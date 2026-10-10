@@ -1,6 +1,27 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-echo "CIVIC orb setup: checking documentation prerequisites"
-command -v git >/dev/null
-echo "CIVIC orb setup: no project toolchain or dependencies are required"
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source_dir="$repo_root/rehearsal/source"
+step() { printf '\n[%s] %s\n' "$(date +%H:%M:%S)" "$1"; }
+
+step "CIVIC: installing Rehearsal dependencies"
+time pnpm --dir "$source_dir" install --frozen-lockfile
+
+# Screen snapshots and review captures launch Playwright with the Google Chrome channel.
+if [ ! -x /opt/google/chrome/chrome ]; then
+  step "CIVIC: installing Google Chrome for review captures"
+  time pnpm --dir "$source_dir/apps/web" exec playwright install --with-deps chrome
+fi
+
+# Bundled synthetic thumbnails are keyed by fixture source hash; copying avoids a ~7 minute first render.
+step "CIVIC: seeding cached screen thumbnails"
+mkdir -p "$source_dir/.review-data/fixtures"
+for fixture in "$repo_root"/rehearsal/fixtures/*.png; do
+  target="$source_dir/.review-data/fixtures/$(basename "$fixture")"
+  [ -e "$target" ] || cp -- "$fixture" "$target"
+done
+
+# The review inventory requires Git; the workspace checkout provides it.
+git -C "$repo_root" rev-parse HEAD >/dev/null
+step "CIVIC: setup complete"
