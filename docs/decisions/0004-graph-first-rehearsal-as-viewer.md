@@ -7,20 +7,20 @@
 
 ## Context
 
-The founding [product spec](../product-spec.md) defines CIVIƆ as a cross-platform artifact graph, "not only a canvas or web preview". Its MVP is platform-neutral from the first release, because "native support must not be retrofitted later". [Decision 0001](0001-fluent-2-demo-design-system.md) defines the demo's success as one Fluent 2 Button across web, iOS, and Android that raises a Contract Conflict which is classified, assigned, and resolved.
+The founding [product spec](../product-spec.md) defines CIVIC as a cross-platform artifact graph, "not only a canvas or web preview". Its MVP is platform-neutral from the first release, because "native support must not be retrofitted later". [Decision 0001](0001-fluent-2-demo-design-system.md) defines the demo's success as one Fluent 2 Button across web, iOS, and Android that raises a Contract Conflict which is classified, assigned, and resolved.
 
 After the Rehearsal import, the roadmap put three steps of Laundry-shaped work ahead of any cross-platform work. Those steps were shell extraction, contract records derived from Laundry screens, and permissions for the review server. The repository's model is still Laundry screens. It has no tokens, semantic components, platform components, or Contract Conflicts as data.
 
 ## Decision
 
-- CIVIƆ's core is a small graph schema that CIVIƆ owns, kept outside `rehearsal/`. Its first entities are Intent, Semantic component, Platform component, Evidence, and Contract Conflict.
+- CIVIC's core is a small graph schema that CIVIC owns, kept outside `rehearsal/`. Its first entities are Intent, Semantic component, Platform component, Evidence, and Contract Conflict.
 - The next milestone is the Fluent 2 Button conflict demo on that schema. iOS and Android evidence starts with source and token analysis, as decision 0001 already plans.
 - Rehearsal is one viewer over that graph and the first web adapter. Its canvas, review, and evidence rules are kept. Its product concepts are written into the spec under "Adopted from Rehearsal".
 - Further extraction of the Laundry shell (decision 0003) is paused. The adapter boundary will be generalized once the Fluent adapter exists, so it is shaped by two consumers.
 
 ## What comes over from Rehearsal
 
-| Kept as CIVIƆ product rules (now in the spec) | Left with Rehearsal or Laundry |
+| Kept as CIVIC product rules (now in the spec) | Left with Rehearsal or Laundry |
 |---|---|
 | Alignment states: Aligned, Approved adaptation, Accepted limitation, Unreviewed drift, Awaiting adoption, Unknown / stale | Laundry screens, fixtures, the towel journey, and its adapter |
 | Proposal, Decision, Adoption, and Verification as separate records | Amp orb service, portal auth, and the single local access key |

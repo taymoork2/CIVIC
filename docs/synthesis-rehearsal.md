@@ -1,9 +1,9 @@
-# Rehearsal synthesis: what the import gives CIVIƆ
+# Rehearsal synthesis: what the import gives CIVIC
 
 - **Date:** 2026-10-10
-- **Decision:** [0002 — Rehearsal is the CIVIƆ base](decisions/0002-rehearsal-is-civic-base.md)
+- **Decision:** [0002 — Rehearsal is the CIVIC base](decisions/0002-rehearsal-is-civic-base.md)
 
-On October 10, 2026 the founder's Rehearsal handoff — built in the Laundry App repository — was imported into [`rehearsal/`](../rehearsal/) and continued as CIVIƆ's implementation base. This document states plainly what the imported system already does, what was added in this repository, and what evidence exists for each claim.
+On October 10, 2026 the founder's Rehearsal handoff — built in the Laundry App repository — was imported into [`rehearsal/`](../rehearsal/) and continued as CIVIC's implementation base. This document states plainly what the imported system already does, what was added in this repository, and what evidence exists for each claim.
 
 ## What Rehearsal already provides
 
@@ -53,4 +53,4 @@ The six web tests that moved now run in the shell package, which is why the web 
 
 ## How to run
 
-The review service is declared in `.amp/services.yaml` (`amp orb services ensure`) and opens through the authenticated Amp portal at the `CIVIƆ Rehearsal` portal. Locally: `pnpm --dir rehearsal/source/apps/web run review`, then sign in with the key in `rehearsal/source/.review-data/access-key` (generated at first run, never committed).
+The review service is declared in `.amp/services.yaml` (`amp orb services ensure`) and opens through the authenticated Amp portal at the `CIVIC Rehearsal` portal. Locally: `pnpm --dir rehearsal/source/apps/web run review`, then sign in with the key in `rehearsal/source/.review-data/access-key` (generated at first run, never committed).

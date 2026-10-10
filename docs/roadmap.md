@@ -1,10 +1,10 @@
-# CIVIƆ roadmap
+# CIVIC roadmap
 
 Ordered next steps after [decision 0004](decisions/0004-graph-first-rehearsal-as-viewer.md). The artifact graph is the core, and Rehearsal is one viewer and the first web adapter. Each step should end with evidence, not a claim.
 
-## 1. CIVIƆ graph schema
+## 1. CIVIC graph schema
 
-Define a small, CIVIƆ-owned schema outside `rehearsal/` for Intent, Semantic component, Platform component, Evidence, and Contract Conflict. Use stable identities and the alignment states from the [spec](product-spec.md#alignment-states). Keep it plain and file-based until the demo shows what storage it needs.
+Define a small, CIVIC-owned schema outside `rehearsal/` for Intent, Semantic component, Platform component, Evidence, and Contract Conflict. Use stable identities and the alignment states from the [spec](product-spec.md#alignment-states). Keep it plain and file-based until the demo shows what storage it needs.
 
 ## 2. Fluent 2 Button conflict demo
 

@@ -1,10 +1,16 @@
-# CIVIƆ product vision and specification
+# CIVIC product vision and specification
 
 **Every journey. Every part. One maintainable system.**
 
-CIVIƆ, pronounced and searchable as **CIVIC**, is a unified, cross-platform product system for Design, Engineering, and QA. It connects product intent, design systems, user journeys, platform-specific component libraries, application code, tests, and runtime evidence so teams can build, verify, and maintain coherent experiences.
+CIVIC is a unified, cross-platform product system for Design, Engineering, and QA. It connects product intent, design systems, user journeys, platform-specific component libraries, application code, tests, and runtime evidence so teams can build, verify, and maintain coherent experiences.
 
 This document preserves the founding product discussion. It is a product direction and specification, not evidence of implemented functionality.
+
+## Name and wordmark
+
+In all text, including docs, code, package names, and search, the name is plain **CIVIC**. The reversed final C (D1) belongs to the wordmark only. The wordmark is drawn by mirroring a real "C" in the same font, for example `CIVI<span class="rev" aria-hidden="true">C</span>` inside an element labelled "CIVIC", with `.rev { display: inline-block; transform: scaleX(-1) }`. A logo is exported as an SVG of that same wordmark.
+
+Don't use the Unicode lookalikes. `Ɔ` (U+0186) is "Latin capital open O", not a reversed C. Many fonts lack it, screen readers read it as "open O", and it breaks search and copy-paste. The true reversed C, `Ↄ` (U+2183), has even less font support.
 
 ## Source and decision status
 
@@ -20,22 +26,22 @@ The source is the Amp discussion in [thread T-01a0dc96-9004-70a8-92a7-d7364d854a
 
 | ID | Decision or requirement | Source |
 |---|---|---|
-| D1 | The product name is **CIVIƆ**, pronounced "civic," with a reversed final **Ɔ**. | M1 |
-| D2 | CIVIƆ must unify: design system → designed screens → user journey → per-platform component library → screen implementation/code → actual app validation. | M1 |
+| D1 | The product name is **CIVIC**, pronounced "civic". Its wordmark reverses the final C. | M1 |
+| D2 | CIVIC must unify: design system → designed screens → user journey → per-platform component library → screen implementation/code → actual app validation. | M1 |
 | D3 | The chain must work top down and in both directions, with each layer remaining in accordance with the others. | M1 |
 | D4 | Users need a website or Figma-like canvas for clicking through scenarios and personas, including states that are not otherwise documented. | M1 |
 | D5 | Users must highlight, comment on, and annotate experiences in context instead of waiting for changes, recreating them, taking screenshots, and sending feedback back. | M1 |
 | D6 | The system should be as easy to build, maintain, run, diagnose, and repair as a Honda Civic or Toyota Corolla, not like a German car engine. | M1 |
 | D7 | Design and Engineering are central. Product Management and Leadership/Executives have important roles. | M3 |
-| D8 | CIVIƆ is cross-platform and must not be limited to web. | M3 |
+| D8 | CIVIC is cross-platform and must not be limited to web. | M3 |
 | D9 | QA is a primary persona alongside Design and Engineering. | M5 |
 | D10 | The model must address bugs, feature requests, accessibility, customer complaints that cause UX/UI changes, composability, platform restrictions and quirks, and component-library coordination with product teams. | M7 |
 | D11 | The model must address the mutual dependence between Design, Engineering, and QA. | M9 |
 | D12 | The model must work for startups, mid-size companies, and enterprises. | M11 |
 | D13 | The product starts as the Amp-hosted `tay/CIVIC` project, followed by a GitHub repository. | M13, M15 |
 | D14 | The full discussion must be documented and stored safely. | M25 |
-| D15 | The artifact graph is CIVIƆ's core. Rehearsal is one viewer and the first web adapter, and the Fluent 2 Button conflict demo comes before more Laundry work. | [Decision 0004](decisions/0004-graph-first-rehearsal-as-viewer.md) |
-| D16 | CIVIƆ's shell has its own interface and does not inherit the reviewed app's design system. Real app components appear only inside the preview. | Rehearsal Codex thread, 02:16 |
+| D15 | The artifact graph is CIVIC's core. Rehearsal is one viewer and the first web adapter, and the Fluent 2 Button conflict demo comes before more Laundry work. | [Decision 0004](decisions/0004-graph-first-rehearsal-as-viewer.md) |
+| D16 | CIVIC's shell has its own interface and does not inherit the reviewed app's design system. Real app components appear only inside the preview. | Rehearsal Codex thread, 02:16 |
 | D17 | One persistent canvas. Explore, play, and review are capabilities reached by selecting and zooming, not separate views. Review shares the right pane with Inspect and Edit. | Rehearsal Codex thread, 05:47 |
 | D18 | The canvas shows real, cached screen snapshots across the whole app by default. Clicking a screen makes it live in place. | Rehearsal Codex thread, 03:19, 03:52 |
 | D19 | Journeys run left to right like a timeline, in app entry order. Branches sit in lanes below with labelled arrows that rejoin. Panning is bounded. | Rehearsal Codex thread, 04:16–04:55 |
@@ -43,7 +49,7 @@ The source is the Amp discussion in [thread T-01a0dc96-9004-70a8-92a7-d7364d854a
 | D21 | Play is the default and Inspect is optional, with no separate developer mode. Edit changes a real, versioned, testable proposal, and testing it is not adopting it. | Rehearsal Codex thread, 03:19, 03:28 |
 | D22 | Inputs are captured during real transitions and carried forward. Jumping to a screen never counts as having walked the path to it. | Rehearsal Codex thread, 03:28 |
 | D23 | Multiplayer-ready from the start. Proposals, comments, decisions, captures, and evidence are shared. Camera, running session, drafts, and fixture experiments are private. | Rehearsal Codex thread, 03:06 |
-| D24 | Borrow canvas conventions from Figma, tldraw, and Paper, but don't become a drawing tool. CIVIƆ's niche is executable journeys and evidence-backed proposals. Figma integration starts as an optional link to a frame, stored with its snapshot and revision. | Rehearsal Codex thread, 05:10–05:13 |
+| D24 | Borrow canvas conventions from Figma, tldraw, and Paper, but don't become a drawing tool. CIVIC's niche is executable journeys and evidence-backed proposals. Figma integration starts as an optional link to a frame, stored with its snapshot and revision. | Rehearsal Codex thread, 05:10–05:13 |
 
 ### Project facts
 
@@ -66,23 +72,23 @@ Feedback is slow because a reviewer must wait for implementation, reproduce the 
 
 ## Business idea
 
-CIVIƆ provides a living, connected model of a product. It lets teams explore every important journey and state, review it in context, trace each part across design and implementation, and verify that intended and shipped behavior still agree.
+CIVIC provides a living, connected model of a product. It lets teams explore every important journey and state, review it in context, trace each part across design and implementation, and verify that intended and shipped behavior still agree.
 
-Early positioning: CIVIƆ sits between design tools, component catalogs, product analytics, visual testing, and QA tools. It integrates with them rather than replacing all of them.
+Early positioning: CIVIC sits between design tools, component catalogs, product analytics, visual testing, and QA tools. It integrates with them rather than replacing all of them.
 
-CIVIƆ is not a drawing or authoring tool (D24). Drawing stays in Figma, Open Design, Claude Design, and similar tools. CIVIƆ owns executable journeys and evidence-backed proposals.
+CIVIC is not a drawing or authoring tool (D24). Drawing stays in Figma, Open Design, Claude Design, and similar tools. CIVIC owns executable journeys and evidence-backed proposals.
 
 Proposed positioning statement:
 
-> CIVIƆ is the living service manual for your product: explore every journey, review every state, trace every part, and verify that design and implementation still agree.
+> CIVIC is the living service manual for your product: explore every journey, review every state, trace every part, and verify that design and implementation still agree.
 
 Cross-platform positioning:
 
-> CIVIƆ connects product design and software engineering across every platform, from system-level intent to validated application behavior.
+> CIVIC connects product design and software engineering across every platform, from system-level intent to validated application behavior.
 
 ## Cross-platform scope
 
-CIVIƆ models shared intent and platform-native expression. Cross-platform does not mean identical visuals or behavior.
+CIVIC models shared intent and platform-native expression. Cross-platform does not mean identical visuals or behavior.
 
 Potential surfaces include:
 
@@ -155,7 +161,7 @@ Example: a semantic **Primary Action** may map to a SwiftUI `PrimaryButton`, a J
       └────────────────────┼────────────────────┘
                            ▼
               ┌────────────────────────┐
-              │         CIVIƆ          │
+              │         CIVIC          │
               │ Intent                 │
               │ Design systems         │
               │ Journeys and scenarios │
@@ -284,7 +290,7 @@ Shared outcome metrics include undocumented-state reduction, escaped regressions
 
 ## Artifact graph and traceability
 
-CIVIƆ is an artifact graph, not only a canvas or web preview.
+CIVIC is an artifact graph, not only a canvas or web preview.
 
 ```diagram
 Intent
@@ -359,7 +365,7 @@ Adopted from Rehearsal:
 
 The journey canvas shows personas and goals, happy and alternate routes, loading, empty, error, offline, and permission states, entry and exit points, platform variants, business rules, and branches.
 
-The canvas is one view over the artifact graph, not the product's core. Rehearsal proved this layout on a real app, and CIVIƆ keeps it as the reference design:
+The canvas is one view over the artifact graph, not the product's core. Rehearsal proved this layout on a real app, and CIVIC keeps it as the reference design:
 
 - **One persistent canvas** with selection, zoom, and contextual panels. Explore, play, and review are capabilities on that canvas, not separate destinations.
 - Flows and the main path run left to right like a timeline, and alternate branches stack below with labelled reconnecting arrows. Navigation order, declared transitions, and verified runtime transitions look different.
@@ -421,7 +427,7 @@ Bugs, feature requests, complaints, accessibility findings, and platform gaps ar
 └────────────┘       └───────────────┘       └────────────┘
 ```
 
-CIVIƆ is not another ticket tracker. Jira, Linear, GitHub, support systems, and accessibility tools can execute work; CIVIƆ maintains the product knowledge graph and lifecycle that connects them.
+CIVIC is not another ticket tracker. Jira, Linear, GitHub, support systems, and accessibility tools can execute work; CIVIC maintains the product knowledge graph and lifecycle that connects them.
 
 ### Proposal, decision, adoption, verification
 
@@ -470,7 +476,7 @@ Complaints are signals, not immediate requirements or defects. Related signals b
 
 An Experience Problem links original reports and support conversations, customer segments, journey and platform distribution, frequency, severity, analytics, design rationale, related bugs or requests, candidate interventions, and post-change outcomes.
 
-Classifications are usability problem, missing capability, accessibility barrier, performance perception, content or terminology issue, platform inconsistency, product education problem, misunderstood expected behavior, and isolated preference. CIVIƆ preserves customer evidence while letting Design choose the response.
+Classifications are usability problem, missing capability, accessibility barrier, performance perception, content or terminology issue, platform inconsistency, product education problem, misunderstood expected behavior, and isolated preference. CIVIC preserves customer evidence while letting Design choose the response.
 
 ### Durable lifecycle
 
@@ -597,7 +603,7 @@ Product teams can accept a migration, request clarification, report unsupported 
 
 ## Company scale
 
-CIVIƆ uses one product model with progressive governance. It scales by increasing coordination, assurance, and governance, not by replacing its core workflow.
+CIVIC uses one product model with progressive governance. It scales by increasing coordination, assurance, and governance, not by replacing its core workflow.
 
 | Scale | Primary need | Product mode | Value |
 |---|---|---|---|
@@ -613,7 +619,7 @@ CIVIƆ uses one product model with progressive governance. It scales by increasi
 │ Coordination layer                            │
 │ Ownership · Dependencies · Versions · Adoption│
 ├───────────────────────────────────────────────┤
-│ Universal CIVIƆ core                          │
+│ Universal CIVIC core                          │
 │ Contracts · Journeys · Components · Evidence  │
 └───────────────────────────────────────────────┘
 ```
@@ -658,7 +664,7 @@ Adopted from Rehearsal's multiplayer boundary:
 
 ## Maintainability principles
 
-The founder's metaphor is a 200,000-mile Honda Civic or Toyota Corolla: easy to build, maintain, run for a long time, diagnose, and repair with readily available parts. CIVIƆ avoids systems that require a specialist every time a warning light appears.
+The founder's metaphor is a 200,000-mile Honda Civic or Toyota Corolla: easy to build, maintain, run for a long time, diagnose, and repair with readily available parts. CIVIC avoids systems that require a specialist every time a warning light appears.
 
 Principles:
 
@@ -692,11 +698,11 @@ The earlier web-first idea of importing a web app or Storybook is superseded by 
 
 Platform-neutral means the model and the first release, not that every platform has runtime evidence on day one. The first evidence comes from web through Rehearsal. Native is proven in the first release through the Fluent 2 adapter, starting with source and token analysis, and is never deferred to a later phase.
 
-Rehearsal already covers items 3 and 4, and part of item 6, for one web app. The other items are built CIVIƆ-first, in the order given in [decision 0004](decisions/0004-graph-first-rehearsal-as-viewer.md).
+Rehearsal already covers items 3 and 4, and part of item 6, for one web app. The other items are built CIVIC-first, in the order given in [decision 0004](decisions/0004-graph-first-rehearsal-as-viewer.md).
 
 ## Integrations
 
-The first design-tool integration is an optional link from a target to a Figma frame, stored with its snapshot and revision (D24). CIVIƆ connects to design and prototyping tools, token systems, web and native component catalogs, source repositories, CI and build systems, device and browser testing, visual regression and accessibility tools, requirements and issue trackers, analytics, and observability tools.
+The first design-tool integration is an optional link from a target to a Figma frame, stored with its snapshot and revision (D24). CIVIC connects to design and prototyping tools, token systems, web and native component catalogs, source repositories, CI and build systems, device and browser testing, visual regression and accessibility tools, requirements and issue trackers, analytics, and observability tools.
 
 ## Target customers
 
@@ -712,7 +718,7 @@ Likely users include designers, engineers, QA, product managers, and stakeholder
 
 ## Business model
 
-CIVIƆ is proposed as B2B SaaS. Pricing should charge for scale, administration, assurance, and infrastructure, not accessibility support or basic QA capabilities. Casual reviewers should not be charged.
+CIVIC is proposed as B2B SaaS. Pricing should charge for scale, administration, assurance, and infrastructure, not accessibility support or basic QA capabilities. Casual reviewers should not be charged.
 
 | Plan | Proposed contents |
 |---|---|
@@ -725,7 +731,7 @@ No dollar prices were proposed.
 
 ## Demo design system
 
-CIVIƆ will use Microsoft Fluent 2 as its first public demo design system. See [decision 0001](decisions/0001-fluent-2-demo-design-system.md).
+CIVIC will use Microsoft Fluent 2 as its first public demo design system. See [decision 0001](decisions/0001-fluent-2-demo-design-system.md).
 
 Design-token import and export are expected future requirements. The platform-neutral token model should support standard formats such as DTCG and tools such as Tokens Studio and Style Dictionary.
 
@@ -735,4 +741,4 @@ Design-token import and export are expected future requirements. The platform-ne
 - Which design, source, and test systems are required for the first integration set?
 - How should scenario fixtures be created for each supported platform?
 - What minimum evidence makes a Product Contract ready for low- and high-risk changes?
-- How should CIVIƆ create and link the GitHub repository once integration permissions allow it?
+- How should CIVIC create and link the GitHub repository once integration permissions allow it?

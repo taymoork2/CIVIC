@@ -1,4 +1,4 @@
-# 0002: Rehearsal is the CIVIƆ base
+# 0002: Rehearsal is the CIVIC base
 
 - **Status:** Accepted, amended by [0004](0004-graph-first-rehearsal-as-viewer.md): Rehearsal is a viewer and the first web adapter, not the core
 - **Date:** 2026-10-10
@@ -6,15 +6,15 @@
 
 ## Context
 
-The founder built **Rehearsal** in the Laundry App repository because they needed to see an entire application journey interactively at once. Rehearsal already implements a large part of CIVIƆ's MVP on one real web app. The founder asked to continue from it rather than start a separate codebase.
+The founder built **Rehearsal** in the Laundry App repository because they needed to see an entire application journey interactively at once. Rehearsal already implements a large part of CIVIC's MVP on one real web app. The founder asked to continue from it rather than start a separate codebase.
 
 ## Decision
 
-Import the October 10, 2026 Rehearsal handoff unchanged into [`rehearsal/`](../../rehearsal/) and evolve it into CIVIƆ. The verbatim import was commit `893bee6` in the Amp-hosted repository, and its `SHA256SUMS` verified on import. That commit is not in the GitHub history: there the import and the changes below arrived together as `12bb16e`. Laundry App remains the first adapter. Fluent 2 ([decision 0001](0001-fluent-2-demo-design-system.md)) becomes the cross-platform adapter that proves the semantic component model.
+Import the October 10, 2026 Rehearsal handoff unchanged into [`rehearsal/`](../../rehearsal/) and evolve it into CIVIC. The verbatim import was commit `893bee6` in the Amp-hosted repository, and its `SHA256SUMS` verified on import. That commit is not in the GitHub history: there the import and the changes below arrived together as `12bb16e`. Laundry App remains the first adapter. Fluent 2 ([decision 0001](0001-fluent-2-demo-design-system.md)) becomes the cross-platform adapter that proves the semantic component model.
 
-## How Rehearsal maps to CIVIƆ
+## How Rehearsal maps to CIVIC
 
-| CIVIƆ capability | Rehearsal today | Gap |
+| CIVIC capability | Rehearsal today | Gap |
 |---|---|---|
 | Journey canvas and scenario player | One persistent canvas, 176 screen nodes, horizontal flows, lower branch lanes, pan and zoom, live towel run | Exhaustive paths, replay from start |
 | Bidirectional traceability | Screen → scenario → component file → checks; source and design hashes | Tokens, semantic components, platform implementations |
@@ -34,7 +34,7 @@ Import the October 10, 2026 Rehearsal handoff unchanged into [`rehearsal/`](../.
 
 ## Consequences
 
-- CIVIƆ has a working base. The next work is evidence, decisions, and adapters, not a new canvas.
+- CIVIC has a working base. The next work is evidence, decisions, and adapters, not a new canvas.
 - Rehearsal's safety rules carry forward: never turn a fixture jump, failed operation, inferred edge, or old screenshot into runtime evidence.
-- The Laundry App source and its domain code still sit inside `rehearsal/source`. Extracting the CIVIƆ shell is a planned step, not done here. It started in [decision 0003](0003-civic-shell-package.md).
+- The Laundry App source and its domain code still sit inside `rehearsal/source`. Extracting the CIVIC shell is a planned step, not done here. It started in [decision 0003](0003-civic-shell-package.md).
 - Portal access is personal-thread access. It is not the multiplayer permission model.

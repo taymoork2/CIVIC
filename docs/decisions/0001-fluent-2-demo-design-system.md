@@ -6,7 +6,7 @@
 
 ## Context
 
-CIVIƆ needs a realistic public design system to prove its core loop:
+CIVIC needs a realistic public design system to prove its core loop:
 
 ```diagram
 Shared intent ──▶ Platform implementations ──▶ Evidence ──▶ Drift and coverage
@@ -26,7 +26,7 @@ The founder has no usable Figma content of their own. The demo source must be pu
 
 ## Decision
 
-Use Fluent 2 as CIVIƆ's first demo design system. CIVIƆ reads Fluent; it does not fork or redistribute it.
+Use Fluent 2 as CIVIC's first demo design system. CIVIC reads Fluent; it does not fork or redistribute it.
 
 | Layer | Source |
 |---|---|
@@ -36,13 +36,13 @@ Use Fluent 2 as CIVIƆ's first demo design system. CIVIƆ reads Fluent; it does 
 | Android | [`microsoft/fluentui-android`](https://github.com/microsoft/fluentui-android): Jetpack Compose and legacy Views |
 | Tokens | Published platform packages: `@fluentui/tokens`, Swift `GlobalTokens` and `FluentTheme`, Kotlin `FluentGlobalTokens`, `FluentAliasTokens`, and control tokens |
 
-Free Figma Community files use CC BY 4.0, so CIVIƆ must credit Microsoft when it copies or adapts them. Fluent code libraries are MIT licensed. Check separate asset and icon licenses before redistributing them.
+Free Figma Community files use CC BY 4.0, so CIVIC must credit Microsoft when it copies or adapts them. Fluent code libraries are MIT licensed. Check separate asset and icon licenses before redistributing them.
 
 ## First demo component: Button
 
 Button exists on every platform and exposes useful differences.
 
-| CIVIƆ semantic variant | React v9 | Web component | iOS | Android Compose |
+| CIVIC semantic variant | React v9 | Web component | iOS | Android Compose |
 |---|---|---|---|---|
 | Primary filled | `primary` | `appearance="primary"` | `accent` | `Button` |
 | Brand outline | `outline`, closest match | `appearance="outline"` | `outlineAccent` | `OutlinedButton` |
@@ -61,7 +61,7 @@ Known differences to show:
 
 ## Demo scenario: misaligned design source
 
-The Android Figma kit may not match the current Android Compose Button. CIVIƆ should treat that as a first-class demo scenario, not a setup problem.
+The Android Figma kit may not match the current Android Compose Button. CIVIC should treat that as a first-class demo scenario, not a setup problem.
 
 ```diagram
 Android Figma kit ──┐
@@ -75,7 +75,7 @@ Compose Button ─────┘                                  │
                 Update design             Change implementation      Approve exception
 ```
 
-CIVIƆ should:
+CIVIC should:
 
 1. Compare the Android kit, Compose implementation, Button contract, and captured evidence.
 2. Open a **Contract Conflict** that names the exact mismatch, such as a missing variant, different default, state, size, radius, or color.
@@ -96,8 +96,8 @@ The demo succeeds when a reviewer can see what disagrees, why it matters, who mu
 
 ## Consequences
 
-- CIVIƆ can demonstrate one semantic component across three real platform implementations.
-- Fluent's canonical token source is private, so CIVIƆ must normalize tokens from published code packages.
-- Microsoft's official Android Figma short link redirected to Bing on 2026-10-10. The public [Microsoft Fluent Android](https://www.figma.com/community/file/836835062056249539/microsoft-fluent-android) Community file is the Android design source for the demo. Figma lists it as last updated six years ago, but the founder observed a v2 label in the file. It only needs to be a realistic example, not a verified current source. Any mismatch with the Fluent Android Compose `V2` controls becomes drift for CIVIƆ to show.
+- CIVIC can demonstrate one semantic component across three real platform implementations.
+- Fluent's canonical token source is private, so CIVIC must normalize tokens from published code packages.
+- Microsoft's official Android Figma short link redirected to Bing on 2026-10-10. The public [Microsoft Fluent Android](https://www.figma.com/community/file/836835062056249539/microsoft-fluent-android) Community file is the Android design source for the demo. Figma lists it as last updated six years ago, but the founder observed a v2 label in the file. It only needs to be a realistic example, not a verified current source. Any mismatch with the Fluent Android Compose `V2` controls becomes drift for CIVIC to show.
 - Figma's Variables REST API is Enterprise-only. Code packages, not Figma variables, are the initial token source.
-- Design-token export is likely to matter later. CIVIƆ should keep a platform-neutral token model that can import and export standard formats such as DTCG and support tools such as Tokens Studio and Style Dictionary.
+- Design-token export is likely to matter later. CIVIC should keep a platform-neutral token model that can import and export standard formats such as DTCG and support tools such as Tokens Studio and Style Dictionary.

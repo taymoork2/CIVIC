@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Local signoff: run CIVIƆ's checks on this machine instead of paid CI minutes, then
+# Local signoff: run CIVIC's checks on this machine instead of paid CI minutes, then
 # record a green "signoff" commit status on GitHub for the exact commit that passed.
 #
 #   bin/signoff            checks, tests and review-server tests

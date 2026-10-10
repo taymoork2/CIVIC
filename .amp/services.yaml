@@ -5,5 +5,5 @@ services:
     health: /review
     portal:
       url: /review
-      title: CIVIƆ Rehearsal
+      title: CIVIC Rehearsal
       description: Laundry App journey canvas with synthetic data. Thread collaborators sign in automatically.
