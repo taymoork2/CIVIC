@@ -28,6 +28,7 @@ After the Rehearsal import, the roadmap put three steps of Laundry-shaped work a
 | Stable identities, explicit re-anchoring, and distinct declared, proposed, and observed paths | The Open Design and Claude Design collaboration workflow |
 | Frozen capture before writing, retained retry identity, and evidence-required resolution | Vendored design skills, the Laundry design reference, the manifest, and checksums |
 | Multiplayer boundary between shared records and private runs and drafts | The legacy `?legacy=1` pin workspace |
+| Coding agents as a persona that reproduces items, proposes fixes and hands them back for verification, plus the split between scenario inputs and presentation inputs (from Claude Design's review-workspace proposal) | The proposal's Sightline name and visual tokens |
 | Canvas layout: one persistent canvas, horizontal flows, branches below, snapshots plus one live screen, play by default | |
 
 The `@civic/shell` code, which covers the camera, controls, capture, and contract states, stays where it is as viewer code. It isn't a foundation for the graph.

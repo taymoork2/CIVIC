@@ -131,6 +131,8 @@ Example: a semantic **Primary Action** may map to a SwiftUI `PrimaryButton`, a J
 
 **Product Management** defines requirements, business rules, and acceptance criteria; reviews journey and scenario coverage; resolves scope and behavioral ambiguity; and evaluates release readiness with Design, Engineering, and QA.
 
+**Coding agents** are consumers as well as people. An agent retrieves a review item, reproduces its exact state from the link, proposes a fix with its revision and evidence, and hands the item back for a person to verify. The agent has visible attribution and no decision authority of its own. This persona comes from the Rehearsal and Claude Design review-workspace work.
+
 **Leadership and Executives** review product-system health and risk, quality, platform coverage, maintainability, divergence, and release confidence. They can explore intended or shipped experiences without local setup.
 
 ```diagram
@@ -362,6 +364,7 @@ Adopted from Rehearsal:
 
 - **Play is the default.** Inspect and edit are optional.
 - Persona, permission, and condition are separate dimensions. A persona never implies a permission or rule.
+- **Scenario inputs** and **presentation inputs** behave differently. Scenario inputs are persona, access, condition, and step, and changing one reloads the fixture. Presentation inputs are viewport, theme, and text size, and they apply live.
 - A **fixture jump** to a state is labelled as a jump and is never presented as a replay of the steps before it. Replay from start is a separate capability.
 - A live run survives browsing, panel changes, and proposal switches. Anything that would discard an unsaved draft asks first.
 - Inputs are captured at confirmed transitions from an allowlist, exactly as entered. Credentials and raw keystrokes are never captured.
@@ -374,7 +377,9 @@ Adopted from Rehearsal:
 
 - Feedback freezes its capture before it is written. The capture includes the screenshot, anchor, visible state, captured inputs, source and design revisions, and an exact-scenario link.
 - Retries keep the original capture and request identity.
-- Resolving feedback requires evidence.
+- Resolving feedback requires evidence. Items move from **Open** to **Fix ready for review** to **Resolved**, and a queue filtered by status lives in the inspector rather than on its own screen.
+- An exact-scenario link restores the step, the scenario and presentation inputs, and the open item.
+- On a narrow screen, the preview comes first. Journey, context, and notes open as sheets.
 - Staleness against the current source is recomputed when feedback is read, while the original receipt stays unchanged.
 
 ## Change management
