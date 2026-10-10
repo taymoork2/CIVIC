@@ -1,0 +1,4 @@
+@AGENTS.md
+
+The shared design coordination contract is `docs/design/opendesign.md`.
+Use that source rather than maintaining a separate design policy here.

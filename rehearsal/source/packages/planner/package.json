@@ -1,0 +1,18 @@
+{
+  "name": "@washcloset/planner",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "check": "tsc --ignoreConfig --noEmit --allowImportingTsExtensions --strict --skipLibCheck --target ES2022 --module ESNext --moduleResolution Bundler src/index.ts && pnpm run check:owner-evidence",
+    "check:owner-evidence": "tsc --ignoreConfig --noEmit --allowImportingTsExtensions --strict --skipLibCheck --target ES2022 --module ESNext --moduleResolution Bundler --types node src/owner-product-evidence.ts src/owner-product-evidence.test.ts scripts/compile-owner-product-evidence.ts",
+    "test": "node --experimental-strip-types src/index.test.ts && node --experimental-strip-types src/dose.test.ts && node --experimental-strip-types src/drying.test.ts && node --experimental-strip-types src/dryer-loads.test.ts && node --experimental-strip-types src/pass-order.test.ts && node --experimental-strip-types src/sizes.test.ts && node --experimental-strip-types src/loads.test.ts && node --experimental-strip-types src/directions.test.ts && node --experimental-strip-types src/vocabulary.test.ts && node --experimental-strip-types src/requirements.test.ts && node --experimental-strip-types src/detergent.test.ts && node --experimental-strip-types src/care-constraints.test.ts && node --experimental-strip-types src/product-benefits.test.ts && node --experimental-strip-types src/garment-advice.test.ts && node --experimental-strip-types --test src/pre-owned.test.ts && node --experimental-strip-types src/personal-outcomes.test.ts && node --experimental-strip-types src/personal-suggestions.test.ts && node --experimental-strip-types src/personal-planner.test.ts && node --experimental-strip-types --test src/owner-product-evidence.test.ts src/product-contract.test.ts src/care-required-detergent.test.ts && node --experimental-strip-types --test src/physical.test.ts src/room.test.ts && node --experimental-strip-types --test src/conditional-separation.test.ts src/conditional-separation.integration.test.ts src/care-wash-duration.test.ts"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.3",
+    "typescript": "7.0.2"
+  },
+  "dependencies": {
+    "obscenity": "^0.4.6"
+  }
+}

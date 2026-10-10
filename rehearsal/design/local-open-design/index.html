@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rehearsal — Operate mode design handoff</title>
+<style>
+/* OD-LAYOUT-PRIMITIVES v1 — structure only: display, flex/grid, overflow, wrapping, ratio.
+   Put this @layer first; product CSS outside the layer always wins. */
+@layer od-layout {
+  :where(.od-stack,.od-row,.od-row-top,.od-cluster,.od-grid,.od-field,.od-stat,.od-cell,.od-tile) > :where(*) { min-width: 0; }
+  .od-stack   { display: flex; flex-direction: column; gap: var(--od-gap, 8px); }
+  .od-row     { display: flex; align-items: center; gap: var(--od-gap, 8px); }
+  .od-row-top { display: flex; align-items: flex-start; gap: var(--od-gap, 8px); }
+  .od-cluster { display: flex; flex-wrap: wrap; align-items: center; gap: var(--od-gap, 8px); }
+  .od-fill    { flex: 1 1 0; min-width: 0; }
+  .od-fixed   { flex: none; }
+  .od-grid    { display: grid; gap: var(--od-gap, 12px); grid-template-columns: repeat(var(--od-cols, 3), minmax(0, 1fr)); }
+  .od-stat, .od-field, .od-cell { display: grid; gap: var(--od-gap, 2px); }
+  :where(.od-stat,.od-field,.od-cell) > :where(*) { display: block; }
+  .od-tile { display: grid; grid-template-rows: auto 1fr; }
+  :where(.od-tile) > :where(*) { display: block; }
+  .od-media { display: block; width: 100%; height: auto; aspect-ratio: var(--od-ratio, auto); }
+  .od-media-cover { object-fit: cover; }
+  .od-truncate { display: block; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .od-clamp-2, .od-clamp-3 { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+  .od-clamp-2 { -webkit-line-clamp: 2; }
+  .od-clamp-3 { -webkit-line-clamp: 3; }
+  .od-lines-2 { min-height: calc(2 * 1.4em); }
+  .od-nowrap  { white-space: nowrap; }
+  .od-keep    { word-break: keep-all; overflow-wrap: anywhere; }
+  .od-screen { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; height: 100%; }
+  .od-scroll { overflow-y: auto; overscroll-behavior: contain; min-height: 0; }
+  .od-rail { display: flex; gap: var(--od-gap, 8px); overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none;
+             padding-inline: var(--od-rail-pad, 16px); scroll-padding-inline: var(--od-rail-pad, 16px); }
+  .od-rail::-webkit-scrollbar { display: none; }
+  :where(.od-rail) > :where(*) { flex: none; scroll-snap-align: start; }
+  :where(.od-rail) > :where(:last-child) { margin-inline-end: var(--od-rail-pad, 16px); }
+  .od-spacer { flex: none; visibility: hidden; pointer-events: none; }
+  .od-touch  { min-width: 44px; min-height: 44px; }
+}
+/* /OD-LAYOUT-PRIMITIVES v1 */
+
+:root{
+  --bg:#F4F5F6; --surface:#FFFFFF; --surface-2:#EFF1F3; --stage:#E6E8EB;
+  --ink:#15171A; --ink-2:#2B2F35; --muted:#5A6068; --line:#DCDFE3; --line-strong:#C2C7CD;
+  --spike:#C23A14; --spike-soft:#FBE9E3; --ok:#1C6E46; --warn:#7F5300; --warn-soft:#FBF0D9; --focus:#1F57C3;
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",system-ui,sans-serif;
+  --font-display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",system-ui,sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --s2:8px;--s3:12px;--s4:16px;--s5:24px;--s6:32px;--s7:48px;--s8:72px;
+  --r1:6px;--r2:10px;--r3:12px;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#0F1113;--surface:#171A1E;--surface-2:#1F2328;--stage:#0B0D0F;--ink:#ECEEF0;--ink-2:#D3D7DC;--muted:#A0A6AE;--line:#2A2F35;--line-strong:#3A4048;
+  --spike:#FF7A52;--spike-soft:#3A1B10;--ok:#5CC98F;--warn:#E6B44C;--warn-soft:#2E230C;--focus:#7FA8FF}}
+*,*::before,*::after{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 16px/1.55 var(--font);-webkit-font-smoothing:antialiased}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px;border-radius:4px}
+h1,h2,h3,p{margin:0}
+a{color:var(--focus);text-underline-offset:3px}
+code,.mono{font-family:var(--mono);font-size:13px}
+.wrap{max-width:1296px;margin:0 auto;padding:0 var(--s6)}
+.mast{border-bottom:1px solid var(--line);background:var(--surface)}
+.mast .wrap{display:flex;align-items:center;gap:var(--s4);min-height:64px;flex-wrap:wrap}
+.mast .brand{display:flex;align-items:center;gap:var(--s2);font:650 17px/1 var(--font-display);letter-spacing:-.015em}
+.mast .brand svg{color:var(--spike)}
+.mast nav{display:flex;gap:var(--s2);flex-wrap:wrap;margin-left:auto}
+.mast nav a{color:var(--ink-2);text-decoration:none;font-size:14px;font-weight:500;min-height:44px;display:inline-flex;align-items:center;padding:0 var(--s2);border-radius:var(--r1)}
+@media (hover:hover){.mast nav a:hover{background:var(--surface-2)}}
+.status{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--warn);background:var(--warn-soft);padding:4px 10px;border-radius:999px}
+
+section{padding:var(--s7) 0;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:13px;font-weight:600;color:var(--muted);display:block;margin-bottom:var(--s2)}
+h1{font:700 clamp(28px,3.2vw,40px)/1.12 var(--font-display);letter-spacing:-.025em;max-width:22ch}
+h2{font:680 26px/1.2 var(--font-display);letter-spacing:-.02em;margin-bottom:var(--s3)}
+h3{font:650 17px/1.3 var(--font-display);margin-bottom:var(--s2)}
+.lede{font-size:18px;line-height:1.55;color:var(--ink-2);max-width:68ch;margin-top:var(--s4)}
+.prose{max-width:70ch;color:var(--ink-2)}
+.prose p+p{margin-top:var(--s3)}
+
+.reco{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:var(--s6);margin-top:var(--s6)}
+.reco ol{margin:0;padding-left:20px;display:grid;gap:var(--s3);color:var(--ink-2)}
+.reco ol strong{color:var(--ink)}
+.facts{display:grid;gap:0;border:1px solid var(--line);border-radius:var(--r2);background:var(--surface);align-self:start}
+.facts div{display:grid;grid-template-columns:140px minmax(0,1fr);gap:var(--s3);padding:var(--s3) var(--s4);font-size:14px}
+.facts div+div{border-top:1px solid var(--line)}
+.facts dt{color:var(--muted)}
+.facts dd{margin:0;font-weight:500}
+
+/* frames: real app.html at its true viewport, scaled for the board */
+.frame{--w:1440;--h:1024;--s:.85;width:calc(var(--w)*var(--s)*1px);height:calc(var(--h)*var(--s)*1px);position:relative;border-radius:var(--r3);overflow:hidden;
+  box-shadow:0 0 0 1px var(--line),0 12px 32px rgba(16,18,22,.10);background:var(--surface);flex:none}
+.frame iframe{position:absolute;left:0;top:0;width:calc(var(--w)*1px);height:calc(var(--h)*1px);border:0;transform:scale(var(--s));transform-origin:0 0}
+.frame.m{--w:390;--h:844;--s:.62;border-radius:22px}
+.cap{display:grid;gap:2px;margin-top:var(--s3);max-width:calc(var(--w,390)*var(--s,.62)*1px)}
+.cap b{font-size:14px}
+.cap span{font-size:13px;color:var(--muted)}
+.fig{display:flex;flex-direction:column}
+.hero-frame{display:flex;justify-content:center;margin-top:var(--s5)}
+.hero-frame .frame{--s:.86}
+.open-link{display:inline-flex;align-items:center;gap:6px;min-height:44px;font-weight:600}
+.grid-d{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s6) var(--s5);margin-top:var(--s5)}
+.grid-d .frame{--s:.425}
+.grid-m{display:grid;grid-template-columns:repeat(auto-fill,minmax(242px,1fr));gap:var(--s6) var(--s5);margin-top:var(--s5)}
+.grid-m .fig{align-items:flex-start}
+
+/* alternatives — structural wireframes */
+.alts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--s5);margin-top:var(--s5)}
+.alt{border:1px solid var(--line);border-radius:var(--r2);background:var(--surface);padding:var(--s4);display:grid;gap:var(--s3);align-content:start}
+.alt.pick{border-color:var(--ink);box-shadow:inset 0 0 0 1px var(--ink)}
+.alt .badge{justify-self:start;font-size:12px;font-weight:700;padding:3px 8px;border-radius:999px;background:var(--surface-2);color:var(--ink-2)}
+.alt.pick .badge{background:var(--ink);color:var(--surface)}
+.wf{aspect-ratio:1440/1024;border:1px solid var(--line-strong);border-radius:6px;display:grid;gap:3px;padding:3px;background:var(--bg)}
+.wf b{display:grid;place-items:center;font:600 10px/1.2 var(--font);color:var(--muted);background:var(--surface-2);border-radius:3px;text-align:center;padding:2px}
+.wf b.pv{background:var(--surface);border:1.5px solid var(--ink);color:var(--ink)}
+.wf b.sp{background:var(--spike-soft);color:var(--spike)}
+.wf1{grid-template-columns:1fr;grid-template-rows:12% 20% 1fr}
+.wf1 .row{display:grid;grid-template-columns:repeat(5,1fr);gap:3px}
+.wf1 .mid{display:grid;grid-template-columns:1fr 28%;gap:3px}
+.wf2{grid-template-columns:34% 1fr 30%;grid-template-rows:1fr}
+.wf3{grid-template-columns:18% 1fr 26%;grid-template-rows:8% 1fr}
+.wf3 .top{grid-column:2}
+.wf3 .pv{grid-row:1/3;grid-column:2}
+.alt dl{margin:0;display:grid;gap:var(--s2);font-size:14px}
+.alt dt{font-weight:600}
+.alt dd{margin:0;color:var(--ink-2)}
+
+.challenge{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s4) var(--s6);margin-top:var(--s5)}
+.challenge div{border-top:1px solid var(--line);padding-top:var(--s3)}
+.challenge p{color:var(--ink-2);font-size:15px}
+
+table{width:100%;border-collapse:collapse;font-size:14px;margin-top:var(--s4)}
+th,td{text-align:left;padding:10px var(--s3);border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:12px;color:var(--muted);font-weight:600}
+td code{white-space:nowrap}
+.sw{display:inline-block;width:16px;height:16px;border-radius:4px;vertical-align:-3px;margin-right:6px;box-shadow:inset 0 0 0 1px rgba(0,0,0,.15)}
+.cols{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s6)}
+.tbl-scroll{overflow-x:auto}
+.ix{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--s5) var(--s6);margin-top:var(--s5)}
+.ix h3{display:flex;align-items:center;gap:var(--s2)}
+.ix p,.ix li{color:var(--ink-2);font-size:15px}
+.ix ul{margin:var(--s2) 0 0;padding-left:20px;display:grid;gap:4px}
+kbd{font:600 12px/1 var(--mono);padding:3px 6px;border:1px solid var(--line-strong);border-radius:4px;background:var(--surface)}
+.risks{display:grid;gap:var(--s3);margin-top:var(--s4);max-width:80ch;padding-left:20px}
+.risks li{color:var(--ink-2)}
+.risks strong{color:var(--ink)}
+footer{padding:var(--s6) 0 var(--s7);color:var(--muted);font-size:14px}
+
+@media (max-width:1100px){
+  .reco,.alts,.challenge,.cols,.ix,.grid-d{grid-template-columns:minmax(0,1fr)}
+  .hero-frame{justify-content:flex-start;overflow-x:auto}
+  .hero-frame .frame{--s:.6}
+  .grid-d .frame{--s:.5}
+}
+@media (max-width:640px){
+  .wrap{padding:0 var(--s4)}
+  .hero-frame .frame{--s:.24}
+  .grid-d .frame{--s:.23}
+  .facts div{grid-template-columns:minmax(0,1fr)}
+}
+</style>
+</head>
+<body>
+<header class="mast">
+  <div class="wrap">
+    <span class="brand"><svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><path d="M3 7V3h4M13 3h4v4M17 13v4h-4M7 17H3v-4"/></svg>Rehearsal</span>
+    <span class="status">Design proposal · not implemented or verified</span>
+    <nav aria-label="Board sections">
+      <a href="#desktop">Desktop</a><a href="#states">States</a><a href="#mobile">Mobile</a><a href="#alternatives">Alternatives</a><a href="#tokens">Tokens</a><a href="#contract">Responsive</a><a href="#interaction">Interaction</a><a href="#risks">Risks</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<section>
+  <div class="wrap">
+    <span class="eyebrow">Operate mode · first integration: Laundry App · Oct 9, 2026</span>
+    <h1>The real app sits in the middle. Everything else stays out of its way until you need it.</h1>
+    <p class="lede">Rehearsal is a review workspace, not a dashboard. You pick a step, use the actual components with synthetic records, mark what’s wrong right on the element, and later reproduce that exact moment to check the fix. The proposal keeps the Claude Design structure (journeys left, preview center, inspector right) and changes four things that decide whether it holds up in daily review.</p>
+    <div class="reco">
+      <ol>
+        <li><strong>Context becomes four chips, not six dropdowns.</strong> Persona, Permission, Condition and Display sit in one line above the preview and open a single grouped popover (a sheet on mobile). Persona, permission and data condition stay separate fields, and Condition turns amber when it isn’t Normal so a save-failure run can’t be mistaken for a normal one.</li>
+        <li><strong>Spike marking is the one signature interaction.</strong> Press <kbd>P</kbd> or tap Mark, and corner ticks like stage spike tape snap to whatever you point at. Choosing an element pins a note that captures the region, app state, build, design revision and full context. <em>Reproduce</em> restores all of that and re-marks the element.</li>
+        <li><strong>Four review lanes, stated in words.</strong> Working preview, design revision, browser verification and physical-device acceptance each have their own status, written out with an icon. A stale design shows as stale and never borrows a green check from a fixed build.</li>
+        <li><strong>The page never grows.</strong> The inspector holds one selected note with a cropped capture. The note list is two lines per note, and full screenshots are reached through Reproduce, not stacked down the page.</li>
+      </ol>
+      <dl class="facts">
+        <div><dt>Deliverables</dt><dd>This board · <a href="app.html">app.html</a> (live prototype) · <a href="HANDOFF.md">HANDOFF.md</a></dd></div>
+        <div><dt>Reviewed record</dt><dd>Synthetic towel TW-0081, Fabric 80% cotton / 20% polyester</dd></div>
+        <div><dt>Sample note</dt><dd>“Keep the composition total visible while editing.”</dd></div>
+        <div><dt>Scope</dt><dd>34 working scenarios, 93 legacy specimens (collapsed, labelled Partial)</dd></div>
+        <div><dt>Not claimed</dt><dd>No implementation, browser or device verification</dd></div>
+      </dl>
+    </div>
+  </div>
+</section>
+
+<section id="desktop">
+  <div class="wrap">
+    <span class="eyebrow">Strongest proposal · desktop 1440 × 1024 · live</span>
+    <h2>Saved note with evidence, stale-design status</h2>
+    <p class="prose">This frame is the real prototype, scaled down. Try <kbd>P</kbd>, change the fabric numbers, switch the Condition chip to Save failure, or press Reproduce. <a class="open-link" href="app.html">Open full size ↗</a></p>
+    <div class="hero-frame"><div class="frame"><iframe src="app.html?state=saved" title="Desktop 1440 by 1024: saved note with evidence" loading="eager"></iframe></div></div>
+  </div>
+</section>
+
+<section id="states">
+  <div class="wrap">
+    <span class="eyebrow">Required states · desktop</span>
+    <h2>Compose, confirm, retry, empty</h2>
+    <div class="grid-d">
+      <figure class="fig" style="margin:0"><div class="frame"><iframe src="app.html?state=compose" title="Compose and pin" loading="lazy"></iframe></div>
+        <figcaption class="cap"><b>Compose + pin</b><span>The pin is dashed until saved. The capture, state, build and context are attached before any text is typed.</span></figcaption></figure>
+      <figure class="fig" style="margin:0"><div class="frame"><iframe src="app.html?state=confirm" title="Context change confirmation" loading="lazy"></iframe></div>
+        <figcaption class="cap"><b>Context change with a draft</b><span>Keep editing is the default. Discarding is explicit and red, and saved notes and records are never affected.</span></figcaption></figure>
+      <figure class="fig" style="margin:0"><div class="frame"><iframe src="app.html?state=error" title="Save error with retry" loading="lazy"></iframe></div>
+        <figcaption class="cap"><b>Pending → error → retry</b><span>Text, pin and capture are kept in place after a failed save, and Retry sends the same captured state.</span></figcaption></figure>
+      <figure class="fig" style="margin:0"><div class="frame"><iframe src="app.html?state=empty" title="Empty step" loading="lazy"></iframe></div>
+        <figcaption class="cap"><b>Empty step</b><span>Explains how to start marking and links to notes on another step.</span></figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section id="mobile">
+  <div class="wrap">
+    <span class="eyebrow">Mobile 390 × 844 · opens on the working preview</span>
+    <h2>One surface, four tools</h2>
+    <p class="prose">The phone never stacks the desktop panels. It opens on the working preview with the step in the top bar, and the bottom bar holds Journeys, Context, Mark and Notes. Each opens a sheet over the preview and closes with Esc, the scrim or ×. The 393 pt preview is scaled to fit and labelled with its true size.</p>
+    <div class="grid-m">
+      <figure class="fig" style="margin:0"><div class="frame m"><iframe src="app.html?state=saved" title="Mobile: working preview" loading="lazy"></iframe></div>
+        <figcaption class="cap"><b>Working preview</b><span>Pins sit on the app, and the selected note’s element keeps its spike outline.</span></figcaption></figure>
+      <figure class="fig" style="margin:0"><div class="frame m"><iframe src="app.html?state=saved&sheet=journeys" title="Mobile: journeys sheet" loading="lazy"></iframe></div>
+        <figcaption class="cap"><b>Journeys sheet</b><span>Numbered steps with note counts. Legacy specimens stay collapsed.</span></figcaption></figure>
+      <figure class="fig" style="margin:0"><div class="frame m"><iframe src="app.html?state=saved&sheet=context" title="Mobile: context sheet" loading="lazy"></iframe></div>
+        <figcaption class="cap"><b>Context sheet</b><span>Three groups: who, data condition, display.</span></figcaption></figure>
+      <figure class="fig" style="margin:0"><div class="frame m"><iframe src="app.html?state=compose&sheet=notes" title="Mobile: compose" loading="lazy"></iframe></div>
+        <figcaption class="cap"><b>Compose after marking</b><span>Pinning opens the Notes sheet straight to the text field.</span></figcaption></figure>
+      <figure class="fig" style="margin:0"><div class="frame m"><iframe src="app.html?state=saved&sheet=notes&theme=dark" title="Mobile: saved note, dark" loading="lazy"></iframe></div>
+        <figcaption class="cap"><b>Saved note · dark workbench</b><span>The capture, reproduction link and lanes are all there, and the reviewed app keeps its own light theme.</span></figcaption></figure>
+      <figure class="fig" style="margin:0"><div class="frame m"><iframe src="app.html?state=confirm" title="Mobile: discard confirmation" loading="lazy"></iframe></div>
+        <figcaption class="cap"><b>Discard confirmation</b><span>The same rule as desktop, shown as a centered dialog.</span></figcaption></figure>
+      <figure class="fig" style="margin:0"><div class="frame m"><iframe src="app.html?state=pending&sheet=notes" title="Mobile: saving" loading="lazy"></iframe></div>
+        <figcaption class="cap"><b>Pending save</b><span>The field becomes read-only and the button reads Saving…. Nothing else moves.</span></figcaption></figure>
+      <figure class="fig" style="margin:0"><div class="frame m"><iframe src="app.html?state=saved&mark=1" title="Mobile: marking" loading="lazy"></iframe></div>
+        <figcaption class="cap"><b>Marking</b><span>The preview gets a spike-colored edge and the element gets corner ticks with its name.</span></figcaption></figure>
+    </div>
+  </div>
+</section>
+
+<section id="alternatives">
+  <div class="wrap">
+    <span class="eyebrow">Structural comparison</span>
+    <h2>Two alternatives, and why the preview wins</h2>
+    <div class="alts">
+      <article class="alt">
+        <span class="badge">A · Journey / storyboard-led</span>
+        <div class="wf wf1" aria-hidden="true"><b>Context bar</b><div class="row"><b>1</b><b>2</b><b class="sp">3</b><b>4</b><b>5</b></div><div class="mid"><b class="pv">Preview</b><b>Notes</b></div></div>
+        <dl><dt>Shape</dt><dd>A filmstrip of step thumbnails runs across the top. The preview sits below and notes hang off each frame.</dd>
+          <dt>Good at</dt><dd>Seeing a whole flow at once and spotting which step is noisy.</dd>
+          <dt>Costs</dt><dd>The filmstrip eats about 20% of the height, and the preview shrinks exactly where review happens. 34 scenarios won’t fit in a strip, and on mobile it turns into a carousel, which hurts findability.</dd></dl>
+      </article>
+      <article class="alt">
+        <span class="badge">B · Feedback / review-led</span>
+        <div class="wf wf2" aria-hidden="true"><b>Notes queue</b><b class="pv">Preview</b><b>Evidence + lanes</b></div>
+        <dl><dt>Shape</dt><dd>A notes queue on the left is the primary navigation. Picking a note loads its step and context.</dd>
+          <dt>Good at</dt><dd>Triage and fix-verification passes.</dd>
+          <dt>Costs</dt><dd>You can’t easily explore a step that has no notes yet, so discovery suffers. The preview becomes a viewer instead of a place to operate.</dd></dl>
+      </article>
+      <article class="alt pick">
+        <span class="badge">Recommended · Preview-first + spike inspector</span>
+        <div class="wf wf3" aria-hidden="true"><b style="grid-row:1/3">Script</b><b class="top">Context chips · Mark</b><b style="grid-row:1/3">Notes · evidence</b></div>
+        <dl><dt>Shape</dt><dd>The script rail (journeys) sits on the left, the preview takes over 50% of the width, and the inspector on the right is driven by marks.</dd>
+          <dt>Takes from A</dt><dd>Numbered steps with note counts in the rail, plus the <kbd>[</kbd> <kbd>]</kbd> step keys.</dd>
+          <dt>Takes from B</dt><dd>Reproduce turns any note into its exact moment, so a triage pass is just walking the note list.</dd></dl>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <span class="eyebrow">Challenges to the current Claude Design direction</span>
+    <h2>Where I pushed back</h2>
+    <div class="challenge">
+      <div><h3>The inspector shouldn’t be a feed</h3><p>A scrolling list of full screenshots is what makes today’s page so long. The inspector here shows one selected note with a cropped capture made from the live preview. Full-frame evidence comes from Reproduce, not from images stacked down the column.</p></div>
+      <div><h3>“Fixed” isn’t one status</h3><p>A fix in the working preview doesn’t mean the design is current, the browser has passed, or a phone has accepted it. Device acceptance can’t be recorded until the browser has passed.</p></div>
+      <div><h3>Context is part of the evidence</h3><p>Every capture records the persona, permission, condition, size, appearance and text size it was made under. The reproduction link is plain text that can be copied and pasted into a ticket.</p></div>
+      <div><h3>Mobile is a mode, not a column</h3><p>Phones get the working preview first and four tools in the bottom bar. Sheets carry the same components as desktop, so there is one design, not a separate mobile app.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="tokens">
+  <div class="wrap">
+    <span class="eyebrow">Tokens · workbench only; the reviewed app brings its own</span>
+    <h2>Tokens</h2>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>Token</th><th>Light</th><th>Dark</th><th>Use</th></tr></thead>
+      <tbody>
+        <tr><td><code>--bg</code></td><td><span class="sw" style="background:#F4F5F6"></span><code>#F4F5F6</code></td><td><span class="sw" style="background:#0F1113"></span><code>#0F1113</code></td><td>App ground</td></tr>
+        <tr><td><code>--surface</code></td><td><span class="sw" style="background:#FFFFFF"></span><code>#FFFFFF</code></td><td><span class="sw" style="background:#171A1E"></span><code>#171A1E</code></td><td>Rail, inspector, popovers</td></tr>
+        <tr><td><code>--stage</code></td><td><span class="sw" style="background:#E6E8EB"></span><code>#E6E8EB</code></td><td><span class="sw" style="background:#0B0D0F"></span><code>#0B0D0F</code></td><td>Behind the preview (recedes so the app reads first)</td></tr>
+        <tr><td><code>--ink</code></td><td><span class="sw" style="background:#15171A"></span><code>#15171A</code></td><td><span class="sw" style="background:#ECEEF0"></span><code>#ECEEF0</code></td><td>Text, primary buttons</td></tr>
+        <tr><td><code>--muted</code></td><td><span class="sw" style="background:#5A6068"></span><code>#5A6068</code></td><td><span class="sw" style="background:#A0A6AE"></span><code>#A0A6AE</code></td><td>Secondary text (≥ 4.5:1 on surface and bg)</td></tr>
+        <tr><td><code>--line</code></td><td><span class="sw" style="background:#DCDFE3"></span><code>#DCDFE3</code></td><td><span class="sw" style="background:#2A2F35"></span><code>#2A2F35</code></td><td>Dividers</td></tr>
+        <tr><td><code>--spike</code></td><td><span class="sw" style="background:#C23A14"></span><code>#C23A14</code></td><td><span class="sw" style="background:#FF7A52"></span><code>#FF7A52</code></td><td>Only for marks, pins and the marking state</td></tr>
+        <tr><td><code>--ok / --warn / --err</code></td><td><code>#1C6E46 / #7F5300 / #B3261E</code></td><td><code>#5CC98F / #E6B44C / #FF8A80</code></td><td>Lane status, always paired with an icon and words</td></tr>
+        <tr><td><code>--focus</code></td><td><code>#1F57C3</code></td><td><code>#7FA8FF</code></td><td>2px focus ring, 2px offset</td></tr>
+      </tbody>
+    </table></div>
+    <div class="cols" style="margin-top:var(--s5)">
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>Type</th><th>Size / line</th><th>Use</th></tr></thead>
+        <tbody>
+          <tr><td>System SF Display 650</td><td>22 / 28, 17 / 22</td><td>Panel titles, wordmark</td></tr>
+          <tr><td>System SF Text 400–600</td><td>15 / 22</td><td>UI labels, rail</td></tr>
+          <tr><td>System SF Text 500</td><td>16 / 24</td><td>Note text, textarea</td></tr>
+          <tr><td>System SF Text 600</td><td>12–13</td><td>Meta, tags, captions</td></tr>
+          <tr><td>ui-monospace 600</td><td>12</td><td>Build, note IDs, reproduction links</td></tr>
+        </tbody>
+      </table></div>
+      <div class="tbl-scroll"><table>
+        <thead><tr><th>Scale</th><th>Values</th></tr></thead>
+        <tbody>
+          <tr><td>Spacing (4/8)</td><td><code>4 8 12 16 24 32 48</code></td></tr>
+          <tr><td>Radius</td><td><code>6</code> controls · <code>10</code> panels · <code>12</code> preview · <code>16</code> sheets</td></tr>
+          <tr><td>Depth</td><td>Only the preview and popovers get shadow; panels are flat with 1px lines</td></tr>
+          <tr><td>Motion</td><td><code>150ms</code> hover, press, spike follow · <code>200ms</code> popover, scrim · <code>220ms</code> sheets, drawer · ease-out in, ease-in out · reduced motion makes them instant</td></tr>
+          <tr><td>Hit targets</td><td>≥ 44 × 44 for every control; 36px chips extend their hit area to 44px</td></tr>
+        </tbody>
+      </table></div>
+    </div>
+  </div>
+</section>
+
+<section id="contract">
+  <div class="wrap">
+    <span class="eyebrow">Responsive contract</span>
+    <h2>Breakpoints rearrange; nothing just shrinks</h2>
+    <div class="tbl-scroll"><table>
+      <thead><tr><th>Width</th><th>Journeys</th><th>Context</th><th>Preview</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>≥ 1024 (1440 target)</td><td>Rail, 264px</td><td>Chip line + popover</td><td>Center, scaled to fit; true size in caption</td><td>Inspector, 368px</td></tr>
+        <tr><td>768 – 1023</td><td>Left drawer behind the Journeys button</td><td>Chip line + popover</td><td>Center</td><td>Inspector, 320px</td></tr>
+        <tr><td>&lt; 768 (390 target)</td><td>Bottom sheet</td><td>Bottom sheet</td><td>Full screen between the top and bottom bars; opens first</td><td>Bottom sheet; opens after pinning</td></tr>
+      </tbody>
+    </table></div>
+    <p class="prose" style="margin-top:var(--s4)">Preview sizes 320, 393 and 1024 are rendered at their real width and scaled with <code>transform</code> only, never reflowed, so a capture always matches the size in its context. The 1024 preview on a 1440 screen fits at about 73%, and the caption says so. Workbench light/dark and the reviewed app’s Appearance setting are independent of each other.</p>
+  </div>
+</section>
+
+<section id="interaction">
+  <div class="wrap">
+    <span class="eyebrow">Interaction details</span>
+    <h2>What Codex should copy exactly</h2>
+    <div class="ix">
+      <div><h3>Spike marking</h3><ul>
+        <li><kbd>P</kbd> or Mark toggles marking. The preview edge turns spike-colored and the caption gives the instruction.</li>
+        <li>The pointer or keyboard focus selects the nearest named region (<code>data-el</code>). Ticks follow with a 150ms transform, never resizing with animated layout.</li>
+        <li>Click or <kbd>Enter</kbd> pins it. Marking ends and the composer focuses the textarea.</li>
+        <li><kbd>Esc</kbd> exits marking without side effects.</li></ul></div>
+      <div><h3>Reproduce</h3><ul>
+        <li>Restores journey, step, persona, permission, condition, size, appearance and text size from the note.</li>
+        <li>Selects the note and re-marks the element (three short pulses, static under reduced motion).</li>
+        <li>Goes through the draft guard like any other context change.</li></ul></div>
+      <div><h3>Drafts and durability</h3><ul>
+        <li>An unsaved draft blocks any change of step, journey, context or reproduction behind a dialog. <em>Keep editing</em> has default focus.</li>
+        <li>Saved notes and synthetic records persist and are never touched by discarding.</li>
+        <li>A failed save keeps the text, pin and capture in place. Retry re-sends the captured state, not the current one.</li></ul></div>
+      <div><h3>Keyboard map</h3><ul>
+        <li><kbd>P</kbd> mark · <kbd>Esc</kbd> exit mark or close sheet · <kbd>[</kbd> <kbd>]</kbd> previous / next step</li>
+        <li>A skip link jumps to the preview. All chips, pins and lanes are buttons with accessible names.</li>
+        <li>Live region announcements cover pin, save, error, reproduce and copy.</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<section id="risks">
+  <div class="wrap">
+    <span class="eyebrow">Honest risks</span>
+    <h2>What this does not prove</h2>
+    <ul class="risks">
+      <li><strong>Not implemented or verified.</strong> This is a design prototype. Nothing has been checked in a browser test, on a device or with assistive technology.</li>
+      <li><strong>The reviewed app is a stand-in.</strong> The towel screens imitate a laundry app with synthetic data. Codex has to mount the real Laundry components in the preview slot and isolate their styles (iframe or shadow root).</li>
+      <li><strong>Captures are re-rendered, not pixel screenshots.</strong> The crop clones the live preview DOM. Real evidence has to be a stored raster or a DOM snapshot pinned to a build.</li>
+      <li><strong>Element targeting depends on stable region IDs.</strong> Marks rely on <code>data-el</code>-style annotations in the reviewed app. Without them, pins drift between builds.</li>
+      <li><strong>Mapping 34 scenarios to journeys is assumed.</strong> I grouped them into 5 journeys with step lists. The real inventory may split differently.</li>
+      <li><strong>Small screens are tight.</strong> A 393 preview in a 390 viewport renders at about 95% scale. A 1024 preview on a phone renders at about 36% and is effectively read-only there.</li>
+      <li><strong>The system font stack</strong> renders SF only on Apple platforms. Elsewhere the hierarchy relies on weight and size alone.</li>
+    </ul>
+  </div>
+</section>
+</main>
+<footer><div class="wrap">Rehearsal design handoff · local project only · nothing published, no providers changed, no repositories touched.</div></footer>
+</body>
+</html>

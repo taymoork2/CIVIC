@@ -1,0 +1,286 @@
+{
+  "schemaVersion": "research-design.v1",
+  "status": "proposed_not_executable",
+  "researchedAt": "2026-10-04",
+  "initialMarketAssumption": "US",
+  "scope": "Product evidence intake, background enrichment and deterministic load intelligence; no runtime imports or compatibility approvals",
+  "localTrialPolicy": {
+    "ownerRecordedAt": "2026-10-04",
+    "paidApiServicesAuthorized": false,
+    "newPaidOcrOrModelServicesAuthorized": false,
+    "authorizedExternalServiceSpendUsd": 0,
+    "primarySources": ["saved_owner_evidence", "reviewed_local_catalog", "manual_private_package_input"],
+    "freeExternalEnrichment": "Optional only, subject to access and reuse terms; not an acceptance prerequisite",
+    "paidProviderChoices": "Documented future options; deferred for local trial",
+    "acceptanceHandoff": "Product identification/source research complete; main controller reconciles delivery status. Physical package, machine and phone/laundry acceptance remain distinct."
+  },
+  "artifacts": {
+    "design": "2026-10-04-repeatable-product-intelligence.md",
+    "ownerEvidence": "2026-10-04-owner-product-evidence.json",
+    "ownerReport": "2026-10-04-owner-product-evidence.md",
+    "catalogContract": "../plans/2026-10-04-catalog-ingestion.md",
+    "deliveryAuthority": "../plans/2026-10-03-delivery-status.md",
+    "learningContract": "../plans/2026-10-03-chemistry-recommendations-and-learning.md"
+  },
+  "invariants": [
+    "Retain original user references and leading zeros in product identifiers",
+    "Barcode identity is not package revision, dosing evidence or compatibility approval",
+    "Owned products are not automatically selected additives",
+    "A selected product cannot disappear silently to make a plan pass",
+    "Missing ingredient disclosure is not verified ingredient absence",
+    "No invented concentration, pH, cap-to-volume, scoop-to-mass or Pak-to-water ratio",
+    "Shared executable instructions require reviewed source-backed conditions",
+    "No external retrieval, OCR or model call in routine load evaluation",
+    "No all-product subset precomputation or universal pairwise compatibility table",
+    "Evaluate aggregate and stage-sequence constraints as well as selected pairs",
+    "Benefit and personal outcomes do not override label or garment restrictions",
+    "Private user photos and outcomes are not automatically contributed publicly",
+    "Source access, storage, redistribution and deletion rights are separate from technical reachability"
+  ],
+  "readinessDimensions": [
+    "identity_ready",
+    "instructions_ready",
+    "capabilities_ready",
+    "use_ready_for_context"
+  ],
+  "stages": [
+    {
+      "id": "capture",
+      "operation": "authenticated_mutation",
+      "inputs": ["scan_or_link_or_photo_or_manual_name", "market", "household_id", "client_idempotency_key"],
+      "outputs": ["private_intake_id", "original_input", "input_digest", "pending_status"],
+      "gate": "Authorization and input validation; external providers need not respond",
+      "retry": "Return existing intake for the same household/idempotency key; reject conflicting replay inputs"
+    },
+    {
+      "id": "identity",
+      "operation": "local_catalog_query_then_background_identity_adapter_if_needed",
+      "inputs": ["original_input", "market", "approved_provider_policy"],
+      "outputs": ["candidate_identities", "identifier_aliases", "provider_receipt", "missing_identity_fields"],
+      "gate": "Valid GTIN or resolved reference; ambiguous candidates remain unconfirmed",
+      "retry": "Negative cache is bounded; empty results do not mean product or ingredient absence"
+    },
+    {
+      "id": "retrieve",
+      "operation": "bounded_background_action_or_private_package_capture",
+      "inputs": ["candidate_identity", "source_urls_or_private_crops", "provider_access_and_reuse_policy"],
+      "outputs": ["permitted_source_record", "document_kind", "retrieval_and_source_dates", "digest", "unavailable_sources"],
+      "gate": "Allowed host/redirect/egress and recorded retrieval/storage basis",
+      "retry": "429 and transient failures back off within quota/attempt limits; 401/403 or login walls suspend the path"
+    },
+    {
+      "id": "extract",
+      "operation": "versioned_parser_then_ocr_or_optional_bounded_model",
+      "inputs": ["permitted_source_record", "adapter_version", "extractor_schema_version"],
+      "outputs": ["field_level_claim_candidates", "source_locations", "conditional_directions", "extraction_quality", "unknowns"],
+      "gate": "Output schema and source traceability; page/model instructions cannot execute code",
+      "retry": "Reuse completed deterministic extraction by digest/version; stochastic reruns create new drafts"
+    },
+    {
+      "id": "validate",
+      "operation": "deterministic_validation",
+      "inputs": ["claim_candidates", "candidate_identity", "source_scope"],
+      "outputs": ["supported_candidates", "quarantined_fields", "conflicts", "unsupported_conditions"],
+      "gate": "Checksum/unit/measurement/source/market/revision consistency; no inferred quantities",
+      "retry": "Require new evidence or a parser correction for semantic failures"
+    },
+    {
+      "id": "review",
+      "operation": "internal_review_boundary",
+      "inputs": ["immutable_candidate_revision", "selected_claim_ids", "reviewer", "rationale"],
+      "outputs": ["append_only_review", "accepted_claim_ids", "rejected_or_unresolved_claims"],
+      "gate": "Explicit acceptance and conflict resolution; extraction confidence cannot grant safety permission",
+      "retry": "Do not append a duplicate acceptance on job replay; a deliberate new review is a new event"
+    },
+    {
+      "id": "match",
+      "operation": "authenticated_household_confirmation",
+      "inputs": ["private_holding", "exact_variant", "review", "selected_claim_ids", "package_identity_confirmation"],
+      "outputs": ["pinned_evidence_binding", "physical_confirmation_status", "remaining_fields"],
+      "gate": "Exact market/pack/revision; distinguish supplied URL identity from inspected physical package",
+      "retry": "Identity edits invalidate the old reference; source refresh cannot silently repin"
+    },
+    {
+      "id": "compile",
+      "operation": "proposed_reviewed_schema_extension_and_deterministic_compiler",
+      "inputs": ["accepted_structured_directions", "accepted_constraints", "capability_evidence", "compiler_version"],
+      "outputs": ["small_product_rule_bundle", "bundle_digest", "unsupported_use_routes"],
+      "gate": "Only supported typed predicates and measurements; textual conditions are not executable rules",
+      "retry": "Same accepted inputs/compiler version yield the same bundle digest"
+    },
+    {
+      "id": "evaluate",
+      "operation": "existing_pure_planner_with_reviewed_bundle_integration",
+      "inputs": ["garment_care", "machine_context", "required_detergent_options", "selected_optional_products", "routes_and_timing", "load_context", "policy", "personal_aggregate_version", "revocation_epoch"],
+      "outputs": ["plan", "evidence_linked_reasons", "explicit_exclusions", "necessary_questions", "separate_benefit_ranking"],
+      "gate": "No unresolved required treatment or care constraints; selected optional products require evidence or explicit removal",
+      "retry": "Deterministic for identical inputs and versions; zero external/model calls"
+    },
+    {
+      "id": "observe",
+      "operation": "authenticated_actual_use_and_outcome_mutations",
+      "inputs": ["plan_and_evidence_versions", "actual_actions", "optional_outcomes", "correction_events"],
+      "outputs": ["immutable_actual_use", "private_comparable_outcome_aggregates", "separately_consented_shared_records_if_supported"],
+      "gate": "Planned selections are not proof of actual use; missing outcomes are not failures",
+      "retry": "Correlate each event with its wash and deduplicate client replay"
+    }
+  ],
+  "providers": [
+    {
+      "id": "label_insight_smartlabel",
+      "role": "manufacturer_candidate_data",
+      "documentation": [
+        "https://developers.labelinsight.com/reference/overview",
+        "https://developers.labelinsight.com/reference/get_api-v4-accesskey-data-upc-upc"
+      ],
+      "endpointTemplate": "https://enterprise-sl-api.labelinsight.com/api/v4/{accessKey}/data/upc/{upc}",
+      "authentication": "X-API-KEY plus provider-issued path authorization key",
+      "documentedLimits": { "defaultRequestsPerSecond": 5 },
+      "coverageLimit": "Published/live products; retired records removed; cross-brand access unverified",
+      "rightsStatus": "Separate API agreement and downstream rights not verified; website terms are restrictive",
+      "terms": "https://smartlabel.org/terms-of-use/",
+      "liveValidation": "not_attempted_credentials_unavailable",
+      "productionAdapterEnabled": false
+    },
+    {
+      "id": "upcitemdb",
+      "role": "identity_candidate",
+      "documentation": ["https://www.upcitemdb.com/wp/docs/main/development/plan/"],
+      "endpointTemplate": "https://api.upcitemdb.com/prod/trial/lookup?upc={upc1},{upc2}",
+      "authentication": "Free trial does not require signup/key; paid API uses different endpoint and headers",
+      "documentedLimits": { "freeCombinedRequestsPerDay": 100, "freeLookupRequestsPerMinute": 6, "freeUpcsPerRequest": 2 },
+      "coverageLimit": "Metadata does not establish matched laundry instructions or formulation",
+      "rightsStatus": "Limited operational-use terms; retention/redistribution rights need confirmation",
+      "terms": "https://www.upcitemdb.com/terms",
+      "liveValidation": "attempted_environment_failure_no_product_response",
+      "attempt": {
+        "upcs": ["030772121108", "030772103111"],
+        "webOutcome": "Endpoint not accessible through web tool",
+        "shellOutcome": "curl exit 6: could not resolve hostname",
+        "interpretation": "No coverage conclusion"
+      },
+      "productionAdapterEnabled": false
+    },
+    {
+      "id": "barcode_lookup",
+      "role": "identity_candidate",
+      "documentation": ["https://www.barcodelookup.com/api", "https://www.barcodelookup.com/api-documentation"],
+      "endpointTemplate": "https://api.barcodelookup.com/v3/products?barcode={barcode}&key={serverSideKey}",
+      "authentication": "API key",
+      "documentedLimits": { "requestsPerMinuteWithoutAdditionalPermission": 100 },
+      "listedStarter": { "usdPerMonth": 99, "callsPerMonth": 5000, "checkedAt": "2026-10-04" },
+      "coverageLimit": "No guaranteed hit or exact laundry instructions",
+      "rightsStatus": "API access permits collection within subscription; supplied cached/backup data must be deleted on termination",
+      "terms": "https://www.barcodelookup.com/terms-and-conditions",
+      "liveValidation": "not_attempted_credentials_unavailable",
+      "productionAdapterEnabled": false
+    },
+    {
+      "id": "gs1_us",
+      "role": "gtin_identity_and_license_validation",
+      "documentation": ["https://www.gs1us.org/tools/gs1-us-data-hub/gs1-us-apis"],
+      "authentication": "Subscription/API keys",
+      "listedApiAddOn": { "usd": 6500, "additionalRequirements": "Other GS1 subscriptions/licenses", "checkedAt": "2026-10-04" },
+      "documentedLimits": null,
+      "coverageLimit": "Identity and product attributes are not manufacturer laundry directions",
+      "rightsStatus": "Subscription/data reuse terms to evaluate before integration",
+      "liveValidation": "not_attempted_credentials_unavailable",
+      "productionAdapterEnabled": false
+    },
+    {
+      "id": "open_products_facts",
+      "role": "community_identity_and_supplementary_evidence",
+      "documentation": [
+        "https://openfoodfacts.github.io/openfoodfacts-server/api/tutorials/scanning-cosmetics-pet-food-and-other-products/",
+        "https://openfoodfacts.github.io/openfoodfacts-server/api/tutorials/license-be-on-the-legal-side/"
+      ],
+      "endpointTemplate": "https://world.openfoodfacts.org/api/v3/product/{barcode}?product_type=all",
+      "authentication": "Public read documentation; identify the application and obey instance rate policy",
+      "documentedLimits": null,
+      "coverageLimit": "Experimental project; may redirect to Open Products Facts; laundry coverage untested",
+      "rightsStatus": "ODbL database, DBCL contents, CC BY-SA images; attribution/share-alike integration must be resolved separately",
+      "liveValidation": "documentation_only_no_coverage_sample",
+      "productionAdapterEnabled": false
+    },
+    {
+      "id": "pubchem_pug_rest",
+      "role": "candidate_ingredient_entity_enrichment",
+      "documentation": ["https://pubchem.ncbi.nlm.nih.gov/docs/pug-rest"],
+      "endpointTemplate": "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/{encodedIdentifier}/cids/JSON",
+      "authentication": "Public REST",
+      "documentedLimits": { "usagePolicyRequestsPerSecond": 5 },
+      "coverageLimit": "Ambiguous CAS/mixture/polymer identity; no branded-product compatibility approval",
+      "rightsStatus": "Retain provenance and review underlying annotations/attribution before redistribution",
+      "liveValidation": "documentation_only",
+      "productionAdapterEnabled": false
+    },
+    {
+      "id": "google_cloud_vision",
+      "role": "private_package_ocr_candidate",
+      "documentation": ["https://docs.cloud.google.com/vision/docs/ocr"],
+      "endpointTemplate": "https://vision.googleapis.com/v1/images:annotate",
+      "authentication": "Cloud project, billing and server-side authorization",
+      "documentedLimits": null,
+      "features": ["TEXT_DETECTION", "DOCUMENT_TEXT_DETECTION"],
+      "coverageLimit": "OCR text/locations, not product semantics or label-rule approval",
+      "rightsStatus": "Data processing, retention, region and cost to evaluate before sending private crops",
+      "liveValidation": "not_attempted_no_private_photos_uploaded",
+      "productionAdapterEnabled": false
+    },
+    {
+      "id": "amazon_textract",
+      "role": "private_package_table_ocr_candidate",
+      "documentation": ["https://docs.aws.amazon.com/textract/latest/dg/how-it-works-analyzing.html"],
+      "authentication": "AWS service credentials",
+      "documentedLimits": null,
+      "coverageLimit": "Document/table/form analysis; actual curved-label accuracy untested",
+      "rightsStatus": "Data processing, retention, region and cost to evaluate before sending private crops",
+      "liveValidation": "not_attempted_no_private_photos_uploaded",
+      "productionAdapterEnabled": false
+    }
+  ],
+  "userPrompts": [
+    { "id": "start", "when": "new_product", "text": "Scan a barcode, paste a product link, or take a photo.", "requiredInputs": "One input method; market can reuse a visible household default" },
+    { "id": "identity", "when": "candidate_found", "text": "Is this your {brand}, {variant}, {form}, {size}?", "requiredInputs": "Confirmation or alternative; ask only distinguishing missing fields" },
+    { "id": "directions", "when": "needed_instruction_missing", "text": "Photograph the directions and warnings on the back. Include the dosing table.", "requiredInputs": "Readable crop or manual transcription" },
+    { "id": "measure", "when": "directions_use_cap_or_scoop_marks", "text": "Include the cap or scoop markings shown in the directions.", "requiredInputs": "Printed mark names; numeric calibration only if independently supported" },
+    { "id": "conflict", "when": "package_and_source_disagree", "text": "Your package appears to say {A}; the linked page says {B}. Which matches this bottle?", "requiredInputs": "Package evidence; affected claims remain unresolved for review" },
+    { "id": "selected_unknown", "when": "chosen_treatment_not_ready", "text": "To use this product, we need {missing_instruction}. Add a label photo or leave it out of this load.", "requiredInputs": "Evidence or explicit selection change" },
+    { "id": "contact_time", "when": "selected_sanitizing_route_requires_time", "text": "Does this rinse keep the clothes in contact for the required time?", "requiredInputs": "Verified machine/actual route evidence; whole wash duration is insufficient" }
+  ],
+  "cacheDesign": {
+    "productBundleKey": ["variant", "evidence_revision", "review", "accepted_claim_ids", "compiler_version", "policy_version"],
+    "privatePlanKeyAdditionalInputs": ["household_authorization_scope", "garment_and_care_revisions", "machine_cycle_and_dispensing_revisions", "product_selection_and_routes", "load_soil_stains", "timing", "requirements_and_preferences", "personal_aggregate_version", "revocation_epoch"],
+    "unconditionallyExcludedFromLoadCriticalPath": ["provider_lookup", "manufacturer_retrieval", "ocr", "model_extraction", "review"],
+    "refreshBehavior": "New evidence creates candidates; pinned revisions do not silently change; active safety revocation invalidates derived plans"
+  },
+  "performanceTargets": {
+    "measured": false,
+    "chemistryP95Ms": 50,
+    "warmPreviewP95Ms": 500,
+    "intakeAcknowledgementP95Ms": 500,
+    "chemistryBenchmarkEnvelope": { "garments": 100, "selectedChemicalProducts": 20, "applicableRules": 500 },
+    "coldEnrichmentTimePromise": null,
+    "notes": "Chemistry-only timing excludes input retrieval; warm preview includes backend/planner/render and supported network. Benchmark before claiming performance."
+  },
+  "acceptanceCases": [
+    { "id": "exact_revision", "expected": "Disambiguate pack, market and label revision even after barcode hit" },
+    { "id": "formula_separation", "expected": "Free and scented variants, powder and Paks remain distinct" },
+    { "id": "retired_label", "expected": "No substitution of later master-label doses or cap sizes" },
+    { "id": "invalid_identifier", "expected": "Preserve invalid CAS source text and quarantine identifier; no silent repair" },
+    { "id": "unavailable_sds", "expected": "Explicit unavailable evidence; no inferred SDS content" },
+    { "id": "missing_ingredient", "expected": "Not listed is not verified absence" },
+    { "id": "uncalibrated_mark", "expected": "Printed cap/scoop marks remain unconverted" },
+    { "id": "missing_pak_ratio", "expected": "Unsupported presoak route unavailable; independently supported wash route retained" },
+    { "id": "bleach_restriction", "expected": "Apply the reviewed bleach restriction without guessing that stage separation resolves it" },
+    { "id": "shared_rinse_unknown", "expected": "No automatic Downy/Lysol combination or invented dose split" },
+    { "id": "contact_time", "expected": "Unsupported rinse contact time cannot produce a sanitizing claim" },
+    { "id": "unchosen_shelf_product", "expected": "No treatment or blocker solely from ownership" },
+    { "id": "chosen_unknown_product", "expected": "Specific question or explicit leave-out choice; no silent omission" },
+    { "id": "aggregate_constraint", "expected": "Whole treatment set and sequence evaluated beyond pairwise checks" },
+    { "id": "job_recovery", "expected": "Idempotent bounded retry after duplicate, disconnect, timeout or expired lease" },
+    { "id": "revision_invalidation", "expected": "Correct bundle/plan invalidation and preserved independently permitted history" },
+    { "id": "household_isolation", "expected": "No private photo, status, outcome or cache leakage across households" },
+    { "id": "deterministic_fast_path", "expected": "Same versioned inputs yield same result with zero external/model calls" }
+  ]
+}

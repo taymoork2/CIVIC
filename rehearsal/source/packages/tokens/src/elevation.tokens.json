@@ -1,0 +1,16 @@
+{
+  "elevation": {
+    "glass-shadow": {
+      "$type": "shadow",
+      "$description": "A compound multi-layer shadow; kept as the exact CSS string rather than the DTCG shadow-object shape.",
+      "$value": "inset 0 1px 0 rgba(255, 255, 255, 0.85), inset 0 0 0 0.5px rgba(255, 255, 255, 0.5), 0 10px 30px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.08)",
+      "$extensions": { "com.washcloset.web": { "css": "inset 0 1px 0 rgba(255, 255, 255, 0.85), inset 0 0 0 0.5px rgba(255, 255, 255, 0.5), 0 10px 30px rgba(0, 0, 0, 0.12), 0 1px 4px rgba(0, 0, 0, 0.08)" } }
+    },
+    "button-edge": {
+      "$type": "shadow",
+      "$description": "none in Day; an inset highlight in Night (see night.tokens.json).",
+      "$value": "none",
+      "$extensions": { "com.washcloset.web": { "css": "none" } }
+    }
+  }
+}

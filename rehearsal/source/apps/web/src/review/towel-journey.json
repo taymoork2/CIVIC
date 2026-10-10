@@ -1,0 +1,15 @@
+[
+  { "id": "type", "label": "Type", "scenario": "intake.towel.type", "x": 0, "y": 0 },
+  { "id": "whose", "label": "Whose", "scenario": "intake.towel.whose", "x": 440, "y": 0 },
+  { "id": "details", "label": "Details", "scenario": "intake.towel.details", "x": 880, "y": 0 },
+  { "id": "fabric", "label": "Fabric", "scenario": "intake.towel.fabric", "x": 1320, "y": 0 },
+  { "id": "color", "label": "Color", "scenario": "intake.towel.color", "x": 1760, "y": 0 },
+  { "id": "origin", "label": "Origin", "scenario": "intake.towel.origin", "x": 2200, "y": 0 },
+  { "id": "dye", "label": "Dye", "scenario": "intake.towel.dye", "x": 2640, "y": 520 },
+  { "id": "care:wash", "label": "Care · wash", "scenario": "intake.towel.care", "x": 3080, "y": 0 },
+  { "id": "care:bleach", "label": "Care · bleach", "scenario": "intake.towel.care", "x": 3520, "y": 0 },
+  { "id": "care:dry", "label": "Care · dry", "scenario": "intake.towel.care", "x": 3960, "y": 0 },
+  { "id": "stain", "label": "Stain", "scenario": "intake.towel.stain", "x": 4400, "y": 0 },
+  { "id": "final", "label": "Review", "scenario": "intake.towel.final", "x": 4840, "y": 0 },
+  { "id": "saved", "label": "Saved", "scenario": "intake.towel.final", "x": 5280, "y": 0 }
+]

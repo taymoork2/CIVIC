@@ -1,0 +1,25 @@
+# Application design coordination
+
+Read [the product brief](apps/web/PRODUCT.md) for audiences and product direction,
+and [current delivery status](docs/plans/2026-10-03-delivery-status.md) before
+continuing trial or roadmap work. Historical handoffs preserve evidence;
+their stale counts and sequencing do not override the current delivery list.
+
+For a continuation, use the delivery list's latest entries for open work,
+package ownership and integration boundaries. Its historical transition records
+preserve prior evidence.
+New worktrees must include the reviewed current implementation, not only the old HEAD.
+
+Read [the shared OpenDesign contract](docs/design/opendesign.md) before UI work.
+OpenDesign owns the design system and screen mockups; this repository owns the
+working React application, planner and backend. Keep the contract as the single
+instruction source across coding harnesses.
+
+Preserve unrelated changes and the designated checkout/backend boundaries.
+Implementation defects can be fixed directly. Intentional design changes and
+missing product states must be reconciled with the canonical OpenDesign workspace.
+Report application verification and design reconciliation separately.
+
+When another owner is actively refining the canonical design, wait for its
+completed handoff before changing those same files. Refresh the design revision
+before integration, and keep unimplemented requests visible in the delivery list.

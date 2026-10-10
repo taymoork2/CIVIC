@@ -1,0 +1,32 @@
+.rehearsal[hidden], .rehearsal ~ div[hidden] { display: none; }
+.app-camera-layer { position: absolute; inset: 0; }
+.app-scene { position: absolute; left: 0; top: 0; transform-origin: top left; }
+.app-flow { position: absolute; background: #f9fafb; border: 2px solid #d6d9df; border-radius: 10px; padding: 28px 36px; }
+.app-flow.is-focused { border-color: #2456d6; }
+.app-flow > header { display: flex; align-items: center; gap: 20px; margin-bottom: 34px; min-height: 70px; max-width: 1660px; }
+.app-flow h2 { font-size: 30px; }
+.app-flow header p { color: #526880; font-size: 16px; }
+.app-flow header button:first-of-type { margin-left: auto; }
+.app-screen-grid { position: relative; }
+.app-flow-edges { position: absolute; left: 36px; top: 132px; pointer-events: none; overflow: visible; }
+.app-cross-flow-edges { position: absolute; inset: 0; pointer-events: none; }
+.app-screen { position: absolute; width: 271px; height: 665px; }
+.app-screen.is-filtered { opacity: .12; pointer-events: none; }
+.app-screen > button { width: 100%; text-align: left; border: 0; background: transparent; padding: 0; min-height: 72px; margin-bottom: 12px; }
+.app-screen strong { display: block; font-size: 20px; line-height: 1.3; }
+.app-screen small { color: #526880; display: block; font-size: 15px; margin-top: 6px; }
+.app-screen .app-screen-picture { min-height: 0; display: block; width: 271px; padding: 0; border: 1px solid #dbe5ed; border-radius: 10px; overflow: hidden; }
+.app-screen-picture img { width: 271px; height: 588px; display: block; background: #fff; }
+.app-live-screen { position: relative; width: 271px; height: 588px; border: 2px solid #328360; border-radius: 10px; overflow: hidden; background: #fff; }
+.app-live-screen iframe { width: 393px; height: 852px; border: 0; transform: scale(.69); transform-origin: top left; }
+.app-screen-placeholder { width: 271px; height: 588px; display: grid; place-items: center; text-align: center; padding: 20px; color: #526880; background: #fff; font-size: 16px; border-radius: 10px; }
+.app-rehearsal .rh-journeys li button[aria-current=location] { background: #edf2ff; color: #2456d6; }
+.app-rehearsal .app-screen-outline { margin: 4px 0 12px 12px; border-left: 1px solid #dbe5ed; }
+.app-rehearsal .app-screen-outline button { justify-content: flex-start; gap: 10px; padding: 9px 10px; font-size: 13px; }
+.app-rehearsal .app-screen-outline button small { flex: 0 0 20px; color: #526880; margin-left: 0; }
+.app-rehearsal .app-screen-outline button span { font-size: 13px; color: inherit; }
+.app-nav-section > ol > li > button span { font-size: 13px; color: inherit; }
+.app-rehearsal .app-screen-outline button[aria-current=page] { background: #edf2ff; color: #2456d6; font-weight: 650; }
+.app-screen.is-viewed .app-screen-picture { border: 2px solid #2456d6; }
+.app-screen > .app-play-screen { background: #2456d6; color: white; padding: 12px; min-height: 44px; border-radius: 8px; text-align: center; font-size: 18px; }
+.app-nav-section h3 { color: #526880; font-size: 12px; margin-top: 18px; }

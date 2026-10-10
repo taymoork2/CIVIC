@@ -1,0 +1,12 @@
+{
+  "palette": {
+    "marigold": {
+      "sig-day": { "$value": "#f0a92e" },
+      "on-sig-day": { "$value": "#1f1400" },
+      "sig-ink-day": { "$value": "#1f1400" },
+      "sig-night": { "$value": "#e3a53d" },
+      "on-sig-night": { "$value": "#1f1400" },
+      "sig-ink-night": { "$value": "#1f1400" }
+    }
+  }
+}

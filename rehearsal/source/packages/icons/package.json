@@ -1,0 +1,10 @@
+{
+  "name": "@washcloset/icons",
+  "private": true,
+  "type": "module",
+  "exports": "./src/index.ts",
+  "scripts": {
+    "vendor": "node scripts/vendor-lucide.mjs",
+    "export-svg": "node scripts/export-svg.mjs"
+  }
+}

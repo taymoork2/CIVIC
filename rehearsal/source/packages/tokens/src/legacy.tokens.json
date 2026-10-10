@@ -1,0 +1,13 @@
+{
+  "legacy": {
+    "paper": { "$value": "{color.day.bg}" },
+    "label": { "$value": "{color.day.surface}" },
+    "label-sunk": { "$value": "{color.day.sheet}" },
+    "rule": { "$value": "{color.day.fill-2}" },
+    "caution": { "$value": "{color.day.warn-ink}" },
+    "caution-ink": { "$value": "{color.day.warn-ink}" },
+    "caution-tint": { "$value": "{color.day.warn-bg}" },
+    "danger": { "$value": "{color.day.warn-ink}" },
+    "selection": { "$value": "{color.day.accent-container}" }
+  }
+}

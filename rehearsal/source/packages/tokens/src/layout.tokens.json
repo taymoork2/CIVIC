@@ -1,0 +1,15 @@
+{
+  "layout": {
+    "bar-h": { "$type": "dimension", "$value": "4rem" },
+    "bar-bottom": {
+      "$type": "dimension",
+      "$value": "calc(1.125rem + env(safe-area-inset-bottom))",
+      "$extensions": { "com.washcloset.web": { "webOnly": true } }
+    },
+    "toast-bottom": {
+      "$type": "dimension",
+      "$value": "calc(var(--bar-bottom) + var(--bar-h) + 8.5rem)",
+      "$extensions": { "com.washcloset.web": { "webOnly": true } }
+    }
+  }
+}

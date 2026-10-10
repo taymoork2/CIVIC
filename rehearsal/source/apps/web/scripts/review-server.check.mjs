@@ -1,0 +1,154 @@
+import assert from 'node:assert/strict'
+import { mkdtemp, readFile } from 'node:fs/promises'
+import http, { createServer } from 'node:http'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { test } from 'node:test'
+import { reviewMiddleware } from './review-server.mjs'
+
+const snapshot = { revision: { head: '0'.repeat(40), source: '1'.repeat(64), capturedAt: new Date().toISOString() }, design: { project: 'synthetic-test-design', hashes: {} } }
+
+test('review feedback requires access, captures synthetic context, retries once and survives restart', async () => {
+  const dataDir = await mkdtemp(join(tmpdir(), 'closet-review-test-'))
+  const metadata = { scenarios: [{ id: 'intake.pack.color' }], ...snapshot }
+  let captures = 0
+  const start = async () => {
+    const middleware = await reviewMiddleware({ dataDir, metadata, capture: async () => { captures++; return Buffer.from('synthetic-png') } })
+    const server = createServer((req, res) => middleware(req, res, () => { res.writeHead(404); res.end() }))
+    await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
+    return { server, base: `http://127.0.0.1:${server.address().port}` }
+  }
+  let running = await start()
+  const key = (await readFile(join(dataDir, 'access-key'), 'utf8')).trim()
+  const headers = { authorization: `Bearer ${key}`, 'content-type': 'application/json' }
+  const context = { scenario: 'intake.pack.color', screen: 'intake.pack.color', persona: 'single', role: 'owner', condition: 'normal', theme: 'light', textScale: 1, viewport: { width: 393, height: 852 }, state: { dialogs: ['Add clothes'], tabs: [], fields: [{ label: 'Name', value: 'Synthetic tee' }] } }
+  const note = { requestId: '12345678-1234-4234-8234-123456789abc', message: 'The color choice needs a clearer label.', kind: 'confusing', context, anchor: { label: 'Color', x: 0.2, y: 0.3, width: 0.1, height: 0.1 }, html: '<html><body>Synthetic only</body></html>', snapshot }
+  try {
+    assert.equal((await fetch(`${running.base}/api/review/feedback`)).status, 401)
+    metadata.refreshError = 'Source inventory unavailable'
+    assert.equal((await fetch(`${running.base}/api/review/index`, { headers })).status, 503)
+    delete metadata.refreshError
+    assert.equal((await fetch(`${running.base}/api/review/feedback`, { method: 'POST', headers: { ...headers, origin: 'https://untrusted.example' }, body: JSON.stringify(note) })).status, 403)
+    assert.equal((await fetch(`${running.base}/api/review/feedback`, { method: 'POST', headers, body: JSON.stringify({ ...note, context: { ...context, scenario: 'private-household' } }) })).status, 400)
+    assert.equal((await fetch(`${running.base}/api/review/feedback`, { method: 'POST', headers, body: JSON.stringify({ ...note, context: { ...context, screen: 'care:dry' } }) })).status, 400)
+    const response = await fetch(`${running.base}/api/review/feedback`, { method: 'POST', headers, body: JSON.stringify(note) })
+    assert.equal(response.status, 201)
+    const saved = await response.json()
+    assert.equal(saved.context.state.fields[0].value, 'Synthetic tee')
+    assert.equal(saved.context.screen, 'intake.pack.color')
+    assert.deepEqual(saved.revision, snapshot.revision)
+    assert.equal(saved.sourceStale, false)
+    metadata.revision = { ...snapshot.revision, source: '2'.repeat(64) }
+    const refreshed = await (await fetch(`${running.base}/api/review/feedback`, { headers })).json()
+    assert.equal(refreshed[0].sourceStale, true)
+    assert.deepEqual(refreshed[0].revision, snapshot.revision)
+    assert.equal(JSON.parse(await readFile(join(dataDir, 'feedback.json'), 'utf8'))[0].sourceStale, false)
+    const stale = await (await fetch(`${running.base}/api/review/feedback`, { method: 'POST', headers, body: JSON.stringify({ ...note, requestId: '22345678-1234-4234-8234-123456789abc' }) })).json()
+    assert.equal(stale.sourceStale, true)
+    assert.deepEqual(stale.revision, snapshot.revision)
+    assert.equal((await fetch(`${running.base}/api/review/feedback`, { method: 'POST', headers, body: JSON.stringify(note) })).status, 200)
+    assert.equal(captures, 2)
+    assert.equal((await fetch(`${running.base}/api/review/feedback/${saved.id}/resolve`, { method: 'POST', headers, body: '{}' })).status, 400)
+    assert.equal((await fetch(`${running.base}/api/review/feedback/${saved.id}/resolve`, { method: 'POST', headers, body: JSON.stringify({ evidence: 'apps/web/e2e/review-workspace.spec.ts: passing correction check' }) })).status, 200)
+    await new Promise((resolve) => running.server.close(resolve))
+    running = await start()
+    const list = await (await fetch(`${running.base}/api/review/feedback`, { headers })).json()
+    assert.equal(list.length, 2)
+    assert.equal(list[0].status, 'resolved')
+    assert.equal(list[0].context.scenario, context.scenario)
+    assert.equal(list[0].sourceStale, true)
+    assert.ok(!JSON.stringify(list).includes(key))
+    const screenshot = await fetch(`${running.base}${list[0].screenshot}`, { headers })
+    assert.equal(await screenshot.text(), 'synthetic-png')
+  } finally { await new Promise((resolve) => running.server.close(resolve)) }
+})
+
+test('the Amp portal admits only its collaborators, and captures still load the loopback listener', async () => {
+  const dataDir = await mkdtemp(join(tmpdir(), 'closet-review-portal-'))
+  const origins = []
+  const middleware = await reviewMiddleware({ dataDir, metadata: { scenarios: [{ id: 'intake.pack.color' }], ...snapshot }, publicHost: 'civic.onamp.dev', capture: async (_html, _viewport, { origin }) => { origins.push(origin); return Buffer.from('png') } })
+  const server = createServer((req, res) => middleware(req, res, () => { res.writeHead(404); res.end() }))
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
+  const port = server.address().port
+  const base = `http://127.0.0.1:${port}`
+  const portal = { host: 'civic.onamp.dev', 'x-amp-authenticated': 'amp-user=yes, workspace-member=no, collaborator=yes' }
+  const note = { requestId: '32345678-1234-4234-8234-123456789abc', message: 'Portal review', kind: 'idea', context: { scenario: 'intake.pack.color', persona: 'single', role: 'owner', condition: 'normal', theme: 'light', textScale: 1, viewport: { width: 393, height: 852 }, state: { dialogs: [], tabs: [], fields: [] } }, anchor: { label: 'Screen', x: 0, y: 0, width: 1, height: 1 }, html: '<html><body>Fixture</body></html>', snapshot }
+  // fetch cannot override Host, so drive the middleware with raw requests.
+  const request = (path, headers, body) => new Promise((resolve, reject) => {
+    const req = http.request({ host: '127.0.0.1', port, path, method: body ? 'POST' : 'GET', headers: { ...headers, ...(body ? { 'content-type': 'application/json' } : {}) } }, (res) => { res.resume(); res.on('end', () => resolve(res.statusCode)) })
+    req.on('error', reject); req.end(body && JSON.stringify(body))
+  })
+  try {
+    assert.equal(await request('/api/review/feedback', portal), 200)
+    assert.equal(await request('/api/review/feedback', { ...portal, 'x-amp-authenticated': 'amp-user=yes, workspace-member=yes, collaborator=no' }), 401)
+    assert.equal(await request('/api/review/feedback', { ...portal, 'x-amp-authenticated': 'amp-user=no, workspace-member=no, collaborator=no' }), 401)
+    assert.equal(await request('/api/review/feedback', { ...portal, host: 'other.onamp.dev' }), 403)
+    assert.equal(await request('/api/review/feedback', { ...portal, origin: 'https://untrusted.example' }, note), 403)
+    assert.equal(await request('/api/review/feedback', { ...portal, origin: 'https://civic.onamp.dev' }, note), 201)
+    assert.deepEqual(origins, [base])
+    assert.equal((await fetch(`${base}/api/review/feedback`)).status, 401)
+  } finally { await new Promise((resolve) => server.close(resolve)) }
+})
+
+test('a failed capture never acknowledges or stores feedback', async () => {
+  const dataDir = await mkdtemp(join(tmpdir(), 'closet-review-failure-'))
+  const middleware = await reviewMiddleware({ dataDir, metadata: { scenarios: [{ id: 'intake.pack.color' }], ...snapshot }, capture: async () => { throw new Error('Capture unavailable') } })
+  const server = createServer((req, res) => middleware(req, res, () => res.end()))
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
+  const base = `http://127.0.0.1:${server.address().port}`
+  const key = (await readFile(join(dataDir, 'access-key'), 'utf8')).trim()
+  const headers = { authorization: `Bearer ${key}`, 'content-type': 'application/json' }
+  try {
+    const body = { requestId: '12345678-1234-4234-8234-123456789abc', message: 'Retain this draft', kind: 'bug', context: { scenario: 'intake.pack.color', persona: 'single', role: 'owner', condition: 'normal', theme: 'dark', textScale: 2, viewport: { width: 393, height: 852 }, state: { dialogs: [], tabs: [], fields: [] } }, anchor: { label: 'Screen', x: 0, y: 0, width: 1, height: 1 }, html: '<html><body>Fixture</body></html>', snapshot }
+    assert.equal((await fetch(`${base}/api/review/feedback`, { method: 'POST', headers, body: JSON.stringify(body) })).status, 503)
+    assert.deepEqual(await (await fetch(`${base}/api/review/feedback`, { headers })).json(), [])
+  } finally { await new Promise((resolve) => server.close(resolve)) }
+})
+
+test('proposals validate supported properties, reject stale writes, and persist alongside idempotent run captures', async () => {
+  const dataDir = await mkdtemp(join(tmpdir(), 'rehearsal-proposals-'))
+  let captures = 0
+  let fixtureCaptures = 0
+  const metadata = { scenarios: [{ id: 'intake.towel.fabric' }, { id: 'intake.pack.color', renderer: 'intake' }, { id: 'legacy.home', renderer: 'legacy' }], ...snapshot }
+  const middleware = await reviewMiddleware({ dataDir, metadata, capture: async () => { captures++; return Buffer.from('run-image') }, fixtureCapture: async () => { fixtureCaptures++; return Buffer.from('real-fixture') } })
+  const server = createServer((req, res) => middleware(req, res, () => { res.writeHead(404); res.end() }))
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
+  const base = `http://127.0.0.1:${server.address().port}`
+  const key = (await readFile(join(dataDir, 'access-key'), 'utf8')).trim()
+  const headers = { authorization: `Bearer ${key}`, 'content-type': 'application/json' }
+  const post = (path, data) => fetch(`${base}/api/review/${path}`, { method: 'POST', headers, body: JSON.stringify(data) })
+  const proposal = { id: '12345678-1234-4234-8234-123456789abc', expectedVersion: 0, source: snapshot.revision.source, title: 'Towel candidate', edits: { fabric: { title: 'Which fibers?', action: 'Choose a color', color: '#174bf5' } } }
+  try {
+    assert.equal((await fetch(`${base}/api/review/proposals`)).status, 401)
+    assert.equal((await post('proposals', { ...proposal, edits: { fabric: { onclick: 'alert(1)' } } })).status, 400)
+    assert.equal((await post('proposals', { ...proposal, edits: { fabric: { color: '#ffffff' } } })).status, 400)
+    assert.equal((await post('proposals', { ...proposal, source: '2'.repeat(64) })).status, 400)
+    assert.equal((await post('proposals', proposal)).status, 200)
+    const saved = await (await fetch(`${base}/api/review/proposals`, { headers })).json()
+    assert.equal(saved[0].version, 1)
+    assert.equal(saved[0].edits.fabric.title, 'Which fibers?')
+    assert.equal((await post('proposals', proposal)).status, 409)
+    const simultaneous = await Promise.all([post('proposals', { ...proposal, expectedVersion: 1 }), post('proposals', { ...proposal, expectedVersion: 1 })])
+    assert.deepEqual(simultaneous.map((res) => res.status).sort(), [200, 409])
+    assert.equal(JSON.parse(await readFile(join(dataDir, 'proposals.json'), 'utf8'))[0].version, 2)
+    const input = { requestId: '22345678-1234-4234-8234-123456789abc', message: 'Fabric to color', kind: 'other', context: { scenario: 'intake.towel.fabric', persona: 'single', role: 'owner', condition: 'normal', theme: 'light', textScale: 1, viewport: { width: 393, height: 852 }, state: { dialogs: ['Fabric'], tabs: [], fields: [{ label: 'Other percentage', value: '' }] } }, anchor: { label: 'Screen', x: 0, y: 0, width: 1, height: 1 }, html: '<html><body>Frozen inputs</body></html>', snapshot }
+    assert.equal((await post('capture', input)).status, 200)
+    assert.equal((await post('capture', input)).status, 200)
+    assert.equal(captures, 1)
+    assert.equal(await (await fetch(`${base}/api/review/captures/${input.requestId}.png`, { headers })).text(), 'run-image')
+    assert.equal((await fetch(`${base}/api/review/fixture.png?screen=private-data`, { headers })).status, 400)
+    assert.equal(await (await fetch(`${base}/api/review/fixture.png?screen=fabric`, { headers })).text(), 'real-fixture')
+    assert.equal((await (await post('snapshots', {})).json()).count, 13)
+    assert.equal(fixtureCaptures, 13)
+    assert.equal((await (await post('snapshots', { scope: 'app' })).json()).count, 15)
+    assert.equal(fixtureCaptures, 15)
+    assert.equal(await (await fetch(`${base}/api/review/fixture.png?screen=legacy.home`, { headers })).text(), 'real-fixture')
+    assert.equal((await (await post('snapshots', {})).json()).count, 13)
+    assert.equal(fixtureCaptures, 15)
+    const restarted = await reviewMiddleware({ dataDir, metadata, capture: async () => Buffer.from('unused'), fixtureCapture: async () => { throw new Error('Saved snapshots must survive restart') } })
+    const restartedServer = createServer((req, res) => restarted(req, res, () => res.end()))
+    await new Promise((resolve) => restartedServer.listen(0, '127.0.0.1', resolve))
+    try { assert.equal(await (await fetch(`http://127.0.0.1:${restartedServer.address().port}/api/review/fixture.png?screen=fabric`, { headers })).text(), 'real-fixture') }
+    finally { await new Promise((resolve) => restartedServer.close(resolve)) }
+  } finally { await new Promise((resolve) => server.close(resolve)) }
+})

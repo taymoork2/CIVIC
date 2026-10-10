@@ -1,0 +1,172 @@
+/* A Laundered Closet — source L/D roles, reconciled with production on 2026-10-03.
+   Source hex values are preserved verbatim. Semantic aliases below are mappings,
+   not a second palette. Status colors are functional, never competing accents. */
+@font-face {
+  font-family: "Source Sans 3";
+  src: url("fonts/SourceSans3-Variable.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 200 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Source Serif 4";
+  src: url("fonts/SourceSerif4-Roman.woff2") format("woff2");
+  font-style: normal;
+  font-weight: 200 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Source Serif 4";
+  src: url("fonts/SourceSerif4-Italic.woff2") format("woff2");
+  font-style: italic;
+  font-weight: 200 900;
+  font-display: swap;
+}
+:root, [data-theme="light"] {
+  --bg: #f7f5ee;
+  --sf: #fffdf9;
+  --s2: #eeece5;
+  --ink: #20211e;
+  --mu: #596059;
+  --ac: #1f45ff;
+  --pr: #164be0;
+  --sel: #dde3ff;
+  --ln: rgba(15,19,28,.12); /* current production day line */
+  --sgB: #e2ebdd;
+  --sgT: #355230;
+  --amB: #fcefbe;
+  --amT: #5c4600;
+  --amI: #5c4600;
+  --onAm: #20211e;
+  --amF: #f2c230;
+  --npB: rgba(255,255,255,.7);
+  --npL: rgba(32,33,30,.10);
+  --blB: #dde3ff;
+  --blT: #1638b8;
+  --liB: #ebe2f5;
+  --liT: #563a80;
+  --ruB: #fbe0e0;
+  --ruT: #a3191f;
+  --ruI: #a3191f;
+  --onRu: #20211e;
+  --ruF: #e5484d;
+  --glass: rgba(255,253,249,.72);
+  --gEdge: rgba(255,255,255,.7);
+  --gHi: inset 0 1px 0 rgba(255,255,255,.85);
+  --sfA: rgba(255,253,249,.82);
+  --e1: 0 1px 2px rgba(32,33,30,.05),0 8px 24px rgba(32,33,30,.06);
+  --e2: 0 2px 6px rgba(32,33,30,.06),0 18px 44px rgba(32,33,30,.16);
+  --on-primary: #ffffff; /* observed primary-button text */
+  --surface: var(--sf);
+  --surface-warm: var(--s2);
+  --fg: var(--ink);
+  --muted: var(--mu);
+  --border: var(--ln);
+  --accent: var(--pr);
+  --accent-hover: var(--ac);
+  --selection: var(--sel);
+  --surface-glass: var(--glass);
+  --shadow-card: var(--e1);
+  --shadow-sheet: var(--e2);
+  --ready-bg: var(--sgB);
+  --ready-fg: var(--sgT);
+  --waiting-bg: var(--amB);
+  --waiting-fg: var(--amI);
+  --waiting-text: var(--onAm);
+  --washing-bg: var(--blB);
+  --washing-fg: var(--blT);
+  --drying-bg: var(--liB);
+  --drying-fg: var(--liT);
+  --conflict-bg: var(--ruB);
+  --conflict-fg: var(--ruI);
+  --conflict-text: var(--onRu);
+  --font-display: "Source Serif 4", Georgia, "Times New Roman", serif;
+  --font-wordmark: var(--font-display);
+  --font-body: "Source Sans 3", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, Menlo, Monaco, Consolas, monospace;
+  --type-caption: .875rem;
+  --type-body: 1rem;
+  --type-control: 1rem;
+  --type-section: 1.25rem;
+  --type-sheet: 1.5rem;
+  --type-page: 1.875rem;
+  --weight-body: 400;
+  --weight-control: 600;
+  --weight-title: 600;
+  --weight-identity: 400;
+  --leading-body: 1.5;
+  --leading-title: 1.2;
+  color-scheme: light;
+}
+[data-theme="dark"] {
+  --bg: #090d19;
+  --sf: #151d32;
+  --s2: #1e2943;
+  --ink: #edf0ff;
+  --mu: #b9c5df;
+  --ac: #9db4ff;
+  --pr: #2f4cf0;
+  --sel: #2f3d70;
+  --ln: rgba(233,237,243,.16); /* current production night line */
+  --sgB: #1d3127;
+  --sgT: #b3d4ad;
+  --amB: #ffe28a;
+  --amT: #ffe28a;
+  --amI: #2a2100;
+  --onAm: #2a2100;
+  --amF: #ffe28a;
+  --npB: rgba(255,255,255,.42);
+  --npL: rgba(0,0,0,.10);
+  --blB: #2f3d70;
+  --blT: #c9d5ff;
+  --liB: #32294a;
+  --liT: #d7c7f3;
+  --ruB: #ffb3b4;
+  --ruT: #ffb8be;
+  --ruI: #2a080c;
+  --onRu: #2a080c;
+  --ruF: #ffb8be;
+  --glass: rgba(21,29,50,.7);
+  --gEdge: rgba(237,240,255,.14);
+  --gHi: inset 0 1px 0 rgba(237,240,255,.12);
+  --sfA: rgba(21,29,50,.82);
+  --e1: inset 0 1px 0 rgba(237,240,255,.04),0 8px 24px rgba(0,0,0,.28);
+  --e2: inset 0 1px 0 rgba(237,240,255,.06),0 18px 48px rgba(0,0,0,.5);
+  --surface: var(--sf);
+  --surface-warm: var(--s2);
+  --fg: var(--ink);
+  --muted: var(--mu);
+  --border: var(--ln);
+  --accent: var(--pr);
+  --accent-hover: var(--ac);
+  --selection: var(--sel);
+  --surface-glass: var(--glass);
+  --shadow-card: var(--e1);
+  --shadow-sheet: var(--e2);
+  --ready-bg: var(--sgB);
+  --ready-fg: var(--sgT);
+  --waiting-bg: var(--amB);
+  --waiting-fg: var(--amI);
+  --waiting-text: var(--onAm);
+  --washing-bg: var(--blB);
+  --washing-fg: var(--blT);
+  --drying-bg: var(--liB);
+  --drying-fg: var(--liT);
+  --conflict-bg: var(--ruB);
+  --conflict-fg: var(--ruI);
+  --conflict-text: var(--onRu);
+  color-scheme: dark;
+  --weight-body: 430;
+  --text-tracking: .005em;
+  --leading-body: 1.55;
+}
+/* Pair-preserving interaction colors, derived in OKLch from the source roles. */
+:root, [data-theme] {
+  --primary-hover: color-mix(in oklch, var(--accent) 88%, black);
+  --neutral-hover: color-mix(in oklch, var(--surface) 88%, var(--surface-warm));
+  --focus-ring: var(--accent-hover);
+}
+[data-theme="dark"] { --focus-ring: #b7c6ff; }
+body { font-family:var(--font-body); font-weight:var(--weight-body); letter-spacing:var(--text-tracking,normal); font-optical-sizing:auto; color:var(--fg); background:var(--bg); }
+button, input, select, textarea { font: inherit; }
+::selection { background: var(--selection); color: var(--fg); }

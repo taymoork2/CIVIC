@@ -1,0 +1,407 @@
+{
+  "schemaVersion": 1,
+  "extraction": {
+    "version": "owner-product-evidence-v3",
+    "inputSha256": "4a0fffbed5201f63aa27e650912bf873c957bf3c0c765b14fd71c0cc267c9fad",
+    "reviewStatus": "unreviewed_candidates"
+  },
+  "entries": [
+    {
+      "claims": [
+        {
+          "conditions": "Unreviewed recorded research for this exact US reference; physical package not confirmed. Textual conditions are not executable rules. No compatibility or use approval. Below/just-below cap targets are qualitative; no fraction or volume inferred. Recorded route main_wash. Preserve native marks/counts and unspecified quantities.",
+          "id": "directions-main-wash-0",
+          "key": "directions",
+          "sourceIds": [
+            "tide-free-gentle-235843"
+          ],
+          "value": "{\"deepFill\":\"Use more with extra water; numerical increment unspecified.\",\"doseByLoad\":{\"heFull\":{\"capBar\":5,\"fractionOfBar\":1},\"large\":{\"capBar\":3,\"fractionOfBar\":null,\"qualifier\":\"just_below\"},\"medium\":{\"capBar\":2,\"fractionOfBar\":null,\"qualifier\":\"below\"}},\"route\":\"main_wash\",\"sequence\":\"Detergent before clothes; follow care label, sort and check inside-seam colorfastness.\",\"volumeMl\":null}"
+        },
+        {
+          "conditions": "Unreviewed recorded research for this exact US reference; physical package not confirmed. Textual conditions are not executable rules. No compatibility or use approval. Below/just-below cap targets are qualitative; no fraction or volume inferred. Operational category candidate; no efficacy or compatibility claim.",
+          "id": "function",
+          "key": "function",
+          "sourceIds": [
+            "tide-free-gentle-235843"
+          ],
+          "value": "detergent; liquid"
+        },
+        {
+          "conditions": "Unreviewed recorded research for this exact US reference; physical package not confirmed. Textual conditions are not executable rules. No compatibility or use approval. Below/just-below cap targets are qualitative; no fraction or volume inferred. Recorded handling/storage precautions; no unavailable SDS classification inferred.",
+          "id": "handling",
+          "key": "restrictions",
+          "sourceIds": [
+            "tide-free-gentle-235843"
+          ],
+          "value": "{\"hazards\":[\"Eye irritant; harmful if swallowed\"],\"precautions\":[\"eye_irritant\",\"harmful_if_swallowed\",\"keep_away_from_children\",\"do_not_reuse_container_for_beverages\"]}"
+        },
+        {
+          "conditions": "Unreviewed recorded research for this exact US reference; physical package not confirmed. Textual conditions are not executable rules. No compatibility or use approval. Below/just-below cap targets are qualitative; no fraction or volume inferred. Names as disclosed; omissions are not verified absence. CAS joins are not authorized.",
+          "id": "ingredients",
+          "key": "ingredients",
+          "sourceIds": [
+            "tide-free-gentle-235843"
+          ],
+          "value": [
+            "Water",
+            "C10-16 Alketh",
+            "Sodium C10-16 Alkylbenzenesulfonate",
+            "Sodium Lauryl Sulfate",
+            "Polyethyleneimines alkoxylated",
+            "Sodium Salts of C12-18 Fatty Acids",
+            "Sodium Citrate",
+            "Propylene Glycol",
+            "C10-16 Alkyldimethylamine Oxide",
+            "Alcohol",
+            "Sodium Cumenesulfonate",
+            "Tetrasodium Glutamate Diacetate",
+            "Calcium formate",
+            "Subtilisin",
+            "Amylase Enzyme",
+            "Benzisothiazolinone",
+            "Cellulase Enzyme",
+            "Mannanase Enzyme"
+          ]
+        },
+        {
+          "conditions": "Unreviewed recorded research for this exact US reference; physical package not confirmed. Textual conditions are not executable rules. No compatibility or use approval. Below/just-below cap targets are qualitative; no fraction or volume inferred. Not listed in this disclosure; absence not independently established.",
+          "id": "lipase",
+          "key": "lipaseDisclosure",
+          "sourceIds": [
+            "tide-free-gentle-235843"
+          ],
+          "value": "not_listed"
+        },
+        {
+          "conditions": "Unreviewed recorded research for this exact US reference; physical package not confirmed. Textual conditions are not executable rules. No compatibility or use approval. Below/just-below cap targets are qualitative; no fraction or volume inferred. Restriction 1, source-specific; no stage-separation exception inferred.",
+          "id": "restriction-0",
+          "key": "restrictions",
+          "sourceIds": [
+            "tide-free-gentle-235843"
+          ],
+          "value": "Follow the garment care label; product enzyme/fragrance disclosure is not care permission."
+        }
+      ],
+      "extractorVersion": "owner-product-evidence-v3",
+      "labelRevision": "2025-10-08",
+      "product": {
+        "brand": "Tide",
+        "key": "owner-reference:tide-free-gentle-235843",
+        "kind": "product",
+        "name": "Tide Free & Gentle Liquid Laundry Detergent"
+      },
+      "retrieverVersion": "saved-owner-research-2026-10-04",
+      "sources": [
+        {
+          "id": "tide-free-gentle-235843",
+          "permission": "Owner-authorized offline factual summary of completed public-reference research for local review. No provider source text retained; no automatic retrieval or commercial redistribution permission asserted.",
+          "provider": "P&G / Tide SmartLabel",
+          "retrievedAt": "2026-10-05T07:02:50Z",
+          "snapshot": "{\"boundary\":\"Authored factual summary from saved research, not a captured provider document or independent re-verification.\",\"facts\":[{\"path\":\"products.tide-free-gentle-235843.referenceContext\",\"value\":{\"claimLimits\":[\"Below/just-below cap targets are qualitative; no fraction or volume inferred.\"],\"form\":\"liquid\",\"id\":\"tide-free-gentle-235843\",\"identity\":{\"advertisedLoads\":126,\"brand\":\"Tide\",\"gtin14\":\"00030772235843\",\"packSize\":{\"unit\":\"US_fl_oz\",\"value\":166},\"physicalRevision\":null,\"scent\":\"No perfumes (explicit manufacturer claim)\",\"sourceDisplayedCode\":\"30772235843\",\"sourceRevision\":\"2025-10-08\",\"upcA\":\"030772235843\"},\"kind\":\"detergent\",\"missing\":[\"Actual owned-pack label/lot revision\",\"Numerical fraction for below/just-below targets (not supplied by source)\",\"Calibrated cap volume\",\"Quantitative deep-fill amount\",\"Concentrations, pH and independently reviewed SDS content\",\"Exact machine/dispenser applicability\"],\"name\":\"Tide Free & Gentle Liquid Laundry Detergent\",\"ownerReferenceSourceId\":\"tide-free-gentle-235843\",\"previousCorrection\":\"New distinct owner-reported reference. Preserve the prior Tide Original source separately.\",\"sourceIssues\":[\"Do not transfer Original 4/5-Bar-1 or 4/5-Bar-3 doses to this product.\",\"No-perfume/no-dye claims do not establish universal allergy or irritation safety.\"]}},{\"path\":\"products.tide-free-gentle-235843.chemistry\",\"value\":{\"boundary\":\"Explicit no-perfume/no-dye/no-phosphate claims. Disclosed enzymes, hardness-management and suspension roles do not establish garment permission, concentration, measured benefit or universal sensitivity safety.\",\"disclosedEnzymes\":[\"Subtilisin\",\"Amylase Enzyme\",\"Cellulase Enzyme\",\"Mannanase Enzyme\"],\"dyeDisclosed\":false,\"fragranceDisclosed\":false,\"lipase\":\"not listed in the retrieved disclosure; absence not independently established\"}},{\"path\":\"products.tide-free-gentle-235843.directions[0]\",\"value\":{\"deepFill\":\"Use more with extra water; numerical increment unspecified.\",\"doseByLoad\":{\"heFull\":{\"capBar\":5,\"fractionOfBar\":1},\"large\":{\"capBar\":3,\"fractionOfBar\":null,\"qualifier\":\"just_below\"},\"medium\":{\"capBar\":2,\"fractionOfBar\":null,\"qualifier\":\"below\"}},\"route\":\"main_wash\",\"sequence\":\"Detergent before clothes; follow care label, sort and check inside-seam colorfastness.\",\"volumeMl\":null}},{\"path\":\"products.tide-free-gentle-235843.handling\",\"value\":{\"hazards\":[\"Eye irritant; harmful if swallowed\"],\"precautions\":[\"eye_irritant\",\"harmful_if_swallowed\",\"keep_away_from_children\",\"do_not_reuse_container_for_beverages\"]}},{\"path\":\"products.tide-free-gentle-235843.ingredients[0]\",\"value\":{\"casAsRecorded\":\"7732-18-5\",\"functionAsRecorded\":\"Water\",\"name\":\"Water\"}},{\"path\":\"products.tide-free-gentle-235843.ingredients[1]\",\"value\":{\"casAsRecorded\":\"68002-97-1\",\"functionAsRecorded\":\"Cleaning Agent\",\"name\":\"C10-16 Alketh\"}},{\"path\":\"products.tide-free-gentle-235843.ingredients[2]\",\"value\":{\"casAsRecorded\":\"68081-81-2\",\"functionAsRecorded\":\"Surfactant\",\"name\":\"Sodium C10-16 Alkylbenzenesulfonate\"}},{\"path\":\"products.tide-free-gentle-235843.ingredients[3]\",\"value\":{\"casAsRecorded\":\"68585-47-7\",\"functionAsRecorded\":\"Surfactant\",\"name\":\"Sodium Lauryl Sulfate\"}},{\"path\":\"products.tide-free-gentle-235843.ingredients[4]\",\"value\":{\"casAsRecorded\":\"68130-99-4; Withheld\",\"functionAsRecorded\":\"Polymer\",\"name\":\"Polyethyleneimines alkoxylated\"}},{\"path\":\"products.tide-free-gentle-235843.ingredients[5]\",\"value\":{\"casAsRecorded\":\"Not available\",\"functionAsRecorded\":\"Suds reducer\",\"name\":\"Sodium Salts of C12-18 Fatty Acids\"}},{\"path\":\"products.tide-free-gentle-235843.ingredients[6]\",\"value\":{\"casAsRecorded\":\"68-04-2\",\"functionAsRecorded\":\"Water softener\",\"name\":\"Sodium Citrate\"}},{\"path\":\"products.tide-free-gentle-235843.ingredients[7]\",\"value\":{\"casAsRecorded\":\"57-55-6\",\"functionAsRecorded\":\"Solvent\",\"name\":\"Propylene Glycol\"}},{\"path\":\"products.tide-free-gentle-235843.ingredients[8]\",\"value\":{\"casAsRecorded\":\"70592-80-2\",\"functionAsRecorded\":\"Surfactant\",\"name\":\"C10-16 Alkyldimethylamine Oxide\"}},{\"path\":\"products.tide-free-gentle-235843.ingredients[9]\",\"value\":{\"casAsRecorded\":\"64-17-5\",\"functionAsRecorded\":\"Solvent\",\"name\":\"Alcohol\"}},{\"path\":\"products.tide-free-gentle-235843.ingredients[10]\",\"value\":{\"casAsRecorded\":\"28348-53-0\",\"functionAsRecorded\":\"Stabilizer\",\"name\":\"Sodium Cumenesulfonate\"}},{\"path\":\"products.tide-free-gentle-235843.ingredients[11]\",\"value\":{\"casAsRecorded\":\"51981-21-6\",\"functionAsRecorded\":\"Cleaning aid\",\"name\":\"Tetrasodium Glutamate Diacetate\"}},{\"path\":\"products.tide-free-gentle-235843.ingredients[12]\",\"value\":{\"casAsRecorded\":\"544-17-2\",\"functionAsRecorded\":\"Stabilizer\",\"name\":\"Calcium formate\"}},{\"path\":\"products.tide-free-gentle-235843.ingredients[13]\",\"value\":{\"casAsRecorded\":\"9014-01-1\",\"functionAsRecorded\":\"Enzyme\",\"name\":\"Subtilisin\"}},{\"path\":\"products.tide-free-gentle-235843.ingredients[14]\",\"value\":{\"casAsRecorded\":\"9000-90-2\",\"functionAsRecorded\":\"Enzyme\",\"name\":\"Amylase Enzyme\"}},{\"path\":\"products.tide-free-gentle-235843.ingredients[15]\",\"value\":{\"casAsRecorded\":\"2634-33-5\",\"functionAsRecorded\":\"Preservative\",\"name\":\"Benzisothiazolinone\"}},{\"path\":\"products.tide-free-gentle-235843.ingredients[16]\",\"value\":{\"casAsRecorded\":\"9012-54-8\",\"functionAsRecorded\":\"Enzyme\",\"name\":\"Cellulase Enzyme\"}},{\"path\":\"products.tide-free-gentle-235843.ingredients[17]\",\"value\":{\"casAsRecorded\":\"37288-54-3\",\"functionAsRecorded\":\"Enzyme\",\"name\":\"Mannanase Enzyme\"}},{\"path\":\"products.tide-free-gentle-235843.restrictions[0]\",\"value\":{\"rule\":\"Follow the garment care label; product enzyme/fragrance disclosure is not care permission.\"}},{\"path\":\"compatibilityFindings[0]\",\"value\":{\"finding\":\"Treat as alternatives for the detergent role. No instruction establishes stacking both together; owning either does not select it.\",\"products\":[\"tide-free-gentle-235843\",\"tide-pods-spring-meadow-032503\"],\"status\":\"compatibility_not_established_by_recorded_instructions\"}}],\"source\":{\"id\":\"tide-free-gentle-235843\",\"publisher\":\"P&G / Tide SmartLabel\",\"retrieval\":\"Public rendered browser panels and all 18 ingredient detail cards reviewed\",\"retrievedAt\":\"2026-10-05T07:02:50Z\",\"sourceUpdatedAt\":\"2025-10-08\",\"url\":\"https://smartlabel.pg.com/en-us/00030772235843.html\"}}",
+          "snapshotKind": "factual_summary",
+          "sourceUpdatedAt": "2025-10-08",
+          "url": "https://smartlabel.pg.com/en-us/00030772235843.html"
+        }
+      ],
+      "variant": {
+        "key": "owner-reference:tide-free-gentle-235843:us",
+        "market": "US",
+        "name": "Tide Free & Gentle Liquid Laundry Detergent",
+        "packIdentifier": "gtin14:00030772235843"
+      }
+    },
+    {
+      "claims": [
+        {
+          "conditions": "Unreviewed recorded research for this exact US reference; physical package not confirmed. Textual conditions are not executable rules. No compatibility or use approval. Guide counts supplement SmartLabel silence for standard Tide PODS; source-native smaller/standard/larger categories have no numerical thresholds. Actual conflicting package instructions require review. Recorded route main_wash; Current manufacturer guidance for standard Tide PODS supplements the exact SmartLabel page. Counts are keyed to the source's smaller/standard/larger categories, not invented weight or drum-fill thresholds. It does not establish an older physical-package revision; conflicting actual pack instructions require reconciliation.. Preserve native marks/counts and unspecified quantities.",
+          "id": "directions-main-wash-0",
+          "key": "directions",
+          "sourceIds": [
+            "tide-pods-family-guide",
+            "tide-pods-spring-meadow-032503"
+          ],
+          "value": "{\"doseByLoad\":{\"larger\":{\"paks\":3},\"smaller\":{\"paks\":1},\"standard\":{\"paks\":2}},\"openPak\":false,\"placement\":\"Washer drum before clothes\",\"route\":\"main_wash\",\"scope\":\"Current manufacturer guidance for standard Tide PODS supplements the exact SmartLabel page. Counts are keyed to the source's smaller/standard/larger categories, not invented weight or drum-fill thresholds. It does not establish an older physical-package revision; conflicting actual pack instructions require reconciliation.\",\"sequence\":\"Whole pacs directly in drum before clothes; securely close lid after use.\"}"
+        },
+        {
+          "conditions": "Unreviewed recorded research for this exact US reference; physical package not confirmed. Textual conditions are not executable rules. No compatibility or use approval. Guide counts supplement SmartLabel silence for standard Tide PODS; source-native smaller/standard/larger categories have no numerical thresholds. Actual conflicting package instructions require review. Operational category candidate; no efficacy or compatibility claim.",
+          "id": "function",
+          "key": "function",
+          "sourceIds": [
+            "tide-pods-spring-meadow-032503"
+          ],
+          "value": "detergent; water_soluble_pak"
+        },
+        {
+          "conditions": "Unreviewed recorded research for this exact US reference; physical package not confirmed. Textual conditions are not executable rules. No compatibility or use approval. Guide counts supplement SmartLabel silence for standard Tide PODS; source-native smaller/standard/larger categories have no numerical thresholds. Actual conflicting package instructions require review. Recorded handling/storage precautions; no unavailable SDS classification inferred.",
+          "id": "handling",
+          "key": "restrictions",
+          "sourceIds": [
+            "tide-pods-spring-meadow-032503"
+          ],
+          "value": "{\"hazards\":[\"Concentrated pacs harmful if swallowed or in eyes; can burst\"],\"precautions\":[\"keep_away_from_children_and_pets\",\"secure_closed_container\",\"no_loose_pacs\",\"dry_hands\",\"avoid_moisture\",\"do_not_cut_puncture_break_or_open\",\"do_not_separate_stuck_pacs\"]}"
+        },
+        {
+          "conditions": "Unreviewed recorded research for this exact US reference; physical package not confirmed. Textual conditions are not executable rules. No compatibility or use approval. Guide counts supplement SmartLabel silence for standard Tide PODS; source-native smaller/standard/larger categories have no numerical thresholds. Actual conflicting package instructions require review. Names as disclosed; omissions are not verified absence. CAS joins are not authorized.",
+          "id": "ingredients",
+          "key": "ingredients",
+          "sourceIds": [
+            "tide-pods-spring-meadow-032503"
+          ],
+          "value": [
+            "MEA C10-16 Alkylbenzenesulfonate",
+            "Propylene Glycol",
+            "MEA Laureth Sulfate",
+            "Water",
+            "MEA salts of C12-18 fatty acids",
+            "Glycerin",
+            "C10-16 Pareth",
+            "Polyethyleneimine alkoxylated",
+            "PEG-136 Polyvinyl Alcohol",
+            "MEA-citrate",
+            "Fragrances",
+            "Tetrasodium Glutamate Diacetate",
+            "Subtilisin",
+            "Sodium Bisulfite",
+            "Methyl Di-t-butyl Hydroxyhydrocinnamate",
+            "Disodium Distyrylbiphenyl Disulfonate",
+            "Hydrogenated castor oil",
+            "Styrene/Acrylates Copolymer",
+            "Amylase Enzyme",
+            "Polyoxyalkylene Substituted Chromophore (violet)",
+            "Mannanase Enzyme",
+            "Polyoxyalkylene Substituted Chromophore (cyan)",
+            "Polyoxyalkylene Substituted Chromophore (yellow)",
+            "Zeolite",
+            "Denatonium Benzoate",
+            "Polyvinyl alcohol polymer"
+          ]
+        },
+        {
+          "conditions": "Unreviewed recorded research for this exact US reference; physical package not confirmed. Textual conditions are not executable rules. No compatibility or use approval. Guide counts supplement SmartLabel silence for standard Tide PODS; source-native smaller/standard/larger categories have no numerical thresholds. Actual conflicting package instructions require review. Not listed in this disclosure; absence not independently established.",
+          "id": "lipase",
+          "key": "lipaseDisclosure",
+          "sourceIds": [
+            "tide-pods-spring-meadow-032503"
+          ],
+          "value": "not_listed"
+        },
+        {
+          "conditions": "Unreviewed recorded research for this exact US reference; physical package not confirmed. Textual conditions are not executable rules. No compatibility or use approval. Guide counts supplement SmartLabel silence for standard Tide PODS; source-native smaller/standard/larger categories have no numerical thresholds. Actual conflicting package instructions require review. Restriction 1, source-specific; no stage-separation exception inferred.",
+          "id": "restriction-0",
+          "key": "restrictions",
+          "sourceIds": [
+            "tide-pods-spring-meadow-032503"
+          ],
+          "value": "Follow the garment care label; product enzyme/fragrance disclosure is not care permission."
+        },
+        {
+          "conditions": "Unreviewed recorded research for this exact US reference; physical package not confirmed. Textual conditions are not executable rules. No compatibility or use approval. Guide counts supplement SmartLabel silence for standard Tide PODS; source-native smaller/standard/larger categories have no numerical thresholds. Actual conflicting package instructions require review. Restriction 2, source-specific; no stage-separation exception inferred.",
+          "id": "restriction-1",
+          "key": "restrictions",
+          "sourceIds": [
+            "tide-pods-family-guide",
+            "tide-pods-spring-meadow-032503"
+          ],
+          "value": "Intact pacs only, drum before clothes; current manufacturer guide says no additional detergent is needed."
+        }
+      ],
+      "extractorVersion": "owner-product-evidence-v3",
+      "labelRevision": "2024-12-28",
+      "product": {
+        "brand": "Tide",
+        "key": "owner-reference:tide-pods-spring-meadow-032503",
+        "kind": "product",
+        "name": "Tide PODS Laundry Detergent Soap Pacs — Spring Meadow"
+      },
+      "retrieverVersion": "saved-owner-research-2026-10-04",
+      "sources": [
+        {
+          "id": "tide-pods-family-guide",
+          "permission": "Owner-authorized offline factual summary of completed public-reference research for local review. No provider source text retained; no automatic retrieval or commercial redistribution permission asserted.",
+          "provider": "Tide",
+          "retrievedAt": "2026-10-05T07:21:55Z",
+          "snapshot": "{\"boundary\":\"Authored factual summary from saved research, not a captured provider document or independent re-verification.\",\"facts\":[{\"path\":\"products.tide-pods-spring-meadow-032503.directions[0]\",\"value\":{\"doseByLoad\":{\"larger\":{\"paks\":3},\"smaller\":{\"paks\":1},\"standard\":{\"paks\":2}},\"openPak\":false,\"placement\":\"Washer drum before clothes\",\"route\":\"main_wash\",\"scope\":\"Current manufacturer guidance for standard Tide PODS supplements the exact SmartLabel page. Counts are keyed to the source's smaller/standard/larger categories, not invented weight or drum-fill thresholds. It does not establish an older physical-package revision; conflicting actual pack instructions require reconciliation.\",\"sequence\":\"Whole pacs directly in drum before clothes; securely close lid after use.\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.restrictions[1]\",\"value\":{\"rule\":\"Intact pacs only, drum before clothes; current manufacturer guide says no additional detergent is needed.\"}},{\"path\":\"contextOnly.sourceCategoryMapping\",\"value\":{\"applicationLoadSizeMapping\":null,\"manufacturerTerms\":[\"smaller\",\"standard\",\"larger\"],\"numericalThresholds\":null}}],\"source\":{\"id\":\"tide-pods-family-guide\",\"publisher\":\"Tide\",\"retrieval\":\"Current manufacturer standard Tide PODS guide; source-native load-category count guidance\",\"retrievedAt\":\"2026-10-05T07:21:55Z\",\"sourceUpdatedAt\":null,\"url\":\"https://tide.com/en-us/our-commitment/americas-number-one-detergent/our-products/laundry-pacs/how-to-use-tide-pods\"}}",
+          "snapshotKind": "factual_summary",
+          "url": "https://tide.com/en-us/our-commitment/americas-number-one-detergent/our-products/laundry-pacs/how-to-use-tide-pods"
+        },
+        {
+          "id": "tide-pods-spring-meadow-032503",
+          "permission": "Owner-authorized offline factual summary of completed public-reference research for local review. No provider source text retained; no automatic retrieval or commercial redistribution permission asserted.",
+          "provider": "P&G / Tide SmartLabel",
+          "retrievedAt": "2026-10-05T07:02:50Z",
+          "snapshot": "{\"boundary\":\"Authored factual summary from saved research, not a captured provider document or independent re-verification.\",\"facts\":[{\"path\":\"products.tide-pods-spring-meadow-032503.referenceContext\",\"value\":{\"claimLimits\":[\"Guide counts supplement SmartLabel silence for standard Tide PODS; source-native smaller/standard/larger categories have no numerical thresholds. Actual conflicting package instructions require review.\"],\"form\":\"water_soluble_pak\",\"id\":\"tide-pods-spring-meadow-032503\",\"identity\":{\"brand\":\"Tide\",\"gtin14\":\"00030772032503\",\"packSize\":{\"unit\":\"count\",\"value\":112},\"physicalRevision\":null,\"scent\":\"Spring Meadow\",\"sourceDisplayedCode\":\"30772032503\",\"sourceRevision\":\"2024-12-28\",\"upcA\":\"030772032503\"},\"kind\":\"detergent\",\"missing\":[\"Actual owned-pack label/lot revision\",\"Numerical definition of smaller/standard/larger load categories and any conflicting owned-package directions\",\"Individual fragrance-subingredient detail/CAS review\",\"Concentrations, pH and independently reviewed SDS content\",\"Product-specific presoak/pretreat authorization\"],\"name\":\"Tide PODS Laundry Detergent Soap Pacs — Spring Meadow\",\"ownerReferenceSourceId\":\"tide-pods-spring-meadow-032503\",\"previousCorrection\":\"New distinct owner-reported reference. Preserve the prior Tide Original source separately.\",\"sourceIssues\":[\"{\\\"ingredient\\\":\\\"Methyl Di-t-butyl Hydroxyhydrocinnamate\\\",\\\"casAsRecorded\\\":\\\"6386-38-5\\\",\\\"casChecksum\\\":\\\"valid\\\",\\\"functionAsRecorded\\\":\\\"Odor remover\\\",\\\"sourceId\\\":\\\"tide-pods-spring-meadow-032503\\\",\\\"boundary\\\":\\\"Preserve the manufacturer-recorded function and identity; no additional chemical mechanism or efficacy inference is established by this review.\\\"}\",\"Exact SmartLabel Usage panel duplicates the drum-before-clothes sentence; deduplicated without adding a dose.\",\"Family-level load categories are not exact-pack label evidence.\"]}},{\"path\":\"products.tide-pods-spring-meadow-032503.chemistry\",\"value\":{\"boundary\":\"Fragrance/colorants, enzymes and manufacturer whitening-agent role disclosed. Optical mechanism, concentrations and independent benefit unverified. Standard PODS identity; not POWER PODS or Free & Gentle PODS.\",\"disclosedEnzymes\":[\"Subtilisin\",\"Amylase Enzyme\",\"Mannanase Enzyme\"],\"dyeDisclosed\":true,\"fragranceDisclosed\":true,\"lipase\":\"not listed in the retrieved disclosure; absence not independently established\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.directions[0]\",\"value\":{\"doseByLoad\":{\"larger\":{\"paks\":3},\"smaller\":{\"paks\":1},\"standard\":{\"paks\":2}},\"openPak\":false,\"placement\":\"Washer drum before clothes\",\"route\":\"main_wash\",\"scope\":\"Current manufacturer guidance for standard Tide PODS supplements the exact SmartLabel page. Counts are keyed to the source's smaller/standard/larger categories, not invented weight or drum-fill thresholds. It does not establish an older physical-package revision; conflicting actual pack instructions require reconciliation.\",\"sequence\":\"Whole pacs directly in drum before clothes; securely close lid after use.\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.handling\",\"value\":{\"hazards\":[\"Concentrated pacs harmful if swallowed or in eyes; can burst\"],\"precautions\":[\"keep_away_from_children_and_pets\",\"secure_closed_container\",\"no_loose_pacs\",\"dry_hands\",\"avoid_moisture\",\"do_not_cut_puncture_break_or_open\",\"do_not_separate_stuck_pacs\"]}},{\"path\":\"products.tide-pods-spring-meadow-032503.ingredients[0]\",\"value\":{\"casAsRecorded\":\"68910-32-7\",\"functionAsRecorded\":\"Cleaning agent\",\"name\":\"MEA C10-16 Alkylbenzenesulfonate\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.ingredients[1]\",\"value\":{\"casAsRecorded\":\"57-55-6\",\"functionAsRecorded\":\"Solvent\",\"name\":\"Propylene Glycol\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.ingredients[2]\",\"value\":{\"casAsRecorded\":\"162201-45-8\",\"functionAsRecorded\":\"Cleaning agent\",\"name\":\"MEA Laureth Sulfate\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.ingredients[3]\",\"value\":{\"casAsRecorded\":\"7732-18-5\",\"functionAsRecorded\":\"Solvent\",\"name\":\"Water\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.ingredients[4]\",\"value\":{\"casAsRecorded\":\"Not Available\",\"functionAsRecorded\":\"Suds reducer\",\"name\":\"MEA salts of C12-18 fatty acids\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.ingredients[5]\",\"value\":{\"casAsRecorded\":\"56-81-5\",\"functionAsRecorded\":\"Solvent\",\"name\":\"Glycerin\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.ingredients[6]\",\"value\":{\"casAsRecorded\":\"68002-97-1\",\"functionAsRecorded\":\"Cleaning agent\",\"name\":\"C10-16 Pareth\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.ingredients[7]\",\"value\":{\"casAsRecorded\":\"68130-99-4\",\"functionAsRecorded\":\"Cleaning aid\",\"name\":\"Polyethyleneimine alkoxylated\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.ingredients[8]\",\"value\":{\"casAsRecorded\":\"25820-49-9\",\"functionAsRecorded\":\"Soil Release Polymer\",\"name\":\"PEG-136 Polyvinyl Alcohol\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.ingredients[9]\",\"value\":{\"casAsRecorded\":\"17863-38-6\",\"functionAsRecorded\":\"Water softener\",\"name\":\"MEA-citrate\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.ingredients[10]\",\"value\":{\"casAsRecorded\":\"Not Available\",\"functionAsRecorded\":\"Perfume\",\"name\":\"Fragrances\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.ingredients[11]\",\"value\":{\"casAsRecorded\":\"51981-21-6\",\"functionAsRecorded\":\"Cleaning aid\",\"name\":\"Tetrasodium Glutamate Diacetate\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.ingredients[12]\",\"value\":{\"casAsRecorded\":\"9014-01-1\",\"functionAsRecorded\":\"Enzyme\",\"name\":\"Subtilisin\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.ingredients[13]\",\"value\":{\"casAsRecorded\":\"7631-90-5\",\"functionAsRecorded\":\"Stabilizer\",\"name\":\"Sodium Bisulfite\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.ingredients[14]\",\"value\":{\"casAsRecorded\":\"6386-38-5\",\"functionAsRecorded\":\"Odor remover\",\"name\":\"Methyl Di-t-butyl Hydroxyhydrocinnamate\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.ingredients[15]\",\"value\":{\"casAsRecorded\":\"27344-41-8\",\"functionAsRecorded\":\"Whitening agent\",\"name\":\"Disodium Distyrylbiphenyl Disulfonate\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.ingredients[16]\",\"value\":{\"casAsRecorded\":\"8001-78-3\",\"functionAsRecorded\":\"Stabilizer\",\"name\":\"Hydrogenated castor oil\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.ingredients[17]\",\"value\":{\"casAsRecorded\":\"9010-92-8\",\"functionAsRecorded\":\"Aesthetics\",\"name\":\"Styrene/Acrylates Copolymer\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.ingredients[18]\",\"value\":{\"casAsRecorded\":\"9000-90-2\",\"functionAsRecorded\":\"Enzyme\",\"name\":\"Amylase Enzyme\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.ingredients[19]\",\"value\":{\"casAsRecorded\":\"Withheld\",\"functionAsRecorded\":\"Colorant\",\"name\":\"Polyoxyalkylene Substituted Chromophore (violet)\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.ingredients[20]\",\"value\":{\"casAsRecorded\":\"37288-54-3\",\"functionAsRecorded\":\"Enzyme\",\"name\":\"Mannanase Enzyme\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.ingredients[21]\",\"value\":{\"casAsRecorded\":\"Withheld\",\"functionAsRecorded\":\"Colorant\",\"name\":\"Polyoxyalkylene Substituted Chromophore (cyan)\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.ingredients[22]\",\"value\":{\"casAsRecorded\":\"Withheld\",\"functionAsRecorded\":\"Colorant\",\"name\":\"Polyoxyalkylene Substituted Chromophore (yellow)\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.ingredients[23]\",\"value\":{\"casAsRecorded\":\"1318-02-1\",\"functionAsRecorded\":\"Process Aide\",\"name\":\"Zeolite\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.ingredients[24]\",\"value\":{\"casAsRecorded\":\"3734-33-6\",\"functionAsRecorded\":\"Bittering agent\",\"name\":\"Denatonium Benzoate\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.ingredients[25]\",\"value\":{\"casAsRecorded\":\"Withheld\",\"functionAsRecorded\":\"Film\",\"name\":\"Polyvinyl alcohol polymer\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.restrictions[0]\",\"value\":{\"rule\":\"Follow the garment care label; product enzyme/fragrance disclosure is not care permission.\"}},{\"path\":\"products.tide-pods-spring-meadow-032503.restrictions[1]\",\"value\":{\"rule\":\"Intact pacs only, drum before clothes; current manufacturer guide says no additional detergent is needed.\"}},{\"path\":\"compatibilityFindings[0]\",\"value\":{\"finding\":\"Treat as alternatives for the detergent role. No instruction establishes stacking both together; owning either does not select it.\",\"products\":[\"tide-free-gentle-235843\",\"tide-pods-spring-meadow-032503\"],\"status\":\"compatibility_not_established_by_recorded_instructions\"}}],\"source\":{\"id\":\"tide-pods-spring-meadow-032503\",\"publisher\":\"P&G / Tide SmartLabel\",\"retrieval\":\"Public rendered browser panels and all 26 top-level ingredient detail cards reviewed; fragrance subingredient names observed, individual detail/CAS not reviewed\",\"retrievedAt\":\"2026-10-05T07:02:50Z\",\"sourceUpdatedAt\":\"2024-12-28\",\"url\":\"https://smartlabel.pg.com/en-us/00030772032503.html\"}}",
+          "snapshotKind": "factual_summary",
+          "sourceUpdatedAt": "2024-12-28",
+          "url": "https://smartlabel.pg.com/en-us/00030772032503.html"
+        }
+      ],
+      "variant": {
+        "key": "owner-reference:tide-pods-spring-meadow-032503:us",
+        "market": "US",
+        "name": "Tide PODS Laundry Detergent Soap Pacs — Spring Meadow",
+        "packIdentifier": "gtin14:00030772032503"
+      }
+    }
+  ],
+  "entryBindings": [
+    {
+      "variantKey": "owner-reference:tide-free-gentle-235843:us",
+      "inputSha256": "8f83cdaf8908b483a4675ba4fb67a957d925faa989648494fbdd494e2748b868",
+      "sourceSha256": {
+        "tide-free-gentle-235843": "5aa3462435be215698d5b3c32d28576212cbe423ebebc8126b002f06bae02db8"
+      },
+      "digest": "23f6bbe1bef66a35fe02817ce8dce84f4277b4e62c2afaddba0e59dce4a46eea"
+    },
+    {
+      "variantKey": "owner-reference:tide-pods-spring-meadow-032503:us",
+      "inputSha256": "f2a508eea440917eee2d2cad4eab10c15a57c7df3482b2aa9abaa33493fc802a",
+      "sourceSha256": {
+        "tide-pods-family-guide": "3e68bc410141010c3f9a31309f2d363aefde831f449c5bef3ad9c367d4d12326",
+        "tide-pods-spring-meadow-032503": "88ae74a234d4ef05ab20ce7e4b6408279abe9d701e657bd5c03aac09d8d1afc0"
+      },
+      "digest": "8ee8162e37f7c1f36546f6fda1644e75cf41534eeb94416b322a3168e271babf"
+    }
+  ],
+  "review": {
+    "acceptedClaimIds": [],
+    "records": [
+      {
+        "recordId": "tide-free-gentle-235843",
+        "identitySha256": "c8e727871b1b0658089877ae946d2dbca8a0f8f036ee56d27fed4d1603fcb3bc",
+        "entryVariantKey": "owner-reference:tide-free-gentle-235843:us",
+        "unresolved": [
+          {
+            "path": "directions[0].doseByLoad.large.fractionOfBar",
+            "value": null,
+            "reason": "not_established_by_recorded_evidence"
+          },
+          {
+            "path": "directions[0].doseByLoad.medium.fractionOfBar",
+            "value": null,
+            "reason": "not_established_by_recorded_evidence"
+          },
+          {
+            "path": "directions[0].volumeMl",
+            "value": null,
+            "reason": "not_established_by_recorded_evidence"
+          },
+          {
+            "path": "identity.physicalRevision",
+            "value": null,
+            "reason": "not_established_by_recorded_evidence"
+          },
+          {
+            "path": "missing[0]",
+            "value": "Actual owned-pack label/lot revision",
+            "reason": "requires_review_or_context_confirmation"
+          },
+          {
+            "path": "missing[1]",
+            "value": "Numerical fraction for below/just-below targets (not supplied by source)",
+            "reason": "requires_review_or_context_confirmation"
+          },
+          {
+            "path": "missing[2]",
+            "value": "Calibrated cap volume",
+            "reason": "requires_review_or_context_confirmation"
+          },
+          {
+            "path": "missing[3]",
+            "value": "Quantitative deep-fill amount",
+            "reason": "requires_review_or_context_confirmation"
+          },
+          {
+            "path": "missing[4]",
+            "value": "Concentrations, pH and independently reviewed SDS content",
+            "reason": "requires_review_or_context_confirmation"
+          },
+          {
+            "path": "missing[5]",
+            "value": "Exact machine/dispenser applicability",
+            "reason": "requires_review_or_context_confirmation"
+          }
+        ],
+        "quarantinedIdentifiers": [],
+        "sourceIssues": [
+          "Do not transfer Original 4/5-Bar-1 or 4/5-Bar-3 doses to this product.",
+          "No-perfume/no-dye claims do not establish universal allergy or irritation safety."
+        ],
+        "corrections": "New distinct owner-reported reference. Preserve the prior Tide Original source separately."
+      },
+      {
+        "recordId": "tide-pods-spring-meadow-032503",
+        "identitySha256": "9b58280a7b132092b8e6c8b4ff58494f6c8ad6e4bcf90197619a29b7ef277c27",
+        "entryVariantKey": "owner-reference:tide-pods-spring-meadow-032503:us",
+        "unresolved": [
+          {
+            "path": "identity.physicalRevision",
+            "value": null,
+            "reason": "not_established_by_recorded_evidence"
+          },
+          {
+            "path": "missing[0]",
+            "value": "Actual owned-pack label/lot revision",
+            "reason": "requires_review_or_context_confirmation"
+          },
+          {
+            "path": "missing[1]",
+            "value": "Numerical definition of smaller/standard/larger load categories and any conflicting owned-package directions",
+            "reason": "requires_review_or_context_confirmation"
+          },
+          {
+            "path": "missing[2]",
+            "value": "Individual fragrance-subingredient detail/CAS review",
+            "reason": "requires_review_or_context_confirmation"
+          },
+          {
+            "path": "missing[3]",
+            "value": "Concentrations, pH and independently reviewed SDS content",
+            "reason": "requires_review_or_context_confirmation"
+          },
+          {
+            "path": "missing[4]",
+            "value": "Product-specific presoak/pretreat authorization",
+            "reason": "requires_review_or_context_confirmation"
+          }
+        ],
+        "quarantinedIdentifiers": [],
+        "sourceIssues": [
+          "{\"ingredient\":\"Methyl Di-t-butyl Hydroxyhydrocinnamate\",\"casAsRecorded\":\"6386-38-5\",\"casChecksum\":\"valid\",\"functionAsRecorded\":\"Odor remover\",\"sourceId\":\"tide-pods-spring-meadow-032503\",\"boundary\":\"Preserve the manufacturer-recorded function and identity; no additional chemical mechanism or efficacy inference is established by this review.\"}",
+          "Exact SmartLabel Usage panel duplicates the drum-before-clothes sentence; deduplicated without adding a dose.",
+          "Family-level load categories are not exact-pack label evidence."
+        ],
+        "corrections": "New distinct owner-reported reference. Preserve the prior Tide Original source separately."
+      }
+    ],
+    "contextSources": [],
+    "compatibilityFindings": [
+      {
+        "finding": "Treat as alternatives for the detergent role. No instruction establishes stacking both together; owning either does not select it.",
+        "products": [
+          "tide-free-gentle-235843",
+          "tide-pods-spring-meadow-032503"
+        ],
+        "sourceIds": [
+          "tide-free-gentle-235843",
+          "tide-pods-spring-meadow-032503"
+        ],
+        "status": "compatibility_not_established_by_recorded_instructions"
+      }
+    ],
+    "contextOnly": {
+      "sourceCategoryMapping": {
+        "applicationLoadSizeMapping": null,
+        "manufacturerTerms": [
+          "smaller",
+          "standard",
+          "larger"
+        ],
+        "numericalThresholds": null,
+        "sourceIds": [
+          "tide-pods-family-guide"
+        ]
+      }
+    },
+    "retrievalLimits": []
+  }
+}

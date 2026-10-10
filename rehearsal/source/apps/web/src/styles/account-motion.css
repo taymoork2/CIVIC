@@ -1,0 +1,4 @@
+/* Welcome imagery remains still when motion is reduced. */
+@media (prefers-reduced-motion: reduce) {
+  [data-welcome-art] * { animation: none !important; }
+}

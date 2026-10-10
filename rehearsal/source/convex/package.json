@@ -1,0 +1,21 @@
+{
+  "name": "@washcloset/convex",
+  "private": true,
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@block65/webcrypto-web-push": "^2.0.0",
+    "@convex-dev/better-auth": "0.12.5",
+    "@washcloset/planner": "workspace:*",
+    "better-auth": "1.6.33"
+  },
+  "devDependencies": {
+    "@edge-runtime/vm": "5.0.0",
+    "convex": "1.46.0",
+    "convex-test": "0.0.60",
+    "typescript": "7.0.2",
+    "vitest": "5.0.1"
+  }
+}

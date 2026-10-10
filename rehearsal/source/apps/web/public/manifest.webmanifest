@@ -1,0 +1,29 @@
+{
+  "name": "A Laundered Closet",
+  "short_name": "Laundered Closet",
+  "description": "Your family’s clothes, care labels and laundry, all together.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "theme_color": "#f7f5ee",
+  "background_color": "#f7f5ee",
+  "icons": [
+    {
+      "src": "/icons/laundered-closet-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/laundered-closet-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/laundered-closet-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
