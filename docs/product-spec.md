@@ -1,10 +1,18 @@
-# CIVIƆ product vision and specification
+# CIVIC product vision and specification
 
 **Every journey. Every part. One maintainable system.**
 
-CIVIƆ, pronounced and searchable as **CIVIC**, is a unified, cross-platform product system for Design, Engineering, and QA. It connects product intent, design systems, user journeys, platform-specific component libraries, application code, tests, and runtime evidence so teams can build, verify, and maintain coherent experiences.
+CIVIC is a unified, cross-platform product system for Design, Engineering, and QA. It connects product intent, design systems, user journeys, platform-specific component libraries, application code, tests, and runtime evidence so teams can build, verify, and maintain coherent experiences.
 
 This document preserves the founding product discussion. It is a product direction and specification, not evidence of implemented functionality.
+
+## Name and wordmark
+
+In all text, including docs, code, package names, and search, the name is plain **CIVIC**. The reversed final C (D1) belongs to the wordmark only. The wordmark is drawn by mirroring a real "C" in the same font, for example `CIVI<span class="rev" aria-hidden="true">C</span>` inside an element labelled "CIVIC", with `.rev { display: inline-block; transform: scaleX(-1) }`. A logo is exported as an SVG of that same wordmark.
+
+**Rehearsal** is only an internal codename for the journey engine, meaning the canvas, scenario player, and review that came from the v0 build, and for the `rehearsal/` source folder. Another project chose that name for another purpose, so it never appears as a product or feature name.
+
+Don't use the Unicode lookalikes. `Ɔ` (U+0186) is "Latin capital open O", not a reversed C. Many fonts lack it, screen readers read it as "open O", and it breaks search and copy-paste. The true reversed C, `Ↄ` (U+2183), has even less font support.
 
 ## Source and decision status
 
@@ -20,20 +28,30 @@ The source is the Amp discussion in [thread T-01a0dc96-9004-70a8-92a7-d7364d854a
 
 | ID | Decision or requirement | Source |
 |---|---|---|
-| D1 | The product name is **CIVIƆ**, pronounced "civic," with a reversed final **Ɔ**. | M1 |
-| D2 | CIVIƆ must unify: design system → designed screens → user journey → per-platform component library → screen implementation/code → actual app validation. | M1 |
+| D1 | The product name is **CIVIC**, pronounced "civic". Its wordmark reverses the final C. | M1 |
+| D2 | CIVIC must unify: design system → designed screens → user journey → per-platform component library → screen implementation/code → actual app validation. | M1 |
 | D3 | The chain must work top down and in both directions, with each layer remaining in accordance with the others. | M1 |
 | D4 | Users need a website or Figma-like canvas for clicking through scenarios and personas, including states that are not otherwise documented. | M1 |
 | D5 | Users must highlight, comment on, and annotate experiences in context instead of waiting for changes, recreating them, taking screenshots, and sending feedback back. | M1 |
 | D6 | The system should be as easy to build, maintain, run, diagnose, and repair as a Honda Civic or Toyota Corolla, not like a German car engine. | M1 |
 | D7 | Design and Engineering are central. Product Management and Leadership/Executives have important roles. | M3 |
-| D8 | CIVIƆ is cross-platform and must not be limited to web. | M3 |
+| D8 | CIVIC is cross-platform and must not be limited to web. | M3 |
 | D9 | QA is a primary persona alongside Design and Engineering. | M5 |
 | D10 | The model must address bugs, feature requests, accessibility, customer complaints that cause UX/UI changes, composability, platform restrictions and quirks, and component-library coordination with product teams. | M7 |
 | D11 | The model must address the mutual dependence between Design, Engineering, and QA. | M9 |
 | D12 | The model must work for startups, mid-size companies, and enterprises. | M11 |
 | D13 | The product starts as the Amp-hosted `tay/CIVIC` project, followed by a GitHub repository. | M13, M15 |
 | D14 | The full discussion must be documented and stored safely. | M25 |
+| D15 | The artifact graph is CIVIC's core. The journey engine is one viewer and the first web adapter, and the Fluent 2 Button conflict demo comes before more Laundry work. | [Decision 0004](decisions/0004-graph-first-journey-engine-as-viewer.md) |
+| D16 | CIVIC's shell has its own interface and does not inherit the reviewed app's design system. Real app components appear only inside the preview. | v0 Codex thread, 02:16 |
+| D17 | One persistent canvas. Explore, play, and review are capabilities reached by selecting and zooming, not separate views. Review shares the right pane with Inspect and Edit. | v0 Codex thread, 05:47 |
+| D18 | The canvas shows real, cached screen snapshots across the whole app by default. Clicking a screen makes it live in place. | v0 Codex thread, 03:19, 03:52 |
+| D19 | Journeys run left to right like a timeline, in app entry order. Branches sit in lanes below with labelled arrows that rejoin. Panning is bounded. | v0 Codex thread, 04:16–04:55 |
+| D20 | An outline goes from app to flow to screen. Picking a flow fits it, picking a screen focuses it, and moving the camera updates the outline. | v0 Codex thread, 04:47 |
+| D21 | Play is the default and Inspect is optional, with no separate developer mode. Edit changes a real, versioned, testable proposal, and testing it is not adopting it. | v0 Codex thread, 03:19, 03:28 |
+| D22 | Inputs are captured during real transitions and carried forward. Jumping to a screen never counts as having walked the path to it. | v0 Codex thread, 03:28 |
+| D23 | Multiplayer-ready from the start. Proposals, comments, decisions, captures, and evidence are shared. Camera, running session, drafts, and fixture experiments are private. | v0 Codex thread, 03:06 |
+| D24 | Borrow canvas conventions from Figma, tldraw, and Paper, but don't become a drawing tool. CIVIC's niche is executable journeys and evidence-backed proposals. Figma integration starts as an optional link to a frame, stored with its snapshot and revision. | v0 Codex thread, 05:10–05:13 |
 
 ### Project facts
 
@@ -56,21 +74,23 @@ Feedback is slow because a reviewer must wait for implementation, reproduce the 
 
 ## Business idea
 
-CIVIƆ provides a living, connected model of a product. It lets teams explore every important journey and state, review it in context, trace each part across design and implementation, and verify that intended and shipped behavior still agree.
+CIVIC provides a living, connected model of a product. It lets teams explore every important journey and state, review it in context, trace each part across design and implementation, and verify that intended and shipped behavior still agree.
 
-Early positioning: CIVIƆ sits between design tools, component catalogs, product analytics, visual testing, and QA tools. It integrates with them rather than replacing all of them.
+Early positioning: CIVIC sits between design tools, component catalogs, product analytics, visual testing, and QA tools. It integrates with them rather than replacing all of them.
+
+CIVIC is not a drawing or authoring tool (D24). Drawing stays in Figma, Open Design, Claude Design, and similar tools. CIVIC owns executable journeys and evidence-backed proposals.
 
 Proposed positioning statement:
 
-> CIVIƆ is the living service manual for your product: explore every journey, review every state, trace every part, and verify that design and implementation still agree.
+> CIVIC is the living service manual for your product: explore every journey, review every state, trace every part, and verify that design and implementation still agree.
 
 Cross-platform positioning:
 
-> CIVIƆ connects product design and software engineering across every platform, from system-level intent to validated application behavior.
+> CIVIC connects product design and software engineering across every platform, from system-level intent to validated application behavior.
 
 ## Cross-platform scope
 
-CIVIƆ models shared intent and platform-native expression. Cross-platform does not mean identical visuals or behavior.
+CIVIC models shared intent and platform-native expression. Cross-platform does not mean identical visuals or behavior.
 
 Potential surfaces include:
 
@@ -130,6 +150,8 @@ Example: a semantic **Primary Action** may map to a SwiftUI `PrimaryButton`, a J
 
 **Product Management** defines requirements, business rules, and acceptance criteria; reviews journey and scenario coverage; resolves scope and behavioral ambiguity; and evaluates release readiness with Design, Engineering, and QA.
 
+**Coding agents** are consumers as well as people. An agent retrieves a review item, reproduces its exact state from the link, proposes a fix with its revision and evidence, and hands the item back for a person to verify. The agent has visible attribution and no decision authority of its own. This persona comes from the v0 journey engine and Claude Design review-workspace work.
+
 **Leadership and Executives** review product-system health and risk, quality, platform coverage, maintainability, divergence, and release confidence. They can explore intended or shipped experiences without local setup.
 
 ```diagram
@@ -141,7 +163,7 @@ Example: a semantic **Primary Action** may map to a SwiftUI `PrimaryButton`, a J
       └────────────────────┼────────────────────┘
                            ▼
               ┌────────────────────────┐
-              │         CIVIƆ          │
+              │         CIVIC          │
               │ Intent                 │
               │ Design systems         │
               │ Journeys and scenarios │
@@ -226,7 +248,7 @@ Collaboration uses typed, actionable records instead of passive comments:
 - **Risk:** a possible harmful or costly outcome.
 - **Proposal:** a candidate change.
 - **Decision:** an approved direction and rationale.
-- **Exception:** a temporary, owned, expiring departure from policy or contract.
+- **Exception:** a temporary, owned, expiring departure from policy or contract. An **Accepted limitation** is the same record applied to a platform or library constraint. Both need an owner, scope, user impact, and a revisit trigger.
 
 Each record identifies the affected contract or scenario, required perspectives, owner, deadline, resolution, and resulting artifact changes.
 
@@ -257,11 +279,20 @@ Platform coverage           ██████░░░░  60%
 Runtime validation          ███░░░░░░░  30%
 ```
 
+### Evidence integrity
+
+Adopted from the v0 journey engine. Readiness is only as strong as its evidence:
+
+- Alignment is never stated more strongly than the evidence supports. Missing or old evidence reads as **Unknown / evidence stale**, never as aligned.
+- A fixture jump, failed operation, inferred edge, or old screenshot is never runtime evidence.
+- Evidence is tied to the exact revision it proves. When the source changes it becomes visibly stale, and it is not relabelled current.
+- Evidence tiers stay separate and never collapse into one "complete" badge. The tiers are working preview, design reconciliation, automated browser or simulator checks, and physical-device acceptance.
+
 Shared outcome metrics include undocumented-state reduction, escaped regressions, time from ambiguity to decision, cross-platform contract coverage, accessibility-evidence coverage, design and implementation divergence, reusable-component adoption, defect reproduction and validation time, and recurrence of customer problems.
 
 ## Artifact graph and traceability
 
-CIVIƆ is an artifact graph, not only a canvas or web preview.
+CIVIC is an artifact graph, not only a canvas or web preview.
 
 ```diagram
 Intent
@@ -304,7 +335,8 @@ Core entity groups:
 
 - **Intent:** requirement, business rule, accessibility rule.
 - **Design language:** token, semantic component, interaction pattern.
-- **Experience:** persona, scenario, journey, screen or surface, state, transition.
+- **Experience:** persona, scenario, journey, screen or surface, state, transition, condition.
+- **Targets:** target, variant, instance. A proposal or contract points at a target at journey, screen, component, primitive, or token scale. "Primitive" is the term, not "atom".
 - **Contract and governance:** Product Contract, decision, constraint, divergence, conflict, exception, risk, Product Change Record, signal, problem.
 - **Implementation:** platform component, adapter, source mapping, app code, build, fixture, instrumentation.
 - **Evidence:** acceptance criterion, test, scenario suite, screenshot, recording, log, accessibility result, runtime behavior, waiver.
@@ -319,11 +351,28 @@ Traceability works in both directions:
 
 The graph answers which journeys and platforms a change affects, which platform states are missing, whether a difference is intentional, and whether shipped behavior still matches the documented system.
 
+### Stable identity and path honesty
+
+Adopted from the v0 journey engine:
+
+- Every journey, state, screen, component, primitive, token, and platform variant has a stable identity. When a target disappears or moves, its identity history is kept and someone re-anchors it explicitly. Nothing is matched automatically to the nearest node, because that would manufacture evidence or approval.
+- States connect through labelled actions and conditions, with branches, return paths, subflows, and alternate outcomes.
+- **Declared**, **proposed**, and **observed** paths stay distinct. An observed path comes only from a confirmed runtime transition. Back and loops create repeat visits, and a failed operation never becomes a successful edge.
+- A runtime state that matches no known node stays visibly unmapped.
+- An incomplete registry never claims exhaustive coverage.
+
 ## Journeys, scenarios, and contextual feedback
 
 ### Journey canvas
 
 The journey canvas shows personas and goals, happy and alternate routes, loading, empty, error, offline, and permission states, entry and exit points, platform variants, business rules, and branches.
+
+The canvas is one view over the artifact graph, not the product's core. The v0 journey engine proved this layout on a real app, and CIVIC keeps it as the reference design:
+
+- **One persistent canvas** with selection, zoom, and contextual panels. Explore, play, and review are capabilities on that canvas, not separate destinations.
+- Flows and the main path run left to right like a timeline, and alternate branches stack below with labelled reconnecting arrows. Navigation order, declared transitions, and verified runtime transitions look different.
+- Inactive screens show cached snapshots that carry their revision or fixture provenance. Only the focused screen runs live.
+- An outline follows the app's own entry, tab, and navigation order and tracks what the camera shows. Selecting a flow fits the flow, and selecting a screen focuses it.
 
 ### Scenario player
 
@@ -331,9 +380,27 @@ The scenario player lets a reviewer choose persona, journey, scenario, platform,
 
 Example: New customer → iPhone → poor connection → payment declined.
 
+Adopted from the v0 journey engine:
+
+- **Play is the default.** Inspect and edit are optional.
+- Persona, permission, and condition are separate dimensions. A persona never implies a permission or rule.
+- **Scenario inputs** and **presentation inputs** behave differently. Scenario inputs are persona, access, condition, and step, and changing one reloads the fixture. Presentation inputs are viewport, theme, and text size, and they apply live.
+- A **fixture jump** to a state is labelled as a jump and is never presented as a replay of the steps before it. Replay from start is a separate capability.
+- A live run survives browsing, panel changes, and proposal switches. Anything that would discard an unsaved draft asks first.
+- Inputs are captured at confirmed transitions from an allowlist, exactly as entered. Credentials and raw keystrokes are never captured.
+
 ### Contextual review
 
 Highlights, comments, annotations, and typed collaboration records attach to components, screens, transitions, journey branches, persona and scenario combinations, and design and implementation discrepancies. Feedback keeps state, platform, build, version, and ownership automatically. Exact-scenario links remove screenshot archaeology.
+
+Adopted from the v0 journey engine:
+
+- Feedback freezes its capture before it is written. The capture includes the screenshot, anchor, visible state, captured inputs, source and design revisions, and an exact-scenario link.
+- Retries keep the original capture and request identity.
+- Resolving feedback requires evidence. Items move from **Open** to **Fix ready for review** to **Resolved**, and a queue filtered by status lives in the inspector rather than on its own screen.
+- An exact-scenario link restores the step, the scenario and presentation inputs, and the open item.
+- On a narrow screen, the preview comes first. Journey, context, and notes open as sheets.
+- Staleness against the current source is recomputed when feedback is read, while the original receipt stays unchanged.
 
 ## Change management
 
@@ -362,7 +429,18 @@ Bugs, feature requests, complaints, accessibility findings, and platform gaps ar
 └────────────┘       └───────────────┘       └────────────┘
 ```
 
-CIVIƆ is not another ticket tracker. Jira, Linear, GitHub, support systems, and accessibility tools can execute work; CIVIƆ maintains the product knowledge graph and lifecycle that connects them.
+CIVIC is not another ticket tracker. Jira, Linear, GitHub, support systems, and accessibility tools can execute work; CIVIC maintains the product knowledge graph and lifecycle that connects them.
+
+### Proposal, decision, adoption, verification
+
+Adopted from the v0 journey engine. These are four separate records, never one "done" flag:
+
+1. **Proposal:** a target, scope (journey, screen, component, primitive, or token), baseline and candidate revisions, rationale, author, and expected behavior. A candidate can be played on the real experience as a reversible change. Testing a candidate is not adopting it.
+2. **Decision:** the exact approved candidate and the platform variants it covers.
+3. **Adoption:** the link from a decision to the implementation revision that carries it.
+4. **Verification:** independent evidence per tier and platform that the adopted change behaves as decided.
+
+Routine fixes that restore an already-approved contract, such as clipping, focus, or spacing regressions, don't need a proposal. Intentional changes to intent, appearance, or behavior do.
 
 ### Bugs
 
@@ -400,7 +478,7 @@ Complaints are signals, not immediate requirements or defects. Related signals b
 
 An Experience Problem links original reports and support conversations, customer segments, journey and platform distribution, frequency, severity, analytics, design rationale, related bugs or requests, candidate interventions, and post-change outcomes.
 
-Classifications are usability problem, missing capability, accessibility barrier, performance perception, content or terminology issue, platform inconsistency, product education problem, misunderstood expected behavior, and isolated preference. CIVIƆ preserves customer evidence while letting Design choose the response.
+Classifications are usability problem, missing capability, accessibility barrier, performance perception, content or terminology issue, platform inconsistency, product education problem, misunderstood expected behavior, and isolated preference. CIVIC preserves customer evidence while letting Design choose the response.
 
 ### Durable lifecycle
 
@@ -459,7 +537,24 @@ Semantic capability: Confirm a destructive action
              different native behavior
 ```
 
+A **target**, a **platform**, and a **device** are different things. Native Android, web in Chrome on Android, and a 393px web preview are three separate targets. A narrow web preview never counts as native acceptance.
+
 Differences are classified as platform convention, technical limitation, form factor or input method, temporary implementation gap, intentional product differentiation, or unapproved divergence.
+
+### Alignment states
+
+Adopted from the v0 journey engine. Every contract target per platform has exactly one alignment state:
+
+| State | Meaning |
+|---|---|
+| **Aligned** | Every dimension is proven by current evidence. |
+| **Approved adaptation** | A recorded decision accepts a platform-native difference that preserves intent. |
+| **Accepted limitation** | A recorded decision accepts a constraint, with user impact, alternative, and revisit condition. |
+| **Unreviewed drift** | Artifacts or behavior disagree, and no decision covers it yet. |
+| **Awaiting adoption** | A decision is approved, but the implementation has not adopted it. |
+| **Unknown / evidence stale** | Evidence is missing or no longer matches the current revision. |
+
+The classification says why a difference exists, and the alignment state says what was decided about it, so a difference has both. Acknowledging a difference is not approving it. Approving a design does not prove it was implemented. A library or platform restriction is a reason to ask for a decision, not an implicit approval. Drift stays **Unreviewed drift** until an owner accepts a specific adaptation or limitation.
 
 ## Component system
 
@@ -510,7 +605,7 @@ Product teams can accept a migration, request clarification, report unsupported 
 
 ## Company scale
 
-CIVIƆ uses one product model with progressive governance. It scales by increasing coordination, assurance, and governance, not by replacing its core workflow.
+CIVIC uses one product model with progressive governance. It scales by increasing coordination, assurance, and governance, not by replacing its core workflow.
 
 | Scale | Primary need | Product mode | Value |
 |---|---|---|---|
@@ -526,7 +621,7 @@ CIVIƆ uses one product model with progressive governance. It scales by increasi
 │ Coordination layer                            │
 │ Ownership · Dependencies · Versions · Adoption│
 ├───────────────────────────────────────────────┤
-│ Universal CIVIƆ core                          │
+│ Universal CIVIC core                          │
 │ Contracts · Journeys · Components · Evidence  │
 └───────────────────────────────────────────────┘
 ```
@@ -558,9 +653,20 @@ Coordinated autonomy
 Federated assurance
 ```
 
+## Multiplayer and ownership
+
+Adopted from the v0 journey engine's multiplayer boundary:
+
+- **Shared:** proposals, observations, decisions, status, immutable captures, and verification evidence.
+- **Private by default:** camera, selection, the running session, entered drafts, persona and fixture experiments, and unsent comments.
+- Shared records need real identities, attribution, and scoped read, write, approve, and resolve permissions.
+- Writes carry expected versions, and conflicts are visible and recoverable. Last write wins must never silently overwrite a candidate or evidence.
+- No collaborator's navigation can discard another person's draft.
+- Presence, following, and shared driving are optional. Each needs an explicit driver and explicit join, leave, and rejoin.
+
 ## Maintainability principles
 
-The founder's metaphor is a 200,000-mile Honda Civic or Toyota Corolla: easy to build, maintain, run for a long time, diagnose, and repair with readily available parts. CIVIƆ avoids systems that require a specialist every time a warning light appears.
+The founder's metaphor is a 200,000-mile Honda Civic or Toyota Corolla: easy to build, maintain, run for a long time, diagnose, and repair with readily available parts. CIVIC avoids systems that require a specialist every time a warning light appears.
 
 Principles:
 
@@ -592,9 +698,13 @@ The MVP must be platform-neutral from the first release:
 
 The earlier web-first idea of importing a web app or Storybook is superseded by D8. Native support must not be retrofitted later.
 
+Platform-neutral means the model and the first release, not that every platform has runtime evidence on day one. The first evidence comes from web through the journey engine. Native is proven in the first release through the Fluent 2 adapter, starting with source and token analysis, and is never deferred to a later phase.
+
+The v0 journey engine already covers items 3 and 4, and part of item 6, for one web app. The other items are built CIVIC-first, in the order given in [decision 0004](decisions/0004-graph-first-journey-engine-as-viewer.md).
+
 ## Integrations
 
-CIVIƆ connects to design and prototyping tools, token systems, web and native component catalogs, source repositories, CI and build systems, device and browser testing, visual regression and accessibility tools, requirements and issue trackers, analytics, and observability tools.
+The first design-tool integration is an optional link from a target to a Figma frame, stored with its snapshot and revision (D24). CIVIC connects to design and prototyping tools, token systems, web and native component catalogs, source repositories, CI and build systems, device and browser testing, visual regression and accessibility tools, requirements and issue trackers, analytics, and observability tools.
 
 ## Target customers
 
@@ -610,7 +720,7 @@ Likely users include designers, engineers, QA, product managers, and stakeholder
 
 ## Business model
 
-CIVIƆ is proposed as B2B SaaS. Pricing should charge for scale, administration, assurance, and infrastructure, not accessibility support or basic QA capabilities. Casual reviewers should not be charged.
+CIVIC is proposed as B2B SaaS. Pricing should charge for scale, administration, assurance, and infrastructure, not accessibility support or basic QA capabilities. Casual reviewers should not be charged.
 
 | Plan | Proposed contents |
 |---|---|
@@ -623,7 +733,7 @@ No dollar prices were proposed.
 
 ## Demo design system
 
-CIVIƆ will use Microsoft Fluent 2 as its first public demo design system. See [decision 0001](decisions/0001-fluent-2-demo-design-system.md).
+CIVIC will use Microsoft Fluent 2 as its first public demo design system. See [decision 0001](decisions/0001-fluent-2-demo-design-system.md).
 
 Design-token import and export are expected future requirements. The platform-neutral token model should support standard formats such as DTCG and tools such as Tokens Studio and Style Dictionary.
 
@@ -633,4 +743,4 @@ Design-token import and export are expected future requirements. The platform-ne
 - Which design, source, and test systems are required for the first integration set?
 - How should scenario fixtures be created for each supported platform?
 - What minimum evidence makes a Product Contract ready for low- and high-risk changes?
-- How should CIVIƆ create and link the GitHub repository once integration permissions allow it?
+- How should CIVIC create and link the GitHub repository once integration permissions allow it?

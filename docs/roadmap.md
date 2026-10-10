@@ -1,30 +1,38 @@
-# CIVIƆ roadmap
+# CIVIC roadmap
 
-Ordered next steps after the Rehearsal import ([synthesis](synthesis-rehearsal.md), [decision 0002](decisions/0002-rehearsal-is-civic-base.md)). Each step should end with evidence in the Product Contract surface, not a claim.
+Ordered next steps after [decision 0004](decisions/0004-graph-first-journey-engine-as-viewer.md). The artifact graph is the core, and the journey engine is one viewer and the first web adapter. Each step should end with evidence, not a claim.
 
-## 1. Extract the CIVIƆ shell from Laundry (started)
+## 1. CIVIC graph schema
 
-`@civic/shell` (`rehearsal/source/packages/shell`) now holds the camera, canvas controls, contract states, capture, shell styles and the review server. Laundry passes its screens, proposal properties and fixture renderer through an explicit adapter ([decision 0003](decisions/0003-civic-shell-package.md)).
+Define a small, CIVIC-owned schema outside `rehearsal/` for Intent, Semantic component, Platform component, Evidence, and Contract Conflict. Use stable identities and the alignment states from the [spec](product-spec.md#alignment-states). Keep it plain and file-based until the demo shows what storage it needs.
 
-Still to move: the canvas composition, journey graph, review and contract panels, the Vite plugin and inventory, and the server's Laundry feedback vocabulary. Each one needs its Laundry types replaced by a narrow adapter input first. Keep shell styles separate from product decisions and domain behavior, per the Rehearsal contributor rules.
+## 2. Fluent 2 Button conflict demo
 
-## 2. Typed Product Contract records
+Build the [decision 0001](decisions/0001-fluent-2-demo-design-system.md) demo on that schema:
 
-Promote the contract panel's derived evidence to durable, typed records: per-dimension claims with owners, timestamps, and the evidence pointer that proves them. Alignment states then read from records instead of being recomputed.
+- One semantic Button with its variants mapped to Fluent React v9, iOS, and Android Compose.
+- Web evidence from Storybook and Playwright. iOS and Android evidence from source and token analysis.
+- The Android Figma kit compared with Compose, which raises a Contract Conflict that is classified, given owners, and resolved.
 
-## 3. Decisions, attribution, permissions
+The demo succeeds when a reviewer can see what disagrees, why it matters, who must act, and how the decision is preserved.
 
-Add the record types Rehearsal's brief defines but does not store: adaptation/limitation decisions for platform constraints, approvals as separate records from proposals, and attributed identity in place of the single local access key. This is also the prerequisite for real multiplayer — portal collaborator access today is personal-thread access, not a permission model.
+## 3. Typed contract and change records
 
-## 4. Fluent 2 cross-platform adapter
+Store Proposal, Decision, Adoption, and Verification as separate, owned records, along with the collaboration record types (Ambiguity, Constraint, Coverage gap, Divergence, Risk, Exception). Alignment states read from records instead of being recomputed.
 
-Implement the [Fluent 2 demo](decisions/0001-fluent-2-demo-design-system.md) as the first non-web adapter: semantic components over tokens, with explicit adaptation/limitation decisions for anything web-specific. Native evidence moves from 0/173 toward partial coverage on real screens.
+## 4. The journey engine as a graph viewer
 
-## 5. Journey completeness and replay
+Point the journey engine's canvas and Contract panel at the graph, with Laundry as one web adapter. Generalize the `@civic/shell` adapter boundary now that Fluent is a second consumer ([decision 0003](decisions/0003-civic-shell-package.md) was paused until then).
 
-Rehearsal captures exhaustively via its cold fixture run (176 cases, ~6m53s in an orb). `bin/signoff` runs type, style, unit and review-server checks locally and records a `signoff` commit status, with `--browser` for the review-canvas journey. The next step is adding fixture capture to the signoff so evidence can be regenerated and become stale visibly. Then add replay-from-start to the scenario player.
+## 5. Identity, permissions, and multiplayer
 
-## 6. Repository and delivery hygiene
+Real identities, scoped permissions, and versioned shared records, following the spec's [multiplayer boundary](product-spec.md#multiplayer-and-ownership). The single local access key and the portal's collaborator access are not this model.
 
-- Done: the repository is on GitHub at [taymoork2/CIVIC](https://github.com/taymoork2/CIVIC) with local signoffs (`bin/signoff`) instead of GitHub Actions, to keep CI costs down.
-- Decide what stays vendored: `rehearsal/design/skills` and the fixture PNGs are handoff material; they can move to a release artifact or submodule once the shell is extracted.
+## 6. Journey completeness and replay
+
+Add fixture capture to `bin/signoff` so evidence can be regenerated and becomes visibly stale. Then add replay from start to the scenario player, and native captures as runners allow.
+
+## 7. Repository hygiene
+
+- Done: the repository is on GitHub at [taymoork2/CIVIC](https://github.com/taymoork2/CIVIC), with local signoffs (`bin/signoff`) instead of GitHub Actions.
+- Decide what stays vendored. `rehearsal/design/skills`, the fixture PNGs, and the handoff manifest are handoff material and could move to a release artifact.

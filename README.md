@@ -1,14 +1,14 @@
-# CIVIƆ
+# CIVIC
 
 **Every journey. Every part. One maintainable system.**
 
-CIVIƆ (pronounced and searchable as **CIVIC**) is a cross-platform product system for Design, Engineering, and QA. It connects product intent, design systems, user journeys, platform-specific component libraries, application code, tests, and runtime evidence in one traceable, bidirectional experience.
+CIVIC is a cross-platform product system for Design, Engineering, and QA. It connects product intent, design systems, user journeys, platform-specific component libraries, application code, tests, and runtime evidence in one traceable, bidirectional experience.
 
 ## Vision
 
 Teams should be able to move from a design system to designed screens, user journeys, per-platform components, app implementation, and validated app behavior, then trace back again. Every layer should stay connected and agree with the others.
 
-CIVIƆ helps teams:
+CIVIC helps teams:
 
 - Explore personas, scenarios, states, transitions, edge cases, and platform variants.
 - Review and annotate complete experiences in context, without screenshot-based feedback loops.
@@ -24,7 +24,7 @@ Designers, engineers, and QA are the primary users. They share ownership of a ve
 
 ## Principles
 
-Like a Honda Civic or Toyota Corolla, CIVIƆ favors understandable systems, standardized interfaces, replaceable parts, and long-term maintainability over unnecessary complexity. Its core should work for startups and scale to enterprise teams with optional governance, ownership, and risk-based assurance.
+Like a Honda Civic or Toyota Corolla, CIVIC favors understandable systems, standardized interfaces, replaceable parts, and long-term maintainability over unnecessary complexity. Its core should work for startups and scale to enterprise teams with optional governance, ownership, and risk-based assurance.
 
 ## Documentation
 
@@ -34,7 +34,7 @@ Architecture decisions live in [docs/decisions](docs/decisions). The first demo 
 
 ## Running today
 
-Implementation is underway on the [Rehearsal](docs/synthesis-rehearsal.md) base (decision [0002](docs/decisions/0002-rehearsal-is-civic-base.md)): a persistent journey canvas for the Laundry App with contextual review and a three-way Product Contract panel. The app-independent shell lives in [`@civic/shell`](rehearsal/source/packages/shell) and Laundry App plugs into it as the first adapter (decision [0003](docs/decisions/0003-civic-shell-package.md)). The current roadmap is in [docs/roadmap.md](docs/roadmap.md).
+Implementation is underway on the [v0 journey engine](docs/synthesis-v0-import.md), codename Rehearsal (decision [0002](docs/decisions/0002-v0-journey-engine-is-civic-base.md)): a persistent journey canvas for the Laundry App with contextual review and a three-way Product Contract panel. The app-independent shell lives in [`@civic/shell`](rehearsal/source/packages/shell) and Laundry App plugs into it as the first adapter (decision [0003](docs/decisions/0003-civic-shell-package.md)). Per decision [0004](docs/decisions/0004-graph-first-journey-engine-as-viewer.md), the journey engine is one viewer and the first web adapter. The core is a CIVIC-owned artifact graph, and the next milestone is the Fluent 2 Button conflict demo. The current roadmap is in [docs/roadmap.md](docs/roadmap.md).
 
 It runs as the `rehearsal` orb service (`amp orb services ensure`) behind an authenticated Amp portal. To run it locally you need Node.js 26 (22 works), pnpm 12.5.1 and Google Chrome:
 
@@ -47,8 +47,8 @@ pnpm --dir apps/web run review
 
 Open <http://127.0.0.1:3010/review> and sign in with the key in `rehearsal/source/.review-data/access-key`. This repository is the Git checkout the inventory needs, so skip the `git init` step in the handoff's own README.
 
-Before a pull request merges, run [`bin/signoff`](bin/signoff) from a clean checkout of its branch. It runs `pnpm run check`, `pnpm test` and the review-server tests locally, then posts a green `signoff` commit status on GitHub through the GitHub CLI. Add `--browser` to include the Playwright review-canvas journey while the review server is running. CIVIƆ uses local signoffs instead of GitHub Actions to keep CI costs down.
+Before a pull request merges, run [`bin/signoff`](bin/signoff) from a clean checkout of its branch. It runs `pnpm run check`, `pnpm test` and the review-server tests locally, then posts a green `signoff` commit status on GitHub through the GitHub CLI. Add `--browser` to include the Playwright review-canvas journey while the review server is running. CIVIC uses local signoffs instead of GitHub Actions to keep CI costs down.
 
 ## Status
 
-The Rehearsal handoff is imported, verified, and running in an orb, and the shell extraction has started. Web implementation evidence covers all 173 registered screens; design reference, native, and QA evidence are the next gaps.
+The v0 journey engine is imported, verified, and running in an orb, and the shell extraction has started. Web implementation evidence covers all 173 registered screens; design reference, native, and QA evidence are the next gaps.
