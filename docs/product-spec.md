@@ -35,6 +35,15 @@ The source is the Amp discussion in [thread T-01a0dc96-9004-70a8-92a7-d7364d854a
 | D13 | The product starts as the Amp-hosted `tay/CIVIC` project, followed by a GitHub repository. | M13, M15 |
 | D14 | The full discussion must be documented and stored safely. | M25 |
 | D15 | The artifact graph is CIVIƆ's core. Rehearsal is one viewer and the first web adapter, and the Fluent 2 Button conflict demo comes before more Laundry work. | [Decision 0004](decisions/0004-graph-first-rehearsal-as-viewer.md) |
+| D16 | CIVIƆ's shell has its own interface and does not inherit the reviewed app's design system. Real app components appear only inside the preview. | Rehearsal Codex thread, 02:16 |
+| D17 | One persistent canvas. Explore, play, and review are capabilities reached by selecting and zooming, not separate views. Review shares the right pane with Inspect and Edit. | Rehearsal Codex thread, 05:47 |
+| D18 | The canvas shows real, cached screen snapshots across the whole app by default. Clicking a screen makes it live in place. | Rehearsal Codex thread, 03:19, 03:52 |
+| D19 | Journeys run left to right like a timeline, in app entry order. Branches sit in lanes below with labelled arrows that rejoin. Panning is bounded. | Rehearsal Codex thread, 04:16–04:55 |
+| D20 | An outline goes from app to flow to screen. Picking a flow fits it, picking a screen focuses it, and moving the camera updates the outline. | Rehearsal Codex thread, 04:47 |
+| D21 | Play is the default and Inspect is optional, with no separate developer mode. Edit changes a real, versioned, testable proposal, and testing it is not adopting it. | Rehearsal Codex thread, 03:19, 03:28 |
+| D22 | Inputs are captured during real transitions and carried forward. Jumping to a screen never counts as having walked the path to it. | Rehearsal Codex thread, 03:28 |
+| D23 | Multiplayer-ready from the start. Proposals, comments, decisions, captures, and evidence are shared. Camera, running session, drafts, and fixture experiments are private. | Rehearsal Codex thread, 03:06 |
+| D24 | Borrow canvas conventions from Figma, tldraw, and Paper, but don't become a drawing tool. CIVIƆ's niche is executable journeys and evidence-backed proposals. Figma integration starts as an optional link to a frame, stored with its snapshot and revision. | Rehearsal Codex thread, 05:10–05:13 |
 
 ### Project facts
 
@@ -60,6 +69,8 @@ Feedback is slow because a reviewer must wait for implementation, reproduce the 
 CIVIƆ provides a living, connected model of a product. It lets teams explore every important journey and state, review it in context, trace each part across design and implementation, and verify that intended and shipped behavior still agree.
 
 Early positioning: CIVIƆ sits between design tools, component catalogs, product analytics, visual testing, and QA tools. It integrates with them rather than replacing all of them.
+
+CIVIƆ is not a drawing or authoring tool (D24). Drawing stays in Figma, Open Design, Claude Design, and similar tools. CIVIƆ owns executable journeys and evidence-backed proposals.
 
 Proposed positioning statement:
 
@@ -229,7 +240,7 @@ Collaboration uses typed, actionable records instead of passive comments:
 - **Risk:** a possible harmful or costly outcome.
 - **Proposal:** a candidate change.
 - **Decision:** an approved direction and rationale.
-- **Exception:** a temporary, owned, expiring departure from policy or contract.
+- **Exception:** a temporary, owned, expiring departure from policy or contract. An **Accepted limitation** is the same record applied to a platform or library constraint. Both need an owner, scope, user impact, and a revisit trigger.
 
 Each record identifies the affected contract or scenario, required perspectives, owner, deadline, resolution, and resulting artifact changes.
 
@@ -316,7 +327,8 @@ Core entity groups:
 
 - **Intent:** requirement, business rule, accessibility rule.
 - **Design language:** token, semantic component, interaction pattern.
-- **Experience:** persona, scenario, journey, screen or surface, state, transition.
+- **Experience:** persona, scenario, journey, screen or surface, state, transition, condition.
+- **Targets:** target, variant, instance. A proposal or contract points at a target at journey, screen, component, primitive, or token scale. "Primitive" is the term, not "atom".
 - **Contract and governance:** Product Contract, decision, constraint, divergence, conflict, exception, risk, Product Change Record, signal, problem.
 - **Implementation:** platform component, adapter, source mapping, app code, build, fixture, instrumentation.
 - **Evidence:** acceptance criterion, test, scenario suite, screenshot, recording, log, accessibility result, runtime behavior, waiver.
@@ -420,6 +432,8 @@ Adopted from Rehearsal. These are four separate records, never one "done" flag:
 3. **Adoption:** the link from a decision to the implementation revision that carries it.
 4. **Verification:** independent evidence per tier and platform that the adopted change behaves as decided.
 
+Routine fixes that restore an already-approved contract, such as clipping, focus, or spacing regressions, don't need a proposal. Intentional changes to intent, appearance, or behavior do.
+
 ### Bugs
 
 A bug is a verified discrepancy between expected and observed behavior. It links the persona, journey, scenario, state, expected artifact, build, platform, device, environment, implementation, fixture or state snapshot, evidence, affected versions, regression tests, and final verification.
@@ -515,6 +529,8 @@ Semantic capability: Confirm a destructive action
              different native behavior
 ```
 
+A **target**, a **platform**, and a **device** are different things. Native Android, web in Chrome on Android, and a 393px web preview are three separate targets. A narrow web preview never counts as native acceptance.
+
 Differences are classified as platform convention, technical limitation, form factor or input method, temporary implementation gap, intentional product differentiation, or unapproved divergence.
 
 ### Alignment states
@@ -530,7 +546,7 @@ Adopted from Rehearsal. Every contract target per platform has exactly one align
 | **Awaiting adoption** | A decision is approved, but the implementation has not adopted it. |
 | **Unknown / evidence stale** | Evidence is missing or no longer matches the current revision. |
 
-A library or platform restriction is a reason to ask for a decision, not an implicit approval. Drift stays **Unreviewed drift** until an owner accepts a specific adaptation or limitation.
+The classification says why a difference exists, and the alignment state says what was decided about it, so a difference has both. Acknowledging a difference is not approving it. Approving a design does not prove it was implemented. A library or platform restriction is a reason to ask for a decision, not an implicit approval. Drift stays **Unreviewed drift** until an owner accepts a specific adaptation or limitation.
 
 ## Component system
 
@@ -674,11 +690,13 @@ The MVP must be platform-neutral from the first release:
 
 The earlier web-first idea of importing a web app or Storybook is superseded by D8. Native support must not be retrofitted later.
 
+Platform-neutral means the model and the first release, not that every platform has runtime evidence on day one. The first evidence comes from web through Rehearsal. Native is proven in the first release through the Fluent 2 adapter, starting with source and token analysis, and is never deferred to a later phase.
+
 Rehearsal already covers items 3 and 4, and part of item 6, for one web app. The other items are built CIVIƆ-first, in the order given in [decision 0004](decisions/0004-graph-first-rehearsal-as-viewer.md).
 
 ## Integrations
 
-CIVIƆ connects to design and prototyping tools, token systems, web and native component catalogs, source repositories, CI and build systems, device and browser testing, visual regression and accessibility tools, requirements and issue trackers, analytics, and observability tools.
+The first design-tool integration is an optional link from a target to a Figma frame, stored with its snapshot and revision (D24). CIVIƆ connects to design and prototyping tools, token systems, web and native component catalogs, source repositories, CI and build systems, device and browser testing, visual regression and accessibility tools, requirements and issue trackers, analytics, and observability tools.
 
 ## Target customers
 
