@@ -51,6 +51,9 @@ The source is the Amp discussion in [thread T-01a0dc96-9004-70a8-92a7-d7364d854a
 | D21 | Play is the default and Inspect is optional, with no separate developer mode. Edit changes a real, versioned, testable proposal, and testing it is not adopting it. | v0 Codex thread, 03:19, 03:28 |
 | D22 | Inputs are captured during real transitions and carried forward. Jumping to a screen never counts as having walked the path to it. | v0 Codex thread, 03:28 |
 | D23 | Multiplayer-ready from the start. Proposals, comments, decisions, captures, and evidence are shared. Camera, running session, drafts, and fixture experiments are private. | v0 Codex thread, 03:06 |
+| D25 | Design Engineering is a primary persona and owns the component library: tokens, semantic components, and each platform's components. Personas are roles, not job titles. One person or team can hold several roles, and roles can be combined, for example an engineer who also does QA through browser end-to-end tests. | CIVIC project thread, 2026-10-10 |
+| D26 | The first QA input is Playwright reports and traces. Ingestion is built so other test runners, and other roles supplying evidence, can be added without changing the graph. | CIVIC project thread, 2026-10-10 |
+| D27 | After frame links, the first design import is a Figma file export. Ingestion is built so other design tools, and other roles supplying design intent, can be added without changing the graph. | CIVIC project thread, 2026-10-10 |
 | D24 | Borrow canvas conventions from Figma, tldraw, and Paper, but don't become a drawing tool. CIVIC's niche is executable journeys and evidence-backed proposals. Figma integration starts as an optional link to a frame, stored with its snapshot and revision. | v0 Codex thread, 05:10–05:13 |
 
 ### Project facts
@@ -137,12 +140,17 @@ Example: a semantic **Primary Action** may map to a SwiftUI `PrimaryButton`, a J
 | Persona | Responsibility | Core question |
 |---|---|---|
 | **Design** | Experience intent | What should happen? |
+| **Design Engineering** | System integrity | Does every platform build the shared component the same way? |
 | **Engineering** | Implementation integrity | How does it work? |
 | **QA** | Evidence | Can we prove it works under every relevant condition? |
 
 **Design** owns design systems, tokens, semantic components, screens, interactions, journeys, responsive and platform behavior, and loading, empty, error, permission, and accessibility states. Design reviews implemented experiences against intent and annotates components, screens, and transitions.
 
-**Engineering** owns platform component libraries, connections between specifications and source, deterministic states and fixtures, dependency and change-impact analysis, runtime instrumentation, and validation of real builds.
+**Design Engineering** owns the component library (D25): tokens and their formats, semantic components and their variants, the mapping from each semantic component to its platform components, and stories or previews as declared states. It sits between Design and Engineering, and it is where shared names come from.
+
+**Engineering** owns connections between specifications and source, deterministic states and fixtures, dependency and change-impact analysis, runtime instrumentation, and validation of real builds.
+
+Personas are roles, not people (D25). A small team may have one person who designs, builds, and tests through browser end-to-end runs, and a large one may have a separate team per role. CIVIC attributes every record and piece of evidence to a role and to the person who supplied it, so a missing team never leaves a role's evidence unaccounted for.
 
 **QA** turns journeys and scenarios into coverage across platforms, devices, and environments. QA exercises happy paths, edge cases, failure, and recovery; captures evidence tied to exact state and build; finds undocumented or ambiguous behavior; verifies accessibility and cross-platform outcomes; and separates intentional platform variance from defects. QA participates during design and implementation, not only at the end.
 
@@ -704,7 +712,11 @@ The v0 journey engine already covers items 3 and 4, and part of item 6, for one 
 
 ## Integrations
 
-The first design-tool integration is an optional link from a target to a Figma frame, stored with its snapshot and revision (D24). CIVIC connects to design and prototyping tools, token systems, web and native component catalogs, source repositories, CI and build systems, device and browser testing, visual regression and accessibility tools, requirements and issue trackers, analytics, and observability tools.
+The first design-tool integration is an optional link from a target to a Figma frame, stored with its snapshot and revision (D24). After that, the first design import is a Figma file export (D27), and the first QA input is Playwright reports and traces (D26).
+
+Every source comes in through an importer that maps its items to graph targets and evidence and records where each item came from. The graph never depends on one tool. Adding Open Design, Paper, Tokens Studio, XCUITest, Espresso, or another runner means adding an importer. It never means changing the schema, and any role can supply any source. The proposal for onboarding and ingestion is in [onboarding-and-ingestion.md](onboarding-and-ingestion.md).
+
+CIVIC connects to design and prototyping tools, token systems, web and native component catalogs, source repositories, CI and build systems, device and browser testing, visual regression and accessibility tools, requirements and issue trackers, analytics, and observability tools.
 
 ## Target customers
 
