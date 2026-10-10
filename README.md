@@ -34,7 +34,7 @@ Architecture decisions live in [docs/decisions](docs/decisions). The first demo 
 
 ## Running today
 
-Implementation is underway on the [Rehearsal](docs/synthesis-rehearsal.md) base (decision [0002](docs/decisions/0002-rehearsal-is-civic-base.md)): a persistent journey canvas for the Laundry App with contextual review and a three-way Product Contract panel. The app-independent shell lives in [`@civic/shell`](rehearsal/source/packages/shell) and Laundry App plugs into it as the first adapter (decision [0003](docs/decisions/0003-civic-shell-package.md)). Per decision [0004](docs/decisions/0004-graph-first-rehearsal-as-viewer.md), Rehearsal is one viewer and the first web adapter. The core is a CIVIC-owned artifact graph, and the next milestone is the Fluent 2 Button conflict demo. The current roadmap is in [docs/roadmap.md](docs/roadmap.md).
+Implementation is underway on the [v0 journey engine](docs/synthesis-v0-import.md), codename Rehearsal (decision [0002](docs/decisions/0002-v0-journey-engine-is-civic-base.md)): a persistent journey canvas for the Laundry App with contextual review and a three-way Product Contract panel. The app-independent shell lives in [`@civic/shell`](rehearsal/source/packages/shell) and Laundry App plugs into it as the first adapter (decision [0003](docs/decisions/0003-civic-shell-package.md)). Per decision [0004](docs/decisions/0004-graph-first-journey-engine-as-viewer.md), the journey engine is one viewer and the first web adapter. The core is a CIVIC-owned artifact graph, and the next milestone is the Fluent 2 Button conflict demo. The current roadmap is in [docs/roadmap.md](docs/roadmap.md).
 
 It runs as the `rehearsal` orb service (`amp orb services ensure`) behind an authenticated Amp portal. To run it locally you need Node.js 26 (22 works), pnpm 12.5.1 and Google Chrome:
 
@@ -51,4 +51,4 @@ Before a pull request merges, run [`bin/signoff`](bin/signoff) from a clean chec
 
 ## Status
 
-The Rehearsal handoff is imported, verified, and running in an orb, and the shell extraction has started. Web implementation evidence covers all 173 registered screens; design reference, native, and QA evidence are the next gaps.
+The v0 journey engine is imported, verified, and running in an orb, and the shell extraction has started. Web implementation evidence covers all 173 registered screens; design reference, native, and QA evidence are the next gaps.

@@ -1,6 +1,6 @@
 # CIVIC roadmap
 
-Ordered next steps after [decision 0004](decisions/0004-graph-first-rehearsal-as-viewer.md). The artifact graph is the core, and Rehearsal is one viewer and the first web adapter. Each step should end with evidence, not a claim.
+Ordered next steps after [decision 0004](decisions/0004-graph-first-journey-engine-as-viewer.md). The artifact graph is the core, and the journey engine is one viewer and the first web adapter. Each step should end with evidence, not a claim.
 
 ## 1. CIVIC graph schema
 
@@ -20,9 +20,9 @@ The demo succeeds when a reviewer can see what disagrees, why it matters, who mu
 
 Store Proposal, Decision, Adoption, and Verification as separate, owned records, along with the collaboration record types (Ambiguity, Constraint, Coverage gap, Divergence, Risk, Exception). Alignment states read from records instead of being recomputed.
 
-## 4. Rehearsal as a graph viewer
+## 4. The journey engine as a graph viewer
 
-Point the Rehearsal canvas and Contract panel at the graph, with Laundry as one web adapter. Generalize the `@civic/shell` adapter boundary now that Fluent is a second consumer ([decision 0003](decisions/0003-civic-shell-package.md) was paused until then).
+Point the journey engine's canvas and Contract panel at the graph, with Laundry as one web adapter. Generalize the `@civic/shell` adapter boundary now that Fluent is a second consumer ([decision 0003](decisions/0003-civic-shell-package.md) was paused until then).
 
 ## 5. Identity, permissions, and multiplayer
 

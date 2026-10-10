@@ -1,12 +1,12 @@
 # 0003: Start the CIVIC shell as a workspace package
 
-- **Status:** Merged in PR #1; further extraction paused by [0004](0004-graph-first-rehearsal-as-viewer.md)
+- **Status:** Merged in PR #1; further extraction paused by [0004](0004-graph-first-journey-engine-as-viewer.md)
 - **Date:** 2026-10-10
 - **Decider:** Founder (pending review)
 
 ## Context
 
-[Decision 0002](0002-rehearsal-is-civic-base.md) made Rehearsal the CIVIC base with Laundry App as its first adapter, and roadmap step 1 is to extract the shell. The Rehearsal handoff asks for that extraction to be honest: move what is truly independent, leave a narrow Laundry adapter, and prove a second integration before building a broad plugin framework.
+[Decision 0002](0002-v0-journey-engine-is-civic-base.md) made the v0 journey engine the CIVIC base with Laundry App as its first adapter, and roadmap step 1 is to extract the shell. The v0 handoff asks for that extraction to be honest: move what is truly independent, leave a narrow Laundry adapter, and prove a second integration before building a broad plugin framework.
 
 The review code in `rehearsal/source/apps/web/src/review` mixed both kinds of code. Some modules never touched Laundry, while others import Laundry components, fixtures and copy.
 

@@ -10,6 +10,8 @@ This document preserves the founding product discussion. It is a product directi
 
 In all text, including docs, code, package names, and search, the name is plain **CIVIC**. The reversed final C (D1) belongs to the wordmark only. The wordmark is drawn by mirroring a real "C" in the same font, for example `CIVI<span class="rev" aria-hidden="true">C</span>` inside an element labelled "CIVIC", with `.rev { display: inline-block; transform: scaleX(-1) }`. A logo is exported as an SVG of that same wordmark.
 
+**Rehearsal** is only an internal codename for the journey engine, meaning the canvas, scenario player, and review that came from the v0 build, and for the `rehearsal/` source folder. Another project chose that name for another purpose, so it never appears as a product or feature name.
+
 Don't use the Unicode lookalikes. `Ɔ` (U+0186) is "Latin capital open O", not a reversed C. Many fonts lack it, screen readers read it as "open O", and it breaks search and copy-paste. The true reversed C, `Ↄ` (U+2183), has even less font support.
 
 ## Source and decision status
@@ -40,16 +42,16 @@ The source is the Amp discussion in [thread T-01a0dc96-9004-70a8-92a7-d7364d854a
 | D12 | The model must work for startups, mid-size companies, and enterprises. | M11 |
 | D13 | The product starts as the Amp-hosted `tay/CIVIC` project, followed by a GitHub repository. | M13, M15 |
 | D14 | The full discussion must be documented and stored safely. | M25 |
-| D15 | The artifact graph is CIVIC's core. Rehearsal is one viewer and the first web adapter, and the Fluent 2 Button conflict demo comes before more Laundry work. | [Decision 0004](decisions/0004-graph-first-rehearsal-as-viewer.md) |
-| D16 | CIVIC's shell has its own interface and does not inherit the reviewed app's design system. Real app components appear only inside the preview. | Rehearsal Codex thread, 02:16 |
-| D17 | One persistent canvas. Explore, play, and review are capabilities reached by selecting and zooming, not separate views. Review shares the right pane with Inspect and Edit. | Rehearsal Codex thread, 05:47 |
-| D18 | The canvas shows real, cached screen snapshots across the whole app by default. Clicking a screen makes it live in place. | Rehearsal Codex thread, 03:19, 03:52 |
-| D19 | Journeys run left to right like a timeline, in app entry order. Branches sit in lanes below with labelled arrows that rejoin. Panning is bounded. | Rehearsal Codex thread, 04:16–04:55 |
-| D20 | An outline goes from app to flow to screen. Picking a flow fits it, picking a screen focuses it, and moving the camera updates the outline. | Rehearsal Codex thread, 04:47 |
-| D21 | Play is the default and Inspect is optional, with no separate developer mode. Edit changes a real, versioned, testable proposal, and testing it is not adopting it. | Rehearsal Codex thread, 03:19, 03:28 |
-| D22 | Inputs are captured during real transitions and carried forward. Jumping to a screen never counts as having walked the path to it. | Rehearsal Codex thread, 03:28 |
-| D23 | Multiplayer-ready from the start. Proposals, comments, decisions, captures, and evidence are shared. Camera, running session, drafts, and fixture experiments are private. | Rehearsal Codex thread, 03:06 |
-| D24 | Borrow canvas conventions from Figma, tldraw, and Paper, but don't become a drawing tool. CIVIC's niche is executable journeys and evidence-backed proposals. Figma integration starts as an optional link to a frame, stored with its snapshot and revision. | Rehearsal Codex thread, 05:10–05:13 |
+| D15 | The artifact graph is CIVIC's core. The journey engine is one viewer and the first web adapter, and the Fluent 2 Button conflict demo comes before more Laundry work. | [Decision 0004](decisions/0004-graph-first-journey-engine-as-viewer.md) |
+| D16 | CIVIC's shell has its own interface and does not inherit the reviewed app's design system. Real app components appear only inside the preview. | v0 Codex thread, 02:16 |
+| D17 | One persistent canvas. Explore, play, and review are capabilities reached by selecting and zooming, not separate views. Review shares the right pane with Inspect and Edit. | v0 Codex thread, 05:47 |
+| D18 | The canvas shows real, cached screen snapshots across the whole app by default. Clicking a screen makes it live in place. | v0 Codex thread, 03:19, 03:52 |
+| D19 | Journeys run left to right like a timeline, in app entry order. Branches sit in lanes below with labelled arrows that rejoin. Panning is bounded. | v0 Codex thread, 04:16–04:55 |
+| D20 | An outline goes from app to flow to screen. Picking a flow fits it, picking a screen focuses it, and moving the camera updates the outline. | v0 Codex thread, 04:47 |
+| D21 | Play is the default and Inspect is optional, with no separate developer mode. Edit changes a real, versioned, testable proposal, and testing it is not adopting it. | v0 Codex thread, 03:19, 03:28 |
+| D22 | Inputs are captured during real transitions and carried forward. Jumping to a screen never counts as having walked the path to it. | v0 Codex thread, 03:28 |
+| D23 | Multiplayer-ready from the start. Proposals, comments, decisions, captures, and evidence are shared. Camera, running session, drafts, and fixture experiments are private. | v0 Codex thread, 03:06 |
+| D24 | Borrow canvas conventions from Figma, tldraw, and Paper, but don't become a drawing tool. CIVIC's niche is executable journeys and evidence-backed proposals. Figma integration starts as an optional link to a frame, stored with its snapshot and revision. | v0 Codex thread, 05:10–05:13 |
 
 ### Project facts
 
@@ -148,7 +150,7 @@ Example: a semantic **Primary Action** may map to a SwiftUI `PrimaryButton`, a J
 
 **Product Management** defines requirements, business rules, and acceptance criteria; reviews journey and scenario coverage; resolves scope and behavioral ambiguity; and evaluates release readiness with Design, Engineering, and QA.
 
-**Coding agents** are consumers as well as people. An agent retrieves a review item, reproduces its exact state from the link, proposes a fix with its revision and evidence, and hands the item back for a person to verify. The agent has visible attribution and no decision authority of its own. This persona comes from the Rehearsal and Claude Design review-workspace work.
+**Coding agents** are consumers as well as people. An agent retrieves a review item, reproduces its exact state from the link, proposes a fix with its revision and evidence, and hands the item back for a person to verify. The agent has visible attribution and no decision authority of its own. This persona comes from the v0 journey engine and Claude Design review-workspace work.
 
 **Leadership and Executives** review product-system health and risk, quality, platform coverage, maintainability, divergence, and release confidence. They can explore intended or shipped experiences without local setup.
 
@@ -279,7 +281,7 @@ Runtime validation          ███░░░░░░░  30%
 
 ### Evidence integrity
 
-Adopted from Rehearsal. Readiness is only as strong as its evidence:
+Adopted from the v0 journey engine. Readiness is only as strong as its evidence:
 
 - Alignment is never stated more strongly than the evidence supports. Missing or old evidence reads as **Unknown / evidence stale**, never as aligned.
 - A fixture jump, failed operation, inferred edge, or old screenshot is never runtime evidence.
@@ -351,7 +353,7 @@ The graph answers which journeys and platforms a change affects, which platform 
 
 ### Stable identity and path honesty
 
-Adopted from Rehearsal:
+Adopted from the v0 journey engine:
 
 - Every journey, state, screen, component, primitive, token, and platform variant has a stable identity. When a target disappears or moves, its identity history is kept and someone re-anchors it explicitly. Nothing is matched automatically to the nearest node, because that would manufacture evidence or approval.
 - States connect through labelled actions and conditions, with branches, return paths, subflows, and alternate outcomes.
@@ -365,7 +367,7 @@ Adopted from Rehearsal:
 
 The journey canvas shows personas and goals, happy and alternate routes, loading, empty, error, offline, and permission states, entry and exit points, platform variants, business rules, and branches.
 
-The canvas is one view over the artifact graph, not the product's core. Rehearsal proved this layout on a real app, and CIVIC keeps it as the reference design:
+The canvas is one view over the artifact graph, not the product's core. The v0 journey engine proved this layout on a real app, and CIVIC keeps it as the reference design:
 
 - **One persistent canvas** with selection, zoom, and contextual panels. Explore, play, and review are capabilities on that canvas, not separate destinations.
 - Flows and the main path run left to right like a timeline, and alternate branches stack below with labelled reconnecting arrows. Navigation order, declared transitions, and verified runtime transitions look different.
@@ -378,7 +380,7 @@ The scenario player lets a reviewer choose persona, journey, scenario, platform,
 
 Example: New customer → iPhone → poor connection → payment declined.
 
-Adopted from Rehearsal:
+Adopted from the v0 journey engine:
 
 - **Play is the default.** Inspect and edit are optional.
 - Persona, permission, and condition are separate dimensions. A persona never implies a permission or rule.
@@ -391,7 +393,7 @@ Adopted from Rehearsal:
 
 Highlights, comments, annotations, and typed collaboration records attach to components, screens, transitions, journey branches, persona and scenario combinations, and design and implementation discrepancies. Feedback keeps state, platform, build, version, and ownership automatically. Exact-scenario links remove screenshot archaeology.
 
-Adopted from Rehearsal:
+Adopted from the v0 journey engine:
 
 - Feedback freezes its capture before it is written. The capture includes the screenshot, anchor, visible state, captured inputs, source and design revisions, and an exact-scenario link.
 - Retries keep the original capture and request identity.
@@ -431,7 +433,7 @@ CIVIC is not another ticket tracker. Jira, Linear, GitHub, support systems, and 
 
 ### Proposal, decision, adoption, verification
 
-Adopted from Rehearsal. These are four separate records, never one "done" flag:
+Adopted from the v0 journey engine. These are four separate records, never one "done" flag:
 
 1. **Proposal:** a target, scope (journey, screen, component, primitive, or token), baseline and candidate revisions, rationale, author, and expected behavior. A candidate can be played on the real experience as a reversible change. Testing a candidate is not adopting it.
 2. **Decision:** the exact approved candidate and the platform variants it covers.
@@ -541,7 +543,7 @@ Differences are classified as platform convention, technical limitation, form fa
 
 ### Alignment states
 
-Adopted from Rehearsal. Every contract target per platform has exactly one alignment state:
+Adopted from the v0 journey engine. Every contract target per platform has exactly one alignment state:
 
 | State | Meaning |
 |---|---|
@@ -653,7 +655,7 @@ Federated assurance
 
 ## Multiplayer and ownership
 
-Adopted from Rehearsal's multiplayer boundary:
+Adopted from the v0 journey engine's multiplayer boundary:
 
 - **Shared:** proposals, observations, decisions, status, immutable captures, and verification evidence.
 - **Private by default:** camera, selection, the running session, entered drafts, persona and fixture experiments, and unsent comments.
@@ -696,9 +698,9 @@ The MVP must be platform-neutral from the first release:
 
 The earlier web-first idea of importing a web app or Storybook is superseded by D8. Native support must not be retrofitted later.
 
-Platform-neutral means the model and the first release, not that every platform has runtime evidence on day one. The first evidence comes from web through Rehearsal. Native is proven in the first release through the Fluent 2 adapter, starting with source and token analysis, and is never deferred to a later phase.
+Platform-neutral means the model and the first release, not that every platform has runtime evidence on day one. The first evidence comes from web through the journey engine. Native is proven in the first release through the Fluent 2 adapter, starting with source and token analysis, and is never deferred to a later phase.
 
-Rehearsal already covers items 3 and 4, and part of item 6, for one web app. The other items are built CIVIC-first, in the order given in [decision 0004](decisions/0004-graph-first-rehearsal-as-viewer.md).
+The v0 journey engine already covers items 3 and 4, and part of item 6, for one web app. The other items are built CIVIC-first, in the order given in [decision 0004](decisions/0004-graph-first-journey-engine-as-viewer.md).
 
 ## Integrations
 
