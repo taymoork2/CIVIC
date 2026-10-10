@@ -59,6 +59,14 @@ export async function reviewInventory(repo, designRoot) {
   for (const path of ['pnpm-lock.yaml', 'package.json', 'apps/web/playwright.config.ts', 'apps/web/tsconfig.json', 'apps/web/review.html', 'apps/web/review-frame.html', 'apps/web/vite.config.ts', 'apps/web/package.json', ...[...evidence.keys()].filter((path) => /(?:test|spec)\./.test(path)), ...(await files(join(web, 'scripts'))).filter((path) => /review-[^/]+\.mjs$/.test(path)).map((path) => relative(repo, path))]) {
     const content = await readFile(join(repo, path), 'utf8'); source.push([path, sha(content)])
   }
+  // The CIVIƆ shell renders and stores every review, so its source is part of the attested revision.
+  const shell = join(repo, 'packages/shell')
+  for (const file of await files(shell)) {
+    if (file.includes('/node_modules/') || !/\.(tsx?|mjs|css|json)$/.test(file)) continue
+    const path = relative(repo, file)
+    const content = await readFile(file, 'utf8')
+    source.push([path, sha(content)]); evidence.set(path, content)
+  }
   const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repo, encoding: 'utf8' }).trim()
   const revision = { head, source: sha(JSON.stringify([...new Map(source)].sort())), capturedAt: new Date().toISOString() }
   const fixtureSource = sha(JSON.stringify([...new Map(source)].filter(([path]) => path.startsWith('apps/web/src/') && !/\.(test|spec)\./.test(path) && (!path.includes('/review/') || /\/review\/(frame\.tsx|store\.ts)$/.test(path))).sort()))

@@ -1,0 +1,33 @@
+{
+  "name": "@civic/shell",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./canvas-camera": "./src/canvas-camera.ts",
+    "./use-canvas-camera": "./src/use-canvas-camera.ts",
+    "./canvas-controls": "./src/canvas-controls.tsx",
+    "./reveal-navigation": "./src/reveal-navigation.ts",
+    "./contract": "./src/contract.ts",
+    "./capture": "./src/capture.ts",
+    "./styles/*.css": "./styles/*.css",
+    "./server": "./server/review-server.mjs"
+  },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "vitest run && pnpm run test:server",
+    "test:server": "node --test server/review-server.check.mjs"
+  },
+  "peerDependencies": {
+    "react": "19.3.0"
+  },
+  "dependencies": {
+    "@playwright/test": "1.63.0"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.3",
+    "@types/react": "19.3.0",
+    "react": "19.3.0",
+    "typescript": "7.0.2",
+    "vitest": "5.0.1"
+  }
+}

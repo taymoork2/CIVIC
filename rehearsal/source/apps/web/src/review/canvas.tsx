@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import nodes from './towel-journey.json'
 import type { IntakePresentation } from '@/closet/add-clothes'
 import type { Proposal, JourneyState, JourneyVisit } from './journey'
-import { captureScreen } from './capture'
+import { captureScreen } from '@civic/shell/capture'
 
 export async function reviewApi<T>(path: string, data?: unknown): Promise<T> {
   const response = await fetch(`/api/review/${path}`, data === undefined ? {} : { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) })

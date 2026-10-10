@@ -34,8 +34,21 @@ Architecture decisions live in [docs/decisions](docs/decisions). The first demo 
 
 ## Running today
 
-Implementation is underway on the [Rehearsal](docs/synthesis-rehearsal.md) base (decision [0002](docs/decisions/0002-rehearsal-is-civic-base.md)): a persistent journey canvas for the Laundry App with contextual review and a three-way Product Contract panel. It runs as the `rehearsal` orb service (`amp orb services ensure`) behind an authenticated Amp portal, or locally with `pnpm --dir rehearsal/source/apps/web run review`. The current roadmap is in [docs/roadmap.md](docs/roadmap.md).
+Implementation is underway on the [Rehearsal](docs/synthesis-rehearsal.md) base (decision [0002](docs/decisions/0002-rehearsal-is-civic-base.md)): a persistent journey canvas for the Laundry App with contextual review and a three-way Product Contract panel. The app-independent shell lives in [`@civic/shell`](rehearsal/source/packages/shell) and Laundry App plugs into it as the first adapter (decision [0003](docs/decisions/0003-civic-shell-package.md)). The current roadmap is in [docs/roadmap.md](docs/roadmap.md).
+
+It runs as the `rehearsal` orb service (`amp orb services ensure`) behind an authenticated Amp portal. To run it locally you need Node.js 26 (22 works), pnpm 12.5.1 and Google Chrome:
+
+```sh
+cd rehearsal/source
+pnpm install --frozen-lockfile
+mkdir -p .review-data/fixtures && cp -n ../fixtures/*.png .review-data/fixtures/
+pnpm --dir apps/web run review
+```
+
+Open <http://127.0.0.1:3010/review> and sign in with the key in `rehearsal/source/.review-data/access-key`. This repository is the Git checkout the inventory needs, so skip the `git init` step in the handoff's own README.
+
+Checks, also run by [CI](.github/workflows/ci.yml) on every pull request: `pnpm run check`, `pnpm test` and `pnpm --dir apps/web run test:review` from `rehearsal/source`.
 
 ## Status
 
-The Rehearsal handoff is imported, verified, and running in an orb. Web implementation evidence covers all 173 registered screens; design reference, native, and QA evidence are the next gaps.
+The Rehearsal handoff is imported, verified, and running in an orb, and the shell extraction has started. Web implementation evidence covers all 173 registered screens; design reference, native, and QA evidence are the next gaps.

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { MapScreen } from './app-map'
 import { reviewApi } from './canvas'
-import { alignment, contractDimensions, coverage, type ScenarioEvidence } from './contract'
+import { alignment, contractDimensions, coverage, type ScenarioEvidence } from '@civic/shell/contract'
 import { feedbackOnScreen, type Feedback } from './review-panel'
 
 const owners = ['Design', 'Engineering', 'QA'] as const

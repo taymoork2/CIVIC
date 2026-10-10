@@ -3,13 +3,13 @@ import { appFlows, crossFlowEdges, flowAtCenter, screenAtCenter, journeySections
 import { useTowelSession } from './canvas'
 import { ReviewPanel } from './review-panel'
 import { ContractPanel } from './contract-panel'
-import type { ScenarioEvidence } from './contract'
-import { useCanvasCamera } from './use-canvas-camera'
-import { revealNavigation } from './reveal-navigation'
-import { CanvasControls, CanvasIcon } from './canvas-controls'
-import './canvas.css'
-import './app-canvas.css'
-import './canvas-chrome.css'
+import type { ScenarioEvidence } from '@civic/shell/contract'
+import { useCanvasCamera } from '@civic/shell/use-canvas-camera'
+import { revealNavigation } from '@civic/shell/reveal-navigation'
+import { CanvasControls, CanvasIcon } from '@civic/shell/canvas-controls'
+import '@civic/shell/styles/canvas.css'
+import '@civic/shell/styles/app-canvas.css'
+import '@civic/shell/styles/canvas-chrome.css'
 
 export function AppCanvas() {
   const [scenarios, setScenarios] = useState<(MapScenario & ScenarioEvidence)[]>([])

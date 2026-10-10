@@ -6,14 +6,20 @@ import { join } from 'node:path'
 import { test } from 'node:test'
 import { reviewMiddleware } from './review-server.mjs'
 
+// A synthetic adapter shaped like the towel journey: 13 screens over 10 scenarios.
+const steps = ['type', 'whose', 'details', 'fabric', 'color', 'origin', 'dye', 'care:wash', 'care:bleach', 'care:dry', 'stain', 'final', 'saved']
+const screens = steps.map((id) => ({ id, scenario: `intake.towel.${id === 'saved' ? 'final' : id.split(':')[0]}` }))
+const unusedFixture = async () => { throw new Error('No fixture expected') }
+const adapter = (captureFixture = unusedFixture) => ({ screens, proposalProperties: ['title', 'action', 'color'], captureFixture })
+
 const snapshot = { revision: { head: '0'.repeat(40), source: '1'.repeat(64), capturedAt: new Date().toISOString() }, design: { project: 'synthetic-test-design', hashes: {} } }
 
 test('review feedback requires access, captures synthetic context, retries once and survives restart', async () => {
-  const dataDir = await mkdtemp(join(tmpdir(), 'closet-review-test-'))
+  const dataDir = await mkdtemp(join(tmpdir(), 'civic-review-test-'))
   const metadata = { scenarios: [{ id: 'intake.pack.color' }], ...snapshot }
   let captures = 0
   const start = async () => {
-    const middleware = await reviewMiddleware({ dataDir, metadata, capture: async () => { captures++; return Buffer.from('synthetic-png') } })
+    const middleware = await reviewMiddleware({ dataDir, metadata, adapter: adapter(), capture: async () => { captures++; return Buffer.from('synthetic-png') } })
     const server = createServer((req, res) => middleware(req, res, () => { res.writeHead(404); res.end() }))
     await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
     return { server, base: `http://127.0.0.1:${server.address().port}` }
@@ -64,9 +70,9 @@ test('review feedback requires access, captures synthetic context, retries once 
 })
 
 test('the Amp portal admits only its collaborators, and captures still load the loopback listener', async () => {
-  const dataDir = await mkdtemp(join(tmpdir(), 'closet-review-portal-'))
+  const dataDir = await mkdtemp(join(tmpdir(), 'civic-review-portal-'))
   const origins = []
-  const middleware = await reviewMiddleware({ dataDir, metadata: { scenarios: [{ id: 'intake.pack.color' }], ...snapshot }, publicHost: 'civic.onamp.dev', capture: async (_html, _viewport, { origin }) => { origins.push(origin); return Buffer.from('png') } })
+  const middleware = await reviewMiddleware({ dataDir, metadata: { scenarios: [{ id: 'intake.pack.color' }], ...snapshot }, publicHost: 'civic.onamp.dev', adapter: adapter(), capture: async (_html, _viewport, { origin }) => { origins.push(origin); return Buffer.from('png') } })
   const server = createServer((req, res) => middleware(req, res, () => { res.writeHead(404); res.end() }))
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
   const port = server.address().port
@@ -91,8 +97,8 @@ test('the Amp portal admits only its collaborators, and captures still load the 
 })
 
 test('a failed capture never acknowledges or stores feedback', async () => {
-  const dataDir = await mkdtemp(join(tmpdir(), 'closet-review-failure-'))
-  const middleware = await reviewMiddleware({ dataDir, metadata: { scenarios: [{ id: 'intake.pack.color' }], ...snapshot }, capture: async () => { throw new Error('Capture unavailable') } })
+  const dataDir = await mkdtemp(join(tmpdir(), 'civic-review-failure-'))
+  const middleware = await reviewMiddleware({ dataDir, metadata: { scenarios: [{ id: 'intake.pack.color' }], ...snapshot }, adapter: adapter(), capture: async () => { throw new Error('Capture unavailable') } })
   const server = createServer((req, res) => middleware(req, res, () => res.end()))
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
   const base = `http://127.0.0.1:${server.address().port}`
@@ -110,7 +116,7 @@ test('proposals validate supported properties, reject stale writes, and persist 
   let captures = 0
   let fixtureCaptures = 0
   const metadata = { scenarios: [{ id: 'intake.towel.fabric' }, { id: 'intake.pack.color', renderer: 'intake' }, { id: 'legacy.home', renderer: 'legacy' }], ...snapshot }
-  const middleware = await reviewMiddleware({ dataDir, metadata, capture: async () => { captures++; return Buffer.from('run-image') }, fixtureCapture: async () => { fixtureCaptures++; return Buffer.from('real-fixture') } })
+  const middleware = await reviewMiddleware({ dataDir, metadata, capture: async () => { captures++; return Buffer.from('run-image') }, adapter: adapter(async () => { fixtureCaptures++; return Buffer.from('real-fixture') }) })
   const server = createServer((req, res) => middleware(req, res, () => { res.writeHead(404); res.end() }))
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
   const base = `http://127.0.0.1:${server.address().port}`
@@ -145,10 +151,15 @@ test('proposals validate supported properties, reject stale writes, and persist 
     assert.equal(await (await fetch(`${base}/api/review/fixture.png?screen=legacy.home`, { headers })).text(), 'real-fixture')
     assert.equal((await (await post('snapshots', {})).json()).count, 13)
     assert.equal(fixtureCaptures, 15)
-    const restarted = await reviewMiddleware({ dataDir, metadata, capture: async () => Buffer.from('unused'), fixtureCapture: async () => { throw new Error('Saved snapshots must survive restart') } })
+    const restarted = await reviewMiddleware({ dataDir, metadata, capture: async () => Buffer.from('unused'), adapter: adapter(async () => { throw new Error('Saved snapshots must survive restart') }) })
     const restartedServer = createServer((req, res) => restarted(req, res, () => res.end()))
     await new Promise((resolve) => restartedServer.listen(0, '127.0.0.1', resolve))
     try { assert.equal(await (await fetch(`http://127.0.0.1:${restartedServer.address().port}/api/review/fixture.png?screen=fabric`, { headers })).text(), 'real-fixture') }
     finally { await new Promise((resolve) => restartedServer.close(resolve)) }
   } finally { await new Promise((resolve) => server.close(resolve)) }
+})
+
+test('an adapter cannot offer proposal properties the shell does not validate', async () => {
+  const dataDir = await mkdtemp(join(tmpdir(), 'rehearsal-adapter-'))
+  await assert.rejects(reviewMiddleware({ dataDir, metadata: { scenarios: [], ...snapshot }, capture: async () => Buffer.from(''), adapter: { ...adapter(), proposalProperties: ['title', 'onclick'] } }), /only validate/)
 })

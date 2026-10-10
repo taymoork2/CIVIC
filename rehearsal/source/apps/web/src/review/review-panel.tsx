@@ -3,7 +3,7 @@ import { feedbackText, type FeedbackKind } from '@/copy/feedback'
 import type { MapScreen } from './app-map'
 import type { ReviewConfig, ReviewSnapshot } from './store'
 import { readFixtureFields } from './journey'
-import { captureScreen } from './capture'
+import { captureScreen } from '@civic/shell/capture'
 import { reviewApi } from './canvas'
 
 export type Feedback = {
