@@ -1,6 +1,6 @@
 # 0002: Rehearsal is the CIVIƆ base
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by [0004](0004-graph-first-rehearsal-as-viewer.md): Rehearsal is a viewer and the first web adapter, not the core
 - **Date:** 2026-10-10
 - **Decider:** Founder
 

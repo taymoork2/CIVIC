@@ -1,6 +1,6 @@
 # 0003: Start the CIVIƆ shell as a workspace package
 
-- **Status:** Proposed
+- **Status:** Merged in PR #1; further extraction paused by [0004](0004-graph-first-rehearsal-as-viewer.md)
 - **Date:** 2026-10-10
 - **Decider:** Founder (pending review)
 

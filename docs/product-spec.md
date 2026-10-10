@@ -34,6 +34,7 @@ The source is the Amp discussion in [thread T-01a0dc96-9004-70a8-92a7-d7364d854a
 | D12 | The model must work for startups, mid-size companies, and enterprises. | M11 |
 | D13 | The product starts as the Amp-hosted `tay/CIVIC` project, followed by a GitHub repository. | M13, M15 |
 | D14 | The full discussion must be documented and stored safely. | M25 |
+| D15 | The artifact graph is CIVIƆ's core. Rehearsal is one viewer and the first web adapter, and the Fluent 2 Button conflict demo comes before more Laundry work. | [Decision 0004](decisions/0004-graph-first-rehearsal-as-viewer.md) |
 
 ### Project facts
 
@@ -257,6 +258,15 @@ Platform coverage           ██████░░░░  60%
 Runtime validation          ███░░░░░░░  30%
 ```
 
+### Evidence integrity
+
+Adopted from Rehearsal. Readiness is only as strong as its evidence:
+
+- Alignment is never stated more strongly than the evidence supports. Missing or old evidence reads as **Unknown / evidence stale**, never as aligned.
+- A fixture jump, failed operation, inferred edge, or old screenshot is never runtime evidence.
+- Evidence is tied to the exact revision it proves. When the source changes it becomes visibly stale, and it is not relabelled current.
+- Evidence tiers stay separate and never collapse into one "complete" badge. The tiers are working preview, design reconciliation, automated browser or simulator checks, and physical-device acceptance.
+
 Shared outcome metrics include undocumented-state reduction, escaped regressions, time from ambiguity to decision, cross-platform contract coverage, accessibility-evidence coverage, design and implementation divergence, reusable-component adoption, defect reproduction and validation time, and recurrence of customer problems.
 
 ## Artifact graph and traceability
@@ -319,11 +329,28 @@ Traceability works in both directions:
 
 The graph answers which journeys and platforms a change affects, which platform states are missing, whether a difference is intentional, and whether shipped behavior still matches the documented system.
 
+### Stable identity and path honesty
+
+Adopted from Rehearsal:
+
+- Every journey, state, screen, component, primitive, token, and platform variant has a stable identity. When a target disappears or moves, its identity history is kept and someone re-anchors it explicitly. Nothing is matched automatically to the nearest node, because that would manufacture evidence or approval.
+- States connect through labelled actions and conditions, with branches, return paths, subflows, and alternate outcomes.
+- **Declared**, **proposed**, and **observed** paths stay distinct. An observed path comes only from a confirmed runtime transition. Back and loops create repeat visits, and a failed operation never becomes a successful edge.
+- A runtime state that matches no known node stays visibly unmapped.
+- An incomplete registry never claims exhaustive coverage.
+
 ## Journeys, scenarios, and contextual feedback
 
 ### Journey canvas
 
 The journey canvas shows personas and goals, happy and alternate routes, loading, empty, error, offline, and permission states, entry and exit points, platform variants, business rules, and branches.
+
+The canvas is one view over the artifact graph, not the product's core. Rehearsal proved this layout on a real app, and CIVIƆ keeps it as the reference design:
+
+- **One persistent canvas** with selection, zoom, and contextual panels. Explore, play, and review are capabilities on that canvas, not separate destinations.
+- Flows and the main path run left to right like a timeline, and alternate branches stack below with labelled reconnecting arrows. Navigation order, declared transitions, and verified runtime transitions look different.
+- Inactive screens show cached snapshots that carry their revision or fixture provenance. Only the focused screen runs live.
+- An outline follows the app's own entry, tab, and navigation order and tracks what the camera shows. Selecting a flow fits the flow, and selecting a screen focuses it.
 
 ### Scenario player
 
@@ -331,9 +358,24 @@ The scenario player lets a reviewer choose persona, journey, scenario, platform,
 
 Example: New customer → iPhone → poor connection → payment declined.
 
+Adopted from Rehearsal:
+
+- **Play is the default.** Inspect and edit are optional.
+- Persona, permission, and condition are separate dimensions. A persona never implies a permission or rule.
+- A **fixture jump** to a state is labelled as a jump and is never presented as a replay of the steps before it. Replay from start is a separate capability.
+- A live run survives browsing, panel changes, and proposal switches. Anything that would discard an unsaved draft asks first.
+- Inputs are captured at confirmed transitions from an allowlist, exactly as entered. Credentials and raw keystrokes are never captured.
+
 ### Contextual review
 
 Highlights, comments, annotations, and typed collaboration records attach to components, screens, transitions, journey branches, persona and scenario combinations, and design and implementation discrepancies. Feedback keeps state, platform, build, version, and ownership automatically. Exact-scenario links remove screenshot archaeology.
+
+Adopted from Rehearsal:
+
+- Feedback freezes its capture before it is written. The capture includes the screenshot, anchor, visible state, captured inputs, source and design revisions, and an exact-scenario link.
+- Retries keep the original capture and request identity.
+- Resolving feedback requires evidence.
+- Staleness against the current source is recomputed when feedback is read, while the original receipt stays unchanged.
 
 ## Change management
 
@@ -363,6 +405,15 @@ Bugs, feature requests, complaints, accessibility findings, and platform gaps ar
 ```
 
 CIVIƆ is not another ticket tracker. Jira, Linear, GitHub, support systems, and accessibility tools can execute work; CIVIƆ maintains the product knowledge graph and lifecycle that connects them.
+
+### Proposal, decision, adoption, verification
+
+Adopted from Rehearsal. These are four separate records, never one "done" flag:
+
+1. **Proposal:** a target, scope (journey, screen, component, primitive, or token), baseline and candidate revisions, rationale, author, and expected behavior. A candidate can be played on the real experience as a reversible change. Testing a candidate is not adopting it.
+2. **Decision:** the exact approved candidate and the platform variants it covers.
+3. **Adoption:** the link from a decision to the implementation revision that carries it.
+4. **Verification:** independent evidence per tier and platform that the adopted change behaves as decided.
 
 ### Bugs
 
@@ -461,6 +512,21 @@ Semantic capability: Confirm a destructive action
 
 Differences are classified as platform convention, technical limitation, form factor or input method, temporary implementation gap, intentional product differentiation, or unapproved divergence.
 
+### Alignment states
+
+Adopted from Rehearsal. Every contract target per platform has exactly one alignment state:
+
+| State | Meaning |
+|---|---|
+| **Aligned** | Every dimension is proven by current evidence. |
+| **Approved adaptation** | A recorded decision accepts a platform-native difference that preserves intent. |
+| **Accepted limitation** | A recorded decision accepts a constraint, with user impact, alternative, and revisit condition. |
+| **Unreviewed drift** | Artifacts or behavior disagree, and no decision covers it yet. |
+| **Awaiting adoption** | A decision is approved, but the implementation has not adopted it. |
+| **Unknown / evidence stale** | Evidence is missing or no longer matches the current revision. |
+
+A library or platform restriction is a reason to ask for a decision, not an implicit approval. Drift stays **Unreviewed drift** until an owner accepts a specific adaptation or limitation.
+
 ## Component system
 
 ### Semantic and platform implementations
@@ -558,6 +624,17 @@ Coordinated autonomy
 Federated assurance
 ```
 
+## Multiplayer and ownership
+
+Adopted from Rehearsal's multiplayer boundary:
+
+- **Shared:** proposals, observations, decisions, status, immutable captures, and verification evidence.
+- **Private by default:** camera, selection, the running session, entered drafts, persona and fixture experiments, and unsent comments.
+- Shared records need real identities, attribution, and scoped read, write, approve, and resolve permissions.
+- Writes carry expected versions, and conflicts are visible and recoverable. Last write wins must never silently overwrite a candidate or evidence.
+- No collaborator's navigation can discard another person's draft.
+- Presence, following, and shared driving are optional. Each needs an explicit driver and explicit join, leave, and rejoin.
+
 ## Maintainability principles
 
 The founder's metaphor is a 200,000-mile Honda Civic or Toyota Corolla: easy to build, maintain, run for a long time, diagnose, and repair with readily available parts. CIVIƆ avoids systems that require a specialist every time a warning light appears.
@@ -591,6 +668,8 @@ The MVP must be platform-neutral from the first release:
 8. Initial adapters for React, SwiftUI, and Jetpack Compose.
 
 The earlier web-first idea of importing a web app or Storybook is superseded by D8. Native support must not be retrofitted later.
+
+Rehearsal already covers items 3 and 4, and part of item 6, for one web app. The other items are built CIVIƆ-first, in the order given in [decision 0004](decisions/0004-graph-first-rehearsal-as-viewer.md).
 
 ## Integrations
 
