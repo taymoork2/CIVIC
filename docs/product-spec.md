@@ -621,6 +621,12 @@ CIVIƆ is proposed as B2B SaaS. Pricing should charge for scale, administration,
 
 No dollar prices were proposed.
 
+## Demo design system
+
+CIVIƆ will use Microsoft Fluent 2 as its first public demo design system. See [decision 0001](decisions/0001-fluent-2-demo-design-system.md).
+
+Design-token import and export are expected future requirements. The platform-neutral token model should support standard formats such as DTCG and tools such as Tokens Studio and Style Dictionary.
+
 ## Open questions
 
 - Which customer segment and platform pair should the first pilot prove?

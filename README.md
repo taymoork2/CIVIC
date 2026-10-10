@@ -30,6 +30,8 @@ Like a Honda Civic or Toyota Corolla, CIVIƆ favors understandable systems, stan
 
 The full [product vision and specification](docs/product-spec.md) preserves the founding product discussion, decisions, diagrams, MVP, positioning, and business model.
 
+Architecture decisions live in [docs/decisions](docs/decisions). The first demo uses [Microsoft Fluent 2](docs/decisions/0001-fluent-2-demo-design-system.md).
+
 ## Status
 
 This is the initial project. The documentation describes the product vision; implementation has not started.
