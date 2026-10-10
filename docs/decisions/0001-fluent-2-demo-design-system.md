@@ -71,6 +71,6 @@ Known differences to show:
 
 - CIVIƆ can demonstrate one semantic component across three real platform implementations.
 - Fluent's canonical token source is private, so CIVIƆ must normalize tokens from published code packages.
-- Microsoft's official Android Figma short link redirected to Bing on 2026-10-10. The public `Microsoft Fluent Android` Community file was last updated six years ago, so Android design intent is a known gap until a current kit is found.
+- Microsoft's official Android Figma short link redirected to Bing on 2026-10-10. The public [Microsoft Fluent Android](https://www.figma.com/community/file/836835062056249539/microsoft-fluent-android) Community file is the Android design-intent candidate. Figma lists it as last updated six years ago, but the founder observed a v2 label in the file. Before treating it as current, compare its Button variants with the Fluent Android Compose `V2` controls.
 - Figma's Variables REST API is Enterprise-only. Code packages, not Figma variables, are the initial token source.
 - Design-token export is likely to matter later. CIVIƆ should keep a platform-neutral token model that can import and export standard formats such as DTCG and support tools such as Tokens Studio and Style Dictionary.
