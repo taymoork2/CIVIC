@@ -59,6 +59,33 @@ Known differences to show:
 - Icon and accessible-name APIs differ by platform.
 - iOS has danger and floating variants that web and Android Button do not.
 
+## Demo scenario: misaligned design source
+
+The Android Figma kit may not match the current Android Compose Button. CIVIƆ should treat that as a first-class demo scenario, not a setup problem.
+
+```diagram
+Android Figma kit ──┐
+                    ├──▶ Compare Button contract ──▶ Contract Conflict
+Compose Button ─────┘                                  │
+                                                       ▼
+                                   Classify · Assign owners · Decide
+                                                       │
+                       ┌───────────────────────────────┼──────────────────────┐
+                       ▼                               ▼                      ▼
+                Update design             Change implementation      Approve exception
+```
+
+CIVIƆ should:
+
+1. Compare the Android kit, Compose implementation, Button contract, and captured evidence.
+2. Open a **Contract Conflict** that names the exact mismatch, such as a missing variant, different default, state, size, radius, or color.
+3. Classify it as an outdated design source, implementation drift, platform adaptation, temporary gap, or intentional difference.
+4. Ask Design, Engineering, and QA for the decisions or evidence they own.
+5. Record the resolution: update the design, change the implementation, update the contract, or approve a time-bound exception.
+6. Show which journeys, platforms, and products are affected until the conflict is resolved.
+
+The demo succeeds when a reviewer can see what disagrees, why it matters, who must act, and how the final decision is preserved.
+
 ## Evidence plan
 
 | Platform | Initial evidence | Constraint |
