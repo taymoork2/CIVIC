@@ -32,6 +32,10 @@ The full [product vision and specification](docs/product-spec.md) preserves the 
 
 Architecture decisions live in [docs/decisions](docs/decisions). The first demo uses [Microsoft Fluent 2](docs/decisions/0001-fluent-2-demo-design-system.md).
 
+## Running today
+
+Implementation is underway on the [Rehearsal](docs/synthesis-rehearsal.md) base (decision [0002](docs/decisions/0002-rehearsal-is-civic-base.md)): a persistent journey canvas for the Laundry App with contextual review and a three-way Product Contract panel. It runs as the `rehearsal` orb service (`amp orb services ensure`) behind an authenticated Amp portal, or locally with `pnpm --dir rehearsal/source/apps/web run review`. The current roadmap is in [docs/roadmap.md](docs/roadmap.md).
+
 ## Status
 
-This is the initial project. The documentation describes the product vision; implementation has not started.
+The Rehearsal handoff is imported, verified, and running in an orb. Web implementation evidence covers all 173 registered screens; design reference, native, and QA evidence are the next gaps.
