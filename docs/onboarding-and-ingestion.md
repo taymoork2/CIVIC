@@ -86,12 +86,49 @@ How deep each lane goes depends on its inputs (from the v4 report). Design files
 
 The Android kit says "Neutral default" exists, but Compose has no stock equivalent. CIVIC raises a Contract Conflict naming the target, both sources and the evidence, and assigns Design and Android Engineering as owners. The decision is recorded and the conflict links back to it.
 
-## 4. What exists today
+## 4. Keeping everyone in check without slowing anyone down
+
+A core tenet of CIVIC is that Design, Design Engineering, Engineering and QA keep each other honest. In the spirit of the 200,000-mile Civic, a divergence should be like a dashboard light: it tells you clearly what's wrong, who should look at it, and the usual fix. It should never need a specialist to interpret.
+
+The spec already models *why* a difference exists (platform convention, technical limitation, form factor, temporary gap, intentional differentiation, unapproved drift). It also models *what was decided* about it, as alignment states: approved adaptation, accepted limitation, unreviewed drift, awaiting adoption, and so on. The proposal below adds how CIVIC helps fix differences, not only flag them.
+
+**Proposed: CIVIC helps remediate.**
+
+1. **One record per root cause.** If one token alias mismatch shows up on 14 screens, CIVIC groups it into one Divergence with 14 affected targets rather than 14 tickets.
+2. **The resolution paths come prepared.** Each divergence arrives with the three resolutions from decision 0001 drafted: update the design, change the implementation, or approve an exception. Each draft is real and reversible:
+   - A design change is drafted as a proposal against the frame or variable, linked back to the design tool.
+   - A code change is drafted as a token patch, a codemod, or an adapter fix on a branch.
+   - An exception is drafted with user impact, an owner, and a revisit trigger already filled in.
+3. **Fixes are checked before anyone decides.** CIVIC runs the proposed fix in the preview or the test runner and attaches before-and-after evidence, so the owner can see it works before choosing it. Testing a fix still isn't adopting it (D21).
+4. **Accepted variance is revisited.** Approved adaptations and limitations carry a revisit trigger, for example "fluentui-android ships a neutral Button" or "iOS adds this capability". When a source update meets the trigger, CIVIC reopens the record with a proposal to converge.
+5. **Variance has a visible budget.** Each product and platform shows its count of approved adaptations, accepted limitations, exceptions about to expire, and unreviewed drift, plus the trend. This feeds the Maintainability Index, so leaders can see when variance is quietly growing.
+6. **The cheapest safe fix comes first.** Triage orders work by the size of the fix and its user impact. Many divergences are one token or one property, and those should be one click to propose.
+
+Guardrails:
+- CIVIC never adopts a change itself. The owner of the target decides, and adoption is a separate record.
+- Drafts come from deterministic rules first: token diffs, prop mappings, codemods. Model-drafted fixes are optional, attributed, and budgeted.
+- A remediation that fails its own evidence is shown as failed. It never quietly becomes "aligned".
+
+**Example: Fluent Button "Neutral default" on Android.** Compose has no stock equivalent, so CIVIC opens one Divergence for the Android target and drafts three options:
+- Mark it in the Android Figma kit as an approved adaptation for web and iOS only.
+- A Compose button built from Fluent alias tokens, rendered and compared against the kit.
+- An accepted limitation with the trigger "fluentui-android adds a neutral variant".
+
+Design and Android Engineering choose, and QA's evidence confirms the result.
+
+## 5. Validating onboarding
+
+Two cases test the onboarding from opposite directions:
+
+- **Fluent Button** starts from design and code across three platforms, with a known mismatch between design and code. It proves that importers, linking, and Contract Conflicts work across platforms.
+- **Laundry's five unmapped destination states** start from an existing app with expected states that don't exist yet. These are Add clothes from the empty home, a garment's running wash, a hamper item in Laundry, moving washed pieces to Drying, and a garment's care history. Onboard Laundry through the manifest as if it were new. The five states should appear as owned coverage gaps, then turn observed as seeds and transitions land, with no Laundry-specific code in CIVIC.
+
+## 6. What exists today
 
 - **Built (Laundry, web only):** a curated scenario registry, a source scan, real-render preview through the adapter, observed towel transitions, revision-tied thumbnails, the Contract panel, a coverage contract with write-back, and 17 curated cross-route bindings.
-- **Not built:** the graph schema, any design-tool import, token or component library import, a test-report importer, native adapters, the project manifest and onboarding UI, and conflict records.
+- **Not built:** remediation drafts, revisit triggers and the variance budget, the graph schema, any design-tool import, token or component library import, a test-report importer, native adapters, the project manifest and onboarding UI, and conflict records.
 
-## 5. Decided
+## 7. Decided
 
 - **D25:** Design Engineering is a primary persona that owns the component library. Personas are roles, so one person can hold several. For example, an engineer can cover QA through browser end-to-end runs when a team has no QA group.
 - **D26:** the first QA input is Playwright reports and traces.

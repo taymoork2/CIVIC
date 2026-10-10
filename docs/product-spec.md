@@ -564,6 +564,8 @@ Adopted from the v0 journey engine. Every contract target per platform has exact
 
 The classification says why a difference exists, and the alignment state says what was decided about it, so a difference has both. Acknowledging a difference is not approving it. Approving a design does not prove it was implemented. A library or platform restriction is a reason to ask for a decision, not an implicit approval. Drift stays **Unreviewed drift** until an owner accepts a specific adaptation or limitation.
 
+**Proposed direction: remediation.** CIVIC does more than flag a divergence. It groups divergences by root cause, drafts each resolution path (design proposal, code patch or codemod, exception with a revisit trigger), and runs each draft against evidence before the owner decides. It reopens accepted variance when a revisit trigger is met and shows a variance budget for each product and platform. The owner always decides, and CIVIC never adopts on its own. See [onboarding and ingestion](onboarding-and-ingestion.md#4-keeping-everyone-in-check-without-slowing-anyone-down).
+
 ## Component system
 
 ### Semantic and platform implementations

@@ -29,6 +29,8 @@ The journey engine already has working examples: `coverage.json` is a Coverage g
 
 Point the journey engine's canvas and Contract panel at the graph, with Laundry as one web adapter. Generalize the `@civic/shell` adapter boundary now that Fluent is a second consumer ([decision 0003](decisions/0003-civic-shell-package.md) was paused until then). Follow the v4 handoff's onboarding direction: a local project manifest plus a supported web adapter.
 
+Validate onboarding with two cases ([onboarding and ingestion](onboarding-and-ingestion.md#5-validating-onboarding)): the Fluent Button, and Laundry's five unmapped destination states brought in through the manifest as expected states.
+
 Acceptance: a second small web app connects without importing Laundry code, unsupported features stay visibly unavailable, and source refresh, capture, and replay make zero model calls with providers disabled.
 
 ## 5. Identity, permissions, and multiplayer
