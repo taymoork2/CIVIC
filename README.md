@@ -47,7 +47,7 @@ pnpm --dir apps/web run review
 
 Open <http://127.0.0.1:3010/review> and sign in with the key in `rehearsal/source/.review-data/access-key`. This repository is the Git checkout the inventory needs, so skip the `git init` step in the handoff's own README.
 
-Checks, also run by [CI](.github/workflows/ci.yml) on every pull request: `pnpm run check`, `pnpm test` and `pnpm --dir apps/web run test:review` from `rehearsal/source`.
+Before a pull request merges, run [`bin/signoff`](bin/signoff) from a clean checkout of its branch. It runs `pnpm run check`, `pnpm test` and the review-server tests locally, then posts a green `signoff` commit status on GitHub through the GitHub CLI. Add `--browser` to include the Playwright review-canvas journey while the review server is running. CIVIƆ uses local signoffs instead of GitHub Actions to keep CI costs down.
 
 ## Status
 

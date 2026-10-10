@@ -22,9 +22,9 @@ Implement the [Fluent 2 demo](decisions/0001-fluent-2-demo-design-system.md) as 
 
 ## 5. Journey completeness and replay
 
-Rehearsal captures exhaustively via its cold fixture run (176 cases, ~6m53s in an orb). GitHub CI now runs type, style, unit and review-server checks on every pull request; the next step is adding the browser capture and review-canvas journey so evidence can be regenerated and become stale visibly. Then add replay-from-start to the scenario player.
+Rehearsal captures exhaustively via its cold fixture run (176 cases, ~6m53s in an orb). `bin/signoff` runs type, style, unit and review-server checks locally and records a `signoff` commit status, with `--browser` for the review-canvas journey. The next step is adding fixture capture to the signoff so evidence can be regenerated and become stale visibly. Then add replay-from-start to the scenario player.
 
 ## 6. Repository and delivery hygiene
 
-- Done: the repository is on GitHub at [taymoork2/CIVIC](https://github.com/taymoork2/CIVIC) with CI in `.github/workflows/ci.yml`.
+- Done: the repository is on GitHub at [taymoork2/CIVIC](https://github.com/taymoork2/CIVIC) with local signoffs (`bin/signoff`) instead of GitHub Actions, to keep CI costs down.
 - Decide what stays vendored: `rehearsal/design/skills` and the fixture PNGs are handoff material; they can move to a release artifact or submodule once the shell is extracted.
