@@ -26,6 +26,10 @@ Designers, engineers, and QA are the primary users. They share ownership of a ve
 
 Like a Honda Civic or Toyota Corolla, CIVIƆ favors understandable systems, standardized interfaces, replaceable parts, and long-term maintainability over unnecessary complexity. Its core should work for startups and scale to enterprise teams with optional governance, ownership, and risk-based assurance.
 
+## Documentation
+
+The full [product vision and specification](docs/product-spec.md) preserves the founding product discussion, decisions, diagrams, MVP, positioning, and business model.
+
 ## Status
 
-This is the initial project. The README describes the product vision; implementation has not started.
+This is the initial project. The documentation describes the product vision; implementation has not started.
