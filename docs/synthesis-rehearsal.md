@@ -16,7 +16,7 @@ On October 10, 2026 the founder's Rehearsal handoff — built in the Laundry App
 
 ## What is deliberately not done
 
-- The Laundry App domain code still sits inside `rehearsal/source`. Extracting the CIVIƆ shell is future work.
+- The Laundry App domain code still sits inside `rehearsal/source`. Shell extraction has started with `@civic/shell` ([decision 0003](decisions/0003-civic-shell-package.md)); the canvas composition and panels are still in the Laundry app.
 - Native (iOS/Android) evidence is 0/173 proven; the Fluent 2 cross-platform adapter ([decision 0001](0001-fluent-2-demo-design-system.md)) is not implemented.
 - Coverage counts come from the current specimen inventory; they are not a claim of full app coverage.
 - Portal access is personal-thread access, not the multiplayer permission model.
@@ -35,6 +35,21 @@ On October 10, 2026 the founder's Rehearsal handoff — built in the Laundry App
 | Contract panel rendering | verified desktop (1440px) and phone (390px) in a fresh orb |
 
 The `contract.ts` / `contract.tsx` evidence was additionally browser-verified in the source thread, with captures in `.amp/in/artifacts/civic-contract-*.png`.
+
+## After the shell extraction (decision 0003)
+
+Rerun on the extraction branch with Node 22 and pnpm 12.5.1:
+
+| Check | Result |
+|---|---|
+| `pnpm run check` (shell, planner, Convex, web) | passed (1591 static utilities compile) |
+| `pnpm test` | web 794 + shell 6 Vitest, Convex 451, tokens 7, planner node suites and 13 web node checks, all passed |
+| Review server checks (shell) and inventory/adapter checks (web) | 5 and 2 passed |
+| Playwright review-canvas journey against the live review service | 1 passed |
+| Desktop (1440px) and phone (390px) render of the canvas | 176 screen nodes, shell styles applied |
+| Fixture-source hash | unchanged at `eb66a3b7…`, so bundled thumbnails stay valid |
+
+The six web tests that moved now run in the shell package, which is why the web count dropped from 800 to 794. The handoff's `SHA256SUMS` describes the original import; moved files report as missing there.
 
 ## How to run
 

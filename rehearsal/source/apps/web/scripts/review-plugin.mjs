@@ -2,12 +2,14 @@ import { readFile } from 'node:fs/promises'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { reviewInventory } from './review-inventory.mjs'
-import { captureReview, reviewMiddleware } from './review-server.mjs'
+import { captureReview, reviewMiddleware } from '@civic/shell/server'
+import { laundryReviewAdapter } from './review-adapter.mjs'
 
 export function reviewPlugin() {
   const web = resolve(dirname(fileURLToPath(import.meta.url)), '..')
   const repo = resolve(web, '../..')
   const dataDir = join(repo, '.review-data')
+  const shell = join(repo, 'packages/shell')
   // The handoff ships bounded Laundry design references beside the source tree.
   const designRoot = process.env.WASHCLOSET_REVIEW_DESIGN ?? resolve(repo, '../design/laundry-reference')
   return {
@@ -19,7 +21,7 @@ export function reviewPlugin() {
       const { metadata, evidence } = await reviewInventory(repo, designRoot)
       let refreshing = Promise.resolve()
       const refresh = (file) => {
-        if (file !== join(repo, 'docs/design/review-validation.json') && (!file.startsWith(join(web, 'src')) || !/\.(tsx?|json|css)$/.test(file))) return
+        if (file !== join(repo, 'docs/design/review-validation.json') && (!(file.startsWith(join(web, 'src')) || file.startsWith(shell) && !file.includes('/node_modules/')) || !/\.(tsx?|mjs|json|css)$/.test(file))) return
         refreshing = refreshing.then(async () => {
           const updated = await reviewInventory(repo, designRoot)
           Object.assign(metadata, updated.metadata)
@@ -34,8 +36,8 @@ export function reviewPlugin() {
       server.watcher.on('change', refresh).on('add', refresh).on('unlink', refresh)
       // Inside an Amp orb, PUBLIC_URL names the authenticated portal for this service.
       const publicHost = process.env.AMP_ORB && process.env.PUBLIC_URL ? new URL(process.env.PUBLIC_URL).host : null
-      const auth = await reviewMiddleware({ dataDir, metadata, evidence, capture: captureReview, publicHost })
-      server.watcher.add(join(repo, 'docs/design/review-validation.json'))
+      const auth = await reviewMiddleware({ dataDir, metadata, evidence, capture: captureReview, adapter: laundryReviewAdapter, publicHost })
+      server.watcher.add([join(repo, 'docs/design/review-validation.json'), shell])
       server.middlewares.use(async (req, res, next) => { await refreshing; return auth(req, res, next) })
       // These entries never mount the app's live providers.
       server.middlewares.use(async (req, res, next) => {

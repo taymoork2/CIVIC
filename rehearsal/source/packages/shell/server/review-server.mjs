@@ -1,7 +1,6 @@
 import { randomBytes, timingSafeEqual } from 'node:crypto'
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import towel from '../src/review/towel-journey.json' with { type: 'json' }
 
 const equal = (a, b) => typeof a === 'string' && Buffer.byteLength(a) === Buffer.byteLength(b) && timingSafeEqual(Buffer.from(a), Buffer.from(b))
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -21,12 +20,12 @@ async function body(req) {
   try { return JSON.parse(Buffer.concat(chunks).toString()) } catch { bad('Invalid JSON') }
 }
 
-function checkedFeedback(input, metadata) {
+function checkedFeedback(input, metadata, screens) {
   if (!input || typeof input !== 'object') bad('Invalid feedback')
   if (!uuid.test(input.requestId)) bad('Invalid request identity')
   const c = input.context
   if (!c || !metadata.scenarios.some((scenario) => scenario.id === c.scenario)) bad('Unknown synthetic scenario')
-  if (c.screen !== undefined && !(towel.some((screen) => screen.id === c.screen && screen.scenario === c.scenario) || c.screen === c.scenario)) bad('Unknown review screen target')
+  if (c.screen !== undefined && !(screens.some((screen) => screen.id === c.screen && screen.scenario === c.scenario) || c.screen === c.scenario)) bad('Unknown review screen target')
   const viewport = c.viewport
   if (!viewport || !Number.isInteger(viewport.width) || !Number.isInteger(viewport.height) || viewport.width < 200 || viewport.width > 1920 || viewport.height < 200 || viewport.height > 1600) bad('Invalid viewport')
   const anchor = input.anchor
@@ -53,8 +52,13 @@ function checkedFeedback(input, metadata) {
 /**
  * Loopback-only review storage. No Convex client, household credentials or personal records.
  * `publicHost` admits one authenticated Amp portal hostname; its collaborators skip the local key.
+ * The adapter declares its journey screens, editable proposal properties and fixture renderer.
  */
-export async function reviewMiddleware({ dataDir, metadata, capture, fixtureCapture = captureFixture, evidence = new Map(), publicHost = null }) {
+export async function reviewMiddleware({ dataDir, metadata, capture, adapter, evidence = new Map(), publicHost = null }) {
+  const { screens, proposalProperties, captureFixture, launchFixtureBrowser } = adapter
+  // The shell validates exactly these presentation edits; an adapter may offer a subset.
+  if (proposalProperties.some((key) => !['title', 'action', 'color'].includes(key))) throw new Error('The review shell can only validate title, action and color proposals.')
+  const declared = new Set(screens.map((screen) => screen.scenario))
   const withCurrentSource = (row) => ({ ...row, sourceStale: row.revision.source !== metadata.revision.source || row.revision.head !== metadata.revision.head })
   await mkdir(dataDir, { recursive: true, mode: 0o700 })
   const keyPath = join(dataDir, 'access-key')
@@ -76,7 +80,7 @@ export async function reviewMiddleware({ dataDir, metadata, capture, fixtureCapt
       const file = join(fixtureDir, `${source}-${node.id.replace(':', '-')}.png`)
       const operation = fixtureQueue.then(async () => {
         try { return await readFile(file) } catch (error) { if (error.code !== 'ENOENT') throw error }
-        const png = await fixtureCapture(node, { origin: `http://${host}`, cookie: `review_session=${session}`, browser })
+        const png = await captureFixture(node, { origin: `http://${host}`, cookie: `review_session=${session}`, browser })
         await writeFile(file + '.tmp', png, { mode: 0o600 }); await rename(file + '.tmp', file)
         return png
       })
@@ -119,10 +123,10 @@ export async function reviewMiddleware({ dataDir, metadata, capture, fixtureCapt
       if (url.pathname === '/api/review/proposals' && req.method === 'POST') {
         const input = await body(req)
         if (!uuid.test(input.id) || !Number.isInteger(input.expectedVersion) || input.expectedVersion < 0 || input.source !== metadata.revision.source) bad('Invalid identity, version or stale source. Reload before editing.')
-        if (!input.edits || typeof input.edits !== 'object' || Array.isArray(input.edits) || Object.keys(input.edits).length > towel.length) bad('Invalid proposal edits')
+        if (!input.edits || typeof input.edits !== 'object' || Array.isArray(input.edits) || Object.keys(input.edits).length > screens.length) bad('Invalid proposal edits')
         const edits = {}
         for (const [screen, edit] of Object.entries(input.edits)) {
-          if (!towel.some((node) => node.id === screen) || !edit || typeof edit !== 'object' || Array.isArray(edit) || Object.keys(edit).some((key) => !['title', 'action', 'color'].includes(key))) bad('Unsupported screen or property')
+          if (!screens.some((node) => node.id === screen) || !edit || typeof edit !== 'object' || Array.isArray(edit) || Object.keys(edit).some((key) => !proposalProperties.includes(key))) bad('Unsupported screen or property')
           const next = {}
           for (const key of ['title', 'action']) if (edit[key] !== undefined) next[key] = text(edit[key], 160)
           if (edit.color !== undefined) {
@@ -145,7 +149,7 @@ export async function reviewMiddleware({ dataDir, metadata, capture, fixtureCapt
         json(result ? 200 : 409, result ?? { error: 'This proposal changed elsewhere. Your draft is kept. Load the latest version before saving.' }); return
       }
       if (url.pathname === '/api/review/capture' && req.method === 'POST') {
-        const input = checkedFeedback(await body(req), metadata)
+        const input = checkedFeedback(await body(req), metadata, screens)
         const result = await serial(async () => {
           const receipt = join(dataDir, `capture-${input.id}.json`)
           try { return JSON.parse(await readFile(receipt, 'utf8')) } catch (error) { if (error.code !== 'ENOENT') throw error }
@@ -166,7 +170,7 @@ export async function reviewMiddleware({ dataDir, metadata, capture, fixtureCapt
       if (url.pathname === '/api/review/fixture.png' && req.method === 'GET') {
         const id = url.searchParams.get('screen')
         const scenario = metadata.scenarios.find((entry) => entry.id === id)
-        const node = towel.find((node) => node.id === id) ?? (scenario ? { ...scenario, scenario: scenario.id } : null)
+        const node = screens.find((node) => node.id === id) ?? (scenario ? { ...scenario, scenario: scenario.id } : null)
         if (!node) bad('Unknown registered screen')
         const png = await thumbnail(node, host)
         res.writeHead(200, { 'content-type': 'image/png', 'cache-control': 'private, max-age=3600', 'x-review-source': metadata.fixtureSource ?? metadata.revision.source }); res.end(png); return
@@ -174,8 +178,8 @@ export async function reviewMiddleware({ dataDir, metadata, capture, fixtureCapt
       if (url.pathname === '/api/review/snapshots' && req.method === 'POST') {
         const input = await body(req)
         if (input.scope !== undefined && input.scope !== 'app') bad('Unknown snapshot scope')
-        const nodes = input.scope === 'app' ? [...towel, ...metadata.scenarios.filter((entry) => !entry.id.startsWith('intake.towel.')).map((entry) => ({ ...entry, scenario: entry.id }))] : towel
-        const browser = fixtureCapture === captureFixture ? await (await import('@playwright/test')).chromium.launch({ channel: 'chrome', headless: true }) : undefined
+        const nodes = input.scope === 'app' ? [...screens, ...metadata.scenarios.filter((entry) => !declared.has(entry.id)).map((entry) => ({ ...entry, scenario: entry.id }))] : screens
+        const browser = await launchFixtureBrowser?.()
         let results
         try { results = await Promise.allSettled(nodes.map((node) => thumbnail(node, host, browser))) }
         finally { await browser?.close() }
@@ -189,7 +193,7 @@ export async function reviewMiddleware({ dataDir, metadata, capture, fixtureCapt
       }
       if (url.pathname === '/api/review/feedback' && req.method === 'GET') { json(200, (await serial(read)).map(withCurrentSource)); return }
       if (url.pathname === '/api/review/feedback' && req.method === 'POST') {
-        const input = checkedFeedback(await body(req), metadata)
+        const input = checkedFeedback(await body(req), metadata, screens)
         const { row, duplicate } = await serial(async () => {
           const rows = await read()
           const previous = rows.find((row) => row.id === input.id)
@@ -218,28 +222,6 @@ export async function reviewMiddleware({ dataDir, metadata, capture, fixtureCapt
       next()
     } catch (error) { json(error.status ?? 503, { error: error.status ? error.message : 'Could not save or load review feedback. Your unsent note is retained; retry.' }) }
   }
-}
-
-/** Captures fixed, real synthetic fixtures in an isolated browser context; never the reviewer's run. */
-async function captureFixture(node, { origin, cookie, browser: sharedBrowser }) {
-  const { chromium } = await import('@playwright/test')
-  const browser = sharedBrowser ?? await chromium.launch({ channel: 'chrome', headless: true })
-  let context
-  try {
-    context = await browser.newContext({ viewport: { width: 393, height: 852 } })
-    await context.addCookies([{ name: 'review_session', value: cookie.slice('review_session='.length), url: origin }])
-    await context.route('**/*', async (route) => {
-      const req = route.request()
-      if (new URL(req.url()).origin === origin && req.method() === 'GET') await route.continue()
-      else await route.abort()
-    })
-    const page = await context.newPage()
-    const care = node.id.startsWith('care:') ? `&care=${node.id.split(':')[1]}` : ''
-    await page.goto(`${origin}/review-frame.html?scenario=${node.scenario}${node.scenario.startsWith('intake.towel.') ? '&journey=towel' : ''}${care}`, { waitUntil: 'networkidle' })
-    if (node.renderer !== 'legacy') await page.getByRole('dialog').first().waitFor({ timeout: 5000 })
-    if (node.id === 'saved') { await page.getByRole('button', { name: 'Save item', exact: true }).click(); await page.getByRole('heading', { name: 'Saved', exact: true }).waitFor() }
-    return await page.screenshot({ type: 'png', animations: 'disabled' })
-  } finally { await context?.close(); if (!sharedBrowser) await browser.close() }
 }
 
 /** Rasterizes the submitted synthetic DOM with scripts disabled and all external requests blocked. */

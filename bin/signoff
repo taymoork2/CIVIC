@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# Local signoff: run CIVIƆ's checks on this machine instead of paid CI minutes, then
+# record a green "signoff" commit status on GitHub for the exact commit that passed.
+#
+#   bin/signoff            checks, tests and review-server tests
+#   bin/signoff --browser  also the Playwright review-canvas journey (needs Chrome
+#                          and a review server: pnpm --dir apps/web run review)
+#   bin/signoff --no-post  run everything but do not post a status
+set -euo pipefail
+
+browser=0 post=1
+for arg in "$@"; do
+  case "$arg" in
+    --browser) browser=1 ;;
+    --no-post) post=0 ;;
+    *) echo "Unknown option: $arg" >&2; exit 2 ;;
+  esac
+done
+
+repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+source_dir="$repo_root/rehearsal/source"
+step() { printf '\n[signoff %s] %s\n' "$(date +%H:%M:%S)" "$1"; }
+
+# A signoff vouches for one commit, so uncommitted changes would make it a false claim.
+if [ -n "$(git -C "$repo_root" status --porcelain)" ]; then
+  echo "Commit or stash your changes first: a signoff covers exactly the committed HEAD." >&2
+  exit 1
+fi
+sha="$(git -C "$repo_root" rev-parse HEAD)"
+
+step "Installing dependencies"
+pnpm --dir "$source_dir" install --frozen-lockfile
+step "Types and styles (shell, planner, Convex, web)"
+pnpm --dir "$source_dir" run check
+step "Unit and node tests"
+pnpm --dir "$source_dir" test
+step "Review inventory, adapter and server checks"
+pnpm --dir "$source_dir/apps/web" run test:review
+if [ "$browser" = 1 ]; then
+  step "Playwright review-canvas journey"
+  WASHCLOSET_REVIEW_E2E=1 WASHCLOSET_E2E_BASE_URL="${WASHCLOSET_E2E_BASE_URL:-http://127.0.0.1:3010}" \
+    pnpm --dir "$source_dir/apps/web" exec playwright test e2e/review-canvas.spec.ts --project=isolated --workers=1
+fi
+
+# Checks may not touch tracked files; if they did, the result no longer describes HEAD.
+if [ -n "$(git -C "$repo_root" status --porcelain)" ] || [ "$(git -C "$repo_root" rev-parse HEAD)" != "$sha" ]; then
+  echo "The working tree changed while checks ran; not signing off." >&2
+  exit 1
+fi
+
+scope="checks, tests and review-server tests"
+[ "$browser" = 1 ] && scope="$scope + review-canvas journey"
+if [ "$post" = 0 ]; then step "Passed for $sha ($scope); status not posted"; exit 0; fi
+if ! command -v gh >/dev/null; then step "Passed for $sha ($scope). Install the GitHub CLI (gh) to post the signoff status."; exit 0; fi
+
+cd "$repo_root"
+user="$(gh api user --jq .login)"
+gh api --silent "repos/{owner}/{repo}/statuses/$sha" \
+  -f state=success -f context=signoff \
+  -f description="Signed off locally by $user: $scope"
+step "Signed off $sha as $user ($scope)"
