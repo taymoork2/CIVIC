@@ -13,6 +13,8 @@ App code ─────┤      │                       ▲
 QA / tests ───┘      └── identity + evidence ┘   proposals flow back out as owned records
 ```
 
+**Vocabulary.** The "database" or "engine" is the **CIVIC graph**. It is an append-only store of events from every tool, plus the current-state graph built from them (section 4b). It has no screen of its own. Everything you see is a **view** over it: the journey canvas (the only one built today, from the journey engine fork), the Contract and Coverage panels, the inbox, and later readiness and variance views. "Dashboard" would name one future view, not the core.
+
 ## 1. Project onboarding (once per product)
 
 These steps follow the v4 report's onboarding proposal, adapted to all four lanes:
@@ -86,7 +88,64 @@ How deep each lane goes depends on its inputs (from the v4 report). Design files
 
 The Android kit says "Neutral default" exists, but Compose has no stock equivalent. CIVIC raises a Contract Conflict naming the target, both sources and the evidence, and assigns Design and Android Engineering as owners. The decision is recorded and the conflict links back to it.
 
-## 4. Keeping everyone in check without slowing anyone down
+## 4. Living in each role's workflow
+
+Onboarding gets a project into CIVIC. Staying useful means CIVIC shows up inside the tools each role already uses, gets their changes back without extra steps, and routes what one role needs to the role that can act on it. This section is a proposal; none of it is built.
+
+### 4a. Where CIVIC appears for each role
+
+| Role | Their daily tool | How CIVIC shows up there | What they do in CIVIC itself |
+|---|---|---|---|
+| Design | Figma, Open Design, Paper | A plugin or panel showing each frame's target, alignment state, and open records. Records arrive as comments on the frame. | Review real screens on the canvas and approve adaptations |
+| Design engineering | Component repo, Storybook, token pipeline | A CLI and a Storybook addon that publish tokens, components, and stories on each release. A status check flags variants with no mapping. | Map semantic variants to platform components and resolve token conflicts |
+| Engineering | App repo, pull requests, IDE | A PR status check and one summary comment: affected targets, stale evidence, new divergence. Deep links open the exact scenario. | Play a state, take a proposal, record adoption |
+| QA | Playwright, CI, test management | A reporter that sends runs, steps, traces, and screenshots tied to the build. Coverage gaps can turn into test tasks. | Plan coverage by journey and condition, and confirm evidence |
+| PM and leadership | Issue tracker, chat | Digests and linked records in the tracker | Readiness, variance budget, and journey walkthroughs |
+
+The rule: whatever a role does in its own tool should never need to be repeated in CIVIC. CIVIC is where the roles meet, not another inbox to keep up with.
+
+### 4b. How data gets back to the engine
+
+Every lane feeds one pipeline:
+
+```
+tool ──▶ connector ──▶ importer ──▶ event ──▶ CIVIC store ──▶ graph view (current state)
+          (pull/push)   (maps to targets)  (append-only, versioned)
+```
+
+- **Three ways in.**
+  - Pull: read a file export or API on demand or on a schedule.
+  - Push: a CLI, test reporter, or CI step uploads after a run or release.
+  - Watch: a local dev server notices changes, as the journey engine does today.
+
+  Hosted webhooks need a reachable endpoint. A local-only CIVIC uses pull and push until a hosted relay exists.
+- **One event shape.** Every importer emits the same envelope: source tool and revision, target ID (or "unmapped"), kind (artifact, state, transition, run, evidence, record, reply), status (declared, observed, inferred, proposed), actor and role, time, and a content hash.
+- **Append-only, then viewed.** Evidence and records are never overwritten. The current graph state is computed from the event log, so staleness, history, and "who said what, when" come for free. This matches the spec's expected-version writes and immutable captures.
+- **Idempotent.** Re-running an import with the same hash changes nothing. A new revision marks only the affected evidence stale.
+- **Tools own artifacts; CIVIC owns records.** Frames, code, and tests stay in their tools. CIVIC stores links, snapshots, evidence, and the collaboration records (proposals, decisions, divergences, exceptions, adoption).
+
+### 4c. Routing between roles
+
+1. **Every record has a target, and every target has owners.** CIVIC builds the ownership map from what teams already maintain: CODEOWNERS, Figma file and library owners, component package owners, and test owners. People fill any gaps by hand. Ownership is stored per role, so one person can hold several roles (D25).
+2. **The record type decides who is asked.** The spec's Dependency Triangle sets the defaults:
+   - An Ambiguity goes to Design.
+   - A Constraint goes from Engineering to Design.
+   - A Coverage gap goes to QA, and to whoever owns the missing state.
+   - A Divergence goes to the owners of both sides.
+   - An Exception goes to the approver named by policy.
+3. **Records are delivered where people work.** That might be a Figma comment, a PR comment or check, a test task, the issue tracker, chat, or the CIVIC inbox. Each person sets this per role. A person holding several roles gets one merged queue, not duplicates.
+4. **Replies come back to the record.** A reply in Figma, GitHub, or chat syncs to the CIVIC record, which stays the single source of truth. If two places edit at once, the expected-version check catches it instead of silently picking one.
+5. **Quiet by default.** Urgent items (failed evidence on a release, an expiring exception) notify right away. Everything else goes into a digest. A record with no owner escalates to the project lead rather than sitting unseen.
+6. **The loop closes on evidence.** A record resolves only when evidence for the decided outcome arrives through the same pipeline: a new design revision, merged code, or a passing run. That keeps every role in check without anyone chasing anyone.
+
+**Suggested build order:**
+1. File exports, a CLI push, and the Playwright reporter.
+2. A PR status check (the same idea as `bin/signoff`) and the CIVIC inbox.
+3. The ownership map from CODEOWNERS and package owners.
+4. The Figma plugin and Storybook addon.
+5. Chat and issue-tracker delivery with reply sync.
+
+## 5. Keeping everyone in check without slowing anyone down
 
 A core tenet of CIVIC is that Design, Design Engineering, Engineering and QA keep each other honest. In the spirit of the 200,000-mile Civic, a divergence should be like a dashboard light: it tells you clearly what's wrong, who should look at it, and the usual fix. It should never need a specialist to interpret.
 
@@ -116,19 +175,19 @@ Guardrails:
 
 Design and Android Engineering choose, and QA's evidence confirms the result.
 
-## 5. Validating onboarding
+## 6. Validating onboarding
 
 Two cases test the onboarding from opposite directions:
 
 - **Fluent Button** starts from design and code across three platforms, with a known mismatch between design and code. It proves that importers, linking, and Contract Conflicts work across platforms.
 - **Laundry's five unmapped destination states** start from an existing app with expected states that don't exist yet. These are Add clothes from the empty home, a garment's running wash, a hamper item in Laundry, moving washed pieces to Drying, and a garment's care history. Onboard Laundry through the manifest as if it were new. The five states should appear as owned coverage gaps, then turn observed as seeds and transitions land, with no Laundry-specific code in CIVIC.
 
-## 6. What exists today
+## 7. What exists today
 
 - **Built (Laundry, web only):** a curated scenario registry, a source scan, real-render preview through the adapter, observed towel transitions, revision-tied thumbnails, the Contract panel, a coverage contract with write-back, and 17 curated cross-route bindings.
-- **Not built:** remediation drafts, revisit triggers and the variance budget, the graph schema, any design-tool import, token or component library import, a test-report importer, native adapters, the project manifest and onboarding UI, and conflict records.
+- **Not built:** workflow plugins, the shared event pipeline, the ownership map and routing, remediation drafts, revisit triggers and the variance budget, the graph schema, any design-tool import, token or component library import, a test-report importer, native adapters, the project manifest and onboarding UI, and conflict records.
 
-## 7. Decided
+## 8. Decided
 
 - **D25:** Design Engineering is a primary persona that owns the component library. Personas are roles, so one person can hold several. For example, an engineer can cover QA through browser end-to-end runs when a team has no QA group.
 - **D26:** the first QA input is Playwright reports and traces.
