@@ -4,12 +4,12 @@ import { fileURLToPath } from 'node:url'
 import { reviewInventory } from './review-inventory.mjs'
 import { captureReview, reviewMiddleware } from '@civic/shell/server'
 import { laundryReviewAdapter } from './review-adapter.mjs'
+import { coverageBridge, coveragePath } from './review-coverage.mjs'
 
 export function reviewPlugin() {
   const web = resolve(dirname(fileURLToPath(import.meta.url)), '..')
   const repo = resolve(web, '../..')
   const dataDir = join(repo, '.review-data')
-  const shell = join(repo, 'packages/shell')
   // The handoff ships bounded Laundry design references beside the source tree.
   const designRoot = process.env.WASHCLOSET_REVIEW_DESIGN ?? resolve(repo, '../design/laundry-reference')
   return {
@@ -20,25 +20,37 @@ export function reviewPlugin() {
       if (!['127.0.0.1', 'localhost'].includes(server.config.server.host)) throw new Error('Review must bind to loopback. Deployment needs separately scoped review access.')
       const { metadata, evidence } = await reviewInventory(repo, designRoot)
       let refreshing = Promise.resolve()
+      let debounce
+      let scheduled
       const refresh = (file) => {
-        if (file !== join(repo, 'docs/design/review-validation.json') && (!(file.startsWith(join(web, 'src')) || file.startsWith(shell) && !file.includes('/node_modules/')) || !/\.(tsx?|mjs|json|css)$/.test(file))) return
-        refreshing = refreshing.then(async () => {
+        if (!/\.(tsx?|json|css|mjs|mts|ya?ml)$/.test(file) || !(file.startsWith(join(web, 'src') + '/') || file.startsWith(join(web, 'scripts') + '/') || file.startsWith(join(repo, 'packages') + '/') || file.startsWith(join(repo, 'convex') + '/') || [join(repo, coveragePath), join(repo, 'docs/design/review-validation.json'), join(repo, 'package.json'), join(repo, 'pnpm-lock.yaml'), join(web, 'package.json')].includes(file)) || file.includes('/node_modules/')) return
+        if (!scheduled) {
+        let wake
+        const delay = new Promise((resolve) => { wake = resolve })
+        scheduled = { wake }
+        refreshing = refreshing.then(() => delay).then(async () => {
           const updated = await reviewInventory(repo, designRoot)
           Object.assign(metadata, updated.metadata)
           delete metadata.refreshError
           evidence.clear(); for (const [path, content] of updated.evidence) evidence.set(path, content)
+          await auth.refreshCoverage()
         }).catch((error) => {
           metadata.validation = { path: 'docs/design/review-validation.json', status: 'unavailable', receipt: null }
           metadata.refreshError = 'Review inventory could not be refreshed. Repair the source and reload; no current revision is attested.'
           server.config.logger.error(`Review inventory refresh failed: ${error.message}`)
         })
+        }
+        clearTimeout(debounce)
+        debounce = setTimeout(() => { const pending = scheduled; scheduled = null; pending.wake() }, 250)
       }
       server.watcher.on('change', refresh).on('add', refresh).on('unlink', refresh)
       // Inside an Amp orb, PUBLIC_URL names the authenticated portal for this service.
       const publicHost = process.env.AMP_ORB && process.env.PUBLIC_URL ? new URL(process.env.PUBLIC_URL).host : null
-      const auth = await reviewMiddleware({ dataDir, metadata, evidence, capture: captureReview, adapter: laundryReviewAdapter, publicHost })
-      server.watcher.add([join(repo, 'docs/design/review-validation.json'), shell])
-      server.middlewares.use(async (req, res, next) => { await refreshing; return auth(req, res, next) })
+      const auth = await reviewMiddleware({ dataDir, metadata, evidence, capture: captureReview, adapter: laundryReviewAdapter, coverage: (context) => coverageBridge({ repo, ...context }), publicHost })
+      await auth.refreshCoverage()
+      server.watcher.add([join(repo, coveragePath), join(repo, 'docs/design/review-validation.json'), join(repo, 'packages'), join(repo, 'convex'), join(repo, 'pnpm-lock.yaml'), join(repo, 'package.json')])
+      server.httpServer?.once('close', () => clearTimeout(debounce))
+      server.middlewares.use(async (req, res, next) => { let pending; do { pending = refreshing; await pending } while (pending !== refreshing); return auth(req, res, next) })
       // These entries never mount the app's live providers.
       server.middlewares.use(async (req, res, next) => {
         const url = new URL(req.url, 'http://127.0.0.1')

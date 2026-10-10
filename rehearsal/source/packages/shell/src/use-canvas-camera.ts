@@ -9,9 +9,9 @@ export function useCanvasCamera(initial: Camera, world: { width: number; height:
   const current = useRef(camera)
   const bounds = useRef(world)
   bounds.current = world
-  const setCamera = (next: Camera) => {
+  const setCamera = (next: Camera, extent = bounds.current) => {
     const element = stage.current
-    const contained = element ? containCamera(next, { width: element.clientWidth, height: element.clientHeight }, bounds.current) : next
+    const contained = element ? containCamera(next, { width: element.clientWidth, height: element.clientHeight }, extent) : next
     current.current = contained; setRawCamera(contained)
   }
   const [space, setSpace] = useState(false)

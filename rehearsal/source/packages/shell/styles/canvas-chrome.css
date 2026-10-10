@@ -86,8 +86,8 @@
 .rh-inspector { display: flex; flex-direction: column; gap: 14px; }
 .rh-inspector > * { flex-shrink: 0; }
 .rh-inspect-content, .rh-review-panel, .rh-review-panel form, .rh-review-evidence { display: grid; gap: 12px; }
-.rh-panel-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--rh-line); padding-bottom: 8px; }
-.rh-panel-tabs button { border: 0; background: transparent; }
+.rh-panel-tabs { display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--rh-line); padding-bottom: 8px; }
+.rh-panel-tabs button { border: 0; background: transparent; padding-inline: 8px; }
 .rh-panel-tabs button[aria-pressed=true] { color: var(--rh-accent); background: #edf2ff; }
 .rh-panel-scope { font-size: 12px; color: var(--rh-muted); }
 .rh-inspector textarea { width: 100%; min-height: 110px; resize: vertical; border: 1px solid var(--rh-line); border-radius: 6px; padding: 10px; }
@@ -108,6 +108,18 @@
 .rehearsal :is(input,textarea) { caret-color: var(--rh-accent); }
 .rehearsal ::selection { background: #dce7ff; color: #25272c; }
 .rh-inspector [role=status]:empty { display: none; }
+.rh-status:empty { display: none; }
+.rh-coverage-panel, .rh-coverage-detail, .rh-coverage-panel form { display: grid; gap: 12px; }
+.rh-coverage-switch { display: flex; gap: 8px; align-items: center; font-size: 12px; }
+.rh-coverage-switch input { width: 16px; min-height: 16px; }
+.rh-coverage-list { max-height: 250px; overflow: auto; border-bottom: 1px solid var(--rh-line); }
+.rh-coverage-detail { border-top: 1px solid var(--rh-line); padding-top: 12px; }
+.rh-coverage-detail code { overflow-wrap: anywhere; font-size: 11px; }
+.rh-coverage-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.rh-generated-preview { border: 1px solid var(--rh-line); border-radius: 8px; padding: 14px; display: grid; gap: 12px; }
+.rh-generated-preview > p { white-space: pre-wrap; }
+.rh-generated-preview > small { color: var(--rh-muted); font-size: 10px; }
+.rh-inspector .rh-intent-editor { min-height: 260px; font: 11px/1.6 monospace; }
 @media (hover: hover) {
   .rh-canvas-tools button:hover, .rh-camera-controls button:hover, .rh-zoom-menu button:hover, .rh-breadcrumb button:hover { background: #f3f4f6; }
 }

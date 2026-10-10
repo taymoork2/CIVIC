@@ -30,3 +30,21 @@
 .app-screen.is-viewed .app-screen-picture { border: 2px solid #2456d6; }
 .app-screen > .app-play-screen { background: #2456d6; color: white; padding: 12px; min-height: 44px; border-radius: 8px; text-align: center; font-size: 18px; }
 .app-nav-section h3 { color: #526880; font-size: 12px; margin-top: 18px; }
+.app-detail-scene[hidden] { display: none; }
+.app-overview { position: absolute; inset: 0; }
+.app-overview-edges { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.app-overview-flow { position: absolute; }
+.app-overview-area { position: absolute; top: -34px; left: 0; font-size: 20px; color: #526880; }
+.app-overview-flow > button { width: 100%; height: 100%; padding: 20px; text-align: left; background: #fff; border: 2px solid #d6d9df; border-radius: 10px; overflow: hidden; }
+.app-overview-flow.is-focused > button { border-color: #2456d6; }
+.app-overview-flow strong { display: block; font-size: 26px; line-height: 1.2; }
+.app-overview-flow button > span { display: block; margin: 8px 0 14px; font-size: 18px; color: #526880; }
+.app-overview-filmstrip { display: flex; align-items: center; gap: 14px; }
+.app-overview-filmstrip img, .app-overview-filmstrip > span:not(.app-overview-more) { width: 58px; height: 126px; background: #f4f5f7; border: 1px solid #d6d9df; border-radius: 4px; }
+.app-overview-more { font-size: 20px; color: #526880; }
+.rh-route-actions article { padding: 14px 0; border-top: 1px solid #d6d9df; }
+.rh-route-actions code { overflow-wrap: anywhere; }
+.rh-route-actions a { display: block; margin-top: 10px; }
+.rh-canvas-detail { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.rh-canvas-detail > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+.rh-canvas-detail select { font: inherit; font-size: 12px; min-height: 36px; max-width: 132px; background: #fff; border: 1px solid #d6d9df; border-radius: 6px; padding: 4px 8px; }

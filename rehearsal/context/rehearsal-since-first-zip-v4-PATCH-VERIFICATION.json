@@ -1,0 +1,11 @@
+{
+  "baselineZipSha256": "fb1738009443993ef0dc9d7b059973747d8f9556fe54c6e9d46e997c89fca5ad",
+  "patchSha256": "86e3e3cf3fb9e3483089beb091b353c49deb464dcfaaa402139aeaf30598075a",
+  "patchBytes": 212389,
+  "changedPaths": 27,
+  "gitApplyCheck": "passed on a fresh extraction of the exact first ZIP",
+  "gitApply": "passed; all changed path hashes match current source",
+  "temporaryVerificationRoot": "/var/folders/fd/hz_x5rk15t31rk4cv4mx047w0000gn/T/rehearsal-git-patch-534g7mjg/verification",
+  "sourceBranchModified": false,
+  "includesPrivateState": false
+}

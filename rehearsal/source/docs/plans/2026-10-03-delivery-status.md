@@ -1,5 +1,18 @@
 # Delivery status: personal trial, remaining implementation and external beta
 
+## Rehearsal update (2026-10-10)
+
+- The local [coverage bridge](../design/review-product/coverage-bridge.md) adds a
+  Coverage pane to the persistent canvas. Canonical repository expectations are
+  editable from Rehearsal; code and contract changes refresh the inventory and
+  stale-state indicators without replacing the live app draft. Automatic local
+  scaffolds include briefs, editable synthetic prototypes and React code exports.
+  Source discoveries stay unconfirmed, generation never marks a gap implemented,
+  and acknowledgement is distinct from resolution. The expectation contract owns
+  machine-readable coverage intent; this delivery list owns priority/release status.
+  AI implementation workers, isolated candidate branch execution, automatic
+  adoption and deployment remain open. This is uncommitted local work in `f0d3`.
+
 ## Current (2026-10-09)
 
 - Rehearsal's owner-approved first build is running in `f0d3` on loopback port

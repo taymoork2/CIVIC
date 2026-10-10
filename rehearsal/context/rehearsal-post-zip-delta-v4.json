@@ -1,0 +1,229 @@
+{
+  "baselineZip": "rehearsal-handoff-2026-10-10.zip",
+  "baselineZipSha256": "fb1738009443993ef0dc9d7b059973747d8f9556fe54c6e9d46e997c89fca5ad",
+  "baselineManifestVerified": true,
+  "scope": "All source paths in the verified baseline ZIP, except portable AGENTS/CLAUDE replacements, plus current Rehearsal source/tests/docs. External/private runtime state is not part of this comparison.",
+  "counts": {
+    "added": 11,
+    "modified": 16,
+    "removed": 0
+  },
+  "files": [
+    {
+      "path": "apps/web/e2e/review-canvas.spec.ts",
+      "status": "modified",
+      "oldSha256": "1cdef941c9f52078776ec6baf47eb28da6334343463e29b229b42586e624074e",
+      "newSha256": "6d0d14efe6f0c2a2e3534f5e342c1e5cffd6140d5e39af45d2cbcb3c3064225f",
+      "oldBytes": 4149,
+      "newBytes": 11741
+    },
+    {
+      "path": "apps/web/e2e/review-coverage.spec.ts",
+      "status": "added",
+      "oldSha256": null,
+      "newSha256": "e605b19c7c1189d1f56f773213f87f1d3e5d9fad9415af6cb1409f6f8d5e7e26",
+      "oldBytes": 0,
+      "newBytes": 4837
+    },
+    {
+      "path": "apps/web/package.json",
+      "status": "modified",
+      "oldSha256": "85adcffb8bb9564b1d1c5eff5daf4cf0649c7daedc2f302e13cd11ec669311f7",
+      "newSha256": "1351a6b6fb2793b0d003cd50743899af984fb0e13431d7e630619a68e291f39d",
+      "oldBytes": 1850,
+      "newBytes": 1884
+    },
+    {
+      "path": "apps/web/scripts/review-coverage.check.mjs",
+      "status": "added",
+      "oldSha256": null,
+      "newSha256": "a6fbd7bc60d20c7a30dc60fa94f05b4a6ba47f61a9cd60cce2db7d67f9a99efa",
+      "oldBytes": 0,
+      "newBytes": 7136
+    },
+    {
+      "path": "apps/web/scripts/review-coverage.mjs",
+      "status": "added",
+      "oldSha256": null,
+      "newSha256": "3652117eb0414cb16a40e021476c4a73c001cfb696c835cad75e71daeff86ae2",
+      "oldBytes": 0,
+      "newBytes": 10396
+    },
+    {
+      "path": "apps/web/scripts/review-inventory.check.mjs",
+      "status": "modified",
+      "oldSha256": "8f4e0c8cc0994e04226fc679b0255b01f99fdb244d4c486ced5a3f7fd5892d4b",
+      "newSha256": "7225f28f2f4eecd9bcb2721caafc8074808527f2c9bb1e31fbc328edf5c90b73",
+      "oldBytes": 1638,
+      "newBytes": 2744
+    },
+    {
+      "path": "apps/web/scripts/review-inventory.mjs",
+      "status": "modified",
+      "oldSha256": "9c38f67eb837d88440adc1d903dea8b8b173e71f360fd96dc3a7b876c018d7e0",
+      "newSha256": "f8a13c9a0d130d4e094dd1ef4adfc0671ef4cd75bbdc2dea76807f30bb9acc0f",
+      "oldBytes": 8134,
+      "newBytes": 10044
+    },
+    {
+      "path": "apps/web/scripts/review-plugin.mjs",
+      "status": "modified",
+      "oldSha256": "9b351faa779c9c14db4542bacb4e0a36f91be03ce34ccea630fc2dd7f227d5c2",
+      "newSha256": "4d4385ddb8f7713adf0c3b0ccfb4640713119f810da29796c4c3412c3733cebc",
+      "oldBytes": 3950,
+      "newBytes": 5014
+    },
+    {
+      "path": "apps/web/scripts/review-server.check.mjs",
+      "status": "modified",
+      "oldSha256": "4feb9ba519af4a464dc6e02400203bc62f666f9ffc6a2a01da5404f71a67f932",
+      "newSha256": "f830351e88cedeba66d2743cb6e4ecad95eae8c8e8e7cc344bef886b3ec16b0d",
+      "oldBytes": 11293,
+      "newBytes": 13444
+    },
+    {
+      "path": "apps/web/scripts/review-server.mjs",
+      "status": "modified",
+      "oldSha256": "a2c343563db0d7b554fe955bfafdc93624ebe59e3abd344683398ee990a0c5f6",
+      "newSha256": "dbf3389cd81d62f8305e804b09ec50fc343c293340497bf0cd37a1af4a989dd7",
+      "oldBytes": 21713,
+      "newBytes": 23381
+    },
+    {
+      "path": "apps/web/src/review/app-canvas.css",
+      "status": "modified",
+      "oldSha256": "6153703441c12bd169c47b8bec91232ae3bba863561e9d9f2956c2302f07e509",
+      "newSha256": "259ce66b6c8c7ec92903bb1ceab880ae36d17d56f3548f182056853a7b4a75c7",
+      "oldBytes": 3037,
+      "newBytes": 4703
+    },
+    {
+      "path": "apps/web/src/review/app-canvas.tsx",
+      "status": "modified",
+      "oldSha256": "85b17074b5b833d0b5b233c765cb2ec6250002aaca7594a60f7daf7cc91d9f23",
+      "newSha256": "c002e930751b66e2a38308d59eb01b65f47a1140324480216effcb55568606c0",
+      "oldBytes": 21475,
+      "newBytes": 25397
+    },
+    {
+      "path": "apps/web/src/review/app-map.test.ts",
+      "status": "modified",
+      "oldSha256": "33c8ecf0493b42687eeb57f8f896614a5285ec1aeab2d448f97f5609f6b43d72",
+      "newSha256": "877c0b6bfa366c131d75881cb830d5c05ab7749e8092d5f4ca1bd0fec653e03a",
+      "oldBytes": 2886,
+      "newBytes": 5164
+    },
+    {
+      "path": "apps/web/src/review/app-map.ts",
+      "status": "modified",
+      "oldSha256": "ff8bc071f6896406e25aea59c846c8c93b9489607cb9dc0be0423db9e40f540a",
+      "newSha256": "7d7baf6cc10334bf9e61a560d68ae00a1b52997b7e895ac0065cdb83a8f77a9d",
+      "oldBytes": 5390,
+      "newBytes": 7743
+    },
+    {
+      "path": "apps/web/src/review/app-overview.tsx",
+      "status": "added",
+      "oldSha256": null,
+      "newSha256": "6cb20f61e8d31187c416e7a62e6657b924e8eeeac00bc45722ba83b932095891",
+      "oldBytes": 0,
+      "newBytes": 3484
+    },
+    {
+      "path": "apps/web/src/review/arrow-routing.test.ts",
+      "status": "added",
+      "oldSha256": null,
+      "newSha256": "b1bc71f2e96af4352eaccbd757970403ee88a59734f7e5be9313b2ebbeee8b62",
+      "oldBytes": 0,
+      "newBytes": 1360
+    },
+    {
+      "path": "apps/web/src/review/arrow-routing.ts",
+      "status": "added",
+      "oldSha256": null,
+      "newSha256": "24c920beded23d52e056d1d501a977dbdc0493fcd087153db382d336d084422e",
+      "oldBytes": 0,
+      "newBytes": 3610
+    },
+    {
+      "path": "apps/web/src/review/canvas-chrome.css",
+      "status": "modified",
+      "oldSha256": "adf9ffd23515f0b4590bc9b839877fa127d4adb60523188d16a9bcb761fc85ea",
+      "newSha256": "428b4cd5711ed71cf651527228d2051447e7270d51e66cd7ba90ffd2508bba67",
+      "oldBytes": 11697,
+      "newBytes": 12623
+    },
+    {
+      "path": "apps/web/src/review/coverage-panel.tsx",
+      "status": "added",
+      "oldSha256": null,
+      "newSha256": "9b5804867bc0fb5be10f50e442a60bf157202644379caa476f802848d6f90887",
+      "oldBytes": 0,
+      "newBytes": 12774
+    },
+    {
+      "path": "apps/web/src/review/route-actions.json",
+      "status": "added",
+      "oldSha256": null,
+      "newSha256": "ee1384efab42e7d876ee96cd9932872a0a5a1133d7226680f48c4f286a00b3d5",
+      "oldBytes": 0,
+      "newBytes": 4934
+    },
+    {
+      "path": "apps/web/src/review/use-canvas-camera.ts",
+      "status": "modified",
+      "oldSha256": "50c6937f5358f56da0638f23be75e4799721e1d927d0f6d76511a2aa5b7ecaed",
+      "newSha256": "1297c5048c26099b18b091b74e95c86388c5578d5892691fe8f1f441de48bb0f",
+      "oldBytes": 4064,
+      "newBytes": 4081
+    },
+    {
+      "path": "docs/design/review-product/2026-10-10-post-zip-report.md",
+      "status": "added",
+      "oldSha256": null,
+      "newSha256": "60b3849636b8552bcc874fe5fc6c4ddeabc64b0535c395bb1ece1c863c406f1f",
+      "oldBytes": 0,
+      "newBytes": 37011
+    },
+    {
+      "path": "docs/design/review-product/PRODUCT.md",
+      "status": "modified",
+      "oldSha256": "489081ca159fd6230160caeb2fe0446473fe583fd762b76143151a4d73824543",
+      "newSha256": "2ca3daf59d2369d229139fcb6361f0b5b9854af52e7a9cff875a6844bb942c99",
+      "oldBytes": 7643,
+      "newBytes": 9694
+    },
+    {
+      "path": "docs/design/review-product/build-evidence.md",
+      "status": "modified",
+      "oldSha256": "71e51c3e60d75bb068c47bc40a60722a20be6f8fe7ed7e36a7fa69ee43535c27",
+      "newSha256": "cdcc3e2b84de4e21500026ced4e6013ee3bcd49c85584bcb566b0f9875038d44",
+      "oldBytes": 14959,
+      "newBytes": 23205
+    },
+    {
+      "path": "docs/design/review-product/coverage-bridge.md",
+      "status": "added",
+      "oldSha256": null,
+      "newSha256": "133cf8d8feccf4fbd0fbb85712e617d0eaeeff52384203e4da72b04cc407ea5d",
+      "oldBytes": 0,
+      "newBytes": 12491
+    },
+    {
+      "path": "docs/design/review-product/coverage.json",
+      "status": "added",
+      "oldSha256": null,
+      "newSha256": "9357472e46c8db35e52f8271e6091527a82ac417d70958dd5e64d61bee73a94e",
+      "oldBytes": 0,
+      "newBytes": 4239
+    },
+    {
+      "path": "docs/plans/2026-10-03-delivery-status.md",
+      "status": "modified",
+      "oldSha256": "10b7901a99339706ba0ef2cb1adb0a5cefbbc06c9c6d9992ff6d5bc0546c97d9",
+      "newSha256": "32258cc512364b1c8b7e71c86338622c65416ee71fc4fe8847107d0c9edc4e4e",
+      "oldBytes": 175549,
+      "newBytes": 176390
+    }
+  ]
+}

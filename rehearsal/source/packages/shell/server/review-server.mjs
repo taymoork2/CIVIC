@@ -53,14 +53,16 @@ function checkedFeedback(input, metadata, screens) {
  * Loopback-only review storage. No Convex client, household credentials or personal records.
  * `publicHost` admits one authenticated Amp portal hostname; its collaborators skip the local key.
  * The adapter declares its journey screens, editable proposal properties and fixture renderer.
+ * `coverage`, when given, opens the app's coverage bridge for this data directory and inventory.
  */
-export async function reviewMiddleware({ dataDir, metadata, capture, adapter, evidence = new Map(), publicHost = null }) {
+export async function reviewMiddleware({ dataDir, metadata, capture, adapter, coverage, evidence = new Map(), publicHost = null }) {
   const { screens, proposalProperties, captureFixture, launchFixtureBrowser } = adapter
   // The shell validates exactly these presentation edits; an adapter may offer a subset.
   if (proposalProperties.some((key) => !['title', 'action', 'color'].includes(key))) throw new Error('The review shell can only validate title, action and color proposals.')
   const declared = new Set(screens.map((screen) => screen.scenario))
   const withCurrentSource = (row) => ({ ...row, sourceStale: row.revision.source !== metadata.revision.source || row.revision.head !== metadata.revision.head })
   await mkdir(dataDir, { recursive: true, mode: 0o700 })
+  const bridge = metadata.coverage && coverage ? await coverage({ dataDir, metadata }) : null
   const keyPath = join(dataDir, 'access-key')
   let accessKey
   try { accessKey = (await readFile(keyPath, 'utf8')).trim() }
@@ -81,6 +83,7 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, ev
       const operation = fixtureQueue.then(async () => {
         try { return await readFile(file) } catch (error) { if (error.code !== 'ENOENT') throw error }
         const png = await captureFixture(node, { origin: `http://${host}`, cookie: `review_session=${session}`, browser })
+        if (source !== (metadata.fixtureSource ?? metadata.revision.source)) throw Object.assign(new Error('Source changed during capture. Retry snapshots.'), { status: 409 })
         await writeFile(file + '.tmp', png, { mode: 0o600 }); await rename(file + '.tmp', file)
         return png
       })
@@ -96,7 +99,7 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, ev
   // Captures and read-modify-write operations share one queue; concurrent notes cannot lose each other.
   let queue = Promise.resolve()
   const serial = (fn) => { const operation = queue.then(fn); queue = operation.catch(() => {}); return operation }
-  return async (req, res, next) => {
+  const middleware = async (req, res, next) => {
     const json = (status, value) => { res.writeHead(status, { 'content-type': 'application/json', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' }); res.end(JSON.stringify(value)) }
     try {
       const portal = publicHost !== null && req.headers.host === publicHost
@@ -119,6 +122,10 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, ev
         res.end('<!doctype html><html lang="en"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Review access</title><style>body{font:18px/1.5 system-ui;max-width:32rem;margin:12vh auto;padding:24px}input,button{font:inherit;padding:12px;width:100%;box-sizing:border-box;margin:8px 0}</style><h1>A Laundered Closet review</h1><p>Enter the local review key from <code>.review-data/access-key</code> in this worktree. This workspace uses synthetic records.</p><form><label for="key">Review key</label><input id="key" type="password" autocomplete="off" required><button>Open review workspace</button><p role="alert" id="error"></p></form><script>document.querySelector("form").onsubmit=async(e)=>{e.preventDefault();try{const r=await fetch("/api/review/login",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({key:document.getElementById("key").value})});if(!r.ok)throw Error("That review key is not valid.");location.reload()}catch(e){document.getElementById("error").textContent=e.message}}</script></html>'); return
       }
       if (url.pathname === '/api/review/index' && req.method === 'GET') { json(metadata.refreshError ? 503 : 200, metadata.refreshError ? { error: metadata.refreshError } : metadata); return }
+      if (url.pathname === '/api/review/coverage' && ['GET', 'POST'].includes(req.method)) {
+        if (!bridge || metadata.refreshError) { json(503, { error: 'Coverage inventory is unavailable. Repair the source and retry.' }); return }
+        json(200, req.method === 'GET' ? await bridge.get() : await bridge.update(await body(req))); return
+      }
       if (url.pathname === '/api/review/proposals' && req.method === 'GET') { json(200, await serial(readProposals)); return }
       if (url.pathname === '/api/review/proposals' && req.method === 'POST') {
         const input = await body(req)
@@ -172,11 +179,20 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, ev
         const scenario = metadata.scenarios.find((entry) => entry.id === id)
         const node = screens.find((node) => node.id === id) ?? (scenario ? { ...scenario, scenario: scenario.id } : null)
         if (!node) bad('Unknown registered screen')
+        const requested = url.searchParams.get('source')
+        if (requested !== null && !/^[0-9a-f]{64}$/.test(requested)) bad('Invalid snapshot source')
+        if (requested && requested !== (metadata.fixtureSource ?? metadata.revision.source)) {
+          let png
+          try { png = await readFile(join(fixtureDir, `${requested}-${node.id.replace(':', '-')}.png`)) }
+          catch (error) { if (error.code !== 'ENOENT') throw error; json(404, { error: 'Historical fixture snapshot unavailable' }); return }
+          res.writeHead(200, { 'content-type': 'image/png', 'cache-control': 'private, max-age=3600', 'x-review-source': requested }); res.end(png); return
+        }
         const png = await thumbnail(node, host)
         res.writeHead(200, { 'content-type': 'image/png', 'cache-control': 'private, max-age=3600', 'x-review-source': metadata.fixtureSource ?? metadata.revision.source }); res.end(png); return
       }
       if (url.pathname === '/api/review/snapshots' && req.method === 'POST') {
         const input = await body(req)
+        const source = metadata.fixtureSource ?? metadata.revision.source
         if (input.scope !== undefined && input.scope !== 'app') bad('Unknown snapshot scope')
         const nodes = input.scope === 'app' ? [...screens, ...metadata.scenarios.filter((entry) => !declared.has(entry.id)).map((entry) => ({ ...entry, scenario: entry.id }))] : screens
         const browser = await launchFixtureBrowser?.()
@@ -184,7 +200,8 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, ev
         try { results = await Promise.allSettled(nodes.map((node) => thumbnail(node, host, browser))) }
         finally { await browser?.close() }
         const errors = nodes.filter((_, i) => results[i].status === 'rejected').map((node) => node.id)
-        json(200, { source: metadata.fixtureSource ?? metadata.revision.source, count: nodes.length - errors.length, errors }); return
+        if (source !== (metadata.fixtureSource ?? metadata.revision.source)) { json(409, { error: 'Source changed during capture. Retry snapshots; previous run is retained.' }); return }
+        json(200, { source, count: nodes.length - errors.length, errors }); return
       }
       if (url.pathname === '/api/review/evidence' && req.method === 'GET') {
         const file = evidence.get(url.searchParams.get('file'))
@@ -222,6 +239,7 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, ev
       next()
     } catch (error) { json(error.status ?? 503, { error: error.status ? error.message : 'Could not save or load review feedback. Your unsent note is retained; retry.' }) }
   }
+  return Object.assign(middleware, { refreshCoverage: () => bridge?.get() })
 }
 
 /** Rasterizes the submitted synthetic DOM with scripts disabled and all external requests blocked. */
