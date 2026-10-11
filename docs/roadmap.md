@@ -6,17 +6,16 @@ Every step follows [decision 0006](decisions/0006-deterministic-civic-for-agenti
 
 ## Order of work
 
-Reprioritized on 2026-10-11. Steps 1 and 2 and the review to agent loop's Laundry slice are built. Step numbers are stable names that other documents cite, so the order of work is listed here rather than by renumbering:
+Reprioritized on 2026-10-11. Steps 1 and 2, the review to agent loop's Laundry slice and the gate (step 8) are built. Step numbers are stable names that other documents cite, so the order of work is listed here rather than by renumbering:
 
-1. **[Step 8: the gate](#8-the-gate-civic-check).** Decision 0005 says most people meet CIVIC through checks in their own tools, and that part has nothing a team could turn on yet. The checks exist; they only print.
-2. **[Step 3](#3-typed-contract-and-change-records), only the Decision record first,** so an approved exception or a rejected override keeps the gate green.
-3. **[Step 9: real inputs](#9-real-inputs-replace-the-stand-ins)** replace the stand-in Figma files and illustrative decisions.
-4. **[Step 4](#4-the-journey-engine-as-a-graph-viewer):** a second app onboards through the manifest and crawl-first discovery, gated by `civic check`.
-5. **The review loop's next items** ([below](#next-the-review-to-agent-loop), item 3): Codex packaging, then PR previews and design drafts once real Figma inputs exist.
-6. **[Step 6](#6-journey-completeness-and-replay), then [step 5](#5-identity-permissions-and-multiplayer).** Multiplayer stays last while there is one user.
-7. **[Step 7](#7-repository-hygiene)** happens opportunistically.
+1. **[Step 3](#3-typed-contract-and-change-records), only the Decision record first,** so an approved exception or a rejected override keeps the gate green.
+2. **[Step 9: real inputs](#9-real-inputs-replace-the-stand-ins)** replace the stand-in Figma files and illustrative decisions.
+3. **[Step 4](#4-the-journey-engine-as-a-graph-viewer):** a second app onboards through the manifest and crawl-first discovery, gated by `civic check`.
+4. **The review loop's next items** ([below](#next-the-review-to-agent-loop), item 3): Codex packaging, then PR previews and design drafts once real Figma inputs exist.
+5. **[Step 6](#6-journey-completeness-and-replay), then [step 5](#5-identity-permissions-and-multiplayer).** Multiplayer stays last while there is one user.
+6. **[Step 7](#7-repository-hygiene)** happens opportunistically.
 
-The reasoning is that the graph and the shared space (parts 1 and 3 of [decision 0005](decisions/0005-what-civic-is.md)) are well along, while part 2 is not, and the gate can be built now on the demo graphs without waiting for Figma access.
+[Step 8, the gate](#8-the-gate-civic-check), came first because decision 0005 says most people meet CIVIC through checks in their own tools (part 2), and until it existed the checks only printed. The graph and the shared space (parts 1 and 3) were already well along.
 
 ## 1. CIVIC graph schema
 
@@ -96,6 +95,8 @@ Acceptance: ordinary refresh and replay make zero model calls with providers dis
 One command that runs every check on a graph (contract conflicts, override drift, completeness, gaps) and exits non-zero when there are new findings nobody has decided. A baseline file records existing findings so old debt doesn't block a change. It prints a short Markdown summary and can post a `civic` commit status the way `bin/signoff` does, with no GitHub Actions. This is the SonarQube shape from [decision 0005](decisions/0005-what-civic-is.md): a finding is raised at the change that caused it.
 
 Acceptance: on the Fluent Button and Card demo graphs, `civic check` fails on an undecided conflict, passes once a recorded decision covers it, ignores baselined findings, and reports counts with denominators. It makes no model calls.
+
+Built in [`graph/`](../graph#the-gate-civic-check) and run by `bin/signoff` on the graphs in [`civic.check.json`](../civic.check.json). Undecided findings block: open conflicts, overrides no conflict tracks, expired exceptions, failing evidence, missing product states, dead ends and unreachable screens. Recorded facts and evidence debt (variants mapped to `none`, platform-only variants, missing run evidence, unconfirmed links, approved exceptions) are reported without blocking, and a project can choose its own list. The Card's undecided selectable override, its missing empty and error states, and the Checkout journey's dead end and unreachable screen are in [`civic.baseline.json`](../civic.baseline.json). Decisions are still inline on the conflict until the Decision record (step 3).
 
 ## 9. Real inputs replace the stand-ins
 

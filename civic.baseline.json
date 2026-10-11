@@ -1,0 +1,30 @@
+{
+  "schema": "civic.baseline/0",
+  "findings": [
+    {
+      "graph": "demo/card/out/resolved.graph.json",
+      "key": "dead-end target:shop.promo-applied target:shop.checkout",
+      "summary": "Promo applied is a dead end in Checkout: no path leads on and it isn't a declared exit."
+    },
+    {
+      "graph": "demo/card/out/resolved.graph.json",
+      "key": "missing-state target:shop.order-summary semantic:card empty",
+      "summary": "Order Summary has no design for the Card's empty state; show it or say the instance inherits the default."
+    },
+    {
+      "graph": "demo/card/out/resolved.graph.json",
+      "key": "missing-state target:shop.order-summary semantic:card error",
+      "summary": "Order Summary has no design for the Card's error state; show it or say the instance inherits the default."
+    },
+    {
+      "graph": "demo/card/out/resolved.graph.json",
+      "key": "open-conflict conflict:shop.order-summary.card.state-selected",
+      "summary": "The product design changes the Card's state.selected (set-property, true) and no maintainer has reviewed it. Nobody has decided it yet."
+    },
+    {
+      "graph": "demo/card/out/resolved.graph.json",
+      "key": "unreachable-screen target:shop.gift-options target:shop.checkout",
+      "summary": "Gift options can't be reached from Checkout's entry."
+    }
+  ]
+}

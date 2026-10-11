@@ -93,19 +93,37 @@ Two read-only queries over a graph (D31). Both are deterministic and print Markd
 - **`civic context <graph> <semantic-id> --platform <p> [--variant <key>]`** prints one work order: intent, states, slots, the platform's mapping and default, the other platforms' mappings, tokens, extension points, conflicts with their decisions, evidence by tier, acceptance, and the IDs to put in code ([`src/context.ts`](src/context.ts)).
 - **`civic gaps <graph> [--scope <semantic-id>] [--platform <p>]`** lists what's expected but missing, each with owners: open conflicts, missing variants, missing product states in designs, platform-only variants, failing evidence, platforms with no run evidence, unconfirmed links, and approved exceptions with their revisit triggers ([`src/gaps.ts`](src/gaps.ts)).
 
+## The gate: `civic check`
+
+`civic check` is roadmap step 8 ([`src/check.ts`](src/check.ts)). It runs every check above on one or more graphs and exits non-zero when there is a new finding nobody has decided. With no files it reads `civic.check.json`, which lists the graphs, the baseline and optionally which finding kinds block:
+
+```json
+{ "graphs": ["demo/card/out/resolved.graph.json"], "baseline": "civic.baseline.json", "blocking": ["open-conflict"] }
+```
+
+- **What blocks by default.** Findings that wait on a decision: an invalid graph, an open conflict, an override no conflict tracks, an approved exception past its `expires` date, failing evidence, a product state a design neither shows nor inherits, and a journey screen that is a dead end or unreachable. Recorded facts and evidence debt are reported as advisory: variants mapped to `none`, platform-only variants, no run evidence, unconfirmed links and approved exceptions.
+- **Baseline.** Each finding has a stable key (kind, subject, platform and what tells it apart, such as the state). A baselined finding doesn't block, so old debt doesn't stop a change, and a new one is raised at the change that caused it. `--update-baseline` writes every current blocking finding to the baseline, which shows up in review as a diff. Findings that are gone are listed as fixed until the baseline is updated. An invalid graph can't be baselined.
+- **Counts.** The report gives each check's count with its denominator, such as 1 of 4 conflicts open, never a score.
+- **Status.** `--post` records the result as a `civic` commit status through the GitHub CLI, from a clean working tree, the way `bin/signoff` records `signoff`. There are no GitHub Actions.
+- **Dates.** Expiry is compared with today's date, or `--today <date>` for a repeatable run. The same graphs and date always give the same report.
+
+A decision is still the inline `resolution` on a conflict; the Decision record (roadmap step 3) replaces it.
+
 ## Commands
 
 ```sh
 cd graph
 pnpm install --frozen-lockfile
 pnpm run check      # types
-pnpm test           # validation, forecast, review, completeness and boundary tests
+pnpm test           # validation, forecast, review, completeness, gate and boundary tests
 pnpm run validate   # validate the example graphs
 node src/cli.ts forecast examples/card-override.graph.json override:shop.order-summary.card.price-badge
 node src/cli.ts overrides examples/card-override.graph.json instance:shop.order-summary.card
 node src/cli.ts completeness examples/card-override.graph.json target:shop.checkout
 node src/cli.ts gaps examples/fluent-button.graph.json
 node src/cli.ts context examples/fluent-button.graph.json semantic:button --platform android --variant neutral-default
+node src/cli.ts check ../demo/fluent-button/out/raised.graph.json     # fails: the brand outline conflict is undecided
+cd .. && bin/civic check                                             # the repository's gate
 ```
 
 The package runs its TypeScript directly on Node 22.18 or later, with no build step. `bin/signoff` runs all of the above before the journey engine checks.
