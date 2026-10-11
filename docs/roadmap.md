@@ -2,6 +2,8 @@
 
 Ordered next steps after [decision 0004](decisions/0004-graph-first-journey-engine-as-viewer.md). The artifact graph is the core, and the journey engine is one viewer and the first web adapter. Each step should end with evidence, not a claim.
 
+Every step follows [decision 0006](decisions/0006-deterministic-civic-for-agentic-teams.md): CIVIC makes no model calls and works from existing non-AI tools and static analysis.
+
 ## 1. CIVIC graph schema
 
 Define a small, CIVIC-owned schema outside `rehearsal/` for Intent, Semantic component, Platform component, Component instance, Override, Extension point, Evidence, and Contract Conflict (D29). Instances, overrides, and extension points let CIVIC forecast at design time whether a product team's change to a library component is supported on each platform ([component change flow](component-change-flow.md)). Use stable identities and the alignment states from the [spec](product-spec.md#alignment-states). Keep it plain and file-based until the demo shows what storage it needs.
@@ -19,6 +21,11 @@ Build the [decision 0001](decisions/0001-fluent-2-demo-design-system.md) demo on
 
 A design-system Card changed by a product team is the second demo after Button.
 
+Also part of this step ([decision 0006](decisions/0006-deterministic-civic-for-agentic-teams.md)):
+
+- **Contract export (D31).** `civic context` prints the Android Button variant's contract as one work order: intent, states, mappings, tokens, extension points, open records, and the IDs to put in code. `civic gaps` lists what's missing, with owners. Both are read-only queries.
+- **Design completeness check (D32).** On the Card demo, static rules flag the states the product team's Card mock is missing (for example empty and error) from the Card contract and the journey's shape.
+
 The demo succeeds when a reviewer can see what disagrees, why it matters, who must act, and how the decision is preserved.
 
 ## 3. Typed contract and change records
@@ -30,6 +37,8 @@ The journey engine already has working examples: `coverage.json` is a Coverage g
 ## 4. The journey engine as a graph viewer
 
 Point the journey engine's canvas and Contract panel at the graph, with Laundry as one web adapter. Generalize the `@civic/shell` adapter boundary now that Fluent is a second consumer ([decision 0003](decisions/0003-civic-shell-package.md) was paused until then). Follow the v4 handoff's onboarding direction: a local project manifest plus a supported web adapter.
+
+Discover the app by crawling first (D34): one CIVIC crawl loop, on Playwright for web and Appium for native, explores from seeded fixtures with destructive actions blocked, and groups states by DOM or accessibility hierarchy. Crawled states come in as discovered until a person confirms them. Write or generate an adapter only where a crawl can't tell states apart, reach them, or reset them. Add the frame walk (D33): the scenario player walks imported design frames along their prototype links, labelled as design intent.
 
 Validate onboarding with two cases ([onboarding and ingestion](onboarding-and-ingestion.md#6-validating-onboarding)): the Fluent Button, and Laundry's five unmapped destination states brought in through the manifest as expected states.
 
@@ -43,7 +52,7 @@ Real identities, scoped permissions, and versioned shared records, following the
 
 Add fixture capture to `bin/signoff` so evidence can be regenerated and becomes visibly stale. Then add replay from start to the scenario player, and native captures as runners allow.
 
-Discovery and replay are deterministic by default. Record journeys with existing Playwright tooling (Codegen, the reporter API, traces) instead of building a recorder, and replay only verified paths, stopping visibly on a miss. Report counts and denominators rather than confidence percentages. Model help is optional, attributed, and budgeted.
+Discovery and replay are deterministic by default. Record journeys with existing Playwright tooling (Codegen, the reporter API, traces) instead of building a recorder, and replay only verified paths, stopping visibly on a miss. Report counts and denominators rather than confidence percentages. CIVIC makes no model calls (D30).
 
 Acceptance: ordinary refresh and replay make zero model calls with providers disabled, and failed or cancelled operations never become successful edges.
 
@@ -51,3 +60,13 @@ Acceptance: ordinary refresh and replay make zero model calls with providers dis
 
 - Done: the repository is on GitHub at [taymoork2/CIVIC](https://github.com/taymoork2/CIVIC), with local signoffs (`bin/signoff`) instead of GitHub Actions.
 - Decide what stays vendored. `rehearsal/design/skills`, the fixture PNGs, and the handoff manifest are handoff material and could move to a release artifact.
+
+## Later, not scheduled
+
+These came out of [agentic development](agentic-development.md) and wait until the steps above give them a base:
+
+- **An agent interface.** An MCP server or similar over the read-only `civic context` and `civic gaps` export (D31). How agents write back, if at all, is decided then.
+- **Prototypes.** If reviews need more than the frame walk (D33), the non-AI option is a preview assembled from the component mappings. CIVIC stays out of WYSIWYG and no-code.
+- **A return path to Figma.** Reference captures, frames rebuilt from library instances, and token proposals, all through a plugin into a page the designer merges from. This needs the Figma import and plugin first.
+- **A rebrand demo.** The Fluent Button and Card re-themed to a second brand, showing the blast radius, hidden overrides, and the migration table. A candidate third demo after Card.
+- **New device classes** such as TV and watches. They aren't modelled until they've been researched.

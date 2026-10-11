@@ -22,7 +22,7 @@ These steps follow the v4 report's onboarding proposal, adapted to all four lane
 1. **Create a project.** Name it and pick the platforms (web, iOS, Android). This works without a model provider or any account sign-up.
 2. **Connect sources, one lane at a time.** Every lane is optional. A project is useful with only one lane connected; it simply shows the other lanes' evidence as unknown.
 3. **Confirm the environment.** CIVIC shows the start commands, preview URLs, source scope, fixtures and reset method it found. It never runs a newly discovered command without asking. Anything unresolved starts in observe-only mode.
-4. **Discover an initial inventory.** It reads route metadata, stories, tests, design frames and token files. Each item shows where it came from, and anything unresolved stays unmapped instead of being guessed.
+4. **Discover an initial inventory.** It reads route metadata, stories, tests, design frames and token files, and crawls the running app with Playwright or Appium (D34). Each item shows where it came from, and anything unresolved stays unmapped instead of being guessed.
 5. **Record one real path.** A person walks one journey, or an existing test supplies the steps. Each recorded step has an identified state, an action, a screenshot and an assertion.
 6. **Confirm the map.** CIVIC suggests groupings and links between sources. A person confirms them and declares states that are expected but not built yet.
 7. **Stay current.** Sources are hashed. When one changes, only the affected evidence goes stale and is re-run, and open drafts are kept.
@@ -186,7 +186,7 @@ The spec already models *why* a difference exists (platform convention, technica
 
 Guardrails:
 - CIVIC never adopts a change itself. The owner of the target decides, and adoption is a separate record.
-- Drafts come from deterministic rules first: token diffs, prop mappings, codemods. Model-drafted fixes are optional, attributed, and budgeted.
+- Drafts come from deterministic rules: token diffs, prop mappings, codemods. CIVIC makes no model calls (D30).
 - A remediation that fails its own evidence is shown as failed. It never quietly becomes "aligned".
 
 **Example: Fluent Button "Neutral default" on Android.** Compose has no stock equivalent, so CIVIC opens one Divergence for the Android target and drafts three options:
@@ -216,5 +216,7 @@ Two cases test the onboarding from opposite directions:
 - **D26:** the first QA input is Playwright reports and traces.
 - **D27:** the first design import after frame links is a Figma file export.
 - **D28 ([decision 0005](decisions/0005-what-civic-is.md)):** CIVIC is the quality gate for product behavior across design, components, code, and tests. It is made of the graph, checks in each role's tools, and one shared space. The journey canvas is the first version of that space.
+
+- **D30–D34 ([decision 0006](decisions/0006-deterministic-civic-for-agentic-teams.md)):** CIVIC makes no model calls. It adds a read-only contract export, a static design completeness check, a frame walk, and crawl-first discovery on Playwright and Appium.
 
 D26 and D27 come with one condition: build for alternatives. Each source comes in through an importer that maps its items to targets and evidence and records where each item came from. Supporting another design tool, token system or test runner means adding an importer, never changing the schema. Any role can supply any source.
