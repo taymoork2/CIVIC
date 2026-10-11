@@ -4,7 +4,7 @@ Ordered next steps after [decision 0004](decisions/0004-graph-first-journey-engi
 
 ## 1. CIVIC graph schema
 
-Define a small, CIVIC-owned schema outside `rehearsal/` for Intent, Semantic component, Platform component, Evidence, and Contract Conflict. Use stable identities and the alignment states from the [spec](product-spec.md#alignment-states). Keep it plain and file-based until the demo shows what storage it needs.
+Define a small, CIVIC-owned schema outside `rehearsal/` for Intent, Semantic component, Platform component, Component instance, Override, Extension point, Evidence, and Contract Conflict (D29). Instances, overrides, and extension points let CIVIC forecast at design time whether a product team's change to a library component is supported on each platform ([component change flow](component-change-flow.md)). Use stable identities and the alignment states from the [spec](product-spec.md#alignment-states). Keep it plain and file-based until the demo shows what storage it needs.
 
 Reuse the journey engine's distinctions rather than inventing new ones: a connection is declared, observed, inferred, or proposed, and a target is either expected or only discovered in source. Its cross-route actions (`rehearsal/source/apps/web/src/review/route-actions.json`) show the edge shape: route, condition, return context, and whether the destination is mapped. The schema copies these ideas; it never imports the engine.
 
@@ -16,6 +16,8 @@ Build the [decision 0001](decisions/0001-fluent-2-demo-design-system.md) demo on
 - Web evidence from Storybook and Playwright. iOS and Android evidence from source and token analysis.
 - The Android Figma kit compared with Compose, which raises a Contract Conflict that is classified, given owners, and resolved.
 - Tokens move as DTCG where the source supports it. Read Figma structure from a file export; the Variables REST API needs Enterprise access, so the demo can't depend on it.
+
+A design-system Card changed by a product team is the second demo after Button.
 
 The demo succeeds when a reviewer can see what disagrees, why it matters, who must act, and how the decision is preserved.
 

@@ -1,6 +1,6 @@
 # A design-system component changed by a product team
 
-Proposal, 2026-10-11. This walks one scenario through CIVIC as described in [decision 0005](decisions/0005-what-civic-is.md) and [onboarding and ingestion](onboarding-and-ingestion.md). None of it is built. Today the spec has the building blocks: semantic and platform components, a composability contract with extension points, alignment states, and migration contracts. The journey canvas models only Laundry screens.
+Proposal, 2026-10-11; the schema decision is D29. This walks one scenario through CIVIC as described in [decision 0005](decisions/0005-what-civic-is.md) and [onboarding and ingestion](onboarding-and-ingestion.md). None of it is built. Today the spec has the building blocks: semantic and platform components, a composability contract with extension points, alignment states, and migration contracts. The journey canvas models only Laundry screens.
 
 ## The scenario
 
@@ -20,7 +20,7 @@ Proposal, 2026-10-11. This walks one scenario through CIVIC as described in [dec
 
 Extension points are read from code by the importer: props, slots, style APIs, and documented theming hooks. Overrides are read from the design file, from detached instances, changed properties, and local styles on a library component. These two lists are the core of the check. For each override, CIVIC asks whether the target platform's library offers a supported way to express it.
 
-**Recommendation:** add Component instance, Override, and Extension point to the graph schema in roadmap step 1, next to Semantic and Platform component.
+**Decided (D29):** Component instance, Override, and Extension point are part of the graph schema in roadmap step 1, alongside Semantic and Platform component. Card is the second demo after Button.
 
 ## How the change flows
 
