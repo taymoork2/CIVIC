@@ -4,6 +4,20 @@ Ordered next steps after [decision 0004](decisions/0004-graph-first-journey-engi
 
 Every step follows [decision 0006](decisions/0006-deterministic-civic-for-agentic-teams.md): CIVIC makes no model calls and works from existing non-AI tools and static analysis. [Decision 0007](decisions/0007-review-to-agent-loop.md) lets agents outside CIVIC claim and report work through a narrow interface.
 
+## Order of work
+
+Reprioritized on 2026-10-11. Steps 1 and 2 and the review to agent loop's Laundry slice are built. Step numbers are stable names that other documents cite, so the order of work is listed here rather than by renumbering:
+
+1. **[Step 8: the gate](#8-the-gate-civic-check).** Decision 0005 says most people meet CIVIC through checks in their own tools, and that part has nothing a team could turn on yet. The checks exist; they only print.
+2. **[Step 3](#3-typed-contract-and-change-records), only the Decision record first,** so an approved exception or a rejected override keeps the gate green.
+3. **[Step 9: real inputs](#9-real-inputs-replace-the-stand-ins)** replace the stand-in Figma files and illustrative decisions.
+4. **[Step 4](#4-the-journey-engine-as-a-graph-viewer):** a second app onboards through the manifest and crawl-first discovery, gated by `civic check`.
+5. **The review loop's next items** ([below](#next-the-review-to-agent-loop), item 3): Codex packaging, then PR previews and design drafts once real Figma inputs exist.
+6. **[Step 6](#6-journey-completeness-and-replay), then [step 5](#5-identity-permissions-and-multiplayer).** Multiplayer stays last while there is one user.
+7. **[Step 7](#7-repository-hygiene)** happens opportunistically.
+
+The reasoning is that the graph and the shared space (parts 1 and 3 of [decision 0005](decisions/0005-what-civic-is.md)) are well along, while part 2 is not, and the gate can be built now on the demo graphs without waiting for Figma access.
+
 ## 1. CIVIC graph schema
 
 Define a small, CIVIC-owned schema outside `rehearsal/` for Intent, Semantic component, Platform component, Component instance, Override, Extension point, Evidence, and Contract Conflict (D29). Instances, overrides, and extension points let CIVIC forecast at design time whether a product team's change to a library component is supported on each platform ([component change flow](component-change-flow.md)). Use stable identities and the alignment states from the [spec](product-spec.md#alignment-states). Keep it plain and file-based until the demo shows what storage it needs.
@@ -36,17 +50,17 @@ The Card demo is built in [`demo/card/`](../demo/card), on Fluent's real Card li
 
 ## Next: the review to agent loop
 
-Ahead of the Card demo ([decision 0007](decisions/0007-review-to-agent-loop.md), [review to agent](agent-review-loop.md)):
+Built ahead of the Card demo ([decision 0007](decisions/0007-review-to-agent-loop.md), [review to agent](agent-review-loop.md)):
 
 1. **Records.** Line, Annotation, WorkRequest, and Actor go into the graph as the start of step 3. Built in [`graph/`](../graph#the-review-to-agent-loop), with validation for D35 to D38, `laneFor` and `resolveAnchor`.
 2. **A first slice on the journey engine with Laundry.** Records move from each worktree's `.review-data/` to the git common directory. Annotations get ID and locator anchors, and screenshot import arrives. The canvas gets a lens to switch between worktrees. The CLI gets `civic annotate`, `requests`, `claim`, `report-fix`, and `repro`, with the resolution policy's Auto, batch review, and owner sign-off lanes. Then come the capture overlay for dev and preview builds, the MCP server, and the Claude Code plugin. The store, the CLI and CIVIC's re-capture are built in [`review/`](../review), with the acceptance below as an end-to-end test on a repository with a linked worktree. Laundry's review now records each canvas note as a shared annotation, anchored to the scenario's target or to the element's role and name, and can hand annotations to agents. Its "Across lines of work" section is the first lens. Re-capture signs in to the review server with its local key. The capture overlay (`civic overlay`, injected into Laundry's dev build by `VITE_CIVIC_OVERLAY`), the MCP server and the [Claude Code plugin](../integrations/claude-code) complete the slice.
-3. **PR previews and design drafts** follow, once the Figma import (D27) brings drafts in. Codex packaging comes with them.
+3. **PR previews and design drafts** follow, once real Figma exports ([step 9](#9-real-inputs-replace-the-stand-ins)) bring drafts in. Codex packaging can come earlier, since it only repackages the MCP server. These come after the gate, the Decision record and real inputs (see [order of work](#order-of-work)).
 
 Acceptance: an annotation made in one worktree is claimed by an agent in another, the reported fix is re-captured on that worktree's preview with no model call, and the request resolves through its lane.
 
 ## 3. Typed contract and change records
 
-Store Proposal, Decision, Adoption, and Verification as separate, owned records, along with the collaboration record types (Ambiguity, Constraint, Coverage gap, Divergence, Risk, Exception). Alignment states read from records instead of being recomputed.
+Start with the Decision record alone, because the gate (step 8) needs a stored, owned decision to stop flagging a conflict a person already decided. Today `applyDecisions` in `importers/` resolves conflicts inline from an illustrative file. Then store Proposal, Decision, Adoption, and Verification as separate, owned records, along with the collaboration record types (Ambiguity, Constraint, Coverage gap, Divergence, Risk, Exception). Alignment states read from records instead of being recomputed.
 
 The journey engine already has working examples: `coverage.json` is a Coverage gap record with versioned write-back, and its coverage candidates are proposals that never count as adoption.
 
@@ -76,6 +90,18 @@ Acceptance: ordinary refresh and replay make zero model calls with providers dis
 
 - Done: the repository is on GitHub at [taymoork2/CIVIC](https://github.com/taymoork2/CIVIC), with local signoffs (`bin/signoff`) instead of GitHub Actions.
 - Decide what stays vendored. `rehearsal/design/skills`, the fixture PNGs, and the handoff manifest are handoff material and could move to a release artifact.
+
+## 8. The gate: `civic check`
+
+One command that runs every check on a graph (contract conflicts, override drift, completeness, gaps) and exits non-zero when there are new findings nobody has decided. A baseline file records existing findings so old debt doesn't block a change. It prints a short Markdown summary and can post a `civic` commit status the way `bin/signoff` does, with no GitHub Actions. This is the SonarQube shape from [decision 0005](decisions/0005-what-civic-is.md): a finding is raised at the change that caused it.
+
+Acceptance: on the Fluent Button and Card demo graphs, `civic check` fails on an undecided conflict, passes once a recorded decision covers it, ignores baselined findings, and reports counts with denominators. It makes no model calls.
+
+## 9. Real inputs replace the stand-ins
+
+The Figma importers already read the real `GET /v1/files/:key` export shape; what's missing is real files. This cloud environment can't reach Figma, so the founder exports the [Microsoft Fluent Android](https://www.figma.com/community/file/836835062056249539/microsoft-fluent-android) Community file with a personal access token (steps in the [Button demo](../demo/fluent-button/README.md)). Laundry's real Playwright reports feed `readPlaywrightReport`, and Storybook adds web evidence.
+
+Acceptance: the Button conflict is raised from the real export, or the demo records that the real kit doesn't disagree. Either result is evidence; decision 0001 was based on a reading of the kit, not an export.
 
 ## Later, not scheduled
 
