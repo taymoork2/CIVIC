@@ -213,5 +213,6 @@ Two cases test the onboarding from opposite directions:
 - **D25:** Design Engineering is a primary persona that owns the component library. Personas are roles, so one person can hold several. For example, an engineer can cover QA through browser end-to-end runs when a team has no QA group.
 - **D26:** the first QA input is Playwright reports and traces.
 - **D27:** the first design import after frame links is a Figma file export.
+- **D28 ([decision 0005](decisions/0005-what-civic-is.md)):** CIVIC is the quality gate for product behavior across design, components, code, and tests. It is made of the graph, checks in each role's tools, and one shared space. The journey canvas is the first version of that space.
 
 D26 and D27 come with one condition: build for alternatives. Each source comes in through an importer that maps its items to targets and evidence and records where each item came from. Supporting another design tool, token system or test runner means adding an importer, never changing the schema. Any role can supply any source.

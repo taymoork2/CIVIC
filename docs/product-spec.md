@@ -4,6 +4,8 @@
 
 CIVIC is a unified, cross-platform product system for Design, Engineering, and QA. It connects product intent, design systems, user journeys, platform-specific component libraries, application code, tests, and runtime evidence so teams can build, verify, and maintain coherent experiences.
 
+In short ([decision 0005](decisions/0005-what-civic-is.md)): CIVIC is the quality gate for product behavior across design, components, code, and tests. It has three parts: a graph that every tool feeds, checks in each role's own tools, and one shared space for decisions that need several roles.
+
 This document preserves the founding product discussion. It is a product direction and specification, not evidence of implemented functionality.
 
 ## Name and wordmark
@@ -54,6 +56,7 @@ The source is the Amp discussion in [thread T-01a0dc96-9004-70a8-92a7-d7364d854a
 | D25 | Design Engineering is a primary persona and owns the component library: tokens, semantic components, and each platform's components. Personas are roles, not job titles. One person or team can hold several roles, and roles can be combined, for example an engineer who also does QA through browser end-to-end tests. | CIVIC project thread, 2026-10-10 |
 | D26 | The first QA input is Playwright reports and traces. Ingestion is built so other test runners, and other roles supplying evidence, can be added without changing the graph. | CIVIC project thread, 2026-10-10 |
 | D27 | After frame links, the first design import is a Figma file export. Ingestion is built so other design tools, and other roles supplying design intent, can be added without changing the graph. | CIVIC project thread, 2026-10-10 |
+| D28 | CIVIC is the quality gate for product behavior across design, components, code, and tests. It is made of the CIVIC graph, checks and flags inside each role's own tools, and one shared space for decisions that need several roles. The journey canvas is the first version of that space, not the product. | [Decision 0005](decisions/0005-what-civic-is.md) |
 | D24 | Borrow canvas conventions from Figma, tldraw, and Paper, but don't become a drawing tool. CIVIC's niche is executable journeys and evidence-backed proposals. Figma integration starts as an optional link to a frame, stored with its snapshot and revision. | v0 Codex thread, 05:10–05:13 |
 
 ### Project facts
