@@ -12,20 +12,23 @@ test('both demo graphs are valid with no warnings', () => {
   assert.deepEqual(validateGraph(load('resolved')), [])
 })
 
-test('the Android kit raises exactly the Neutral default conflict, from read evidence', () => {
+test('the real Android kit raises exactly the Brand outline conflict, from read evidence', () => {
   const graph = indexGraph(load('raised'))
   const conflicts = graph.ofKind('contract-conflict')
-  assert.deepEqual(conflicts.map((conflict) => conflict.id), ['conflict:button.android.neutral-default'])
+  assert.deepEqual(conflicts.map((conflict) => conflict.id), ['conflict:button.android.brand-outline'])
   const [conflict] = conflicts as [ContractConflict]
   assert.equal(conflict.status, 'open')
   const sides = conflict.sides.flatMap((side) => side.evidenceIds).map((id) => graph.get(id))
   assert.deepEqual(sides.map((item) => item?.kind === 'evidence' && item.source.importer), ['figma-file', 'kotlin-source'])
+  const kit = graph.get('evidence:figma.android-kit.button')
+  assert.ok(kit?.kind === 'evidence' && kit.source.revision !== 'civic-stand-in-1')
 })
 
 test('the resolved graph keeps the decision with its evidence and revisit trigger', () => {
-  const conflict = indexGraph(load('resolved')).get('conflict:button.android.neutral-default') as ContractConflict
+  const conflict = indexGraph(load('resolved')).get('conflict:button.android.brand-outline') as ContractConflict
   assert.equal(conflict.status, 'resolved')
-  assert.equal(conflict.resolution?.outcome, 'approve-exception')
+  assert.equal(conflict.resolution?.outcome, 'update-design')
+  assert.equal(conflict.classification, 'outdated-design-source')
   assert.ok(conflict.resolution?.revisitTrigger)
 })
 

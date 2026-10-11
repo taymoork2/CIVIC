@@ -2,7 +2,7 @@
 
 ## open-conflict (1)
 
-- [android] The Microsoft Fluent Android Figma kit has a Neutral default Button that Fluent Android Compose Button cannot express. Classification unclassified. Owners: design design-system-maintainers, design-engineering fluent-android. (`conflict:button.android.neutral-default`)
+- [android] Fluent Android Compose Button offers Brand outline, which the Microsoft Fluent Android Figma kit does not draw. Classification unclassified. Owners: design design-system-maintainers, design-engineering fluent-android. (`conflict:button.android.brand-outline`)
 
 ## missing-variant (4)
 

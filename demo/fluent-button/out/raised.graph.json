@@ -1265,14 +1265,14 @@
       "method": "design-export",
       "platform": "android",
       "outcome": "finding",
-      "finding": "Button draws Style: Primary, Outlined, Neutral, Text; State: Rest, Pressed, Disabled.",
-      "capturedAt": "2026-10-11T00:00:00Z",
+      "finding": "Button draws Style: Primary, Text; each drawn as Default, Pressed, Disabled; Light, Dark.",
+      "capturedAt": "2026-10-11T09:16:46Z",
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-1",
-        "path": "Microsoft Fluent Android (CIVIC stand-in) / Controls / Button",
-        "anchor": "12:2"
+        "revision": "2408995634983570781",
+        "path": "Microsoft Fluent Android (Community) / Components / Buttons",
+        "anchor": "7358:1413"
       }
     },
     {
@@ -1657,22 +1657,22 @@
       }
     },
     {
-      "id": "conflict:button.android.neutral-default",
+      "id": "conflict:button.android.brand-outline",
       "kind": "contract-conflict",
-      "title": "Neutral default Button on android",
+      "title": "Brand outline Button on android",
       "targetId": "semantic:button",
-      "variant": "neutral-default",
+      "variant": "brand-outline",
       "platform": "android",
-      "summary": "The Microsoft Fluent Android Figma kit has a Neutral default Button that Fluent Android Compose Button cannot express.",
+      "summary": "Fluent Android Compose Button offers Brand outline, which the Microsoft Fluent Android Figma kit does not draw.",
       "sides": [
         {
-          "claim": "Neutral default exists in the Microsoft Fluent Android Figma kit.",
+          "claim": "The Microsoft Fluent Android Figma kit does not draw Brand outline.",
           "evidenceIds": [
             "evidence:figma.android-kit.button"
           ]
         },
         {
-          "claim": "Fluent Android Compose Button has no Neutral default: No stock ButtonStyle.",
+          "claim": "Fluent Android Compose Button expresses Brand outline as OutlinedButton.",
           "recordId": "platform:fluent-android.compose-button",
           "evidenceIds": [
             "evidence:fluent-android.compose-button.variants"

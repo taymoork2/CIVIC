@@ -4,7 +4,7 @@ Importers read what each role's tools already produce and turn it into [CIVIC gr
 
 | Importer | Reads | Produces |
 |---|---|---|
-| `readFigmaComponentSet` | A Figma file export (`GET /v1/files/:key`), one component set's variant options | `design-export` evidence and the semantic variants the kit draws |
+| `readFigmaComponentSet` | A Figma file export (`GET /v1/files/:key`), one component set's variant options, or for a kit drawn before Figma variants, the components named `<Option> / <State>` in one frame | `design-export` evidence and the semantic variants the kit draws |
 | `readFigmaLibraryComponent` | A design system library's Figma export: one component set's variant and state options and its property defaults | `design-export` evidence and the defaults an instance is compared with |
 | `readFigmaProductFile` | A product team's Figma export: frames, prototype links and flow starting points, and instances of the library component | Screens and state targets, a journey with its entry, declared `navigates` and `contains` links, component instances with their state, and overrides |
 | `readDtcgTokens` | A DTCG tokens file | Token records keyed by DTCG path |

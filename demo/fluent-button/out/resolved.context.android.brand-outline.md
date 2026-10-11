@@ -1,4 +1,4 @@
-# Work order: Button, Neutral default, on android
+# Work order: Button, Brand outline, on android
 
 Trigger an action, with the emphasis set by its variant.
 
@@ -9,7 +9,7 @@ Trigger an action, with the emphasis set by its variant.
 - `extension:fluent-android.compose-button.buttonTokens`
 - `extension:fluent-android.compose-button.icon`
 - `extension:fluent-android.compose-button.size`
-- Variant key `neutral-default`
+- Variant key `brand-outline`
 
 ## Intent
 
@@ -28,12 +28,12 @@ Trigger an action, with the emphasis set by its variant.
 
 - Fluent Android Compose Button: `Button` from `microsoft/fluentui-android` (`platform:fluent-android.compose-button`)
 - Renders primary-filled when no variant is given.
-- neutral-default: none. No stock ButtonStyle.
+- brand-outline: exact as `OutlinedButton`
 
 ## Other platforms
 
-- ios: exact as `outlineNeutral`
-- web: exact as `secondary`
+- ios: exact as `outlineAccent`
+- web: closest as `outline`
 
 ## Tokens
 
@@ -47,11 +47,11 @@ Trigger an action, with the emphasis set by its variant.
 
 ## Records
 
-- **open** Neutral default Button on android: The Microsoft Fluent Android Figma kit has a Neutral default Button that Fluent Android Compose Button cannot express. Classification unclassified, unreviewed-drift. Owners: design design-system-maintainers, design-engineering fluent-android. (`conflict:button.android.neutral-default`)
+- **resolved** Brand outline Button on android: Fluent Android Compose Button offers Brand outline, which the Microsoft Fluent Android Figma kit does not draw. Classification outdated-design-source, awaiting-adoption. Owners: design design-system-maintainers, design-engineering fluent-android. (`conflict:button.android.brand-outline`) Decided: update-design by design design-system-maintainers. The Android kit predates Fluent Android's Compose controls and draws only Primary and Text buttons. Compose ships OutlinedButton for Brand outline, and the contract keeps it, so Design adds an Outlined button to the kit. Until it lands, Android designers take Brand outline from the contract, not the kit. Revisit when: The kit gains an Outlined button, or Compose drops OutlinedButton.
 
 ## Evidence
 
-- static-analysis / design-export / finding: Button draws Style: Primary, Outlined, Neutral, Text; State: Rest, Pressed, Disabled. (`evidence:figma.android-kit.button`)
+- static-analysis / design-export / finding: Button draws Style: Primary, Text; each drawn as Default, Pressed, Disabled; Light, Dark. (`evidence:figma.android-kit.button`)
 - static-analysis / token-analysis / finding: ButtonTokens backgroundBrush by ButtonStyle: Button reads BrandBackground1, BrandBackground1Pressed, BrandBackground1Selected, Background5; OutlinedButton reads no background token; TextButton reads no background token. (`evidence:fluent-android.compose-button.background-tokens`)
 - static-analysis / source-analysis / finding: ButtonStyle declares Button, OutlinedButton, TextButton; the default is Button. (`evidence:fluent-android.compose-button.variants`)
 
@@ -59,7 +59,6 @@ Trigger an action, with the emphasis set by its variant.
 
 - A button has an accessible name: Every button exposes an accessible name, including icon-only buttons.
 - A button triggers one action: Activating a button performs exactly one action, and its emphasis tells the user how important that action is.
-- android has no equivalent for neutral-default (No stock ButtonStyle).
-- Neutral default Button on android is open and needs a decision from design design-system-maintainers, design-engineering fluent-android before this is built.
+- Follow the decision on Brand outline Button on android: The Android kit predates Fluent Android's Compose controls and draws only Primary and Text buttons. Compose ships OutlinedButton for Brand outline, and the contract keeps it, so Design adds an Outlined button to the kit. Until it lands, Android designers take Brand outline from the contract, not the kit.
 - No automated or device evidence on android yet; static analysis shows what the source says, not how it behaves.
 

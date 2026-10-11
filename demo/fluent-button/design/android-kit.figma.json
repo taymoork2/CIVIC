@@ -1,7 +1,7 @@
 {
-  "name": "Microsoft Fluent Android (CIVIC stand-in)",
-  "lastModified": "2026-10-11T00:00:00Z",
-  "version": "civic-stand-in-1",
+  "name": "Microsoft Fluent Android (Community)",
+  "lastModified": "2026-10-11T09:16:46Z",
+  "version": "2408995634983570781",
   "schemaVersion": 0,
   "document": {
     "id": "0:0",
@@ -9,189 +9,254 @@
     "type": "DOCUMENT",
     "children": [
       {
-        "id": "12:0",
-        "name": "Controls",
+        "id": "9124:12197",
+        "name": "Components",
         "type": "CANVAS",
         "children": [
           {
-            "id": "12:2",
-            "name": "Button",
-            "type": "COMPONENT_SET",
-            "componentPropertyDefinitions": {
-              "Style": {
-                "type": "VARIANT",
-                "defaultValue": "Primary",
-                "variantOptions": [
-                  "Primary",
-                  "Outlined",
-                  "Neutral",
-                  "Text"
-                ]
-              },
-              "State": {
-                "type": "VARIANT",
-                "defaultValue": "Rest",
-                "variantOptions": [
-                  "Rest",
-                  "Pressed",
-                  "Disabled"
-                ]
-              }
-            },
+            "id": "7358:1413",
+            "name": "Buttons",
+            "type": "FRAME",
             "children": [
               {
-                "id": "12:3",
-                "name": "Style=Primary, State=Rest",
-                "type": "COMPONENT",
+                "id": "7177:3349",
+                "name": "Light",
+                "type": "FRAME",
                 "children": [
                   {
-                    "id": "12:4",
-                    "name": "Label",
-                    "type": "TEXT",
-                    "characters": "Button"
+                    "id": "7177:3695",
+                    "name": "01. Primary",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "7177:3697",
+                        "name": "Sheet",
+                        "type": "FRAME",
+                        "children": [
+                          {
+                            "id": "7177:3698",
+                            "name": "Components Autolayout",
+                            "type": "FRAME",
+                            "children": [
+                              {
+                                "id": "7177:3699",
+                                "name": "State",
+                                "type": "FRAME",
+                                "children": [
+                                  {
+                                    "id": "1:1610",
+                                    "name": "01. Primary / ⚪️ A. Default - Light",
+                                    "type": "COMPONENT"
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "7177:3703",
+                                "name": "State",
+                                "type": "FRAME",
+                                "children": [
+                                  {
+                                    "id": "1:1582",
+                                    "name": "01. Primary / ⚪️ B. Pressed - Light",
+                                    "type": "COMPONENT"
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "7177:3707",
+                                "name": "State",
+                                "type": "FRAME",
+                                "children": [
+                                  {
+                                    "id": "1:1586",
+                                    "name": "01. Primary / ⚪️ C. Disabled - Light",
+                                    "type": "COMPONENT"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "7177:3744",
+                    "name": "02. Text",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "7177:3746",
+                        "name": "Sheet",
+                        "type": "FRAME",
+                        "children": [
+                          {
+                            "id": "7177:3747",
+                            "name": "Components Autolayout",
+                            "type": "FRAME",
+                            "children": [
+                              {
+                                "id": "7177:3748",
+                                "name": "State",
+                                "type": "FRAME",
+                                "children": [
+                                  {
+                                    "id": "1:1594",
+                                    "name": "03. Text / ⚪️ A. Default - Light",
+                                    "type": "COMPONENT"
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "7177:3751",
+                                "name": "State",
+                                "type": "FRAME",
+                                "children": [
+                                  {
+                                    "id": "1:1602",
+                                    "name": "03. Text / ⚪️ B. Pressed - Light",
+                                    "type": "COMPONENT"
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "7177:3754",
+                                "name": "State",
+                                "type": "FRAME",
+                                "children": [
+                                  {
+                                    "id": "1:1606",
+                                    "name": "03. Text / ⚪️ C. Disabled - Light",
+                                    "type": "COMPONENT"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
                   }
                 ]
               },
               {
-                "id": "12:5",
-                "name": "Style=Primary, State=Pressed",
-                "type": "COMPONENT",
+                "id": "7177:3403",
+                "name": "Dark",
+                "type": "FRAME",
                 "children": [
                   {
-                    "id": "12:6",
-                    "name": "Label",
-                    "type": "TEXT",
-                    "characters": "Button"
-                  }
-                ]
-              },
-              {
-                "id": "12:7",
-                "name": "Style=Primary, State=Disabled",
-                "type": "COMPONENT",
-                "children": [
+                    "id": "7177:3807",
+                    "name": "01. Primary",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "7177:3809",
+                        "name": "Sheet",
+                        "type": "FRAME",
+                        "children": [
+                          {
+                            "id": "7177:3810",
+                            "name": "components autolayout",
+                            "type": "FRAME",
+                            "children": [
+                              {
+                                "id": "7177:3811",
+                                "name": "state",
+                                "type": "FRAME",
+                                "children": [
+                                  {
+                                    "id": "5195:8296",
+                                    "name": "01. Primary / ⚫️ A. Default - Dark",
+                                    "type": "COMPONENT"
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "7177:3815",
+                                "name": "state",
+                                "type": "FRAME",
+                                "children": [
+                                  {
+                                    "id": "5195:8275",
+                                    "name": "01. Primary / ⚫️ B. Pressed - Dark",
+                                    "type": "COMPONENT"
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "7177:3819",
+                                "name": "state",
+                                "type": "FRAME",
+                                "children": [
+                                  {
+                                    "id": "5195:8278",
+                                    "name": "01. Primary / ⚫️ C. Disabled - Dark",
+                                    "type": "COMPONENT"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
                   {
-                    "id": "12:8",
-                    "name": "Label",
-                    "type": "TEXT",
-                    "characters": "Button"
-                  }
-                ]
-              },
-              {
-                "id": "12:9",
-                "name": "Style=Outlined, State=Rest",
-                "type": "COMPONENT",
-                "children": [
-                  {
-                    "id": "12:10",
-                    "name": "Label",
-                    "type": "TEXT",
-                    "characters": "Button"
-                  }
-                ]
-              },
-              {
-                "id": "12:11",
-                "name": "Style=Outlined, State=Pressed",
-                "type": "COMPONENT",
-                "children": [
-                  {
-                    "id": "12:12",
-                    "name": "Label",
-                    "type": "TEXT",
-                    "characters": "Button"
-                  }
-                ]
-              },
-              {
-                "id": "12:13",
-                "name": "Style=Outlined, State=Disabled",
-                "type": "COMPONENT",
-                "children": [
-                  {
-                    "id": "12:14",
-                    "name": "Label",
-                    "type": "TEXT",
-                    "characters": "Button"
-                  }
-                ]
-              },
-              {
-                "id": "12:15",
-                "name": "Style=Neutral, State=Rest",
-                "type": "COMPONENT",
-                "children": [
-                  {
-                    "id": "12:16",
-                    "name": "Label",
-                    "type": "TEXT",
-                    "characters": "Button"
-                  }
-                ]
-              },
-              {
-                "id": "12:17",
-                "name": "Style=Neutral, State=Pressed",
-                "type": "COMPONENT",
-                "children": [
-                  {
-                    "id": "12:18",
-                    "name": "Label",
-                    "type": "TEXT",
-                    "characters": "Button"
-                  }
-                ]
-              },
-              {
-                "id": "12:19",
-                "name": "Style=Neutral, State=Disabled",
-                "type": "COMPONENT",
-                "children": [
-                  {
-                    "id": "12:20",
-                    "name": "Label",
-                    "type": "TEXT",
-                    "characters": "Button"
-                  }
-                ]
-              },
-              {
-                "id": "12:21",
-                "name": "Style=Text, State=Rest",
-                "type": "COMPONENT",
-                "children": [
-                  {
-                    "id": "12:22",
-                    "name": "Label",
-                    "type": "TEXT",
-                    "characters": "Button"
-                  }
-                ]
-              },
-              {
-                "id": "12:23",
-                "name": "Style=Text, State=Pressed",
-                "type": "COMPONENT",
-                "children": [
-                  {
-                    "id": "12:24",
-                    "name": "Label",
-                    "type": "TEXT",
-                    "characters": "Button"
-                  }
-                ]
-              },
-              {
-                "id": "12:25",
-                "name": "Style=Text, State=Disabled",
-                "type": "COMPONENT",
-                "children": [
-                  {
-                    "id": "12:26",
-                    "name": "Label",
-                    "type": "TEXT",
-                    "characters": "Button"
+                    "id": "7177:3835",
+                    "name": "02. Text",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "7177:3837",
+                        "name": "Sheet",
+                        "type": "FRAME",
+                        "children": [
+                          {
+                            "id": "7177:3838",
+                            "name": "components autolayout",
+                            "type": "FRAME",
+                            "children": [
+                              {
+                                "id": "7177:3839",
+                                "name": "state",
+                                "type": "FRAME",
+                                "children": [
+                                  {
+                                    "id": "5195:8284",
+                                    "name": "03. Text / ⚫️ A. Default - Dark",
+                                    "type": "COMPONENT"
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "7177:3841",
+                                "name": "state",
+                                "type": "FRAME",
+                                "children": [
+                                  {
+                                    "id": "5195:8290",
+                                    "name": "03. Text / ⚫️ B. Pressed - Dark",
+                                    "type": "COMPONENT"
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "7177:3843",
+                                "name": "state",
+                                "type": "FRAME",
+                                "children": [
+                                  {
+                                    "id": "5195:8293",
+                                    "name": "03. Text / ⚫️ C. Disabled - Dark",
+                                    "type": "COMPONENT"
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
                   }
                 ]
               }
@@ -200,12 +265,5 @@
         ]
       }
     ]
-  },
-  "componentSets": {
-    "12:2": {
-      "key": "civic-stand-in-button",
-      "name": "Button",
-      "description": ""
-    }
   }
 }
