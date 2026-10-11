@@ -1,0 +1,47 @@
+{
+  "note": "The semantic Card contract, declared by the design system maintainers and owned in CIVIC. Platform mappings live in mappings.json; everything else in the demo graph is read from tool output.",
+  "records": [
+    {
+      "id": "intent:card.one-subject",
+      "kind": "intent",
+      "title": "A card is about one subject",
+      "category": "requirement",
+      "statement": "A card groups content and actions about one subject, and its actions act on that subject."
+    },
+    {
+      "id": "intent:card.states-explained",
+      "kind": "intent",
+      "title": "A card explains its own empty and error states",
+      "category": "requirement",
+      "statement": "When a card's data is loading, empty or failed to load, the card says so in place instead of disappearing."
+    },
+    {
+      "id": "semantic:card",
+      "kind": "semantic-component",
+      "title": "Card",
+      "purpose": "Group related content and actions about one subject.",
+      "owners": [
+        { "role": "design", "who": "design-system-maintainers" },
+        { "role": "qa", "who": "card-qa" }
+      ],
+      "variants": [
+        { "key": "filled", "title": "Filled" },
+        { "key": "outline", "title": "Outline" }
+      ],
+      "states": ["rest", "hover", "selected", "disabled", "loading", "empty", "error"],
+      "productStates": ["loading", "empty", "error"],
+      "slots": ["media", "header", "body", "actions"],
+      "rules": [
+        {
+          "key": "shape-from-token",
+          "statement": "Corner radius comes from the shape token; a local radius is not allowed.",
+          "forbids": { "property": "corner-radius", "change": "local-style" }
+        }
+      ]
+    }
+  ],
+  "links": [
+    { "from": "semantic:card", "relation": "serves", "to": "intent:card.one-subject", "status": "declared" },
+    { "from": "semantic:card", "relation": "serves", "to": "intent:card.states-explained", "status": "declared" }
+  ]
+}

@@ -1,0 +1,249 @@
+{
+  "name": "Shop checkout (CIVIC stand-in)",
+  "lastModified": "2026-10-11T00:00:00Z",
+  "version": "civic-stand-in-1",
+  "schemaVersion": 0,
+  "document": {
+    "id": "0:0",
+    "name": "Document",
+    "type": "DOCUMENT",
+    "children": [
+      {
+        "id": "40:0",
+        "name": "Checkout",
+        "type": "CANVAS",
+        "flowStartingPoints": [
+          {
+            "nodeId": "40:1",
+            "name": "Checkout"
+          }
+        ],
+        "children": [
+          {
+            "id": "40:1",
+            "name": "Order Summary",
+            "type": "FRAME",
+            "children": [
+              {
+                "id": "40:2",
+                "name": "Card",
+                "type": "INSTANCE",
+                "componentId": "30:1",
+                "cornerRadius": 20,
+                "componentProperties": {
+                  "Appearance": {
+                    "type": "VARIANT",
+                    "value": "Filled"
+                  },
+                  "State": {
+                    "type": "VARIANT",
+                    "value": "Rest"
+                  },
+                  "Header action#20:40": {
+                    "type": "INSTANCE_SWAP",
+                    "value": "30:5"
+                  },
+                  "Show footer#20:41": {
+                    "type": "BOOLEAN",
+                    "value": true
+                  },
+                  "Selectable#20:42": {
+                    "type": "BOOLEAN",
+                    "value": true
+                  },
+                  "Title#20:43": {
+                    "type": "TEXT",
+                    "value": "Your order"
+                  }
+                },
+                "overrides": [
+                  {
+                    "id": "40:2",
+                    "overriddenFields": [
+                      "cornerRadius"
+                    ]
+                  }
+                ],
+                "children": []
+              },
+              {
+                "id": "40:3",
+                "name": "Apply promotion",
+                "type": "INSTANCE",
+                "componentId": "30:6",
+                "reactions": [
+                  {
+                    "trigger": {
+                      "type": "ON_CLICK"
+                    },
+                    "actions": [
+                      {
+                        "type": "NODE",
+                        "destinationId": "40:10",
+                        "navigation": "NAVIGATE",
+                        "transition": null,
+                        "preserveScrollPosition": false
+                      }
+                    ]
+                  }
+                ],
+                "children": []
+              },
+              {
+                "id": "40:4",
+                "name": "Continue to payment",
+                "type": "INSTANCE",
+                "componentId": "30:6",
+                "reactions": [
+                  {
+                    "trigger": {
+                      "type": "ON_CLICK"
+                    },
+                    "actions": [
+                      {
+                        "type": "URL",
+                        "url": "/checkout/payment"
+                      }
+                    ]
+                  }
+                ],
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": "40:5",
+            "name": "Order Summary / Loading",
+            "type": "FRAME",
+            "children": [
+              {
+                "id": "40:6",
+                "name": "Card",
+                "type": "INSTANCE",
+                "componentId": "30:2",
+                "componentProperties": {
+                  "Appearance": {
+                    "type": "VARIANT",
+                    "value": "Filled"
+                  },
+                  "State": {
+                    "type": "VARIANT",
+                    "value": "Loading"
+                  },
+                  "Header action#20:40": {
+                    "type": "INSTANCE_SWAP",
+                    "value": "30:4"
+                  },
+                  "Show footer#20:41": {
+                    "type": "BOOLEAN",
+                    "value": false
+                  },
+                  "Selectable#20:42": {
+                    "type": "BOOLEAN",
+                    "value": false
+                  },
+                  "Title#20:43": {
+                    "type": "TEXT",
+                    "value": "Your order"
+                  }
+                },
+                "children": []
+              }
+            ]
+          },
+          {
+            "id": "40:10",
+            "name": "Promo applied",
+            "type": "FRAME",
+            "children": [
+              {
+                "id": "40:11",
+                "name": "Message",
+                "type": "TEXT",
+                "characters": "Promotion applied"
+              }
+            ]
+          },
+          {
+            "id": "40:20",
+            "name": "Gift options",
+            "type": "FRAME",
+            "children": [
+              {
+                "id": "40:21",
+                "name": "Back to order",
+                "type": "INSTANCE",
+                "componentId": "30:6",
+                "reactions": [
+                  {
+                    "trigger": {
+                      "type": "ON_CLICK"
+                    },
+                    "actions": [
+                      {
+                        "type": "NODE",
+                        "destinationId": "40:1",
+                        "navigation": "NAVIGATE",
+                        "transition": null,
+                        "preserveScrollPosition": false
+                      }
+                    ]
+                  }
+                ],
+                "children": []
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "components": {
+    "30:1": {
+      "key": "card-filled-rest",
+      "name": "Appearance=Filled, State=Rest",
+      "description": "",
+      "componentSetId": "30:0",
+      "remote": true,
+      "documentationLinks": []
+    },
+    "30:2": {
+      "key": "card-filled-loading",
+      "name": "Appearance=Filled, State=Loading",
+      "description": "",
+      "componentSetId": "30:0",
+      "remote": true,
+      "documentationLinks": []
+    },
+    "30:4": {
+      "key": "header-action-placeholder",
+      "name": "Placeholder",
+      "description": "",
+      "remote": true,
+      "documentationLinks": []
+    },
+    "30:5": {
+      "key": "badge-price",
+      "name": "Badge / Price",
+      "description": "",
+      "remote": true,
+      "documentationLinks": []
+    },
+    "30:6": {
+      "key": "button-primary",
+      "name": "Button",
+      "description": "",
+      "remote": true,
+      "documentationLinks": []
+    }
+  },
+  "componentSets": {
+    "30:0": {
+      "key": "card",
+      "name": "Card",
+      "description": "",
+      "remote": true
+    }
+  },
+  "styles": {}
+}

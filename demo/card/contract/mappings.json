@@ -1,0 +1,82 @@
+{
+  "note": "Declared by Design Engineering and the design system maintainers: how each platform's Fluent Card and the library's Figma Card express the semantic Card. Importers check every name here against the source and design files they read; they never guess a mapping.",
+  "semanticId": "semantic:card",
+  "platforms": [
+    {
+      "id": "platform:fluent-react-v9.card",
+      "title": "Fluent React v9 Card",
+      "platform": "web",
+      "symbol": "Card",
+      "owners": [{ "role": "design-engineering", "who": "fluent-web", "platform": "web" }],
+      "variantProperty": "appearance",
+      "variants": {
+        "filled": { "mapping": "exact", "expression": "filled" },
+        "outline": { "mapping": "exact", "expression": "outline" }
+      },
+      "extensionPoints": [
+        { "name": "appearance", "mechanism": "prop", "expresses": ["variant"] },
+        { "name": "selected", "mechanism": "prop", "expresses": ["state.selected"] },
+        { "name": "size", "mechanism": "prop", "expresses": ["density"] },
+        { "name": "CardPreview", "mechanism": "slot", "expresses": ["media"] },
+        { "name": "CardHeader.header", "mechanism": "slot", "expresses": ["header.title"] },
+        { "name": "CardHeader.description", "mechanism": "slot", "expresses": ["header.description"] },
+        { "name": "CardHeader.image", "mechanism": "slot", "expresses": ["header.image"] },
+        { "name": "CardHeader.action", "mechanism": "slot", "expresses": ["header.action"] },
+        { "name": "CardFooter", "mechanism": "slot", "expresses": ["actions"] }
+      ]
+    },
+    {
+      "id": "platform:fluent-apple.card-view",
+      "title": "Fluent iOS CardView",
+      "platform": "ios",
+      "symbol": "CardView",
+      "owners": [{ "role": "design-engineering", "who": "fluent-ios", "platform": "ios" }],
+      "variantProperty": "CardColorStyle",
+      "variants": {
+        "filled": { "mapping": "closest", "expression": "neutral", "note": "CardView always draws a border as well as a background." },
+        "outline": { "mapping": "none", "note": "CardView has no style without a background." }
+      },
+      "extensionPoints": [
+        { "name": "colorStyle", "mechanism": "prop", "expresses": ["variant"] },
+        { "name": "primaryText", "mechanism": "prop", "expresses": ["header.title"] },
+        { "name": "secondaryText", "mechanism": "prop", "expresses": ["header.description"] },
+        { "name": "icon", "mechanism": "prop", "expresses": ["header.image"] },
+        { "name": "customBackgroundColor", "mechanism": "style-api", "expresses": ["background"] },
+        { "name": "customBorderColor", "mechanism": "style-api", "expresses": ["border"] }
+      ]
+    },
+    {
+      "id": "platform:fluent-android.basic-card",
+      "title": "Fluent Android Compose BasicCard",
+      "platform": "android",
+      "symbol": "BasicCard",
+      "owners": [{ "role": "design-engineering", "who": "fluent-android", "platform": "android" }],
+      "variantProperty": "CardType",
+      "variants": {
+        "filled": { "mapping": "closest", "expression": "Elevated", "note": "Elevated draws a shadow and no border." },
+        "outline": { "mapping": "exact", "expression": "Outlined" }
+      },
+      "extensionPoints": [
+        { "name": "cardType", "mechanism": "prop", "expresses": ["variant"] },
+        { "name": "content", "mechanism": "slot", "expresses": ["media", "header", "body", "actions"] },
+        { "name": "basicCardTokens", "mechanism": "token", "expresses": ["background", "border", "elevation", "corner-radius"] }
+      ]
+    }
+  ],
+  "library": {
+    "semanticId": "semantic:card",
+    "componentSet": "Card",
+    "owners": [{ "role": "design", "who": "design-system-maintainers" }],
+    "variantProperty": "Appearance",
+    "variants": { "Filled": "filled", "Outline": "outline" },
+    "stateProperty": "State",
+    "states": { "Rest": "rest", "Hover": "hover", "Selected": "selected", "Disabled": "disabled", "Loading": "loading", "Empty": "empty", "Error": "error" },
+    "properties": {
+      "Header action": { "property": "header.action", "change": "add-content" },
+      "Show footer": { "property": "actions", "change": "add-content" },
+      "Selectable": { "property": "state.selected", "change": "set-property" },
+      "Title": { "content": true }
+    },
+    "styleFields": { "cornerRadius": "corner-radius", "fills": "background" }
+  }
+}

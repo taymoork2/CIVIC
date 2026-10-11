@@ -12,6 +12,7 @@
         { "key": "outline", "title": "Outline" }
       ],
       "states": ["rest", "hover", "selected", "disabled", "loading", "empty", "error"],
+      "productStates": ["loading", "empty", "error"],
       "slots": ["media", "header", "body", "actions"],
       "rules": [
         {
@@ -58,7 +59,8 @@
       "title": "Checkout",
       "scale": "journey",
       "presence": "expected",
-      "platforms": ["web", "ios", "android"]
+      "platforms": ["web", "ios", "android"],
+      "entry": ["target:shop.order-summary"]
     },
     {
       "id": "target:shop.order-summary",
@@ -81,6 +83,7 @@
       "title": "Order Summary card",
       "semanticId": "semantic:card",
       "variant": "filled",
+      "state": "rest",
       "placedOn": "target:shop.order-summary",
       "product": "shop",
       "origin": "design"

@@ -13,7 +13,7 @@ Storage is plain JSON files until the Button demo shows what storage it needs. T
 Types are in [`src/schema.ts`](src/schema.ts). Two worked examples validate cleanly:
 
 - [`examples/fluent-button.graph.json`](examples/fluent-button.graph.json) is the decision 0001 Button: one semantic Button, its React v9, iOS and Compose components with each variant's mapping, and an open Contract Conflict for the Android kit's Neutral default. It is hand-entered from decision 0001's table, so its source revision is `decision-0001` and its evidence is static. It stays as a small test fixture; the [Fluent Button demo](../demo/fluent-button) builds the same Button from read data with the [importers](../importers).
-- [`examples/card-override.graph.json`](examples/card-override.graph.json) is an illustrative Card with web and iOS libraries, a product screen, an instance on it, and two overrides to forecast.
+- [`examples/card-override.graph.json`](examples/card-override.graph.json) is an illustrative Card with web and iOS libraries, a product screen, an instance on it, and two overrides to forecast. The [Card demo](../demo/card) builds a fuller Card from Fluent's source and Figma exports.
 - [`examples/review-loop.graph.json`](examples/review-loop.graph.json) is an illustrative review to agent loop on Laundry: a person, their agent and CIVIC as actors, main and a worktree line, three annotations (anchored, a path, and an unanchored screenshot), and one work request in each lane.
 
 ## Records
@@ -23,12 +23,12 @@ Every record has a stable ID, `<prefix>:<dot.separated.path>`, a title, and opti
 | Kind | ID prefix | What it holds |
 |---|---|---|
 | Intent | `intent:` | A requirement, business rule or accessibility rule that stays true on every platform |
-| Target | `target:` | A journey, screen, state or surface, either **expected** (declared) or only **discovered** in source or by a crawl |
+| Target | `target:` | A journey, screen, state or surface, either **expected** (declared) or only **discovered** in source or by a crawl. A journey can name its `entry` and `exits` screens. |
 | Token | `token:` | A design token, identified by its DTCG path |
-| Semantic component | `semantic:` | The platform-independent contract: purpose, variants, states, slots and contract rules |
+| Semantic component | `semantic:` | The platform-independent contract: purpose, variants, states, slots and contract rules. `productStates` are the states whose content depends on the product's data, such as loading, empty and error. |
 | Platform component | `platform:` | One platform's implementation, with how each semantic variant maps (`exact`, `closest` or `none`), its default variant, and any variants no semantic variant covers |
 | Extension point | `extension:` | A slot, prop, token, style API or theming hook on a platform component, and the semantic properties it can express |
-| Component instance | `instance:` | A use of a component on a product's screen, from design or code |
+| Component instance | `instance:` | A use of a component on a product's screen, from design or code, with the contract `state` it shows and any product states it `inheritsStates` from the default |
 | Override | `override:` | A local change to an instance: added content, a changed property, a local style, or a detach |
 | Evidence | `evidence:` | What a source shows, tied to the exact revision it read, in one evidence tier |
 | Contract Conflict | `conflict:` | Two sources that disagree on a target: classification, owners, alignment state and evidence-backed resolution |
@@ -75,12 +75,23 @@ Actor, Line, Annotation and Work request are the records for [decision 0007](../
 
 `forecastOverride` answers D29's question for each platform the screen ships on. Is the override **supported** by an existing extension point, does it **need a library change**, or is it **forbidden** by a contract rule? The answer is computed from the current graph rather than stored, and platforms are never merged into one answer. Only declared or observed `implements` links count, so a proposed mapping can't make an override look supported.
 
+`reviewInstance` (`civic overrides <graph> <instance-id>`) is the design-time review of one instance from the [component change flow](../docs/component-change-flow.md). It forecasts every override, finds the conflict that tracks each one, and names who is asked (the person who made the change and the contract's design owners) and who is told (design engineering on each platform that needs a library change, and the engineers and QA of the screens and journeys the instance appears in). The design reads "not yet adoptable" until every override has a decision ([`src/overrides.ts`](src/overrides.ts)).
+
+## Design completeness
+
+`completenessOf` (`civic completeness <graph> <journey-id>`) is the static design completeness check (D32). It runs two rule sets and reports counts with denominators ([`src/completeness.ts`](src/completeness.ts)):
+
+- **Component states.** For each screen and component, it counts the contract states that the design instances on the screen and its state targets account for. A state counts when an instance shows it, when the library renders it (it isn't a product state), or when an instance says it inherits the default. Only design instances count, because the check runs before code exists. `civic gaps` lists each missing product state with the instance's owners.
+- **Journey shape.** Starting from the journey's entry screens, it reports dead ends (screens with no counted path on that aren't declared exits) and unreachable screens. An unmapped path still counts as a way on.
+
+Which gaps block a release is the project's risk policy. Accessibility intent in designs isn't checked yet.
+
 ## Contract export
 
 Two read-only queries over a graph (D31). Both are deterministic and print Markdown, or JSON with `--json`.
 
 - **`civic context <graph> <semantic-id> --platform <p> [--variant <key>]`** prints one work order: intent, states, slots, the platform's mapping and default, the other platforms' mappings, tokens, extension points, conflicts with their decisions, evidence by tier, acceptance, and the IDs to put in code ([`src/context.ts`](src/context.ts)).
-- **`civic gaps <graph> [--scope <semantic-id>] [--platform <p>]`** lists what's expected but missing, each with owners: open conflicts, missing variants, platform-only variants, failing evidence, platforms with no run evidence, unconfirmed links, and approved exceptions with their revisit triggers ([`src/gaps.ts`](src/gaps.ts)).
+- **`civic gaps <graph> [--scope <semantic-id>] [--platform <p>]`** lists what's expected but missing, each with owners: open conflicts, missing variants, missing product states in designs, platform-only variants, failing evidence, platforms with no run evidence, unconfirmed links, and approved exceptions with their revisit triggers ([`src/gaps.ts`](src/gaps.ts)).
 
 ## Commands
 
@@ -88,9 +99,11 @@ Two read-only queries over a graph (D31). Both are deterministic and print Markd
 cd graph
 pnpm install --frozen-lockfile
 pnpm run check      # types
-pnpm test           # validation, forecast and boundary tests
+pnpm test           # validation, forecast, review, completeness and boundary tests
 pnpm run validate   # validate the example graphs
 node src/cli.ts forecast examples/card-override.graph.json override:shop.order-summary.card.price-badge
+node src/cli.ts overrides examples/card-override.graph.json instance:shop.order-summary.card
+node src/cli.ts completeness examples/card-override.graph.json target:shop.checkout
 node src/cli.ts gaps examples/fluent-button.graph.json
 node src/cli.ts context examples/fluent-button.graph.json semantic:button --platform android --variant neutral-default
 ```

@@ -197,6 +197,16 @@ export function validateGraph(input: unknown): Issue[] {
       case 'extension-point':
         ref(at, 'platformComponentId', record.platformComponentId, ['platform-component'])
         break
+      case 'semantic-component':
+        for (const state of record.productStates ?? []) {
+          if (!record.states.includes(state)) error('unknown-state', at, `Product state ${state} is not one of the contract's states.`)
+        }
+        break
+      case 'target':
+        if (record.scale !== 'journey' && (record.entry || record.exits)) error('journey-ends', at, 'Only a journey has entry and exit screens.')
+        for (const id of record.entry ?? []) ref(at, 'entry', id, ['target'])
+        for (const id of record.exits ?? []) ref(at, 'exits', id, ['target'])
+        break
       case 'component-instance': {
         const semantic = ref(at, 'semanticId', record.semanticId, ['semantic-component'])
         ref(at, 'placedOn', record.placedOn, ['target'])
@@ -204,6 +214,12 @@ export function validateGraph(input: unknown): Issue[] {
           error('unknown-variant', at, `Variant ${record.variant} is not defined by ${semantic.id}.`)
         }
         if (record.origin === 'code' && !record.platform) error('instance-platform', at, 'An instance read from code names its platform.')
+        if (semantic?.kind === 'semantic-component') {
+          if (record.state && !semantic.states.includes(record.state)) error('unknown-state', at, `State ${record.state} is not defined by ${semantic.id}.`)
+          for (const state of record.inheritsStates ?? []) {
+            if (!(semantic.productStates ?? []).includes(state)) error('unknown-state', at, `${state} is not a product state of ${semantic.id}; only product states are inherited explicitly.`)
+          }
+        }
         break
       }
       case 'override':
@@ -393,6 +409,8 @@ function checkRecordShape(raw: unknown, at: string, error: Report) {
       field.oneOf('scale', ['journey', 'screen', 'state', 'surface'])
       field.oneOf('presence', ['expected', 'discovered'])
       field.optionalList('platforms', (value, path) => checkEnum(value, PLATFORMS, path, error))
+      field.optionalList('entry', (value, path) => checkString(value, path, error))
+      field.optionalList('exits', (value, path) => checkString(value, path, error))
       break
     case 'token':
       field.string('path')
@@ -407,6 +425,7 @@ function checkRecordShape(raw: unknown, at: string, error: Report) {
         v.string('title')
       })
       field.list('states', (value, path) => checkString(value, path, error))
+      field.optionalList('productStates', (value, path) => checkString(value, path, error))
       field.optionalList('slots', (value, path) => checkString(value, path, error))
       field.optionalList('rules', (rule, path) => {
         if (!isObject(rule)) return error('shape', path, 'Must be an object.')
@@ -451,6 +470,8 @@ function checkRecordShape(raw: unknown, at: string, error: Report) {
       field.string('product')
       field.oneOf('origin', ['design', 'code'])
       field.optional('platform', (value, path) => checkEnum(value, PLATFORMS, path, error))
+      field.optional('state', (value, path) => checkString(value, path, error))
+      field.optionalList('inheritsStates', (value, path) => checkString(value, path, error))
       break
     case 'override':
       field.string('instanceId')

@@ -1,0 +1,11 @@
+{
+  "note": "Declared by the product team: an illustrative Shop product that uses the design system's Card. The owners are the demo's placeholders.",
+  "product": "shop",
+  "title": "Shop",
+  "platforms": ["web", "ios", "android"],
+  "owners": [
+    { "role": "design", "who": "shop-design" },
+    { "role": "engineering", "who": "shop-engineering" },
+    { "role": "qa", "who": "shop-qa" }
+  ]
+}

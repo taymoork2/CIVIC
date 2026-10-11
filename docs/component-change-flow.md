@@ -1,6 +1,6 @@
 # A design-system component changed by a product team
 
-Proposal, 2026-10-11; the schema decision is D29. This walks one scenario through CIVIC as described in [decision 0005](decisions/0005-what-civic-is.md) and [onboarding and ingestion](onboarding-and-ingestion.md). None of it is built. Today the spec has the building blocks: semantic and platform components, a composability contract with extension points, alignment states, and migration contracts. The journey canvas models only Laundry screens.
+Proposal, 2026-10-11; the schema decision is D29. This walks one scenario through CIVIC as described in [decision 0005](decisions/0005-what-civic-is.md) and [onboarding and ingestion](onboarding-and-ingestion.md). Steps 1 to 3 are built in the [Card demo](../demo/card) on Fluent's real Card libraries, with stand-in Figma files. Today the spec has the building blocks: semantic and platform components, a composability contract with extension points, alignment states, and migration contracts. The journey canvas models only Laundry screens.
 
 ## The scenario
 

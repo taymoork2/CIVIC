@@ -1,0 +1,613 @@
+{
+  "name": "Fluent 2 Card library (CIVIC stand-in)",
+  "lastModified": "2026-10-11T00:00:00Z",
+  "version": "civic-stand-in-1",
+  "schemaVersion": 0,
+  "document": {
+    "id": "0:0",
+    "name": "Document",
+    "type": "DOCUMENT",
+    "children": [
+      {
+        "id": "20:0",
+        "name": "Components",
+        "type": "CANVAS",
+        "children": [
+          {
+            "id": "20:1",
+            "name": "Card",
+            "type": "COMPONENT_SET",
+            "componentPropertyDefinitions": {
+              "Appearance": {
+                "type": "VARIANT",
+                "defaultValue": "Filled",
+                "variantOptions": [
+                  "Filled",
+                  "Outline"
+                ]
+              },
+              "State": {
+                "type": "VARIANT",
+                "defaultValue": "Rest",
+                "variantOptions": [
+                  "Rest",
+                  "Hover",
+                  "Selected",
+                  "Disabled",
+                  "Loading",
+                  "Empty",
+                  "Error"
+                ]
+              },
+              "Header action#20:40": {
+                "type": "INSTANCE_SWAP",
+                "defaultValue": "21:2",
+                "preferredValues": [
+                  {
+                    "type": "COMPONENT",
+                    "key": "badge-price"
+                  }
+                ]
+              },
+              "Show footer#20:41": {
+                "type": "BOOLEAN",
+                "defaultValue": false
+              },
+              "Selectable#20:42": {
+                "type": "BOOLEAN",
+                "defaultValue": false
+              },
+              "Title#20:43": {
+                "type": "TEXT",
+                "defaultValue": "Card title"
+              }
+            },
+            "children": [
+              {
+                "id": "20:2",
+                "name": "Appearance=Filled, State=Rest",
+                "type": "COMPONENT",
+                "cornerRadius": 8,
+                "children": [
+                  {
+                    "id": "I20:2;1",
+                    "name": "Header",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "I20:2;2",
+                        "name": "Title",
+                        "type": "TEXT",
+                        "characters": "Card title"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "I20:2;3",
+                    "name": "Body",
+                    "type": "FRAME",
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": "20:3",
+                "name": "Appearance=Filled, State=Hover",
+                "type": "COMPONENT",
+                "cornerRadius": 8,
+                "children": [
+                  {
+                    "id": "I20:3;1",
+                    "name": "Header",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "I20:3;2",
+                        "name": "Title",
+                        "type": "TEXT",
+                        "characters": "Card title"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "I20:3;3",
+                    "name": "Body",
+                    "type": "FRAME",
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": "20:4",
+                "name": "Appearance=Filled, State=Selected",
+                "type": "COMPONENT",
+                "cornerRadius": 8,
+                "children": [
+                  {
+                    "id": "I20:4;1",
+                    "name": "Header",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "I20:4;2",
+                        "name": "Title",
+                        "type": "TEXT",
+                        "characters": "Card title"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "I20:4;3",
+                    "name": "Body",
+                    "type": "FRAME",
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": "20:5",
+                "name": "Appearance=Filled, State=Disabled",
+                "type": "COMPONENT",
+                "cornerRadius": 8,
+                "children": [
+                  {
+                    "id": "I20:5;1",
+                    "name": "Header",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "I20:5;2",
+                        "name": "Title",
+                        "type": "TEXT",
+                        "characters": "Card title"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "I20:5;3",
+                    "name": "Body",
+                    "type": "FRAME",
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": "20:6",
+                "name": "Appearance=Filled, State=Loading",
+                "type": "COMPONENT",
+                "cornerRadius": 8,
+                "children": [
+                  {
+                    "id": "I20:6;1",
+                    "name": "Header",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "I20:6;2",
+                        "name": "Title",
+                        "type": "TEXT",
+                        "characters": "Card title"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "I20:6;3",
+                    "name": "Body",
+                    "type": "FRAME",
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": "20:7",
+                "name": "Appearance=Filled, State=Empty",
+                "type": "COMPONENT",
+                "cornerRadius": 8,
+                "children": [
+                  {
+                    "id": "I20:7;1",
+                    "name": "Header",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "I20:7;2",
+                        "name": "Title",
+                        "type": "TEXT",
+                        "characters": "Card title"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "I20:7;3",
+                    "name": "Body",
+                    "type": "FRAME",
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": "20:8",
+                "name": "Appearance=Filled, State=Error",
+                "type": "COMPONENT",
+                "cornerRadius": 8,
+                "children": [
+                  {
+                    "id": "I20:8;1",
+                    "name": "Header",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "I20:8;2",
+                        "name": "Title",
+                        "type": "TEXT",
+                        "characters": "Card title"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "I20:8;3",
+                    "name": "Body",
+                    "type": "FRAME",
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": "20:9",
+                "name": "Appearance=Outline, State=Rest",
+                "type": "COMPONENT",
+                "cornerRadius": 8,
+                "children": [
+                  {
+                    "id": "I20:9;1",
+                    "name": "Header",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "I20:9;2",
+                        "name": "Title",
+                        "type": "TEXT",
+                        "characters": "Card title"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "I20:9;3",
+                    "name": "Body",
+                    "type": "FRAME",
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": "20:10",
+                "name": "Appearance=Outline, State=Hover",
+                "type": "COMPONENT",
+                "cornerRadius": 8,
+                "children": [
+                  {
+                    "id": "I20:10;1",
+                    "name": "Header",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "I20:10;2",
+                        "name": "Title",
+                        "type": "TEXT",
+                        "characters": "Card title"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "I20:10;3",
+                    "name": "Body",
+                    "type": "FRAME",
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": "20:11",
+                "name": "Appearance=Outline, State=Selected",
+                "type": "COMPONENT",
+                "cornerRadius": 8,
+                "children": [
+                  {
+                    "id": "I20:11;1",
+                    "name": "Header",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "I20:11;2",
+                        "name": "Title",
+                        "type": "TEXT",
+                        "characters": "Card title"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "I20:11;3",
+                    "name": "Body",
+                    "type": "FRAME",
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": "20:12",
+                "name": "Appearance=Outline, State=Disabled",
+                "type": "COMPONENT",
+                "cornerRadius": 8,
+                "children": [
+                  {
+                    "id": "I20:12;1",
+                    "name": "Header",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "I20:12;2",
+                        "name": "Title",
+                        "type": "TEXT",
+                        "characters": "Card title"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "I20:12;3",
+                    "name": "Body",
+                    "type": "FRAME",
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": "20:13",
+                "name": "Appearance=Outline, State=Loading",
+                "type": "COMPONENT",
+                "cornerRadius": 8,
+                "children": [
+                  {
+                    "id": "I20:13;1",
+                    "name": "Header",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "I20:13;2",
+                        "name": "Title",
+                        "type": "TEXT",
+                        "characters": "Card title"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "I20:13;3",
+                    "name": "Body",
+                    "type": "FRAME",
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": "20:14",
+                "name": "Appearance=Outline, State=Empty",
+                "type": "COMPONENT",
+                "cornerRadius": 8,
+                "children": [
+                  {
+                    "id": "I20:14;1",
+                    "name": "Header",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "I20:14;2",
+                        "name": "Title",
+                        "type": "TEXT",
+                        "characters": "Card title"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "I20:14;3",
+                    "name": "Body",
+                    "type": "FRAME",
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": "20:15",
+                "name": "Appearance=Outline, State=Error",
+                "type": "COMPONENT",
+                "cornerRadius": 8,
+                "children": [
+                  {
+                    "id": "I20:15;1",
+                    "name": "Header",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "I20:15;2",
+                        "name": "Title",
+                        "type": "TEXT",
+                        "characters": "Card title"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "I20:15;3",
+                    "name": "Body",
+                    "type": "FRAME",
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "21:1",
+            "name": "Parts",
+            "type": "FRAME",
+            "children": [
+              {
+                "id": "21:2",
+                "name": "Placeholder",
+                "type": "COMPONENT",
+                "children": []
+              },
+              {
+                "id": "21:3",
+                "name": "Badge / Price",
+                "type": "COMPONENT",
+                "children": [
+                  {
+                    "id": "21:4",
+                    "name": "Label",
+                    "type": "TEXT",
+                    "characters": "-20%"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "components": {
+    "20:2": {
+      "key": "card-filled-rest",
+      "name": "Appearance=Filled, State=Rest",
+      "description": "",
+      "componentSetId": "20:1",
+      "remote": false,
+      "documentationLinks": []
+    },
+    "20:3": {
+      "key": "card-filled-hover",
+      "name": "Appearance=Filled, State=Hover",
+      "description": "",
+      "componentSetId": "20:1",
+      "remote": false,
+      "documentationLinks": []
+    },
+    "20:4": {
+      "key": "card-filled-selected",
+      "name": "Appearance=Filled, State=Selected",
+      "description": "",
+      "componentSetId": "20:1",
+      "remote": false,
+      "documentationLinks": []
+    },
+    "20:5": {
+      "key": "card-filled-disabled",
+      "name": "Appearance=Filled, State=Disabled",
+      "description": "",
+      "componentSetId": "20:1",
+      "remote": false,
+      "documentationLinks": []
+    },
+    "20:6": {
+      "key": "card-filled-loading",
+      "name": "Appearance=Filled, State=Loading",
+      "description": "",
+      "componentSetId": "20:1",
+      "remote": false,
+      "documentationLinks": []
+    },
+    "20:7": {
+      "key": "card-filled-empty",
+      "name": "Appearance=Filled, State=Empty",
+      "description": "",
+      "componentSetId": "20:1",
+      "remote": false,
+      "documentationLinks": []
+    },
+    "20:8": {
+      "key": "card-filled-error",
+      "name": "Appearance=Filled, State=Error",
+      "description": "",
+      "componentSetId": "20:1",
+      "remote": false,
+      "documentationLinks": []
+    },
+    "20:9": {
+      "key": "card-outline-rest",
+      "name": "Appearance=Outline, State=Rest",
+      "description": "",
+      "componentSetId": "20:1",
+      "remote": false,
+      "documentationLinks": []
+    },
+    "20:10": {
+      "key": "card-outline-hover",
+      "name": "Appearance=Outline, State=Hover",
+      "description": "",
+      "componentSetId": "20:1",
+      "remote": false,
+      "documentationLinks": []
+    },
+    "20:11": {
+      "key": "card-outline-selected",
+      "name": "Appearance=Outline, State=Selected",
+      "description": "",
+      "componentSetId": "20:1",
+      "remote": false,
+      "documentationLinks": []
+    },
+    "20:12": {
+      "key": "card-outline-disabled",
+      "name": "Appearance=Outline, State=Disabled",
+      "description": "",
+      "componentSetId": "20:1",
+      "remote": false,
+      "documentationLinks": []
+    },
+    "20:13": {
+      "key": "card-outline-loading",
+      "name": "Appearance=Outline, State=Loading",
+      "description": "",
+      "componentSetId": "20:1",
+      "remote": false,
+      "documentationLinks": []
+    },
+    "20:14": {
+      "key": "card-outline-empty",
+      "name": "Appearance=Outline, State=Empty",
+      "description": "",
+      "componentSetId": "20:1",
+      "remote": false,
+      "documentationLinks": []
+    },
+    "20:15": {
+      "key": "card-outline-error",
+      "name": "Appearance=Outline, State=Error",
+      "description": "",
+      "componentSetId": "20:1",
+      "remote": false,
+      "documentationLinks": []
+    },
+    "21:2": {
+      "key": "header-action-placeholder",
+      "name": "Placeholder",
+      "description": "Empty header action.",
+      "remote": false,
+      "documentationLinks": []
+    },
+    "21:3": {
+      "key": "badge-price",
+      "name": "Badge / Price",
+      "description": "",
+      "remote": false,
+      "documentationLinks": []
+    }
+  },
+  "componentSets": {
+    "20:1": {
+      "key": "card",
+      "name": "Card",
+      "description": "The design system Card.",
+      "remote": false
+    }
+  },
+  "styles": {}
+}

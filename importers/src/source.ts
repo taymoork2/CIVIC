@@ -179,6 +179,11 @@ export function tsTypeKeys(dts: string, typeName: string): string[] {
   return [...new Set([...body.matchAll(/^\s{4}([A-Za-z_]\w*)\??\s*:/gm)].map((m) => m[1]!))].sort()
 }
 
+/** Components a declaration file exports: `export declare const Card: ForwardRefComponent<CardProps>`. */
+export function tsExportedComponents(dts: string): string[] {
+  return [...new Set([...dts.matchAll(/^export declare const ([A-Z]\w*): ForwardRefComponent</gm)].map((m) => m[1]!))].sort()
+}
+
 /** A destructured default in compiled JS: `const { appearance = 'secondary' } = props`. */
 export function jsDestructuredDefault(js: string, prop: string): string {
   return find(js, new RegExp(`\\b${escape(prop)}\\s*=\\s*'([^']*)'`), `a default for ${prop}`)[1]!

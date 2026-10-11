@@ -1,4 +1,4 @@
-import type { ContractConflict, Owner, PlatformComponent, SemanticComponent } from '../../graph/src/index.ts'
+import type { ContractConflict, Override, Owner, PlatformComponent, SemanticComponent } from '../../graph/src/index.ts'
 import type { DesignKitFacts } from './figma.ts'
 
 /**
@@ -50,4 +50,29 @@ function dedupe(owners: Owner[]): Owner[] {
     const key = `${owner.role}|${owner.who}|${owner.platform ?? ''}`
     return !seen.has(key) && seen.add(key) !== undefined
   })
+}
+
+/**
+ * Raises each override on a product's instances as Unreviewed drift against the component
+ * contract (component change flow, step 2). The designer is never blocked: the design is
+ * imported as it is, and the conflict stays open until the contract's owners decide. Each
+ * conflict asks the person who made the change and the contract's design owners. Whether
+ * each platform can build it is a forecast computed from the graph, never stored here.
+ */
+export function raiseOverrideDrift(semantic: SemanticComponent, overrides: Override[], evidence: { design: string; contract: string }): ContractConflict[] {
+  return overrides.map((override) => ({
+    id: `conflict:${override.id.slice('override:'.length)}`,
+    kind: 'contract-conflict',
+    title: `${override.title} (${semantic.title} override)`,
+    targetId: semantic.id,
+    summary: `The product design changes the ${semantic.title}'s ${override.property} (${override.change}${override.value !== undefined ? `, ${override.value}` : ''}) and no maintainer has reviewed it.`,
+    sides: [
+      { claim: `${override.title} on ${override.instanceId}.`, recordId: override.id, evidenceIds: [evidence.design] },
+      { claim: `The ${semantic.title} contract and library do not include this change.`, recordId: semantic.id, evidenceIds: [evidence.contract] },
+    ],
+    classification: 'unclassified',
+    owners: dedupe([...(override.madeBy ? [override.madeBy] : []), ...(semantic.owners ?? []).filter((owner) => owner.role === 'design')]),
+    alignment: 'unreviewed-drift',
+    status: 'open',
+  }))
 }

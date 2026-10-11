@@ -1,0 +1,43 @@
+{
+  "note": "Illustrative decisions by the Card's maintainers, so the graph shows the component change flow's outcomes: reject, temporary exception and promote. The selectable Card is left undecided on purpose, so the design stays not yet adoptable. The deciders are the demo's placeholder owners, not real Fluent teams.",
+  "decisions": [
+    {
+      "conflictId": "conflict:shop.order-summary.card.corner-radius",
+      "classification": "unapproved-divergence",
+      "alignment": "awaiting-adoption",
+      "resolution": {
+        "outcome": "update-design",
+        "decidedBy": { "role": "design", "who": "design-system-maintainers" },
+        "at": "2026-10-11T00:00:00Z",
+        "rationale": "Reject. The contract takes corner radius from the shape token, and a local 20 breaks it on every platform. Shop design reverts the radius, and the Card reads Awaiting adoption until the file matches.",
+        "evidenceIds": ["evidence:figma.shop.shop-checkout-civic-stand-in", "evidence:figma.library.card"]
+      }
+    },
+    {
+      "conflictId": "conflict:shop.order-summary.card.header-action",
+      "classification": "temporary-gap",
+      "alignment": "accepted-limitation",
+      "resolution": {
+        "outcome": "approve-exception",
+        "decidedBy": { "role": "design", "who": "design-system-maintainers" },
+        "at": "2026-10-11T00:00:00Z",
+        "rationale": "Temporary exception. Web builds the price badge in CardHeader's action slot and Android inside BasicCard's content. iOS CardView has no header accessory, so Shop shows the price in the subtitle on iOS until the library adds one.",
+        "evidenceIds": ["evidence:fluent-apple.card-view.variants", "evidence:figma.shop.shop-checkout-civic-stand-in"],
+        "revisitTrigger": "Fluent iOS CardView gains a header accessory, or a second product asks for a badge in the Card header.",
+        "expires": "2027-04-01"
+      }
+    },
+    {
+      "conflictId": "conflict:shop.order-summary.card.actions",
+      "classification": "intentional-differentiation",
+      "alignment": "awaiting-adoption",
+      "resolution": {
+        "outcome": "update-contract",
+        "decidedBy": { "role": "design", "who": "design-system-maintainers" },
+        "at": "2026-10-11T00:00:00Z",
+        "rationale": "Promote. Footer actions are useful beyond Shop, and the contract already has an actions slot. Design engineering adds actions to iOS CardView with a migration note; Shop's footer waits on that release.",
+        "evidenceIds": ["evidence:fluent-apple.card-view.variants", "evidence:fluent-react-v9.card.variants"]
+      }
+    }
+  ]
+}

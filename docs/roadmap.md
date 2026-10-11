@@ -21,7 +21,7 @@ Build the [decision 0001](decisions/0001-fluent-2-demo-design-system.md) demo on
 - The Android Figma kit compared with Compose, which raises a Contract Conflict that is classified, given owners, and resolved.
 - Tokens move as DTCG where the source supports it. Read Figma structure from a file export; the Variables REST API needs Enterprise access, so the demo can't depend on it.
 
-A design-system Card changed by a product team is the second demo after Button. It follows the review to agent loop below.
+A design-system Card changed by a product team is the second demo after Button.
 
 Also part of this step ([decision 0006](decisions/0006-deterministic-civic-for-agentic-teams.md)):
 
@@ -31,6 +31,8 @@ Also part of this step ([decision 0006](decisions/0006-deterministic-civic-for-a
 The demo succeeds when a reviewer can see what disagrees, why it matters, who must act, and how the decision is preserved.
 
 Built in [`demo/fluent-button/`](../demo/fluent-button) on the importers in [`importers/`](../importers). The Button's web, iOS and Android mappings are checked against Fluent's own source at pinned revisions. Web has 13 passing Playwright checks against DTCG token values; iOS and Android have static evidence only. A Figma-export-shaped stand-in for the Android kit raises the Neutral default conflict, and an illustrative decision resolves it as an approved exception. `civic context` and `civic gaps` are in the graph CLI. The real Figma export, Storybook and native runs are still to come.
+
+The Card demo is built in [`demo/card/`](../demo/card), on Fluent's real Card libraries: React `Card` (flexible, with slots), iOS `CardView` (a brittle UIKit widget) and Android `BasicCard` (one content slot). A product design for Shop changes the Card in four ways. `civic overrides` forecasts each change per platform, raises it as unreviewed drift, and names who is asked and who is told. Illustrative decisions reject one change, approve a temporary exception, promote one into the system and leave one undecided. `civic completeness` is the D32 check: it finds the Card's missing empty and error states, a dead-end screen and an unreachable screen in the journey, as counts with denominators. Both Figma files are stand-ins in the REST export shape, and all evidence is static. Accessibility intent in designs isn't checked yet.
 
 ## Next: the review to agent loop
 
