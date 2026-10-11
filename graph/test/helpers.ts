@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import type { GraphDocument } from '../src/schema.ts'
+import type { Decision, GraphDocument } from '../src/schema.ts'
 
 export type ExampleName = 'fluent-button' | 'card-override' | 'review-loop'
 
@@ -18,4 +18,26 @@ export function record<T = Record<string, unknown>>(document: GraphDocument, id:
   const found = document.records.find((candidate) => candidate.id === id)
   if (!found) throw new Error(`No record ${id}`)
   return found as unknown as T
+}
+
+/**
+ * Records a person's decision on a conflict, as `civic decide` would. Defaults to a
+ * design-system maintainer updating the design, with the given evidence.
+ */
+export function decide(document: GraphDocument, conflictId: string, fields: Partial<Decision> & Pick<Decision, 'evidenceIds'>): Decision {
+  const decision: Decision = {
+    id: `decision:${conflictId.slice('conflict:'.length)}`,
+    kind: 'decision',
+    title: `Decision on ${conflictId}`,
+    conflictId,
+    outcome: 'update-design',
+    classification: 'outdated-design-source',
+    alignment: 'awaiting-adoption',
+    decidedBy: { role: 'design', who: 'design-system-maintainers' },
+    at: '2026-10-12T00:00:00Z',
+    rationale: 'Compose is the source of truth.',
+    ...fields,
+  }
+  document.records.push(decision)
+  return decision
 }

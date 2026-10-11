@@ -38,7 +38,6 @@ export function compareDesignKit(semantic: SemanticComponent, design: DesignKitF
       classification: 'unclassified',
       owners,
       alignment: 'unreviewed-drift',
-      status: 'open',
     })
   }
   return conflicts
@@ -73,6 +72,5 @@ export function raiseOverrideDrift(semantic: SemanticComponent, overrides: Overr
     classification: 'unclassified',
     owners: dedupe([...(override.madeBy ? [override.madeBy] : []), ...(semantic.owners ?? []).filter((owner) => owner.role === 'design')]),
     alignment: 'unreviewed-drift',
-    status: 'open',
   }))
 }

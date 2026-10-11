@@ -1691,8 +1691,7 @@
           "platform": "android"
         }
       ],
-      "alignment": "unreviewed-drift",
-      "status": "open"
+      "alignment": "unreviewed-drift"
     }
   ],
   "links": [

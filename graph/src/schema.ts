@@ -87,7 +87,7 @@ interface RecordBase {
   formerIds?: FormerId[]
   /**
    * The `actor:` that wrote this record, when it matters who did (D35). An agent may write
-   * annotations and comments for its person, but never evidence or a resolution.
+   * annotations and comments for its person, but never evidence or a decision.
    */
   writtenBy?: string
 }
@@ -274,8 +274,9 @@ export type Classification = (typeof CLASSIFICATIONS)[number]
 
 /**
  * Two sources disagree on the same target (spec: Collaboration cycle). A disagreement is
- * a record, not automatically a bug. It is classified, given owners, and resolved only
- * with evidence.
+ * a record, not automatically a bug. It is classified, given owners, and settled only by
+ * a Decision record with evidence. The conflict keeps what the import raised; whether it
+ * is decided, and how, is read from its Decision (see decisions.ts).
  */
 export interface ContractConflict extends RecordBase {
   kind: 'contract-conflict'
@@ -284,11 +285,11 @@ export interface ContractConflict extends RecordBase {
   platform?: Platform
   summary: string
   sides: ConflictSide[]
+  /** As raised, before anyone decides it. A Decision carries the classification a person gave. */
   classification: Classification
   owners: Owner[]
+  /** As raised: `unreviewed-drift`, or `unknown-stale`. A Decision carries the decided state. */
   alignment: AlignmentState
-  status: 'open' | 'resolved'
-  resolution?: Resolution
 }
 
 export interface ConflictSide {
@@ -297,19 +298,36 @@ export interface ConflictSide {
   evidenceIds: string[]
 }
 
+export const DECISION_OUTCOMES = ['update-design', 'change-implementation', 'update-contract', 'approve-exception'] as const
+export type DecisionOutcome = (typeof DECISION_OUTCOMES)[number]
+
 /**
- * How a conflict was settled. Decision becomes its own record in roadmap step 3; until
- * then the decision is kept inline here.
+ * A person's call on a contract conflict (roadmap step 3). It is its own owned record, so
+ * the gate (step 8) can tell a decided conflict from an undecided one, and a later call
+ * supersedes an earlier one instead of overwriting it. A conflict is decided when a
+ * Decision on it is in force: one that no other Decision supersedes. Agents never write
+ * one (D35).
  */
-export interface Resolution {
-  outcome: 'update-design' | 'change-implementation' | 'update-contract' | 'approve-exception'
+export interface Decision extends RecordBase {
+  kind: 'decision'
+  /** The `conflict:` this decides. */
+  conflictId: string
+  outcome: DecisionOutcome
+  /** The person's classification of the conflict; never `unclassified`. */
+  classification: Classification
+  /** The alignment state the conflict's target takes on its platform once decided. */
+  alignment: AlignmentState
   decidedBy: Owner
   at: string
   rationale: string
+  /** Evidence for the decided outcome. A conflict is never settled without it. */
   evidenceIds: string[]
   /** Required for `approve-exception`: when the exception is reconsidered. */
   revisitTrigger?: string
+  /** An approved exception's end date (ISO). The gate fails once it has passed. */
   expires?: string
+  /** The earlier `decision:` on the same conflict that this one replaces. */
+  supersedes?: string
 }
 
 // ---------------------------------------------------------------------------
@@ -521,6 +539,7 @@ export type GraphRecord =
   | Override
   | Evidence
   | ContractConflict
+  | Decision
   | Actor
   | Line
   | Annotation

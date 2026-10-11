@@ -29,7 +29,7 @@ The corner radius is forbidden on every platform, even though Android's `basicCa
 
 ### The decisions
 
-[`contract/decisions.json`](contract/decisions.json) holds illustrative decisions with the demo's placeholder owners. They aren't a real Fluent team's calls.
+[`contract/decisions.json`](contract/decisions.json) holds illustrative Decision records with the demo's placeholder owners. They aren't a real Fluent team's calls. The gate reads them: the three decided overrides don't block, and the undecided one is held by the baseline.
 
 - **Reject** the corner radius. Shop's design reverts it, and the Card reads Awaiting adoption until the file matches.
 - **Temporary exception** for the header badge, with a revisit trigger and an expiry date. Web and Android build it, and iOS shows the price in the subtitle.

@@ -1,7 +1,9 @@
+import { conflictStates, type ConflictState } from './decisions.ts'
 import { countsForReadiness, type Graph } from './graph.ts'
 import type {
   ContractConflict,
   ContractRule,
+  Decision,
   Evidence,
   ExtensionPoint,
   Intent,
@@ -41,7 +43,7 @@ export interface WorkOrder {
   tokens: { id: string; path: string; type: string; from: string }[]
   extensionPoints: Pick<ExtensionPoint, 'id' | 'mechanism' | 'name' | 'expresses'>[]
   /** Conflicts on this target and platform, open ones first. */
-  records: Pick<ContractConflict, 'id' | 'title' | 'status' | 'classification' | 'alignment' | 'summary' | 'owners' | 'resolution'>[]
+  records: (Pick<ContractConflict, 'id' | 'title' | 'summary' | 'owners'> & Pick<ConflictState, 'status' | 'classification' | 'alignment'> & { decision?: Decision })[]
   evidence: Pick<Evidence, 'id' | 'title' | 'tier' | 'method' | 'outcome' | 'finding'>[]
   /** What done means: the intents and contract rules, plus the evidence still missing. */
   acceptance: string[]
@@ -80,12 +82,11 @@ export function contextFor(graph: Graph, targetId: string, options: ContextOptio
       .map((token) => ({ id: token.id, path: token.path, type: token.type, from })),
   )
 
-  const records = graph
-    .ofKind('contract-conflict')
-    .filter((conflict) => conflict.targetId === semantic.id || (component !== undefined && conflict.sides.some((side) => side.recordId === component.id)))
-    .filter((conflict) => !conflict.platform || conflict.platform === platform)
-    .filter((conflict) => !variant || !conflict.variant || conflict.variant === variant.key)
-    .sort((a, b) => (a.status === b.status ? a.id.localeCompare(b.id) : a.status === 'open' ? -1 : 1))
+  const records = conflictStates(graph)
+    .filter(({ conflict }) => conflict.targetId === semantic.id || (component !== undefined && conflict.sides.some((side) => side.recordId === component.id)))
+    .filter(({ conflict }) => !conflict.platform || conflict.platform === platform)
+    .filter(({ conflict }) => !variant || !conflict.variant || conflict.variant === variant.key)
+    .sort((a, b) => (a.status === b.status ? a.conflict.id.localeCompare(b.conflict.id) : a.status === 'open' ? -1 : 1))
 
   const subjects = new Set([semantic.id, ...(component ? [component.id] : []), ...points.map((point) => point.id), ...intents.map((intent) => intent.id)])
   const evidence = graph
@@ -103,12 +104,12 @@ export function contextFor(graph: Graph, targetId: string, options: ContextOptio
   for (const mapping of mappings.filter((candidate) => candidate.mapping === 'none')) {
     acceptance.push(`${platform} has no equivalent for ${mapping.semanticVariant}${mapping.note ? ` (${mapping.note.replace(/\.$/, '')})` : ''}.`)
   }
-  for (const record of records) {
-    const owners = record.owners.map((owner) => `${owner.role} ${owner.who}`).join(', ')
+  for (const { conflict, decision } of records) {
+    const owners = conflict.owners.map((owner) => `${owner.role} ${owner.who}`).join(', ')
     acceptance.push(
-      record.resolution
-        ? `Follow the decision on ${record.title}: ${record.resolution.rationale}`
-        : `${record.title} is open and needs a decision from ${owners} before this is built.`,
+      decision
+        ? `Follow the decision on ${conflict.title}: ${decision.rationale}`
+        : `${conflict.title} is open and needs a decision from ${owners} before this is built.`,
     )
   }
   if (!evidence.some((item) => (item.tier === 'automated' || item.tier === 'physical-device') && item.outcome === 'pass')) {
@@ -148,7 +149,7 @@ export function contextFor(graph: Graph, targetId: string, options: ContextOptio
       ),
     tokens,
     extensionPoints: points.map(({ id, mechanism, name, expresses }) => ({ id, mechanism, name, expresses })),
-    records: records.map(({ id, title, status, classification, alignment, summary, owners, resolution }) => ({
+    records: records.map(({ conflict: { id, title, summary, owners }, status, classification, alignment, decision }) => ({
       id,
       title,
       status,
@@ -156,7 +157,7 @@ export function contextFor(graph: Graph, targetId: string, options: ContextOptio
       alignment,
       summary,
       owners,
-      ...(resolution ? { resolution } : {}),
+      ...(decision ? { decision } : {}),
     })),
     evidence: evidence.map(({ id, title, tier, method, outcome, finding }) => ({ id, title, tier, method, outcome, ...(finding ? { finding } : {}) })),
     acceptance,
@@ -211,8 +212,8 @@ export function renderWorkOrder(order: WorkOrder): string {
     order.records.length > 0
       ? order.records.map((record) => {
           const owners = record.owners.map((owner) => `${owner.role} ${owner.who}`).join(', ')
-          const decided = record.resolution
-            ? ` Decided: ${record.resolution.outcome} by ${record.resolution.decidedBy.role} ${record.resolution.decidedBy.who}. ${record.resolution.rationale}${record.resolution.revisitTrigger ? ` Revisit when: ${record.resolution.revisitTrigger}` : ''}`
+          const decided = record.decision
+            ? ` Decided: ${record.decision.outcome} by ${record.decision.decidedBy.role} ${record.decision.decidedBy.who} (\`${record.decision.id}\`). ${record.decision.rationale}${record.decision.revisitTrigger ? ` Revisit when: ${record.decision.revisitTrigger}` : ''}`
             : ''
           return `**${record.status}** ${record.title}: ${record.summary} Classification ${record.classification}, ${record.alignment}. Owners: ${owners}. (\`${record.id}\`)${decided}`
         })

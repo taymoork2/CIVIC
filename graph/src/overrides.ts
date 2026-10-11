@@ -1,7 +1,8 @@
 import { implementationsOf } from './context.ts'
 import { forecastOverride, type Forecast } from './forecast.ts'
 import { countsForReadiness, type Graph } from './graph.ts'
-import type { ContractConflict, Override, Owner } from './schema.ts'
+import { decisionFor } from './decisions.ts'
+import type { ContractConflict, Decision, Override, Owner } from './schema.ts'
 
 // The design-time review of a product's changes to one library component instance
 // (component change flow, steps 1 and 2): each override's per-platform forecast, the
@@ -13,6 +14,8 @@ export interface OverrideReviewItem {
   forecasts: Forecast[]
   /** The conflict tracking this override, if the import raised one. */
   conflict?: ContractConflict
+  /** The Decision in force on that conflict, once a person has decided it. */
+  decision?: Decision
 }
 
 export interface OverrideReview {
@@ -39,7 +42,8 @@ export function reviewInstance(graph: Graph, instanceId: string): OverrideReview
   const conflicts = graph.ofKind('contract-conflict')
   const items = overrides.map((override): OverrideReviewItem => {
     const conflict = conflicts.find((candidate) => candidate.sides.some((side) => side.recordId === override.id))
-    return { override, forecasts: forecastOverride(graph, override.id), ...(conflict ? { conflict } : {}) }
+    const decision = conflict ? decisionFor(graph, conflict.id) : undefined
+    return { override, forecasts: forecastOverride(graph, override.id), ...(conflict ? { conflict } : {}), ...(decision ? { decision } : {}) }
   })
 
   const shownOn = containers(graph, instanceId)
@@ -49,7 +53,7 @@ export function reviewInstance(graph: Graph, instanceId: string): OverrideReview
     .flatMap((component) => (component.owners ?? []).filter((owner) => owner.role === 'design-engineering'))
   const productOwners = shownOn.flatMap((id) => graph.get(id)?.owners ?? []).filter((owner) => owner.role === 'engineering' || owner.role === 'qa')
 
-  const decided = items.every((item) => item.conflict?.status === 'resolved')
+  const decided = items.every((item) => item.decision !== undefined)
   return {
     instanceId,
     semanticId: semantic.id,
@@ -107,15 +111,15 @@ export function renderInstanceReview(graph: Graph, review: OverrideReview): stri
       const forecast = item.forecasts.find((candidate) => candidate.platform === platform)
       return forecast ? OUTCOME_LABEL[forecast.outcome] : 'not shipped'
     })
-    lines.push(`| ${item.override.title} (\`${item.override.property}\`) | ${cells.join(' | ')} | ${recordState(item.conflict)} |`)
+    lines.push(`| ${item.override.title} (\`${item.override.property}\`) | ${cells.join(' | ')} | ${recordState(item)} |`)
   }
   lines.push('', '## Why', '')
   for (const item of review.items) {
     lines.push(`- **${item.override.title}** (\`${item.override.id}\`)`)
     for (const forecast of item.forecasts) lines.push(`  - ${forecast.platform}: ${forecast.reason}`)
-    const resolution = item.conflict?.resolution
-    if (resolution) {
-      lines.push(`  - Decided by ${resolution.decidedBy.role} ${resolution.decidedBy.who}: ${resolution.rationale}${resolution.revisitTrigger ? ` Revisit when: ${resolution.revisitTrigger}` : ''}${resolution.expires ? ` Expires ${resolution.expires}.` : ''}`)
+    const decision = item.decision
+    if (decision) {
+      lines.push(`  - Decided by ${decision.decidedBy.role} ${decision.decidedBy.who}: ${decision.rationale}${decision.revisitTrigger ? ` Revisit when: ${decision.revisitTrigger}` : ''}${decision.expires ? ` Expires ${decision.expires}.` : ''}`)
     }
   }
   lines.push('', '## People', '')
@@ -123,18 +127,18 @@ export function renderInstanceReview(graph: Graph, review: OverrideReview): stri
   lines.push(`- Told: ${who(review.told)}.`)
   lines.push(`- Shown on: ${review.shownOn.map((id) => `${title(id)} (\`${id}\`)`).join(', ') || 'no screen recorded'}.`)
   lines.push('', '## Readiness', '')
-  const open = review.items.filter((item) => item.conflict?.status !== 'resolved').length
+  const open = review.items.filter((item) => !item.decision).length
   lines.push(
     review.readiness === 'decided'
-      ? `Every override has a decision. ${review.items.filter((item) => item.conflict?.alignment === 'awaiting-adoption').length} of ${review.items.length} await adoption.`
+      ? `Every override has a decision. ${review.items.filter((item) => item.decision?.alignment === 'awaiting-adoption').length} of ${review.items.length} await adoption.`
       : `Design not yet adoptable: ${open} of ${review.items.length} override(s) have no decision.`,
   )
   return lines.join('\n')
 }
 
-function recordState(conflict: ContractConflict | undefined): string {
+function recordState({ conflict, decision }: OverrideReviewItem): string {
   if (!conflict) return 'not raised'
-  if (conflict.status === 'open') return `Unreviewed drift, open (\`${conflict.id}\`)`
-  const outcome = { 'update-design': 'rejected: update the design', 'change-implementation': 'change the implementation', 'update-contract': 'promoted into the system', 'approve-exception': 'exception approved' }[conflict.resolution!.outcome]
-  return `Decided, ${outcome}; ${conflict.alignment} (\`${conflict.id}\`)`
+  if (!decision) return `Unreviewed drift, open (\`${conflict.id}\`)`
+  const outcome = { 'update-design': 'rejected: update the design', 'change-implementation': 'change the implementation', 'update-contract': 'promoted into the system', 'approve-exception': 'exception approved' }[decision.outcome]
+  return `Decided, ${outcome}; ${decision.alignment} (\`${conflict.id}\`)`
 }

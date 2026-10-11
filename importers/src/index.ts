@@ -5,5 +5,5 @@ export { readFigmaComponentSet, type DesignKitFacts, type DesignKitMapping } fro
 export { readFigmaLibraryComponent, readFigmaProductFile, type LibraryComponentMapping, type LibraryFacts, type ProductManifest } from './figma-product.ts'
 export { readPlaywrightReport } from './playwright.ts'
 export { compareDesignKit, raiseOverrideDrift } from './compare.ts'
-export { applyDecisions, type ConflictDecision } from './decisions.ts'
+export { applyDecisions } from './decisions.ts'
 export * from './source.ts'

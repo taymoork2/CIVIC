@@ -112,7 +112,7 @@ test('each override is raised as open, unreviewed drift that asks its maker and 
   const semantic: SemanticComponent = { id: 'semantic:card', kind: 'semantic-component', title: 'Card', purpose: 'Group.', variants: [{ key: 'filled', title: 'Filled' }], states: ['rest'], owners: [{ role: 'design', who: 'ds' }, { role: 'qa', who: 'q' }] }
   const [conflict] = raiseOverrideDrift(semantic, [{ id: 'override:shop.x.card.actions', kind: 'override', title: 'Footer', instanceId: 'instance:shop.x.card', property: 'actions', change: 'add-content', madeBy: { role: 'design', who: 'shop-design' } }], { design: 'evidence:a', contract: 'evidence:b' })
   assert.equal(conflict!.id, 'conflict:shop.x.card.actions')
-  assert.deepEqual([conflict!.status, conflict!.alignment, conflict!.classification], ['open', 'unreviewed-drift', 'unclassified'])
+  assert.deepEqual([conflict!.alignment, conflict!.classification], ['unreviewed-drift', 'unclassified'])
   assert.deepEqual(conflict!.owners.map((owner) => owner.who), ['shop-design', 'ds'])
 })
 

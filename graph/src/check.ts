@@ -1,4 +1,5 @@
 import { completenessOf, stateCoverageOn } from './completeness.ts'
+import { conflictStates } from './decisions.ts'
 import { gapsIn, screenOf } from './gaps.ts'
 import { indexGraph, type Graph } from './graph.ts'
 import type { GraphDocument, Owner, Platform } from './schema.ts'
@@ -93,25 +94,27 @@ export function checkGraph(label: string, graph: Graph, options: CheckOptions): 
     findings.push(finding(label, kind, subjectId, summary, owners, platform, detail))
   const measure = (check: string, found: number, of: number) => measures.push({ graph: label, check, found, of })
 
-  const conflicts = graph.ofKind('contract-conflict')
-  const exceptions = conflicts.filter((conflict) => conflict.status === 'resolved' && conflict.resolution?.outcome === 'approve-exception')
-  for (const conflict of conflicts) {
-    if (conflict.status === 'open') add('open-conflict', conflict.id, `${conflict.summary} Nobody has decided it yet.`, conflict.owners, conflict.platform)
+  // A conflict is decided only by a Decision record in force on it (roadmap step 3).
+  const states = conflictStates(graph)
+  const conflicts = states.map((state) => state.conflict)
+  const exceptions = states.filter((state) => state.decision?.outcome === 'approve-exception')
+  for (const { conflict, status } of states) {
+    if (status === 'open') add('open-conflict', conflict.id, `${conflict.summary} Nobody has decided it yet.`, conflict.owners, conflict.platform)
   }
-  for (const conflict of exceptions) {
-    const { expires, revisitTrigger } = conflict.resolution!
+  for (const { conflict, decision, alignment } of exceptions) {
+    const { expires, revisitTrigger } = decision!
     if (expires && expires < options.today) add('expired-exception', conflict.id, `${conflict.title}: the approved exception expired on ${expires}. Revisit when: ${revisitTrigger}`, conflict.owners, conflict.platform)
-    else add('approved-exception', conflict.id, `${conflict.title}: accepted as ${conflict.alignment}${expires ? ` until ${expires}` : ''}. Revisit when: ${revisitTrigger}`, conflict.owners, conflict.platform)
+    else add('approved-exception', conflict.id, `${conflict.title}: accepted as ${alignment}${expires ? ` until ${expires}` : ''}. Revisit when: ${revisitTrigger}`, conflict.owners, conflict.platform)
   }
-  measure('Contract conflicts open', conflicts.filter((conflict) => conflict.status === 'open').length, conflicts.length)
+  measure('Contract conflicts open', states.filter((state) => state.status === 'open').length, states.length)
   measure('Approved exceptions expired', findings.filter((item) => item.kind === 'expired-exception').length, exceptions.length)
 
   const overrides = graph.ofKind('override')
   let undecided = 0
   for (const override of overrides) {
-    const tracking = conflicts.find((conflict) => conflict.sides.some((side) => side.recordId === override.id))
+    const tracking = states.find((state) => state.conflict.sides.some((side) => side.recordId === override.id))
     if (!tracking) add('unreviewed-override', override.id, `${override.title} changes \`${override.property}\` and no conflict tracks it, so nobody has been asked to decide.`, override.madeBy ? [override.madeBy] : [])
-    if (tracking?.status !== 'resolved') undecided += 1
+    if (tracking?.status !== 'decided') undecided += 1
   }
   measure('Overrides without a decision', undecided, overrides.length)
 

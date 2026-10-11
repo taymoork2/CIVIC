@@ -16,6 +16,7 @@ export const ID_PREFIX: Record<RecordKind, string> = {
   override: 'override',
   evidence: 'evidence',
   'contract-conflict': 'conflict',
+  decision: 'decision',
   actor: 'actor',
   line: 'line',
   annotation: 'annotation',

@@ -6,14 +6,13 @@ Every step follows [decision 0006](decisions/0006-deterministic-civic-for-agenti
 
 ## Order of work
 
-Reprioritized on 2026-10-11. Steps 1 and 2, the review to agent loop's Laundry slice and the gate (step 8) are built. Step numbers are stable names that other documents cite, so the order of work is listed here rather than by renumbering:
+Reprioritized on 2026-10-11. Steps 1 and 2, the review to agent loop's Laundry slice, the gate (step 8) and step 3's Decision record are built. Step numbers are stable names that other documents cite, so the order of work is listed here rather than by renumbering:
 
-1. **[Step 3](#3-typed-contract-and-change-records), only the Decision record first,** so an approved exception or a rejected override keeps the gate green.
-2. **[Step 9: real inputs](#9-real-inputs-replace-the-stand-ins)** replace the stand-in Figma files and illustrative decisions.
-3. **[Step 4](#4-the-journey-engine-as-a-graph-viewer):** a second app onboards through the manifest and crawl-first discovery, gated by `civic check`.
-4. **The review loop's next items** ([below](#next-the-review-to-agent-loop), item 3): Codex packaging, then PR previews and design drafts once real Figma inputs exist.
-5. **[Step 6](#6-journey-completeness-and-replay), then [step 5](#5-identity-permissions-and-multiplayer).** Multiplayer stays last while there is one user.
-6. **[Step 7](#7-repository-hygiene)** happens opportunistically.
+1. **[Step 9: real inputs](#9-real-inputs-replace-the-stand-ins)** replace the stand-in Figma files and illustrative decisions.
+2. **[Step 4](#4-the-journey-engine-as-a-graph-viewer):** a second app onboards through the manifest and crawl-first discovery, gated by `civic check`.
+3. **The review loop's next items** ([below](#next-the-review-to-agent-loop), item 3): Codex packaging, then PR previews and design drafts once real Figma inputs exist.
+4. **[Step 6](#6-journey-completeness-and-replay), then [step 5](#5-identity-permissions-and-multiplayer).** Multiplayer stays last while there is one user.
+5. **[Step 7](#7-repository-hygiene)** happens opportunistically.
 
 [Step 8, the gate](#8-the-gate-civic-check), came first because decision 0005 says most people meet CIVIC through checks in their own tools (part 2), and until it existed the checks only printed. The graph and the shared space (parts 1 and 3) were already well along.
 
@@ -59,9 +58,11 @@ Acceptance: an annotation made in one worktree is claimed by an agent in another
 
 ## 3. Typed contract and change records
 
-Start with the Decision record alone, because the gate (step 8) needs a stored, owned decision to stop flagging a conflict a person already decided. Today `applyDecisions` in `importers/` resolves conflicts inline from an illustrative file. Then store Proposal, Decision, Adoption, and Verification as separate, owned records, along with the collaboration record types (Ambiguity, Constraint, Coverage gap, Divergence, Risk, Exception). Alignment states read from records instead of being recomputed.
+Start with the Decision record alone, because the gate (step 8) needs a stored, owned decision to stop flagging a conflict a person already decided. Then store Proposal, Adoption, and Verification as separate, owned records, along with the collaboration record types (Ambiguity, Constraint, Coverage gap, Divergence, Risk, Exception). Alignment states read from records instead of being recomputed.
 
 The journey engine already has working examples: `coverage.json` is a Coverage gap record with versioned write-back, and its coverage candidates are proposals that never count as adoption.
+
+The Decision record is built in [`graph/`](../graph#decisions). A conflict keeps what the import raised, and its status, classification and alignment state are read from the Decision in force on it. A changed call supersedes the earlier decision instead of overwriting it, and an agent can't write one (D35). Each demo keeps its decisions in a `civic.decisions/0` file next to its contract, and `civic decide` records a new one after checking it against the graph. The gate counts a conflict as decided only when a Decision is in force on it, so the Button's brand outline conflict fails on the raised graph and passes once its decision is recorded.
 
 ## 4. The journey engine as a graph viewer
 
@@ -96,7 +97,7 @@ One command that runs every check on a graph (contract conflicts, override drift
 
 Acceptance: on the Fluent Button and Card demo graphs, `civic check` fails on an undecided conflict, passes once a recorded decision covers it, ignores baselined findings, and reports counts with denominators. It makes no model calls.
 
-Built in [`graph/`](../graph#the-gate-civic-check) and run by `bin/signoff` on the graphs in [`civic.check.json`](../civic.check.json). Undecided findings block: open conflicts, overrides no conflict tracks, expired exceptions, failing evidence, missing product states, dead ends and unreachable screens. Recorded facts and evidence debt (variants mapped to `none`, platform-only variants, missing run evidence, unconfirmed links, approved exceptions) are reported without blocking, and a project can choose its own list. The Card's undecided selectable override, its missing empty and error states, and the Checkout journey's dead end and unreachable screen are in [`civic.baseline.json`](../civic.baseline.json). Decisions are still inline on the conflict until the Decision record (step 3).
+Built in [`graph/`](../graph#the-gate-civic-check) and run by `bin/signoff` on the graphs in [`civic.check.json`](../civic.check.json). Undecided findings block: open conflicts, overrides no conflict tracks, expired exceptions, failing evidence, missing product states, dead ends and unreachable screens. Recorded facts and evidence debt (variants mapped to `none`, platform-only variants, missing run evidence, unconfirmed links, approved exceptions) are reported without blocking, and a project can choose its own list. The Card's undecided selectable override, its missing empty and error states, and the Checkout journey's dead end and unreachable screen are in [`civic.baseline.json`](../civic.baseline.json). Decisions come from Decision records (step 3).
 
 ## 9. Real inputs replace the stand-ins
 

@@ -144,8 +144,7 @@
         { "role": "design", "who": "design-system-maintainers" },
         { "role": "engineering", "who": "fluent-android", "platform": "android" }
       ],
-      "alignment": "unreviewed-drift",
-      "status": "open"
+      "alignment": "unreviewed-drift"
     }
   ],
   "links": [

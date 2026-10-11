@@ -9,7 +9,7 @@
 //   node build.ts --check   fail if out/ is not what the inputs produce
 
 import { readFileSync, writeFileSync } from 'node:fs'
-import { assertValid, contextFor, gapsIn, indexGraph, renderGaps, renderWorkOrder, type Evidence, type GraphRecord, type Link, type SemanticComponent, type SourceRef } from '../../graph/src/index.ts'
+import { assertValid, contextFor, gapsIn, indexGraph, renderGaps, renderWorkOrder, type DecisionFile, type Evidence, type GraphRecord, type Link, type SemanticComponent, type SourceRef } from '../../graph/src/index.ts'
 import {
   applyDecisions,
   assemble,
@@ -31,7 +31,6 @@ import {
   swiftStyleArms,
   tsPropUnion,
   tsTypeKeys,
-  type ConflictDecision,
   type DesignKitMapping,
   type PlatformMapping,
   type StyleArm,
@@ -194,7 +193,7 @@ const design = fragment([...kits.map((kit) => kit.evidence), ...conflicts])
 // --- Assemble, decide, export ---------------------------------------------------------
 
 const raised = assemble(contract, web, webTokens, webRuns, ios, iosTokens, android, androidTokens, design)
-const resolved = applyDecisions(raised, json<{ decisions: ConflictDecision[] }>('contract/decisions.json').decisions)
+const resolved = applyDecisions(raised, json<DecisionFile>('contract/decisions.json'))
 assertValid(raised)
 assertValid(resolved)
 

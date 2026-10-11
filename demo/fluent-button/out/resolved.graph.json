@@ -1679,7 +1679,7 @@
           ]
         }
       ],
-      "classification": "outdated-design-source",
+      "classification": "unclassified",
       "owners": [
         {
           "role": "design",
@@ -1691,22 +1691,27 @@
           "platform": "android"
         }
       ],
+      "alignment": "unreviewed-drift"
+    },
+    {
+      "id": "decision:button.android.brand-outline",
+      "kind": "decision",
+      "title": "Update the Android kit with an Outlined button",
+      "conflictId": "conflict:button.android.brand-outline",
+      "outcome": "update-design",
+      "classification": "outdated-design-source",
       "alignment": "awaiting-adoption",
-      "status": "resolved",
-      "resolution": {
-        "outcome": "update-design",
-        "decidedBy": {
-          "role": "design",
-          "who": "design-system-maintainers"
-        },
-        "at": "2026-10-11T00:00:00Z",
-        "rationale": "The Android kit predates Fluent Android's Compose controls and draws only Primary and Text buttons. Compose ships OutlinedButton for Brand outline, and the contract keeps it, so Design adds an Outlined button to the kit. Until it lands, Android designers take Brand outline from the contract, not the kit.",
-        "evidenceIds": [
-          "evidence:figma.android-kit.button",
-          "evidence:fluent-android.compose-button.variants"
-        ],
-        "revisitTrigger": "The kit gains an Outlined button, or Compose drops OutlinedButton."
-      }
+      "decidedBy": {
+        "role": "design",
+        "who": "design-system-maintainers"
+      },
+      "at": "2026-10-11T00:00:00Z",
+      "rationale": "The Android kit predates Fluent Android's Compose controls and draws only Primary and Text buttons. Compose ships OutlinedButton for Brand outline, and the contract keeps it, so Design adds an Outlined button to the kit. Until it lands, Android designers take Brand outline from the contract, not the kit.",
+      "evidenceIds": [
+        "evidence:figma.android-kit.button",
+        "evidence:fluent-android.compose-button.variants"
+      ],
+      "revisitTrigger": "The kit gains an Outlined button, or Compose drops OutlinedButton."
     }
   ],
   "links": [

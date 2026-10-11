@@ -1,5 +1,6 @@
 import { stateCoverageOn } from './completeness.ts'
 import { implementationsOf } from './context.ts'
+import { conflictState } from './decisions.ts'
 import { countsForReadiness, type Graph } from './graph.ts'
 import type { Owner, Platform, SemanticComponent } from './schema.ts'
 
@@ -60,15 +61,16 @@ function gapsForComponent(graph: Graph, semantic: SemanticComponent): Gap[] {
   for (const conflict of graph.ofKind('contract-conflict')) {
     if (conflict.targetId !== semantic.id && !conflict.sides.some((side) => side.recordId && componentIds.has(side.recordId))) continue
     const where = { ...(conflict.platform ? { platform: conflict.platform } : {}) }
-    if (conflict.status === 'open') {
-      gaps.push({ kind: 'open-conflict', subjectId: conflict.id, ...where, summary: `${conflict.summary} Classification ${conflict.classification}.`, owners: conflict.owners })
-    } else if (conflict.resolution?.outcome === 'approve-exception') {
-      const { revisitTrigger, expires } = conflict.resolution
+    const state = conflictState(graph, conflict)
+    if (state.status === 'open') {
+      gaps.push({ kind: 'open-conflict', subjectId: conflict.id, ...where, summary: `${conflict.summary} Classification ${state.classification}.`, owners: conflict.owners })
+    } else if (state.decision?.outcome === 'approve-exception') {
+      const { revisitTrigger, expires } = state.decision
       gaps.push({
         kind: 'approved-exception',
         subjectId: conflict.id,
         ...where,
-        summary: `${conflict.title}: accepted as ${conflict.alignment}. Revisit when: ${revisitTrigger}${expires ? ` Expires ${expires}.` : ''}`,
+        summary: `${conflict.title}: accepted as ${state.alignment}. Revisit when: ${revisitTrigger}${expires ? ` Expires ${expires}.` : ''}`,
         owners: conflict.owners,
       })
     }
