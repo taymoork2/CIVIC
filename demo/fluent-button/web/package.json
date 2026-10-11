@@ -2,22 +2,30 @@
   "name": "@civic/demo-fluent-button-web",
   "private": true,
   "type": "module",
-  "description": "Web evidence for the Fluent Button demo: renders Fluent React v9 Buttons and checks them with Playwright. Also exports Fluent's web tokens as DTCG.",
+  "description": "Web evidence for the Fluent Button demo: renders Fluent React v9 Buttons and Fluent's own Button stories, and checks them with Playwright. Also exports Fluent's web tokens as DTCG.",
   "scripts": {
     "tokens": "node export-tokens.mjs ../tokens/fluent-web-light.tokens.json",
     "bundle": "esbuild src/harness.tsx --bundle --minify --outfile=dist/harness.js --define:process.env.NODE_ENV='\"production\"'",
-    "evidence": "pnpm run bundle && playwright test",
-    "evidence:record": "pnpm run bundle && CIVIC_REPORT=../evidence/playwright-report.json playwright test"
+    "evidence": "pnpm run bundle && pnpm run storybook:build && playwright test",
+    "evidence:record": "pnpm run bundle && pnpm run storybook:build && CIVIC_REPORT=../evidence/playwright-report.json playwright test",
+    "storybook:build": "storybook build --quiet --output-dir storybook-static"
   },
   "devDependencies": {
     "@fluentui/react-components": "9.74.9",
+    "@fluentui/react-icons": "2.0.341",
+    "@fluentui/react-utilities": "9.26.7",
     "@fluentui/tokens": "1.0.0-alpha.24",
     "@playwright/test": "1.56.1",
+    "@storybook/react": "8.6.14",
+    "@storybook/react-vite": "8.6.14",
+    "@storybook/test": "8.6.14",
     "@types/react": "18.3.31",
     "@types/react-dom": "18.3.7",
     "esbuild": "0.28.2",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-dom": "18.3.1",
+    "storybook": "8.6.14",
+    "vite": "6.3.5"
   },
   "pnpm": {
     "onlyBuiltDependencies": [

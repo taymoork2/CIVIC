@@ -181,6 +181,24 @@ test('reads a Playwright report: passes, failures, skips and the revision', () =
   assert.throws(() => readPlaywrightReport({ config: {}, suites: [] }, 'web'), /civic.revision/)
 })
 
+test('a Playwright test can record that it observed a Storybook story', () => {
+  const story = (method: string) => ({
+    config: { metadata: { 'civic.revision': 'lib@1.0.0' } },
+    suites: [{ specs: [{ title: 'Appearance story renders', file: 'storybook.spec.ts', line: 3, tests: [{
+      annotations: [
+        { type: 'civic.subject', description: 'semantic:button' },
+        { type: 'civic.method', description: method },
+        { type: 'civic.source', description: 'stories/Button.stories.tsx#components-button--appearance' },
+      ],
+      results: [{ status: 'passed', startTime: '2026-10-11T00:00:00Z' }],
+    }] }] }],
+  })
+  const [evidence] = readPlaywrightReport(story('storybook'), 'web')
+  assert.equal(evidence?.id, 'evidence:storybook.appearance-story-renders')
+  assert.deepEqual([evidence?.method, evidence?.tier, evidence?.source.path, evidence?.source.anchor], ['storybook', 'automated', 'stories/Button.stories.tsx', 'components-button--appearance'])
+  assert.throws(() => readPlaywrightReport(story('source-analysis'), 'web'), /not a run method/)
+})
+
 test('reads DTCG tokens with inherited types and nested paths', () => {
   const tokens = readDtcgTokens({ color: { $type: 'color', brand: { $value: '#0f6cbd' } }, radius: { $value: '4px', $type: 'dimension' } }, { tool: 'npm', importer: 'dtcg', revision: '1' })
   assert.deepEqual([...tokens.keys()], ['color.brand', 'radius'])
