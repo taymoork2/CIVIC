@@ -138,9 +138,30 @@ tool ──▶ connector ──▶ importer ──▶ event ──▶ CIVIC stor
 5. **Quiet by default.** Urgent items (failed evidence on a release, an expiring exception) notify right away. Everything else goes into a digest. A record with no owner escalates to the project lead rather than sitting unseen.
 6. **The loop closes on evidence.** A record resolves only when evidence for the decided outcome arrives through the same pipeline: a new design revision, merged code, or a passing run. That keeps every role in check without anyone chasing anyone.
 
+### 4d. Raising violations and drift to the right roles
+
+People create most records, but CIVIC also raises some itself. A violation breaks a rule (for example a hard-coded color where a token is required, or a failed accessibility check). Drift means two sources that were aligned no longer agree. Both are routed by **what changed and who changed it**, not sent to everyone:
+
+1. **Find the side that moved.** CIVIC compares each side against the last revision where they were aligned. Whoever's change introduced the difference is asked first: the PR author, the designer who published the frame, or the release that changed a token. The other side's owners are told, not asked.
+2. **Raise it at the moment of change.** A violation from a code change appears on that pull request. One from a design change appears on that frame, and one from a library release appears on that release. It is cheapest to fix while the change is still open.
+3. **The kind of problem picks the roles:**
+
+| Detected | First asked | Also told |
+|---|---|---|
+| Token misuse or hard-coded value | Design engineering (in the library), or Engineering (in app code) | Design |
+| Variant with no mapping on a platform | Design engineering | Design, and the platform's engineers |
+| Design and implementation disagree | The side that moved | The other side, QA |
+| Accessibility failure | Engineering | Design if the intent is missing; QA for the evidence |
+| Expected state missing or unreachable | Engineering | QA, PM |
+| Evidence stale after a change | QA | The owner of the change |
+| Exception past its revisit date | The exception's owner | Its approver |
+
+4. **Severity sets urgency and blocking.** Policy decides what blocks: for example, an accessibility failure on a release blocks, while a spacing drift does not. Blocking items appear as a failed check where the change lives. Everything else follows the quiet-by-default rule above.
+5. **Repeats escalate instead of piling up.** The same root cause on many targets is one record (section 5). Unowned or ignored items move up to the area lead after a set time, and the variance budget shows the trend.
+
 **Suggested build order:**
 1. File exports, a CLI push, and the Playwright reporter.
-2. A PR status check (the same idea as `bin/signoff`) and the CIVIC inbox.
+2. A PR status check (the same idea as `bin/signoff`) that raises violations and drift on the change that caused them, plus the CIVIC inbox.
 3. The ownership map from CODEOWNERS and package owners.
 4. The Figma plugin and Storybook addon.
 5. Chat and issue-tracker delivery with reply sync.
