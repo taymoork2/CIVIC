@@ -196,6 +196,8 @@ Guardrails:
 
 Design and Android Engineering choose, and QA's evidence confirms the result.
 
+For a full walk-through of a product team changing a design system component, see [component-change-flow.md](component-change-flow.md).
+
 ## 6. Validating onboarding
 
 Two cases test the onboarding from opposite directions:
