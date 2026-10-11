@@ -2,7 +2,7 @@
 
 Ordered next steps after [decision 0004](decisions/0004-graph-first-journey-engine-as-viewer.md). The artifact graph is the core, and the journey engine is one viewer and the first web adapter. Each step should end with evidence, not a claim.
 
-Every step follows [decision 0006](decisions/0006-deterministic-civic-for-agentic-teams.md): CIVIC makes no model calls and works from existing non-AI tools and static analysis.
+Every step follows [decision 0006](decisions/0006-deterministic-civic-for-agentic-teams.md): CIVIC makes no model calls and works from existing non-AI tools and static analysis. [Decision 0007](decisions/0007-review-to-agent-loop.md) lets agents outside CIVIC claim and report work through a narrow interface.
 
 ## 1. CIVIC graph schema
 
@@ -21,7 +21,7 @@ Build the [decision 0001](decisions/0001-fluent-2-demo-design-system.md) demo on
 - The Android Figma kit compared with Compose, which raises a Contract Conflict that is classified, given owners, and resolved.
 - Tokens move as DTCG where the source supports it. Read Figma structure from a file export; the Variables REST API needs Enterprise access, so the demo can't depend on it.
 
-A design-system Card changed by a product team is the second demo after Button.
+A design-system Card changed by a product team is the second demo after Button. It follows the review to agent loop below.
 
 Also part of this step ([decision 0006](decisions/0006-deterministic-civic-for-agentic-teams.md)):
 
@@ -31,6 +31,16 @@ Also part of this step ([decision 0006](decisions/0006-deterministic-civic-for-a
 The demo succeeds when a reviewer can see what disagrees, why it matters, who must act, and how the decision is preserved.
 
 Built in [`demo/fluent-button/`](../demo/fluent-button) on the importers in [`importers/`](../importers). The Button's web, iOS and Android mappings are checked against Fluent's own source at pinned revisions. Web has 13 passing Playwright checks against DTCG token values; iOS and Android have static evidence only. A Figma-export-shaped stand-in for the Android kit raises the Neutral default conflict, and an illustrative decision resolves it as an approved exception. `civic context` and `civic gaps` are in the graph CLI. The real Figma export, Storybook and native runs are still to come.
+
+## Next: the review to agent loop
+
+Ahead of the Card demo ([decision 0007](decisions/0007-review-to-agent-loop.md), [review to agent](agent-review-loop.md)):
+
+1. **Records.** Line, Annotation, WorkRequest, and Actor go into the graph as the start of step 3.
+2. **A first slice on the journey engine with Laundry.** Records move from each worktree's `.review-data/` to the git common directory. Annotations get ID and locator anchors, and screenshot import arrives. The canvas gets a lens to switch between worktrees. The CLI gets `civic annotate`, `requests`, `claim`, `report-fix`, and `repro`, with the resolution policy's Auto, batch review, and owner sign-off lanes. Then come the capture overlay for dev and preview builds, the MCP server, and the Claude Code plugin.
+3. **PR previews and design drafts** follow, once the Figma import (D27) brings drafts in. Codex packaging comes with them.
+
+Acceptance: an annotation made in one worktree is claimed by an agent in another, the reported fix is re-captured on that worktree's preview with no model call, and the request resolves through its lane.
 
 ## 3. Typed contract and change records
 
@@ -69,7 +79,8 @@ Acceptance: ordinary refresh and replay make zero model calls with providers dis
 
 These came out of [agentic development](agentic-development.md) and wait until the steps above give them a base:
 
-- **An agent interface.** An MCP server or similar over the read-only `civic context` and `civic gaps` export (D31). How agents write back, if at all, is decided then.
+- **CIVIC launching agents.** Starting a coding agent on a new worktree from "Hand to agent". The agent interface itself moved to the next build ([decision 0007](decisions/0007-review-to-agent-loop.md)).
+- **A capture browser extension** for pages a preview build can't inject the overlay into, such as production.
 - **Prototypes.** If reviews need more than the frame walk (D33), the non-AI option is a preview assembled from the component mappings. CIVIC stays out of WYSIWYG and no-code.
 - **A return path to Figma.** Reference captures, frames rebuilt from library instances, and token proposals, all through a plugin into a page the designer merges from. This needs the Figma import and plugin first.
 - **A rebrand demo.** The Fluent Button and Card re-themed to a second brand, showing the blast radius, hidden overrides, and the migration table. A candidate third demo after Card.

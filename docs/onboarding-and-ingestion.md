@@ -218,5 +218,6 @@ Two cases test the onboarding from opposite directions:
 - **D28 ([decision 0005](decisions/0005-what-civic-is.md)):** CIVIC is the quality gate for product behavior across design, components, code, and tests. It is made of the graph, checks in each role's tools, and one shared space. The journey canvas is the first version of that space.
 
 - **D30–D34 ([decision 0006](decisions/0006-deterministic-civic-for-agentic-teams.md)):** CIVIC makes no model calls. It adds a read-only contract export, a static design completeness check, a frame walk, and crawl-first discovery on Playwright and Appium.
+- **D35–D40 ([decision 0007](decisions/0007-review-to-agent-loop.md)):** Review on the journey goes to agents as work requests, with screenshot import and a capture overlay as new annotation sources. Records carry their revision and line.
 
 D26 and D27 come with one condition: build for alternatives. Each source comes in through an importer that maps its items to targets and evidence and records where each item came from. Supporting another design tool, token system or test runner means adding an importer, never changing the schema. Any role can supply any source.
