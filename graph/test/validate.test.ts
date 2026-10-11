@@ -54,6 +54,11 @@ const cases: [string, 'fluent-button' | 'card-override', (document: GraphDocumen
     decide(d, 'conflict:button.android.neutral-default', { evidenceIds: PROOF })
     decide(d, 'conflict:button.android.neutral-default', { evidenceIds: PROOF, id: 'decision:button.android.neutral-default.2' })
   }, 'decisions-in-force'],
+  ['one decision superseded by two later ones', 'fluent-button', (d) => {
+    decide(d, 'conflict:button.android.neutral-default', { evidenceIds: PROOF })
+    decide(d, 'conflict:button.android.neutral-default', { evidenceIds: PROOF, id: 'decision:button.android.neutral-default.2', supersedes: 'decision:button.android.neutral-default' })
+    decide(d, 'conflict:button.android.neutral-default', { evidenceIds: PROOF, id: 'decision:button.android.neutral-default.3', supersedes: 'decision:button.android.neutral-default' })
+  }, 'supersedes-twice'],
   ['a decision superseding one on another conflict', 'fluent-button', (d) => {
     decide(d, 'conflict:button.android.neutral-default', { evidenceIds: PROOF })
     d.records.push({ ...record(d, 'conflict:button.android.neutral-default'), id: 'conflict:button.android.other' } as GraphRecord)
