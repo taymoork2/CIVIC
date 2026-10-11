@@ -1,0 +1,6 @@
+{
+  "name": "@civic/demo-fluent-button",
+  "private": true,
+  "type": "module",
+  "description": "Roadmap step 2: the Fluent 2 Button demo graph, built by node build.ts from the inputs in this folder."
+}

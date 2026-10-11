@@ -28,6 +28,12 @@ const cases: [string, 'fluent-button' | 'card-override', (document: GraphDocumen
   ['a variant the semantic component does not define', 'fluent-button', (d) => {
     record<{ variants: { semanticVariant: string }[] }>(d, 'platform:fluent-apple.button').variants[0]!.semanticVariant = 'floating'
   }, 'unknown-variant'],
+  ['a default variant the semantic component does not define', 'fluent-button', (d) => {
+    record(d, 'platform:fluent-apple.button').defaultVariant = 'floating'
+  }, 'unknown-variant'],
+  ['an extra variant without its expression', 'fluent-button', (d) => {
+    record(d, 'platform:fluent-apple.button').extraVariants = [{ note: 'floating' }]
+  }, 'shape'],
   ['a mapped variant with no expression', 'fluent-button', (d) => {
     delete record<{ variants: { expression?: string }[] }>(d, 'platform:fluent-apple.button').variants[0]!.expression
   }, 'shape'],

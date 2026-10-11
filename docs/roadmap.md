@@ -30,6 +30,8 @@ Also part of this step ([decision 0006](decisions/0006-deterministic-civic-for-a
 
 The demo succeeds when a reviewer can see what disagrees, why it matters, who must act, and how the decision is preserved.
 
+Built in [`demo/fluent-button/`](../demo/fluent-button) on the importers in [`importers/`](../importers). The Button's web, iOS and Android mappings are checked against Fluent's own source at pinned revisions. Web has 13 passing Playwright checks against DTCG token values; iOS and Android have static evidence only. A Figma-export-shaped stand-in for the Android kit raises the Neutral default conflict, and an illustrative decision resolves it as an approved exception. `civic context` and `civic gaps` are in the graph CLI. The real Figma export, Storybook and native runs are still to come.
+
 ## 3. Typed contract and change records
 
 Store Proposal, Decision, Adoption, and Verification as separate, owned records, along with the collaboration record types (Ambiguity, Constraint, Coverage gap, Divergence, Risk, Exception). Alignment states read from records instead of being recomputed.

@@ -146,6 +146,13 @@ export interface PlatformComponent extends RecordBase {
   symbol: string
   /** How each semantic variant is expressed here. `none` is a gap CIVIC must show, not hide. */
   variants: VariantMapping[]
+  /** The semantic variant this component renders when no variant is given, read from source. */
+  defaultVariant?: string
+  /**
+   * Variants this platform offers that no semantic variant covers, such as iOS's floating
+   * styles. Design decides whether the contract grows; until then they are listed, not hidden.
+   */
+  extraVariants?: { expression: string; note?: string }[]
 }
 
 export interface VariantMapping {

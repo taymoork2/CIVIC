@@ -1,0 +1,2428 @@
+{
+  "schema": "civic.graph/0",
+  "records": [
+    {
+      "id": "intent:button.accessible-name",
+      "kind": "intent",
+      "title": "A button has an accessible name",
+      "category": "accessibility-rule",
+      "statement": "Every button exposes an accessible name, including icon-only buttons.",
+      "source": {
+        "tool": "civic",
+        "importer": "contract",
+        "revision": "sha256:4ec1a5af6ac2356a88198f1214404cafe5d54960ec87fa2553fea7eeeedf2fb3",
+        "path": "demo/fluent-button/contract/button.json"
+      }
+    },
+    {
+      "id": "intent:button.triggers-action",
+      "kind": "intent",
+      "title": "A button triggers one action",
+      "category": "requirement",
+      "statement": "Activating a button performs exactly one action, and its emphasis tells the user how important that action is.",
+      "source": {
+        "tool": "civic",
+        "importer": "contract",
+        "revision": "sha256:4ec1a5af6ac2356a88198f1214404cafe5d54960ec87fa2553fea7eeeedf2fb3",
+        "path": "demo/fluent-button/contract/button.json"
+      }
+    },
+    {
+      "id": "token:borderRadiusCircular",
+      "kind": "token",
+      "title": "borderRadiusCircular",
+      "path": "borderRadiusCircular",
+      "type": "dimension",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "borderRadiusCircular"
+      }
+    },
+    {
+      "id": "token:borderRadiusLarge",
+      "kind": "token",
+      "title": "borderRadiusLarge",
+      "path": "borderRadiusLarge",
+      "type": "dimension",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "borderRadiusLarge"
+      }
+    },
+    {
+      "id": "token:borderRadiusMedium",
+      "kind": "token",
+      "title": "borderRadiusMedium",
+      "path": "borderRadiusMedium",
+      "type": "dimension",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "borderRadiusMedium"
+      }
+    },
+    {
+      "id": "token:borderRadiusNone",
+      "kind": "token",
+      "title": "borderRadiusNone",
+      "path": "borderRadiusNone",
+      "type": "dimension",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "borderRadiusNone"
+      }
+    },
+    {
+      "id": "token:borderRadiusSmall",
+      "kind": "token",
+      "title": "borderRadiusSmall",
+      "path": "borderRadiusSmall",
+      "type": "dimension",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "borderRadiusSmall"
+      }
+    },
+    {
+      "id": "token:colorBrandBackground",
+      "kind": "token",
+      "title": "colorBrandBackground",
+      "path": "colorBrandBackground",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorBrandBackground"
+      }
+    },
+    {
+      "id": "token:colorBrandBackgroundHover",
+      "kind": "token",
+      "title": "colorBrandBackgroundHover",
+      "path": "colorBrandBackgroundHover",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorBrandBackgroundHover"
+      }
+    },
+    {
+      "id": "token:colorBrandBackgroundPressed",
+      "kind": "token",
+      "title": "colorBrandBackgroundPressed",
+      "path": "colorBrandBackgroundPressed",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorBrandBackgroundPressed"
+      }
+    },
+    {
+      "id": "token:colorNeutralBackground1",
+      "kind": "token",
+      "title": "colorNeutralBackground1",
+      "path": "colorNeutralBackground1",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorNeutralBackground1"
+      }
+    },
+    {
+      "id": "token:colorNeutralBackground1Hover",
+      "kind": "token",
+      "title": "colorNeutralBackground1Hover",
+      "path": "colorNeutralBackground1Hover",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorNeutralBackground1Hover"
+      }
+    },
+    {
+      "id": "token:colorNeutralBackground1Pressed",
+      "kind": "token",
+      "title": "colorNeutralBackground1Pressed",
+      "path": "colorNeutralBackground1Pressed",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorNeutralBackground1Pressed"
+      }
+    },
+    {
+      "id": "token:colorNeutralBackgroundDisabled",
+      "kind": "token",
+      "title": "colorNeutralBackgroundDisabled",
+      "path": "colorNeutralBackgroundDisabled",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorNeutralBackgroundDisabled"
+      }
+    },
+    {
+      "id": "token:colorNeutralForeground1",
+      "kind": "token",
+      "title": "colorNeutralForeground1",
+      "path": "colorNeutralForeground1",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorNeutralForeground1"
+      }
+    },
+    {
+      "id": "token:colorNeutralForeground1Hover",
+      "kind": "token",
+      "title": "colorNeutralForeground1Hover",
+      "path": "colorNeutralForeground1Hover",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorNeutralForeground1Hover"
+      }
+    },
+    {
+      "id": "token:colorNeutralForeground1Pressed",
+      "kind": "token",
+      "title": "colorNeutralForeground1Pressed",
+      "path": "colorNeutralForeground1Pressed",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorNeutralForeground1Pressed"
+      }
+    },
+    {
+      "id": "token:colorNeutralForeground2",
+      "kind": "token",
+      "title": "colorNeutralForeground2",
+      "path": "colorNeutralForeground2",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorNeutralForeground2"
+      }
+    },
+    {
+      "id": "token:colorNeutralForeground2BrandHover",
+      "kind": "token",
+      "title": "colorNeutralForeground2BrandHover",
+      "path": "colorNeutralForeground2BrandHover",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorNeutralForeground2BrandHover"
+      }
+    },
+    {
+      "id": "token:colorNeutralForeground2BrandPressed",
+      "kind": "token",
+      "title": "colorNeutralForeground2BrandPressed",
+      "path": "colorNeutralForeground2BrandPressed",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorNeutralForeground2BrandPressed"
+      }
+    },
+    {
+      "id": "token:colorNeutralForeground2Hover",
+      "kind": "token",
+      "title": "colorNeutralForeground2Hover",
+      "path": "colorNeutralForeground2Hover",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorNeutralForeground2Hover"
+      }
+    },
+    {
+      "id": "token:colorNeutralForeground2Pressed",
+      "kind": "token",
+      "title": "colorNeutralForeground2Pressed",
+      "path": "colorNeutralForeground2Pressed",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorNeutralForeground2Pressed"
+      }
+    },
+    {
+      "id": "token:colorNeutralForegroundDisabled",
+      "kind": "token",
+      "title": "colorNeutralForegroundDisabled",
+      "path": "colorNeutralForegroundDisabled",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorNeutralForegroundDisabled"
+      }
+    },
+    {
+      "id": "token:colorNeutralForegroundOnBrand",
+      "kind": "token",
+      "title": "colorNeutralForegroundOnBrand",
+      "path": "colorNeutralForegroundOnBrand",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorNeutralForegroundOnBrand"
+      }
+    },
+    {
+      "id": "token:colorNeutralStroke1",
+      "kind": "token",
+      "title": "colorNeutralStroke1",
+      "path": "colorNeutralStroke1",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorNeutralStroke1"
+      }
+    },
+    {
+      "id": "token:colorNeutralStroke1Hover",
+      "kind": "token",
+      "title": "colorNeutralStroke1Hover",
+      "path": "colorNeutralStroke1Hover",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorNeutralStroke1Hover"
+      }
+    },
+    {
+      "id": "token:colorNeutralStroke1Pressed",
+      "kind": "token",
+      "title": "colorNeutralStroke1Pressed",
+      "path": "colorNeutralStroke1Pressed",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorNeutralStroke1Pressed"
+      }
+    },
+    {
+      "id": "token:colorNeutralStrokeDisabled",
+      "kind": "token",
+      "title": "colorNeutralStrokeDisabled",
+      "path": "colorNeutralStrokeDisabled",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorNeutralStrokeDisabled"
+      }
+    },
+    {
+      "id": "token:colorStrokeFocus2",
+      "kind": "token",
+      "title": "colorStrokeFocus2",
+      "path": "colorStrokeFocus2",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorStrokeFocus2"
+      }
+    },
+    {
+      "id": "token:colorSubtleBackground",
+      "kind": "token",
+      "title": "colorSubtleBackground",
+      "path": "colorSubtleBackground",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorSubtleBackground"
+      }
+    },
+    {
+      "id": "token:colorSubtleBackgroundHover",
+      "kind": "token",
+      "title": "colorSubtleBackgroundHover",
+      "path": "colorSubtleBackgroundHover",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorSubtleBackgroundHover"
+      }
+    },
+    {
+      "id": "token:colorSubtleBackgroundPressed",
+      "kind": "token",
+      "title": "colorSubtleBackgroundPressed",
+      "path": "colorSubtleBackgroundPressed",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorSubtleBackgroundPressed"
+      }
+    },
+    {
+      "id": "token:colorTransparentBackground",
+      "kind": "token",
+      "title": "colorTransparentBackground",
+      "path": "colorTransparentBackground",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorTransparentBackground"
+      }
+    },
+    {
+      "id": "token:colorTransparentBackgroundHover",
+      "kind": "token",
+      "title": "colorTransparentBackgroundHover",
+      "path": "colorTransparentBackgroundHover",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorTransparentBackgroundHover"
+      }
+    },
+    {
+      "id": "token:colorTransparentBackgroundPressed",
+      "kind": "token",
+      "title": "colorTransparentBackgroundPressed",
+      "path": "colorTransparentBackgroundPressed",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorTransparentBackgroundPressed"
+      }
+    },
+    {
+      "id": "token:colorTransparentStroke",
+      "kind": "token",
+      "title": "colorTransparentStroke",
+      "path": "colorTransparentStroke",
+      "type": "color",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "colorTransparentStroke"
+      }
+    },
+    {
+      "id": "token:curveEasyEase",
+      "kind": "token",
+      "title": "curveEasyEase",
+      "path": "curveEasyEase",
+      "type": "cubicBezier",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "curveEasyEase"
+      }
+    },
+    {
+      "id": "token:durationFaster",
+      "kind": "token",
+      "title": "durationFaster",
+      "path": "durationFaster",
+      "type": "duration",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "durationFaster"
+      }
+    },
+    {
+      "id": "token:fontFamilyBase",
+      "kind": "token",
+      "title": "fontFamilyBase",
+      "path": "fontFamilyBase",
+      "type": "fontFamily",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "fontFamilyBase"
+      }
+    },
+    {
+      "id": "token:fontSizeBase200",
+      "kind": "token",
+      "title": "fontSizeBase200",
+      "path": "fontSizeBase200",
+      "type": "dimension",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "fontSizeBase200"
+      }
+    },
+    {
+      "id": "token:fontSizeBase300",
+      "kind": "token",
+      "title": "fontSizeBase300",
+      "path": "fontSizeBase300",
+      "type": "dimension",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "fontSizeBase300"
+      }
+    },
+    {
+      "id": "token:fontSizeBase400",
+      "kind": "token",
+      "title": "fontSizeBase400",
+      "path": "fontSizeBase400",
+      "type": "dimension",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "fontSizeBase400"
+      }
+    },
+    {
+      "id": "token:fontWeightRegular",
+      "kind": "token",
+      "title": "fontWeightRegular",
+      "path": "fontWeightRegular",
+      "type": "fontWeight",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "fontWeightRegular"
+      }
+    },
+    {
+      "id": "token:fontWeightSemibold",
+      "kind": "token",
+      "title": "fontWeightSemibold",
+      "path": "fontWeightSemibold",
+      "type": "fontWeight",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "fontWeightSemibold"
+      }
+    },
+    {
+      "id": "token:lineHeightBase200",
+      "kind": "token",
+      "title": "lineHeightBase200",
+      "path": "lineHeightBase200",
+      "type": "dimension",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "lineHeightBase200"
+      }
+    },
+    {
+      "id": "token:lineHeightBase300",
+      "kind": "token",
+      "title": "lineHeightBase300",
+      "path": "lineHeightBase300",
+      "type": "dimension",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "lineHeightBase300"
+      }
+    },
+    {
+      "id": "token:lineHeightBase400",
+      "kind": "token",
+      "title": "lineHeightBase400",
+      "path": "lineHeightBase400",
+      "type": "dimension",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "lineHeightBase400"
+      }
+    },
+    {
+      "id": "token:shadow2",
+      "kind": "token",
+      "title": "shadow2",
+      "path": "shadow2",
+      "type": "shadow",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "shadow2"
+      }
+    },
+    {
+      "id": "token:spacingHorizontalL",
+      "kind": "token",
+      "title": "spacingHorizontalL",
+      "path": "spacingHorizontalL",
+      "type": "dimension",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "spacingHorizontalL"
+      }
+    },
+    {
+      "id": "token:spacingHorizontalM",
+      "kind": "token",
+      "title": "spacingHorizontalM",
+      "path": "spacingHorizontalM",
+      "type": "dimension",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "spacingHorizontalM"
+      }
+    },
+    {
+      "id": "token:spacingHorizontalS",
+      "kind": "token",
+      "title": "spacingHorizontalS",
+      "path": "spacingHorizontalS",
+      "type": "dimension",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "spacingHorizontalS"
+      }
+    },
+    {
+      "id": "token:spacingHorizontalSNudge",
+      "kind": "token",
+      "title": "spacingHorizontalSNudge",
+      "path": "spacingHorizontalSNudge",
+      "type": "dimension",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "spacingHorizontalSNudge"
+      }
+    },
+    {
+      "id": "token:spacingHorizontalXS",
+      "kind": "token",
+      "title": "spacingHorizontalXS",
+      "path": "spacingHorizontalXS",
+      "type": "dimension",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "spacingHorizontalXS"
+      }
+    },
+    {
+      "id": "token:strokeWidthThick",
+      "kind": "token",
+      "title": "strokeWidthThick",
+      "path": "strokeWidthThick",
+      "type": "dimension",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "strokeWidthThick"
+      }
+    },
+    {
+      "id": "token:strokeWidthThin",
+      "kind": "token",
+      "title": "strokeWidthThin",
+      "path": "strokeWidthThin",
+      "type": "dimension",
+      "source": {
+        "tool": "npm",
+        "importer": "dtcg",
+        "revision": "@fluentui/tokens@1.0.0-alpha.24",
+        "path": "demo/fluent-button/tokens/fluent-web-light.tokens.json",
+        "contentHash": "sha256:1daf0c0f4613b9ac67d876f076f11d74449a39ab770b8059a4edb51644c57b34",
+        "anchor": "strokeWidthThin"
+      }
+    },
+    {
+      "id": "semantic:button",
+      "kind": "semantic-component",
+      "title": "Button",
+      "purpose": "Trigger an action, with the emphasis set by its variant.",
+      "owners": [
+        {
+          "role": "design",
+          "who": "design-system-maintainers"
+        },
+        {
+          "role": "qa",
+          "who": "button-qa"
+        }
+      ],
+      "variants": [
+        {
+          "key": "primary-filled",
+          "title": "Primary filled"
+        },
+        {
+          "key": "brand-outline",
+          "title": "Brand outline"
+        },
+        {
+          "key": "neutral-default",
+          "title": "Neutral default"
+        },
+        {
+          "key": "subtle",
+          "title": "Subtle or text"
+        },
+        {
+          "key": "transparent-neutral",
+          "title": "Transparent neutral"
+        },
+        {
+          "key": "danger",
+          "title": "Danger"
+        }
+      ],
+      "states": [
+        "rest",
+        "hover",
+        "pressed",
+        "focused",
+        "disabled"
+      ],
+      "slots": [
+        "icon",
+        "label"
+      ],
+      "source": {
+        "tool": "civic",
+        "importer": "contract",
+        "revision": "sha256:4ec1a5af6ac2356a88198f1214404cafe5d54960ec87fa2553fea7eeeedf2fb3",
+        "path": "demo/fluent-button/contract/button.json"
+      }
+    },
+    {
+      "id": "platform:fluent-android.compose-button",
+      "kind": "platform-component",
+      "title": "Fluent Android Compose Button",
+      "platform": "android",
+      "library": {
+        "package": "microsoft/fluentui-android",
+        "version": "207ae6843eda"
+      },
+      "symbol": "Button",
+      "owners": [
+        {
+          "role": "design-engineering",
+          "who": "fluent-android",
+          "platform": "android"
+        }
+      ],
+      "variants": [
+        {
+          "semanticVariant": "primary-filled",
+          "mapping": "exact",
+          "expression": "Button"
+        },
+        {
+          "semanticVariant": "brand-outline",
+          "mapping": "exact",
+          "expression": "OutlinedButton"
+        },
+        {
+          "semanticVariant": "neutral-default",
+          "mapping": "none",
+          "note": "No stock ButtonStyle."
+        },
+        {
+          "semanticVariant": "subtle",
+          "mapping": "exact",
+          "expression": "TextButton"
+        },
+        {
+          "semanticVariant": "transparent-neutral",
+          "mapping": "none",
+          "note": "No stock ButtonStyle."
+        },
+        {
+          "semanticVariant": "danger",
+          "mapping": "none",
+          "note": "Only through custom ButtonTokens."
+        }
+      ],
+      "defaultVariant": "primary-filled",
+      "source": {
+        "tool": "github",
+        "importer": "kotlin-source",
+        "revision": "207ae6843eda82e990ed378794abba8ec451c1e8",
+        "path": "microsoft/fluentui-android/fluentui_core/src/main/java/com/microsoft/fluentui/theme/token/controlTokens/ButtonTokens.kt",
+        "contentHash": "sha256:4c9fea004fd8dd1536df3ed374b74b4ed3c9ddccf5e37767b75c8376a56a617e"
+      }
+    },
+    {
+      "id": "platform:fluent-apple.button",
+      "kind": "platform-component",
+      "title": "Fluent iOS Button",
+      "platform": "ios",
+      "library": {
+        "package": "microsoft/fluentui-apple",
+        "version": "920ee25179c4"
+      },
+      "symbol": "Button",
+      "owners": [
+        {
+          "role": "design-engineering",
+          "who": "fluent-ios",
+          "platform": "ios"
+        }
+      ],
+      "variants": [
+        {
+          "semanticVariant": "primary-filled",
+          "mapping": "exact",
+          "expression": "accent"
+        },
+        {
+          "semanticVariant": "brand-outline",
+          "mapping": "exact",
+          "expression": "outlineAccent"
+        },
+        {
+          "semanticVariant": "neutral-default",
+          "mapping": "exact",
+          "expression": "outlineNeutral"
+        },
+        {
+          "semanticVariant": "subtle",
+          "mapping": "exact",
+          "expression": "subtle"
+        },
+        {
+          "semanticVariant": "transparent-neutral",
+          "mapping": "exact",
+          "expression": "transparentNeutral"
+        },
+        {
+          "semanticVariant": "danger",
+          "mapping": "exact",
+          "expression": "danger",
+          "note": "dangerOutline and dangerSubtle have no semantic variant yet."
+        }
+      ],
+      "defaultVariant": "brand-outline",
+      "extraVariants": [
+        {
+          "expression": "dangerOutline"
+        },
+        {
+          "expression": "dangerSubtle"
+        },
+        {
+          "expression": "floatingAccent"
+        },
+        {
+          "expression": "floatingSubtle"
+        }
+      ],
+      "source": {
+        "tool": "github",
+        "importer": "swift-source",
+        "revision": "920ee25179c4d2086aa1219b106be90d5ab37113",
+        "path": "microsoft/fluentui-apple/Sources/FluentUI_iOS/Components/Button/ButtonTokenSet.swift",
+        "contentHash": "sha256:e92ab261cb9e8612c88c31c3a26e917eb142f5c8de48c97c803f3bf85ed04e2d"
+      }
+    },
+    {
+      "id": "platform:fluent-react-v9.button",
+      "kind": "platform-component",
+      "title": "Fluent React v9 Button",
+      "platform": "web",
+      "library": {
+        "package": "@fluentui/react-button",
+        "version": "9.11.1"
+      },
+      "symbol": "Button",
+      "owners": [
+        {
+          "role": "design-engineering",
+          "who": "fluent-web",
+          "platform": "web"
+        }
+      ],
+      "variants": [
+        {
+          "semanticVariant": "primary-filled",
+          "mapping": "exact",
+          "expression": "primary"
+        },
+        {
+          "semanticVariant": "brand-outline",
+          "mapping": "closest",
+          "expression": "outline",
+          "note": "Fluent web's outline is neutral-coloured, not brand-coloured."
+        },
+        {
+          "semanticVariant": "neutral-default",
+          "mapping": "exact",
+          "expression": "secondary"
+        },
+        {
+          "semanticVariant": "subtle",
+          "mapping": "exact",
+          "expression": "subtle"
+        },
+        {
+          "semanticVariant": "transparent-neutral",
+          "mapping": "exact",
+          "expression": "transparent"
+        },
+        {
+          "semanticVariant": "danger",
+          "mapping": "none",
+          "note": "No base appearance."
+        }
+      ],
+      "defaultVariant": "neutral-default",
+      "source": {
+        "tool": "npm",
+        "importer": "react-types",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/dist/index.d.ts",
+        "contentHash": "sha256:f17668e565d617f95dced642168e63aa9771a905eb3c1148ffe5db66515e8395"
+      }
+    },
+    {
+      "id": "extension:fluent-android.compose-button.buttonTokens",
+      "kind": "extension-point",
+      "title": "Fluent Android Compose Button buttonTokens",
+      "platformComponentId": "platform:fluent-android.compose-button",
+      "mechanism": "token",
+      "name": "buttonTokens",
+      "expresses": [
+        "appearance",
+        "shape",
+        "size"
+      ],
+      "source": {
+        "tool": "github",
+        "importer": "kotlin-source",
+        "revision": "207ae6843eda82e990ed378794abba8ec451c1e8",
+        "path": "microsoft/fluentui-android/fluentui_core/src/main/java/com/microsoft/fluentui/theme/token/controlTokens/ButtonTokens.kt",
+        "contentHash": "sha256:4c9fea004fd8dd1536df3ed374b74b4ed3c9ddccf5e37767b75c8376a56a617e"
+      }
+    },
+    {
+      "id": "extension:fluent-android.compose-button.icon",
+      "kind": "extension-point",
+      "title": "Fluent Android Compose Button icon",
+      "platformComponentId": "platform:fluent-android.compose-button",
+      "mechanism": "prop",
+      "name": "icon",
+      "expresses": [
+        "icon"
+      ],
+      "source": {
+        "tool": "github",
+        "importer": "kotlin-source",
+        "revision": "207ae6843eda82e990ed378794abba8ec451c1e8",
+        "path": "microsoft/fluentui-android/fluentui_core/src/main/java/com/microsoft/fluentui/theme/token/controlTokens/ButtonTokens.kt",
+        "contentHash": "sha256:4c9fea004fd8dd1536df3ed374b74b4ed3c9ddccf5e37767b75c8376a56a617e"
+      }
+    },
+    {
+      "id": "extension:fluent-android.compose-button.size",
+      "kind": "extension-point",
+      "title": "Fluent Android Compose Button size",
+      "platformComponentId": "platform:fluent-android.compose-button",
+      "mechanism": "prop",
+      "name": "size",
+      "expresses": [
+        "size"
+      ],
+      "source": {
+        "tool": "github",
+        "importer": "kotlin-source",
+        "revision": "207ae6843eda82e990ed378794abba8ec451c1e8",
+        "path": "microsoft/fluentui-android/fluentui_core/src/main/java/com/microsoft/fluentui/theme/token/controlTokens/ButtonTokens.kt",
+        "contentHash": "sha256:4c9fea004fd8dd1536df3ed374b74b4ed3c9ddccf5e37767b75c8376a56a617e"
+      }
+    },
+    {
+      "id": "extension:fluent-apple.button.image",
+      "kind": "extension-point",
+      "title": "Fluent iOS Button image",
+      "platformComponentId": "platform:fluent-apple.button",
+      "mechanism": "prop",
+      "name": "image",
+      "expresses": [
+        "icon"
+      ],
+      "source": {
+        "tool": "github",
+        "importer": "swift-source",
+        "revision": "920ee25179c4d2086aa1219b106be90d5ab37113",
+        "path": "microsoft/fluentui-apple/Sources/FluentUI_iOS/Components/Button/ButtonTokenSet.swift",
+        "contentHash": "sha256:e92ab261cb9e8612c88c31c3a26e917eb142f5c8de48c97c803f3bf85ed04e2d"
+      }
+    },
+    {
+      "id": "extension:fluent-apple.button.sizeCategory",
+      "kind": "extension-point",
+      "title": "Fluent iOS Button sizeCategory",
+      "platformComponentId": "platform:fluent-apple.button",
+      "mechanism": "prop",
+      "name": "sizeCategory",
+      "expresses": [
+        "size"
+      ],
+      "source": {
+        "tool": "github",
+        "importer": "swift-source",
+        "revision": "920ee25179c4d2086aa1219b106be90d5ab37113",
+        "path": "microsoft/fluentui-apple/Sources/FluentUI_iOS/Components/Button/ButtonTokenSet.swift",
+        "contentHash": "sha256:e92ab261cb9e8612c88c31c3a26e917eb142f5c8de48c97c803f3bf85ed04e2d"
+      }
+    },
+    {
+      "id": "extension:fluent-apple.button.tokenSet",
+      "kind": "extension-point",
+      "title": "Fluent iOS Button tokenSet",
+      "platformComponentId": "platform:fluent-apple.button",
+      "mechanism": "token",
+      "name": "tokenSet",
+      "expresses": [
+        "appearance",
+        "shape"
+      ],
+      "source": {
+        "tool": "github",
+        "importer": "swift-source",
+        "revision": "920ee25179c4d2086aa1219b106be90d5ab37113",
+        "path": "microsoft/fluentui-apple/Sources/FluentUI_iOS/Components/Button/ButtonTokenSet.swift",
+        "contentHash": "sha256:e92ab261cb9e8612c88c31c3a26e917eb142f5c8de48c97c803f3bf85ed04e2d"
+      }
+    },
+    {
+      "id": "extension:fluent-react-v9.button.disabledFocusable",
+      "kind": "extension-point",
+      "title": "Fluent React v9 Button disabledFocusable",
+      "platformComponentId": "platform:fluent-react-v9.button",
+      "mechanism": "prop",
+      "name": "disabledFocusable",
+      "expresses": [
+        "state.disabled.focusable"
+      ],
+      "source": {
+        "tool": "npm",
+        "importer": "react-types",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/dist/index.d.ts",
+        "contentHash": "sha256:f17668e565d617f95dced642168e63aa9771a905eb3c1148ffe5db66515e8395"
+      }
+    },
+    {
+      "id": "extension:fluent-react-v9.button.icon",
+      "kind": "extension-point",
+      "title": "Fluent React v9 Button icon",
+      "platformComponentId": "platform:fluent-react-v9.button",
+      "mechanism": "slot",
+      "name": "icon",
+      "expresses": [
+        "icon"
+      ],
+      "source": {
+        "tool": "npm",
+        "importer": "react-types",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/dist/index.d.ts",
+        "contentHash": "sha256:f17668e565d617f95dced642168e63aa9771a905eb3c1148ffe5db66515e8395"
+      }
+    },
+    {
+      "id": "extension:fluent-react-v9.button.shape",
+      "kind": "extension-point",
+      "title": "Fluent React v9 Button shape",
+      "platformComponentId": "platform:fluent-react-v9.button",
+      "mechanism": "prop",
+      "name": "shape",
+      "expresses": [
+        "shape"
+      ],
+      "source": {
+        "tool": "npm",
+        "importer": "react-types",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/dist/index.d.ts",
+        "contentHash": "sha256:f17668e565d617f95dced642168e63aa9771a905eb3c1148ffe5db66515e8395"
+      }
+    },
+    {
+      "id": "extension:fluent-react-v9.button.size",
+      "kind": "extension-point",
+      "title": "Fluent React v9 Button size",
+      "platformComponentId": "platform:fluent-react-v9.button",
+      "mechanism": "prop",
+      "name": "size",
+      "expresses": [
+        "size"
+      ],
+      "source": {
+        "tool": "npm",
+        "importer": "react-types",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/dist/index.d.ts",
+        "contentHash": "sha256:f17668e565d617f95dced642168e63aa9771a905eb3c1148ffe5db66515e8395"
+      }
+    },
+    {
+      "id": "evidence:figma.android-kit.button",
+      "kind": "evidence",
+      "title": "Microsoft Fluent Android Figma kit Button variants",
+      "subjectIds": [
+        "semantic:button"
+      ],
+      "tier": "static-analysis",
+      "method": "design-export",
+      "platform": "android",
+      "outcome": "finding",
+      "finding": "Button draws Style: Primary, Outlined, Neutral, Text; State: Rest, Pressed, Disabled.",
+      "capturedAt": "2026-10-11T00:00:00Z",
+      "source": {
+        "tool": "figma",
+        "importer": "figma-file",
+        "revision": "civic-stand-in-1",
+        "path": "Microsoft Fluent Android (CIVIC stand-in) / Controls / Button",
+        "anchor": "12:2"
+      }
+    },
+    {
+      "id": "evidence:fluent-android.compose-button.background-tokens",
+      "kind": "evidence",
+      "title": "Fluent Android Compose Button background tokens by style",
+      "subjectIds": [
+        "platform:fluent-android.compose-button"
+      ],
+      "tier": "static-analysis",
+      "method": "token-analysis",
+      "platform": "android",
+      "outcome": "finding",
+      "finding": "ButtonTokens backgroundBrush by ButtonStyle: Button reads BrandBackground1, BrandBackground1Pressed, BrandBackground1Selected, Background5; OutlinedButton reads no background token; TextButton reads no background token.",
+      "capturedAt": "2026-10-11T00:00:00Z",
+      "source": {
+        "tool": "github",
+        "importer": "kotlin-control-tokens",
+        "revision": "207ae6843eda82e990ed378794abba8ec451c1e8",
+        "path": "microsoft/fluentui-android/fluentui_core/src/main/java/com/microsoft/fluentui/theme/token/controlTokens/ButtonTokens.kt",
+        "contentHash": "sha256:4c9fea004fd8dd1536df3ed374b74b4ed3c9ddccf5e37767b75c8376a56a617e"
+      }
+    },
+    {
+      "id": "evidence:fluent-android.compose-button.variants",
+      "kind": "evidence",
+      "title": "Fluent Android Compose Button variants read from source",
+      "subjectIds": [
+        "platform:fluent-android.compose-button"
+      ],
+      "tier": "static-analysis",
+      "method": "source-analysis",
+      "platform": "android",
+      "outcome": "finding",
+      "finding": "ButtonStyle declares Button, OutlinedButton, TextButton; the default is Button.",
+      "capturedAt": "2026-10-11T00:00:00Z",
+      "source": {
+        "tool": "github",
+        "importer": "kotlin-source",
+        "revision": "207ae6843eda82e990ed378794abba8ec451c1e8",
+        "path": "microsoft/fluentui-android/fluentui_core/src/main/java/com/microsoft/fluentui/theme/token/controlTokens/ButtonTokens.kt",
+        "contentHash": "sha256:4c9fea004fd8dd1536df3ed374b74b4ed3c9ddccf5e37767b75c8376a56a617e"
+      }
+    },
+    {
+      "id": "evidence:fluent-apple.button.background-tokens",
+      "kind": "evidence",
+      "title": "Fluent iOS Button background tokens by style",
+      "subjectIds": [
+        "platform:fluent-apple.button"
+      ],
+      "tier": "static-analysis",
+      "method": "token-analysis",
+      "platform": "ios",
+      "outcome": "finding",
+      "finding": "ButtonTokenSet backgroundColor by ButtonStyle: accent, floatingAccent reads brandBackground1; outline, outlineAccent, outlineNeutral, subtle, transparentNeutral, dangerOutline, dangerSubtle reads no background token; danger reads dangerBackground2; floatingSubtle reads background1.",
+      "capturedAt": "2026-10-11T00:00:00Z",
+      "source": {
+        "tool": "github",
+        "importer": "swift-token-set",
+        "revision": "920ee25179c4d2086aa1219b106be90d5ab37113",
+        "path": "microsoft/fluentui-apple/Sources/FluentUI_iOS/Components/Button/ButtonTokenSet.swift",
+        "contentHash": "sha256:e92ab261cb9e8612c88c31c3a26e917eb142f5c8de48c97c803f3bf85ed04e2d"
+      }
+    },
+    {
+      "id": "evidence:fluent-apple.button.variants",
+      "kind": "evidence",
+      "title": "Fluent iOS Button variants read from source",
+      "subjectIds": [
+        "platform:fluent-apple.button"
+      ],
+      "tier": "static-analysis",
+      "method": "source-analysis",
+      "platform": "ios",
+      "outcome": "finding",
+      "finding": "ButtonStyle declares accent, outlineAccent, outlineNeutral, subtle, transparentNeutral, danger, dangerOutline, dangerSubtle, floatingAccent, floatingSubtle (deprecated: outline); the default is outlineAccent.",
+      "capturedAt": "2026-10-11T00:00:00Z",
+      "source": {
+        "tool": "github",
+        "importer": "swift-source",
+        "revision": "920ee25179c4d2086aa1219b106be90d5ab37113",
+        "path": "microsoft/fluentui-apple/Sources/FluentUI_iOS/Components/Button/ButtonTokenSet.swift",
+        "contentHash": "sha256:e92ab261cb9e8612c88c31c3a26e917eb142f5c8de48c97c803f3bf85ed04e2d"
+      }
+    },
+    {
+      "id": "evidence:fluent-react-v9.button.variants",
+      "kind": "evidence",
+      "title": "Fluent React v9 Button variants read from source",
+      "subjectIds": [
+        "platform:fluent-react-v9.button"
+      ],
+      "tier": "static-analysis",
+      "method": "source-analysis",
+      "platform": "web",
+      "outcome": "finding",
+      "finding": "appearance declares secondary, primary, outline, subtle, transparent; the default is secondary.",
+      "capturedAt": "2026-10-11T00:00:00Z",
+      "source": {
+        "tool": "npm",
+        "importer": "react-types",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/dist/index.d.ts",
+        "contentHash": "sha256:f17668e565d617f95dced642168e63aa9771a905eb3c1148ffe5db66515e8395"
+      }
+    },
+    {
+      "id": "evidence:playwright.a-button-with-no-appearance-renders-as-the-neutral-default",
+      "kind": "evidence",
+      "title": "a button with no appearance renders as the neutral default",
+      "subjectIds": [
+        "platform:fluent-react-v9.button"
+      ],
+      "tier": "automated",
+      "method": "playwright",
+      "platform": "web",
+      "outcome": "pass",
+      "capturedAt": "2026-10-11T02:23:45.899Z",
+      "source": {
+        "tool": "playwright",
+        "importer": "playwright-report",
+        "revision": "@fluentui/react-components@9.74.9",
+        "path": "button.spec.ts",
+        "anchor": "line 41"
+      }
+    },
+    {
+      "id": "evidence:playwright.a-disabled-button-cannot-take-focus",
+      "kind": "evidence",
+      "title": "a disabled button cannot take focus",
+      "subjectIds": [
+        "semantic:button",
+        "platform:fluent-react-v9.button"
+      ],
+      "tier": "automated",
+      "method": "playwright",
+      "platform": "web",
+      "outcome": "pass",
+      "capturedAt": "2026-10-11T02:23:46.114Z",
+      "source": {
+        "tool": "playwright",
+        "importer": "playwright-report",
+        "revision": "@fluentui/react-components@9.74.9",
+        "path": "button.spec.ts",
+        "anchor": "line 46"
+      }
+    },
+    {
+      "id": "evidence:playwright.a-disabledfocusable-button-takes-focus-and-reports-itself-disabled",
+      "kind": "evidence",
+      "title": "a disabledFocusable button takes focus and reports itself disabled",
+      "subjectIds": [
+        "extension:fluent-react-v9.button.disabledFocusable"
+      ],
+      "tier": "automated",
+      "method": "playwright",
+      "platform": "web",
+      "outcome": "pass",
+      "capturedAt": "2026-10-11T02:23:46.304Z",
+      "source": {
+        "tool": "playwright",
+        "importer": "playwright-report",
+        "revision": "@fluentui/react-components@9.74.9",
+        "path": "button.spec.ts",
+        "anchor": "line 53"
+      }
+    },
+    {
+      "id": "evidence:playwright.brand-outline-renders-as-a-button-with-an-accessible-name",
+      "kind": "evidence",
+      "title": "brand-outline renders as a button with an accessible name",
+      "subjectIds": [
+        "semantic:button",
+        "platform:fluent-react-v9.button",
+        "intent:button.accessible-name"
+      ],
+      "tier": "automated",
+      "method": "playwright",
+      "platform": "web",
+      "outcome": "pass",
+      "capturedAt": "2026-10-11T02:23:44.106Z",
+      "source": {
+        "tool": "playwright",
+        "importer": "playwright-report",
+        "revision": "@fluentui/react-components@9.74.9",
+        "path": "button.spec.ts",
+        "anchor": "line 29"
+      }
+    },
+    {
+      "id": "evidence:playwright.brand-outline-rests-on-colortransparentbackground",
+      "kind": "evidence",
+      "title": "brand-outline rests on colorTransparentBackground",
+      "subjectIds": [
+        "platform:fluent-react-v9.button",
+        "token:colorTransparentBackground"
+      ],
+      "tier": "automated",
+      "method": "playwright",
+      "platform": "web",
+      "outcome": "pass",
+      "capturedAt": "2026-10-11T02:23:44.299Z",
+      "source": {
+        "tool": "playwright",
+        "importer": "playwright-report",
+        "revision": "@fluentui/react-components@9.74.9",
+        "path": "button.spec.ts",
+        "anchor": "line 36"
+      }
+    },
+    {
+      "id": "evidence:playwright.neutral-default-renders-as-a-button-with-an-accessible-name",
+      "kind": "evidence",
+      "title": "neutral-default renders as a button with an accessible name",
+      "subjectIds": [
+        "semantic:button",
+        "platform:fluent-react-v9.button",
+        "intent:button.accessible-name"
+      ],
+      "tier": "automated",
+      "method": "playwright",
+      "platform": "web",
+      "outcome": "pass",
+      "capturedAt": "2026-10-11T02:23:44.527Z",
+      "source": {
+        "tool": "playwright",
+        "importer": "playwright-report",
+        "revision": "@fluentui/react-components@9.74.9",
+        "path": "button.spec.ts",
+        "anchor": "line 29"
+      }
+    },
+    {
+      "id": "evidence:playwright.neutral-default-rests-on-colorneutralbackground1",
+      "kind": "evidence",
+      "title": "neutral-default rests on colorNeutralBackground1",
+      "subjectIds": [
+        "platform:fluent-react-v9.button",
+        "token:colorNeutralBackground1"
+      ],
+      "tier": "automated",
+      "method": "playwright",
+      "platform": "web",
+      "outcome": "pass",
+      "capturedAt": "2026-10-11T02:23:44.718Z",
+      "source": {
+        "tool": "playwright",
+        "importer": "playwright-report",
+        "revision": "@fluentui/react-components@9.74.9",
+        "path": "button.spec.ts",
+        "anchor": "line 36"
+      }
+    },
+    {
+      "id": "evidence:playwright.primary-filled-renders-as-a-button-with-an-accessible-name",
+      "kind": "evidence",
+      "title": "primary-filled renders as a button with an accessible name",
+      "subjectIds": [
+        "semantic:button",
+        "platform:fluent-react-v9.button",
+        "intent:button.accessible-name"
+      ],
+      "tier": "automated",
+      "method": "playwright",
+      "platform": "web",
+      "outcome": "pass",
+      "capturedAt": "2026-10-11T02:23:43.387Z",
+      "source": {
+        "tool": "playwright",
+        "importer": "playwright-report",
+        "revision": "@fluentui/react-components@9.74.9",
+        "path": "button.spec.ts",
+        "anchor": "line 29"
+      }
+    },
+    {
+      "id": "evidence:playwright.primary-filled-rests-on-colorbrandbackground",
+      "kind": "evidence",
+      "title": "primary-filled rests on colorBrandBackground",
+      "subjectIds": [
+        "platform:fluent-react-v9.button",
+        "token:colorBrandBackground"
+      ],
+      "tier": "automated",
+      "method": "playwright",
+      "platform": "web",
+      "outcome": "pass",
+      "capturedAt": "2026-10-11T02:23:43.850Z",
+      "source": {
+        "tool": "playwright",
+        "importer": "playwright-report",
+        "revision": "@fluentui/react-components@9.74.9",
+        "path": "button.spec.ts",
+        "anchor": "line 36"
+      }
+    },
+    {
+      "id": "evidence:playwright.subtle-renders-as-a-button-with-an-accessible-name",
+      "kind": "evidence",
+      "title": "subtle renders as a button with an accessible name",
+      "subjectIds": [
+        "semantic:button",
+        "platform:fluent-react-v9.button",
+        "intent:button.accessible-name"
+      ],
+      "tier": "automated",
+      "method": "playwright",
+      "platform": "web",
+      "outcome": "pass",
+      "capturedAt": "2026-10-11T02:23:44.926Z",
+      "source": {
+        "tool": "playwright",
+        "importer": "playwright-report",
+        "revision": "@fluentui/react-components@9.74.9",
+        "path": "button.spec.ts",
+        "anchor": "line 29"
+      }
+    },
+    {
+      "id": "evidence:playwright.subtle-rests-on-colorsubtlebackground",
+      "kind": "evidence",
+      "title": "subtle rests on colorSubtleBackground",
+      "subjectIds": [
+        "platform:fluent-react-v9.button",
+        "token:colorSubtleBackground"
+      ],
+      "tier": "automated",
+      "method": "playwright",
+      "platform": "web",
+      "outcome": "pass",
+      "capturedAt": "2026-10-11T02:23:45.104Z",
+      "source": {
+        "tool": "playwright",
+        "importer": "playwright-report",
+        "revision": "@fluentui/react-components@9.74.9",
+        "path": "button.spec.ts",
+        "anchor": "line 36"
+      }
+    },
+    {
+      "id": "evidence:playwright.transparent-neutral-renders-as-a-button-with-an-accessible-name",
+      "kind": "evidence",
+      "title": "transparent-neutral renders as a button with an accessible name",
+      "subjectIds": [
+        "semantic:button",
+        "platform:fluent-react-v9.button",
+        "intent:button.accessible-name"
+      ],
+      "tier": "automated",
+      "method": "playwright",
+      "platform": "web",
+      "outcome": "pass",
+      "capturedAt": "2026-10-11T02:23:45.346Z",
+      "source": {
+        "tool": "playwright",
+        "importer": "playwright-report",
+        "revision": "@fluentui/react-components@9.74.9",
+        "path": "button.spec.ts",
+        "anchor": "line 29"
+      }
+    },
+    {
+      "id": "evidence:playwright.transparent-neutral-rests-on-colortransparentbackground",
+      "kind": "evidence",
+      "title": "transparent-neutral rests on colorTransparentBackground",
+      "subjectIds": [
+        "platform:fluent-react-v9.button",
+        "token:colorTransparentBackground"
+      ],
+      "tier": "automated",
+      "method": "playwright",
+      "platform": "web",
+      "outcome": "pass",
+      "capturedAt": "2026-10-11T02:23:45.613Z",
+      "source": {
+        "tool": "playwright",
+        "importer": "playwright-report",
+        "revision": "@fluentui/react-components@9.74.9",
+        "path": "button.spec.ts",
+        "anchor": "line 36"
+      }
+    },
+    {
+      "id": "conflict:button.android.neutral-default",
+      "kind": "contract-conflict",
+      "title": "Neutral default Button on android",
+      "targetId": "semantic:button",
+      "variant": "neutral-default",
+      "platform": "android",
+      "summary": "The Microsoft Fluent Android Figma kit has a Neutral default Button that Fluent Android Compose Button cannot express.",
+      "sides": [
+        {
+          "claim": "Neutral default exists in the Microsoft Fluent Android Figma kit.",
+          "evidenceIds": [
+            "evidence:figma.android-kit.button"
+          ]
+        },
+        {
+          "claim": "Fluent Android Compose Button has no Neutral default: No stock ButtonStyle.",
+          "recordId": "platform:fluent-android.compose-button",
+          "evidenceIds": [
+            "evidence:fluent-android.compose-button.variants"
+          ]
+        }
+      ],
+      "classification": "unclassified",
+      "owners": [
+        {
+          "role": "design",
+          "who": "design-system-maintainers"
+        },
+        {
+          "role": "design-engineering",
+          "who": "fluent-android",
+          "platform": "android"
+        }
+      ],
+      "alignment": "unreviewed-drift",
+      "status": "open"
+    }
+  ],
+  "links": [
+    {
+      "from": "platform:fluent-android.compose-button",
+      "relation": "implements",
+      "to": "semantic:button",
+      "status": "declared",
+      "evidenceIds": [
+        "evidence:fluent-android.compose-button.variants"
+      ]
+    },
+    {
+      "from": "platform:fluent-apple.button",
+      "relation": "implements",
+      "to": "semantic:button",
+      "status": "declared",
+      "evidenceIds": [
+        "evidence:fluent-apple.button.variants"
+      ]
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "implements",
+      "to": "semantic:button",
+      "status": "declared",
+      "evidenceIds": [
+        "evidence:fluent-react-v9.button.variants"
+      ]
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:borderRadiusCircular",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:borderRadiusLarge",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:borderRadiusMedium",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:borderRadiusNone",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:borderRadiusSmall",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorBrandBackground",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorBrandBackgroundHover",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorBrandBackgroundPressed",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorNeutralBackground1",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorNeutralBackground1Hover",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorNeutralBackground1Pressed",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorNeutralBackgroundDisabled",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorNeutralForeground1",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorNeutralForeground1Hover",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorNeutralForeground1Pressed",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorNeutralForeground2",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorNeutralForeground2BrandHover",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorNeutralForeground2BrandPressed",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorNeutralForeground2Hover",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorNeutralForeground2Pressed",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorNeutralForegroundDisabled",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorNeutralForegroundOnBrand",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorNeutralStroke1",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorNeutralStroke1Hover",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorNeutralStroke1Pressed",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorNeutralStrokeDisabled",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorStrokeFocus2",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorSubtleBackground",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorSubtleBackgroundHover",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorSubtleBackgroundPressed",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorTransparentBackground",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorTransparentBackgroundHover",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorTransparentBackgroundPressed",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:colorTransparentStroke",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:curveEasyEase",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:durationFaster",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:fontFamilyBase",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:fontSizeBase200",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:fontSizeBase300",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:fontSizeBase400",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:fontWeightRegular",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:fontWeightSemibold",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:lineHeightBase200",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:lineHeightBase300",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:lineHeightBase400",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:shadow2",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:spacingHorizontalL",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:spacingHorizontalM",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:spacingHorizontalS",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:spacingHorizontalSNudge",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:spacingHorizontalXS",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:strokeWidthThick",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "platform:fluent-react-v9.button",
+      "relation": "uses-token",
+      "to": "token:strokeWidthThin",
+      "status": "declared",
+      "source": {
+        "tool": "npm",
+        "importer": "style-tokens",
+        "revision": "@fluentui/react-button@9.11.1",
+        "path": "@fluentui/react-button/lib/components/Button/useButtonStyles.styles.raw.js",
+        "contentHash": "sha256:266f0391004f52a6f0f3bf33e8e4071680447ba10129252cab18b86592c42c3e"
+      }
+    },
+    {
+      "from": "semantic:button",
+      "relation": "serves",
+      "to": "intent:button.accessible-name",
+      "status": "declared"
+    },
+    {
+      "from": "semantic:button",
+      "relation": "serves",
+      "to": "intent:button.triggers-action",
+      "status": "declared"
+    }
+  ]
+}
