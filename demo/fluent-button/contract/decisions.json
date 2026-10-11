@@ -1,20 +1,20 @@
 {
-  "note": "Illustrative decisions for the demo, so the graph shows a conflict being classified and resolved. The deciders are the demo's placeholder owners, not real Fluent teams. Replace them with your own team's call.",
+  "note": "Illustrative decisions for the demo, so the graph shows a conflict being classified and resolved. The conflict is real: it comes from the Microsoft Fluent Android Community file as exported on 2026-10-11. The call and the deciders are the demo's placeholder owners, not a real Fluent team's. Replace them with your own team's call.",
   "decisions": [
     {
-      "conflictId": "conflict:button.android.neutral-default",
-      "classification": "temporary-gap",
-      "alignment": "accepted-limitation",
+      "conflictId": "conflict:button.android.brand-outline",
+      "classification": "outdated-design-source",
+      "alignment": "awaiting-adoption",
       "resolution": {
-        "outcome": "approve-exception",
+        "outcome": "update-design",
         "decidedBy": { "role": "design", "who": "design-system-maintainers" },
         "at": "2026-10-11T00:00:00Z",
-        "rationale": "Neutral default stays in the contract and the Android kit. Compose has no stock ButtonStyle for it, so an Android product that needs one builds it through the buttonTokens extension point with its own ButtonTokens subclass until the library adds a style.",
+        "rationale": "The Android kit predates Fluent Android's Compose controls and draws only Primary and Text buttons. Compose ships OutlinedButton for Brand outline, and the contract keeps it, so Design adds an Outlined button to the kit. Until it lands, Android designers take Brand outline from the contract, not the kit.",
         "evidenceIds": [
-          "evidence:fluent-android.compose-button.variants",
-          "evidence:fluent-android.compose-button.background-tokens"
+          "evidence:figma.android-kit.button",
+          "evidence:fluent-android.compose-button.variants"
         ],
-        "revisitTrigger": "Fluent Android adds a neutral ButtonStyle, or a second Android product builds its own neutral Button."
+        "revisitTrigger": "The kit gains an Outlined button, or Compose drops OutlinedButton."
       }
     }
   ]

@@ -1265,14 +1265,14 @@
       "method": "design-export",
       "platform": "android",
       "outcome": "finding",
-      "finding": "Button draws Style: Primary, Outlined, Neutral, Text; State: Rest, Pressed, Disabled.",
-      "capturedAt": "2026-10-11T00:00:00Z",
+      "finding": "Button draws Style: Primary, Text; each drawn as Default, Pressed, Disabled; Light, Dark.",
+      "capturedAt": "2026-10-11T09:16:46Z",
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-1",
-        "path": "Microsoft Fluent Android (CIVIC stand-in) / Controls / Button",
-        "anchor": "12:2"
+        "revision": "2408995634983570781",
+        "path": "Microsoft Fluent Android (Community) / Components / Buttons",
+        "anchor": "7358:1413"
       }
     },
     {
@@ -1657,29 +1657,29 @@
       }
     },
     {
-      "id": "conflict:button.android.neutral-default",
+      "id": "conflict:button.android.brand-outline",
       "kind": "contract-conflict",
-      "title": "Neutral default Button on android",
+      "title": "Brand outline Button on android",
       "targetId": "semantic:button",
-      "variant": "neutral-default",
+      "variant": "brand-outline",
       "platform": "android",
-      "summary": "The Microsoft Fluent Android Figma kit has a Neutral default Button that Fluent Android Compose Button cannot express.",
+      "summary": "Fluent Android Compose Button offers Brand outline, which the Microsoft Fluent Android Figma kit does not draw.",
       "sides": [
         {
-          "claim": "Neutral default exists in the Microsoft Fluent Android Figma kit.",
+          "claim": "The Microsoft Fluent Android Figma kit does not draw Brand outline.",
           "evidenceIds": [
             "evidence:figma.android-kit.button"
           ]
         },
         {
-          "claim": "Fluent Android Compose Button has no Neutral default: No stock ButtonStyle.",
+          "claim": "Fluent Android Compose Button expresses Brand outline as OutlinedButton.",
           "recordId": "platform:fluent-android.compose-button",
           "evidenceIds": [
             "evidence:fluent-android.compose-button.variants"
           ]
         }
       ],
-      "classification": "temporary-gap",
+      "classification": "outdated-design-source",
       "owners": [
         {
           "role": "design",
@@ -1691,21 +1691,21 @@
           "platform": "android"
         }
       ],
-      "alignment": "accepted-limitation",
+      "alignment": "awaiting-adoption",
       "status": "resolved",
       "resolution": {
-        "outcome": "approve-exception",
+        "outcome": "update-design",
         "decidedBy": {
           "role": "design",
           "who": "design-system-maintainers"
         },
         "at": "2026-10-11T00:00:00Z",
-        "rationale": "Neutral default stays in the contract and the Android kit. Compose has no stock ButtonStyle for it, so an Android product that needs one builds it through the buttonTokens extension point with its own ButtonTokens subclass until the library adds a style.",
+        "rationale": "The Android kit predates Fluent Android's Compose controls and draws only Primary and Text buttons. Compose ships OutlinedButton for Brand outline, and the contract keeps it, so Design adds an Outlined button to the kit. Until it lands, Android designers take Brand outline from the contract, not the kit.",
         "evidenceIds": [
-          "evidence:fluent-android.compose-button.variants",
-          "evidence:fluent-android.compose-button.background-tokens"
+          "evidence:figma.android-kit.button",
+          "evidence:fluent-android.compose-button.variants"
         ],
-        "revisitTrigger": "Fluent Android adds a neutral ButtonStyle, or a second Android product builds its own neutral Button."
+        "revisitTrigger": "The kit gains an Outlined button, or Compose drops OutlinedButton."
       }
     }
   ],

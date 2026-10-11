@@ -201,7 +201,7 @@ assertValid(resolved)
 const exportFor = (document: typeof raised) => {
   const graph = indexGraph(document)
   return {
-    context: `${renderWorkOrder(contextFor(graph, semantic.id, { platform: 'android', variant: 'neutral-default' }))}\n`,
+    context: `${renderWorkOrder(contextFor(graph, semantic.id, { platform: 'android', variant: 'brand-outline' }))}\n`,
     gaps: `${renderGaps(gapsIn(graph, { scope: semantic.id }))}\n`,
   }
 }
@@ -210,9 +210,9 @@ const resolvedExport = exportFor(resolved)
 const outputs: Record<string, string> = {
   'out/raised.graph.json': `${JSON.stringify(raised, null, 2)}\n`,
   'out/resolved.graph.json': `${JSON.stringify(resolved, null, 2)}\n`,
-  'out/raised.context.android.neutral-default.md': raisedExport.context,
+  'out/raised.context.android.brand-outline.md': raisedExport.context,
   'out/raised.gaps.md': raisedExport.gaps,
-  'out/resolved.context.android.neutral-default.md': resolvedExport.context,
+  'out/resolved.context.android.brand-outline.md': resolvedExport.context,
   'out/resolved.gaps.md': resolvedExport.gaps,
 }
 

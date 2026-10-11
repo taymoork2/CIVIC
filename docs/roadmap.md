@@ -103,6 +103,8 @@ The Figma importers already read the real `GET /v1/files/:key` export shape; wha
 
 Acceptance: the Button conflict is raised from the real export, or the demo records that the real kit doesn't disagree. Either result is evidence; decision 0001 was based on a reading of the kit, not an export.
 
+Progress, 2026-10-11: the Button demo reads the real Android kit export. The kit predates Figma variants and draws only Primary and Text buttons, so there is no Neutral button to conflict with. The real conflict runs the other way: Compose ships `OutlinedButton` (Brand outline) and the kit doesn't draw it. The Card demo's two Figma files and Laundry's Playwright reports are still stand-ins.
+
 ## Later, not scheduled
 
 These came out of [agentic development](agentic-development.md) and wait until the steps above give them a base:

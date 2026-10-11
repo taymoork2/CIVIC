@@ -120,6 +120,41 @@ test('a kit missing a variant the code offers is a conflict too', () => {
   assert.match(conflicts[0]!.summary, /offers Primary, which the Lib kit does not draw/)
 })
 
+test('reads a kit drawn before Figma variants from its component names', () => {
+  const named = (id: string, name: string) => ({ id, name, type: 'FRAME', children: [{ id: `${id}c`, name, type: 'COMPONENT' }] })
+  const file = {
+    name: 'Old kit',
+    version: '7',
+    document: {
+      id: '0:0',
+      name: 'Document',
+      type: 'DOCUMENT',
+      children: [
+        {
+          id: '1:0',
+          name: 'Components',
+          type: 'CANVAS',
+          children: [
+            {
+              id: '1:1',
+              name: 'Buttons',
+              type: 'FRAME',
+              children: [named('1:2', '01. Primary / ⚪️ A. Default - Light'), named('1:3', '01. Primary / ⚫️ B. Pressed - Dark'), named('1:4', '03. Text / ⚪️ A. Default - Light')],
+            },
+          ],
+        },
+      ],
+    },
+  }
+  const design = readFigmaComponentSet(file, { ...kit, componentFrame: 'Buttons', variants: { Primary: 'primary' } }, 'semantic:button', 'x')
+  assert.deepEqual(design.semanticVariants, ['primary'])
+  assert.deepEqual(design.unmappedOptions, ['Text'])
+  assert.equal(design.evidence.finding, 'Button draws Style: Primary, Text; each drawn as Default, Pressed; Light, Dark.')
+  assert.equal(design.evidence.source.path, 'Old kit / Components / Buttons')
+  assert.throws(() => readFigmaComponentSet(file, { ...kit, componentFrame: 'Buttons' }, 'semantic:button', 'x'), /names Neutral, which Buttons does not draw/)
+  assert.throws(() => readFigmaComponentSet(file, { ...kit, componentFrame: 'Chips' }, 'semantic:button', 'x'), /no frame named Chips/)
+})
+
 test('a Figma mapping naming an option the file does not draw fails the import', () => {
   assert.throws(() => readFigmaComponentSet(figma(['Primary', 'Neutral'], ['Primary']), kit, 'semantic:button', 'x'), /names Neutral/)
   assert.throws(() => readFigmaComponentSet({ document: {} }, kit, 'semantic:button', 'x'), /Not a Figma file export/)

@@ -1,4 +1,4 @@
-11 gap(s)
+10 gap(s)
 
 ## missing-variant (4)
 
@@ -18,7 +18,3 @@
 
 - [android] No automated or device evidence for Fluent Android Compose Button; only static analysis. Owners: qa button-qa. (`platform:fluent-android.compose-button`)
 - [ios] No automated or device evidence for Fluent iOS Button; only static analysis. Owners: qa button-qa. (`platform:fluent-apple.button`)
-
-## approved-exception (1)
-
-- [android] Neutral default Button on android: accepted as accepted-limitation. Revisit when: Fluent Android adds a neutral ButtonStyle, or a second Android product builds its own neutral Button. Owners: design design-system-maintainers, design-engineering fluent-android. (`conflict:button.android.neutral-default`)

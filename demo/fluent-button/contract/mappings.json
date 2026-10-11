@@ -73,12 +73,11 @@
       "title": "Microsoft Fluent Android Figma kit",
       "platform": "android",
       "componentSet": "Button",
+      "componentFrame": "Buttons",
       "variantProperty": "Style",
       "owners": [{ "role": "design", "who": "design-system-maintainers" }],
       "variants": {
         "Primary": "primary-filled",
-        "Outlined": "brand-outline",
-        "Neutral": "neutral-default",
         "Text": "subtle"
       }
     }
