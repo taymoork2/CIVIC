@@ -1,0 +1,23 @@
+{
+  "name": "@civic/review",
+  "private": true,
+  "type": "module",
+  "description": "The review to agent loop (decision 0007): a local store in the git common directory shared by every worktree, and the civic CLI for annotations, work requests, claims, fix reports and CIVIC's deterministic re-capture. No model calls.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "bin": {
+    "civic-review": "./src/cli.ts"
+  },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "node --test \"test/**/*.test.ts\""
+  },
+  "dependencies": {
+    "playwright-core": "1.63.0"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.3",
+    "typescript": "7.0.2"
+  }
+}
