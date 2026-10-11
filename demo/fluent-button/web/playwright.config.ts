@@ -12,7 +12,10 @@ export default defineConfig({
   // The report's metadata names the exact revision the run proves, so the importer can tie
   // each result to it (spec: Evidence integrity).
   metadata: { 'civic.revision': `@fluentui/react-components@${version('@fluentui/react-components')}`, 'civic.tool': 'playwright' },
+  // Fluent's own Button stories, built by `pnpm run storybook:build` (e2e/storybook.spec.ts).
+  webServer: { command: 'node serve-storybook.mjs', url: 'http://127.0.0.1:6106/index.json', reuseExistingServer: false },
   use: {
+    baseURL: 'http://127.0.0.1:6106',
     browserName: 'chromium',
     launchOptions: process.env.PLAYWRIGHT_CHROMIUM_PATH ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_PATH } : {},
   },

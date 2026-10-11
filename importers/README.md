@@ -10,7 +10,7 @@ Importers read what each role's tools already produce and turn it into [CIVIC gr
 | `readDtcgTokens` | A DTCG tokens file | Token records keyed by DTCG path |
 | `readPlatformComponent` | A declared variant mapping plus facts from platform source | A platform component, its extension points, `source-analysis` evidence and an `implements` link |
 | Source readers (`source.ts`) | TypeScript declarations, compiled JS, Swift and Kotlin | Narrow facts: a prop's union, an enum's cases and deprecations, defaults, public members, tokens per style arm |
-| `readPlaywrightReport` | Playwright's JSON reporter output | `automated` evidence for each test that names CIVIC IDs in a `civic.subject` annotation |
+| `readPlaywrightReport` | Playwright's JSON reporter output | `automated` evidence for each test that names CIVIC IDs in a `civic.subject` annotation. A `civic.method` annotation (such as `storybook`) and a `civic.source` of `<path>#<anchor>` (such as a story file and story ID) say how and where the test observed them. |
 | `compareDesignKit` | A design kit and the same platform's component | Open, unclassified Contract Conflicts, one per variant they disagree on |
 | `raiseOverrideDrift` | A product's overrides on a library component | Open, unclassified Contract Conflicts in Unreviewed drift, one per override, asking its maker and the contract's design owners |
 | `applyDecisions` | A decision file (`civic.decisions/0`) of people's Decision records | The raised graph with those Decision records added; a decision on a conflict the import didn't raise fails |

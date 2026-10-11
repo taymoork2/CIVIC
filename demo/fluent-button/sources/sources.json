@@ -32,6 +32,25 @@
         "Button.kt": "fluentui_controls/src/main/java/com/microsoft/fluentui/tokenized/controls/Button.kt",
         "ButtonTokens.kt": "fluentui_core/src/main/java/com/microsoft/fluentui/theme/token/controlTokens/ButtonTokens.kt"
       }
+    },
+    "react-button-stories": {
+      "tool": "github",
+      "package": "microsoft/fluentui",
+      "revision": "@fluentui/react-button_v9.11.1",
+      "url": "https://github.com/microsoft/fluentui/tree/%40fluentui/react-button_v9.11.1/packages/react-components/react-button/stories/src/Button",
+      "files": {
+        "index.stories.tsx": "packages/react-components/react-button/stories/src/Button/index.stories.tsx",
+        "ButtonDefault.stories.tsx": "packages/react-components/react-button/stories/src/Button/ButtonDefault.stories.tsx",
+        "ButtonShape.stories.tsx": "packages/react-components/react-button/stories/src/Button/ButtonShape.stories.tsx",
+        "ButtonAppearance.stories.tsx": "packages/react-components/react-button/stories/src/Button/ButtonAppearance.stories.tsx",
+        "ButtonIcon.stories.tsx": "packages/react-components/react-button/stories/src/Button/ButtonIcon.stories.tsx",
+        "ButtonSize.stories.tsx": "packages/react-components/react-button/stories/src/Button/ButtonSize.stories.tsx",
+        "ButtonDisabled.stories.tsx": "packages/react-components/react-button/stories/src/Button/ButtonDisabled.stories.tsx",
+        "ButtonLoading.stories.tsx": "packages/react-components/react-button/stories/src/Button/ButtonLoading.stories.tsx",
+        "ButtonWithLongText.stories.tsx": "packages/react-components/react-button/stories/src/Button/ButtonWithLongText.stories.tsx",
+        "ButtonDescription.md": "packages/react-components/react-button/stories/src/Button/ButtonDescription.md",
+        "ButtonBestPractices.md": "packages/react-components/react-button/stories/src/Button/ButtonBestPractices.md"
+      }
     }
   }
 }

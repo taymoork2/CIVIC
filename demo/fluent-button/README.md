@@ -32,7 +32,8 @@ node graph/src/cli.ts context demo/fluent-button/out/resolved.graph.json semanti
 | [`sources/`](sources) | Fluent's own files, vendored at pinned revisions with their MIT licences ([`sources.json`](sources/sources.json)): React v9 Button types, defaults and styles; iOS `Button.swift` and `ButtonTokenSet.swift`; Android `Button.kt` and `ButtonTokens.kt` | static source readers ([`importers/src/source.ts`](../../importers/src/source.ts)) |
 | [`tokens/fluent-web-light.tokens.json`](tokens/fluent-web-light.tokens.json) | Fluent's web light theme as DTCG, exported from `@fluentui/tokens` by [`web/export-tokens.mjs`](web/export-tokens.mjs) | DTCG importer |
 | [`design/android-kit.figma.json`](design/android-kit.figma.json) | The real [Microsoft Fluent Android](https://www.figma.com/community/file/836835062056249539/microsoft-fluent-android) kit's Buttons frame, from a Figma REST file export (`GET /v1/files/:key`) trimmed by [`design/trim.ts`](design/trim.ts) | Figma file importer |
-| [`evidence/playwright-report.json`](evidence/playwright-report.json) | A Playwright JSON report from rendering Fluent React v9 Buttons in Chromium ([`web/`](web)) | Playwright report importer |
+| [`sources/react-button-stories/`](sources/react-button-stories) | Fluent's own Button stories at the tag `@fluentui/react-button_v9.11.1`, the release of the vendored types | built into Storybook by [`web/`](web) |
+| [`evidence/playwright-report.json`](evidence/playwright-report.json) | A Playwright JSON report from rendering Fluent React v9 Buttons, in CIVIC's harness and in Fluent's stories, in Chromium ([`web/`](web)) | Playwright report importer |
 
 ### The Figma export
 
@@ -53,9 +54,8 @@ If the kit renames its frame or options, update `designKits` in `contract/mappin
 ## Evidence tiers
 
 - **Web** has automated evidence: 13 Playwright checks render every mapped appearance and check its accessible name, its rest background against the DTCG token value, the default appearance, and disabled versus `disabledFocusable` focus. They run against `@fluentui/react-components@9.74.9`, which resolves `@fluentui/react-button@9.11.1`, the same version as the vendored types.
+- **Web also has Storybook evidence**: 13 more Playwright checks open Fluent's own Button stories, the ones Fluent publishes in its Storybook, vendored at the pinned release in [`sources/react-button-stories/`](sources/react-button-stories) and built with Storybook 8 ([`web/.storybook/`](web/.storybook)). They check that the Appearance story shows every mapped appearance with an accessible name and on its rest token, that the Default story renders the neutral default, and that the Disabled story's `disabled` and `disabledFocusable` buttons behave as the contract says. Each test carries `civic.method: storybook` and the story ID, so it becomes `storybook` evidence anchored to that story. The harness checks what CIVIC's mapping declares; the stories check that Fluent's own examples agree.
 - **iOS and Android** have static analysis only: variants, defaults, public API and background tokens read from source. That proves what the source declares, never how it behaves, and `civic gaps` lists the missing run evidence with QA as owner. Native captures need a Mac runner and an Android device runner (decision 0001's evidence plan).
-
-Storybook isn't run. The Playwright harness renders the same Button props a story would, from the same mapping file.
 
 ## Rebuilding
 
@@ -66,7 +66,7 @@ node demo/fluent-button/build.ts --check    # what bin/signoff runs
 cd demo/fluent-button/web
 pnpm install --frozen-lockfile
 pnpm run tokens            # re-export DTCG tokens from @fluentui/tokens
-pnpm run evidence          # bundle the harness and run the Playwright checks
+pnpm run evidence          # bundle the harness, build Fluent's stories in Storybook, run the Playwright checks
 pnpm run evidence:record   # same, and rewrite evidence/playwright-report.json
 ```
 

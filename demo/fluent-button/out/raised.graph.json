@@ -1391,13 +1391,13 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-11T02:23:45.899Z",
+      "capturedAt": "2026-10-11T11:23:54.561Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
         "revision": "@fluentui/react-components@9.74.9",
         "path": "button.spec.ts",
-        "anchor": "line 41"
+        "anchor": "line 28"
       }
     },
     {
@@ -1412,13 +1412,13 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-11T02:23:46.114Z",
+      "capturedAt": "2026-10-11T11:23:54.842Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
         "revision": "@fluentui/react-components@9.74.9",
         "path": "button.spec.ts",
-        "anchor": "line 46"
+        "anchor": "line 33"
       }
     },
     {
@@ -1432,13 +1432,13 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-11T02:23:46.304Z",
+      "capturedAt": "2026-10-11T11:23:55.108Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
         "revision": "@fluentui/react-components@9.74.9",
         "path": "button.spec.ts",
-        "anchor": "line 53"
+        "anchor": "line 40"
       }
     },
     {
@@ -1454,13 +1454,13 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-11T02:23:44.106Z",
+      "capturedAt": "2026-10-11T11:23:52.606Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
         "revision": "@fluentui/react-components@9.74.9",
         "path": "button.spec.ts",
-        "anchor": "line 29"
+        "anchor": "line 16"
       }
     },
     {
@@ -1475,13 +1475,13 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-11T02:23:44.299Z",
+      "capturedAt": "2026-10-11T11:23:52.883Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
         "revision": "@fluentui/react-components@9.74.9",
         "path": "button.spec.ts",
-        "anchor": "line 36"
+        "anchor": "line 23"
       }
     },
     {
@@ -1497,13 +1497,13 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-11T02:23:44.527Z",
+      "capturedAt": "2026-10-11T11:23:53.155Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
         "revision": "@fluentui/react-components@9.74.9",
         "path": "button.spec.ts",
-        "anchor": "line 29"
+        "anchor": "line 16"
       }
     },
     {
@@ -1518,13 +1518,13 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-11T02:23:44.718Z",
+      "capturedAt": "2026-10-11T11:23:53.395Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
         "revision": "@fluentui/react-components@9.74.9",
         "path": "button.spec.ts",
-        "anchor": "line 36"
+        "anchor": "line 23"
       }
     },
     {
@@ -1540,13 +1540,13 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-11T02:23:43.387Z",
+      "capturedAt": "2026-10-11T11:23:51.844Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
         "revision": "@fluentui/react-components@9.74.9",
         "path": "button.spec.ts",
-        "anchor": "line 29"
+        "anchor": "line 16"
       }
     },
     {
@@ -1561,13 +1561,13 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-11T02:23:43.850Z",
+      "capturedAt": "2026-10-11T11:23:52.314Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
         "revision": "@fluentui/react-components@9.74.9",
         "path": "button.spec.ts",
-        "anchor": "line 36"
+        "anchor": "line 23"
       }
     },
     {
@@ -1583,13 +1583,13 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-11T02:23:44.926Z",
+      "capturedAt": "2026-10-11T11:23:53.633Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
         "revision": "@fluentui/react-components@9.74.9",
         "path": "button.spec.ts",
-        "anchor": "line 29"
+        "anchor": "line 16"
       }
     },
     {
@@ -1604,13 +1604,13 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-11T02:23:45.104Z",
+      "capturedAt": "2026-10-11T11:23:53.856Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
         "revision": "@fluentui/react-components@9.74.9",
         "path": "button.spec.ts",
-        "anchor": "line 36"
+        "anchor": "line 23"
       }
     },
     {
@@ -1626,13 +1626,13 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-11T02:23:45.346Z",
+      "capturedAt": "2026-10-11T11:23:54.095Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
         "revision": "@fluentui/react-components@9.74.9",
         "path": "button.spec.ts",
-        "anchor": "line 29"
+        "anchor": "line 16"
       }
     },
     {
@@ -1647,13 +1647,290 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-11T02:23:45.613Z",
+      "capturedAt": "2026-10-11T11:23:54.306Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
         "revision": "@fluentui/react-components@9.74.9",
         "path": "button.spec.ts",
-        "anchor": "line 36"
+        "anchor": "line 23"
+      }
+    },
+    {
+      "id": "evidence:storybook.fluent-s-appearance-story-rests-outline-on-colortransparentbackground",
+      "kind": "evidence",
+      "title": "Fluent's Appearance story rests outline on colorTransparentBackground",
+      "subjectIds": [
+        "platform:fluent-react-v9.button",
+        "token:colorTransparentBackground"
+      ],
+      "tier": "automated",
+      "method": "storybook",
+      "platform": "web",
+      "outcome": "pass",
+      "capturedAt": "2026-10-11T11:23:57.209Z",
+      "source": {
+        "tool": "playwright",
+        "importer": "playwright-report",
+        "revision": "@fluentui/react-components@9.74.9",
+        "path": "demo/fluent-button/sources/react-button-stories/index.stories.tsx",
+        "anchor": "components-button-button--appearance"
+      }
+    },
+    {
+      "id": "evidence:storybook.fluent-s-appearance-story-rests-primary-on-colorbrandbackground",
+      "kind": "evidence",
+      "title": "Fluent's Appearance story rests primary on colorBrandBackground",
+      "subjectIds": [
+        "platform:fluent-react-v9.button",
+        "token:colorBrandBackground"
+      ],
+      "tier": "automated",
+      "method": "storybook",
+      "platform": "web",
+      "outcome": "pass",
+      "capturedAt": "2026-10-11T11:23:55.998Z",
+      "source": {
+        "tool": "playwright",
+        "importer": "playwright-report",
+        "revision": "@fluentui/react-components@9.74.9",
+        "path": "demo/fluent-button/sources/react-button-stories/index.stories.tsx",
+        "anchor": "components-button-button--appearance"
+      }
+    },
+    {
+      "id": "evidence:storybook.fluent-s-appearance-story-rests-secondary-on-colorneutralbackground1",
+      "kind": "evidence",
+      "title": "Fluent's Appearance story rests secondary on colorNeutralBackground1",
+      "subjectIds": [
+        "platform:fluent-react-v9.button",
+        "token:colorNeutralBackground1"
+      ],
+      "tier": "automated",
+      "method": "storybook",
+      "platform": "web",
+      "outcome": "pass",
+      "capturedAt": "2026-10-11T11:23:58.576Z",
+      "source": {
+        "tool": "playwright",
+        "importer": "playwright-report",
+        "revision": "@fluentui/react-components@9.74.9",
+        "path": "demo/fluent-button/sources/react-button-stories/index.stories.tsx",
+        "anchor": "components-button-button--appearance"
+      }
+    },
+    {
+      "id": "evidence:storybook.fluent-s-appearance-story-rests-subtle-on-colorsubtlebackground",
+      "kind": "evidence",
+      "title": "Fluent's Appearance story rests subtle on colorSubtleBackground",
+      "subjectIds": [
+        "platform:fluent-react-v9.button",
+        "token:colorSubtleBackground"
+      ],
+      "tier": "automated",
+      "method": "storybook",
+      "platform": "web",
+      "outcome": "pass",
+      "capturedAt": "2026-10-11T11:23:59.971Z",
+      "source": {
+        "tool": "playwright",
+        "importer": "playwright-report",
+        "revision": "@fluentui/react-components@9.74.9",
+        "path": "demo/fluent-button/sources/react-button-stories/index.stories.tsx",
+        "anchor": "components-button-button--appearance"
+      }
+    },
+    {
+      "id": "evidence:storybook.fluent-s-appearance-story-rests-transparent-on-colortransparentbackground",
+      "kind": "evidence",
+      "title": "Fluent's Appearance story rests transparent on colorTransparentBackground",
+      "subjectIds": [
+        "platform:fluent-react-v9.button",
+        "token:colorTransparentBackground"
+      ],
+      "tier": "automated",
+      "method": "storybook",
+      "platform": "web",
+      "outcome": "pass",
+      "capturedAt": "2026-10-11T11:24:01.296Z",
+      "source": {
+        "tool": "playwright",
+        "importer": "playwright-report",
+        "revision": "@fluentui/react-components@9.74.9",
+        "path": "demo/fluent-button/sources/react-button-stories/index.stories.tsx",
+        "anchor": "components-button-button--appearance"
+      }
+    },
+    {
+      "id": "evidence:storybook.fluent-s-appearance-story-shows-outline-for-brand-outline-with-an-accessible-name",
+      "kind": "evidence",
+      "title": "Fluent's Appearance story shows outline for brand-outline, with an accessible name",
+      "subjectIds": [
+        "semantic:button",
+        "platform:fluent-react-v9.button",
+        "intent:button.accessible-name"
+      ],
+      "tier": "automated",
+      "method": "storybook",
+      "platform": "web",
+      "outcome": "pass",
+      "capturedAt": "2026-10-11T11:23:56.634Z",
+      "source": {
+        "tool": "playwright",
+        "importer": "playwright-report",
+        "revision": "@fluentui/react-components@9.74.9",
+        "path": "demo/fluent-button/sources/react-button-stories/index.stories.tsx",
+        "anchor": "components-button-button--appearance"
+      }
+    },
+    {
+      "id": "evidence:storybook.fluent-s-appearance-story-shows-primary-for-primary-filled-with-an-accessible-name",
+      "kind": "evidence",
+      "title": "Fluent's Appearance story shows primary for primary-filled, with an accessible name",
+      "subjectIds": [
+        "semantic:button",
+        "platform:fluent-react-v9.button",
+        "intent:button.accessible-name"
+      ],
+      "tier": "automated",
+      "method": "storybook",
+      "platform": "web",
+      "outcome": "pass",
+      "capturedAt": "2026-10-11T11:23:55.379Z",
+      "source": {
+        "tool": "playwright",
+        "importer": "playwright-report",
+        "revision": "@fluentui/react-components@9.74.9",
+        "path": "demo/fluent-button/sources/react-button-stories/index.stories.tsx",
+        "anchor": "components-button-button--appearance"
+      }
+    },
+    {
+      "id": "evidence:storybook.fluent-s-appearance-story-shows-secondary-for-neutral-default-with-an-accessible-name",
+      "kind": "evidence",
+      "title": "Fluent's Appearance story shows secondary for neutral-default, with an accessible name",
+      "subjectIds": [
+        "semantic:button",
+        "platform:fluent-react-v9.button",
+        "intent:button.accessible-name"
+      ],
+      "tier": "automated",
+      "method": "storybook",
+      "platform": "web",
+      "outcome": "pass",
+      "capturedAt": "2026-10-11T11:23:57.874Z",
+      "source": {
+        "tool": "playwright",
+        "importer": "playwright-report",
+        "revision": "@fluentui/react-components@9.74.9",
+        "path": "demo/fluent-button/sources/react-button-stories/index.stories.tsx",
+        "anchor": "components-button-button--appearance"
+      }
+    },
+    {
+      "id": "evidence:storybook.fluent-s-appearance-story-shows-subtle-for-subtle-with-an-accessible-name",
+      "kind": "evidence",
+      "title": "Fluent's Appearance story shows subtle for subtle, with an accessible name",
+      "subjectIds": [
+        "semantic:button",
+        "platform:fluent-react-v9.button",
+        "intent:button.accessible-name"
+      ],
+      "tier": "automated",
+      "method": "storybook",
+      "platform": "web",
+      "outcome": "pass",
+      "capturedAt": "2026-10-11T11:23:59.339Z",
+      "source": {
+        "tool": "playwright",
+        "importer": "playwright-report",
+        "revision": "@fluentui/react-components@9.74.9",
+        "path": "demo/fluent-button/sources/react-button-stories/index.stories.tsx",
+        "anchor": "components-button-button--appearance"
+      }
+    },
+    {
+      "id": "evidence:storybook.fluent-s-appearance-story-shows-transparent-for-transparent-neutral-with-an-accessible-name",
+      "kind": "evidence",
+      "title": "Fluent's Appearance story shows transparent for transparent-neutral, with an accessible name",
+      "subjectIds": [
+        "semantic:button",
+        "platform:fluent-react-v9.button",
+        "intent:button.accessible-name"
+      ],
+      "tier": "automated",
+      "method": "storybook",
+      "platform": "web",
+      "outcome": "pass",
+      "capturedAt": "2026-10-11T11:24:00.640Z",
+      "source": {
+        "tool": "playwright",
+        "importer": "playwright-report",
+        "revision": "@fluentui/react-components@9.74.9",
+        "path": "demo/fluent-button/sources/react-button-stories/index.stories.tsx",
+        "anchor": "components-button-button--appearance"
+      }
+    },
+    {
+      "id": "evidence:storybook.fluent-s-default-story-renders-the-neutral-default",
+      "kind": "evidence",
+      "title": "Fluent's Default story renders the neutral default",
+      "subjectIds": [
+        "platform:fluent-react-v9.button",
+        "token:colorNeutralBackground1"
+      ],
+      "tier": "automated",
+      "method": "storybook",
+      "platform": "web",
+      "outcome": "pass",
+      "capturedAt": "2026-10-11T11:24:02.050Z",
+      "source": {
+        "tool": "playwright",
+        "importer": "playwright-report",
+        "revision": "@fluentui/react-components@9.74.9",
+        "path": "demo/fluent-button/sources/react-button-stories/index.stories.tsx",
+        "anchor": "components-button-button--default"
+      }
+    },
+    {
+      "id": "evidence:storybook.fluent-s-disabled-story-disabled-buttons-cannot-take-focus",
+      "kind": "evidence",
+      "title": "Fluent's Disabled story: disabled buttons cannot take focus",
+      "subjectIds": [
+        "semantic:button",
+        "platform:fluent-react-v9.button"
+      ],
+      "tier": "automated",
+      "method": "storybook",
+      "platform": "web",
+      "outcome": "pass",
+      "capturedAt": "2026-10-11T11:24:02.783Z",
+      "source": {
+        "tool": "playwright",
+        "importer": "playwright-report",
+        "revision": "@fluentui/react-components@9.74.9",
+        "path": "demo/fluent-button/sources/react-button-stories/index.stories.tsx",
+        "anchor": "components-button-button--disabled"
+      }
+    },
+    {
+      "id": "evidence:storybook.fluent-s-disabled-story-disabledfocusable-buttons-take-focus-and-report-themselves-disabled",
+      "kind": "evidence",
+      "title": "Fluent's Disabled story: disabledFocusable buttons take focus and report themselves disabled",
+      "subjectIds": [
+        "extension:fluent-react-v9.button.disabledFocusable"
+      ],
+      "tier": "automated",
+      "method": "storybook",
+      "platform": "web",
+      "outcome": "pass",
+      "capturedAt": "2026-10-11T11:24:03.502Z",
+      "source": {
+        "tool": "playwright",
+        "importer": "playwright-report",
+        "revision": "@fluentui/react-components@9.74.9",
+        "path": "demo/fluent-button/sources/react-button-stories/index.stories.tsx",
+        "anchor": "components-button-button--disabled"
       }
     },
     {

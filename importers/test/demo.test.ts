@@ -43,10 +43,14 @@ test('each platform maps the Button from its own source, with decision 0001’s 
   assert.deepEqual(component('platform:fluent-apple.button').extraVariants?.map((extra) => extra.expression), ['dangerOutline', 'dangerSubtle', 'floatingAccent', 'floatingSubtle'])
 })
 
-test('web evidence is automated and passing; iOS and Android evidence is static only', () => {
+test("web evidence is automated and passing, from the harness and Fluent's own stories; iOS and Android evidence is static only", () => {
   const evidence = indexGraph(load('raised')).ofKind('evidence')
   const web = evidence.filter((item) => item.platform === 'web' && item.tier === 'automated')
-  assert.ok(web.length > 0 && web.every((item) => item.outcome === 'pass' && item.method === 'playwright'))
+  assert.ok(web.length > 0 && web.every((item) => item.outcome === 'pass'))
+  const stories = web.filter((item) => item.method === 'storybook')
+  assert.equal(stories.length, 13)
+  assert.equal(web.length - stories.length, 13)
+  assert.ok(stories.every((item) => item.source.path?.startsWith('demo/fluent-button/sources/react-button-stories/') && item.source.anchor?.startsWith('components-button-button--')))
   for (const platform of ['ios', 'android'] as const) {
     assert.ok(evidence.filter((item) => item.platform === platform).every((item) => item.tier === 'static-analysis'))
   }
