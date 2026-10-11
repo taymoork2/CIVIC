@@ -2,9 +2,11 @@
 # Local signoff: run CIVIC's checks on this machine instead of paid CI minutes, then
 # record a green "signoff" commit status on GitHub for the exact commit that passed.
 #
-#   bin/signoff            graph checks, then checks, tests and review-server tests
-#   bin/signoff --browser  also the Playwright review-canvas journey (needs Chrome
-#                          and a review server: pnpm --dir apps/web run review)
+#   bin/signoff            graph, importer and Fluent Button demo checks, then the
+#                          journey engine's checks, tests and review-server tests
+#   bin/signoff --browser  also the Fluent Button web evidence and the Playwright
+#                          review-canvas journey (needs Chrome and a review server:
+#                          pnpm --dir apps/web run review)
 #   bin/signoff --no-post  run everything but do not post a status
 set -euo pipefail
 
@@ -20,6 +22,8 @@ done
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source_dir="$repo_root/rehearsal/source"
 graph_dir="$repo_root/graph"
+importers_dir="$repo_root/importers"
+demo_dir="$repo_root/demo/fluent-button"
 step() { printf '\n[signoff %s] %s\n' "$(date +%H:%M:%S)" "$1"; }
 
 # A signoff vouches for one commit, so uncommitted changes would make it a false claim.
@@ -34,6 +38,17 @@ pnpm --dir "$graph_dir" install --frozen-lockfile
 pnpm --dir "$graph_dir" run check
 pnpm --dir "$graph_dir" test
 pnpm --dir "$graph_dir" run validate
+
+step "CIVIC importers and the Fluent Button demo graph"
+pnpm --dir "$importers_dir" install --frozen-lockfile
+pnpm --dir "$importers_dir" run check
+pnpm --dir "$importers_dir" test
+node "$demo_dir/build.ts" --check
+if [ "$browser" = 1 ]; then
+  step "Fluent Button web evidence (Playwright)"
+  pnpm --dir "$demo_dir/web" install --frozen-lockfile
+  pnpm --dir "$demo_dir/web" run evidence
+fi
 
 step "Installing dependencies"
 pnpm --dir "$source_dir" install --frozen-lockfile
@@ -55,8 +70,8 @@ if [ -n "$(git -C "$repo_root" status --porcelain)" ] || [ "$(git -C "$repo_root
   exit 1
 fi
 
-scope="graph, checks, tests and review-server tests"
-[ "$browser" = 1 ] && scope="$scope + review-canvas journey"
+scope="graph, importers, Button demo, checks, tests and review-server tests"
+[ "$browser" = 1 ] && scope="$scope + Button web evidence and review-canvas journey"
 if [ "$post" = 0 ]; then step "Passed for $sha ($scope); status not posted"; exit 0; fi
 if ! command -v gh >/dev/null; then step "Passed for $sha ($scope). Install the GitHub CLI (gh) to post the signoff status."; exit 0; fi
 

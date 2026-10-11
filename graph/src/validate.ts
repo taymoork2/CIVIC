@@ -129,6 +129,7 @@ export function validateGraph(input: unknown): Issue[] {
         for (const mapping of record.variants) {
           if (!keys.has(mapping.semanticVariant)) error('unknown-variant', at, `Variant ${mapping.semanticVariant} is not defined by ${semantic.id}.`)
         }
+        if (record.defaultVariant && !keys.has(record.defaultVariant)) error('unknown-variant', at, `Default variant ${record.defaultVariant} is not defined by ${semantic.id}.`)
         for (const key of keys) {
           if (!record.variants.some((mapping) => mapping.semanticVariant === key)) {
             add('warning', 'unmapped-variant', at, `${semantic.id} variant ${key} has no mapping here; record it as \`none\` if there is no equivalent.`)
@@ -298,6 +299,11 @@ function checkRecordShape(raw: unknown, at: string, error: Report) {
         m.string('semanticVariant')
         m.oneOf('mapping', ['exact', 'closest', 'none'])
         if (mapping.mapping !== 'none' && typeof mapping.expression !== 'string') error('shape', path, 'An exact or closest mapping names its `expression`.')
+      })
+      field.optional('defaultVariant', (value, path) => checkString(value, path, error))
+      field.optionalList('extraVariants', (extra, path) => {
+        if (!isObject(extra)) return error('shape', path, 'Must be an object.')
+        fieldChecker(extra, path, error).string('expression')
       })
       break
     case 'extension-point':

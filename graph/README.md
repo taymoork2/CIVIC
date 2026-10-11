@@ -12,7 +12,7 @@ Storage is plain JSON files until the Button demo shows what storage it needs. T
 
 Types are in [`src/schema.ts`](src/schema.ts). Two worked examples validate cleanly:
 
-- [`examples/fluent-button.graph.json`](examples/fluent-button.graph.json) is the decision 0001 Button: one semantic Button, its React v9, iOS and Compose components with each variant's mapping, and an open Contract Conflict for the Android kit's Neutral default. It is hand-entered from decision 0001's table, so its source revision is `decision-0001` and its evidence is static. The importers in step 2 replace it with read data.
+- [`examples/fluent-button.graph.json`](examples/fluent-button.graph.json) is the decision 0001 Button: one semantic Button, its React v9, iOS and Compose components with each variant's mapping, and an open Contract Conflict for the Android kit's Neutral default. It is hand-entered from decision 0001's table, so its source revision is `decision-0001` and its evidence is static. It stays as a small test fixture; the [Fluent Button demo](../demo/fluent-button) builds the same Button from read data with the [importers](../importers).
 - [`examples/card-override.graph.json`](examples/card-override.graph.json) is an illustrative Card with web and iOS libraries, a product screen, an instance on it, and two overrides to forecast.
 
 ## Records
@@ -25,7 +25,7 @@ Every record has a stable ID, `<prefix>:<dot.separated.path>`, a title, and opti
 | Target | `target:` | A journey, screen, state or surface, either **expected** (declared) or only **discovered** in source or by a crawl |
 | Token | `token:` | A design token, identified by its DTCG path |
 | Semantic component | `semantic:` | The platform-independent contract: purpose, variants, states, slots and contract rules |
-| Platform component | `platform:` | One platform's implementation, with how each semantic variant maps (`exact`, `closest` or `none`) |
+| Platform component | `platform:` | One platform's implementation, with how each semantic variant maps (`exact`, `closest` or `none`), its default variant, and any variants no semantic variant covers |
 | Extension point | `extension:` | A slot, prop, token, style API or theming hook on a platform component, and the semantic properties it can express |
 | Component instance | `instance:` | A use of a component on a product's screen, from design or code |
 | Override | `override:` | A local change to an instance: added content, a changed property, a local style, or a detach |
@@ -58,6 +58,13 @@ Only declared and observed links count for readiness. A `navigates` link follows
 
 `forecastOverride` answers D29's question for each platform the screen ships on. Is the override **supported** by an existing extension point, does it **need a library change**, or is it **forbidden** by a contract rule? The answer is computed from the current graph rather than stored, and platforms are never merged into one answer. Only declared or observed `implements` links count, so a proposed mapping can't make an override look supported.
 
+## Contract export
+
+Two read-only queries over a graph (D31). Both are deterministic and print Markdown, or JSON with `--json`.
+
+- **`civic context <graph> <semantic-id> --platform <p> [--variant <key>]`** prints one work order: intent, states, slots, the platform's mapping and default, the other platforms' mappings, tokens, extension points, conflicts with their decisions, evidence by tier, acceptance, and the IDs to put in code ([`src/context.ts`](src/context.ts)).
+- **`civic gaps <graph> [--scope <semantic-id>] [--platform <p>]`** lists what's expected but missing, each with owners: open conflicts, missing variants, platform-only variants, failing evidence, platforms with no run evidence, unconfirmed links, and approved exceptions with their revisit triggers ([`src/gaps.ts`](src/gaps.ts)).
+
 ## Commands
 
 ```sh
@@ -67,6 +74,8 @@ pnpm run check      # types
 pnpm test           # validation, forecast and boundary tests
 pnpm run validate   # validate the example graphs
 node src/cli.ts forecast examples/card-override.graph.json override:shop.order-summary.card.price-badge
+node src/cli.ts gaps examples/fluent-button.graph.json
+node src/cli.ts context examples/fluent-button.graph.json semantic:button --platform android --variant neutral-default
 ```
 
 The package runs its TypeScript directly on Node 22.18 or later, with no build step. `bin/signoff` runs all of the above before the journey engine checks.

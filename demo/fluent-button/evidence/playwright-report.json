@@ -1,0 +1,1072 @@
+{
+  "config": {
+    "configFile": "/home/claude/CIVIC/demo/fluent-button/web/playwright.config.ts",
+    "rootDir": "/home/claude/CIVIC/demo/fluent-button/web/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "civic.revision": "@fluentui/react-components@9.74.9",
+      "civic.tool": "playwright",
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "../evidence/playwright-report.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "quiet": false,
+    "projects": [
+      {
+        "outputDir": "/home/claude/CIVIC/demo/fluent-button/web/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "civic.revision": "@fluentui/react-components@9.74.9",
+          "civic.tool": "playwright",
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "/home/claude/CIVIC/demo/fluent-button/web/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "shard": null,
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.56.1",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "button.spec.ts",
+      "file": "button.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "primary-filled renders as a button with an accessible name",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "civic.subject",
+                  "description": "semantic:button",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 29,
+                    "column": 3
+                  }
+                },
+                {
+                  "type": "civic.subject",
+                  "description": "platform:fluent-react-v9.button",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 29,
+                    "column": 3
+                  }
+                },
+                {
+                  "type": "civic.subject",
+                  "description": "intent:button.accessible-name",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 29,
+                    "column": 3
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 267,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T02:23:43.387Z",
+                  "annotations": [
+                    {
+                      "type": "civic.subject",
+                      "description": "semantic:button",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 29,
+                        "column": 3
+                      }
+                    },
+                    {
+                      "type": "civic.subject",
+                      "description": "platform:fluent-react-v9.button",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 29,
+                        "column": 3
+                      }
+                    },
+                    {
+                      "type": "civic.subject",
+                      "description": "intent:button.accessible-name",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 29,
+                        "column": 3
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "853d4d75579e0323ed08-ea8e38e1fe30ae82a05b",
+          "file": "button.spec.ts",
+          "line": 29,
+          "column": 3
+        },
+        {
+          "title": "primary-filled rests on colorBrandBackground",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "civic.subject",
+                  "description": "platform:fluent-react-v9.button",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 36,
+                    "column": 3
+                  }
+                },
+                {
+                  "type": "civic.subject",
+                  "description": "token:colorBrandBackground",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 36,
+                    "column": 3
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 235,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T02:23:43.850Z",
+                  "annotations": [
+                    {
+                      "type": "civic.subject",
+                      "description": "platform:fluent-react-v9.button",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 36,
+                        "column": 3
+                      }
+                    },
+                    {
+                      "type": "civic.subject",
+                      "description": "token:colorBrandBackground",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 36,
+                        "column": 3
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "853d4d75579e0323ed08-39bdbd5e0740c2d92d07",
+          "file": "button.spec.ts",
+          "line": 36,
+          "column": 3
+        },
+        {
+          "title": "brand-outline renders as a button with an accessible name",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "civic.subject",
+                  "description": "semantic:button",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 29,
+                    "column": 3
+                  }
+                },
+                {
+                  "type": "civic.subject",
+                  "description": "platform:fluent-react-v9.button",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 29,
+                    "column": 3
+                  }
+                },
+                {
+                  "type": "civic.subject",
+                  "description": "intent:button.accessible-name",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 29,
+                    "column": 3
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 174,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T02:23:44.106Z",
+                  "annotations": [
+                    {
+                      "type": "civic.subject",
+                      "description": "semantic:button",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 29,
+                        "column": 3
+                      }
+                    },
+                    {
+                      "type": "civic.subject",
+                      "description": "platform:fluent-react-v9.button",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 29,
+                        "column": 3
+                      }
+                    },
+                    {
+                      "type": "civic.subject",
+                      "description": "intent:button.accessible-name",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 29,
+                        "column": 3
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "853d4d75579e0323ed08-c32ff059291fee0bcb74",
+          "file": "button.spec.ts",
+          "line": 29,
+          "column": 3
+        },
+        {
+          "title": "brand-outline rests on colorTransparentBackground",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "civic.subject",
+                  "description": "platform:fluent-react-v9.button",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 36,
+                    "column": 3
+                  }
+                },
+                {
+                  "type": "civic.subject",
+                  "description": "token:colorTransparentBackground",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 36,
+                    "column": 3
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 205,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T02:23:44.299Z",
+                  "annotations": [
+                    {
+                      "type": "civic.subject",
+                      "description": "platform:fluent-react-v9.button",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 36,
+                        "column": 3
+                      }
+                    },
+                    {
+                      "type": "civic.subject",
+                      "description": "token:colorTransparentBackground",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 36,
+                        "column": 3
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "853d4d75579e0323ed08-6334b25ad50d81a78482",
+          "file": "button.spec.ts",
+          "line": 36,
+          "column": 3
+        },
+        {
+          "title": "neutral-default renders as a button with an accessible name",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "civic.subject",
+                  "description": "semantic:button",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 29,
+                    "column": 3
+                  }
+                },
+                {
+                  "type": "civic.subject",
+                  "description": "platform:fluent-react-v9.button",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 29,
+                    "column": 3
+                  }
+                },
+                {
+                  "type": "civic.subject",
+                  "description": "intent:button.accessible-name",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 29,
+                    "column": 3
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 170,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T02:23:44.527Z",
+                  "annotations": [
+                    {
+                      "type": "civic.subject",
+                      "description": "semantic:button",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 29,
+                        "column": 3
+                      }
+                    },
+                    {
+                      "type": "civic.subject",
+                      "description": "platform:fluent-react-v9.button",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 29,
+                        "column": 3
+                      }
+                    },
+                    {
+                      "type": "civic.subject",
+                      "description": "intent:button.accessible-name",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 29,
+                        "column": 3
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "853d4d75579e0323ed08-607529b9d32eac9fc54d",
+          "file": "button.spec.ts",
+          "line": 29,
+          "column": 3
+        },
+        {
+          "title": "neutral-default rests on colorNeutralBackground1",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "civic.subject",
+                  "description": "platform:fluent-react-v9.button",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 36,
+                    "column": 3
+                  }
+                },
+                {
+                  "type": "civic.subject",
+                  "description": "token:colorNeutralBackground1",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 36,
+                    "column": 3
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 190,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T02:23:44.718Z",
+                  "annotations": [
+                    {
+                      "type": "civic.subject",
+                      "description": "platform:fluent-react-v9.button",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 36,
+                        "column": 3
+                      }
+                    },
+                    {
+                      "type": "civic.subject",
+                      "description": "token:colorNeutralBackground1",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 36,
+                        "column": 3
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "853d4d75579e0323ed08-77e4d2f0c3b60d283018",
+          "file": "button.spec.ts",
+          "line": 36,
+          "column": 3
+        },
+        {
+          "title": "subtle renders as a button with an accessible name",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "civic.subject",
+                  "description": "semantic:button",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 29,
+                    "column": 3
+                  }
+                },
+                {
+                  "type": "civic.subject",
+                  "description": "platform:fluent-react-v9.button",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 29,
+                    "column": 3
+                  }
+                },
+                {
+                  "type": "civic.subject",
+                  "description": "intent:button.accessible-name",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 29,
+                    "column": 3
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 162,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T02:23:44.926Z",
+                  "annotations": [
+                    {
+                      "type": "civic.subject",
+                      "description": "semantic:button",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 29,
+                        "column": 3
+                      }
+                    },
+                    {
+                      "type": "civic.subject",
+                      "description": "platform:fluent-react-v9.button",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 29,
+                        "column": 3
+                      }
+                    },
+                    {
+                      "type": "civic.subject",
+                      "description": "intent:button.accessible-name",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 29,
+                        "column": 3
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "853d4d75579e0323ed08-7a6337ac390ebb155b8a",
+          "file": "button.spec.ts",
+          "line": 29,
+          "column": 3
+        },
+        {
+          "title": "subtle rests on colorSubtleBackground",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "civic.subject",
+                  "description": "platform:fluent-react-v9.button",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 36,
+                    "column": 3
+                  }
+                },
+                {
+                  "type": "civic.subject",
+                  "description": "token:colorSubtleBackground",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 36,
+                    "column": 3
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 229,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T02:23:45.104Z",
+                  "annotations": [
+                    {
+                      "type": "civic.subject",
+                      "description": "platform:fluent-react-v9.button",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 36,
+                        "column": 3
+                      }
+                    },
+                    {
+                      "type": "civic.subject",
+                      "description": "token:colorSubtleBackground",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 36,
+                        "column": 3
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "853d4d75579e0323ed08-387e525d59c878093c82",
+          "file": "button.spec.ts",
+          "line": 36,
+          "column": 3
+        },
+        {
+          "title": "transparent-neutral renders as a button with an accessible name",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "civic.subject",
+                  "description": "semantic:button",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 29,
+                    "column": 3
+                  }
+                },
+                {
+                  "type": "civic.subject",
+                  "description": "platform:fluent-react-v9.button",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 29,
+                    "column": 3
+                  }
+                },
+                {
+                  "type": "civic.subject",
+                  "description": "intent:button.accessible-name",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 29,
+                    "column": 3
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 250,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T02:23:45.346Z",
+                  "annotations": [
+                    {
+                      "type": "civic.subject",
+                      "description": "semantic:button",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 29,
+                        "column": 3
+                      }
+                    },
+                    {
+                      "type": "civic.subject",
+                      "description": "platform:fluent-react-v9.button",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 29,
+                        "column": 3
+                      }
+                    },
+                    {
+                      "type": "civic.subject",
+                      "description": "intent:button.accessible-name",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 29,
+                        "column": 3
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "853d4d75579e0323ed08-26e6c98905514166f6dd",
+          "file": "button.spec.ts",
+          "line": 29,
+          "column": 3
+        },
+        {
+          "title": "transparent-neutral rests on colorTransparentBackground",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "civic.subject",
+                  "description": "platform:fluent-react-v9.button",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 36,
+                    "column": 3
+                  }
+                },
+                {
+                  "type": "civic.subject",
+                  "description": "token:colorTransparentBackground",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 36,
+                    "column": 3
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 265,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T02:23:45.613Z",
+                  "annotations": [
+                    {
+                      "type": "civic.subject",
+                      "description": "platform:fluent-react-v9.button",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 36,
+                        "column": 3
+                      }
+                    },
+                    {
+                      "type": "civic.subject",
+                      "description": "token:colorTransparentBackground",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 36,
+                        "column": 3
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "853d4d75579e0323ed08-b5209f1d5b594a755b94",
+          "file": "button.spec.ts",
+          "line": 36,
+          "column": 3
+        },
+        {
+          "title": "a button with no appearance renders as the neutral default",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "civic.subject",
+                  "description": "platform:fluent-react-v9.button",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 41,
+                    "column": 1
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 196,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T02:23:45.899Z",
+                  "annotations": [
+                    {
+                      "type": "civic.subject",
+                      "description": "platform:fluent-react-v9.button",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 41,
+                        "column": 1
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "853d4d75579e0323ed08-ae60ad412390c10610cf",
+          "file": "button.spec.ts",
+          "line": 41,
+          "column": 1
+        },
+        {
+          "title": "a disabled button cannot take focus",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "civic.subject",
+                  "description": "semantic:button",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 46,
+                    "column": 1
+                  }
+                },
+                {
+                  "type": "civic.subject",
+                  "description": "platform:fluent-react-v9.button",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 46,
+                    "column": 1
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 177,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T02:23:46.114Z",
+                  "annotations": [
+                    {
+                      "type": "civic.subject",
+                      "description": "semantic:button",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 46,
+                        "column": 1
+                      }
+                    },
+                    {
+                      "type": "civic.subject",
+                      "description": "platform:fluent-react-v9.button",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 46,
+                        "column": 1
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "853d4d75579e0323ed08-50005715721b4fee0357",
+          "file": "button.spec.ts",
+          "line": 46,
+          "column": 1
+        },
+        {
+          "title": "a disabledFocusable button takes focus and reports itself disabled",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 30000,
+              "annotations": [
+                {
+                  "type": "civic.subject",
+                  "description": "extension:fluent-react-v9.button.disabledFocusable",
+                  "location": {
+                    "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                    "line": 53,
+                    "column": 1
+                  }
+                }
+              ],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 207,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-11T02:23:46.304Z",
+                  "annotations": [
+                    {
+                      "type": "civic.subject",
+                      "description": "extension:fluent-react-v9.button.disabledFocusable",
+                      "location": {
+                        "file": "/home/claude/CIVIC/demo/fluent-button/web/e2e/button.spec.ts",
+                        "line": 53,
+                        "column": 1
+                      }
+                    }
+                  ],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "853d4d75579e0323ed08-0a690c89ed26cfb6460b",
+          "file": "button.spec.ts",
+          "line": 53,
+          "column": 1
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-11T02:23:42.455Z",
+    "duration": 4161.0419999999995,
+    "expected": 13,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

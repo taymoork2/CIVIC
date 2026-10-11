@@ -1,0 +1,211 @@
+{
+  "name": "Microsoft Fluent Android (CIVIC stand-in)",
+  "lastModified": "2026-10-11T00:00:00Z",
+  "version": "civic-stand-in-1",
+  "schemaVersion": 0,
+  "document": {
+    "id": "0:0",
+    "name": "Document",
+    "type": "DOCUMENT",
+    "children": [
+      {
+        "id": "12:0",
+        "name": "Controls",
+        "type": "CANVAS",
+        "children": [
+          {
+            "id": "12:2",
+            "name": "Button",
+            "type": "COMPONENT_SET",
+            "componentPropertyDefinitions": {
+              "Style": {
+                "type": "VARIANT",
+                "defaultValue": "Primary",
+                "variantOptions": [
+                  "Primary",
+                  "Outlined",
+                  "Neutral",
+                  "Text"
+                ]
+              },
+              "State": {
+                "type": "VARIANT",
+                "defaultValue": "Rest",
+                "variantOptions": [
+                  "Rest",
+                  "Pressed",
+                  "Disabled"
+                ]
+              }
+            },
+            "children": [
+              {
+                "id": "12:3",
+                "name": "Style=Primary, State=Rest",
+                "type": "COMPONENT",
+                "children": [
+                  {
+                    "id": "12:4",
+                    "name": "Label",
+                    "type": "TEXT",
+                    "characters": "Button"
+                  }
+                ]
+              },
+              {
+                "id": "12:5",
+                "name": "Style=Primary, State=Pressed",
+                "type": "COMPONENT",
+                "children": [
+                  {
+                    "id": "12:6",
+                    "name": "Label",
+                    "type": "TEXT",
+                    "characters": "Button"
+                  }
+                ]
+              },
+              {
+                "id": "12:7",
+                "name": "Style=Primary, State=Disabled",
+                "type": "COMPONENT",
+                "children": [
+                  {
+                    "id": "12:8",
+                    "name": "Label",
+                    "type": "TEXT",
+                    "characters": "Button"
+                  }
+                ]
+              },
+              {
+                "id": "12:9",
+                "name": "Style=Outlined, State=Rest",
+                "type": "COMPONENT",
+                "children": [
+                  {
+                    "id": "12:10",
+                    "name": "Label",
+                    "type": "TEXT",
+                    "characters": "Button"
+                  }
+                ]
+              },
+              {
+                "id": "12:11",
+                "name": "Style=Outlined, State=Pressed",
+                "type": "COMPONENT",
+                "children": [
+                  {
+                    "id": "12:12",
+                    "name": "Label",
+                    "type": "TEXT",
+                    "characters": "Button"
+                  }
+                ]
+              },
+              {
+                "id": "12:13",
+                "name": "Style=Outlined, State=Disabled",
+                "type": "COMPONENT",
+                "children": [
+                  {
+                    "id": "12:14",
+                    "name": "Label",
+                    "type": "TEXT",
+                    "characters": "Button"
+                  }
+                ]
+              },
+              {
+                "id": "12:15",
+                "name": "Style=Neutral, State=Rest",
+                "type": "COMPONENT",
+                "children": [
+                  {
+                    "id": "12:16",
+                    "name": "Label",
+                    "type": "TEXT",
+                    "characters": "Button"
+                  }
+                ]
+              },
+              {
+                "id": "12:17",
+                "name": "Style=Neutral, State=Pressed",
+                "type": "COMPONENT",
+                "children": [
+                  {
+                    "id": "12:18",
+                    "name": "Label",
+                    "type": "TEXT",
+                    "characters": "Button"
+                  }
+                ]
+              },
+              {
+                "id": "12:19",
+                "name": "Style=Neutral, State=Disabled",
+                "type": "COMPONENT",
+                "children": [
+                  {
+                    "id": "12:20",
+                    "name": "Label",
+                    "type": "TEXT",
+                    "characters": "Button"
+                  }
+                ]
+              },
+              {
+                "id": "12:21",
+                "name": "Style=Text, State=Rest",
+                "type": "COMPONENT",
+                "children": [
+                  {
+                    "id": "12:22",
+                    "name": "Label",
+                    "type": "TEXT",
+                    "characters": "Button"
+                  }
+                ]
+              },
+              {
+                "id": "12:23",
+                "name": "Style=Text, State=Pressed",
+                "type": "COMPONENT",
+                "children": [
+                  {
+                    "id": "12:24",
+                    "name": "Label",
+                    "type": "TEXT",
+                    "characters": "Button"
+                  }
+                ]
+              },
+              {
+                "id": "12:25",
+                "name": "Style=Text, State=Disabled",
+                "type": "COMPONENT",
+                "children": [
+                  {
+                    "id": "12:26",
+                    "name": "Label",
+                    "type": "TEXT",
+                    "characters": "Button"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "componentSets": {
+    "12:2": {
+      "key": "civic-stand-in-button",
+      "name": "Button",
+      "description": ""
+    }
+  }
+}

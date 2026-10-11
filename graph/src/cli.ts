@@ -1,10 +1,15 @@
 #!/usr/bin/env node
-// civic-graph: validate graph files and forecast overrides. Read-only and deterministic.
+// civic: validate graph files, forecast overrides, and export contracts and gaps (D31).
+// Every command is read-only and deterministic, and none makes a model call (D30).
 //
-//   civic-graph validate <file>...
-//   civic-graph forecast <file> <override-id> [--platforms web,ios,android]
+//   civic validate <file>...
+//   civic forecast <file> <override-id> [--platforms web,ios,android]
+//   civic context <file> <semantic-id> --platform <p> [--variant <key>] [--json]
+//   civic gaps <file> [--scope <semantic-id>] [--platform <p>] [--json]
 
+import { contextFor, renderWorkOrder } from './context.ts'
 import { forecastOverride } from './forecast.ts'
+import { gapsIn, renderGaps } from './gaps.ts'
 import { loadGraph, readGraphFile } from './load.ts'
 import { PLATFORMS, type Platform } from './schema.ts'
 import { validateGraph } from './validate.ts'
@@ -34,12 +39,47 @@ async function main(): Promise<number> {
     }
     return 0
   }
+  if (command === 'context' && args.length >= 2) {
+    const [file, targetId] = args as [string, string]
+    const platform = option('--platform')
+    if (!platform) return usage('context needs --platform.')
+    if (!isPlatform(platform)) return usage(`Unknown platform: ${platform}`)
+    const variant = option('--variant')
+    const order = contextFor(await loadGraph(file), targetId, { platform, ...(variant ? { variant } : {}) })
+    console.log(args.includes('--json') ? JSON.stringify(order, null, 2) : renderWorkOrder(order))
+    return 0
+  }
+  if (command === 'gaps' && args.length >= 1) {
+    const platform = option('--platform')
+    if (platform !== undefined && !isPlatform(platform)) return usage(`Unknown platform: ${platform}`)
+    const scope = option('--scope')
+    const gaps = gapsIn(await loadGraph(args[0]!), { ...(scope ? { scope } : {}), ...(platform !== undefined ? { platform } : {}) })
+    console.log(args.includes('--json') ? JSON.stringify(gaps, null, 2) : renderGaps(gaps))
+    return 0
+  }
   return usage()
+}
+
+function option(name: string): string | undefined {
+  const index = args.indexOf(name)
+  return index >= 0 ? args[index + 1] : undefined
+}
+
+function isPlatform(value: string): value is Platform {
+  return (PLATFORMS as readonly string[]).includes(value)
 }
 
 function usage(problem?: string): number {
   if (problem) console.error(problem)
-  console.error('Usage:\n  civic-graph validate <file>...\n  civic-graph forecast <file> <override-id> [--platforms web,ios,android]')
+  console.error(
+    [
+      'Usage:',
+      '  civic validate <file>...',
+      '  civic forecast <file> <override-id> [--platforms web,ios,android]',
+      '  civic context <file> <semantic-id> --platform <p> [--variant <key>] [--json]',
+      '  civic gaps <file> [--scope <semantic-id>] [--platform <p>] [--json]',
+    ].join('\n'),
+  )
   return 2
 }
 

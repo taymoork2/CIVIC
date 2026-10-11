@@ -1,0 +1,43 @@
+{
+  "note": "The semantic Button contract, declared by Design and owned in CIVIC. Platform mappings live in mappings.json; everything else in the demo graph is read from tool output.",
+  "records": [
+    {
+      "id": "intent:button.triggers-action",
+      "kind": "intent",
+      "title": "A button triggers one action",
+      "category": "requirement",
+      "statement": "Activating a button performs exactly one action, and its emphasis tells the user how important that action is."
+    },
+    {
+      "id": "intent:button.accessible-name",
+      "kind": "intent",
+      "title": "A button has an accessible name",
+      "category": "accessibility-rule",
+      "statement": "Every button exposes an accessible name, including icon-only buttons."
+    },
+    {
+      "id": "semantic:button",
+      "kind": "semantic-component",
+      "title": "Button",
+      "purpose": "Trigger an action, with the emphasis set by its variant.",
+      "owners": [
+        { "role": "design", "who": "design-system-maintainers" },
+        { "role": "qa", "who": "button-qa" }
+      ],
+      "variants": [
+        { "key": "primary-filled", "title": "Primary filled" },
+        { "key": "brand-outline", "title": "Brand outline" },
+        { "key": "neutral-default", "title": "Neutral default" },
+        { "key": "subtle", "title": "Subtle or text" },
+        { "key": "transparent-neutral", "title": "Transparent neutral" },
+        { "key": "danger", "title": "Danger" }
+      ],
+      "states": ["rest", "hover", "pressed", "focused", "disabled"],
+      "slots": ["icon", "label"]
+    }
+  ],
+  "links": [
+    { "from": "semantic:button", "relation": "serves", "to": "intent:button.triggers-action", "status": "declared" },
+    { "from": "semantic:button", "relation": "serves", "to": "intent:button.accessible-name", "status": "declared" }
+  ]
+}

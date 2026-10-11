@@ -1,0 +1,21 @@
+{
+  "note": "Illustrative decisions for the demo, so the graph shows a conflict being classified and resolved. The deciders are the demo's placeholder owners, not real Fluent teams. Replace them with your own team's call.",
+  "decisions": [
+    {
+      "conflictId": "conflict:button.android.neutral-default",
+      "classification": "temporary-gap",
+      "alignment": "accepted-limitation",
+      "resolution": {
+        "outcome": "approve-exception",
+        "decidedBy": { "role": "design", "who": "design-system-maintainers" },
+        "at": "2026-10-11T00:00:00Z",
+        "rationale": "Neutral default stays in the contract and the Android kit. Compose has no stock ButtonStyle for it, so an Android product that needs one builds it through the buttonTokens extension point with its own ButtonTokens subclass until the library adds a style.",
+        "evidenceIds": [
+          "evidence:fluent-android.compose-button.variants",
+          "evidence:fluent-android.compose-button.background-tokens"
+        ],
+        "revisitTrigger": "Fluent Android adds a neutral ButtonStyle, or a second Android product builds its own neutral Button."
+      }
+    }
+  ]
+}

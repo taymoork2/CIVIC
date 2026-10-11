@@ -1,0 +1,17 @@
+{
+  "name": "@civic/importers",
+  "private": true,
+  "type": "module",
+  "description": "Pluggable, deterministic importers that read tool output (Figma file exports, DTCG tokens, platform source, Playwright reports) into CIVIC graph records. No runtime dependencies and no model calls.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "node --test \"test/**/*.test.ts\""
+  },
+  "devDependencies": {
+    "@types/node": "26.6.3",
+    "typescript": "7.0.2"
+  }
+}

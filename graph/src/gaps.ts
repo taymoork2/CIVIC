@@ -1,0 +1,135 @@
+import { implementationsOf } from './context.ts'
+import { countsForReadiness, type Graph } from './graph.ts'
+import type { Owner, Platform, SemanticComponent } from './schema.ts'
+
+export const GAP_KINDS = [
+  'open-conflict',
+  'missing-variant',
+  'platform-only-variant',
+  'failing-evidence',
+  'no-run-evidence',
+  'unconfirmed-link',
+  'approved-exception',
+] as const
+export type GapKind = (typeof GAP_KINDS)[number]
+
+/** Something the contract expects that isn't there yet, and who owns closing it (D31). */
+export interface Gap {
+  kind: GapKind
+  subjectId: string
+  platform?: Platform
+  summary: string
+  /** Empty when the graph names no owner, which is itself worth fixing. */
+  owners: Owner[]
+}
+
+export interface GapOptions {
+  /** A semantic component ID. Defaults to every semantic component. */
+  scope?: string
+  platform?: Platform
+}
+
+/**
+ * Lists what is expected but missing, with owners. A read-only query over the graph:
+ * the same graph always gives the same list, in the same order.
+ */
+export function gapsIn(graph: Graph, options: GapOptions = {}): Gap[] {
+  const semantics = options.scope ? [graph.get(options.scope)] : graph.ofKind('semantic-component')
+  const gaps: Gap[] = []
+  for (const semantic of semantics) {
+    if (semantic?.kind !== 'semantic-component') throw new Error(`${options.scope} is not a semantic component in this graph.`)
+    gaps.push(...gapsForComponent(graph, semantic))
+  }
+  return gaps
+    .filter((gap) => !options.platform || !gap.platform || gap.platform === options.platform)
+    .sort((a, b) => GAP_KINDS.indexOf(a.kind) - GAP_KINDS.indexOf(b.kind) || (a.platform ?? '').localeCompare(b.platform ?? '') || a.subjectId.localeCompare(b.subjectId) || a.summary.localeCompare(b.summary))
+}
+
+function gapsForComponent(graph: Graph, semantic: SemanticComponent): Gap[] {
+  const gaps: Gap[] = []
+  const owners = (role: Owner['role']) => (semantic.owners ?? []).filter((owner) => owner.role === role)
+  const implementations = implementationsOf(graph, semantic)
+  const componentIds = new Set(implementations.map((component) => component.id))
+  const points = graph.ofKind('extension-point').filter((point) => componentIds.has(point.platformComponentId))
+  const scopeIds = new Set([semantic.id, ...componentIds, ...points.map((point) => point.id)])
+
+  for (const conflict of graph.ofKind('contract-conflict')) {
+    if (conflict.targetId !== semantic.id && !conflict.sides.some((side) => side.recordId && componentIds.has(side.recordId))) continue
+    const where = { ...(conflict.platform ? { platform: conflict.platform } : {}) }
+    if (conflict.status === 'open') {
+      gaps.push({ kind: 'open-conflict', subjectId: conflict.id, ...where, summary: `${conflict.summary} Classification ${conflict.classification}.`, owners: conflict.owners })
+    } else if (conflict.resolution?.outcome === 'approve-exception') {
+      const { revisitTrigger, expires } = conflict.resolution
+      gaps.push({
+        kind: 'approved-exception',
+        subjectId: conflict.id,
+        ...where,
+        summary: `${conflict.title}: accepted as ${conflict.alignment}. Revisit when: ${revisitTrigger}${expires ? ` Expires ${expires}.` : ''}`,
+        owners: conflict.owners,
+      })
+    }
+  }
+
+  for (const component of implementations) {
+    const componentOwners = [...(component.owners ?? [])]
+    for (const mapping of component.variants.filter((candidate) => candidate.mapping === 'none')) {
+      gaps.push({
+        kind: 'missing-variant',
+        subjectId: component.id,
+        platform: component.platform,
+        summary: `No ${component.platform} equivalent for ${semantic.title} ${mapping.semanticVariant}${mapping.note ? `: ${mapping.note}` : '.'}`,
+        owners: componentOwners,
+      })
+    }
+    for (const extra of component.extraVariants ?? []) {
+      gaps.push({
+        kind: 'platform-only-variant',
+        subjectId: component.id,
+        platform: component.platform,
+        summary: `${component.platform} offers \`${extra.expression}\`, which no ${semantic.title} variant covers. Design decides whether the contract adds it.`,
+        owners: owners('design'),
+      })
+    }
+    const evidence = graph.ofKind('evidence').filter((item) => item.subjectIds.some((id) => id === component.id || id === semantic.id) && (!item.platform || item.platform === component.platform))
+    const runs = evidence.filter((item) => (item.tier === 'automated' || item.tier === 'physical-device') && (item.subjectIds.includes(component.id) || item.platform === component.platform))
+    if (!runs.some((item) => item.outcome === 'pass')) {
+      gaps.push({
+        kind: 'no-run-evidence',
+        subjectId: component.id,
+        platform: component.platform,
+        summary: `No automated or device evidence for ${component.title}; only static analysis.`,
+        owners: owners('qa'),
+      })
+    }
+  }
+
+  for (const item of graph.ofKind('evidence')) {
+    if (item.outcome === 'fail' && item.subjectIds.some((id) => scopeIds.has(id))) {
+      gaps.push({ kind: 'failing-evidence', subjectId: item.id, ...(item.platform ? { platform: item.platform } : {}), summary: `${item.title} fails.`, owners: owners('qa') })
+    }
+  }
+
+  for (const link of graph.document.links) {
+    if (!countsForReadiness(link) && (scopeIds.has(link.from) || (link.to && scopeIds.has(link.to)))) {
+      gaps.push({ kind: 'unconfirmed-link', subjectId: link.from, summary: `${link.from} ${link.relation} ${link.to ?? link.unmapped} is ${link.status}; a person confirms it before it counts.`, owners: semantic.owners ?? [] })
+    }
+  }
+  return gaps
+}
+
+/** The gap list as Markdown, grouped by kind. */
+export function renderGaps(gaps: Gap[]): string {
+  if (gaps.length === 0) return 'No gaps.'
+  const lines = [`${gaps.length} gap(s)`, '']
+  for (const kind of GAP_KINDS) {
+    const ofKind = gaps.filter((gap) => gap.kind === kind)
+    if (ofKind.length === 0) continue
+    lines.push(`## ${kind} (${ofKind.length})`, '')
+    for (const gap of ofKind) {
+      const owners = gap.owners.length > 0 ? gap.owners.map((owner) => `${owner.role} ${owner.who}`).join(', ') : 'no owner recorded'
+      lines.push(`- ${gap.platform ? `[${gap.platform}] ` : ''}${gap.summary} Owners: ${owners}. (\`${gap.subjectId}\`)`)
+    }
+    lines.push('')
+  }
+  return lines.join('\n').trimEnd()
+}

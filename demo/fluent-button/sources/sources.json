@@ -1,0 +1,37 @@
+{
+  "note": "Upstream files vendored for static analysis, pinned to the exact revision read. CIVIC reads Fluent; it does not fork or redistribute it beyond these MIT-licensed files (decision 0001). Each folder keeps its upstream LICENSE.",
+  "retrievedAt": "2026-10-11T00:00:00Z",
+  "inputs": {
+    "react-button": {
+      "tool": "npm",
+      "package": "@fluentui/react-button",
+      "revision": "@fluentui/react-button@9.11.1",
+      "url": "https://registry.npmjs.org/@fluentui/react-button/-/react-button-9.11.1.tgz",
+      "files": {
+        "index.d.ts": "dist/index.d.ts",
+        "useButton.js": "lib/components/Button/useButton.js",
+        "useButtonStyles.styles.raw.js": "lib/components/Button/useButtonStyles.styles.raw.js"
+      }
+    },
+    "fluentui-apple": {
+      "tool": "github",
+      "package": "microsoft/fluentui-apple",
+      "revision": "920ee25179c4d2086aa1219b106be90d5ab37113",
+      "url": "https://github.com/microsoft/fluentui-apple/tree/920ee25179c4d2086aa1219b106be90d5ab37113",
+      "files": {
+        "Button.swift": "Sources/FluentUI_iOS/Components/Button/Button.swift",
+        "ButtonTokenSet.swift": "Sources/FluentUI_iOS/Components/Button/ButtonTokenSet.swift"
+      }
+    },
+    "fluentui-android": {
+      "tool": "github",
+      "package": "microsoft/fluentui-android",
+      "revision": "207ae6843eda82e990ed378794abba8ec451c1e8",
+      "url": "https://github.com/microsoft/fluentui-android/tree/207ae6843eda82e990ed378794abba8ec451c1e8",
+      "files": {
+        "Button.kt": "fluentui_controls/src/main/java/com/microsoft/fluentui/tokenized/controls/Button.kt",
+        "ButtonTokens.kt": "fluentui_core/src/main/java/com/microsoft/fluentui/theme/token/controlTokens/ButtonTokens.kt"
+      }
+    }
+  }
+}
