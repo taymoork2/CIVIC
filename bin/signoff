@@ -2,7 +2,7 @@
 # Local signoff: run CIVIC's checks on this machine instead of paid CI minutes, then
 # record a green "signoff" commit status on GitHub for the exact commit that passed.
 #
-#   bin/signoff            checks, tests and review-server tests
+#   bin/signoff            graph checks, then checks, tests and review-server tests
 #   bin/signoff --browser  also the Playwright review-canvas journey (needs Chrome
 #                          and a review server: pnpm --dir apps/web run review)
 #   bin/signoff --no-post  run everything but do not post a status
@@ -19,6 +19,7 @@ done
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source_dir="$repo_root/rehearsal/source"
+graph_dir="$repo_root/graph"
 step() { printf '\n[signoff %s] %s\n' "$(date +%H:%M:%S)" "$1"; }
 
 # A signoff vouches for one commit, so uncommitted changes would make it a false claim.
@@ -27,6 +28,12 @@ if [ -n "$(git -C "$repo_root" status --porcelain)" ]; then
   exit 1
 fi
 sha="$(git -C "$repo_root" rev-parse HEAD)"
+
+step "CIVIC graph: types, tests and example graphs"
+pnpm --dir "$graph_dir" install --frozen-lockfile
+pnpm --dir "$graph_dir" run check
+pnpm --dir "$graph_dir" test
+pnpm --dir "$graph_dir" run validate
 
 step "Installing dependencies"
 pnpm --dir "$source_dir" install --frozen-lockfile
@@ -48,7 +55,7 @@ if [ -n "$(git -C "$repo_root" status --porcelain)" ] || [ "$(git -C "$repo_root
   exit 1
 fi
 
-scope="checks, tests and review-server tests"
+scope="graph, checks, tests and review-server tests"
 [ "$browser" = 1 ] && scope="$scope + review-canvas journey"
 if [ "$post" = 0 ]; then step "Passed for $sha ($scope); status not posted"; exit 0; fi
 if ! command -v gh >/dev/null; then step "Passed for $sha ($scope). Install the GitHub CLI (gh) to post the signoff status."; exit 0; fi

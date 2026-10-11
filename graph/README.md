@@ -1,0 +1,72 @@
+# CIVIC graph schema
+
+Roadmap step 1. This package is the CIVIC-owned schema that every importer writes and every view reads ([decision 0004](../docs/decisions/0004-graph-first-journey-engine-as-viewer.md)). It lives outside `rehearsal/` and imports nothing from the journey engine or Laundry. It has no runtime dependencies and makes no model calls ([decision 0006](../docs/decisions/0006-deterministic-civic-for-agentic-teams.md)). A test enforces both.
+
+Storage is plain JSON files until the Button demo shows what storage it needs. The event log from [onboarding and ingestion](../docs/onboarding-and-ingestion.md#4b-how-data-gets-back-to-the-engine) comes later; a graph document here is the current state that log would produce.
+
+## A graph document
+
+```json
+{ "schema": "civic.graph/0", "records": [ ... ], "links": [ ... ] }
+```
+
+Types are in [`src/schema.ts`](src/schema.ts). Two worked examples validate cleanly:
+
+- [`examples/fluent-button.graph.json`](examples/fluent-button.graph.json) is the decision 0001 Button: one semantic Button, its React v9, iOS and Compose components with each variant's mapping, and an open Contract Conflict for the Android kit's Neutral default. It is hand-entered from decision 0001's table, so its source revision is `decision-0001` and its evidence is static. The importers in step 2 replace it with read data.
+- [`examples/card-override.graph.json`](examples/card-override.graph.json) is an illustrative Card with web and iOS libraries, a product screen, an instance on it, and two overrides to forecast.
+
+## Records
+
+Every record has a stable ID, `<prefix>:<dot.separated.path>`, a title, and optional owners, source and former IDs.
+
+| Kind | ID prefix | What it holds |
+|---|---|---|
+| Intent | `intent:` | A requirement, business rule or accessibility rule that stays true on every platform |
+| Target | `target:` | A journey, screen, state or surface, either **expected** (declared) or only **discovered** in source or by a crawl |
+| Token | `token:` | A design token, identified by its DTCG path |
+| Semantic component | `semantic:` | The platform-independent contract: purpose, variants, states, slots and contract rules |
+| Platform component | `platform:` | One platform's implementation, with how each semantic variant maps (`exact`, `closest` or `none`) |
+| Extension point | `extension:` | A slot, prop, token, style API or theming hook on a platform component, and the semantic properties it can express |
+| Component instance | `instance:` | A use of a component on a product's screen, from design or code |
+| Override | `override:` | A local change to an instance: added content, a changed property, a local style, or a detach |
+| Evidence | `evidence:` | What a source shows, tied to the exact revision it read, in one evidence tier |
+| Contract Conflict | `conflict:` | Two sources that disagree on a target: classification, owners, alignment state and evidence-backed resolution |
+
+Proposal, Decision, Adoption and Verification become separate records in roadmap step 3. Until then a conflict keeps its decision inline in `resolution`.
+
+## Links
+
+A link is a traceable claim between two records: `implements`, `serves`, `uses-token`, `navigates` or `contains`. Every link has a status, as in the journey engine:
+
+- **declared**: a person, manifest or explicit reference says so.
+- **observed**: a confirmed run showed it. It needs passing automated or physical-device evidence.
+- **inferred**: read from structure or names, and never counted.
+- **proposed**: a candidate a person hasn't confirmed.
+
+Only declared and observed links count for readiness. A `navigates` link follows the journey engine's cross-route actions (action, route, condition, return context). It can leave out `to` when the destination isn't mapped yet, and then it says what is known in `unmapped`, so the gap stays visible.
+
+## What validation enforces
+
+`validateGraph` checks shapes and these spec rules:
+
+- **Stable identity.** IDs are unique and match their kind. A renamed record keeps its old ID in `formerIds`, an old ID is never reused, and references to an old ID fail until someone updates them. Nothing is re-anchored automatically.
+- **Evidence integrity.** Evidence names its source revision. Source, token and design-file analysis can't claim to be automated or device evidence. An observed link needs a passing run, so a failed operation, fixture jump or inferred edge never becomes one.
+- **Contracts.** A platform component's variant mappings use the semantic component's variants. A warning lists variants with no mapping, so a missing equivalent is recorded as `none` rather than left out.
+- **Conflicts.** A conflict names at least two sides and an owner. It resolves only with evidence, an approved exception names its revisit trigger, and the alignment state must fit the status. For example, an open conflict can't be Aligned.
+
+## Override forecasts
+
+`forecastOverride` answers D29's question for each platform the screen ships on. Is the override **supported** by an existing extension point, does it **need a library change**, or is it **forbidden** by a contract rule? The answer is computed from the current graph rather than stored, and platforms are never merged into one answer. Only declared or observed `implements` links count, so a proposed mapping can't make an override look supported.
+
+## Commands
+
+```sh
+cd graph
+pnpm install --frozen-lockfile
+pnpm run check      # types
+pnpm test           # validation, forecast and boundary tests
+pnpm run validate   # validate the example graphs
+node src/cli.ts forecast examples/card-override.graph.json override:shop.order-summary.card.price-badge
+```
+
+The package runs its TypeScript directly on Node 22.18 or later, with no build step. `bin/signoff` runs all of the above before the journey engine checks.

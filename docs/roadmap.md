@@ -10,6 +10,8 @@ Define a small, CIVIC-owned schema outside `rehearsal/` for Intent, Semantic com
 
 Reuse the journey engine's distinctions rather than inventing new ones: a connection is declared, observed, inferred, or proposed, and a target is either expected or only discovered in source. Its cross-route actions (`rehearsal/source/apps/web/src/review/route-actions.json`) show the edge shape: route, condition, return context, and whether the destination is mapped. The schema copies these ideas; it never imports the engine.
 
+Built in [`graph/`](../graph): schema v0 types, a validator for the spec's identity, evidence and conflict rules, per-platform override forecasts, and two example graphs (the decision 0001 Button and an illustrative Card). `bin/signoff` runs its checks.
+
 ## 2. Fluent 2 Button conflict demo
 
 Build the [decision 0001](decisions/0001-fluent-2-demo-design-system.md) demo on that schema:
