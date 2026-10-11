@@ -6,3 +6,4 @@ export { forecastOverride, type Forecast, type ForecastOutcome } from './forecas
 export { loadGraph, readGraphFile } from './load.ts'
 export { contextFor, implementationsOf, renderWorkOrder, type ContextOptions, type WorkOrder } from './context.ts'
 export { GAP_KINDS, gapsIn, renderGaps, type Gap, type GapKind, type GapOptions } from './gaps.ts'
+export { checkCounts, isAnchored, laneFor, resolveAnchor, type AnchorResolution, type ObservedElement } from './work.ts'

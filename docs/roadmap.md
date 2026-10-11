@@ -36,7 +36,7 @@ Built in [`demo/fluent-button/`](../demo/fluent-button) on the importers in [`im
 
 Ahead of the Card demo ([decision 0007](decisions/0007-review-to-agent-loop.md), [review to agent](agent-review-loop.md)):
 
-1. **Records.** Line, Annotation, WorkRequest, and Actor go into the graph as the start of step 3.
+1. **Records.** Line, Annotation, WorkRequest, and Actor go into the graph as the start of step 3. Built in [`graph/`](../graph#the-review-to-agent-loop), with validation for D35 to D38, `laneFor` and `resolveAnchor`.
 2. **A first slice on the journey engine with Laundry.** Records move from each worktree's `.review-data/` to the git common directory. Annotations get ID and locator anchors, and screenshot import arrives. The canvas gets a lens to switch between worktrees. The CLI gets `civic annotate`, `requests`, `claim`, `report-fix`, and `repro`, with the resolution policy's Auto, batch review, and owner sign-off lanes. Then come the capture overlay for dev and preview builds, the MCP server, and the Claude Code plugin.
 3. **PR previews and design drafts** follow, once the Figma import (D27) brings drafts in. Codex packaging comes with them.
 

@@ -14,6 +14,7 @@ Types are in [`src/schema.ts`](src/schema.ts). Two worked examples validate clea
 
 - [`examples/fluent-button.graph.json`](examples/fluent-button.graph.json) is the decision 0001 Button: one semantic Button, its React v9, iOS and Compose components with each variant's mapping, and an open Contract Conflict for the Android kit's Neutral default. It is hand-entered from decision 0001's table, so its source revision is `decision-0001` and its evidence is static. It stays as a small test fixture; the [Fluent Button demo](../demo/fluent-button) builds the same Button from read data with the [importers](../importers).
 - [`examples/card-override.graph.json`](examples/card-override.graph.json) is an illustrative Card with web and iOS libraries, a product screen, an instance on it, and two overrides to forecast.
+- [`examples/review-loop.graph.json`](examples/review-loop.graph.json) is an illustrative review to agent loop on Laundry: a person, their agent and CIVIC as actors, main and a worktree line, three annotations (anchored, a path, and an unanchored screenshot), and one work request in each lane.
 
 ## Records
 
@@ -31,8 +32,14 @@ Every record has a stable ID, `<prefix>:<dot.separated.path>`, a title, and opti
 | Override | `override:` | A local change to an instance: added content, a changed property, a local style, or a detach |
 | Evidence | `evidence:` | What a source shows, tied to the exact revision it read, in one evidence tier |
 | Contract Conflict | `conflict:` | Two sources that disagree on a target: classification, owners, alignment state and evidence-backed resolution |
+| Actor | `actor:` | Who wrote something: a person, an agent acting for a named person, or CIVIC's own deterministic process |
+| Line | `line:` | A stream of work with revisions: main, a branch, a worktree, a PR with its preview, or a design draft |
+| Annotation | `annotation:` | A comment on a journey, screen, part of a screen, path or branch, with layered anchors, a frozen capture, and the line and revision it was made on |
+| Work request | `request:` | Annotations handed to an agent: base revision, acceptance checks, repro command, claim lease, reported fixes, CIVIC's re-capture, and a status history |
 
 Proposal, Decision, Adoption and Verification become separate records in roadmap step 3. Until then a conflict keeps its decision inline in `resolution`.
+
+Any record can name the actor that wrote it in `writtenBy`, and a `SourceRef` can name the `line` its revision was seen on.
 
 ## Links
 
@@ -53,6 +60,16 @@ Only declared and observed links count for readiness. A `navigates` link follows
 - **Evidence integrity.** Evidence names its source revision. Source, token and design-file analysis can't claim to be automated or device evidence. An observed link needs a passing run, so a failed operation, fixture jump or inferred edge never becomes one.
 - **Contracts.** A platform component's variant mappings use the semantic component's variants. A warning lists variants with no mapping, so a missing equivalent is recorded as `none` rather than left out.
 - **Conflicts.** A conflict names at least two sides and an owner. It resolves only with evidence, an approved exception names its revisit trigger, and the alignment state must fit the status. For example, an open conflict can't be Aligned.
+
+## The review to agent loop
+
+Actor, Line, Annotation and Work request are the records for [decision 0007](../docs/decisions/0007-review-to-agent-loop.md), and the start of roadmap step 3's collaboration records. Validation enforces its rules:
+
+- **Agents act for a person (D35).** An agent names the person it acts for in `delegatedBy`. An agent can write annotations and comments, claim, and report fixes, but it can't write evidence, resolve a conflict, accept an acceptance check, or resolve a work request.
+- **Lines branch from a base (D36).** Only main has no base, and a merged line names the revision it merged as.
+- **Anchors follow identity (D37).** An anchor lists graph target IDs, path edges (whose starting screen is also a target) and an element locator, plus the capture's rectangle. `resolveAnchor` finds an anchor on another revision by target ID, then by exact locator (a test ID, or role and accessible name, matching exactly one element), and otherwise reports it not found. The rectangle is never used to find anything. Anchor target IDs are checked for format only, because "not found on this revision" is a real answer, not a broken graph.
+- **Requests close through their lane (D38).** `laneFor` computes the lane: owner sign-off for a change to intent or behavior or a high-risk target, Auto for a contract-restoring request whose annotations are anchored and whose acceptance checks were all written or accepted by a person, and batch review for the rest. A person can escalate a request to a stricter lane. CIVIC resolves only in the Auto lane, after its own re-capture found every anchor and every check passed. The owner lane needs a named owner, and on a high-risk target the person who delegated the fix can't approve it.
+- **History is the truth.** A request starts Open, its status is its last history entry, a claimed request has a claim, and a Fix ready request has a reported fix.
 
 ## Override forecasts
 

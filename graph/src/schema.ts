@@ -45,6 +45,11 @@ export interface SourceRef {
   path?: string
   anchor?: string
   contentHash?: string
+  /**
+   * The line the revision was seen on (D36), as a `line:` ID. The same commit seen on two
+   * lines is still one revision, so the line is recorded beside it, not folded into it.
+   */
+  line?: string
 }
 
 /**
@@ -80,6 +85,11 @@ interface RecordBase {
   owners?: Owner[]
   source?: SourceRef
   formerIds?: FormerId[]
+  /**
+   * The `actor:` that wrote this record, when it matters who did (D35). An agent may write
+   * annotations and comments for its person, but never evidence or a resolution.
+   */
+  writtenBy?: string
 }
 
 /** Spec: Artifact graph, Intent group. What must stay true, whatever the platform. */
@@ -288,6 +298,204 @@ export interface Resolution {
   expires?: string
 }
 
+// ---------------------------------------------------------------------------
+// The review to agent loop (decision 0007, D35 to D39). These start roadmap step 3's
+// collaboration records: who acts, which line of work they act on, what was annotated,
+// and the work request an agent can claim.
+
+/**
+ * Who wrote something (D35). A person is accountable for their own writes and for every
+ * write an agent makes on their behalf. `civic` is CIVIC's own deterministic process: it
+ * re-captures reported fixes and resolves requests in the Auto lane, under a policy a
+ * person set. It never makes a model call.
+ */
+export const ACTOR_TYPES = ['person', 'agent', 'civic'] as const
+export type ActorType = (typeof ACTOR_TYPES)[number]
+
+export interface Actor extends RecordBase {
+  kind: 'actor'
+  type: ActorType
+  /** A person's handle as ownership files name it, an agent's harness and name, or `civic`. */
+  handle: string
+  /** An agent only: the `actor:` ID of the person it acts for. Required, and must be a person. */
+  delegatedBy?: string
+}
+
+/**
+ * A stream of work with revisions (D36): main, a branch, a worktree, a PR with its
+ * preview, or a design draft. Records made on a line stay on it until it merges.
+ */
+export const LINE_TYPES = ['main', 'branch', 'worktree', 'pr', 'design-draft'] as const
+export type LineType = (typeof LINE_TYPES)[number]
+
+export interface Line extends RecordBase {
+  kind: 'line'
+  type: LineType
+  /** The tool the line lives in, such as `git`, `github` or `figma`. */
+  tool: string
+  /** What the tool calls it: a branch name, a worktree's branch, a PR number, a Figma branch key. */
+  ref: string
+  /** The `line:` this one branched from. Only main has none. */
+  base?: string
+  /** The latest revision seen on this line. */
+  head: string
+  /** Where revisions of this line run: a local port, a PR preview, a Storybook deploy. */
+  previews?: Preview[]
+  status: 'open' | 'merged' | 'abandoned'
+  /** A merged line names the revision it merged as, so its records can be adopted on the base. */
+  mergedAs?: string
+}
+
+export interface Preview {
+  url: string
+  revision: string
+}
+
+/**
+ * Where an annotation points, strongest first (D37). Target IDs follow a change across
+ * revisions and lines. The locator is used only when no target ID matches. The rectangle
+ * is kept with the frozen capture and is never used to find anything again.
+ */
+export interface Anchor {
+  /** Graph IDs the selection covers: a journey, screen, state, component instance and so on. */
+  targetIds: string[]
+  /** A selected path or branch: the `navigates` edge itself, by its ends and action or condition. */
+  edges?: EdgeRef[]
+  locator?: ElementLocator
+  /** Normalized to the frozen capture (0 to 1). */
+  rect?: { x: number; y: number; width: number; height: number; label?: string }
+}
+
+export interface EdgeRef {
+  from: string
+  to?: string
+  action?: string
+  condition?: string
+}
+
+/** The same facts a Playwright locator uses, read at capture time. Matched exactly or not at all. */
+export interface ElementLocator {
+  testId?: string
+  role?: string
+  name?: string
+  /** DOM or accessibility path at capture time. Kept for people to read; never matched. */
+  path?: string
+}
+
+/** A frozen capture: content-addressed, so it can never change after it is written. */
+export interface CaptureRef {
+  /** SHA-256 of the image bytes. */
+  sha256: string
+  mediaType: 'image/png' | 'image/jpeg' | 'image/webp'
+  viewport?: { width: number; height: number }
+  /** The page or scenario the capture shows, as a URL path and query any preview can open. */
+  reproduction?: string
+}
+
+/**
+ * A comment on something in the journey (D37), from the canvas, the capture overlay, a
+ * harness, or an imported screenshot. With no anchor it is unanchored: tracked, handed off
+ * and resolved like any other, but it can't follow the product to another revision until a
+ * person anchors it.
+ */
+export interface Annotation extends RecordBase {
+  kind: 'annotation'
+  comment: string
+  anchor?: Anchor
+  capture?: CaptureRef
+  /** The line and revision the annotation was made on, and the URL when it was a preview. */
+  seenOn: { line: string; revision: string; url?: string }
+  at: string
+  writtenBy: string
+}
+
+/** How a work request closes (D38). Computed by laneFor from the request, not chosen freely. */
+export const LANES = ['auto', 'batch-review', 'owner-sign-off'] as const
+export type Lane = (typeof LANES)[number]
+
+export const REQUEST_STATUSES = ['open', 'claimed', 'fix-ready', 'resolved', 'reopened'] as const
+export type RequestStatus = (typeof REQUEST_STATUSES)[number]
+
+/**
+ * A check that decides whether a fix is accepted. A check an agent wrote for its own fix
+ * counts toward the Auto lane only once a person has accepted it (D38).
+ */
+export interface AcceptanceCheck {
+  command: string
+  writtenBy: string
+  acceptedBy?: string
+}
+
+/** A lease, so a crashed agent doesn't hold a request forever. */
+export interface Claim {
+  by: string
+  line: string
+  at: string
+  expires: string
+}
+
+/** Moving a request to Fix ready for review. Agents can report; only CIVIC re-captures. */
+export interface FixReport {
+  by: string
+  line: string
+  revision: string
+  preview?: string
+  at: string
+  note?: string
+  recapture?: Recapture
+}
+
+/** CIVIC's own deterministic re-capture of the request's scenario on the fix's preview. */
+export interface Recapture {
+  at: string
+  revision: string
+  anchors: { annotationId: string; outcome: AnchorOutcome; capture?: CaptureRef }[]
+  checks: { command: string; outcome: 'pass' | 'fail' }[]
+  /** The working-preview Evidence record the re-capture wrote. */
+  evidenceId?: string
+}
+
+/** D37: by stable ID, else by exact locator, else not found. There is no nearest match. */
+export const ANCHOR_OUTCOMES = ['found-by-id', 'found-by-locator', 'not-found', 'unanchored'] as const
+export type AnchorOutcome = (typeof ANCHOR_OUTCOMES)[number]
+
+export interface RequestEvent {
+  status: RequestStatus
+  by: string
+  at: string
+  note?: string
+}
+
+/**
+ * Selected annotations handed to an agent (D38). The agent claims it on its own line and
+ * reports a fix; CIVIC re-captures; a person, or CIVIC in the Auto lane under a person's
+ * policy, resolves it. Owners (on the record) sign off in the owner lane.
+ */
+export interface WorkRequest extends RecordBase {
+  kind: 'work-request'
+  ask: string
+  annotationIds: string[]
+  /** `restore-contract` fixes drift from the approved contract; `change` alters intent or behavior and is a Proposal. */
+  intent: 'restore-contract' | 'change'
+  risk: 'normal' | 'high'
+  /** A person may send a request to a stricter lane than laneFor gives, never a looser one. */
+  escalatedTo?: 'batch-review' | 'owner-sign-off'
+  base: { line: string; revision: string }
+  platform?: Platform
+  /** Semantic components whose `civic context` export the request carries. */
+  contextIds?: string[]
+  acceptance: AcceptanceCheck[]
+  /** The command that opens the exact scenario on any preview. */
+  repro: string
+  requestedBy: string
+  status: RequestStatus
+  claim?: Claim
+  fixes: FixReport[]
+  comments: { by: string; at: string; text: string }[]
+  /** Every status change, oldest first. The last entry's status is the current status. */
+  history: RequestEvent[]
+}
+
 export type GraphRecord =
   | Intent
   | Target
@@ -299,6 +507,10 @@ export type GraphRecord =
   | Override
   | Evidence
   | ContractConflict
+  | Actor
+  | Line
+  | Annotation
+  | WorkRequest
 
 export type RecordKind = GraphRecord['kind']
 

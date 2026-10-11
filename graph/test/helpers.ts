@@ -1,12 +1,14 @@
 import { readFileSync } from 'node:fs'
 import type { GraphDocument } from '../src/schema.ts'
 
-export function example(name: 'fluent-button' | 'card-override'): GraphDocument {
+export type ExampleName = 'fluent-button' | 'card-override' | 'review-loop'
+
+export function example(name: ExampleName): GraphDocument {
   return JSON.parse(readFileSync(new URL(`../examples/${name}.graph.json`, import.meta.url), 'utf8')) as GraphDocument
 }
 
 /** A deep copy of an example, changed by `edit`, so each test starts from a valid graph. */
-export function edited(name: 'fluent-button' | 'card-override', edit: (document: GraphDocument) => void): GraphDocument {
+export function edited(name: ExampleName, edit: (document: GraphDocument) => void): GraphDocument {
   const document = example(name)
   edit(document)
   return document

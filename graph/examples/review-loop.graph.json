@@ -1,0 +1,152 @@
+{
+  "schema": "civic.graph/0",
+  "records": [
+    { "id": "actor:person.taymoor", "kind": "actor", "title": "Taymoor", "type": "person", "handle": "taymoor" },
+    { "id": "actor:person.laundry-design", "kind": "actor", "title": "Laundry design owner", "type": "person", "handle": "laundry-design" },
+    { "id": "actor:agent.claude-code.taymoor", "kind": "actor", "title": "Claude Code for Taymoor", "type": "agent", "handle": "claude-code", "delegatedBy": "actor:person.taymoor" },
+    { "id": "actor:civic", "kind": "actor", "title": "CIVIC re-capture and Auto lane", "type": "civic", "handle": "civic" },
+
+    { "id": "line:git.main", "kind": "line", "title": "main", "type": "main", "tool": "git", "ref": "main", "head": "1111111111111111111111111111111111111111", "status": "open" },
+    {
+      "id": "line:git.fix-intake-label",
+      "kind": "line",
+      "title": "Worktree: fix intake label",
+      "type": "worktree",
+      "tool": "git",
+      "ref": "fix/intake-label",
+      "base": "line:git.main",
+      "head": "2222222222222222222222222222222222222222",
+      "previews": [{ "url": "http://127.0.0.1:3011", "revision": "2222222222222222222222222222222222222222" }],
+      "status": "open"
+    },
+
+    {
+      "id": "annotation:intake.pack.label-clipped",
+      "kind": "annotation",
+      "title": "Pack label clips at 200% text",
+      "comment": "The colour label on the pack step clips at 200% text size.",
+      "anchor": {
+        "targetIds": ["target:laundry.intake.pack"],
+        "locator": { "testId": "pack-color-label", "role": "heading", "name": "Pick a colour", "path": "main > section > h2" },
+        "rect": { "x": 0.1, "y": 0.2, "width": 0.5, "height": 0.08, "label": "Colour label" }
+      },
+      "capture": { "sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "mediaType": "image/png", "viewport": { "width": 390, "height": 844 }, "reproduction": "/review?scenario=intake.pack.color&scale=2&width=390" },
+      "seenOn": { "line": "line:git.main", "revision": "1111111111111111111111111111111111111111", "url": "http://127.0.0.1:3010" },
+      "at": "2026-10-11T03:00:00Z",
+      "writtenBy": "actor:person.taymoor"
+    },
+    {
+      "id": "annotation:screenshot.receipt-back",
+      "kind": "annotation",
+      "title": "Back from the receipt goes home",
+      "comment": "Back from the receipt should return to the order, not home.",
+      "capture": { "sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "mediaType": "image/png" },
+      "seenOn": { "line": "line:git.main", "revision": "1111111111111111111111111111111111111111", "url": "http://127.0.0.1:3010/orders/receipt" },
+      "at": "2026-10-11T03:05:00Z",
+      "writtenBy": "actor:agent.claude-code.taymoor"
+    },
+    {
+      "id": "annotation:intake.offline-branch",
+      "kind": "annotation",
+      "title": "Offline branch dead-ends",
+      "comment": "Saving while offline should offer a retry branch back to the pack step.",
+      "anchor": {
+        "targetIds": ["target:laundry.intake.save-error"],
+        "edges": [{ "from": "target:laundry.intake.save-error", "to": "target:laundry.intake.pack", "action": "Retry" }]
+      },
+      "seenOn": { "line": "line:git.main", "revision": "1111111111111111111111111111111111111111" },
+      "at": "2026-10-11T03:06:00Z",
+      "writtenBy": "actor:person.taymoor"
+    },
+
+    {
+      "id": "evidence:recapture.label-clipped.2222222",
+      "kind": "evidence",
+      "title": "Re-capture of the pack label at 200% text",
+      "subjectIds": ["request:intake.pack.label-clipped", "annotation:intake.pack.label-clipped"],
+      "tier": "working-preview",
+      "method": "playwright",
+      "outcome": "pass",
+      "capturedAt": "2026-10-11T03:20:00Z",
+      "writtenBy": "actor:civic",
+      "source": { "tool": "playwright", "importer": "civic-recapture", "revision": "2222222222222222222222222222222222222222", "line": "line:git.fix-intake-label" }
+    },
+
+    {
+      "id": "request:intake.pack.label-clipped",
+      "kind": "work-request",
+      "title": "Fix the clipped pack label",
+      "ask": "The colour label must wrap, not clip, at 200% text.",
+      "annotationIds": ["annotation:intake.pack.label-clipped"],
+      "intent": "restore-contract",
+      "risk": "normal",
+      "base": { "line": "line:git.main", "revision": "1111111111111111111111111111111111111111" },
+      "platform": "web",
+      "acceptance": [{ "command": "pnpm --dir apps/web exec playwright test e2e/text-scale.spec.ts", "writtenBy": "actor:person.taymoor" }],
+      "repro": "civic repro request:intake.pack.label-clipped --url <preview>",
+      "requestedBy": "actor:person.taymoor",
+      "owners": [{ "role": "design", "who": "laundry-design" }],
+      "status": "resolved",
+      "claim": { "by": "actor:agent.claude-code.taymoor", "line": "line:git.fix-intake-label", "at": "2026-10-11T03:10:00Z", "expires": "2026-10-11T05:10:00Z" },
+      "fixes": [
+        {
+          "by": "actor:agent.claude-code.taymoor",
+          "line": "line:git.fix-intake-label",
+          "revision": "2222222222222222222222222222222222222222",
+          "preview": "http://127.0.0.1:3011",
+          "at": "2026-10-11T03:18:00Z",
+          "recapture": {
+            "at": "2026-10-11T03:20:00Z",
+            "revision": "2222222222222222222222222222222222222222",
+            "anchors": [{ "annotationId": "annotation:intake.pack.label-clipped", "outcome": "found-by-id", "capture": { "sha256": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "mediaType": "image/png" } }],
+            "checks": [{ "command": "pnpm --dir apps/web exec playwright test e2e/text-scale.spec.ts", "outcome": "pass" }],
+            "evidenceId": "evidence:recapture.label-clipped.2222222"
+          }
+        }
+      ],
+      "comments": [{ "by": "actor:agent.claude-code.taymoor", "at": "2026-10-11T03:17:00Z", "text": "Let the label wrap; no change to the contract." }],
+      "history": [
+        { "status": "open", "by": "actor:person.taymoor", "at": "2026-10-11T03:08:00Z" },
+        { "status": "claimed", "by": "actor:agent.claude-code.taymoor", "at": "2026-10-11T03:10:00Z" },
+        { "status": "fix-ready", "by": "actor:agent.claude-code.taymoor", "at": "2026-10-11T03:18:00Z" },
+        { "status": "resolved", "by": "actor:civic", "at": "2026-10-11T03:20:00Z", "note": "Auto lane: every anchor found and every acceptance check passed." }
+      ]
+    },
+    {
+      "id": "request:orders.receipt-back",
+      "kind": "work-request",
+      "title": "Back from the receipt",
+      "ask": "Back from the receipt returns to the order.",
+      "annotationIds": ["annotation:screenshot.receipt-back"],
+      "intent": "restore-contract",
+      "risk": "normal",
+      "base": { "line": "line:git.main", "revision": "1111111111111111111111111111111111111111" },
+      "acceptance": [],
+      "repro": "civic repro request:orders.receipt-back --url <preview>",
+      "requestedBy": "actor:person.taymoor",
+      "status": "open",
+      "fixes": [],
+      "comments": [],
+      "history": [{ "status": "open", "by": "actor:person.taymoor", "at": "2026-10-11T03:07:00Z" }]
+    },
+    {
+      "id": "request:intake.offline-retry",
+      "kind": "work-request",
+      "title": "Add an offline retry branch",
+      "ask": "Add a Retry branch from the save error back to the pack step.",
+      "annotationIds": ["annotation:intake.offline-branch"],
+      "intent": "change",
+      "risk": "normal",
+      "base": { "line": "line:git.main", "revision": "1111111111111111111111111111111111111111" },
+      "acceptance": [],
+      "repro": "civic repro request:intake.offline-retry --url <preview>",
+      "requestedBy": "actor:person.taymoor",
+      "owners": [{ "role": "design", "who": "laundry-design" }],
+      "status": "open",
+      "fixes": [],
+      "comments": [],
+      "history": [{ "status": "open", "by": "actor:person.taymoor", "at": "2026-10-11T03:09:00Z" }]
+    }
+  ],
+  "links": []
+}
