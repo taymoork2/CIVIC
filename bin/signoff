@@ -2,7 +2,7 @@
 # Local signoff: run CIVIC's checks on this machine instead of paid CI minutes, then
 # record a green "signoff" commit status on GitHub for the exact commit that passed.
 #
-#   bin/signoff            graph, review loop, importer and Fluent Button demo checks, then the
+#   bin/signoff            graph, review loop, importer, Fluent Button and Card demo checks, then the
 #                          journey engine's checks, tests and review-server tests
 #   bin/signoff --browser  also the Fluent Button web evidence and the Playwright
 #                          review-canvas journey (needs Chrome and a review server:
@@ -24,6 +24,7 @@ source_dir="$repo_root/rehearsal/source"
 graph_dir="$repo_root/graph"
 importers_dir="$repo_root/importers"
 demo_dir="$repo_root/demo/fluent-button"
+card_dir="$repo_root/demo/card"
 review_dir="$repo_root/review"
 step() { printf '\n[signoff %s] %s\n' "$(date +%H:%M:%S)" "$1"; }
 
@@ -45,11 +46,12 @@ pnpm --dir "$review_dir" install --frozen-lockfile
 pnpm --dir "$review_dir" run check
 pnpm --dir "$review_dir" test
 
-step "CIVIC importers and the Fluent Button demo graph"
+step "CIVIC importers and the Fluent Button and Card demo graphs"
 pnpm --dir "$importers_dir" install --frozen-lockfile
 pnpm --dir "$importers_dir" run check
 pnpm --dir "$importers_dir" test
 node "$demo_dir/build.ts" --check
+node "$card_dir/build.ts" --check
 if [ "$browser" = 1 ]; then
   step "Fluent Button web evidence (Playwright)"
   pnpm --dir "$demo_dir/web" install --frozen-lockfile
@@ -76,7 +78,7 @@ if [ -n "$(git -C "$repo_root" status --porcelain)" ] || [ "$(git -C "$repo_root
   exit 1
 fi
 
-scope="graph, review loop, importers, Button demo, checks, tests and review-server tests"
+scope="graph, review loop, importers, Button and Card demos, checks, tests and review-server tests"
 [ "$browser" = 1 ] && scope="$scope + Button web evidence and review-canvas journey"
 if [ "$post" = 0 ]; then step "Passed for $sha ($scope); status not posted"; exit 0; fi
 if ! command -v gh >/dev/null; then step "Passed for $sha ($scope). Install the GitHub CLI (gh) to post the signoff status."; exit 0; fi

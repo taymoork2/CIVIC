@@ -1,0 +1,6 @@
+{
+  "name": "@civic/demo-card",
+  "private": true,
+  "type": "module",
+  "description": "The Card demo: a design-system Card changed by a product team, forecast per platform and checked for completeness. Built by node build.ts from the inputs in this folder."
+}

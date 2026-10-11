@@ -1,0 +1,1228 @@
+{
+  "schema": "civic.graph/0",
+  "records": [
+    {
+      "id": "intent:card.one-subject",
+      "kind": "intent",
+      "title": "A card is about one subject",
+      "category": "requirement",
+      "statement": "A card groups content and actions about one subject, and its actions act on that subject.",
+      "source": {
+        "tool": "civic",
+        "importer": "contract",
+        "revision": "sha256:6496b1061f8778544a77adf9ac002776dad724a86f1efaf9a03c7fecfb37df59",
+        "path": "demo/card/contract/card.json"
+      }
+    },
+    {
+      "id": "intent:card.states-explained",
+      "kind": "intent",
+      "title": "A card explains its own empty and error states",
+      "category": "requirement",
+      "statement": "When a card's data is loading, empty or failed to load, the card says so in place instead of disappearing.",
+      "source": {
+        "tool": "civic",
+        "importer": "contract",
+        "revision": "sha256:6496b1061f8778544a77adf9ac002776dad724a86f1efaf9a03c7fecfb37df59",
+        "path": "demo/card/contract/card.json"
+      }
+    },
+    {
+      "id": "target:shop.checkout",
+      "kind": "target",
+      "title": "Checkout",
+      "scale": "journey",
+      "presence": "expected",
+      "platforms": [
+        "web",
+        "ios",
+        "android"
+      ],
+      "owners": [
+        {
+          "role": "design",
+          "who": "shop-design"
+        },
+        {
+          "role": "engineering",
+          "who": "shop-engineering"
+        },
+        {
+          "role": "qa",
+          "who": "shop-qa"
+        }
+      ],
+      "entry": [
+        "target:shop.order-summary"
+      ],
+      "source": {
+        "tool": "figma",
+        "importer": "figma-file",
+        "revision": "civic-stand-in-1",
+        "path": "Shop checkout (CIVIC stand-in) / Checkout",
+        "anchor": "40:0"
+      }
+    },
+    {
+      "id": "target:shop.gift-options",
+      "kind": "target",
+      "title": "Gift options",
+      "scale": "screen",
+      "presence": "expected",
+      "platforms": [
+        "web",
+        "ios",
+        "android"
+      ],
+      "owners": [
+        {
+          "role": "design",
+          "who": "shop-design"
+        }
+      ],
+      "source": {
+        "tool": "figma",
+        "importer": "figma-file",
+        "revision": "civic-stand-in-1",
+        "path": "Shop checkout (CIVIC stand-in) / Checkout / Gift options",
+        "anchor": "40:20"
+      }
+    },
+    {
+      "id": "target:shop.order-summary",
+      "kind": "target",
+      "title": "Order Summary",
+      "scale": "screen",
+      "presence": "expected",
+      "platforms": [
+        "web",
+        "ios",
+        "android"
+      ],
+      "owners": [
+        {
+          "role": "design",
+          "who": "shop-design"
+        }
+      ],
+      "source": {
+        "tool": "figma",
+        "importer": "figma-file",
+        "revision": "civic-stand-in-1",
+        "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary",
+        "anchor": "40:1"
+      }
+    },
+    {
+      "id": "target:shop.order-summary.loading",
+      "kind": "target",
+      "title": "Order Summary / Loading",
+      "scale": "state",
+      "presence": "expected",
+      "platforms": [
+        "web",
+        "ios",
+        "android"
+      ],
+      "owners": [
+        {
+          "role": "design",
+          "who": "shop-design"
+        }
+      ],
+      "source": {
+        "tool": "figma",
+        "importer": "figma-file",
+        "revision": "civic-stand-in-1",
+        "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Loading",
+        "anchor": "40:5"
+      }
+    },
+    {
+      "id": "target:shop.promo-applied",
+      "kind": "target",
+      "title": "Promo applied",
+      "scale": "screen",
+      "presence": "expected",
+      "platforms": [
+        "web",
+        "ios",
+        "android"
+      ],
+      "owners": [
+        {
+          "role": "design",
+          "who": "shop-design"
+        }
+      ],
+      "source": {
+        "tool": "figma",
+        "importer": "figma-file",
+        "revision": "civic-stand-in-1",
+        "path": "Shop checkout (CIVIC stand-in) / Checkout / Promo applied",
+        "anchor": "40:10"
+      }
+    },
+    {
+      "id": "semantic:card",
+      "kind": "semantic-component",
+      "title": "Card",
+      "purpose": "Group related content and actions about one subject.",
+      "owners": [
+        {
+          "role": "design",
+          "who": "design-system-maintainers"
+        },
+        {
+          "role": "qa",
+          "who": "card-qa"
+        }
+      ],
+      "variants": [
+        {
+          "key": "filled",
+          "title": "Filled"
+        },
+        {
+          "key": "outline",
+          "title": "Outline"
+        }
+      ],
+      "states": [
+        "rest",
+        "hover",
+        "selected",
+        "disabled",
+        "loading",
+        "empty",
+        "error"
+      ],
+      "productStates": [
+        "loading",
+        "empty",
+        "error"
+      ],
+      "slots": [
+        "media",
+        "header",
+        "body",
+        "actions"
+      ],
+      "rules": [
+        {
+          "key": "shape-from-token",
+          "statement": "Corner radius comes from the shape token; a local radius is not allowed.",
+          "forbids": {
+            "property": "corner-radius",
+            "change": "local-style"
+          }
+        }
+      ],
+      "source": {
+        "tool": "civic",
+        "importer": "contract",
+        "revision": "sha256:6496b1061f8778544a77adf9ac002776dad724a86f1efaf9a03c7fecfb37df59",
+        "path": "demo/card/contract/card.json"
+      }
+    },
+    {
+      "id": "platform:fluent-android.basic-card",
+      "kind": "platform-component",
+      "title": "Fluent Android Compose BasicCard",
+      "platform": "android",
+      "library": {
+        "package": "microsoft/fluentui-android",
+        "version": "207ae6843eda"
+      },
+      "symbol": "BasicCard",
+      "owners": [
+        {
+          "role": "design-engineering",
+          "who": "fluent-android",
+          "platform": "android"
+        }
+      ],
+      "variants": [
+        {
+          "semanticVariant": "filled",
+          "mapping": "closest",
+          "expression": "Elevated",
+          "note": "Elevated draws a shadow and no border."
+        },
+        {
+          "semanticVariant": "outline",
+          "mapping": "exact",
+          "expression": "Outlined"
+        }
+      ],
+      "defaultVariant": "filled",
+      "source": {
+        "tool": "github",
+        "importer": "kotlin-source",
+        "revision": "207ae6843eda82e990ed378794abba8ec451c1e8",
+        "path": "microsoft/fluentui-android/fluentui_core/src/main/java/com/microsoft/fluentui/theme/token/controlTokens/BasicCardTokens.kt",
+        "contentHash": "sha256:c88c974d72eebbe7718f3116acec9b50aa6321e64fceafabbc0ef8e0d52762b3"
+      }
+    },
+    {
+      "id": "platform:fluent-apple.card-view",
+      "kind": "platform-component",
+      "title": "Fluent iOS CardView",
+      "platform": "ios",
+      "library": {
+        "package": "microsoft/fluentui-apple",
+        "version": "920ee25179c4"
+      },
+      "symbol": "CardView",
+      "owners": [
+        {
+          "role": "design-engineering",
+          "who": "fluent-ios",
+          "platform": "ios"
+        }
+      ],
+      "variants": [
+        {
+          "semanticVariant": "filled",
+          "mapping": "closest",
+          "expression": "neutral",
+          "note": "CardView always draws a border as well as a background."
+        },
+        {
+          "semanticVariant": "outline",
+          "mapping": "none",
+          "note": "CardView has no style without a background."
+        }
+      ],
+      "defaultVariant": "filled",
+      "extraVariants": [
+        {
+          "expression": "appColor"
+        },
+        {
+          "expression": "custom"
+        }
+      ],
+      "source": {
+        "tool": "github",
+        "importer": "swift-source",
+        "revision": "920ee25179c4d2086aa1219b106be90d5ab37113",
+        "path": "microsoft/fluentui-apple/Sources/FluentUI_iOS/Components/Card/CardView.swift",
+        "contentHash": "sha256:3dce57b261299e3f52dd0044c9ea48e7cf17807ae785e6c6d5eb657a4e3fcd0a"
+      }
+    },
+    {
+      "id": "platform:fluent-react-v9.card",
+      "kind": "platform-component",
+      "title": "Fluent React v9 Card",
+      "platform": "web",
+      "library": {
+        "package": "@fluentui/react-card",
+        "version": "9.7.3"
+      },
+      "symbol": "Card",
+      "owners": [
+        {
+          "role": "design-engineering",
+          "who": "fluent-web",
+          "platform": "web"
+        }
+      ],
+      "variants": [
+        {
+          "semanticVariant": "filled",
+          "mapping": "exact",
+          "expression": "filled"
+        },
+        {
+          "semanticVariant": "outline",
+          "mapping": "exact",
+          "expression": "outline"
+        }
+      ],
+      "defaultVariant": "filled",
+      "extraVariants": [
+        {
+          "expression": "filled-alternative"
+        },
+        {
+          "expression": "subtle"
+        }
+      ],
+      "source": {
+        "tool": "npm",
+        "importer": "react-types",
+        "revision": "@fluentui/react-card@9.7.3",
+        "path": "@fluentui/react-card/dist/index.d.ts",
+        "contentHash": "sha256:91d94abf72be0642e91160170c48fbe7b815d5091e5e67fcc06754e5c03e2818"
+      }
+    },
+    {
+      "id": "extension:fluent-android.basic-card.basicCardTokens",
+      "kind": "extension-point",
+      "title": "Fluent Android Compose BasicCard basicCardTokens",
+      "platformComponentId": "platform:fluent-android.basic-card",
+      "mechanism": "token",
+      "name": "basicCardTokens",
+      "expresses": [
+        "background",
+        "border",
+        "elevation",
+        "corner-radius"
+      ],
+      "source": {
+        "tool": "github",
+        "importer": "kotlin-source",
+        "revision": "207ae6843eda82e990ed378794abba8ec451c1e8",
+        "path": "microsoft/fluentui-android/fluentui_core/src/main/java/com/microsoft/fluentui/theme/token/controlTokens/BasicCardTokens.kt",
+        "contentHash": "sha256:c88c974d72eebbe7718f3116acec9b50aa6321e64fceafabbc0ef8e0d52762b3"
+      }
+    },
+    {
+      "id": "extension:fluent-android.basic-card.cardType",
+      "kind": "extension-point",
+      "title": "Fluent Android Compose BasicCard cardType",
+      "platformComponentId": "platform:fluent-android.basic-card",
+      "mechanism": "prop",
+      "name": "cardType",
+      "expresses": [
+        "variant"
+      ],
+      "source": {
+        "tool": "github",
+        "importer": "kotlin-source",
+        "revision": "207ae6843eda82e990ed378794abba8ec451c1e8",
+        "path": "microsoft/fluentui-android/fluentui_core/src/main/java/com/microsoft/fluentui/theme/token/controlTokens/BasicCardTokens.kt",
+        "contentHash": "sha256:c88c974d72eebbe7718f3116acec9b50aa6321e64fceafabbc0ef8e0d52762b3"
+      }
+    },
+    {
+      "id": "extension:fluent-android.basic-card.content",
+      "kind": "extension-point",
+      "title": "Fluent Android Compose BasicCard content",
+      "platformComponentId": "platform:fluent-android.basic-card",
+      "mechanism": "slot",
+      "name": "content",
+      "expresses": [
+        "media",
+        "header",
+        "body",
+        "actions"
+      ],
+      "source": {
+        "tool": "github",
+        "importer": "kotlin-source",
+        "revision": "207ae6843eda82e990ed378794abba8ec451c1e8",
+        "path": "microsoft/fluentui-android/fluentui_core/src/main/java/com/microsoft/fluentui/theme/token/controlTokens/BasicCardTokens.kt",
+        "contentHash": "sha256:c88c974d72eebbe7718f3116acec9b50aa6321e64fceafabbc0ef8e0d52762b3"
+      }
+    },
+    {
+      "id": "extension:fluent-apple.card-view.colorStyle",
+      "kind": "extension-point",
+      "title": "Fluent iOS CardView colorStyle",
+      "platformComponentId": "platform:fluent-apple.card-view",
+      "mechanism": "prop",
+      "name": "colorStyle",
+      "expresses": [
+        "variant"
+      ],
+      "source": {
+        "tool": "github",
+        "importer": "swift-source",
+        "revision": "920ee25179c4d2086aa1219b106be90d5ab37113",
+        "path": "microsoft/fluentui-apple/Sources/FluentUI_iOS/Components/Card/CardView.swift",
+        "contentHash": "sha256:3dce57b261299e3f52dd0044c9ea48e7cf17807ae785e6c6d5eb657a4e3fcd0a"
+      }
+    },
+    {
+      "id": "extension:fluent-apple.card-view.customBackgroundColor",
+      "kind": "extension-point",
+      "title": "Fluent iOS CardView customBackgroundColor",
+      "platformComponentId": "platform:fluent-apple.card-view",
+      "mechanism": "style-api",
+      "name": "customBackgroundColor",
+      "expresses": [
+        "background"
+      ],
+      "source": {
+        "tool": "github",
+        "importer": "swift-source",
+        "revision": "920ee25179c4d2086aa1219b106be90d5ab37113",
+        "path": "microsoft/fluentui-apple/Sources/FluentUI_iOS/Components/Card/CardView.swift",
+        "contentHash": "sha256:3dce57b261299e3f52dd0044c9ea48e7cf17807ae785e6c6d5eb657a4e3fcd0a"
+      }
+    },
+    {
+      "id": "extension:fluent-apple.card-view.customBorderColor",
+      "kind": "extension-point",
+      "title": "Fluent iOS CardView customBorderColor",
+      "platformComponentId": "platform:fluent-apple.card-view",
+      "mechanism": "style-api",
+      "name": "customBorderColor",
+      "expresses": [
+        "border"
+      ],
+      "source": {
+        "tool": "github",
+        "importer": "swift-source",
+        "revision": "920ee25179c4d2086aa1219b106be90d5ab37113",
+        "path": "microsoft/fluentui-apple/Sources/FluentUI_iOS/Components/Card/CardView.swift",
+        "contentHash": "sha256:3dce57b261299e3f52dd0044c9ea48e7cf17807ae785e6c6d5eb657a4e3fcd0a"
+      }
+    },
+    {
+      "id": "extension:fluent-apple.card-view.icon",
+      "kind": "extension-point",
+      "title": "Fluent iOS CardView icon",
+      "platformComponentId": "platform:fluent-apple.card-view",
+      "mechanism": "prop",
+      "name": "icon",
+      "expresses": [
+        "header.image"
+      ],
+      "source": {
+        "tool": "github",
+        "importer": "swift-source",
+        "revision": "920ee25179c4d2086aa1219b106be90d5ab37113",
+        "path": "microsoft/fluentui-apple/Sources/FluentUI_iOS/Components/Card/CardView.swift",
+        "contentHash": "sha256:3dce57b261299e3f52dd0044c9ea48e7cf17807ae785e6c6d5eb657a4e3fcd0a"
+      }
+    },
+    {
+      "id": "extension:fluent-apple.card-view.primaryText",
+      "kind": "extension-point",
+      "title": "Fluent iOS CardView primaryText",
+      "platformComponentId": "platform:fluent-apple.card-view",
+      "mechanism": "prop",
+      "name": "primaryText",
+      "expresses": [
+        "header.title"
+      ],
+      "source": {
+        "tool": "github",
+        "importer": "swift-source",
+        "revision": "920ee25179c4d2086aa1219b106be90d5ab37113",
+        "path": "microsoft/fluentui-apple/Sources/FluentUI_iOS/Components/Card/CardView.swift",
+        "contentHash": "sha256:3dce57b261299e3f52dd0044c9ea48e7cf17807ae785e6c6d5eb657a4e3fcd0a"
+      }
+    },
+    {
+      "id": "extension:fluent-apple.card-view.secondaryText",
+      "kind": "extension-point",
+      "title": "Fluent iOS CardView secondaryText",
+      "platformComponentId": "platform:fluent-apple.card-view",
+      "mechanism": "prop",
+      "name": "secondaryText",
+      "expresses": [
+        "header.description"
+      ],
+      "source": {
+        "tool": "github",
+        "importer": "swift-source",
+        "revision": "920ee25179c4d2086aa1219b106be90d5ab37113",
+        "path": "microsoft/fluentui-apple/Sources/FluentUI_iOS/Components/Card/CardView.swift",
+        "contentHash": "sha256:3dce57b261299e3f52dd0044c9ea48e7cf17807ae785e6c6d5eb657a4e3fcd0a"
+      }
+    },
+    {
+      "id": "extension:fluent-react-v9.card.appearance",
+      "kind": "extension-point",
+      "title": "Fluent React v9 Card appearance",
+      "platformComponentId": "platform:fluent-react-v9.card",
+      "mechanism": "prop",
+      "name": "appearance",
+      "expresses": [
+        "variant"
+      ],
+      "source": {
+        "tool": "npm",
+        "importer": "react-types",
+        "revision": "@fluentui/react-card@9.7.3",
+        "path": "@fluentui/react-card/dist/index.d.ts",
+        "contentHash": "sha256:91d94abf72be0642e91160170c48fbe7b815d5091e5e67fcc06754e5c03e2818"
+      }
+    },
+    {
+      "id": "extension:fluent-react-v9.card.CardFooter",
+      "kind": "extension-point",
+      "title": "Fluent React v9 Card CardFooter",
+      "platformComponentId": "platform:fluent-react-v9.card",
+      "mechanism": "slot",
+      "name": "CardFooter",
+      "expresses": [
+        "actions"
+      ],
+      "source": {
+        "tool": "npm",
+        "importer": "react-types",
+        "revision": "@fluentui/react-card@9.7.3",
+        "path": "@fluentui/react-card/dist/index.d.ts",
+        "contentHash": "sha256:91d94abf72be0642e91160170c48fbe7b815d5091e5e67fcc06754e5c03e2818"
+      }
+    },
+    {
+      "id": "extension:fluent-react-v9.card.CardHeader.action",
+      "kind": "extension-point",
+      "title": "Fluent React v9 Card CardHeader.action",
+      "platformComponentId": "platform:fluent-react-v9.card",
+      "mechanism": "slot",
+      "name": "CardHeader.action",
+      "expresses": [
+        "header.action"
+      ],
+      "source": {
+        "tool": "npm",
+        "importer": "react-types",
+        "revision": "@fluentui/react-card@9.7.3",
+        "path": "@fluentui/react-card/dist/index.d.ts",
+        "contentHash": "sha256:91d94abf72be0642e91160170c48fbe7b815d5091e5e67fcc06754e5c03e2818"
+      }
+    },
+    {
+      "id": "extension:fluent-react-v9.card.CardHeader.description",
+      "kind": "extension-point",
+      "title": "Fluent React v9 Card CardHeader.description",
+      "platformComponentId": "platform:fluent-react-v9.card",
+      "mechanism": "slot",
+      "name": "CardHeader.description",
+      "expresses": [
+        "header.description"
+      ],
+      "source": {
+        "tool": "npm",
+        "importer": "react-types",
+        "revision": "@fluentui/react-card@9.7.3",
+        "path": "@fluentui/react-card/dist/index.d.ts",
+        "contentHash": "sha256:91d94abf72be0642e91160170c48fbe7b815d5091e5e67fcc06754e5c03e2818"
+      }
+    },
+    {
+      "id": "extension:fluent-react-v9.card.CardHeader.header",
+      "kind": "extension-point",
+      "title": "Fluent React v9 Card CardHeader.header",
+      "platformComponentId": "platform:fluent-react-v9.card",
+      "mechanism": "slot",
+      "name": "CardHeader.header",
+      "expresses": [
+        "header.title"
+      ],
+      "source": {
+        "tool": "npm",
+        "importer": "react-types",
+        "revision": "@fluentui/react-card@9.7.3",
+        "path": "@fluentui/react-card/dist/index.d.ts",
+        "contentHash": "sha256:91d94abf72be0642e91160170c48fbe7b815d5091e5e67fcc06754e5c03e2818"
+      }
+    },
+    {
+      "id": "extension:fluent-react-v9.card.CardHeader.image",
+      "kind": "extension-point",
+      "title": "Fluent React v9 Card CardHeader.image",
+      "platformComponentId": "platform:fluent-react-v9.card",
+      "mechanism": "slot",
+      "name": "CardHeader.image",
+      "expresses": [
+        "header.image"
+      ],
+      "source": {
+        "tool": "npm",
+        "importer": "react-types",
+        "revision": "@fluentui/react-card@9.7.3",
+        "path": "@fluentui/react-card/dist/index.d.ts",
+        "contentHash": "sha256:91d94abf72be0642e91160170c48fbe7b815d5091e5e67fcc06754e5c03e2818"
+      }
+    },
+    {
+      "id": "extension:fluent-react-v9.card.CardPreview",
+      "kind": "extension-point",
+      "title": "Fluent React v9 Card CardPreview",
+      "platformComponentId": "platform:fluent-react-v9.card",
+      "mechanism": "slot",
+      "name": "CardPreview",
+      "expresses": [
+        "media"
+      ],
+      "source": {
+        "tool": "npm",
+        "importer": "react-types",
+        "revision": "@fluentui/react-card@9.7.3",
+        "path": "@fluentui/react-card/dist/index.d.ts",
+        "contentHash": "sha256:91d94abf72be0642e91160170c48fbe7b815d5091e5e67fcc06754e5c03e2818"
+      }
+    },
+    {
+      "id": "extension:fluent-react-v9.card.selected",
+      "kind": "extension-point",
+      "title": "Fluent React v9 Card selected",
+      "platformComponentId": "platform:fluent-react-v9.card",
+      "mechanism": "prop",
+      "name": "selected",
+      "expresses": [
+        "state.selected"
+      ],
+      "source": {
+        "tool": "npm",
+        "importer": "react-types",
+        "revision": "@fluentui/react-card@9.7.3",
+        "path": "@fluentui/react-card/dist/index.d.ts",
+        "contentHash": "sha256:91d94abf72be0642e91160170c48fbe7b815d5091e5e67fcc06754e5c03e2818"
+      }
+    },
+    {
+      "id": "extension:fluent-react-v9.card.size",
+      "kind": "extension-point",
+      "title": "Fluent React v9 Card size",
+      "platformComponentId": "platform:fluent-react-v9.card",
+      "mechanism": "prop",
+      "name": "size",
+      "expresses": [
+        "density"
+      ],
+      "source": {
+        "tool": "npm",
+        "importer": "react-types",
+        "revision": "@fluentui/react-card@9.7.3",
+        "path": "@fluentui/react-card/dist/index.d.ts",
+        "contentHash": "sha256:91d94abf72be0642e91160170c48fbe7b815d5091e5e67fcc06754e5c03e2818"
+      }
+    },
+    {
+      "id": "instance:shop.order-summary.card",
+      "kind": "component-instance",
+      "title": "Card on Order Summary",
+      "semanticId": "semantic:card",
+      "variant": "filled",
+      "state": "rest",
+      "placedOn": "target:shop.order-summary",
+      "product": "shop",
+      "origin": "design",
+      "owners": [
+        {
+          "role": "design",
+          "who": "shop-design"
+        }
+      ],
+      "source": {
+        "tool": "figma",
+        "importer": "figma-file",
+        "revision": "civic-stand-in-1",
+        "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Card",
+        "anchor": "40:2"
+      }
+    },
+    {
+      "id": "instance:shop.order-summary.loading.card",
+      "kind": "component-instance",
+      "title": "Card on Order Summary / Loading",
+      "semanticId": "semantic:card",
+      "variant": "filled",
+      "state": "loading",
+      "placedOn": "target:shop.order-summary.loading",
+      "product": "shop",
+      "origin": "design",
+      "owners": [
+        {
+          "role": "design",
+          "who": "shop-design"
+        }
+      ],
+      "source": {
+        "tool": "figma",
+        "importer": "figma-file",
+        "revision": "civic-stand-in-1",
+        "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Loading / Card",
+        "anchor": "40:6"
+      }
+    },
+    {
+      "id": "override:shop.order-summary.card.actions",
+      "kind": "override",
+      "title": "Show footer set to true",
+      "instanceId": "instance:shop.order-summary.card",
+      "property": "actions",
+      "change": "add-content",
+      "value": true,
+      "madeBy": {
+        "role": "design",
+        "who": "shop-design"
+      },
+      "source": {
+        "tool": "figma",
+        "importer": "figma-file",
+        "revision": "civic-stand-in-1",
+        "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Card",
+        "anchor": "40:2"
+      }
+    },
+    {
+      "id": "override:shop.order-summary.card.corner-radius",
+      "kind": "override",
+      "title": "Local cornerRadius 20",
+      "instanceId": "instance:shop.order-summary.card",
+      "property": "corner-radius",
+      "change": "local-style",
+      "value": 20,
+      "madeBy": {
+        "role": "design",
+        "who": "shop-design"
+      },
+      "source": {
+        "tool": "figma",
+        "importer": "figma-file",
+        "revision": "civic-stand-in-1",
+        "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Card",
+        "anchor": "40:2"
+      }
+    },
+    {
+      "id": "override:shop.order-summary.card.header-action",
+      "kind": "override",
+      "title": "Header action set to Badge / Price",
+      "instanceId": "instance:shop.order-summary.card",
+      "property": "header.action",
+      "change": "add-content",
+      "value": "Badge / Price",
+      "madeBy": {
+        "role": "design",
+        "who": "shop-design"
+      },
+      "source": {
+        "tool": "figma",
+        "importer": "figma-file",
+        "revision": "civic-stand-in-1",
+        "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Card",
+        "anchor": "40:2"
+      }
+    },
+    {
+      "id": "override:shop.order-summary.card.state-selected",
+      "kind": "override",
+      "title": "Selectable set to true",
+      "instanceId": "instance:shop.order-summary.card",
+      "property": "state.selected",
+      "change": "set-property",
+      "value": true,
+      "madeBy": {
+        "role": "design",
+        "who": "shop-design"
+      },
+      "source": {
+        "tool": "figma",
+        "importer": "figma-file",
+        "revision": "civic-stand-in-1",
+        "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Card",
+        "anchor": "40:2"
+      }
+    },
+    {
+      "id": "evidence:figma.library.card",
+      "kind": "evidence",
+      "title": "Library Card component set",
+      "subjectIds": [
+        "semantic:card"
+      ],
+      "tier": "static-analysis",
+      "method": "design-export",
+      "outcome": "finding",
+      "finding": "Card draws Appearance: Filled, Outline; State: Rest, Hover, Selected, Disabled, Loading, Empty, Error; product-settable properties: Header action (default Placeholder), Show footer (default false), Selectable (default false).",
+      "capturedAt": "2026-10-11T00:00:00Z",
+      "source": {
+        "tool": "figma",
+        "importer": "figma-file",
+        "revision": "civic-stand-in-1",
+        "path": "Fluent 2 Card library (CIVIC stand-in) / Card",
+        "anchor": "20:1"
+      }
+    },
+    {
+      "id": "evidence:figma.shop.shop-checkout-civic-stand-in",
+      "kind": "evidence",
+      "title": "Shop checkout (CIVIC stand-in) design export",
+      "subjectIds": [
+        "semantic:card",
+        "instance:shop.order-summary.card",
+        "instance:shop.order-summary.loading.card"
+      ],
+      "tier": "static-analysis",
+      "method": "design-export",
+      "outcome": "finding",
+      "finding": "4 frame(s): Order Summary, Order Summary / Loading, Promo applied, Gift options. 2 Card instance(s) showing rest, loading; 4 override(s): header.action, actions, state.selected, corner-radius.",
+      "capturedAt": "2026-10-11T00:00:00Z",
+      "source": {
+        "tool": "figma",
+        "importer": "figma-file",
+        "revision": "civic-stand-in-1",
+        "path": "Shop checkout (CIVIC stand-in)"
+      }
+    },
+    {
+      "id": "evidence:fluent-android.basic-card.variants",
+      "kind": "evidence",
+      "title": "Fluent Android Compose BasicCard variants read from source",
+      "subjectIds": [
+        "platform:fluent-android.basic-card"
+      ],
+      "tier": "static-analysis",
+      "method": "source-analysis",
+      "platform": "android",
+      "outcome": "finding",
+      "finding": "CardType declares Elevated, Outlined; the default is Elevated.",
+      "capturedAt": "2026-10-11T00:00:00Z",
+      "source": {
+        "tool": "github",
+        "importer": "kotlin-source",
+        "revision": "207ae6843eda82e990ed378794abba8ec451c1e8",
+        "path": "microsoft/fluentui-android/fluentui_core/src/main/java/com/microsoft/fluentui/theme/token/controlTokens/BasicCardTokens.kt",
+        "contentHash": "sha256:c88c974d72eebbe7718f3116acec9b50aa6321e64fceafabbc0ef8e0d52762b3"
+      }
+    },
+    {
+      "id": "evidence:fluent-apple.card-view.variants",
+      "kind": "evidence",
+      "title": "Fluent iOS CardView variants read from source",
+      "subjectIds": [
+        "platform:fluent-apple.card-view"
+      ],
+      "tier": "static-analysis",
+      "method": "source-analysis",
+      "platform": "ios",
+      "outcome": "finding",
+      "finding": "CardColorStyle declares appColor, neutral, custom; the default is neutral.",
+      "capturedAt": "2026-10-11T00:00:00Z",
+      "source": {
+        "tool": "github",
+        "importer": "swift-source",
+        "revision": "920ee25179c4d2086aa1219b106be90d5ab37113",
+        "path": "microsoft/fluentui-apple/Sources/FluentUI_iOS/Components/Card/CardView.swift",
+        "contentHash": "sha256:3dce57b261299e3f52dd0044c9ea48e7cf17807ae785e6c6d5eb657a4e3fcd0a"
+      }
+    },
+    {
+      "id": "evidence:fluent-react-v9.card.variants",
+      "kind": "evidence",
+      "title": "Fluent React v9 Card variants read from source",
+      "subjectIds": [
+        "platform:fluent-react-v9.card"
+      ],
+      "tier": "static-analysis",
+      "method": "source-analysis",
+      "platform": "web",
+      "outcome": "finding",
+      "finding": "appearance declares filled, filled-alternative, outline, subtle; the default is filled.",
+      "capturedAt": "2026-10-11T00:00:00Z",
+      "source": {
+        "tool": "npm",
+        "importer": "react-types",
+        "revision": "@fluentui/react-card@9.7.3",
+        "path": "@fluentui/react-card/dist/index.d.ts",
+        "contentHash": "sha256:91d94abf72be0642e91160170c48fbe7b815d5091e5e67fcc06754e5c03e2818"
+      }
+    },
+    {
+      "id": "conflict:shop.order-summary.card.actions",
+      "kind": "contract-conflict",
+      "title": "Show footer set to true (Card override)",
+      "targetId": "semantic:card",
+      "summary": "The product design changes the Card's actions (add-content, true) and no maintainer has reviewed it.",
+      "sides": [
+        {
+          "claim": "Show footer set to true on instance:shop.order-summary.card.",
+          "recordId": "override:shop.order-summary.card.actions",
+          "evidenceIds": [
+            "evidence:figma.shop.shop-checkout-civic-stand-in"
+          ]
+        },
+        {
+          "claim": "The Card contract and library do not include this change.",
+          "recordId": "semantic:card",
+          "evidenceIds": [
+            "evidence:figma.library.card"
+          ]
+        }
+      ],
+      "classification": "intentional-differentiation",
+      "owners": [
+        {
+          "role": "design",
+          "who": "shop-design"
+        },
+        {
+          "role": "design",
+          "who": "design-system-maintainers"
+        }
+      ],
+      "alignment": "awaiting-adoption",
+      "status": "resolved",
+      "resolution": {
+        "outcome": "update-contract",
+        "decidedBy": {
+          "role": "design",
+          "who": "design-system-maintainers"
+        },
+        "at": "2026-10-11T00:00:00Z",
+        "rationale": "Promote. Footer actions are useful beyond Shop, and the contract already has an actions slot. Design engineering adds actions to iOS CardView with a migration note; Shop's footer waits on that release.",
+        "evidenceIds": [
+          "evidence:fluent-apple.card-view.variants",
+          "evidence:fluent-react-v9.card.variants"
+        ]
+      }
+    },
+    {
+      "id": "conflict:shop.order-summary.card.corner-radius",
+      "kind": "contract-conflict",
+      "title": "Local cornerRadius 20 (Card override)",
+      "targetId": "semantic:card",
+      "summary": "The product design changes the Card's corner-radius (local-style, 20) and no maintainer has reviewed it.",
+      "sides": [
+        {
+          "claim": "Local cornerRadius 20 on instance:shop.order-summary.card.",
+          "recordId": "override:shop.order-summary.card.corner-radius",
+          "evidenceIds": [
+            "evidence:figma.shop.shop-checkout-civic-stand-in"
+          ]
+        },
+        {
+          "claim": "The Card contract and library do not include this change.",
+          "recordId": "semantic:card",
+          "evidenceIds": [
+            "evidence:figma.library.card"
+          ]
+        }
+      ],
+      "classification": "unapproved-divergence",
+      "owners": [
+        {
+          "role": "design",
+          "who": "shop-design"
+        },
+        {
+          "role": "design",
+          "who": "design-system-maintainers"
+        }
+      ],
+      "alignment": "awaiting-adoption",
+      "status": "resolved",
+      "resolution": {
+        "outcome": "update-design",
+        "decidedBy": {
+          "role": "design",
+          "who": "design-system-maintainers"
+        },
+        "at": "2026-10-11T00:00:00Z",
+        "rationale": "Reject. The contract takes corner radius from the shape token, and a local 20 breaks it on every platform. Shop design reverts the radius, and the Card reads Awaiting adoption until the file matches.",
+        "evidenceIds": [
+          "evidence:figma.shop.shop-checkout-civic-stand-in",
+          "evidence:figma.library.card"
+        ]
+      }
+    },
+    {
+      "id": "conflict:shop.order-summary.card.header-action",
+      "kind": "contract-conflict",
+      "title": "Header action set to Badge / Price (Card override)",
+      "targetId": "semantic:card",
+      "summary": "The product design changes the Card's header.action (add-content, Badge / Price) and no maintainer has reviewed it.",
+      "sides": [
+        {
+          "claim": "Header action set to Badge / Price on instance:shop.order-summary.card.",
+          "recordId": "override:shop.order-summary.card.header-action",
+          "evidenceIds": [
+            "evidence:figma.shop.shop-checkout-civic-stand-in"
+          ]
+        },
+        {
+          "claim": "The Card contract and library do not include this change.",
+          "recordId": "semantic:card",
+          "evidenceIds": [
+            "evidence:figma.library.card"
+          ]
+        }
+      ],
+      "classification": "temporary-gap",
+      "owners": [
+        {
+          "role": "design",
+          "who": "shop-design"
+        },
+        {
+          "role": "design",
+          "who": "design-system-maintainers"
+        }
+      ],
+      "alignment": "accepted-limitation",
+      "status": "resolved",
+      "resolution": {
+        "outcome": "approve-exception",
+        "decidedBy": {
+          "role": "design",
+          "who": "design-system-maintainers"
+        },
+        "at": "2026-10-11T00:00:00Z",
+        "rationale": "Temporary exception. Web builds the price badge in CardHeader's action slot and Android inside BasicCard's content. iOS CardView has no header accessory, so Shop shows the price in the subtitle on iOS until the library adds one.",
+        "evidenceIds": [
+          "evidence:fluent-apple.card-view.variants",
+          "evidence:figma.shop.shop-checkout-civic-stand-in"
+        ],
+        "revisitTrigger": "Fluent iOS CardView gains a header accessory, or a second product asks for a badge in the Card header.",
+        "expires": "2027-04-01"
+      }
+    },
+    {
+      "id": "conflict:shop.order-summary.card.state-selected",
+      "kind": "contract-conflict",
+      "title": "Selectable set to true (Card override)",
+      "targetId": "semantic:card",
+      "summary": "The product design changes the Card's state.selected (set-property, true) and no maintainer has reviewed it.",
+      "sides": [
+        {
+          "claim": "Selectable set to true on instance:shop.order-summary.card.",
+          "recordId": "override:shop.order-summary.card.state-selected",
+          "evidenceIds": [
+            "evidence:figma.shop.shop-checkout-civic-stand-in"
+          ]
+        },
+        {
+          "claim": "The Card contract and library do not include this change.",
+          "recordId": "semantic:card",
+          "evidenceIds": [
+            "evidence:figma.library.card"
+          ]
+        }
+      ],
+      "classification": "unclassified",
+      "owners": [
+        {
+          "role": "design",
+          "who": "shop-design"
+        },
+        {
+          "role": "design",
+          "who": "design-system-maintainers"
+        }
+      ],
+      "alignment": "unreviewed-drift",
+      "status": "open"
+    }
+  ],
+  "links": [
+    {
+      "from": "platform:fluent-android.basic-card",
+      "relation": "implements",
+      "to": "semantic:card",
+      "status": "declared",
+      "evidenceIds": [
+        "evidence:fluent-android.basic-card.variants"
+      ]
+    },
+    {
+      "from": "platform:fluent-apple.card-view",
+      "relation": "implements",
+      "to": "semantic:card",
+      "status": "declared",
+      "evidenceIds": [
+        "evidence:fluent-apple.card-view.variants"
+      ]
+    },
+    {
+      "from": "platform:fluent-react-v9.card",
+      "relation": "implements",
+      "to": "semantic:card",
+      "status": "declared",
+      "evidenceIds": [
+        "evidence:fluent-react-v9.card.variants"
+      ]
+    },
+    {
+      "from": "semantic:card",
+      "relation": "serves",
+      "to": "intent:card.one-subject",
+      "status": "declared"
+    },
+    {
+      "from": "semantic:card",
+      "relation": "serves",
+      "to": "intent:card.states-explained",
+      "status": "declared"
+    },
+    {
+      "from": "target:shop.checkout",
+      "relation": "contains",
+      "to": "target:shop.gift-options",
+      "status": "declared"
+    },
+    {
+      "from": "target:shop.checkout",
+      "relation": "contains",
+      "to": "target:shop.order-summary",
+      "status": "declared"
+    },
+    {
+      "from": "target:shop.checkout",
+      "relation": "contains",
+      "to": "target:shop.promo-applied",
+      "status": "declared"
+    },
+    {
+      "from": "target:shop.gift-options",
+      "relation": "navigates",
+      "status": "declared",
+      "action": "Back to order",
+      "source": {
+        "tool": "figma",
+        "importer": "figma-file",
+        "revision": "civic-stand-in-1",
+        "path": "Shop checkout (CIVIC stand-in) / Checkout / Gift options / Back to order",
+        "anchor": "40:21"
+      },
+      "to": "target:shop.order-summary"
+    },
+    {
+      "from": "target:shop.order-summary.loading",
+      "relation": "contains",
+      "to": "instance:shop.order-summary.loading.card",
+      "status": "declared"
+    },
+    {
+      "from": "target:shop.order-summary",
+      "relation": "contains",
+      "to": "instance:shop.order-summary.card",
+      "status": "declared"
+    },
+    {
+      "from": "target:shop.order-summary",
+      "relation": "contains",
+      "to": "target:shop.order-summary.loading",
+      "status": "declared"
+    },
+    {
+      "from": "target:shop.order-summary",
+      "relation": "navigates",
+      "status": "declared",
+      "action": "Continue to payment",
+      "source": {
+        "tool": "figma",
+        "importer": "figma-file",
+        "revision": "civic-stand-in-1",
+        "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Continue to payment",
+        "anchor": "40:4"
+      },
+      "unmapped": "/checkout/payment",
+      "route": "/checkout/payment"
+    },
+    {
+      "from": "target:shop.order-summary",
+      "relation": "navigates",
+      "status": "declared",
+      "action": "Apply promotion",
+      "source": {
+        "tool": "figma",
+        "importer": "figma-file",
+        "revision": "civic-stand-in-1",
+        "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Apply promotion",
+        "anchor": "40:3"
+      },
+      "to": "target:shop.promo-applied"
+    }
+  ]
+}

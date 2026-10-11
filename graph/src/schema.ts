@@ -109,6 +109,10 @@ export interface Target extends RecordBase {
   scale: 'journey' | 'screen' | 'state' | 'surface'
   presence: 'expected' | 'discovered'
   platforms?: Platform[]
+  /** A journey only: the screens it starts on, as `target:` IDs. The completeness check (D32) walks from these. */
+  entry?: string[]
+  /** A journey only: screens where it may legitimately end, so they are not reported as dead ends. */
+  exits?: string[]
 }
 
 /** A design token, identified by its DTCG path so design and code link on the same string. */
@@ -140,6 +144,12 @@ export interface SemanticComponent extends RecordBase {
   variants: { key: string; title: string }[]
   /** Behavioral states the contract defines, such as `default`, `disabled`, `loading`. */
   states: string[]
+  /**
+   * States whose content depends on the product's data, such as `loading`, `empty` and
+   * `error`. A product design that uses the component shows each one, or says the instance
+   * inherits the component's default (D32). The other states come from the library.
+   */
+  productStates?: string[]
   slots?: string[]
   rules?: ContractRule[]
 }
@@ -194,6 +204,10 @@ export interface ComponentInstance extends RecordBase {
   product: string
   origin: 'design' | 'code'
   platform?: Platform
+  /** The contract state this instance shows, such as `rest` or `loading`, read from the design or code. */
+  state?: string
+  /** Product states this instance explicitly leaves to the component's default (D32). */
+  inheritsStates?: string[]
 }
 
 export const OVERRIDE_CHANGES = ['add-content', 'set-property', 'local-style', 'detach'] as const

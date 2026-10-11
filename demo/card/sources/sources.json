@@ -1,0 +1,35 @@
+{
+  "note": "Upstream files vendored for static analysis, pinned to the exact revision read. CIVIC reads Fluent; it does not fork or redistribute it beyond these MIT-licensed files (decision 0001). Each folder keeps its upstream LICENSE. The iOS and Android revisions are the ones the Fluent Button demo reads.",
+  "retrievedAt": "2026-10-11T00:00:00Z",
+  "inputs": {
+    "react-card": {
+      "tool": "npm",
+      "package": "@fluentui/react-card",
+      "revision": "@fluentui/react-card@9.7.3",
+      "url": "https://registry.npmjs.org/@fluentui/react-card/-/react-card-9.7.3.tgz",
+      "files": {
+        "index.d.ts": "dist/index.d.ts",
+        "useCard.js": "lib/components/Card/useCard.js"
+      }
+    },
+    "fluentui-apple": {
+      "tool": "github",
+      "package": "microsoft/fluentui-apple",
+      "revision": "920ee25179c4d2086aa1219b106be90d5ab37113",
+      "url": "https://github.com/microsoft/fluentui-apple/tree/920ee25179c4d2086aa1219b106be90d5ab37113",
+      "files": {
+        "CardView.swift": "Sources/FluentUI_iOS/Components/Card/CardView.swift"
+      }
+    },
+    "fluentui-android": {
+      "tool": "github",
+      "package": "microsoft/fluentui-android",
+      "revision": "207ae6843eda82e990ed378794abba8ec451c1e8",
+      "url": "https://github.com/microsoft/fluentui-android/tree/207ae6843eda82e990ed378794abba8ec451c1e8",
+      "files": {
+        "BasicCard.kt": "fluentui_controls/src/main/java/com/microsoft/fluentui/tokenized/controls/BasicCard.kt",
+        "BasicCardTokens.kt": "fluentui_core/src/main/java/com/microsoft/fluentui/theme/token/controlTokens/BasicCardTokens.kt"
+      }
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import { stateCoverageOn } from './completeness.ts'
 import { implementationsOf } from './context.ts'
 import { countsForReadiness, type Graph } from './graph.ts'
 import type { Owner, Platform, SemanticComponent } from './schema.ts'
@@ -5,6 +6,7 @@ import type { Owner, Platform, SemanticComponent } from './schema.ts'
 export const GAP_KINDS = [
   'open-conflict',
   'missing-variant',
+  'missing-state',
   'platform-only-variant',
   'failing-evidence',
   'no-run-evidence',
@@ -103,6 +105,21 @@ function gapsForComponent(graph: Graph, semantic: SemanticComponent): Gap[] {
     }
   }
 
+  // Product states a screen's design neither shows nor inherits (D32), owned by whoever owns the instances.
+  const instances = graph.ofKind('component-instance').filter((instance) => instance.semanticId === semantic.id && instance.origin === 'design')
+  const screens = new Set(instances.map((instance) => screenOf(graph, instance.placedOn)))
+  for (const screenId of [...screens].sort()) {
+    for (const coverage of stateCoverageOn(graph, screenId).filter((item) => item.semanticId === semantic.id && item.missing.length > 0)) {
+      const instanceOwners = instances.filter((instance) => coverage.instanceIds.includes(instance.id)).flatMap((instance) => instance.owners ?? [])
+      gaps.push({
+        kind: 'missing-state',
+        subjectId: screenId,
+        summary: `${graph.get(screenId)?.title ?? screenId} has no design for the ${semantic.title}'s ${coverage.missing.join(', ')} state(s); show them or say the instance inherits the default.`,
+        owners: instanceOwners.length > 0 ? dedupeOwners(instanceOwners) : owners('design'),
+      })
+    }
+  }
+
   for (const item of graph.ofKind('evidence')) {
     if (item.outcome === 'fail' && item.subjectIds.some((id) => scopeIds.has(id))) {
       gaps.push({ kind: 'failing-evidence', subjectId: item.id, ...(item.platform ? { platform: item.platform } : {}), summary: `${item.title} fails.`, owners: owners('qa') })
@@ -115,6 +132,24 @@ function gapsForComponent(graph: Graph, semantic: SemanticComponent): Gap[] {
     }
   }
   return gaps
+}
+
+/** The screen an instance belongs to: its own target, or the screen that contains its state target. */
+function screenOf(graph: Graph, targetId: string): string {
+  const target = graph.get(targetId)
+  if (target?.kind !== 'target' || target.scale !== 'state') return targetId
+  const parent = graph.linksTo(targetId).find((link) => link.relation === 'contains' && countsForReadiness(link) && graph.get(link.from)?.kind === 'target')
+  return parent?.from ?? targetId
+}
+
+function dedupeOwners(owners: Owner[]): Owner[] {
+  const seen = new Set<string>()
+  return owners.filter((owner) => {
+    const key = `${owner.role}|${owner.who}|${owner.platform ?? ''}`
+    if (seen.has(key)) return false
+    seen.add(key)
+    return true
+  })
 }
 
 /** The gap list as Markdown, grouped by kind. */

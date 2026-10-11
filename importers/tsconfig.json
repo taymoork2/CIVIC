@@ -21,6 +21,7 @@
   "include": [
     "src",
     "test",
-    "../demo/fluent-button/*.ts"
+    "../demo/fluent-button/*.ts",
+    "../demo/card/*.ts"
   ]
 }

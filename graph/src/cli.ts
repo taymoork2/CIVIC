@@ -4,12 +4,16 @@
 //
 //   civic validate <file>...
 //   civic forecast <file> <override-id> [--platforms web,ios,android]
+//   civic overrides <file> <instance-id> [--json]
 //   civic context <file> <semantic-id> --platform <p> [--variant <key>] [--json]
 //   civic gaps <file> [--scope <semantic-id>] [--platform <p>] [--json]
+//   civic completeness <file> <journey-id> [--json]
 
+import { completenessOf, renderCompleteness } from './completeness.ts'
 import { contextFor, renderWorkOrder } from './context.ts'
 import { forecastOverride } from './forecast.ts'
 import { gapsIn, renderGaps } from './gaps.ts'
+import { renderInstanceReview, reviewInstance } from './overrides.ts'
 import { loadGraph, readGraphFile } from './load.ts'
 import { PLATFORMS, type Platform } from './schema.ts'
 import { validateGraph } from './validate.ts'
@@ -57,6 +61,18 @@ async function main(): Promise<number> {
     console.log(args.includes('--json') ? JSON.stringify(gaps, null, 2) : renderGaps(gaps))
     return 0
   }
+  if (command === 'overrides' && args.length >= 2) {
+    const graph = await loadGraph(args[0]!)
+    const review = reviewInstance(graph, args[1]!)
+    console.log(args.includes('--json') ? JSON.stringify(review, null, 2) : renderInstanceReview(graph, review))
+    return 0
+  }
+  if (command === 'completeness' && args.length >= 2) {
+    const graph = await loadGraph(args[0]!)
+    const result = completenessOf(graph, args[1]!)
+    console.log(args.includes('--json') ? JSON.stringify(result, null, 2) : renderCompleteness(graph, result))
+    return 0
+  }
   return usage()
 }
 
@@ -76,8 +92,10 @@ function usage(problem?: string): number {
       'Usage:',
       '  civic validate <file>...',
       '  civic forecast <file> <override-id> [--platforms web,ios,android]',
+      '  civic overrides <file> <instance-id> [--json]',
       '  civic context <file> <semantic-id> --platform <p> [--variant <key>] [--json]',
       '  civic gaps <file> [--scope <semantic-id>] [--platform <p>] [--json]',
+      '  civic completeness <file> <journey-id> [--json]',
     ].join('\n'),
   )
   return 2
