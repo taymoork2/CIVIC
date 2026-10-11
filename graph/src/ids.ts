@@ -16,6 +16,10 @@ export const ID_PREFIX: Record<RecordKind, string> = {
   override: 'override',
   evidence: 'evidence',
   'contract-conflict': 'conflict',
+  actor: 'actor',
+  line: 'line',
+  annotation: 'annotation',
+  'work-request': 'request',
 }
 
 const ID_PATTERN = /^([a-z]+):([A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)*)$/

@@ -1,16 +1,22 @@
 import { ID_PREFIX, idMatchesKind, parseId } from './ids.ts'
+import { isAnchored, laneFor } from './work.ts'
 import {
+  ACTOR_TYPES,
   ALIGNMENT_STATES,
+  ANCHOR_OUTCOMES,
   CLASSIFICATIONS,
   EVIDENCE_TIERS,
+  LINE_TYPES,
   LINK_STATUSES,
   OVERRIDE_CHANGES,
   PLATFORMS,
   RELATIONS,
+  REQUEST_STATUSES,
   ROLES,
   RUN_METHODS,
   SCHEMA_VERSION,
   STATIC_METHODS,
+  type Actor,
   type AlignmentState,
   type Evidence,
   type GraphDocument,
@@ -19,6 +25,7 @@ import {
   type RecordKind,
   type Relation,
   type Resolution,
+  type WorkRequest,
 } from './schema.ts'
 
 export interface Issue {
@@ -111,9 +118,59 @@ export function validateGraph(input: unknown): Issue[] {
     if (link.relation === 'implements' && link.to && (link.status === 'declared' || link.status === 'observed')) implemented.set(link.from, link.to)
   }
 
+  const actorRef = (at: string, field: string, id: string) => {
+    const actor = ref(at, field, id, ['actor'])
+    return actor?.kind === 'actor' ? actor : undefined
+  }
+  const actorOf = (id: string) => {
+    const record = records.get(id)
+    return record?.kind === 'actor' ? record : undefined
+  }
+
   for (const record of records.values()) {
     const at = record.id
+    // D35: an agent can annotate and comment for its person, but never writes evidence or a decision.
+    const author = record.writtenBy === undefined ? undefined : actorRef(at, 'writtenBy', record.writtenBy)
+    if (author?.type === 'agent') {
+      if (record.kind === 'evidence') error('agent-evidence', at, `${author.id} is an agent; agents can't write evidence. CIVIC's own capture does.`)
+      if (record.kind === 'contract-conflict' && record.status === 'resolved') error('agent-decision', at, `${author.id} is an agent; agents can't resolve a conflict.`)
+    }
+    if (record.source?.line) ref(at, 'source.line', record.source.line, ['line'])
     switch (record.kind) {
+      case 'actor':
+        if (record.type === 'agent') {
+          if (!record.delegatedBy) error('agent-delegation', at, 'An agent always acts for a named person; set `delegatedBy`.')
+          else if (actorRef(at, 'delegatedBy', record.delegatedBy) && actorOf(record.delegatedBy)?.type !== 'person') {
+            error('agent-delegation', at, `${record.delegatedBy} is not a person; an agent acts for a person, who is accountable.`)
+          }
+        } else if (record.delegatedBy) error('agent-delegation', at, 'Only an agent acts for someone else.')
+        break
+      case 'line':
+        if (record.type === 'main' && record.base) error('line-base', at, 'Main has no base line.')
+        if (record.type !== 'main' && !record.base) error('line-base', at, 'A line that is not main names the line it branched from.')
+        if (record.base) {
+          if (record.base === record.id) error('line-base', at, 'A line cannot be its own base.')
+          else ref(at, 'base', record.base, ['line'])
+        }
+        if (record.status === 'merged' && !record.mergedAs) error('line-merge', at, 'A merged line names the revision it merged as.')
+        if (record.status !== 'merged' && record.mergedAs) error('line-merge', at, 'Only a merged line has `mergedAs`.')
+        break
+      case 'annotation':
+        actorRef(at, 'writtenBy', record.writtenBy)
+        ref(at, 'seenOn.line', record.seenOn.line, ['line'])
+        for (const edge of record.anchor?.edges ?? []) {
+          if (!record.anchor!.targetIds.includes(edge.from)) error('edge-anchor', at, `A path anchor also lists the screen it leaves, ${edge.from}, in targetIds.`)
+        }
+        if (record.anchor && !isAnchored(record.anchor) && !record.capture) {
+          error('annotation-empty', at, 'An annotation with no target, edge or locator keeps its capture; otherwise there is nothing to look at.')
+        }
+        break
+      case 'work-request':
+        checkWorkRequest(record, at, error, ref, actorRef, actorOf, (id) => {
+          const annotation = records.get(id)
+          return annotation?.kind === 'annotation' && isAnchored(annotation.anchor)
+        })
+        break
       case 'token':
         if (record.id !== `token:${record.path}`) error('token-id', at, `A token's ID is token:<path>; expected token:${record.path}.`)
         break
@@ -200,6 +257,81 @@ export function validateGraph(input: unknown): Issue[] {
   return issues
 }
 
+type Ref = (at: string, field: string, id: string, kinds: RecordKind[]) => GraphRecord | undefined
+
+/**
+ * D38's rules for a work request: its history tells the truth about its status, agents
+ * never resolve, CIVIC resolves only in the Auto lane on a passing re-capture, the owner
+ * lane needs an owner, and for a high-risk target the person who delegated the fix can't
+ * approve it alone.
+ */
+function checkWorkRequest(
+  request: WorkRequest,
+  at: string,
+  error: (code: string, at: string, message: string) => void,
+  ref: Ref,
+  actorRef: (at: string, field: string, id: string) => Actor | undefined,
+  actorOf: (id: string) => Actor | undefined,
+  anchored: (annotationId: string) => boolean,
+) {
+  if (request.annotationIds.length === 0) error('request-annotations', at, 'A work request carries at least one annotation.')
+  for (const id of request.annotationIds) ref(at, 'annotationIds', id, ['annotation'])
+  ref(at, 'base.line', request.base.line, ['line'])
+  for (const id of request.contextIds ?? []) ref(at, 'contextIds', id, ['semantic-component'])
+  if (actorRef(at, 'requestedBy', request.requestedBy) && actorOf(request.requestedBy)?.type !== 'person') {
+    error('request-requester', at, 'A work request is asked for by a person, who owns the result.')
+  }
+  for (const check of request.acceptance) {
+    actorRef(at, 'acceptance.writtenBy', check.writtenBy)
+    if (check.acceptedBy && actorRef(at, 'acceptance.acceptedBy', check.acceptedBy) && actorOf(check.acceptedBy)?.type !== 'person') {
+      error('acceptance-self', at, 'Only a person accepts a check; an agent never grades its own work.')
+    }
+  }
+  for (const comment of request.comments) actorRef(at, 'comments.by', comment.by)
+  if (request.claim) {
+    actorRef(at, 'claim.by', request.claim.by)
+    ref(at, 'claim.line', request.claim.line, ['line'])
+  }
+  for (const fix of request.fixes) {
+    actorRef(at, 'fixes.by', fix.by)
+    ref(at, 'fixes.line', fix.line, ['line'])
+    if (fix.recapture?.evidenceId) ref(at, 'fixes.recapture.evidenceId', fix.recapture.evidenceId, ['evidence'])
+  }
+
+  const last = request.history.at(-1)
+  if (!last) return error('request-history', at, 'A work request records how it reached its status.')
+  if (last.status !== request.status) error('request-history', at, `Status is ${request.status} but the last history entry is ${last.status}.`)
+  if (request.history[0]!.status !== 'open') error('request-history', at, 'A work request starts Open.')
+  if (request.status === 'claimed' && !request.claim) error('request-claim', at, 'A claimed request has a claim.')
+  if (request.status === 'fix-ready' && request.fixes.length === 0) error('request-fix', at, 'A request is Fix ready only after a fix is reported.')
+
+  const lane = laneFor(request, actorOf, anchored)
+  for (const event of request.history) {
+    const actor = actorRef(at, 'history.by', event.by)
+    if (event.status !== 'resolved' || !actor) continue
+    if (actor.type === 'agent') {
+      error('agent-resolved', at, `${actor.id} is an agent; agents never resolve a work request (D38).`)
+      continue
+    }
+    const fix = request.fixes.at(-1)
+    if (actor.type === 'civic') {
+      if (lane !== 'auto') error('auto-lane', at, `CIVIC resolves only in the Auto lane; this request is in ${lane}.`)
+      const recapture = fix?.recapture
+      const passed = recapture !== undefined && recapture.anchors.every((anchor) => anchor.outcome === 'found-by-id' || anchor.outcome === 'found-by-locator') && recapture.checks.length > 0 && recapture.checks.every((check) => check.outcome === 'pass')
+      if (!passed) error('auto-lane', at, 'CIVIC resolves only when its own re-capture found every anchor and every acceptance check passed.')
+      continue
+    }
+    if (lane === 'owner-sign-off' && !(request.owners ?? []).some((owner) => owner.who === actor.handle)) {
+      error('owner-sign-off', at, `${actor.id} is not an owner of this request; changes to intent and high-risk targets go to a named owner.`)
+    }
+    if (request.risk === 'high' && fix) {
+      const fixer = actorOf(fix.by)
+      const delegator = fixer?.type === 'agent' ? fixer.delegatedBy : fixer?.id
+      if (delegator === actor.id) error('self-approval', at, `${actor.id} delegated this fix, so they can't be its only approver on a high-risk target.`)
+    }
+  }
+}
+
 function checkResolution(
   status: 'open' | 'resolved',
   resolution: Resolution | undefined,
@@ -242,6 +374,7 @@ function checkRecordShape(raw: unknown, at: string, error: Report) {
   field.string('title')
   field.optionalList('owners', (owner, path) => checkOwner(owner, path, error))
   field.optional('source', (source, path) => checkSource(source, path, error))
+  field.optional('writtenBy', (value, path) => checkString(value, path, error))
   field.optionalList('formerIds', (former, path) => {
     if (!isObject(former)) return error('shape', path, 'Must be an object.')
     const f = fieldChecker(former, path, error)
@@ -358,6 +491,138 @@ function checkRecordShape(raw: unknown, at: string, error: Report) {
         checkOwner(resolution.decidedBy, `${path}.decidedBy`, error)
       })
       break
+    case 'actor':
+    case 'line':
+    case 'annotation':
+    case 'work-request':
+      checkReviewShape(kind, raw, at, error)
+      break
+  }
+}
+
+function checkReviewShape(kind: RecordKind, raw: Record<string, unknown>, at: string, error: Report) {
+  const field = fieldChecker(raw, at, error)
+  const id = (value: unknown, path: string) => {
+    if (typeof value !== 'string' || !parseId(value)) error('shape', path, 'Must be a graph ID, <prefix>:<dot.separated.path>.')
+  }
+  const capture = (value: unknown, path: string) => {
+    if (!isObject(value)) return error('shape', path, 'A capture is an object.')
+    if (typeof value.sha256 !== 'string' || !/^[0-9a-f]{64}$/.test(value.sha256)) error('shape', path, 'A capture names the SHA-256 of its image.')
+    checkEnum(value.mediaType, ['image/png', 'image/jpeg', 'image/webp'], `${path}.mediaType`, error)
+  }
+  switch (kind) {
+    case 'actor':
+      field.oneOf('type', ACTOR_TYPES)
+      field.string('handle')
+      field.optional('delegatedBy', id)
+      break
+    case 'line':
+      field.oneOf('type', LINE_TYPES)
+      field.string('tool')
+      field.string('ref')
+      field.string('head')
+      field.oneOf('status', ['open', 'merged', 'abandoned'])
+      field.optional('base', id)
+      field.optionalList('previews', (preview, path) => {
+        if (!isObject(preview)) return error('shape', path, 'Must be an object.')
+        const p = fieldChecker(preview, path, error)
+        p.string('url')
+        p.string('revision')
+      })
+      break
+    case 'annotation':
+      field.string('comment')
+      field.string('at')
+      field.string('writtenBy')
+      field.optional('capture', capture)
+      if (!isObject(raw.seenOn)) error('shape', at, '`seenOn` names the line and revision the annotation was made on.')
+      else {
+        const seen = fieldChecker(raw.seenOn, `${at}.seenOn`, error)
+        seen.string('line')
+        seen.string('revision')
+      }
+      field.optional('anchor', (anchor, path) => {
+        if (!isObject(anchor)) return error('shape', path, 'An anchor is an object.')
+        const a = fieldChecker(anchor, path, error)
+        a.list('targetIds', id)
+        a.optionalList('edges', (edge, edgePath) => {
+          if (!isObject(edge)) return error('shape', edgePath, 'Must be an object.')
+          id(edge.from, `${edgePath}.from`)
+          if (edge.to !== undefined) id(edge.to, `${edgePath}.to`)
+        })
+        a.optional('locator', (locator, locatorPath) => {
+          if (!isObject(locator)) error('shape', locatorPath, 'A locator is an object.')
+        })
+        a.optional('rect', (rect, rectPath) => {
+          if (!isObject(rect) || ['x', 'y', 'width', 'height'].some((key) => typeof rect[key] !== 'number' || (rect[key] as number) < 0 || (rect[key] as number) > 1)) {
+            error('shape', rectPath, 'A rectangle is normalized to the capture: x, y, width and height between 0 and 1.')
+          }
+        })
+      })
+      break
+    case 'work-request':
+      field.string('ask')
+      field.list('annotationIds', id)
+      field.oneOf('intent', ['restore-contract', 'change'])
+      field.oneOf('risk', ['normal', 'high'])
+      field.optional('escalatedTo', (value, path) => checkEnum(value, ['batch-review', 'owner-sign-off'], path, error))
+      if (!isObject(raw.base)) error('shape', at, '`base` names the line and revision the problem was seen on.')
+      else {
+        const base = fieldChecker(raw.base, `${at}.base`, error)
+        base.string('line')
+        base.string('revision')
+      }
+      field.optional('platform', (value, path) => checkEnum(value, PLATFORMS, path, error))
+      field.optionalList('contextIds', id)
+      field.list('acceptance', (check, path) => {
+        if (!isObject(check)) return error('shape', path, 'Must be an object.')
+        const c = fieldChecker(check, path, error)
+        c.string('command')
+        c.string('writtenBy')
+      })
+      field.string('repro')
+      field.string('requestedBy')
+      field.oneOf('status', REQUEST_STATUSES)
+      field.optional('claim', (claim, path) => {
+        if (!isObject(claim)) return error('shape', path, 'Must be an object.')
+        const c = fieldChecker(claim, path, error)
+        for (const key of ['by', 'line', 'at', 'expires']) c.string(key)
+      })
+      field.list('fixes', (fix, path) => {
+        if (!isObject(fix)) return error('shape', path, 'Must be an object.')
+        const f = fieldChecker(fix, path, error)
+        for (const key of ['by', 'line', 'revision', 'at']) f.string(key)
+        f.optional('recapture', (recapture, recapturePath) => {
+          if (!isObject(recapture)) return error('shape', recapturePath, 'Must be an object.')
+          const r = fieldChecker(recapture, recapturePath, error)
+          r.string('at')
+          r.string('revision')
+          r.list('anchors', (anchor, anchorPath) => {
+            if (!isObject(anchor)) return error('shape', anchorPath, 'Must be an object.')
+            id(anchor.annotationId, `${anchorPath}.annotationId`)
+            checkEnum(anchor.outcome, ANCHOR_OUTCOMES, `${anchorPath}.outcome`, error)
+            if (anchor.capture !== undefined) capture(anchor.capture, `${anchorPath}.capture`)
+          })
+          r.list('checks', (check, checkPath) => {
+            if (!isObject(check)) return error('shape', checkPath, 'Must be an object.')
+            fieldChecker(check, checkPath, error).string('command')
+            checkEnum(check.outcome, ['pass', 'fail'], `${checkPath}.outcome`, error)
+          })
+        })
+      })
+      field.list('comments', (comment, path) => {
+        if (!isObject(comment)) return error('shape', path, 'Must be an object.')
+        const c = fieldChecker(comment, path, error)
+        for (const key of ['by', 'at', 'text']) c.string(key)
+      })
+      field.list('history', (event, path) => {
+        if (!isObject(event)) return error('shape', path, 'Must be an object.')
+        const e = fieldChecker(event, path, error)
+        e.oneOf('status', REQUEST_STATUSES)
+        e.string('by')
+        e.string('at')
+      })
+      break
   }
 }
 
@@ -398,6 +663,7 @@ function checkSource(source: unknown, at: string, error: Report) {
   field.string('tool')
   field.string('importer')
   field.string('revision')
+  field.optional('line', (value, path) => checkString(value, path, error))
 }
 
 function fieldChecker(object: Record<string, unknown>, at: string, error: Report) {
