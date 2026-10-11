@@ -8,7 +8,7 @@
 import { mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { extname, join, resolve as resolvePath } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { loadGraph, type Annotation, type CaptureRef, type EdgeRef, type GraphDocument, type Lane, type Owner, type Platform, type RequestStatus, type Role, PLATFORMS, ROLES, REQUEST_STATUSES } from '../../graph/src/index.ts'
+import { isAnchored, loadGraph, type Annotation, type CaptureRef, type EdgeRef, type GraphDocument, type Lane, type Owner, type Platform, type RequestStatus, type Role, PLATFORMS, ROLES, REQUEST_STATUSES } from '../../graph/src/index.ts'
 import { readCheckout } from './git.ts'
 import { actorId, identityFromEnv } from './identity.ts'
 import {
@@ -31,7 +31,7 @@ import {
   reviewQueue,
   type Context,
 } from './loop.ts'
-import { captureScenario, launchBrowser, recapture, reproductionUrl } from './recapture.ts'
+import { bearerFor, captureScenario, launchBrowser, recapture, reproductionUrl } from './recapture.ts'
 import { renderList, renderRequest } from './render.ts'
 import { Store } from './store.ts'
 
@@ -49,7 +49,8 @@ const USAGE = `Usage (records are shared by every worktree of this repository):
   civic queue                                     civic resolve <request>... [--note "<text>"]
   civic reopen <request> --note "<text>"          civic escalate <request> --lane batch-review|owner-sign-off
   civic add-check <request> "<command>"           civic accept-check <request> <number>
-  civic preview <url>                             civic lines | whoami`
+  civic preview <url> [--bearer-file <file>]      civic lines [--json] | annotations [--line <id>] [--json] | whoami
+  annotate also takes --rect x,y,w,h [--rect-label <text>], --viewport <w>x<h> and --json; request takes --json.`
 
 const MEDIA: Record<string, CaptureRef['mediaType']> = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp' }
 
@@ -74,6 +75,8 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
       const testId = one('--test-id')
       if ((role === undefined) !== (name === undefined)) throw new UsageError('A role locator needs both --role and --name.')
       const url = one('--url')
+      const rect = one('--rect')
+      const viewport = one('--viewport')
       const annotation = annotate(context, {
         comment: positional.join(' '),
         ...(one('--title') ? { title: one('--title')! } : {}),
@@ -82,8 +85,10 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
         ...(testId || role ? { locator: { ...(testId ? { testId } : {}), ...(role ? { role, name: name! } : {}) } } : {}),
         ...(image ? { image: { bytes: readFileSync(resolvePath(cwd, image)), mediaType: mediaOf(image) } } : {}),
         ...(url ? { url } : {}),
+        ...(rect ? { rect: parseRect(rect, one('--rect-label')) } : {}),
+        ...(viewport ? { viewport: parseViewport(viewport) } : {}),
       })
-      print(`${annotation.id}${annotation.anchor && (annotation.anchor.targetIds.length || annotation.anchor.locator) ? '' : ' (unanchored)'}`)
+      print(has('--json') ? JSON.stringify(annotation, null, 2) : `${annotation.id}${isAnchored(annotation.anchor) ? '' : ' (unanchored)'}`)
       return 0
     }
     case 'request': {
@@ -102,7 +107,7 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
         ...(platform ? { platform: platform as Platform } : {}),
         contextIds: flags.get('--context') ?? [],
       })
-      print(`${request.id} open, lane ${getRequest(context, request.id).lane}`)
+      print(has('--json') ? JSON.stringify(getRequest(context, request.id), null, 2) : `${request.id} open, lane ${getRequest(context, request.id).lane}`)
       return 0
     }
     case 'requests': {
@@ -174,7 +179,7 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
       const browser = await launchBrowser(env)
       try {
         for (const annotation of annotations) {
-          const shot = await captureScenario(browser, annotation, url)
+          const shot = await captureScenario(browser, annotation, url, bearerFor(context, url))
           const file = shot.png ? join(resolvePath(cwd, dir), `${annotation.id.slice('annotation:'.length)}.png`) : undefined
           if (file) writeFileSync(file, shot.png!)
           print(`${shot.outcome.padEnd(16)} ${shot.url}${file ? `  ${file}` : ''}`)
@@ -215,13 +220,26 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
       return 0
     case 'preview': {
       need(1)
-      const line = registerPreview(context, positional[0]!)
+      const bearer = one('--bearer-file')
+      const line = registerPreview(context, positional[0]!, bearer ? resolvePath(cwd, bearer) : undefined)
       print(`${line.id} at ${checkout.head} is served at ${new URL(positional[0]!).origin}`)
       return 0
     }
-    case 'lines':
-      print(renderLines(store.read(), lineIdFor(checkout)))
+    case 'lines': {
+      const document = store.read()
+      print(has('--json') ? JSON.stringify({ current: lineIdFor(checkout), lines: document.records.filter((record) => record.kind === 'line') }, null, 2) : renderLines(document, lineIdFor(checkout)))
       return 0
+    }
+    case 'annotations': {
+      const document = store.read()
+      const line = one('--line')
+      const requests = document.records.filter((record) => record.kind === 'work-request')
+      const annotations = document.records
+        .filter((record): record is Annotation => record.kind === 'annotation' && (!line || record.seenOn.line === line))
+        .map((annotation) => ({ annotation, requests: requests.filter((request) => request.annotationIds.includes(annotation.id)).map((request) => ({ id: request.id, status: request.status, title: request.title })) }))
+      print(has('--json') ? JSON.stringify(annotations, null, 2) : annotations.map(({ annotation, requests: linked }) => `${annotation.id}  ${annotation.seenOn.line}  ${annotation.title}${linked.length ? `  [${linked.map((request) => request.status).join(', ')}]` : ''}`).join('\n') || 'No annotations.')
+      return 0
+    }
     case 'whoami':
       print(`${actorId(context.identity)} on ${lineIdFor(checkout)} at ${checkout.head}\nStore: ${store.dir}`)
       return 0
@@ -268,6 +286,19 @@ function parseEdge(value: string): EdgeRef {
   const to = parts.length >= 2 ? `${parts[0]}:${parts[1]}` : undefined
   const action = parts.length > 2 ? parts.slice(2).join(':') : undefined
   return { from, ...(to ? { to } : {}), ...(action ? { action } : {}) }
+}
+
+function parseRect(value: string, label: string | undefined): NonNullable<Annotation['anchor']>['rect'] {
+  const numbers = value.split(',').map(Number)
+  if (numbers.length !== 4 || numbers.some((number) => !Number.isFinite(number) || number < 0 || number > 1)) throw new UsageError('A rectangle is x,y,width,height, each between 0 and 1.')
+  const [x, y, width, height] = numbers as [number, number, number, number]
+  return { x, y, width, height, ...(label ? { label } : {}) }
+}
+
+function parseViewport(value: string): { width: number; height: number } {
+  const match = /^(\d+)x(\d+)$/.exec(value)
+  if (!match) throw new UsageError('A viewport is <width>x<height>, such as 393x852.')
+  return { width: Number(match[1]), height: Number(match[2]) }
 }
 
 function parseOwner(value: string): Owner {

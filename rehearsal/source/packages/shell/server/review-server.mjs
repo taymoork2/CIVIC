@@ -8,6 +8,12 @@ const bad = (message) => { throw Object.assign(new Error(message), { status: 400
 const text = (value, max) => typeof value === 'string' && value.trim().length > 0 && value.length <= max ? value.trim() : bad('Invalid or oversized text')
 const choice = (value, choices) => choices.includes(value) ? value : bad('Unknown review condition')
 
+// An element locator read at capture time (D37): ARIA role and accessible name, matched exactly or not at all.
+function checkedLocator(locator) {
+  if (!locator || typeof locator !== 'object' || !/^[a-z]{2,40}$/.test(locator.role ?? '')) bad('Invalid element locator')
+  return { role: locator.role, name: text(locator.name, 300) }
+}
+
 async function body(req) {
   if (!req.headers['content-type']?.startsWith('application/json')) bad('Use JSON')
   let size = 0
@@ -43,7 +49,7 @@ function checkedFeedback(input, metadata, screens) {
   return {
     id: input.requestId, kind: choice(input.kind, ['bug', 'confusing', 'idea', 'other']), message: text(input.message, 4000),
     context: { scenario: c.scenario, ...(c.screen === undefined ? {} : { screen: c.screen }), persona: choice(c.persona, ['single', 'student', 'parent']), role: choice(c.role, ['owner', 'member']), condition: choice(c.condition, ['normal', 'save-error', 'offline', 'missing-care']), theme: choice(c.theme, ['light', 'dark']), textScale: choice(c.textScale, [1, 2]), viewport: { width: viewport.width, height: viewport.height }, state: { dialogs: state.dialogs.map((s) => text(s, 300)), tabs: state.tabs.map((s) => text(s, 300)), fields: state.fields.map((field) => ({ label: text(field.label, 300), value: typeof field.value === 'string' && field.value.length <= 4000 ? field.value : bad('Invalid draft value') })) } },
-    anchor: { label: text(anchor.label, 300), x: anchor.x, y: anchor.y, width: anchor.width, height: anchor.height },
+    anchor: { label: text(anchor.label, 300), x: anchor.x, y: anchor.y, width: anchor.width, height: anchor.height, ...(anchor.locator === undefined ? {} : { locator: checkedLocator(anchor.locator) }) },
     html: text(input.html, 2_500_000),
     snapshot: { revision: { head: snapshot.revision.head, source: snapshot.revision.source, capturedAt: snapshot.revision.capturedAt }, design: { project: metadata.design.project, hashes: designHashes } },
   }
@@ -51,11 +57,14 @@ function checkedFeedback(input, metadata, screens) {
 
 /**
  * Loopback-only review storage. No Convex client, household credentials or personal records.
+ * `shared`, when given, records each saved note as a CIVIC annotation in the store every
+ * worktree shares (decision 0007, D39) and hands annotations to agents as work requests.
+ * This server keeps only its own working copy and the annotation ID.
  * `publicHost` admits one authenticated Amp portal hostname; its collaborators skip the local key.
  * The adapter declares its journey screens, editable proposal properties and fixture renderer.
  * `coverage`, when given, opens the app's coverage bridge for this data directory and inventory.
  */
-export async function reviewMiddleware({ dataDir, metadata, capture, adapter, coverage, evidence = new Map(), publicHost = null }) {
+export async function reviewMiddleware({ dataDir, metadata, capture, adapter, coverage, evidence = new Map(), publicHost = null, shared = null }) {
   const { screens, proposalProperties, captureFixture, launchFixtureBrowser } = adapter
   // The shell validates exactly these presentation edits; an adapter may offer a subset.
   if (proposalProperties.some((key) => !['title', 'action', 'color'].includes(key))) throw new Error('The review shell can only validate title, action and color proposals.')
@@ -208,6 +217,17 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
         if (!file) { json(404, { error: 'Evidence missing' }); return }
         res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' }); res.end(file); return
       }
+      if (url.pathname === '/api/review/shared' && req.method === 'GET') {
+        if (!shared) { json(404, { error: 'This review server is not connected to a shared CIVIC store.' }); return }
+        json(200, await shared.list()); return
+      }
+      if (url.pathname === '/api/review/hand-off' && req.method === 'POST') {
+        if (!shared) { json(404, { error: 'This review server is not connected to a shared CIVIC store.' }); return }
+        const input = await body(req)
+        if (!Array.isArray(input.annotationIds) || input.annotationIds.length === 0 || input.annotationIds.length > 50 || input.annotationIds.some((id) => typeof id !== 'string' || !/^annotation:[0-9a-f-]{36}$/.test(id))) bad('Choose saved annotations to hand off')
+        const checks = Array.isArray(input.checks) ? input.checks.map((check) => text(check, 500)) : []
+        json(201, await serial(() => shared.handOff({ annotationIds: input.annotationIds, ask: text(input.ask, 4000), checks }))); return
+      }
       if (url.pathname === '/api/review/feedback' && req.method === 'GET') { json(200, (await serial(read)).map(withCurrentSource)); return }
       if (url.pathname === '/api/review/feedback' && req.method === 'POST') {
         const input = checkedFeedback(await body(req), metadata, screens)
@@ -219,7 +239,9 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
           const screenshot = await capture(input.html, input.context.viewport, { origin: `http://${host}`, cookie: `review_session=${session}` })
           await writeFile(join(dataDir, input.id + '.png'), screenshot, { mode: 0o600 })
           const { html: _html, snapshot, ...data } = input
-          const row = { ...data, revision: snapshot.revision, design: snapshot.design, serverRevision, sourceStale: snapshot.revision.source !== serverRevision.source || snapshot.revision.head !== serverRevision.head, createdAt: Date.now(), status: 'new', screenshot: `/api/review/screenshots/${input.id}.png`, reproduction: `/review?scenario=${encodeURIComponent(input.context.scenario)}&persona=${input.context.persona}&role=${input.context.role}&condition=${input.context.condition}&theme=${input.context.theme}&scale=${input.context.textScale}&width=${input.context.viewport.width}&feedback=${input.id}` }
+          const reproduction = `/review?scenario=${encodeURIComponent(input.context.scenario)}&persona=${input.context.persona}&role=${input.context.role}&condition=${input.context.condition}&theme=${input.context.theme}&scale=${input.context.textScale}&width=${input.context.viewport.width}&feedback=${input.id}`
+          const annotationId = shared ? await shared.record({ feedback: { ...data, revision: snapshot.revision }, screenshot, origin: `http://${host}` }) : undefined
+          const row = { ...data, ...(annotationId ? { annotationId } : {}), revision: snapshot.revision, design: snapshot.design, serverRevision, sourceStale: snapshot.revision.source !== serverRevision.source || snapshot.revision.head !== serverRevision.head, createdAt: Date.now(), status: 'new', screenshot: `/api/review/screenshots/${input.id}.png`, reproduction }
           await write([...rows, row]); return { row, duplicate: false }
         })
         json(duplicate ? 200 : 201, withCurrentSource(row)); return

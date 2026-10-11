@@ -61,6 +61,12 @@ An agent can add a check with `civic add-check`. It counts toward Auto only afte
 
 Re-capture runs only checks that a person wrote or accepted, so an agent can't run a command through CIVIC by adding it as a check. It writes a working-preview Evidence record as `actor:civic`, tied to the fix's revision and line.
 
+## The journey engine
+
+Laundry's review server ([`review-civic.mjs`](../rehearsal/source/apps/web/scripts/review-civic.mjs)) runs this CLI. Each note saved on the canvas also becomes an annotation here. A whole-screen note anchors to the scenario's target, `target:laundry.<scenario>`, which the review frame carries as `data-civic-id`. A note pinned to an element keeps that element's role and accessible name as its locator. A dragged region keeps only its rectangle. The note's capture, viewport and exact `/review-frame.html?...` scenario come with it. Saved notes get a **Hand to agent** button, and the **Across lines of work** section lists the notes from every worktree, which you can filter by line.
+
+When the review server starts, it registers itself as its line's preview, with `.review-data/access-key` as the key file. That lets `civic recapture` and `civic repro --capture` sign in with the key, which is never copied into the store. `.review-data/` still holds the server's own working state for its checkout: the access key, the fixture cache, presentation drafts, coverage candidates, and its copy of each note with the annotation's ID. Set `CIVIC_SHARED=0` to review without the shared store. Without `review/`, as in the standalone handoff, the server reviews as it did before.
+
 ## Commands
 
 ```sh

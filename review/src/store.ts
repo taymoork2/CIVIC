@@ -70,6 +70,31 @@ export class Store {
     return { sha256, mediaType }
   }
 
+  /** Where the access key for a preview origin is kept, if the preview needs one. */
+  previewAuth(origin: string): string | undefined {
+    try {
+      return (JSON.parse(readFileSync(join(this.dir, 'preview-auth.json'), 'utf8')) as Record<string, string>)[origin]
+    } catch {
+      return undefined
+    }
+  }
+
+  setPreviewAuth(origin: string, bearerFile: string | undefined) {
+    mkdirSync(this.dir, { recursive: true, mode: 0o700 })
+    const release = this.lock()
+    try {
+      const path = join(this.dir, 'preview-auth.json')
+      let current: Record<string, string> = {}
+      try { current = JSON.parse(readFileSync(path, 'utf8')) as Record<string, string> } catch {}
+      if (bearerFile) current[origin] = bearerFile
+      else delete current[origin]
+      writeFileSync(`${path}.tmp`, `${JSON.stringify(current, null, 2)}\n`, { mode: 0o600 })
+      renameSync(`${path}.tmp`, path)
+    } finally {
+      release()
+    }
+  }
+
   capturePath(capture: Pick<CaptureRef, 'sha256' | 'mediaType'>): string {
     return join(this.dir, 'captures', `${capture.sha256}.${EXTENSIONS[capture.mediaType]}`)
   }

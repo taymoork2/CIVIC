@@ -31,6 +31,8 @@ export const config: ReviewConfig = { scenario: params.get('scenario') ?? 'intak
 document.documentElement.dataset.theme = config.theme
 document.documentElement.style.fontSize = config.textScale === 2 ? '200%' : '100%'
 document.documentElement.dataset.reviewCondition = config.condition
+// The scenario's stable CIVIC target ID, so a whole-screen annotation is found again on any revision (D37).
+document.documentElement.dataset.civicId = `target:laundry.${config.scenario}`
 const local = reviewClient(config)
 const indexResponse = await fetch('/api/review/index')
 if (!indexResponse.ok) throw new Error('Review source receipt unavailable. Reload after signing in.')
