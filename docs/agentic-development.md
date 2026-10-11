@@ -4,6 +4,8 @@ Proposal, 2026-10-11, revised the same day, answering the founder's questions in
 
 **Revision (founder, 2026-10-11):** CIVIC doesn't integrate agents and makes no model calls. Everything it does comes from existing non-AI tools and static analysis of what it can read from designs and codebases. Coding agents, if a team uses them, sit outside CIVIC like any other tool an engineer uses: they can read the same contract export a person reads, and their code reaches CIVIC only through the normal PR and import path. This revision removed the agent-actor schema, the agent write interface, model-suggested states, agent-drafted TV adaptations and adapters, and agent-built prototypes.
 
+**Amendment (founder, 2026-10-11):** [decision 0007](decisions/0007-review-to-agent-loop.md) loosens part of this. Review on the journey can be handed to agents as work requests, agents get a narrow write path and act for a named person, and CIVIC still makes no model calls. See [review to agent](agent-review-loop.md).
+
 ## Short answer
 
 Agents make writing UI code cheap. They don't make knowing *what* to build, or proving it was built right, any cheaper. Those two things are what CIVIC already is: a contract (the graph) and a gate (checks plus evidence). CIVIC stays deterministic itself, and gives agentic teams three things:
