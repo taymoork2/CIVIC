@@ -26,7 +26,7 @@ test('each override gets its own answer per platform: flexible web and Android, 
 test('every override is unreviewed drift until the maintainers decide, and the design is not yet adoptable', () => {
   const raised = reviewInstance(indexGraph(load('raised')), INSTANCE)
   assert.equal(raised.items.length, 4)
-  assert.ok(raised.items.every((item) => item.conflict?.status === 'open' && item.conflict.alignment === 'unreviewed-drift'))
+  assert.ok(raised.items.every((item) => item.conflict?.alignment === 'unreviewed-drift' && !item.decision))
   assert.equal(raised.readiness, 'not-yet-adoptable')
   assert.deepEqual(raised.asked.map((owner) => owner.who), ['shop-design', 'design-system-maintainers'])
   assert.deepEqual(raised.told.map((owner) => owner.who), ['fluent-android', 'fluent-ios', 'shop-engineering', 'shop-qa'])
@@ -34,7 +34,7 @@ test('every override is unreviewed drift until the maintainers decide, and the d
 
 test('the resolved graph keeps reject, exception and promote, and leaves one change undecided', () => {
   const resolved = reviewInstance(indexGraph(load('resolved')), INSTANCE)
-  const decided = Object.fromEntries(resolved.items.map((item) => [item.override.property, item.conflict?.resolution?.outcome ?? 'open']))
+  const decided = Object.fromEntries(resolved.items.map((item) => [item.override.property, item.decision?.outcome ?? 'open']))
   assert.deepEqual(decided, { actions: 'update-contract', 'corner-radius': 'update-design', 'header.action': 'approve-exception', 'state.selected': 'open' })
   assert.equal(resolved.readiness, 'not-yet-adoptable')
 })

@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 import { baselineFrom, checkDocument, compareToBaseline, renderCheck, statusLine, type GraphDocument } from '../src/index.ts'
-import { record } from './helpers.ts'
+import { decide } from './helpers.ts'
 
 // The gate's acceptance (roadmap step 8) on the Fluent Button and Card demo graphs.
 
@@ -55,8 +55,7 @@ test('baselined findings are ignored, a new one still fails, and a fixed one is 
 
   // A new undecided override on the same graph is raised at the change that caused it.
   const changed = demo('card/out/resolved')
-  const reopened = record(demo('card/out/raised'), 'conflict:shop.order-summary.card.actions')
-  changed.records = changed.records.map((item) => (item.id === reopened.id ? (reopened as unknown as typeof item) : item))
+  changed.records = changed.records.filter((item) => item.id !== 'decision:shop.order-summary.card.actions')
   const report = compareToBaseline([run('card', changed)], baselineFrom(resolved))
   assert.equal(report.passed, false)
   assert.deepEqual(report.fresh.map((item) => item.subjectId), ['conflict:shop.order-summary.card.actions'])
@@ -71,9 +70,34 @@ test('an approved exception past its expiry blocks again', () => {
 
 test('an override no conflict tracks is unreviewed and blocks', () => {
   const document = demo('card/out/resolved')
-  document.records = document.records.filter((item) => item.id !== 'conflict:shop.order-summary.card.corner-radius')
+  document.records = document.records.filter((item) => item.id !== 'conflict:shop.order-summary.card.corner-radius' && item.id !== 'decision:shop.order-summary.card.corner-radius')
   const report = compareToBaseline([run('card', document)], undefined)
   assert.ok(report.fresh.some((item) => item.kind === 'unreviewed-override' && item.subjectId.endsWith('corner-radius')))
+})
+
+test('a decision recorded on an open conflict clears its finding, and only its finding', () => {
+  const raised = demo('fluent-button/out/raised')
+  const decided = demo('fluent-button/out/raised')
+  decide(decided, 'conflict:button.android.brand-outline', { evidenceIds: ['evidence:figma.android-kit.button'], decidedBy: { role: 'design', who: 'design-system-maintainers' } })
+  assert.equal(compareToBaseline([run('button', raised)], undefined).passed, false)
+  const report = compareToBaseline([run('button', decided)], undefined)
+  assert.deepEqual(report.fresh, [])
+  assert.deepEqual(
+    report.measures.find((item) => item.check === 'Contract conflicts open'),
+    { graph: 'button', check: 'Contract conflicts open', found: 0, of: 1 },
+  )
+})
+
+test('an agent-written decision does not clear a finding: the graph is invalid', () => {
+  const document = demo('fluent-button/out/raised')
+  document.records.push(
+    { id: 'actor:person.taymoor', kind: 'actor', title: 'Taymoor', type: 'person', handle: 'taymoor' },
+    { id: 'actor:agent.claude-code.taymoor', kind: 'actor', title: 'Claude Code for Taymoor', type: 'agent', handle: 'claude-code', delegatedBy: 'actor:person.taymoor' },
+  )
+  decide(document, 'conflict:button.android.brand-outline', { evidenceIds: ['evidence:figma.android-kit.button'], writtenBy: 'actor:agent.claude-code.taymoor' })
+  const report = compareToBaseline([run('button', document)], undefined)
+  assert.equal(report.passed, false)
+  assert.ok(report.fresh.some((item) => item.kind === 'invalid-graph' && item.key.includes('agent-decision')))
 })
 
 test('a project can choose which kinds block', () => {

@@ -13,7 +13,7 @@ Importers read what each role's tools already produce and turn it into [CIVIC gr
 | `readPlaywrightReport` | Playwright's JSON reporter output | `automated` evidence for each test that names CIVIC IDs in a `civic.subject` annotation |
 | `compareDesignKit` | A design kit and the same platform's component | Open, unclassified Contract Conflicts, one per variant they disagree on |
 | `raiseOverrideDrift` | A product's overrides on a library component | Open, unclassified Contract Conflicts in Unreviewed drift, one per override, asking its maker and the contract's design owners |
-| `applyDecisions` | People's recorded decisions | Conflicts classified and resolved inline, until roadmap step 3 adds Decision records |
+| `applyDecisions` | A decision file (`civic.decisions/0`) of people's Decision records | The raised graph with those Decision records added; a decision on a conflict the import didn't raise fails |
 | `assemble` | Fragments from the importers above | One graph document in a stable order |
 
 ## Rules every importer follows

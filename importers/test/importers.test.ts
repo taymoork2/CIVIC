@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { validateGraph, type ContractConflict, type PlatformComponent, type SemanticComponent } from '../../graph/src/index.ts'
+import { conflictState, indexGraph, validateGraph, type ContractConflict, type Decision, type PlatformComponent, type SemanticComponent } from '../../graph/src/index.ts'
 import {
   applyDecisions,
   assemble,
@@ -106,7 +106,7 @@ test('reads a Figma component set and raises a conflict for a variant the code c
   const conflicts = compareDesignKit(semantic, design, record, 'evidence:lib.button.variants')
   assert.deepEqual(conflicts.map((conflict) => conflict.id), ['conflict:button.android.neutral'])
   assert.deepEqual(conflicts[0]?.owners.map((owner) => owner.who), ['ds', 'lib'])
-  assert.equal(conflicts[0]?.status, 'open')
+  assert.equal(conflicts[0]?.alignment, 'unreviewed-drift')
   assert.equal(conflicts[0]?.classification, 'unclassified')
   const document = assemble(fragment([semantic, design.evidence, ...conflicts]), component())
   assert.deepEqual(validateGraph(document).filter((issue) => issue.severity === 'error'), [])
@@ -195,27 +195,29 @@ test('assemble is ordered and refuses two claims on one ID', () => {
   assert.throws(() => assemble(fragment([semantic]), fragment([semantic])), /Two importers produced semantic:button/)
 })
 
-test('decisions classify and resolve raised conflicts, and stale decisions fail', () => {
+test('decision records decide raised conflicts, and stale decisions fail', () => {
   const design = readFigmaComponentSet(figma(['Primary', 'Neutral']), kit, 'semantic:button', 'x')
   const record = component().records.find((candidate) => candidate.kind === 'platform-component') as PlatformComponent
   const document = assemble(fragment([semantic, design.evidence, ...compareDesignKit(semantic, design, record, 'evidence:lib.button.variants')]), component())
-  const decided = applyDecisions(document, [
-    {
-      conflictId: 'conflict:button.android.neutral',
-      classification: 'temporary-gap',
-      alignment: 'accepted-limitation',
-      resolution: {
-        outcome: 'approve-exception',
-        decidedBy: { role: 'design', who: 'ds' },
-        at: '2026-10-11T00:00:00Z',
-        rationale: 'Use custom tokens.',
-        evidenceIds: ['evidence:lib.button.variants'],
-        revisitTrigger: 'The library adds a neutral style.',
-      },
-    },
-  ])
-  const conflict = decided.records.find((candidate) => candidate.kind === 'contract-conflict') as ContractConflict
-  assert.equal(conflict.status, 'resolved')
+  const decision: Decision = {
+    id: 'decision:button.android.neutral',
+    kind: 'decision',
+    title: 'Neutral as a temporary exception',
+    conflictId: 'conflict:button.android.neutral',
+    outcome: 'approve-exception',
+    classification: 'temporary-gap',
+    alignment: 'accepted-limitation',
+    decidedBy: { role: 'design', who: 'ds' },
+    at: '2026-10-11T00:00:00Z',
+    rationale: 'Use custom tokens.',
+    evidenceIds: ['evidence:lib.button.variants'],
+    revisitTrigger: 'The library adds a neutral style.',
+  }
+  const decided = applyDecisions(document, { schema: 'civic.decisions/0', decisions: [decision] })
+  const graph = indexGraph(decided)
+  const conflict = graph.get('conflict:button.android.neutral') as ContractConflict
+  assert.equal(conflict.alignment, 'unreviewed-drift', 'the conflict keeps what the import raised')
+  assert.equal(conflictState(graph, conflict).alignment, 'accepted-limitation')
   assert.deepEqual(validateGraph(decided).filter((issue) => issue.severity === 'error'), [])
-  assert.throws(() => applyDecisions(document, [{ conflictId: 'conflict:button.ios.neutral', classification: 'temporary-gap' }]), /did not raise/)
+  assert.throws(() => applyDecisions(document, [{ ...decision, conflictId: 'conflict:button.ios.neutral' }]), /did not raise/)
 })

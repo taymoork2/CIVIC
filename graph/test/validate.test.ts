@@ -1,8 +1,10 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { validateGraph, type Issue } from '../src/index.ts'
-import type { GraphDocument } from '../src/schema.ts'
-import { edited, example, record } from './helpers.ts'
+import { conflictState, decisionFor, indexGraph, validateGraph, type Issue } from '../src/index.ts'
+import type { ContractConflict, Decision, GraphDocument, GraphRecord } from '../src/schema.ts'
+import { decide, edited, example, record } from './helpers.ts'
+
+const PROOF = ['evidence:compose-source.button.styles']
 
 const errorCodes = (document: unknown) =>
   validateGraph(document).filter((issue: Issue) => issue.severity === 'error').map((issue) => issue.code)
@@ -44,7 +46,24 @@ const cases: [string, 'fluent-button' | 'card-override', (document: GraphDocumen
   ['a conflict with one side', 'fluent-button', (d) => { record<{ sides: unknown[] }>(d, 'conflict:button.android.neutral-default').sides.pop() }, 'conflict-sides'],
   ['a conflict with no owners', 'fluent-button', (d) => { record(d, 'conflict:button.android.neutral-default').owners = [] }, 'conflict-owners'],
   ['an open conflict marked aligned', 'fluent-button', (d) => { record(d, 'conflict:button.android.neutral-default').alignment = 'aligned' }, 'alignment-inconsistent'],
-  ['a resolved conflict with no resolution', 'fluent-button', (d) => { record(d, 'conflict:button.android.neutral-default').status = 'resolved' }, 'resolution-missing'],
+  ['a conflict that still carries an inline resolution', 'fluent-button', (d) => { record(d, 'conflict:button.android.neutral-default').status = 'resolved' }, 'decision-inline'],
+  ['a decision on something that is not a conflict', 'fluent-button', (d) => { decide(d, 'conflict:button.android.neutral-default', { evidenceIds: PROOF }).conflictId = 'semantic:button' }, 'reference-kind'],
+  ['a decision that leaves the conflict unclassified', 'fluent-button', (d) => { decide(d, 'conflict:button.android.neutral-default', { evidenceIds: PROOF, classification: 'unclassified' }) }, 'decision-unclassified'],
+  ['an expiry on a decision that is not an exception', 'fluent-button', (d) => { decide(d, 'conflict:button.android.neutral-default', { evidenceIds: PROOF, expires: '2027-01-01' }) }, 'decision-expires'],
+  ['two decisions in force on one conflict', 'fluent-button', (d) => {
+    decide(d, 'conflict:button.android.neutral-default', { evidenceIds: PROOF })
+    decide(d, 'conflict:button.android.neutral-default', { evidenceIds: PROOF, id: 'decision:button.android.neutral-default.2' })
+  }, 'decisions-in-force'],
+  ['one decision superseded by two later ones', 'fluent-button', (d) => {
+    decide(d, 'conflict:button.android.neutral-default', { evidenceIds: PROOF })
+    decide(d, 'conflict:button.android.neutral-default', { evidenceIds: PROOF, id: 'decision:button.android.neutral-default.2', supersedes: 'decision:button.android.neutral-default' })
+    decide(d, 'conflict:button.android.neutral-default', { evidenceIds: PROOF, id: 'decision:button.android.neutral-default.3', supersedes: 'decision:button.android.neutral-default' })
+  }, 'supersedes-twice'],
+  ['a decision superseding one on another conflict', 'fluent-button', (d) => {
+    decide(d, 'conflict:button.android.neutral-default', { evidenceIds: PROOF })
+    d.records.push({ ...record(d, 'conflict:button.android.neutral-default'), id: 'conflict:button.android.other' } as GraphRecord)
+    decide(d, 'conflict:button.android.other', { evidenceIds: PROOF, supersedes: 'decision:button.android.neutral-default' })
+  }, 'supersedes-other-conflict'],
   ['an observed link with only static evidence', 'card-override', (d) => {
     d.records.push({ id: 'evidence:promo.source', kind: 'evidence', title: 'Promo route in source', subjectIds: ['target:shop.order-summary'], tier: 'static-analysis', method: 'source-analysis', outcome: 'finding', finding: 'A route exists.', capturedAt: '2026-10-11T00:00:00Z', source: { tool: 'github', importer: 'test', revision: 'abc' } })
     const link = d.links.find((l) => l.action === 'Apply promotion')!
@@ -70,19 +89,40 @@ for (const [name, base, edit, code] of cases) {
   })
 }
 
-test('a resolved conflict needs evidence for the decided outcome', () => {
-  const resolve = (resolution: Record<string, unknown>, alignment: string) => edited('fluent-button', (d) => {
-    const conflict = record(d, 'conflict:button.android.neutral-default')
-    conflict.status = 'resolved'
-    conflict.alignment = alignment
-    conflict.resolution = { decidedBy: { role: 'design', who: 'design-system-maintainers' }, at: '2026-10-12T00:00:00Z', rationale: 'Compose is the source of truth.', ...resolution }
+test('a decision needs evidence for the decided outcome', () => {
+  const resolve = (fields: Partial<Decision> & Pick<Decision, 'evidenceIds'>) =>
+    edited('fluent-button', (d) => { decide(d, 'conflict:button.android.neutral-default', fields) })
+  assert.deepEqual(errorCodes(resolve({ outcome: 'update-design', evidenceIds: PROOF })), [])
+  assert.ok(errorCodes(resolve({ outcome: 'update-design', evidenceIds: [] })).includes('decision-evidence'))
+  assert.ok(errorCodes(resolve({ outcome: 'approve-exception', alignment: 'accepted-limitation', evidenceIds: PROOF })).includes('exception-revisit'))
+  assert.deepEqual(errorCodes(resolve({ outcome: 'approve-exception', alignment: 'accepted-limitation', evidenceIds: PROOF, revisitTrigger: 'Compose ships a neutral style' })), [])
+  assert.ok(errorCodes(resolve({ outcome: 'approve-exception', alignment: 'aligned', evidenceIds: PROOF, revisitTrigger: 'later' })).includes('alignment-inconsistent'))
+})
+
+test('a later decision supersedes an earlier one, and only the later one is in force', () => {
+  const document = edited('fluent-button', (d) => {
+    decide(d, 'conflict:button.android.neutral-default', { evidenceIds: PROOF })
+    decide(d, 'conflict:button.android.neutral-default', {
+      id: 'decision:button.android.neutral-default.2',
+      at: '2026-10-13T00:00:00Z',
+      outcome: 'approve-exception',
+      classification: 'temporary-gap',
+      alignment: 'accepted-limitation',
+      revisitTrigger: 'Compose ships a neutral style.',
+      supersedes: 'decision:button.android.neutral-default',
+      evidenceIds: PROOF,
+    })
   })
-  const proof = ['evidence:compose-source.button.styles']
-  assert.deepEqual(errorCodes(resolve({ outcome: 'update-design', evidenceIds: proof }, 'awaiting-adoption')), [])
-  assert.ok(errorCodes(resolve({ outcome: 'update-design', evidenceIds: [] }, 'awaiting-adoption')).includes('resolution-evidence'))
-  assert.ok(errorCodes(resolve({ outcome: 'approve-exception', evidenceIds: proof }, 'accepted-limitation')).includes('exception-revisit'))
-  assert.deepEqual(errorCodes(resolve({ outcome: 'approve-exception', evidenceIds: proof, revisitTrigger: 'Compose ships a neutral style' }, 'accepted-limitation')), [])
-  assert.ok(errorCodes(resolve({ outcome: 'approve-exception', evidenceIds: proof, revisitTrigger: 'later' }, 'aligned')).includes('alignment-inconsistent'))
+  assert.deepEqual(errorCodes(document), [])
+  const graph = indexGraph(document)
+  assert.equal(decisionFor(graph, 'conflict:button.android.neutral-default')?.id, 'decision:button.android.neutral-default.2')
+  const state = conflictState(graph, record<ContractConflict>(document, 'conflict:button.android.neutral-default'))
+  assert.deepEqual([state.status, state.classification, state.alignment], ['decided', 'temporary-gap', 'accepted-limitation'])
+})
+
+test('a decision by someone who does not own the conflict is a warning', () => {
+  const document = edited('fluent-button', (d) => { decide(d, 'conflict:button.android.neutral-default', { evidenceIds: PROOF, decidedBy: { role: 'qa', who: 'someone' } }) })
+  assert.ok(validateGraph(document).some((issue) => issue.severity === 'warning' && issue.code === 'decision-not-owner'))
 })
 
 test('a re-anchored ID is kept and references to it must be updated explicitly', () => {

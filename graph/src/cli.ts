@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// civic: validate graph files, forecast overrides, and export contracts and gaps (D31).
-// Every command is read-only and deterministic, and none makes a model call (D30).
+// civic: validate graph files, forecast overrides, export contracts and gaps (D31), run the
+// gate, and record a person's decision on a conflict. Every command but `decide` is read-only;
+// all are deterministic, and none makes a model call (D30).
 //
 //   civic validate <file>...
 //   civic forecast <file> <override-id> [--platforms web,ios,android]
@@ -9,18 +10,21 @@
 //   civic gaps <file> [--scope <semantic-id>] [--platform <p>] [--json]
 //   civic completeness <file> <journey-id> [--json]
 //   civic check [<file>...] [--config civic.check.json] [--baseline <file>] [--update-baseline] [--today <date>] [--json] [--post]
+//   civic decide <decisions.json> <conflict-id> --graph <file> --outcome <o> --classification <c> --by <role>:<who>
+//                --rationale <text> --evidence <id,...> [--alignment <a>] [--title <t>] [--revisit <text>] [--expires <date>] [--at <time>]
 
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, relative, resolve } from 'node:path'
 import { baselineFrom, checkDocument, compareToBaseline, DEFAULT_BLOCKING, FINDING_KINDS, renderCheck, statusLine, type Baseline, type FindingKind } from './check.ts'
 import { completenessOf, renderCompleteness } from './completeness.ts'
+import { ALIGNMENT_FOR, DECISION_FILE_SCHEMA, recordDecision, type DecisionFile } from './decisions.ts'
 import { contextFor, renderWorkOrder } from './context.ts'
 import { forecastOverride } from './forecast.ts'
 import { gapsIn, renderGaps } from './gaps.ts'
 import { renderInstanceReview, reviewInstance } from './overrides.ts'
 import { loadGraph, readGraphFile } from './load.ts'
-import { PLATFORMS, type Platform } from './schema.ts'
+import { CLASSIFICATIONS, DECISION_OUTCOMES, PLATFORMS, ROLES, type AlignmentState, type Classification, type DecisionOutcome, type GraphDocument, type Platform, type Role } from './schema.ts'
 import { validateGraph } from './validate.ts'
 
 const [command, ...args] = process.argv.slice(2)
@@ -79,7 +83,66 @@ async function main(): Promise<number> {
     return 0
   }
   if (command === 'check') return check()
+  if (command === 'decide' && args.length >= 2) return decide(args[0]!, args[1]!)
   return usage()
+}
+
+/**
+ * Records a person's decision on a conflict as a Decision record in the project's decision
+ * file (roadmap step 3). The file is checked against the graph before it is written, so a
+ * decision on a conflict the graph doesn't raise, or one without evidence, is never kept.
+ * A later call on the same conflict supersedes the one in force. Rebuild the graph after.
+ */
+async function decide(file: string, conflictId: string): Promise<number> {
+  const graphPath = option('--graph')
+  if (!graphPath) return usage('decide needs --graph, the graph that raised the conflict, to check the decision against.')
+  const outcome = option('--outcome')
+  if (!outcome || !(DECISION_OUTCOMES as readonly string[]).includes(outcome)) return usage(`--outcome is one of ${DECISION_OUTCOMES.join(', ')}.`)
+  const classification = option('--classification')
+  if (!classification || classification === 'unclassified' || !(CLASSIFICATIONS as readonly string[]).includes(classification)) {
+    return usage(`--classification is one of ${CLASSIFICATIONS.filter((item) => item !== 'unclassified').join(', ')}.`)
+  }
+  const allowed = ALIGNMENT_FOR[outcome as DecisionOutcome]
+  const alignment = option('--alignment') ?? allowed[0]!
+  if (!allowed.includes(alignment as AlignmentState)) return usage(`A ${outcome} decision leaves the conflict ${allowed.join(' or ')}.`)
+  const [role, who] = (option('--by') ?? '').split(':') as [string, string | undefined]
+  if (!(ROLES as readonly string[]).includes(role) || !who) return usage(`--by is <role>:<who>, where role is one of ${ROLES.join(', ')}.`)
+  const rationale = option('--rationale')
+  if (!rationale) return usage('--rationale says why, in a sentence or two.')
+  const evidenceIds = (option('--evidence') ?? '').split(',').filter(Boolean)
+  const revisitTrigger = option('--revisit')
+  const expires = option('--expires')
+
+  const document = (await readGraphFile(graphPath)) as GraphDocument
+  const conflict = Array.isArray(document.records) ? document.records.find((record) => record.id === conflictId) : undefined
+  const existing: DecisionFile = existsSync(file) ? (JSON.parse(readFileSync(file, 'utf8')) as DecisionFile) : { schema: DECISION_FILE_SCHEMA, decisions: [] }
+  if (existing.schema !== DECISION_FILE_SCHEMA) return usage(`${file} is not a decision file (schema ${DECISION_FILE_SCHEMA}).`)
+  const { file: next, decision } = recordDecision(existing, {
+    title: option('--title') ?? `Decision on ${conflict?.title ?? conflictId}`,
+    conflictId,
+    outcome: outcome as DecisionOutcome,
+    classification: classification as Classification,
+    alignment: alignment as AlignmentState,
+    decidedBy: { role: role as Role, who },
+    at: option('--at') ?? new Date().toISOString(),
+    rationale,
+    evidenceIds,
+    ...(revisitTrigger ? { revisitTrigger } : {}),
+    ...(expires ? { expires } : {}),
+  })
+
+  // The graph with this file's decisions in place of any it already holds.
+  const candidate = { ...document, records: [...document.records.filter((record) => record.kind !== 'decision'), ...next.decisions] }
+  const issues = validateGraph(candidate).filter((issue) => issue.severity === 'error' || issue.at === decision.id)
+  const errors = issues.filter((issue) => issue.severity === 'error')
+  for (const issue of issues) console.error(`  ${issue.severity} ${issue.code} at ${issue.at}: ${issue.message}`)
+  if (errors.length > 0) {
+    console.error(`Not recorded: ${errors.length} error(s) with this decision on ${graphPath}.`)
+    return 1
+  }
+  writeFileSync(file, `${JSON.stringify(next, null, 2)}\n`)
+  console.log(`Recorded ${decision.id} in ${file}${decision.supersedes ? `, superseding ${decision.supersedes}` : ''}. Rebuild the graph, then run civic check.`)
+  return 0
 }
 
 /** The project's gate settings: which graphs to check, the baseline, and optionally which kinds block. */
@@ -156,6 +219,8 @@ function usage(problem?: string): number {
       '  civic gaps <file> [--scope <semantic-id>] [--platform <p>] [--json]',
       '  civic completeness <file> <journey-id> [--json]',
       '  civic check [<file>...] [--config civic.check.json] [--baseline <file>] [--update-baseline] [--today <date>] [--json] [--post]',
+      '  civic decide <decisions.json> <conflict-id> --graph <file> --outcome <o> --classification <c> --by <role>:<who>',
+      '               --rationale <text> --evidence <id,...> [--alignment <a>] [--title <t>] [--revisit <text>] [--expires <date>] [--at <time>]',
     ].join('\n'),
   )
   return 2

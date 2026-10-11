@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { indexGraph, isAnchored, laneFor, resolveAnchor, validateGraph, type Actor, type Annotation, type GraphDocument, type ObservedElement, type WorkRequest } from '../src/index.ts'
-import { edited, example, record } from './helpers.ts'
+import { decide, edited, example, record } from './helpers.ts'
 
 const errorCodes = (document: unknown) => validateGraph(document).filter((issue) => issue.severity === 'error').map((issue) => issue.code)
 const request = (d: GraphDocument, id: string) => record<WorkRequest>(d, id)
@@ -71,8 +71,7 @@ test('rejects an agent resolving a contract conflict', () => {
       { id: 'actor:person.taymoor', kind: 'actor', title: 'Taymoor', type: 'person', handle: 'taymoor' } as Actor,
       { id: 'actor:agent.claude-code.taymoor', kind: 'actor', title: 'Claude Code for Taymoor', type: 'agent', handle: 'claude-code', delegatedBy: 'actor:person.taymoor' } as Actor,
     )
-    const conflict = d.records.find((candidate) => candidate.kind === 'contract-conflict')!
-    Object.assign(conflict, { status: 'resolved', writtenBy: 'actor:agent.claude-code.taymoor' })
+    decide(d, 'conflict:button.android.neutral-default', { evidenceIds: ['evidence:compose-source.button.styles'], writtenBy: 'actor:agent.claude-code.taymoor' })
   }))
   assert.ok(codes.includes('agent-decision'), `expected agent-decision in ${JSON.stringify(codes)}`)
 })

@@ -952,8 +952,7 @@
           "who": "design-system-maintainers"
         }
       ],
-      "alignment": "unreviewed-drift",
-      "status": "open"
+      "alignment": "unreviewed-drift"
     },
     {
       "id": "conflict:shop.order-summary.card.corner-radius",
@@ -988,8 +987,7 @@
           "who": "design-system-maintainers"
         }
       ],
-      "alignment": "unreviewed-drift",
-      "status": "open"
+      "alignment": "unreviewed-drift"
     },
     {
       "id": "conflict:shop.order-summary.card.header-action",
@@ -1024,8 +1022,7 @@
           "who": "design-system-maintainers"
         }
       ],
-      "alignment": "unreviewed-drift",
-      "status": "open"
+      "alignment": "unreviewed-drift"
     },
     {
       "id": "conflict:shop.order-summary.card.state-selected",
@@ -1060,8 +1057,7 @@
           "who": "design-system-maintainers"
         }
       ],
-      "alignment": "unreviewed-drift",
-      "status": "open"
+      "alignment": "unreviewed-drift"
     }
   ],
   "links": [

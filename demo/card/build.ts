@@ -19,6 +19,7 @@ import {
   renderGaps,
   renderInstanceReview,
   reviewInstance,
+  type DecisionFile,
   type GraphDocument,
   type GraphRecord,
   type Link,
@@ -44,7 +45,6 @@ import {
   tsExportedComponents,
   tsPropUnion,
   tsTypeKeys,
-  type ConflictDecision,
   type LibraryComponentMapping,
   type PlatformMapping,
   type ProductManifest,
@@ -167,7 +167,7 @@ const drift = fragment(raiseOverrideDrift(semantic, overrides, { design: designE
 // --- Assemble, decide, export ---------------------------------------------------------
 
 const raised = assemble(contract, web, ios, android, fragment([library.evidence]), shop, drift)
-const resolved = applyDecisions(raised, json<{ decisions: ConflictDecision[] }>('contract/decisions.json').decisions)
+const resolved = applyDecisions(raised, json<DecisionFile>('contract/decisions.json'))
 assertValid(raised)
 assertValid(resolved)
 

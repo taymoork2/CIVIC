@@ -31,13 +31,27 @@ Every record has a stable ID, `<prefix>:<dot.separated.path>`, a title, and opti
 | Component instance | `instance:` | A use of a component on a product's screen, from design or code, with the contract `state` it shows and any product states it `inheritsStates` from the default |
 | Override | `override:` | A local change to an instance: added content, a changed property, a local style, or a detach |
 | Evidence | `evidence:` | What a source shows, tied to the exact revision it read, in one evidence tier |
-| Contract Conflict | `conflict:` | Two sources that disagree on a target: classification, owners, alignment state and evidence-backed resolution |
+| Contract Conflict | `conflict:` | Two sources that disagree on a target, as the import raised it: the sides and their evidence, owners, and the state it was raised in |
+| Decision | `decision:` | A person's call on a conflict: outcome, classification, the alignment state it leaves, who decided, rationale, evidence, and for an exception its revisit trigger and expiry. A later decision `supersedes` an earlier one. |
 | Actor | `actor:` | Who wrote something: a person, an agent acting for a named person, or CIVIC's own deterministic process |
 | Line | `line:` | A stream of work with revisions: main, a branch, a worktree, a PR with its preview, or a design draft |
 | Annotation | `annotation:` | A comment on a journey, screen, part of a screen, path or branch, with layered anchors, a frozen capture, and the line and revision it was made on |
 | Work request | `request:` | Annotations handed to an agent: base revision, acceptance checks, repro command, claim lease, reported fixes, CIVIC's re-capture, and a status history |
 
-Proposal, Decision, Adoption and Verification become separate records in roadmap step 3. Until then a conflict keeps its decision inline in `resolution`.
+### Decisions
+
+A conflict is decided only by a Decision record (roadmap step 3, [`src/decisions.ts`](src/decisions.ts)). The conflict keeps what the import raised, and whether it is decided, how it was classified and which alignment state it is in are read from the Decision in force on it: the one no later Decision supersedes. A changed call is a new Decision that supersedes the old one, so the history stays. Validation requires evidence, a classification, an alignment state that fits the outcome, and a revisit trigger for an exception. It allows one decision in force per conflict, warns when the decider isn't one of the conflict's owners, and rejects a decision an agent wrote (D35).
+
+A project keeps its decisions in a decision file (`civic.decisions/0`) next to its contract, reviewed and versioned like code, and its importers add them to the graph they raise. `civic decide` adds one:
+
+```sh
+civic decide demo/fluent-button/contract/decisions.json conflict:button.android.brand-outline \
+  --graph demo/fluent-button/out/raised.graph.json --outcome update-design \
+  --classification outdated-design-source --by design:design-system-maintainers \
+  --rationale "The kit predates Compose's OutlinedButton." --evidence evidence:figma.android-kit.button
+```
+
+It checks the decision against the graph before writing, defaults the alignment state from the outcome, and supersedes the decision already in force. Rebuild the graph, and the gate stops counting the conflict as undecided. Proposal, Adoption and Verification records come later in step 3.
 
 Any record can name the actor that wrote it in `writtenBy`, and a `SourceRef` can name the `line` its revision was seen on.
 
@@ -107,7 +121,7 @@ Two read-only queries over a graph (D31). Both are deterministic and print Markd
 - **Status.** `--post` records the result as a `civic` commit status through the GitHub CLI, from a clean working tree, the way `bin/signoff` records `signoff`. There are no GitHub Actions.
 - **Dates.** Expiry is compared with today's date, or `--today <date>` for a repeatable run. The same graphs and date always give the same report.
 
-A decision is still the inline `resolution` on a conflict; the Decision record (roadmap step 3) replaces it.
+A conflict counts as decided only when a Decision record is in force on it ([Decisions](#decisions)). An agent-written decision makes the graph invalid, so it never clears a finding.
 
 ## Commands
 

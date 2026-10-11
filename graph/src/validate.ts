@@ -1,3 +1,4 @@
+import { ALIGNMENT_FOR } from './decisions.ts'
 import { ID_PREFIX, idMatchesKind, parseId } from './ids.ts'
 import { isAnchored, laneFor } from './work.ts'
 import {
@@ -5,6 +6,7 @@ import {
   ALIGNMENT_STATES,
   ANCHOR_OUTCOMES,
   CLASSIFICATIONS,
+  DECISION_OUTCOMES,
   EVIDENCE_TIERS,
   LINE_TYPES,
   LINK_STATUSES,
@@ -17,14 +19,12 @@ import {
   SCHEMA_VERSION,
   STATIC_METHODS,
   type Actor,
-  type AlignmentState,
   type Evidence,
   type GraphDocument,
   type GraphRecord,
   type Link,
   type RecordKind,
   type Relation,
-  type Resolution,
   type WorkRequest,
 } from './schema.ts'
 
@@ -50,18 +50,9 @@ const RELATION_KINDS: Record<Relation, { from: RecordKind[]; to: RecordKind[] }>
 /** Evidence tiers that prove behavior, so they can back an observed link. */
 const RUN_TIERS: Evidence['tier'][] = ['automated', 'physical-device']
 
-/** Which alignment states a conflict may carry, by status and resolution outcome. */
-const ALIGNMENT_FOR: Record<'open' | Resolution['outcome'], AlignmentState[]> = {
-  open: ['unreviewed-drift', 'unknown-stale'],
-  'update-design': ['awaiting-adoption', 'aligned'],
-  'change-implementation': ['awaiting-adoption', 'aligned'],
-  'update-contract': ['awaiting-adoption', 'aligned'],
-  'approve-exception': ['approved-adaptation', 'accepted-limitation'],
-}
-
 /**
  * Checks a graph document against schema v0: the shape of every record and link, stable
- * IDs, references, link statuses, evidence honesty and conflict resolution. Pure and
+ * IDs, references, link statuses, evidence honesty and decisions on conflicts. Pure and
  * deterministic; it reads nothing but its argument.
  */
 export function validateGraph(input: unknown): Issue[] {
@@ -133,7 +124,7 @@ export function validateGraph(input: unknown): Issue[] {
     const author = record.writtenBy === undefined ? undefined : actorRef(at, 'writtenBy', record.writtenBy)
     if (author?.type === 'agent') {
       if (record.kind === 'evidence') error('agent-evidence', at, `${author.id} is an agent; agents can't write evidence. CIVIC's own capture does.`)
-      if (record.kind === 'contract-conflict' && record.status === 'resolved') error('agent-decision', at, `${author.id} is an agent; agents can't resolve a conflict.`)
+      if (record.kind === 'decision') error('agent-decision', at, `${author.id} is an agent; agents can't decide a conflict. A person records the decision.`)
     }
     if (record.source?.line) ref(at, 'source.line', record.source.line, ['line'])
     switch (record.kind) {
@@ -245,10 +236,51 @@ export function validateGraph(input: unknown): Issue[] {
           for (const id of side.evidenceIds) ref(at, 'sides.evidenceIds', id, ['evidence'])
         }
         if (record.owners.length === 0) error('conflict-owners', at, 'A conflict has at least one owner.')
-        checkResolution(record.status, record.resolution, record.alignment, at, error, (id) => ref(at, 'resolution.evidenceIds', id, ['evidence']))
+        if (!ALIGNMENT_FOR.open.includes(record.alignment)) {
+          error('alignment-inconsistent', at, `A conflict records the state it was raised in (${ALIGNMENT_FOR.open.join(' or ')}); ${record.alignment} comes from a Decision record.`)
+        }
+        break
+      }
+      case 'decision': {
+        const conflict = ref(at, 'conflictId', record.conflictId, ['contract-conflict'])
+        if (record.evidenceIds.length === 0) error('decision-evidence', at, 'A conflict is decided only with evidence for the decided outcome.')
+        for (const id of record.evidenceIds) ref(at, 'evidenceIds', id, ['evidence'])
+        if (record.classification === 'unclassified') error('decision-unclassified', at, 'A decision classifies the conflict it decides.')
+        if (record.outcome === 'approve-exception' && !record.revisitTrigger) error('exception-revisit', at, 'An approved exception names its revisit trigger.')
+        if (record.expires && record.outcome !== 'approve-exception') error('decision-expires', at, 'Only an approved exception expires.')
+        const allowed = ALIGNMENT_FOR[record.outcome]
+        if (!allowed.includes(record.alignment)) {
+          error('alignment-inconsistent', at, `Alignment ${record.alignment} does not fit a ${record.outcome} decision; expected ${allowed.join(' or ')}.`)
+        }
+        if (conflict?.kind === 'contract-conflict' && !conflict.owners.some((owner) => owner.role === record.decidedBy.role && owner.who === record.decidedBy.who)) {
+          add('warning', 'decision-not-owner', at, `${record.decidedBy.role} ${record.decidedBy.who} is not an owner of ${conflict.id}; an owner decides, or is added as one.`)
+        }
+        if (record.supersedes) {
+          const earlier = ref(at, 'supersedes', record.supersedes, ['decision'])
+          if (earlier?.kind === 'decision' && earlier.conflictId !== record.conflictId) {
+            error('supersedes-other-conflict', at, `${record.supersedes} decides ${earlier.conflictId}, not ${record.conflictId}.`)
+          }
+        }
         break
       }
     }
+  }
+
+  // One decision in force per conflict: every other decision on it is superseded by a later one.
+  const decisions = [...records.values()].filter((record) => record.kind === 'decision')
+  const superseders = new Map<string, string[]>()
+  for (const decision of decisions) {
+    if (decision.supersedes) superseders.set(decision.supersedes, [...(superseders.get(decision.supersedes) ?? []), decision.id])
+  }
+  for (const [id, by] of superseders) {
+    if (by.length > 1) error('supersedes-twice', id, `${id} is superseded by ${by.join(' and ')}; a decision is replaced once, so one stays in force.`)
+  }
+  const inForce = new Map<string, string[]>()
+  for (const decision of decisions) {
+    if (!superseders.has(decision.id)) inForce.set(decision.conflictId, [...(inForce.get(decision.conflictId) ?? []), decision.id])
+  }
+  for (const [conflictId, ids] of inForce) {
+    if (ids.length > 1) error('decisions-in-force', conflictId, `${ids.join(' and ')} are both in force; the later one names the earlier in \`supersedes\`.`)
   }
 
   const seenLinks = new Set<string>()
@@ -345,31 +377,6 @@ function checkWorkRequest(
       const delegator = fixer?.type === 'agent' ? fixer.delegatedBy : fixer?.id
       if (delegator === actor.id) error('self-approval', at, `${actor.id} delegated this fix, so they can't be its only approver on a high-risk target.`)
     }
-  }
-}
-
-function checkResolution(
-  status: 'open' | 'resolved',
-  resolution: Resolution | undefined,
-  alignment: AlignmentState,
-  at: string,
-  error: (code: string, at: string, message: string) => void,
-  evidenceRef: (id: string) => unknown,
-) {
-  if (status === 'open') {
-    if (resolution) error('resolution-on-open', at, 'An open conflict has no resolution yet.')
-  } else if (!resolution) {
-    return error('resolution-missing', at, 'A resolved conflict records its resolution.')
-  } else {
-    if (resolution.evidenceIds.length === 0) error('resolution-evidence', at, 'A conflict resolves only with evidence for the decided outcome.')
-    for (const id of resolution.evidenceIds) evidenceRef(id)
-    if (resolution.outcome === 'approve-exception' && !resolution.revisitTrigger) {
-      error('exception-revisit', at, 'An approved exception names its revisit trigger.')
-    }
-  }
-  const allowed = ALIGNMENT_FOR[status === 'open' ? 'open' : (resolution?.outcome ?? 'update-contract')]
-  if (!allowed.includes(alignment)) {
-    error('alignment-inconsistent', at, `Alignment ${alignment} does not fit a ${status === 'open' ? 'open' : resolution?.outcome} conflict; expected ${allowed.join(' or ')}.`)
   }
 }
 
@@ -501,16 +508,24 @@ function checkRecordShape(raw: unknown, at: string, error: Report) {
       field.oneOf('classification', CLASSIFICATIONS)
       field.list('owners', (owner, path) => checkOwner(owner, path, error))
       field.oneOf('alignment', ALIGNMENT_STATES)
-      field.oneOf('status', ['open', 'resolved'])
-      field.optional('resolution', (resolution, path) => {
-        if (!isObject(resolution)) return error('shape', path, 'Must be an object.')
-        const r = fieldChecker(resolution, path, error)
-        r.oneOf('outcome', ['update-design', 'change-implementation', 'update-contract', 'approve-exception'])
-        r.string('at')
-        r.string('rationale')
-        r.list('evidenceIds', (value, idPath) => checkString(value, idPath, error))
-        checkOwner(resolution.decidedBy, `${path}.decidedBy`, error)
+      if ('status' in raw || 'resolution' in raw) {
+        error('decision-inline', at, 'A conflict no longer carries `status` or `resolution`; record the call as a Decision record (`civic decide`).')
+      }
+      break
+    case 'decision':
+      field.string('conflictId')
+      field.oneOf('outcome', DECISION_OUTCOMES)
+      field.oneOf('classification', CLASSIFICATIONS)
+      field.oneOf('alignment', ALIGNMENT_STATES)
+      checkOwner(raw.decidedBy, `${at}.decidedBy`, error)
+      field.string('at')
+      field.string('rationale')
+      field.list('evidenceIds', (value, path) => checkString(value, path, error))
+      field.optional('revisitTrigger', (value, path) => checkString(value, path, error))
+      field.optional('expires', (value, path) => {
+        if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}/.test(value)) error('shape', path, 'Must be an ISO date, YYYY-MM-DD.')
       })
+      field.optional('supersedes', (value, path) => checkString(value, path, error))
       break
     case 'actor':
     case 'line':

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { indexGraph, renderInstanceReview, reviewInstance } from '../src/index.ts'
-import { edited, example } from './helpers.ts'
+import { decide, edited, example } from './helpers.ts'
 
 const INSTANCE = 'instance:shop.order-summary.card'
 const BADGE = 'override:shop.order-summary.card.price-badge'
@@ -19,10 +19,9 @@ const withConflict = (resolved: boolean) =>
       sides: [{ claim: 'Badge.', recordId: BADGE, evidenceIds: ['evidence:design'] }, { claim: 'Contract.', recordId: 'semantic:card', evidenceIds: [] }],
       classification: 'unclassified',
       owners: [{ role: 'design', who: 'design-system-maintainers' }],
-      alignment: resolved ? 'aligned' : 'unreviewed-drift',
-      status: resolved ? 'resolved' : 'open',
-      ...(resolved ? { resolution: { outcome: 'update-contract', decidedBy: { role: 'design', who: 'design-system-maintainers' }, at: 'now', rationale: 'Promote.', evidenceIds: ['evidence:design'] } } : {}),
+      alignment: 'unreviewed-drift',
     })
+    if (resolved) decide(d, 'conflict:shop.order-summary.card.price-badge', { outcome: 'update-contract', classification: 'intentional-differentiation', alignment: 'aligned', rationale: 'Promote.', evidenceIds: ['evidence:design'] })
   })
 
 test('a review forecasts every override and finds the record that tracks it', () => {

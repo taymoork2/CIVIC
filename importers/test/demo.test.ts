@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
-import { indexGraph, validateGraph, type ContractConflict, type GraphDocument, type PlatformComponent } from '../../graph/src/index.ts'
+import { conflictState, indexGraph, validateGraph, type ContractConflict, type GraphDocument, type PlatformComponent } from '../../graph/src/index.ts'
 
 // The committed demo outputs: `node demo/fluent-button/build.ts --check` proves they are
 // what the inputs produce; these tests pin what the demo must show (roadmap step 2).
@@ -17,7 +17,7 @@ test('the real Android kit raises exactly the Brand outline conflict, from read 
   const conflicts = graph.ofKind('contract-conflict')
   assert.deepEqual(conflicts.map((conflict) => conflict.id), ['conflict:button.android.brand-outline'])
   const [conflict] = conflicts as [ContractConflict]
-  assert.equal(conflict.status, 'open')
+  assert.equal(conflictState(graph, conflict).status, 'open')
   const sides = conflict.sides.flatMap((side) => side.evidenceIds).map((id) => graph.get(id))
   assert.deepEqual(sides.map((item) => item?.kind === 'evidence' && item.source.importer), ['figma-file', 'kotlin-source'])
   const kit = graph.get('evidence:figma.android-kit.button')
@@ -25,11 +25,13 @@ test('the real Android kit raises exactly the Brand outline conflict, from read 
 })
 
 test('the resolved graph keeps the decision with its evidence and revisit trigger', () => {
-  const conflict = indexGraph(load('resolved')).get('conflict:button.android.brand-outline') as ContractConflict
-  assert.equal(conflict.status, 'resolved')
-  assert.equal(conflict.resolution?.outcome, 'update-design')
-  assert.equal(conflict.classification, 'outdated-design-source')
-  assert.ok(conflict.resolution?.revisitTrigger)
+  const graph = indexGraph(load('resolved'))
+  const state = conflictState(graph, graph.get('conflict:button.android.brand-outline') as ContractConflict)
+  assert.equal(state.status, 'decided')
+  assert.equal(state.decision?.id, 'decision:button.android.brand-outline')
+  assert.equal(state.decision?.outcome, 'update-design')
+  assert.equal(state.classification, 'outdated-design-source')
+  assert.ok(state.decision?.revisitTrigger)
 })
 
 test('each platform maps the Button from its own source, with decision 0001’s differences', () => {

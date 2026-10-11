@@ -11,9 +11,9 @@ Everything in [`out/`](out) is built by `node build.ts` from the inputs below. T
 | What disagrees? | [`out/raised.gaps.md`](out/raised.gaps.md): Compose's `ButtonStyle` has `Button`, `OutlinedButton` and `TextButton`, and the Android kit draws only Primary and Text buttons. Brand outline exists in code with no design. |
 | Why does it matter? | [`out/raised.context.android.brand-outline.md`](out/raised.context.android.brand-outline.md): the work order an Android engineer gets. It shows the open conflict, both sides' evidence, and that nothing on Android has run evidence yet. |
 | Who must act? | Both files name owners: Design for the kit and Design Engineering for the Compose library. |
-| How is the decision kept? | [`out/resolved.context.android.brand-outline.md`](out/resolved.context.android.brand-outline.md) and [`out/resolved.graph.json`](out/resolved.graph.json): the kit is classified as an outdated design source and the conflict is resolved as a design update, with its evidence and the trigger for revisiting it. |
+| How is the decision kept? | [`out/resolved.context.android.brand-outline.md`](out/resolved.context.android.brand-outline.md) and [`out/resolved.graph.json`](out/resolved.graph.json): a Decision record classifies the kit as an outdated design source and decides the conflict as a design update, with its evidence and the trigger for revisiting it. |
 
-The two graphs are the same import before and after the decision in [`contract/decisions.json`](contract/decisions.json). The conflict is real; that decision is an illustration with the demo's placeholder owners. It is not a real Fluent team's call.
+The two graphs are the same import before and after the Decision record in [`contract/decisions.json`](contract/decisions.json). The conflict is real; that decision is an illustration with the demo's placeholder owners. It is not a real Fluent team's call. `civic check` fails on the raised graph and passes on the resolved one. Record your own call with `civic decide` ([graph README](../../graph/README.md#decisions)) and rebuild.
 
 Query the graphs yourself:
 

@@ -3,8 +3,7 @@ import { test } from 'node:test'
 import { contextFor, renderWorkOrder } from '../src/context.ts'
 import { gapsIn, renderGaps } from '../src/gaps.ts'
 import { indexGraph } from '../src/graph.ts'
-import type { ContractConflict } from '../src/schema.ts'
-import { edited, example } from './helpers.ts'
+import { decide, edited, example } from './helpers.ts'
 
 const graph = () => indexGraph(example('fluent-button'))
 
@@ -55,19 +54,13 @@ test('gaps filters by platform and keeps platform-neutral gaps', () => {
 
 test('an approved exception is listed with its revisit trigger, not as an open conflict', () => {
   const document = edited('fluent-button', (doc) => {
-    const conflict = doc.records.find((record) => record.id === 'conflict:button.android.neutral-default') as ContractConflict
-    Object.assign(conflict, {
-      status: 'resolved',
+    decide(doc, 'conflict:button.android.neutral-default', {
+      outcome: 'approve-exception',
       classification: 'temporary-gap',
       alignment: 'accepted-limitation',
-      resolution: {
-        outcome: 'approve-exception',
-        decidedBy: { role: 'design', who: 'design-system-maintainers' },
-        at: '2026-10-11T00:00:00Z',
-        rationale: 'Use custom tokens until the library adds a style.',
-        evidenceIds: ['evidence:compose-source.button.styles'],
-        revisitTrigger: 'The library adds a neutral style.',
-      },
+      rationale: 'Use custom tokens until the library adds a style.',
+      evidenceIds: ['evidence:compose-source.button.styles'],
+      revisitTrigger: 'The library adds a neutral style.',
     })
   })
   const gaps = gapsIn(indexGraph(document))

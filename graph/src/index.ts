@@ -10,3 +10,4 @@ export { checkCounts, isAnchored, laneFor, resolveAnchor, type AnchorResolution,
 export { completenessOf, renderCompleteness, stateCoverageOn, type Completeness, type JourneyShape, type StateCoverage } from './completeness.ts'
 export { renderInstanceReview, reviewInstance, type OverrideReview, type OverrideReviewItem } from './overrides.ts'
 export { baselineFrom, checkDocument, checkGraph, compareToBaseline, DEFAULT_BLOCKING, FINDING_KINDS, renderCheck, statusLine, type Baseline, type BaselineEntry, type CheckOptions, type CheckReport, type Finding, type FindingKind, type GraphCheck, type Measure } from './check.ts'
+export { ALIGNMENT_FOR, conflictState, conflictStates, DECISION_FILE_SCHEMA, decisionFor, decisionsOn, recordDecision, type ConflictState, type DecisionFile } from './decisions.ts'
