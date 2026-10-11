@@ -8,7 +8,12 @@
 //   civic context <file> <semantic-id> --platform <p> [--variant <key>] [--json]
 //   civic gaps <file> [--scope <semantic-id>] [--platform <p>] [--json]
 //   civic completeness <file> <journey-id> [--json]
+//   civic check [<file>...] [--config civic.check.json] [--baseline <file>] [--update-baseline] [--today <date>] [--json] [--post]
 
+import { execFileSync } from 'node:child_process'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { dirname, relative, resolve } from 'node:path'
+import { baselineFrom, checkDocument, compareToBaseline, DEFAULT_BLOCKING, FINDING_KINDS, renderCheck, statusLine, type Baseline, type FindingKind } from './check.ts'
 import { completenessOf, renderCompleteness } from './completeness.ts'
 import { contextFor, renderWorkOrder } from './context.ts'
 import { forecastOverride } from './forecast.ts'
@@ -73,7 +78,61 @@ async function main(): Promise<number> {
     console.log(args.includes('--json') ? JSON.stringify(result, null, 2) : renderCompleteness(graph, result))
     return 0
   }
+  if (command === 'check') return check()
   return usage()
+}
+
+/** The project's gate settings: which graphs to check, the baseline, and optionally which kinds block. */
+interface CheckConfig {
+  graphs: string[]
+  baseline?: string
+  blocking?: FindingKind[]
+}
+
+async function check(): Promise<number> {
+  const valued = new Set(['--config', '--baseline', '--today'])
+  const files = args.filter((arg, index) => !arg.startsWith('--') && !valued.has(args[index - 1] ?? ''))
+  const configPath = resolve(option('--config') ?? 'civic.check.json')
+  let config: CheckConfig = { graphs: files }
+  let root = process.cwd()
+  if (files.length === 0) {
+    if (!existsSync(configPath)) return usage(`No graphs given and no ${relative(process.cwd(), configPath) || configPath} to read them from.`)
+    config = JSON.parse(readFileSync(configPath, 'utf8')) as CheckConfig
+    root = dirname(configPath)
+  }
+  const unknown = (config.blocking ?? []).filter((kind) => !(FINDING_KINDS as readonly string[]).includes(kind))
+  if (unknown.length > 0) return usage(`Unknown finding kind in blocking: ${unknown.join(', ')}`)
+  const today = option('--today') ?? new Date().toISOString().slice(0, 10)
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(today)) return usage('--today takes a date like 2026-10-11.')
+
+  const checks = config.graphs.map((file) => checkDocument(file, JSON.parse(readFileSync(resolve(root, file), 'utf8')), { today }))
+  const baselineFlag = option('--baseline')
+  const baselinePath = baselineFlag ? resolve(baselineFlag) : config.baseline ? resolve(root, config.baseline) : undefined
+  const baseline = baselinePath && existsSync(baselinePath) ? (JSON.parse(readFileSync(baselinePath, 'utf8')) as Baseline) : undefined
+  const report = compareToBaseline(checks, baseline, config.blocking ?? DEFAULT_BLOCKING)
+
+  if (args.includes('--update-baseline')) {
+    if (!baselinePath) return usage('--update-baseline needs --baseline or a baseline in the config.')
+    const next = baselineFrom(report)
+    writeFileSync(baselinePath, `${JSON.stringify(next, null, 2)}\n`)
+    console.log(`Wrote ${next.findings.length} finding(s) to ${relative(process.cwd(), baselinePath)}.`)
+    return report.fresh.some((item) => item.kind === 'invalid-graph') ? 1 : 0
+  }
+  console.log(args.includes('--json') ? JSON.stringify(report, null, 2) : renderCheck(report))
+  if (args.includes('--post')) postStatus(root, report.passed ? 'success' : 'failure', statusLine(report))
+  return report.passed ? 0 : 1
+}
+
+/**
+ * Records the result as a `civic` commit status, the way bin/signoff records `signoff`. A
+ * status vouches for one commit, so it is posted only from a clean working tree.
+ */
+function postStatus(root: string, state: 'success' | 'failure', description: string): void {
+  const git = (...rest: string[]) => execFileSync('git', ['-C', root, ...rest], { encoding: 'utf8' }).trim()
+  if (git('status', '--porcelain') !== '') throw new Error('Commit or stash your changes first: a civic status covers exactly the committed HEAD.')
+  const sha = git('rev-parse', 'HEAD')
+  execFileSync('gh', ['api', '--silent', `repos/{owner}/{repo}/statuses/${sha}`, '-f', `state=${state}`, '-f', 'context=civic', '-f', `description=${description}`], { cwd: root, stdio: 'inherit' })
+  console.log(`\nPosted civic: ${state} on ${sha}.`)
 }
 
 function option(name: string): string | undefined {
@@ -96,6 +155,7 @@ function usage(problem?: string): number {
       '  civic context <file> <semantic-id> --platform <p> [--variant <key>] [--json]',
       '  civic gaps <file> [--scope <semantic-id>] [--platform <p>] [--json]',
       '  civic completeness <file> <journey-id> [--json]',
+      '  civic check [<file>...] [--config civic.check.json] [--baseline <file>] [--update-baseline] [--today <date>] [--json] [--post]',
     ].join('\n'),
   )
   return 2

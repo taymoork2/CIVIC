@@ -20,6 +20,8 @@ export interface Gap {
   kind: GapKind
   subjectId: string
   platform?: Platform
+  /** What tells two gaps on one subject apart, such as the variant or the link, so a gap has a stable key. */
+  detail?: string
   summary: string
   /** Empty when the graph names no owner, which is itself worth fixing. */
   owners: Owner[]
@@ -79,6 +81,7 @@ function gapsForComponent(graph: Graph, semantic: SemanticComponent): Gap[] {
         kind: 'missing-variant',
         subjectId: component.id,
         platform: component.platform,
+        detail: mapping.semanticVariant,
         summary: `No ${component.platform} equivalent for ${semantic.title} ${mapping.semanticVariant}${mapping.note ? `: ${mapping.note}` : '.'}`,
         owners: componentOwners,
       })
@@ -88,6 +91,7 @@ function gapsForComponent(graph: Graph, semantic: SemanticComponent): Gap[] {
         kind: 'platform-only-variant',
         subjectId: component.id,
         platform: component.platform,
+        detail: extra.expression,
         summary: `${component.platform} offers \`${extra.expression}\`, which no ${semantic.title} variant covers. Design decides whether the contract adds it.`,
         owners: owners('design'),
       })
@@ -128,14 +132,14 @@ function gapsForComponent(graph: Graph, semantic: SemanticComponent): Gap[] {
 
   for (const link of graph.document.links) {
     if (!countsForReadiness(link) && (scopeIds.has(link.from) || (link.to && scopeIds.has(link.to)))) {
-      gaps.push({ kind: 'unconfirmed-link', subjectId: link.from, summary: `${link.from} ${link.relation} ${link.to ?? link.unmapped} is ${link.status}; a person confirms it before it counts.`, owners: semantic.owners ?? [] })
+      gaps.push({ kind: 'unconfirmed-link', subjectId: link.from, detail: `${link.relation} ${link.to ?? link.unmapped ?? 'unmapped'}`, summary: `${link.from} ${link.relation} ${link.to ?? link.unmapped} is ${link.status}; a person confirms it before it counts.`, owners: semantic.owners ?? [] })
     }
   }
   return gaps
 }
 
 /** The screen an instance belongs to: its own target, or the screen that contains its state target. */
-function screenOf(graph: Graph, targetId: string): string {
+export function screenOf(graph: Graph, targetId: string): string {
   const target = graph.get(targetId)
   if (target?.kind !== 'target' || target.scale !== 'state') return targetId
   const parent = graph.linksTo(targetId).find((link) => link.relation === 'contains' && countsForReadiness(link) && graph.get(link.from)?.kind === 'target')
