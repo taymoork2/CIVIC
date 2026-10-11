@@ -1,0 +1,131 @@
+{
+  "schema": "civic.graph/0",
+  "records": [
+    {
+      "id": "semantic:card",
+      "kind": "semantic-component",
+      "title": "Card",
+      "purpose": "Group related content and actions about one subject.",
+      "owners": [{ "role": "design", "who": "design-system-maintainers" }],
+      "variants": [
+        { "key": "filled", "title": "Filled" },
+        { "key": "outline", "title": "Outline" }
+      ],
+      "states": ["rest", "hover", "selected", "disabled", "loading", "empty", "error"],
+      "slots": ["media", "header", "body", "actions"],
+      "rules": [
+        {
+          "key": "shape-from-token",
+          "statement": "Corner radius comes from the shape token; a local radius is not allowed.",
+          "forbids": { "property": "corner-radius", "change": "local-style" }
+        }
+      ]
+    },
+    {
+      "id": "platform:example-web.card",
+      "kind": "platform-component",
+      "title": "Web Card",
+      "platform": "web",
+      "library": { "package": "example-design-system-web" },
+      "symbol": "Card",
+      "variants": [
+        { "semanticVariant": "filled", "mapping": "exact", "expression": "appearance=\"filled\"" },
+        { "semanticVariant": "outline", "mapping": "exact", "expression": "appearance=\"outline\"" }
+      ]
+    },
+    {
+      "id": "platform:example-ios.card",
+      "kind": "platform-component",
+      "title": "iOS Card",
+      "platform": "ios",
+      "library": { "package": "example-design-system-ios" },
+      "symbol": "CardView",
+      "variants": [
+        { "semanticVariant": "filled", "mapping": "exact", "expression": ".filled" },
+        { "semanticVariant": "outline", "mapping": "none" }
+      ]
+    },
+    { "id": "extension:example-web.card.media", "kind": "extension-point", "title": "media slot", "platformComponentId": "platform:example-web.card", "mechanism": "slot", "name": "media", "expresses": ["media"] },
+    { "id": "extension:example-web.card.header", "kind": "extension-point", "title": "header slot", "platformComponentId": "platform:example-web.card", "mechanism": "slot", "name": "header", "expresses": ["header"] },
+    { "id": "extension:example-web.card.actions", "kind": "extension-point", "title": "actions slot", "platformComponentId": "platform:example-web.card", "mechanism": "slot", "name": "actions", "expresses": ["actions"] },
+    { "id": "extension:example-web.card.density", "kind": "extension-point", "title": "density prop", "platformComponentId": "platform:example-web.card", "mechanism": "prop", "name": "density", "expresses": ["density"] },
+    { "id": "extension:example-ios.card.title", "kind": "extension-point", "title": "title", "platformComponentId": "platform:example-ios.card", "mechanism": "prop", "name": "title", "expresses": ["header.title"] },
+    { "id": "extension:example-ios.card.body", "kind": "extension-point", "title": "body", "platformComponentId": "platform:example-ios.card", "mechanism": "prop", "name": "body", "expresses": ["body"] },
+    { "id": "extension:example-ios.card.style", "kind": "extension-point", "title": "style", "platformComponentId": "platform:example-ios.card", "mechanism": "prop", "name": "style", "expresses": ["variant"] },
+    {
+      "id": "target:shop.checkout",
+      "kind": "target",
+      "title": "Checkout",
+      "scale": "journey",
+      "presence": "expected",
+      "platforms": ["web", "ios", "android"]
+    },
+    {
+      "id": "target:shop.order-summary",
+      "kind": "target",
+      "title": "Order Summary",
+      "scale": "screen",
+      "presence": "expected",
+      "platforms": ["web", "ios", "android"]
+    },
+    {
+      "id": "target:shop.order-summary.promo-applied",
+      "kind": "target",
+      "title": "Order Summary with a promotion applied",
+      "scale": "state",
+      "presence": "discovered"
+    },
+    {
+      "id": "instance:shop.order-summary.card",
+      "kind": "component-instance",
+      "title": "Order Summary card",
+      "semanticId": "semantic:card",
+      "variant": "filled",
+      "placedOn": "target:shop.order-summary",
+      "product": "shop",
+      "origin": "design"
+    },
+    {
+      "id": "override:shop.order-summary.card.price-badge",
+      "kind": "override",
+      "title": "Price badge in the header",
+      "instanceId": "instance:shop.order-summary.card",
+      "property": "header.badge",
+      "change": "add-content",
+      "madeBy": { "role": "design", "who": "shop-design" }
+    },
+    {
+      "id": "override:shop.order-summary.card.radius",
+      "kind": "override",
+      "title": "Larger corner radius",
+      "instanceId": "instance:shop.order-summary.card",
+      "property": "corner-radius",
+      "change": "local-style",
+      "value": 20,
+      "madeBy": { "role": "design", "who": "shop-design" }
+    }
+  ],
+  "links": [
+    { "from": "platform:example-web.card", "relation": "implements", "to": "semantic:card", "status": "declared" },
+    { "from": "platform:example-ios.card", "relation": "implements", "to": "semantic:card", "status": "declared" },
+    { "from": "target:shop.checkout", "relation": "contains", "to": "target:shop.order-summary", "status": "declared" },
+    { "from": "target:shop.order-summary", "relation": "contains", "to": "instance:shop.order-summary.card", "status": "declared" },
+    {
+      "from": "target:shop.order-summary",
+      "relation": "navigates",
+      "to": "target:shop.order-summary.promo-applied",
+      "status": "inferred",
+      "action": "Apply promotion",
+      "condition": "A valid promotion code is entered"
+    },
+    {
+      "from": "target:shop.order-summary",
+      "relation": "navigates",
+      "unmapped": "/checkout/payment",
+      "status": "declared",
+      "action": "Continue to payment",
+      "route": "/checkout/payment",
+      "returnTo": "Order Summary"
+    }
+  ]
+}

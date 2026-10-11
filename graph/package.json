@@ -1,0 +1,21 @@
+{
+  "name": "@civic/graph",
+  "private": true,
+  "type": "module",
+  "description": "The CIVIC graph schema: records, links, validation and override forecasts. Plain files, no runtime dependencies.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "bin": {
+    "civic-graph": "./src/cli.ts"
+  },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "node --test \"test/**/*.test.ts\"",
+    "validate": "node src/cli.ts validate examples/fluent-button.graph.json examples/card-override.graph.json"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.3",
+    "typescript": "7.0.2"
+  }
+}

@@ -1,0 +1,160 @@
+{
+  "schema": "civic.graph/0",
+  "records": [
+    {
+      "id": "intent:button.triggers-action",
+      "kind": "intent",
+      "title": "A button triggers one action",
+      "category": "requirement",
+      "statement": "Activating a button performs exactly one action, and its emphasis tells the user how important that action is."
+    },
+    {
+      "id": "intent:button.accessible-name",
+      "kind": "intent",
+      "title": "A button has an accessible name",
+      "category": "accessibility-rule",
+      "statement": "Every button exposes an accessible name, including icon-only buttons."
+    },
+    {
+      "id": "semantic:button",
+      "kind": "semantic-component",
+      "title": "Button",
+      "purpose": "Trigger an action, with the emphasis set by its variant.",
+      "owners": [{ "role": "design", "who": "design-system-maintainers" }],
+      "variants": [
+        { "key": "primary-filled", "title": "Primary filled" },
+        { "key": "brand-outline", "title": "Brand outline" },
+        { "key": "neutral-default", "title": "Neutral default" },
+        { "key": "subtle", "title": "Subtle or text" },
+        { "key": "transparent-neutral", "title": "Transparent neutral" },
+        { "key": "danger", "title": "Danger" }
+      ],
+      "states": ["rest", "hover", "pressed", "focused", "disabled"],
+      "slots": ["icon", "label"],
+      "source": { "tool": "hand-entered", "importer": "seed", "revision": "decision-0001" }
+    },
+    {
+      "id": "platform:fluent-react-v9.button",
+      "kind": "platform-component",
+      "title": "Fluent React v9 Button",
+      "platform": "web",
+      "library": { "package": "@fluentui/react-components" },
+      "symbol": "Button",
+      "owners": [{ "role": "design-engineering", "who": "fluent-web", "platform": "web" }],
+      "variants": [
+        { "semanticVariant": "primary-filled", "mapping": "exact", "expression": "appearance=\"primary\"" },
+        { "semanticVariant": "brand-outline", "mapping": "closest", "expression": "appearance=\"outline\"" },
+        { "semanticVariant": "neutral-default", "mapping": "exact", "expression": "appearance=\"secondary\"" },
+        { "semanticVariant": "subtle", "mapping": "exact", "expression": "appearance=\"subtle\"" },
+        { "semanticVariant": "transparent-neutral", "mapping": "exact", "expression": "appearance=\"transparent\"" },
+        { "semanticVariant": "danger", "mapping": "none", "note": "No base appearance." }
+      ],
+      "source": { "tool": "hand-entered", "importer": "seed", "revision": "decision-0001" }
+    },
+    {
+      "id": "platform:fluent-apple.button",
+      "kind": "platform-component",
+      "title": "Fluent iOS Button",
+      "platform": "ios",
+      "library": { "package": "microsoft/fluentui-apple" },
+      "symbol": "Button",
+      "owners": [{ "role": "design-engineering", "who": "fluent-ios", "platform": "ios" }],
+      "variants": [
+        { "semanticVariant": "primary-filled", "mapping": "exact", "expression": "accent" },
+        { "semanticVariant": "brand-outline", "mapping": "exact", "expression": "outlineAccent" },
+        { "semanticVariant": "neutral-default", "mapping": "exact", "expression": "outlineNeutral" },
+        { "semanticVariant": "subtle", "mapping": "exact", "expression": "subtle" },
+        { "semanticVariant": "transparent-neutral", "mapping": "exact", "expression": "transparentNeutral" },
+        { "semanticVariant": "danger", "mapping": "exact", "expression": "danger", "note": "Also dangerOutline and dangerSubtle." }
+      ],
+      "source": { "tool": "hand-entered", "importer": "seed", "revision": "decision-0001" }
+    },
+    {
+      "id": "platform:fluent-android.compose-button",
+      "kind": "platform-component",
+      "title": "Fluent Android Compose Button",
+      "platform": "android",
+      "library": { "package": "microsoft/fluentui-android" },
+      "symbol": "Button",
+      "owners": [{ "role": "design-engineering", "who": "fluent-android", "platform": "android" }],
+      "variants": [
+        { "semanticVariant": "primary-filled", "mapping": "exact", "expression": "Button" },
+        { "semanticVariant": "brand-outline", "mapping": "exact", "expression": "OutlinedButton" },
+        { "semanticVariant": "neutral-default", "mapping": "none", "note": "No stock equivalent." },
+        { "semanticVariant": "subtle", "mapping": "exact", "expression": "TextButton" },
+        { "semanticVariant": "transparent-neutral", "mapping": "none", "note": "No stock equivalent." },
+        { "semanticVariant": "danger", "mapping": "none", "note": "Custom tokens." }
+      ],
+      "source": { "tool": "hand-entered", "importer": "seed", "revision": "decision-0001" }
+    },
+    {
+      "id": "token:colorBrandBackground",
+      "kind": "token",
+      "title": "Brand background",
+      "path": "colorBrandBackground",
+      "type": "color"
+    },
+    {
+      "id": "token:colorNeutralBackground1",
+      "kind": "token",
+      "title": "Neutral background 1",
+      "path": "colorNeutralBackground1",
+      "type": "color"
+    },
+    {
+      "id": "evidence:android-figma-kit.button.neutral-default",
+      "kind": "evidence",
+      "title": "Android Figma kit shows a Neutral default Button",
+      "subjectIds": ["semantic:button"],
+      "tier": "static-analysis",
+      "method": "design-export",
+      "platform": "android",
+      "outcome": "finding",
+      "finding": "The Microsoft Fluent Android Community file has a Button frame in a neutral default style.",
+      "capturedAt": "2026-10-11T00:00:00Z",
+      "source": { "tool": "figma", "importer": "seed", "revision": "decision-0001", "path": "Microsoft Fluent Android / Button" }
+    },
+    {
+      "id": "evidence:compose-source.button.styles",
+      "kind": "evidence",
+      "title": "Compose Button offers no neutral default",
+      "subjectIds": ["platform:fluent-android.compose-button"],
+      "tier": "static-analysis",
+      "method": "source-analysis",
+      "platform": "android",
+      "outcome": "finding",
+      "finding": "The Compose Button covers Button, OutlinedButton and TextButton; none is a neutral default.",
+      "capturedAt": "2026-10-11T00:00:00Z",
+      "source": { "tool": "github", "importer": "seed", "revision": "decision-0001", "path": "microsoft/fluentui-android" }
+    },
+    {
+      "id": "conflict:button.android.neutral-default",
+      "kind": "contract-conflict",
+      "title": "Neutral default Button on Android",
+      "targetId": "semantic:button",
+      "variant": "neutral-default",
+      "platform": "android",
+      "summary": "The Android Figma kit has a Neutral default Button that the Compose library cannot express.",
+      "sides": [
+        { "claim": "Neutral default exists on Android.", "evidenceIds": ["evidence:android-figma-kit.button.neutral-default"] },
+        { "claim": "Compose has no stock neutral default.", "recordId": "platform:fluent-android.compose-button", "evidenceIds": ["evidence:compose-source.button.styles"] }
+      ],
+      "classification": "unclassified",
+      "owners": [
+        { "role": "design", "who": "design-system-maintainers" },
+        { "role": "engineering", "who": "fluent-android", "platform": "android" }
+      ],
+      "alignment": "unreviewed-drift",
+      "status": "open"
+    }
+  ],
+  "links": [
+    { "from": "platform:fluent-react-v9.button", "relation": "implements", "to": "semantic:button", "status": "declared" },
+    { "from": "platform:fluent-apple.button", "relation": "implements", "to": "semantic:button", "status": "declared" },
+    { "from": "platform:fluent-android.compose-button", "relation": "implements", "to": "semantic:button", "status": "declared" },
+    { "from": "semantic:button", "relation": "serves", "to": "intent:button.triggers-action", "status": "declared" },
+    { "from": "semantic:button", "relation": "serves", "to": "intent:button.accessible-name", "status": "declared" },
+    { "from": "platform:fluent-react-v9.button", "relation": "uses-token", "to": "token:colorBrandBackground", "status": "declared" },
+    { "from": "platform:fluent-react-v9.button", "relation": "uses-token", "to": "token:colorNeutralBackground1", "status": "declared" }
+  ]
+}
