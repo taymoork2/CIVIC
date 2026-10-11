@@ -194,3 +194,29 @@ test('repro prints the exact scenario on any preview, and the lens lists every l
   assert.match(lines, /^\* line:git\.fix\.pack-label\s+worktree/m)
   assert.match(lines, /line:git\.main\s+main/)
 })
+
+test('re-capture signs in to a preview behind a local access key, without copying the key into the store', async (t) => {
+  if (!browser) return t.skip(`No browser for CIVIC's capture: ${browserError}`)
+  const keyFile = join(root, 'access-key')
+  writeFileSync(keyFile, 'local-secret\n')
+  const server = createServer((req, res) => {
+    if (req.headers.authorization !== 'Bearer local-secret') { res.writeHead(200, { 'content-type': 'text/html' }); res.end('<h1>Review access</h1>'); return }
+    res.writeHead(200, { 'content-type': 'text/html' })
+    res.end(page('Signed in'))
+  })
+  await new Promise<void>((resolve) => server.listen(0, '127.0.0.1', resolve))
+  servers.push(server)
+  const address = server.address()
+  const preview = `http://127.0.0.1:${typeof address === 'object' && address ? address.port : 0}`
+
+  const annotation = (await civic(main, person, 'annotate', 'Signed-in screen.', '--target', 'target:demo.intake.pack')).split(' ')[0]!
+  const id = (await civic(main, person, 'request', annotation, '--ask', 'Check it.', '--check', 'true')).split(' ')[0]!
+  await civic(worktree, agent, 'preview', preview, '--bearer-file', keyFile)
+  await civic(worktree, agent, 'claim', id)
+  await civic(worktree, agent, 'report-fix', id, '--preview', preview)
+  const { recapture } = await import('../src/index.ts')
+  const result = await recapture({ store: store(), checkout: readCheckout(main), identity: { type: 'person', handle: 'taymoor' } }, id, { browser })
+  assert.equal(result.recapture.anchors[0]!.outcome, 'found-by-id')
+  assert.equal(request(id).status, 'resolved')
+  assert.ok(!readFileSync(store().file, 'utf8').includes('local-secret'))
+})

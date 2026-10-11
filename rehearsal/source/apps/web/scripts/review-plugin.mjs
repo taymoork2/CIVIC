@@ -5,6 +5,7 @@ import { reviewInventory } from './review-inventory.mjs'
 import { captureReview, reviewMiddleware } from '@civic/shell/server'
 import { laundryReviewAdapter } from './review-adapter.mjs'
 import { coverageBridge, coveragePath } from './review-coverage.mjs'
+import { civicShared } from './review-civic.mjs'
 
 export function reviewPlugin() {
   const web = resolve(dirname(fileURLToPath(import.meta.url)), '..')
@@ -46,7 +47,13 @@ export function reviewPlugin() {
       server.watcher.on('change', refresh).on('add', refresh).on('unlink', refresh)
       // Inside an Amp orb, PUBLIC_URL names the authenticated portal for this service.
       const publicHost = process.env.AMP_ORB && process.env.PUBLIC_URL ? new URL(process.env.PUBLIC_URL).host : null
-      const auth = await reviewMiddleware({ dataDir, metadata, evidence, capture: captureReview, adapter: laundryReviewAdapter, coverage: (context) => coverageBridge({ repo, ...context }), publicHost })
+      // Notes and hand-offs go to CIVIC's store in the git common directory, shared by every worktree (D39).
+      const shared = process.env.CIVIC_SHARED === '0' ? null : civicShared({ repo })
+      const auth = await reviewMiddleware({ dataDir, metadata, evidence, capture: captureReview, adapter: laundryReviewAdapter, coverage: (context) => coverageBridge({ repo, ...context }), publicHost, shared })
+      server.httpServer?.once('listening', () => {
+        const address = server.httpServer.address()
+        if (shared && address && typeof address === 'object') shared.registerPreview(`http://127.0.0.1:${address.port}`, join(dataDir, 'access-key')).catch((error) => server.config.logger.warn(`CIVIC preview registration failed: ${error.message}`))
+      })
       await auth.refreshCoverage()
       server.watcher.add([join(repo, coveragePath), join(repo, 'docs/design/review-validation.json'), join(repo, 'packages'), join(repo, 'convex'), join(repo, 'pnpm-lock.yaml'), join(repo, 'package.json')])
       server.httpServer?.once('close', () => clearTimeout(debounce))
@@ -68,7 +75,7 @@ export function reviewPlugin() {
           res.writeHead(200, { 'content-type': 'text/html', 'cache-control': 'no-store', 'x-frame-options': 'SAMEORIGIN' }); res.end(html)
         } catch (error) { next(error) }
       })
-      console.info(`Synthetic review store: ${dataDir}. Local access key: ${join(dataDir, 'access-key')}`)
+      console.info(`Synthetic review store: ${dataDir}. Local access key: ${join(dataDir, 'access-key')}${shared ? '. Notes are shared with every worktree through the civic CLI.' : ''}`)
     },
   }
 }

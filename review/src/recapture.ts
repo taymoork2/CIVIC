@@ -1,5 +1,5 @@
 import { spawnSync } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import {
   isAnchored,
   resolveAnchor,
@@ -27,7 +27,7 @@ interface Page {
   screenshot(options: { type: 'png' }): Promise<Uint8Array>
 }
 export interface Browser {
-  newPage(options: { viewport: { width: number; height: number } }): Promise<Page & { close(): Promise<void> }>
+  newPage(options: { viewport: { width: number; height: number }; extraHTTPHeaders?: Record<string, string> }): Promise<Page & { close(): Promise<void> }>
   close(): Promise<void>
 }
 
@@ -69,10 +69,10 @@ export function reproductionUrl(annotation: Annotation, preview: string): string
  * Opens one annotation's scenario on a preview, finds its anchor by ID then exact locator
  * (never the nearest element), and takes a screenshot. Deterministic: no model call.
  */
-export async function captureScenario(browser: Browser, annotation: Annotation, preview: string): Promise<ScenarioCapture> {
+export async function captureScenario(browser: Browser, annotation: Annotation, preview: string, bearer?: string): Promise<ScenarioCapture> {
   const url = reproductionUrl(annotation, preview)
   if (!isAnchored(annotation.anchor)) return { url, outcome: 'unanchored' }
-  const page = await browser.newPage({ viewport: annotation.capture?.viewport ?? { width: 1280, height: 800 } })
+  const page = await browser.newPage({ viewport: annotation.capture?.viewport ?? { width: 1280, height: 800 }, ...(bearer ? { extraHTTPHeaders: { authorization: `Bearer ${bearer}` } } : {}) })
   try {
     await page.goto(url, { waitUntil: 'load', timeout: 30_000 })
     const { outcome } = resolveAnchor(annotation.anchor, await observe(page, annotation.anchor!))
@@ -132,11 +132,12 @@ export async function recapture(context: Context, id: string, options: Recapture
   const preview = fix.preview ?? line.previews?.find((candidate) => candidate.revision === fix.revision)?.url
   if (!preview) throw new Error(`The fix on ${fix.line} names no preview. Report it again with --preview <url>.`)
 
+  const bearer = bearerFor(context, preview)
   const browser = options.browser ?? (await launchBrowser())
   const anchors: Recapture['anchors'] = []
   try {
     for (const annotationId of request.annotationIds) {
-      const shot = await captureScenario(browser, find<Annotation>(document, annotationId, 'annotation'), preview)
+      const shot = await captureScenario(browser, find<Annotation>(document, annotationId, 'annotation'), preview, bearer)
       anchors.push({ annotationId, outcome: shot.outcome, ...(shot.png ? { capture: context.store.putCapture(shot.png, 'image/png') } : {}) })
     }
   } finally {
@@ -201,6 +202,17 @@ export async function recapture(context: Context, id: string, options: Recapture
     return { request: structuredClone(current), recapture: recaptured }
   })
   return { ...result, skippedChecks, checkNotes }
+}
+
+/** The access key a preview registered with `civic preview --bearer-file`, read fresh for each capture. */
+export function bearerFor(context: Pick<Context, 'store'>, preview: string): string | undefined {
+  const file = context.store.previewAuth(new URL(preview).origin)
+  if (!file) return undefined
+  try {
+    return readFileSync(file, 'utf8').trim() || undefined
+  } catch {
+    return undefined
+  }
 }
 
 function pathOf(url: string): string {

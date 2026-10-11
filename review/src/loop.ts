@@ -85,9 +85,14 @@ function upsertLine(document: GraphDocument, line: Line) {
   }
 }
 
-/** Says a preview serves this checkout's line at its current revision. */
-export function registerPreview(context: Context, url: string): Line {
+/**
+ * Says a preview serves this checkout's line at its current revision. A preview behind a
+ * local access key (the journey engine's review server) names the file holding the key, so
+ * CIVIC's re-capture can sign in. The key itself is never copied into the store.
+ */
+export function registerPreview(context: Context, url: string, bearerFile?: string): Line {
   const origin = new URL(url).origin
+  if (bearerFile) context.store.setPreviewAuth(origin, bearerFile)
   return context.store.transact((document) => {
     const id = ensureLines(document, context.checkout)
     const line = find<Line>(document, id, 'line')

@@ -190,3 +190,35 @@ test('an adapter cannot offer proposal properties the shell does not validate', 
   const dataDir = await mkdtemp(join(tmpdir(), 'rehearsal-adapter-'))
   await assert.rejects(reviewMiddleware({ dataDir, metadata: { scenarios: [], ...snapshot }, capture: async () => Buffer.from(''), adapter: { ...adapter(), proposalProperties: ['title', 'onclick'] } }), /only validate/)
 })
+
+test('saved notes become shared CIVIC annotations with their locator, and annotations can be handed to an agent', async () => {
+  const dataDir = await mkdtemp(join(tmpdir(), 'civic-review-shared-'))
+  const recorded = []
+  const handed = []
+  const shared = {
+    record: async (input) => { recorded.push(input); return 'annotation:12345678-1234-4234-8234-123456789abc' },
+    list: async () => ({ lines: [], annotations: recorded.length }),
+    handOff: async (input) => { handed.push(input); return { id: 'request:1' } },
+  }
+  const middleware = await reviewMiddleware({ dataDir, metadata: { scenarios: [{ id: 'intake.pack.color' }], ...snapshot }, adapter: adapter(), shared, capture: async () => Buffer.from('png') })
+  const server = createServer((req, res) => middleware(req, res, () => { res.writeHead(404); res.end() }))
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
+  const base = `http://127.0.0.1:${server.address().port}`
+  const key = (await readFile(join(dataDir, 'access-key'), 'utf8')).trim()
+  const headers = { authorization: `Bearer ${key}`, 'content-type': 'application/json' }
+  const context = { scenario: 'intake.pack.color', persona: 'single', role: 'owner', condition: 'normal', theme: 'light', textScale: 2, viewport: { width: 393, height: 852 }, state: { dialogs: [], tabs: [], fields: [] } }
+  const note = { requestId: '32345678-1234-4234-8234-123456789abc', message: 'Continue is hard to find.', kind: 'bug', context, anchor: { label: 'Continue', x: 0.1, y: 0.8, width: 0.8, height: 0.05, locator: { role: 'button', name: 'Continue' } }, html: '<html></html>', snapshot }
+  try {
+    assert.equal((await fetch(`${base}/api/review/feedback`, { method: 'POST', headers, body: JSON.stringify({ ...note, requestId: '42345678-1234-4234-8234-123456789abc', anchor: { ...note.anchor, locator: { role: 'Not a role!', name: 'x' } } }) })).status, 400)
+    const saved = await (await fetch(`${base}/api/review/feedback`, { method: 'POST', headers, body: JSON.stringify(note) })).json()
+    assert.equal(saved.annotationId, 'annotation:12345678-1234-4234-8234-123456789abc')
+    assert.deepEqual(recorded[0].feedback.anchor.locator, { role: 'button', name: 'Continue' })
+    assert.equal(recorded[0].screenshot.toString(), 'png')
+    assert.equal(recorded[0].origin, base)
+    assert.deepEqual(await (await fetch(`${base}/api/review/shared`, { headers })).json(), { lines: [], annotations: 1 })
+    assert.equal((await fetch(`${base}/api/review/hand-off`, { method: 'POST', headers, body: JSON.stringify({ annotationIds: ['../../etc'], ask: 'x' }) })).status, 400)
+    assert.equal((await fetch(`${base}/api/review/hand-off`, { method: 'POST', headers, body: JSON.stringify({ annotationIds: [saved.annotationId], ask: 'Make Continue visible.' }) })).status, 201)
+    assert.deepEqual(handed, [{ annotationIds: [saved.annotationId], ask: 'Make Continue visible.', checks: [] }])
+    assert.equal((await fetch(`${base}/api/review/hand-off`, { method: 'POST', body: '{}' })).status, 401)
+  } finally { await new Promise((resolve) => server.close(resolve)) }
+})

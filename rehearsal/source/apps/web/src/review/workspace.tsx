@@ -13,9 +13,14 @@ import { AppCanvas } from './app-canvas'
 
 type Scenario = { id: string; label: string; journey: string; renderer: string; component: string; design: string[]; checks: string[]; preview: string; implementation: string; designCoverage: string; reference: string; behavior: string; native: string; device: string; edges?: { action: string; destination: string; effect: string }[] }
 type Index = { validation: { path: string; status: string }; revision: { head: string; source: string; capturedAt: string }; design: { project: string; hashes: Record<string, string | null>; reconciliation: string }; scenarios: Scenario[]; surfaces: { id: string; name: string; path: string; kind: string; scenarios: string[] }[]; limits: string[] }
-type Anchor = { label: string; x: number; y: number; width: number; height: number }
+type Anchor = { label: string; x: number; y: number; width: number; height: number; locator?: { role: string; name: string } }
 type State = { dialogs: string[]; tabs: string[]; fields: { label: string; value: string }[] }
-type Feedback = { sourceStale?: boolean; id: string; kind: FeedbackKind; message: string; context: ReviewConfig & { viewport: { width: number; height: number }; state: State }; anchor: Anchor; screenshot: string; reproduction: string; status: string; resolution?: { evidence: string }; revision: Index['revision'] }
+type Feedback = { sourceStale?: boolean; id: string; kind: FeedbackKind; message: string; context: ReviewConfig & { viewport: { width: number; height: number }; state: State }; anchor: Anchor; screenshot: string; reproduction: string; status: string; resolution?: { evidence: string }; revision: Index['revision']; annotationId?: string }
+// CIVIC's shared store, read through the review server (decision 0007): every line, and each annotation with its work requests.
+type SharedLine = { id: string; title: string; type: string; head: string; status: string }
+type SharedRequest = { id: string; status: string; title: string }
+type Shared = { current: string; lines: SharedLine[]; annotations: { annotation: { id: string; title: string; comment: string; seenOn: { line: string; revision: string } }; requests: SharedRequest[] }[] }
+const requestStatus: Record<string, string> = { open: 'Open', claimed: 'Claimed by an agent', 'fix-ready': 'Fix ready for review', resolved: 'Resolved', reopened: 'Reopened' }
 const screenAnchor: Anchor = { label: 'Whole screen', x: 0, y: 0, width: 1, height: 1 }
 const initial = () => {
   const p = new URLSearchParams(location.search)
@@ -32,6 +37,14 @@ async function api<T>(path: string, input?: unknown): Promise<T> {
 function labelOf(element: Element): string {
   const input = element as HTMLInputElement
   return element.getAttribute('aria-label') ?? input.labels?.[0]?.textContent?.trim() ?? element.textContent?.trim().slice(0, 200) ?? element.id ?? element.tagName
+}
+const implicitRoles: Record<string, string> = { BUTTON: 'button', SELECT: 'combobox', TEXTAREA: 'textbox', H1: 'heading', H2: 'heading', H3: 'heading', H4: 'heading' }
+/** The element's ARIA role and accessible name, so CIVIC can find it again by exact locator on another revision (D37). */
+function locatorOf(element: Element): Anchor['locator'] {
+  const input = element as HTMLInputElement
+  const role = element.getAttribute('role') ?? (element.tagName === 'A' && element.hasAttribute('href') ? 'link' : element.tagName === 'INPUT' ? ({ checkbox: 'checkbox', radio: 'radio', button: 'button', submit: 'button' } as Record<string, string>)[input.type] ?? 'textbox' : implicitRoles[element.tagName])
+  const name = labelOf(element).replace(/\s+/g, ' ').trim()
+  return role && /^[a-z]{2,40}$/.test(role) && name ? { role, name: name.slice(0, 300) } : undefined
 }
 function visible(element: Element) { const rect = element.getBoundingClientRect(); return rect.width > 0 && rect.height > 0 && !element.closest('[inert]') }
 function capture(doc: Document) {
@@ -75,11 +88,20 @@ function Workspace() {
   const [resolution, setResolution] = useState('')
   const [evidenceOpen, setEvidenceOpen] = useState(false)
   const [inventoryOpen, setInventoryOpen] = useState(false)
+  const [shared, setShared] = useState<Shared | null>(null)
+  const [lens, setLens] = useState('')
   const frame = useRef<HTMLIFrameElement>(null)
   const pointer = useRef<{ x: number; y: number } | null>(null)
   const request = useRef<{ requestId: string; message: string; kind: FeedbackKind; context: unknown; anchor: Anchor; html: string; snapshot: ReviewSnapshot } | null>(null)
   const current = index?.scenarios.find((scenario) => scenario.id === config.scenario)
-  const refresh = () => api<Feedback[]>('feedback').then(setComments)
+  // The shared store is optional: a server without the civic CLI still reviews as before.
+  const refreshShared = () => api<Shared>('shared').then(setShared, () => setShared(null))
+  const refresh = () => Promise.all([api<Feedback[]>('feedback').then(setComments), refreshShared()])
+  const handOff = async (comment: Feedback) => {
+    try { await api('hand-off', { annotationIds: [comment.annotationId], ask: comment.message }); await refreshShared(); setStatus('Handed to agents as a work request. Any worktree can claim it with civic claim.') }
+    catch (caught) { setError((caught as Error).message) }
+  }
+  const requestsFor = (annotationId?: string) => shared?.annotations.find((entry) => entry.annotation.id === annotationId)?.requests ?? []
   useEffect(() => { Promise.all([api<Index>('index').then(setIndex), refresh()]).catch((error) => setError(error.message)) }, [])
   useEffect(() => { document.documentElement.dataset.theme = config.theme; try { const saved = JSON.parse(localStorage.getItem(noteKey(config)) ?? 'null'); setNote(saved?.message ?? ''); setKind(saved?.kind ?? 'confusing'); setAnchor(saved?.anchor ?? screenAnchor) } catch { setNote(''); setAnchor(screenAnchor) } }, [config])
   const persistNote = (message: string, nextKind = kind, nextAnchor = anchor) => {
@@ -103,7 +125,8 @@ function Workspace() {
     const rect = element.getBoundingClientRect()
     const width = frame.current!.clientWidth, height = frame.current!.clientHeight
     const x = Math.max(0, Math.min(1, rect.left / width)), y = Math.max(0, Math.min(1, rect.top / height))
-    return { label: labelOf(element) || 'Selected element', x, y, width: Math.max(0.001, (Math.min(width, rect.right) - Math.max(0, rect.left)) / width), height: Math.max(0.001, (Math.min(height, rect.bottom) - Math.max(0, rect.top)) / height) }
+    const locator = locatorOf(element)
+    return { label: labelOf(element) || 'Selected element', ...(locator ? { locator } : {}), x, y, width: Math.max(0.001, (Math.min(width, rect.right) - Math.max(0, rect.left)) / width), height: Math.max(0.001, (Math.min(height, rect.bottom) - Math.max(0, rect.top)) / height) }
   }
   const submit = async () => {
     if (!note.trim() || pending) return
@@ -156,7 +179,8 @@ function Workspace() {
         <Button variant="outline" onClick={() => setInventoryOpen(!inventoryOpen)}>Surface inventory and coverage gaps</Button>
         {inventoryOpen && index ? <section className="review-evidence"><p>{index.surfaces.length} source-discovered routes/sheet presenters; {index.scenarios.length} named preview entries. Neither count proves complete journey coverage.</p>{index.limits.map((limit) => <p key={limit}>{limit}</p>)}{index.surfaces.filter((surface) => surface.scenarios.length === 0).map((surface) => <p key={surface.id}>Review entry missing: {surface.name} · {surface.path}</p>)}<a href="/api/review/index" target="_blank" rel="noreferrer">Agent-readable connected index</a></section> : null}
         <h2>Saved feedback</h2><a href="/api/review/feedback" target="_blank" rel="noreferrer">Agent-readable feedback and screenshot links</a>
-        {comments.filter((comment) => comment.context.scenario === config.scenario).map((comment) => <article className="review-comment" key={comment.id}><p>{comment.message}</p><p className="review-note">{feedbackText.kinds[comment.kind]} · {comment.status} · {comment.anchor.label} · {comment.context.persona}/{comment.context.role} · {comment.revision.head.slice(0, 12)}</p><p className="review-note">Input {comment.revision.source.slice(0, 12)} · {comment.sourceStale ? 'source changed after this preview opened' : 'revision captured with this preview'}</p><div className="review-frame-wrap" style={{ width: '100%' }}><img src={comment.screenshot} alt={`Captured preview: ${comment.anchor.label}`} /><div className="review-pin" style={{ left: `${comment.anchor.x * 100}%`, top: `${comment.anchor.y * 100}%`, width: `${comment.anchor.width * 100}%`, height: `${comment.anchor.height * 100}%` }} /></div><a href={comment.reproduction}>Reopen scenario and compare with original capture</a>{comment.resolution ? <p>Resolution evidence: {comment.resolution.evidence}</p> : <><label>Resolution evidence<Input value={resolution} onChange={(e) => setResolution(e.target.value)} placeholder="Passing check or correction receipt" /></label><Button variant="outline" disabled={!resolution.trim()} onClick={async () => { try { await api(`feedback/${comment.id}/resolve`, { evidence: resolution }); await refresh(); setResolution('') } catch (caught) { setError((caught as Error).message) } }}>Resolve with evidence</Button></>}</article>)}
+        {comments.filter((comment) => comment.context.scenario === config.scenario).map((comment) => <article className="review-comment" key={comment.id}><p>{comment.message}</p><p className="review-note">{feedbackText.kinds[comment.kind]} · {comment.status} · {comment.anchor.label} · {comment.context.persona}/{comment.context.role} · {comment.revision.head.slice(0, 12)}</p><p className="review-note">Input {comment.revision.source.slice(0, 12)} · {comment.sourceStale ? 'source changed after this preview opened' : 'revision captured with this preview'}</p><div className="review-frame-wrap" style={{ width: '100%' }}><img src={comment.screenshot} alt={`Captured preview: ${comment.anchor.label}`} /><div className="review-pin" style={{ left: `${comment.anchor.x * 100}%`, top: `${comment.anchor.y * 100}%`, width: `${comment.anchor.width * 100}%`, height: `${comment.anchor.height * 100}%` }} /></div><a href={comment.reproduction}>Reopen scenario and compare with original capture</a>{comment.annotationId && shared ? (requestsFor(comment.annotationId).length > 0 ? <p className="review-note">Work request: {requestsFor(comment.annotationId).map((request) => requestStatus[request.status] ?? request.status).join(', ')}</p> : <Button variant="outline" onClick={() => void handOff(comment)}>Hand to agent</Button>) : null}{comment.resolution ? <p>Resolution evidence: {comment.resolution.evidence}</p> : <><label>Resolution evidence<Input value={resolution} onChange={(e) => setResolution(e.target.value)} placeholder="Passing check or correction receipt" /></label><Button variant="outline" disabled={!resolution.trim()} onClick={async () => { try { await api(`feedback/${comment.id}/resolve`, { evidence: resolution }); await refresh(); setResolution('') } catch (caught) { setError((caught as Error).message) } }}>Resolve with evidence</Button></>}</article>)}
+        {shared ? <section className="review-evidence" aria-label="Across lines of work"><h2>Across lines of work</h2><p className="review-note">Notes from every worktree and branch of this repository, from CIVIC's shared store. You are on {shared.current}.</p><label>Line<NativeSelect aria-label="Line" value={lens} onChange={(e) => setLens(e.target.value)}><option value="">All lines</option>{shared.lines.map((line) => <option key={line.id} value={line.id}>{line.title} · {line.type} · {line.head.slice(0, 7)}</option>)}</NativeSelect></label>{shared.annotations.filter((entry) => !lens || entry.annotation.seenOn.line === lens).map((entry) => <p key={entry.annotation.id}>{entry.annotation.title} · {entry.annotation.seenOn.line} at {entry.annotation.seenOn.revision.slice(0, 7)}{entry.requests.length > 0 ? ` · ${entry.requests.map((request) => requestStatus[request.status] ?? request.status).join(', ')}` : ''}</p>)}</section> : null}
       </section>
     </div>
   </main>
