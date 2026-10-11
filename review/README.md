@@ -2,7 +2,7 @@
 
 The local half of [decision 0007](../docs/decisions/0007-review-to-agent-loop.md). People annotate the journey, hand annotations to an agent as a work request, the agent claims it on its own line and reports a fix, CIVIC re-captures the fix on its preview, and the request resolves through its lane. The records are the graph's Actor, Line, Annotation and Work request ([`graph/`](../graph#the-review-to-agent-loop)), so every rule there applies to every write here.
 
-CIVIC makes no model calls (D30). Agents run in their own harness and talk to CIVIC through this CLI. An MCP server over the same calls comes next.
+CIVIC makes no model calls (D30). Agents run in their own harness and talk to CIVIC through this CLI or through the MCP server over the same calls. The [Claude Code plugin](../integrations/claude-code) packages that server.
 
 ## Where the records live
 
@@ -66,6 +66,16 @@ Re-capture runs only checks that a person wrote or accepted, so an agent can't r
 Laundry's review server ([`review-civic.mjs`](../rehearsal/source/apps/web/scripts/review-civic.mjs)) runs this CLI. Each note saved on the canvas also becomes an annotation here. A whole-screen note anchors to the scenario's target, `target:laundry.<scenario>`, which the review frame carries as `data-civic-id`. A note pinned to an element keeps that element's role and accessible name as its locator. A dragged region keeps only its rectangle. The note's capture, viewport and exact `/review-frame.html?...` scenario come with it. Saved notes get a **Hand to agent** button, and the **Across lines of work** section lists the notes from every worktree, which you can filter by line.
 
 When the review server starts, it registers itself as its line's preview, with `.review-data/access-key` as the key file. That lets `civic recapture` and `civic repro --capture` sign in with the key, which is never copied into the store. `.review-data/` still holds the server's own working state for its checkout: the access key, the fixture cache, presentation drafts, coverage candidates, and its copy of each note with the annotation's ID. Set `CIVIC_SHARED=0` to review without the shared store. Without `review/`, as in the standalone handoff, the server reviews as it did before.
+
+## Capture overlay
+
+`civic overlay [--port 4777]` serves a small script for dev and preview pages (D40), and prints the script tag to add to them. In a page with the tag, press Alt+Shift+C or the CIVIC button, then select an element or drag over an area, and write a comment. The overlay sends the page's DOM, the selection's rectangle, the element's role and accessible name, its test ID, and the `data-civic-id` of the element or its nearest ancestor (never the page root). It also sends the viewport, the URL, and any line and revision stamped on the script tag. The server renders the screenshot from the DOM with scripts disabled, then records an annotation for the person running it. It accepts only pages served from loopback, so another website can't write annotations. Because it lives in the page, it works in any browser, including the browsers built into desktop harnesses.
+
+Laundry's dev build adds the tag only when `VITE_CIVIC_OVERLAY` names the overlay server, for example `VITE_CIVIC_OVERLAY=http://127.0.0.1:4777`. A production build never includes it.
+
+## MCP server
+
+`node review/src/mcp.ts` (the `civic-mcp` bin) speaks MCP over stdio, and any harness that speaks MCP can use it. It offers D35's write path and nothing more. An agent can list and read requests (captures come back as images), claim, release, comment, get repro URLs, report a fix, add a check, record an annotation, and run `context` and `gaps`. When a fix is reported with a preview, CIVIC's re-capture runs straight away. On the CLI, the same thing is `civic report-fix --recapture`. The server acts as `CIVIC_AGENT` (default `mcp-agent`) for `CIVIC_FOR`. Each tool takes the agent's `cwd`, so its line is the worktree it's working in.
 
 ## Commands
 

@@ -7,7 +7,8 @@
     ".": "./src/index.ts"
   },
   "bin": {
-    "civic-review": "./src/cli.ts"
+    "civic-review": "./src/cli.ts",
+    "civic-mcp": "./src/mcp.ts"
   },
   "scripts": {
     "check": "tsc --noEmit",

@@ -32,6 +32,7 @@ import {
   type Context,
 } from './loop.ts'
 import { bearerFor, captureScenario, launchBrowser, recapture, reproductionUrl } from './recapture.ts'
+import { createOverlayServer } from './overlay/server.ts'
 import { renderList, renderRequest } from './render.ts'
 import { Store } from './store.ts'
 
@@ -44,11 +45,12 @@ const USAGE = `Usage (records are shared by every worktree of this repository):
   civic show <request> [--graph <file>] [--json]
   civic claim <request> [--lease <minutes>]       civic release <request>
   civic comment <request> "<text>"
-  civic report-fix <request> [--preview <url>] [--note "<text>"] [--revision <sha>]
+  civic report-fix <request> [--preview <url>] [--note "<text>"] [--revision <sha>] [--recapture]
   civic recapture <request> [--no-checks]         civic repro <request> --url <preview> [--capture <dir>]
   civic queue                                     civic resolve <request>... [--note "<text>"]
   civic reopen <request> --note "<text>"          civic escalate <request> --lane batch-review|owner-sign-off
   civic add-check <request> "<command>"           civic accept-check <request> <number>
+  civic overlay [--port 4777]                     serves the capture overlay for dev and preview pages
   civic preview <url> [--bearer-file <file>]      civic lines [--json] | annotations [--line <id>] [--json] | whoami
   annotate also takes --rect x,y,w,h [--rect-label <text>], --viewport <w>x<h> and --json; request takes --json.`
 
@@ -150,7 +152,13 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
       const preview = one('--preview')
       const note = one('--note')
       const revision = one('--revision')
-      show(reportFix(context, positional[0]!, { ...(preview ? { preview } : {}), ...(note ? { note } : {}), ...(revision ? { revision } : {}) }))
+      const reported = reportFix(context, positional[0]!, { ...(preview ? { preview } : {}), ...(note ? { note } : {}), ...(revision ? { revision } : {}) })
+      show(reported)
+      if (has('--recapture')) {
+        const result = await recapture(context, reported.id)
+        for (const anchor of result.recapture.anchors) print(`${anchor.annotationId}: ${anchor.outcome}`)
+        print(`${result.request.id} ${result.request.status}`)
+      }
       return 0
     }
     case 'recapture': {
@@ -240,6 +248,17 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
       print(has('--json') ? JSON.stringify(annotations, null, 2) : annotations.map(({ annotation, requests: linked }) => `${annotation.id}  ${annotation.seenOn.line}  ${annotation.title}${linked.length ? `  [${linked.map((request) => request.status).join(', ')}]` : ''}`).join('\n') || 'No annotations.')
       return 0
     }
+    case 'overlay': {
+      // A person clicks the overlay, even when an agent started this server.
+      const person = identityFromEnv({ ...env, CIVIC_AGENT: undefined }, checkout.root)
+      const port = Number(one('--port') ?? 4777)
+      const server = createOverlayServer(() => ({ store, checkout: readCheckout(cwd), identity: person }))
+      await new Promise<void>((resolve) => server.listen(port, '127.0.0.1', resolve))
+      print(`CIVIC overlay server on http://127.0.0.1:${port} for ${actorId(person)}. Add this to a dev or preview page, never to production:`)
+      print(`<script src="http://127.0.0.1:${port}/overlay.js" data-civic-line="${lineIdFor(checkout)}" data-civic-revision="${checkout.head}" defer></script>`)
+      await new Promise<void>((resolve) => server.once('close', () => resolve()))
+      return 0
+    }
     case 'whoami':
       print(`${actorId(context.identity)} on ${lineIdFor(checkout)} at ${checkout.head}\nStore: ${store.dir}`)
       return 0
@@ -264,7 +283,7 @@ function renderLines(document: GraphDocument, current: string): string {
 function parse(args: string[]) {
   const positional: string[] = []
   const flags = new Map<string, string[]>()
-  const booleans = new Set(['--change', '--high-risk', '--json', '--no-checks'])
+  const booleans = new Set(['--change', '--high-risk', '--json', '--no-checks', '--recapture'])
   for (let index = 0; index < args.length; index++) {
     const arg = args[index]!
     if (!arg.startsWith('--')) positional.push(arg)

@@ -1,0 +1,12 @@
+{
+  "name": "civic",
+  "description": "CIVIC: the quality gate for product behavior across design, components, code and tests.",
+  "owner": { "name": "taymoork2" },
+  "plugins": [
+    {
+      "name": "civic",
+      "source": "./integrations/claude-code",
+      "description": "Work CIVIC review requests from Claude Code: list, claim, reproduce, fix and report, through CIVIC's MCP server. CIVIC makes no model calls."
+    }
+  ]
+}

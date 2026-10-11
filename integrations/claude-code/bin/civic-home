@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+# Prints the CIVIC checkout whose review/ package this plugin runs. The plugin is copied into
+# Claude Code's plugin cache, so it can't find CIVIC relative to itself: set CIVIC_HOME to a
+# CIVIC checkout, or work inside the CIVIC repository itself.
+for candidate in "${CIVIC_HOME:-}" "${CLAUDE_PROJECT_DIR:-}" "$PWD"; do
+  if [ -n "$candidate" ] && [ -f "$candidate/review/src/cli.ts" ]; then
+    printf '%s\n' "$candidate"
+    exit 0
+  fi
+done
+exit 1
