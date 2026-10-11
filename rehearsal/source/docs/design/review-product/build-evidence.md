@@ -17,6 +17,34 @@ Final source revision:
 The single-canvas consolidation below supersedes the separate structure navigation
 in the historical passes. Its private Color run remains resumable.
 
+## October 10 whole-app framing and branch correction
+
+Owner evidence showed an app-wide strip compressed to 0.7% zoom. Source after
+the correction: `6526dfd6fa336915e46a722ed03ad92e670a2acb6b78fd80f442e18476b31b3a`.
+The fixture revision remains `81d9c3604c5ba4b876a8d71f7fdf351fa3a16dea938dd7248f2f511741c3fc85`.
+
+The same canvas now frames readable flow summaries for App, with entry/navigation
+areas horizontal and related flows in nonoverlapping vertical lanes. Choosing a
+flow fits its full horizontal screen timeline; choosing a screen focuses it.
+The dye screen is wholly below the main row, with split/rejoin arrows preserved.
+Dashed navigation/grouping links remain separate from solid declared actions.
+The detailed scene is hidden in overview without unmounting the live run.
+On narrow widths, overview uses a 35% floor and horizontal panning.
+
+Type/style checks and 66 focused tests pass. Two canvas Chromium cases pass:
+live inputs survive overview, navigation, review and proposal testing; actual
+cached images render, flow lanes/branch geometry are separate, and a 488px-wide
+canvas pans without collapsing to a hairline. The coverage Chromium case also
+passes after this change. Tests used a disposable source copy and local store
+on port 3143, not the owner's private draft/store. Browser captures are included
+in the new handoff's `evidence/` directory. An initial zero-height overview
+container was fixed; a narrow test correctly dismisses the existing outline
+overlay before operating the canvas. No application allowlist was widened.
+
+Fresh local Open Design / Claude Design visual reconciliation and physical
+device acceptance remain pending. Navigation grouping does not establish
+unregistered application actions or exhaustive branching coverage.
+
 ## Initial delivery (historical)
 
 - **Storyboard:** 176 actual screen nodes from 34 working scenarios and 139 partial
@@ -238,3 +266,105 @@ Types/styles pass after the scoped Play correction; tracked and new-panel
 whitespace checks are clean. The final delivery opens a fresh baseline Color
 session, with the earlier candidate visibly stale when inspected. Temporary QA
 tabs and viewport overrides are removed; owner tabs are retained.
+
+## Coverage bridge — October 10
+
+The [coverage bridge](coverage-bridge.md) is running in this same isolated checkout
+on port 3010. Final inventory source is
+`c2f1c21d1b91bb90f3924bebb5ee77246b53a9bee66fb5618623c5985e2e4092`;
+fixture source is `81d9c3604c5ba4b876a8d71f7fdf351fa3a16dea938dd7248f2f511741c3fc85`.
+Contract v4 contains 11 expectations; source discovery adds 40 unconfirmed
+mapping candidates. All 176 fixture images are cached for this fixture revision.
+These counts are inventory facts, not 51 confirmed absent app features.
+
+Types/styles and 65 focused tests pass. Nine API/inventory/coverage checks pass,
+including candidate TSX compilation, path validation, canonical contract writes,
+durable scaffolds, stale/conflicting writes, source changes during image capture,
+and exact historical snapshot provenance. The new Chromium coverage browser case
+passes against the final service: editable prototype and captured example input,
+persistence, unpublished-edit discard guard, actual repository expectation save,
+automatic watched-source notification and unchanged live towel iframe/inputs.
+The washer-recovery expectation now explicitly requires retries to retain the
+washer selection and preparation. The synthetic QA candidate heading was restored
+to its real target title after verification.
+
+The local desktop design project supplied a completed text-only critique; fresh
+Claude Design review was not obtained in that separate app. Generation is a local
+brief/prototype/React scaffold, not AI implementation or a candidate Git branch.
+No application feature adoption, native/device acceptance, deployment, background
+daemon or cross-process multiplayer safety is attested. Existing execution/design
+receipts remain tied to their earlier source revisions.
+
+## Cross-route action connections — October 10
+
+Navigation order now controls area placement without drawing artificial arrows
+between tabs or vertically adjacent flows. `src/review/route-actions.json` holds
+17 curated source bindings: 12 link representative existing specimens; five
+retain an unmapped destination state. Examples include Home → selected plan,
+Home → running wash or dryer check, Closet → Laundry, and Me → completed wash
+with return-to-Me context. Account/settings actions remain actions within Me.
+
+The inventory merges mapped actions into the existing scenario graph and exposes
+all bindings in Inspect with symbolic route parameters, conditions, return
+context and source links. A missing source anchor suppresses the mapped arrow;
+the binding becomes stale. This is a bounded source check, not semantic parsing,
+exhaustive discovery, an observed transition or a continuous cross-route runner.
+Unmapped states include Add chooser, Closet item in a running load, Laundry's
+open hamper item, successful washer-to-Drying transfer and garment care history.
+
+Types/styles, four map tests and six inventory/coverage checks passed. Three
+isolated Chromium canvas cases passed, including preserved live drafts, readable
+overview/branch framing and route inspection with an explicitly unmapped target.
+The overview screenshot was inspected. Tests used copied local dependencies
+after the temporary test cache was repaired; no cold install is attested.
+Laundry App behavior and canonical design files were not changed. No fresh
+Claude Design or local desktop visual handoff, native acceptance or exhaustive
+application navigation audit is attested. The v3 ZIP remains the prior snapshot.
+
+The existing port-3010 service reads the new source revision but retains the
+previously loaded inventory module (its index exposes zero route bindings).
+It requires a server restart before these bindings appear there. That service
+and its user's live session were left running; verification used port 3143.
+
+## Canvas routing and full detail — October 10
+
+An in-repository rectilinear A* router replaces the shared top lane and curved
+branch connectors. It routes through card gutters with a bend cost, separates
+lanes, rounds corners and suppresses an arrow if no unobstructed path exists.
+Forward actions are blue, branch choices retain teal labels, and return links
+use dashed gray strokes. Existing observed towel transitions retain orange.
+Routing is memoized independently of pan/zoom. It avoids cards, but does not
+globally minimize connector crossings; more densely connected graphs may need
+crossing costs. Navigation order still creates no inferred actions.
+
+The Canvas detail selector offers Compact flows or All screens and persists the
+choice locally. All screens renders all 176 registered thumbnails at a minimum
+18% camera scale, with panning rather than whole-app compression. Selecting a
+flow or screen still fits that target; App returns to the chosen detail setting.
+The same live frame stays mounted across both representations.
+
+Types/styles, six routing/map tests, six inventory/coverage checks and four
+isolated Chromium cases passed. Desktop overview, towel branches and desktop/
+narrow all-screen captures were inspected in two bounded rounds. The browser
+cases verify retained input, complete thumbnail count, reload persistence,
+narrow panning and cross-route target context. The existing port-3010 service
+was not restarted. No cold install, native-device acceptance, exhaustive graph
+audit or fresh external design handoff is attested; the v3 ZIP is unchanged.
+
+## Preview restart and v4 handoff — October 10
+
+At the user's request the current checkout now serves the synthetic preview on
+`http://127.0.0.1:3010/review`. Port 3010 had no listener before launch. The new
+service exposes source `e514dbcd8ee04808602f81432455f43b0f43f233752e05f78c5d289edf55bb77`,
+173 scenarios and all 17 route bindings (12 representative previews, five
+unmapped destination states). This supersedes the earlier cached-module warning;
+the earlier notes describe the service before this restart.
+
+The v4 package refreshes the curated source, complete post-first-ZIP report,
+handoff, arrow/full-detail screenshots and incremental Git patch. Its comparison
+with the verified original archive covers 27 source paths: 11 additions and 16
+modifications, without removals. Earlier bundles are preserved. Source/runtime
+proof, portable payload integrity and historical design evidence are separate;
+private keys, saved review records, environment files and dependencies are not
+transfer assets. No additional product feature or shared design edit is part of
+this packaging pass.

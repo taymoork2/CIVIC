@@ -1,14 +1,14 @@
-# Rehearsal — new project handoff
+# Rehearsal — current project handoff
 
-Rehearsal is a working product exploration and review workspace: an application journey on a canvas, with real screens you can play, proposed changes you can test, and feedback attached to captured state. Laundry App is its first integration.
+October 10, 2026, v4. Read [HANDOFF.md](HANDOFF.md) for current state and accepted decisions, [REPORT.md](REPORT.md) for changes since the first ZIP and the researched onboarding/model-light direction, and [PACKAGE-VERIFICATION.md](PACKAGE-VERIFICATION.md) for evidence and limits.
 
-This is the October 10, 2026 working-source handoff. It includes uncommitted implementation, design proposals, local desktop design artifacts, current browser evidence and a path to extracting an independent product. **The product shell is independent; the implementation still imports Laundry App components.** The original repository and running server were not changed by packaging.
+Rehearsal is independent in product direction; this source still depends on Laundry App as its first integration. This bundle adds the latest cross-route bindings, gutter-routed arrows and persistent Compact flows / All screens control to the earlier coverage bridge and canvas. The first ZIP, v2 and v3 remain earlier snapshots.
 
-Start with [HANDOFF.md](HANDOFF.md). The recipient needs Git, Node.js 26.10.0, pnpm 12.5.1 and Google Chrome. No OpenDesign Cloud account or running Convex backend is needed for synthetic review. Installing dependencies needs access to the package registry or a populated local pnpm store.
+## Run your extracted copy
 
-## Run locally
+The verified local environment has Node 26.10.0, pnpm 12.5.1 and Google Chrome. Earlier full review service checks used Node 24; current live startup and browser reads passed on Node 26. No model provider, design account or real Convex backend is needed for synthetic review.
 
-From the extracted folder, create your own source repository. The inventory requires a Git HEAD; this import commit provides one. No upstream remote is configured or original Git history included.
+From this folder, in a new extracted copy:
 
 ```sh
 cd source
@@ -16,60 +16,50 @@ git init -b main
 git add .
 git -c user.name="Rehearsal import" -c user.email="import@localhost" commit -m "chore: import rehearsal handoff"
 pnpm install --frozen-lockfile
-```
-
-The bundled thumbnails contain only fixed synthetic fixtures. Copy them once to avoid regenerating the entire screen library on first launch:
-
-```sh
 mkdir -p .review-data/fixtures
 cp ../fixtures/*.png .review-data/fixtures/
 WASHCLOSET_REVIEW_DESIGN="$PWD/../design/laundry-reference" pnpm --dir apps/web run review
 ```
 
-Open <http://127.0.0.1:3010/review>. In another terminal, from `source`, read `.review-data/access-key` and enter that new local key at the sign-in screen. Keep the host and port consistent. If 3010 is already occupied, use this equivalent startup on another loopback port:
+The inventory reads Git HEAD, so the disposable import commit is required. It is not an instruction to commit or reset an existing Laundry checkout. Dependencies are excluded; installation requires registry access or a populated compatible store.
+
+Open `http://127.0.0.1:3010/review`. Read the new `source/.review-data/access-key` locally and enter it on the access screen; do not share it. Existing keys, reviews, candidates and browser drafts are not transferred. This access screen is not generic project onboarding.
+
+If 3010 belongs to another runtime, select a different explicit loopback port:
 
 ```sh
 WASHCLOSET_REVIEW=1 WASHCLOSET_REVIEW_DESIGN="$PWD/../design/laundry-reference" VITE_CONVEX_URL=http://127.0.0.1:1 VITE_CONVEX_SITE_URL=http://127.0.0.1:1 pnpm --dir apps/web exec vite dev --host 127.0.0.1 --port 3011 --strictPort
 ```
 
-Open `/review?scenario=intake.towel.fabric` to inspect Fabric directly. This is a fixture jump, not a replay of preceding steps. Start from Type to play the complete towel journey. Newly owned enters Dye; pre-owned skips it. Normal transitions preserve one application session and capture allowlisted raw inputs.
+## Try the current workspace
 
-The new store starts without the original notes, proposals or browser draft. Create your own candidate in **Edit proposal**, then **Save & play candidate**. Supported edits are heading, primary-action text and accessible button color. Review can capture a screen, retain the capture while navigating, save a note and resolve it with evidence.
+- App shows compact flow cards by default. Canvas detail → All screens shows all 176 registered thumbnails; panning keeps them readable instead of compressing the entire app into a hairline. The choice persists in your browser.
+- Click a sidebar flow to fit its complete horizontal timeline, or an individual screen to focus it. Related flows and alternate branch lanes stack vertically.
+- Begin Add a towel at Type to play both ownership branches. `/review?scenario=intake.towel.fabric` focuses Fabric. Play is the default; Inspect shows context and source evidence; Edit tests supported presentation proposals; Review captures frozen state.
+- Blue arrows are declared actions, teal labelled paths are branches, dashed gray arrows are returns and orange marks observed towel transitions. Navigation order alone draws no action.
+- Inspect exposes 17 curated cross-route bindings with parameters, conditions and return context. Twelve lead to representative specimens; five destination states remain unmapped. Selecting a specimen does not replay its symbolic record parameters.
+- Coverage separates 11 explicit expectations from 40 unconfirmed source candidates. Generated briefs, prototypes and React scaffolds are proposals, not delivered Laundry features.
 
-## Check the implementation
+## Verification commands
 
 From `source`:
 
 ```sh
 pnpm --dir apps/web run check
-pnpm --dir apps/web exec vitest run src/review src/closet/add-clothes.test.tsx
+pnpm --dir apps/web exec vitest run src/review/arrow-routing.test.ts src/review/app-map.test.ts
 pnpm --dir apps/web run test:review
 ```
 
-The explicit browser test mutates only the local synthetic review store. Run it against the review server you started, with loopback listeners and Chrome available:
+Use Node 24 to reproduce the earlier full service-test environment. Browser tests write synthetic reviews/proposals and the coverage case can edit the local expectation contract, so run them only against a disposable extracted copy:
 
 ```sh
-WASHCLOSET_REVIEW_E2E=1 WASHCLOSET_E2E_BASE_URL=http://127.0.0.1:3010 pnpm --dir apps/web exec playwright test e2e/review-canvas.spec.ts --project=isolated --workers=1
+WASHCLOSET_REVIEW_E2E=1 WASHCLOSET_E2E_BASE_URL=http://127.0.0.1:3010 pnpm --dir apps/web exec playwright test e2e/review-canvas.spec.ts --project=isolated --workers=1 --retries=0
 ```
 
-That new browser scenario was saved but not executed in the original delivery. See [PACKAGE-VERIFICATION.md](PACKAGE-VERIFICATION.md) for checks actually performed on this package.
+## Transfer and integrity
 
-## What is included
+`source/` contains the current curated source, Laundry dependencies, tests, lockfile and relevant docs. It is not yet a standalone Rehearsal repository. `design/` preserves the earlier local desktop prototypes, bounded Laundry references and design-skill snapshots. `fixtures/` contains 176 fixed synthetic PNGs. `evidence/` separates current routing/full-detail captures from historical coverage/design proof. `context/` contains source provenance, live verification, exact baseline delta and the verified Git patch.
 
-| Folder/file | Purpose |
-|---|---|
-| `source/` | Current working source, lockfile, tests, Laundry adapter dependencies and relevant repository documentation |
-| `HANDOFF.md` | Product decisions, architecture, design workflow, current limits and recommended next work |
-| `AGENTS.md` and `source/AGENTS.md` | Portable instructions for the incoming contributor |
-| `context/` | Original local instructions as historical context; source provenance |
-| `design/local-open-design/` | Actual local desktop prototype and completed written briefs/handoff |
-| `design/laundry-reference/` | Bounded canonical references for the reviewed Laundry screens, not authority for Rehearsal's shell |
-| `design/proposal-images/` | Owner-supplied/generated design concepts, including Claude Design's three structures |
-| `design/skills/` | Portable copies of the owner's named design guidance; these are reference snapshots, not installed tools |
-| `evidence/` | Actual implementation screenshots, with historical and current passes distinguished |
-| `fixtures/` | Revision-keyed synthetic screen thumbnails for the initial screen library |
-| `MANIFEST.json`, `SHA256SUMS` | Per-file integrity and packaging provenance |
+Use [APPLY-PATCH.md](APPLY-PATCH.md) only if starting from the exact first ZIP. The full ZIP includes updated handoff/evidence assets beyond the source patch. Run `shasum -a 256 -c SHA256SUMS` from this folder to check payload integrity.
 
-Verify the extracted payload with `shasum -a 256 -c SHA256SUMS` from this folder. `SHA256SUMS` covers the payload and manifest; it excludes itself.
-
-Excluded: credentials, environment files, existing review records/session data, Git internals/history, dependencies, build outputs, personal harness configuration and unrelated Laundry audit archives. Full private collaborator chat exports are not included; their decisions, identifiers, written handoffs and supplied artifacts are included. Historical documents retain their original paths and receipts and must not be treated as fresh proof for the imported project.
+Excluded: private stores, credentials, environment files, original Git internals/history, dependencies and personal harness state. Historical `BASELINE-*` and `V3-*` documents retain context; this README and handoff describe the current snapshot. Machine-local paths and old receipts are provenance, not portable runtime configuration or current acceptance.

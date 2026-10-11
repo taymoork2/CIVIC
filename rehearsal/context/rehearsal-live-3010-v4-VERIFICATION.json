@@ -1,0 +1,18 @@
+{
+  "capturedAt": "2026-10-10T23:21:14.654Z",
+  "origin": "http://127.0.0.1:3010",
+  "originalCheckout": "/Users/taymoor/.codex/worktrees/f0d3/laundry-app",
+  "source": "e514dbcd8ee04808602f81432455f43b0f43f233752e05f78c5d289edf55bb77",
+  "head": "0bffbbcf2e38ca3ec7e17da3eb6496b6f04f348d",
+  "fixtureSource": "81d9c3604c5ba4b876a8d71f7fdf351fa3a16dea938dd7248f2f511741c3fc85",
+  "scenarios": 173,
+  "screenStates": 176,
+  "routeBindings": 17,
+  "mappedRepresentativeBindings": 12,
+  "unmappedDestinationStates": 5,
+  "cachedPngHashReadsPassed": 176,
+  "chromiumReadOnlySmoke": "passed; Fabric, Inspect, App, All screens; fresh browser context; no feedback/proposal/contract writes",
+  "browserPageErrors": [],
+  "runtime": "Started explicitly for user on 3010; left running",
+  "privateCredentialsIncluded": false
+}

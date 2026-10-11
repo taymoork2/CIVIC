@@ -21,12 +21,15 @@ The parts of the CIVIƆ review shell that know nothing about the application und
 - `captureFixture(node, { origin, cookie, browser })`: renders one fixed synthetic fixture to PNG.
 - `launchFixtureBrowser()` (optional): a shared browser for bulk snapshot runs.
 
+It also takes an optional `coverage({ dataDir, metadata })` factory that opens the app's coverage bridge. The shell guards access, origin and stale inventory for `/api/review/coverage`; the bridge owns expectations, candidates and their versions.
+
 ## Still inside the Laundry adapter
 
 This is the first extraction step, not a finished plugin contract. These remain in `apps/web/src/review` because they still import Laundry components, fixtures or vocabulary:
 
 - The canvas composition (`app-canvas.tsx`), journey graph (`app-map.ts`, `journey.ts`), towel runtime (`canvas.tsx`), review and contract panels.
-- The Vite plugin and inventory (`apps/web/scripts/review-plugin.mjs`, `review-inventory.mjs`), which scan Laundry design references and previews.
+- The Vite plugin, inventory and coverage bridge (`apps/web/scripts/review-plugin.mjs`, `review-inventory.mjs`, `review-coverage.mjs`), which scan Laundry design references, previews and source paths.
+- The cross-route bindings (`route-actions.json`), app overview and arrow routing (`app-overview.tsx`, `arrow-routing.ts`) and the coverage pane.
 - The feedback context vocabulary in `server/review-server.mjs` (personas, roles and conditions) is still Laundry's.
 
 Prove a second, minimal integration before generalizing any of these.

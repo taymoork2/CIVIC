@@ -3,11 +3,12 @@ import { execFileSync } from 'node:child_process'
 import { readFile, readdir } from 'node:fs/promises'
 import { join, relative } from 'node:path'
 import { referenceInputHashes } from './opendesign-reference-inputs.mjs'
+import { coveragePath, checkedContract, coverageReport } from './review-coverage.mjs'
 
 const sha = (bytes) => createHash('sha256').update(bytes).digest('hex')
 async function files(root) {
   const entries = await readdir(root, { withFileTypes: true })
-  return (await Promise.all(entries.map((entry) => entry.isDirectory() ? files(join(root, entry.name)) : join(root, entry.name)))).flat()
+  return (await Promise.all(entries.filter((entry) => !['node_modules', '.git', 'dist'].includes(entry.name)).map((entry) => entry.isDirectory() ? files(join(root, entry.name)) : join(root, entry.name)))).flat()
 }
 
 /** Source-discovered routes/sheets and named scenarios are separate coverage measures. */
@@ -47,6 +48,16 @@ export async function reviewInventory(repo, designRoot) {
   const sourceHashes = await referenceInputHashes(web)
   const referenceCurrent = design.receipt?.status === 'verified' && JSON.stringify(design.receipt.sourceHashes) === JSON.stringify(sourceHashes)
   const existing = [...previews].sort().map((screen) => ({ id: `legacy.${screen}`, label: screen, journey: 'Existing specimens', renderer: 'legacy', screen, component: 'apps/web/src/routes/design-preview.tsx', design: ['source-reference/receipt.json'], checks: ['apps/web/src/dev/design-preview.test.ts'], preview: 'visual-or-partial', device: 'unverified', native: 'missing' }))
+  // These are curated source bindings, not observed transitions or automatic route discovery.
+  const routeActions = JSON.parse(await readFile(join(web, 'src/review/route-actions.json'), 'utf8'))
+  const registered = new Map([...scenarios, ...existing].map((scenario) => [scenario.id, scenario]))
+  for (const action of routeActions) {
+    action.status = !evidence.get(action.source)?.includes(action.anchor) ? 'source binding stale' : !registered.has(action.from) ? 'origin preview missing' : !action.destination || !registered.has(action.destination) ? 'destination state unmapped' : 'source-declared; representative preview'
+    const origin = registered.get(action.from)
+    if (!origin) continue
+    origin.routeActions = [...(origin.routeActions ?? []), action]
+    if (action.status === 'source-declared; representative preview') origin.edges = [...(origin.edges ?? []), { action: action.action, destination: action.destination, effect: 'Source-declared navigation; representative specimen, not an observed run' }]
+  }
   const cases = design.receipt?.cases ?? []
   for (const scenario of [...scenarios, ...existing]) {
     scenario.implementation = evidence.has(scenario.component) ? 'present' : 'missing'
@@ -68,8 +79,14 @@ export async function reviewInventory(repo, designRoot) {
     source.push([path, sha(content)]); evidence.set(path, content)
   }
   const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repo, encoding: 'utf8' }).trim()
+  let contract = { version: 1, targets: [] }
+  try { const content = await readFile(join(repo, coveragePath), 'utf8'); contract = checkedContract(JSON.parse(content)); source.push([coveragePath, sha(content)]); evidence.set(coveragePath, content) } catch (error) { if (error.code !== 'ENOENT') throw error }
+  for (const root of ['packages', 'convex']) for (const path of await files(join(repo, root))) {
+    if (/\.(?:tsx?|json|css|mjs|mts)$/.test(path)) source.push([relative(repo, path), sha(await readFile(path))])
+  }
   const revision = { head, source: sha(JSON.stringify([...new Map(source)].sort())), capturedAt: new Date().toISOString() }
-  const fixtureSource = sha(JSON.stringify([...new Map(source)].filter(([path]) => path.startsWith('apps/web/src/') && !/\.(test|spec)\./.test(path) && (!path.includes('/review/') || /\/review\/(frame\.tsx|store\.ts)$/.test(path))).sort()))
+  // The CIVIC shell draws the review workspace around fixtures, never the fixture frames themselves.
+  const fixtureSource = sha(JSON.stringify([...new Map(source)].filter(([path]) => !/\.(test|spec)\./.test(path) && (path.startsWith('packages/') && !path.startsWith('packages/shell/') || path.startsWith('convex/') || path.startsWith('apps/web/src/') && (!path.includes('/review/') || /\/review\/(frame\.tsx|store\.ts)$/.test(path)))).sort()))
   const validationPath = 'docs/design/review-validation.json'
   let validation = { path: validationPath, status: 'missing', receipt: null }
   try {
@@ -81,5 +98,7 @@ export async function reviewInventory(repo, designRoot) {
   } catch (error) { if (error.code !== 'ENOENT') throw error }
   const metadata = { revision, validation, design: { ...design, receipt: design.receipt === null ? null : { baseline: design.receipt.baseline, status: design.receipt.status, generatedAt: design.receipt.generatedAt, current: referenceCurrent } }, scenarios: [...scenarios, ...existing], surfaces, limits: ['Source discovery is not an exhaustive scenario audit.', 'Existing specimens may reject saves or have visual-only callbacks.', 'Photo upload, garment care actions, research and planning are not simulated; unsupported writes fail.', 'Planner/backend authorization is not simulated or proven by local saves.', 'Native implementations, arbitrary canvas editing and simultaneous collaboration remain roadmap work.', 'Physical device acceptance and review-access deployment are unverified.', 'OpenDesign native annotation retrieval is unverified; /api/review/feedback is the explicit agent path.'] }
   metadata.fixtureSource = fixtureSource
+  metadata.routeActions = routeActions
+  metadata.coverage = coverageReport(metadata, contract, new Set(source.map(([path]) => path)))
   return { metadata, evidence }
 }

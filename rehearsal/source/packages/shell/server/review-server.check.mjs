@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict'
-import { mkdtemp, readFile } from 'node:fs/promises'
+import { mkdtemp, readFile, readdir } from 'node:fs/promises'
 import http, { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -12,14 +12,24 @@ const screens = steps.map((id) => ({ id, scenario: `intake.towel.${id === 'saved
 const unusedFixture = async () => { throw new Error('No fixture expected') }
 const adapter = (captureFixture = unusedFixture) => ({ screens, proposalProperties: ['title', 'action', 'color'], captureFixture })
 
+// A synthetic coverage bridge: the shell owns access, origin and refresh guards; the app's bridge owns versions.
+const coverage = async () => {
+  let version = 1
+  return {
+    get: async () => ({ version, source: snapshot.revision.source, candidates: [{ id: 'screen.test' }] }),
+    update: async (input) => { if (input.expectedVersion !== version) throw Object.assign(new Error('Coverage changed elsewhere.'), { status: 409 }); return { version: ++version } },
+  }
+}
+
 const snapshot = { revision: { head: '0'.repeat(40), source: '1'.repeat(64), capturedAt: new Date().toISOString() }, design: { project: 'synthetic-test-design', hashes: {} } }
 
 test('review feedback requires access, captures synthetic context, retries once and survives restart', async () => {
   const dataDir = await mkdtemp(join(tmpdir(), 'civic-review-test-'))
   const metadata = { scenarios: [{ id: 'intake.pack.color' }], ...snapshot }
+  metadata.coverage = { contractVersion: 1, targets: [{ id: 'screen.test', title: 'Test gap', kind: 'screen', scenarios: [], acceptance: ['Cancel retains draft.'], preview: 'missing', missingEdges: [], verification: 'unverified', reason: 'Missing preview.' }], limits: [] }
   let captures = 0
   const start = async () => {
-    const middleware = await reviewMiddleware({ dataDir, metadata, adapter: adapter(), capture: async () => { captures++; return Buffer.from('synthetic-png') } })
+    const middleware = await reviewMiddleware({ dataDir, metadata, adapter: adapter(), coverage, capture: async () => { captures++; return Buffer.from('synthetic-png') } })
     const server = createServer((req, res) => middleware(req, res, () => { res.writeHead(404); res.end() }))
     await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
     return { server, base: `http://127.0.0.1:${server.address().port}` }
@@ -31,8 +41,16 @@ test('review feedback requires access, captures synthetic context, retries once 
   const note = { requestId: '12345678-1234-4234-8234-123456789abc', message: 'The color choice needs a clearer label.', kind: 'confusing', context, anchor: { label: 'Color', x: 0.2, y: 0.3, width: 0.1, height: 0.1 }, html: '<html><body>Synthetic only</body></html>', snapshot }
   try {
     assert.equal((await fetch(`${running.base}/api/review/feedback`)).status, 401)
+    assert.equal((await fetch(`${running.base}/api/review/coverage`)).status, 401)
+    const coverage = await (await fetch(`${running.base}/api/review/coverage`, { headers })).json()
+    assert.equal(coverage.candidates.length, 1)
+    const coverageInput = { operation: 'acknowledge', source: coverage.source, expectedVersion: coverage.version, id: 'screen.test' }
+    assert.equal((await fetch(`${running.base}/api/review/coverage`, { method: 'POST', headers: { ...headers, origin: 'https://untrusted.example' }, body: JSON.stringify(coverageInput) })).status, 403)
+    assert.equal((await fetch(`${running.base}/api/review/coverage`, { method: 'POST', headers, body: JSON.stringify(coverageInput) })).status, 200)
+    assert.equal((await fetch(`${running.base}/api/review/coverage`, { method: 'POST', headers, body: JSON.stringify(coverageInput) })).status, 409)
     metadata.refreshError = 'Source inventory unavailable'
     assert.equal((await fetch(`${running.base}/api/review/index`, { headers })).status, 503)
+    assert.equal((await fetch(`${running.base}/api/review/coverage`, { headers })).status, 503)
     delete metadata.refreshError
     assert.equal((await fetch(`${running.base}/api/review/feedback`, { method: 'POST', headers: { ...headers, origin: 'https://untrusted.example' }, body: JSON.stringify(note) })).status, 403)
     assert.equal((await fetch(`${running.base}/api/review/feedback`, { method: 'POST', headers, body: JSON.stringify({ ...note, context: { ...context, scenario: 'private-household' } }) })).status, 400)
@@ -115,8 +133,9 @@ test('proposals validate supported properties, reject stale writes, and persist 
   const dataDir = await mkdtemp(join(tmpdir(), 'rehearsal-proposals-'))
   let captures = 0
   let fixtureCaptures = 0
+  let driftDuringCapture = false
   const metadata = { scenarios: [{ id: 'intake.towel.fabric' }, { id: 'intake.pack.color', renderer: 'intake' }, { id: 'legacy.home', renderer: 'legacy' }], ...snapshot }
-  const middleware = await reviewMiddleware({ dataDir, metadata, capture: async () => { captures++; return Buffer.from('run-image') }, adapter: adapter(async () => { fixtureCaptures++; return Buffer.from('real-fixture') }) })
+  const middleware = await reviewMiddleware({ dataDir, metadata, capture: async () => { captures++; return Buffer.from('run-image') }, adapter: adapter(async () => { fixtureCaptures++; if (driftDuringCapture) metadata.fixtureSource = '3'.repeat(64); return Buffer.from('real-fixture') }) })
   const server = createServer((req, res) => middleware(req, res, () => { res.writeHead(404); res.end() }))
   await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
   const base = `http://127.0.0.1:${server.address().port}`
@@ -156,6 +175,14 @@ test('proposals validate supported properties, reject stale writes, and persist 
     await new Promise((resolve) => restartedServer.listen(0, '127.0.0.1', resolve))
     try { assert.equal(await (await fetch(`http://127.0.0.1:${restartedServer.address().port}/api/review/fixture.png?screen=fabric`, { headers })).text(), 'real-fixture') }
     finally { await new Promise((resolve) => restartedServer.close(resolve)) }
+    metadata.fixtureSource = '2'.repeat(64); driftDuringCapture = true
+    assert.equal((await post('snapshots', {})).status, 409)
+    assert.ok(!(await readdir(join(dataDir, 'fixtures'))).some((file) => file.startsWith('2'.repeat(64))), 'mixed revision captures must not be cached')
+    const historical = await fetch(`${base}/api/review/fixture.png?screen=fabric&source=${snapshot.revision.source}`, { headers })
+    assert.equal(historical.headers.get('x-review-source'), snapshot.revision.source)
+    assert.equal(await historical.text(), 'real-fixture')
+    assert.equal((await fetch(`${base}/api/review/fixture.png?screen=fabric&source=${'4'.repeat(64)}`, { headers })).status, 404)
+    assert.equal((await fetch(`${base}/api/review/fixture.png?screen=fabric&source=invalid`, { headers })).status, 400)
   } finally { await new Promise((resolve) => server.close(resolve)) }
 })
 

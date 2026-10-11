@@ -34,7 +34,7 @@ Architecture decisions live in [docs/decisions](docs/decisions). The first demo 
 
 ## Running today
 
-Implementation is underway on the [v0 journey engine](docs/synthesis-v0-import.md), codename Rehearsal (decision [0002](docs/decisions/0002-v0-journey-engine-is-civic-base.md)): a persistent journey canvas for the Laundry App with contextual review and a three-way Product Contract panel. The app-independent shell lives in [`@civic/shell`](rehearsal/source/packages/shell) and Laundry App plugs into it as the first adapter (decision [0003](docs/decisions/0003-civic-shell-package.md)). Per decision [0004](docs/decisions/0004-graph-first-journey-engine-as-viewer.md), the journey engine is one viewer and the first web adapter. The core is a CIVIC-owned artifact graph, and the next milestone is the Fluent 2 Button conflict demo. The current roadmap is in [docs/roadmap.md](docs/roadmap.md).
+Implementation is underway on the [v0 journey engine](docs/synthesis-v0-import.md), codename Rehearsal (decision [0002](docs/decisions/0002-v0-journey-engine-is-civic-base.md)): a persistent journey canvas for the Laundry App with contextual review and a three-way Product Contract panel. The app-independent shell lives in [`@civic/shell`](rehearsal/source/packages/shell) and Laundry App plugs into it as the first adapter (decision [0003](docs/decisions/0003-civic-shell-package.md)). Per decision [0004](docs/decisions/0004-graph-first-journey-engine-as-viewer.md), the journey engine is one viewer and the first web adapter. The core is a CIVIC-owned artifact graph, and the next milestone is the Fluent 2 Button conflict demo. The current roadmap is in [docs/roadmap.md](docs/roadmap.md). Decision [0005](docs/decisions/0005-what-civic-is.md) states what the product is: the quality gate for product behavior across design, components, code, and tests. It has three parts: the CIVIC graph, checks in each role's own tools, and one shared space for decisions that need several roles. The journey canvas is the first version of that shared space. How each role's tools feed the graph is in [docs/onboarding-and-ingestion.md](docs/onboarding-and-ingestion.md).
 
 It runs as the `rehearsal` orb service (`amp orb services ensure`) behind an authenticated Amp portal. To run it locally you need Node.js 26 (22 works), pnpm 12.5.1 and Google Chrome:
 
@@ -51,4 +51,4 @@ Before a pull request merges, run [`bin/signoff`](bin/signoff) from a clean chec
 
 ## Status
 
-The v0 journey engine is imported, verified, and running in an orb, and the shell extraction has started. Web implementation evidence covers all 173 registered screens; design reference, native, and QA evidence are the next gaps.
+The journey engine is at the v4 handoff, verified, and running in an orb, with coverage, cross-route actions, and routed arrows alongside the Contract panel. Web implementation evidence covers all 173 registered screens; design reference, native, and QA evidence are the next gaps.

@@ -1,7 +1,14 @@
 {
-  "snapshotDate": "2026-10-10",
+  "capturedAt": "2026-10-10T23:21:33.398921+00:00",
   "originalCheckout": "/Users/taymoor/.codex/worktrees/f0d3/laundry-app",
   "baseHead": "0bffbbcf2e38ca3ec7e17da3eb6496b6f04f348d",
+  "containsUncommittedSource": true,
+  "gitHistoryIncluded": false,
+  "source": "e514dbcd8ee04808602f81432455f43b0f43f233752e05f78c5d289edf55bb77",
+  "fixtureSource": "81d9c3604c5ba4b876a8d71f7fdf351fa3a16dea938dd7248f2f511741c3fc85",
+  "fixtureCount": 176,
+  "baselineZip": "rehearsal-handoff-2026-10-10.zip",
+  "baselineZipSha256": "fb1738009443993ef0dc9d7b059973747d8f9556fe54c6e9d46e997c89fca5ad",
   "workingTreeStatus": [
     " M .gitignore",
     " M apps/web/package.json",
@@ -15,9 +22,12 @@
     " M apps/web/vite.config.ts",
     " M docs/plans/2026-10-03-delivery-status.md",
     "?? apps/web/e2e/review-canvas.spec.ts",
+    "?? apps/web/e2e/review-coverage.spec.ts",
     "?? apps/web/e2e/review-workspace.spec.ts",
     "?? apps/web/review-frame.html",
     "?? apps/web/review.html",
+    "?? apps/web/scripts/review-coverage.check.mjs",
+    "?? apps/web/scripts/review-coverage.mjs",
     "?? apps/web/scripts/review-inventory.check.mjs",
     "?? apps/web/scripts/review-inventory.mjs",
     "?? apps/web/scripts/review-plugin.mjs",
@@ -31,9 +41,5 @@
     "?? docs/design/review-validation.json",
     "?? docs/design/review-workspace/"
   ],
-  "containsUncommittedSource": true,
-  "gitHistoryIncluded": false,
-  "fixtureSource": "eb66a3b7e3d1d65e1759a5060d659c2e513225064810eb7c372e9320517ac813",
-  "fixtureCount": 176,
-  "copyPolicy": "Current working contents of apps/packages/convex plus bounded review documentation and design artifacts. Personal/private runtime files excluded. Portable AGENTS replaces original active instructions."
+  "copyPolicy": "Verified baseline curated source refreshed from working checkout; new Rehearsal source/tests/docs added. Historical design/evidence retained and labelled. Current fixed synthetic thumbnails included. Private stores, access keys, environment files, Git and dependencies excluded."
 }

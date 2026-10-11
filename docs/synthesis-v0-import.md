@@ -51,6 +51,38 @@ Rerun on the extraction branch with Node 22 and pnpm 12.5.1:
 
 The six web tests that moved now run in the shell package, which is why the web count dropped from 800 to 794. The handoff's `SHA256SUMS` describes the original import; moved files report as missing there.
 
+## v4 handoff update
+
+On October 10, 2026 the founder sent a v4 handoff of the journey engine. It was merged into `rehearsal/` on top of this repository's own changes (the `@civic/shell` extraction, the Laundry adapter and the Product Contract panel), using the handoff's verified patch against the original import as the common base. The handoff's `REPORT.md` lists every changed file.
+
+What v4 adds:
+
+- **Coverage.** A declared expectation contract (`docs/design/review-product/coverage.json`, 11 expectations) kept apart from 40 unconfirmed candidates found in source. Each gap gets one durable, proposal-only brief, prototype and React scaffold, and expectations can be edited in the canvas and written back to the repository with version checks. It has a Coverage pane next to Contract.
+- **Cross-route actions.** 17 curated source bindings (`route-actions.json`) with parameters, guards and return context: 12 lead to a representative specimen and 5 destination states stay explicitly unmapped. Navigation order no longer draws arrows.
+- **Canvas.** A compact flow overview replaces the whole-app hairline, an All screens setting shows all 176 thumbnails, and arrows are routed through gutters around cards (blue action, teal branch, dashed return).
+- **Evidence and refresh.** Captures are rejected if the source changes mid-capture, historical thumbnails are served by their own revision, and watched changes are debounced.
+
+What it means for CIVIC:
+
+- The engine now separates declared, observed, inferred and proposed connections, and expected from discovered targets. The graph schema (roadmap step 1) should carry the same distinction instead of reinventing it.
+- `coverage.json` is a working example of the Coverage gap record from roadmap step 3, and the candidate store is a working example of a proposal that never counts as adoption.
+- The report's onboarding direction (a local manifest plus a web adapter, proven on a second app that does not import Laundry) is the same boundary as decision 0003 and roadmap step 4.
+- Its model-light direction (deterministic discovery and replay by default, with any model help optional and budgeted) and its notes on Figma variables and DTCG tokens are inputs to the Fluent 2 Button demo, not commitments.
+
+Merge decisions made here: the coverage bridge stays in the Laundry app, and the shell server receives it as an optional `coverage` factory, so `@civic/shell` still imports nothing from Laundry. The fixture-source hash leaves out `packages/shell/`, because the shell draws the workspace around fixtures and not the fixtures themselves. That keeps it at the handoff's `81d9c360…`, so all 176 bundled thumbnails stay valid.
+
+Verified on the merge branch with Node 22 and pnpm 12.5.1:
+
+| Check | Result |
+|---|---|
+| `pnpm install --frozen-lockfile` and `pnpm run check` | passed (1591 static utilities compile) |
+| `pnpm test` | web 798 + shell 6 Vitest, Convex 451, tokens 7, planner node suites and 13 web node checks, all passed |
+| `pnpm --dir apps/web run test:review` | 7 web checks (adapter, coverage, inventory) and 5 shell server checks passed |
+| Live review service inventory | 173 scenarios, 176 thumbnails served from the bundled fixtures, 17 route bindings, 51 coverage targets |
+| Playwright `review-canvas.spec.ts` and `review-coverage.spec.ts` (isolated) | 4 and 1 passed |
+
+The handoff's `MANIFEST.json` and `SHA256SUMS` describe the v4 bundle as sent, so files this repository moved into `@civic/shell` or changed still report as missing or different there.
+
 ## How to run
 
 The review service is declared in `.amp/services.yaml` (`amp orb services ensure`) and opens through the authenticated Amp portal at the `CIVIC journey engine` portal. Locally: `pnpm --dir rehearsal/source/apps/web run review`, then sign in with the key in `rehearsal/source/.review-data/access-key` (generated at first run, never committed).
