@@ -222,8 +222,8 @@ This is the next build, ahead of the Card demo:
 |---|---|---|
 | 1 | How far to loosen 0006 | **Approved** (founder, 2026-10-11): agents get a narrow write interface and are attributed actors for a named person. CIVIC itself still makes no model calls. CIVIC launching agents is later. (D35) |
 | 2 | How annotations follow a change | **Approved** (founder, 2026-10-11): stable target IDs, then exact locator, otherwise "not found on this revision". Never nearest-element matching. (D37) |
-| 3 | Who can close a request | **Approved** (founder, 2026-10-11): agents never resolve, and a person decides. The founder asked that review not become a bottleneck, so a person decides through the resolution policy's three lanes. (D38) |
+| 3 | Who can close a request | **Approved** (founder, 2026-10-11): agents never resolve, and a person decides. The founder asked that review not become a bottleneck, so a person decides through the resolution policy's three lanes, which the founder approved the same day. (D38) |
 | 4 | Where local records live | **Approved** (founder, 2026-10-11): the git common directory, shared by all worktrees. (D39) |
 | 5 | When to build it | **Approved** (founder, 2026-10-11): the next build, ahead of the Card demo. Records start step 3, then the Laundry slice. |
-| 6 | Lines and the design-and-code lens | Part of the approved proposal. (D36) |
-| 7 | Harness integration | **Recommended:** a capture overlay in previews, an MCP server with thin packages per harness, and screenshot import. (D40) |
+| 6 | Lines and the design-and-code lens | **Approved** (founder, 2026-10-11) with the proposal. (D36) |
+| 7 | Harness integration | **Approved** (founder, 2026-10-11): a capture overlay in previews, an MCP server with thin packages per harness, and screenshot import. (D40) |
