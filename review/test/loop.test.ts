@@ -99,6 +99,7 @@ test('an annotation in one worktree is claimed in another, re-captured on its pr
 
   // The agent in the other worktree sees it, claims it, and a second agent is refused.
   assert.match(await civic(worktree, agent, 'requests'), /Let the label wrap\./)
+  await assert.rejects(run(['claim', id, '--lease', 'abc'], worktree, { ...process.env, CIVIC_PERSON: undefined, ...agent }, () => {}), /--lease is a number of minutes/)
   assert.match(await civic(worktree, agent, 'claim', id), /claimed by actor:agent\.claude-code\.taymoor on line:git\.fix\.pack-label/)
   await assert.rejects(run(['claim', id], worktree, { ...process.env, CIVIC_AGENT: 'codex', CIVIC_FOR: 'taymoor' }, () => {}), /claimed by actor:agent\.claude-code\.taymoor/)
 

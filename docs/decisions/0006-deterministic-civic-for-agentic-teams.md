@@ -1,10 +1,9 @@
 # 0006: CIVIC stays deterministic, and agents use it from outside
 
-- **Status:** Accepted
+- **Status:** Accepted, amended by [0007](0007-review-to-agent-loop.md): agents get a narrow write path and become attributed actors; CIVIC still makes no model calls
 - **Date:** 2026-10-11
 - **Decider:** Founder
 - **Builds on:** [0005](0005-what-civic-is.md)
-- **Amended by:** [0007](0007-review-to-agent-loop.md), which gives agents a narrow write path and makes them attributed actors. CIVIC still makes no model calls.
 
 ## Context
 

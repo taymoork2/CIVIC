@@ -65,6 +65,27 @@ for (const [name, edit, code] of cases) {
   })
 }
 
+test('rejects an agent resolving a contract conflict', () => {
+  const codes = errorCodes(edited('fluent-button', (d) => {
+    d.records.push(
+      { id: 'actor:person.taymoor', kind: 'actor', title: 'Taymoor', type: 'person', handle: 'taymoor' } as Actor,
+      { id: 'actor:agent.claude-code.taymoor', kind: 'actor', title: 'Claude Code for Taymoor', type: 'agent', handle: 'claude-code', delegatedBy: 'actor:person.taymoor' } as Actor,
+    )
+    const conflict = d.records.find((candidate) => candidate.kind === 'contract-conflict')!
+    Object.assign(conflict, { status: 'resolved', writtenBy: 'actor:agent.claude-code.taymoor' })
+  }))
+  assert.ok(codes.includes('agent-decision'), `expected agent-decision in ${JSON.stringify(codes)}`)
+})
+
+test('rejects an annotation with no anchor and no capture', () => {
+  const codes = errorCodes(edited('review-loop', (d) => {
+    const annotation = record<Annotation>(d, 'annotation:intake.offline-branch')
+    delete annotation.anchor
+    delete annotation.capture
+  }))
+  assert.ok(codes.includes('annotation-empty'), `expected annotation-empty in ${JSON.stringify(codes)}`)
+})
+
 test('an owner signs off a change, and a person may resolve a batch-review request', () => {
   assert.deepEqual(errorCodes(edited('review-loop', (d) => {
     const r = request(d, OWNER)
