@@ -161,7 +161,7 @@ export function validateGraph(input: unknown): Issue[] {
         for (const edge of record.anchor?.edges ?? []) {
           if (!record.anchor!.targetIds.includes(edge.from)) error('edge-anchor', at, `A path anchor also lists the screen it leaves, ${edge.from}, in targetIds.`)
         }
-        if (record.anchor && !isAnchored(record.anchor) && !record.capture) {
+        if (!isAnchored(record.anchor) && !record.capture) {
           error('annotation-empty', at, 'An annotation with no target, edge or locator keeps its capture; otherwise there is nothing to look at.')
         }
         break

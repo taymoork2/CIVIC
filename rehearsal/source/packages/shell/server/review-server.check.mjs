@@ -220,5 +220,12 @@ test('saved notes become shared CIVIC annotations with their locator, and annota
     assert.equal((await fetch(`${base}/api/review/hand-off`, { method: 'POST', headers, body: JSON.stringify({ annotationIds: [saved.annotationId], ask: 'Make Continue visible.' }) })).status, 201)
     assert.deepEqual(handed, [{ annotationIds: [saved.annotationId], ask: 'Make Continue visible.', checks: [] }])
     assert.equal((await fetch(`${base}/api/review/hand-off`, { method: 'POST', body: '{}' })).status, 401)
+    shared.record = async () => { throw new Error('store is locked') }
+    const kept = await fetch(`${base}/api/review/feedback`, { method: 'POST', headers, body: JSON.stringify({ ...note, requestId: '52345678-1234-4234-8234-123456789abc' }) })
+    assert.equal(kept.status, 201)
+    const row = await kept.json()
+    assert.equal(row.annotationId, undefined)
+    assert.match(row.sharedError, /store is locked/)
+    assert.ok((await (await fetch(`${base}/api/review/feedback`, { headers })).json()).some((entry) => entry.id === row.id))
   } finally { await new Promise((resolve) => server.close(resolve)) }
 })

@@ -135,7 +135,8 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
     case 'claim': {
       need(1)
       const lease = one('--lease')
-      const request = claim(context, positional[0]!, lease ? Number(lease) : undefined)
+      if (lease !== undefined && !(Number.isFinite(Number(lease)) && Number(lease) > 0)) throw new UsageError(`--lease is a number of minutes above zero. Got ${lease}.`)
+      const request = claim(context, positional[0]!, lease !== undefined ? Number(lease) : undefined)
       print(`${request.id} claimed by ${request.claim!.by} on ${request.claim!.line} until ${request.claim!.expires}`)
       return 0
     }

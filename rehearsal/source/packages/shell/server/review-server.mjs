@@ -240,8 +240,12 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
           await writeFile(join(dataDir, input.id + '.png'), screenshot, { mode: 0o600 })
           const { html: _html, snapshot, ...data } = input
           const reproduction = `/review?scenario=${encodeURIComponent(input.context.scenario)}&persona=${input.context.persona}&role=${input.context.role}&condition=${input.context.condition}&theme=${input.context.theme}&scale=${input.context.textScale}&width=${input.context.viewport.width}&feedback=${input.id}`
-          const annotationId = shared ? await shared.record({ feedback: { ...data, revision: snapshot.revision }, screenshot, origin: `http://${host}` }) : undefined
-          const row = { ...data, ...(annotationId ? { annotationId } : {}), revision: snapshot.revision, design: snapshot.design, serverRevision, sourceStale: snapshot.revision.source !== serverRevision.source || snapshot.revision.head !== serverRevision.head, createdAt: Date.now(), status: 'new', screenshot: `/api/review/screenshots/${input.id}.png`, reproduction }
+          // Sharing is best-effort: the note is kept locally even when the shared store is unavailable.
+          let annotationId, sharedError
+          if (shared) {
+            try { annotationId = await shared.record({ feedback: { ...data, revision: snapshot.revision }, screenshot, origin: `http://${host}` }) } catch (error) { sharedError = 'Saved here but not shared with CIVIC: ' + (error?.message ?? String(error)); console.warn(`[civic] ${sharedError}`) }
+          }
+          const row = { ...data, ...(annotationId ? { annotationId } : {}), ...(sharedError ? { sharedError } : {}), revision: snapshot.revision, design: snapshot.design, serverRevision, sourceStale: snapshot.revision.source !== serverRevision.source || snapshot.revision.head !== serverRevision.head, createdAt: Date.now(), status: 'new', screenshot: `/api/review/screenshots/${input.id}.png`, reproduction }
           await write([...rows, row]); return { row, duplicate: false }
         })
         json(duplicate ? 200 : 201, withCurrentSource(row)); return

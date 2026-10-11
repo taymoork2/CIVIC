@@ -21,7 +21,7 @@ Agents make writing UI code cheap. They don't make knowing *what* to build, or p
 **Already in the spec**
 - The graph links intent, design, components, code, and evidence, with stable identities and typed links (spec, "Artifact graph and traceability").
 - Proposal, Decision, Adoption, and Verification are four separate records. Testing a candidate is not adopting it (D21).
-- Model help is optional, attributed, and budgeted. Discovery and replay are deterministic, and refresh and replay make zero model calls (roadmap steps 4 and 6).
+- Discovery and replay are deterministic, and refresh and replay make zero model calls (roadmap steps 4 and 6).
 - Design states with no code yet stay **planned**, and expected-but-missing states become coverage gaps (onboarding plan, sections 2 and 6).
 - Startup mode: minimal setup, lightweight contracts, flexible roles (spec, "Company scale").
 
@@ -164,7 +164,7 @@ The line: CIVIC shouldn't become a WYSIWYG or no-code builder. That's a differen
 
 **New proposal: crawl first with existing tools, adapter only where a crawl isn't enough, and guided journeys from three sources**
 
-the founder's point (2026-10-11): tools already exist that walk a live app, click everything, and take a picture of each state, and several are cross-platform. CIVIC should import their output instead of asking engineers to write an adapter up front. Candidates, all non-AI, to evaluate:
+**The founder's point (2026-10-11):** tools already exist that walk a live app, click everything, and take a picture of each state, and several are cross-platform. CIVIC should import their output instead of asking engineers to write an adapter up front. Candidates, all non-AI, to evaluate:
 
 | Tool | Platforms | What it produces |
 |---|---|---|
