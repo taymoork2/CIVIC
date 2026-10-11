@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "civic": {
+      "command": "${CLAUDE_PLUGIN_ROOT}/bin/civic-mcp",
+      "env": {
+        "CIVIC_AGENT": "claude-code",
+        "CIVIC_REPO": "${CLAUDE_PROJECT_DIR}"
+      }
+    }
+  }
+}

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { execFile } from 'node:child_process'
 import { mkdtempSync, readdirSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
 import { promisify } from 'node:util'
 import { test } from 'node:test'
 import { Store } from '../src/index.ts'
@@ -37,11 +37,15 @@ test('captures are content-addressed and written once', () => {
 
 // Decision 0006: CIVIC makes no model calls. The loop imports Node, the graph, and Playwright for capture, nothing else.
 test('the review loop imports only Node built-ins, the graph and playwright-core', () => {
-  const sourceDir = new URL('../src/', import.meta.url)
-  for (const name of readdirSync(sourceDir)) {
-    for (const match of readFileSync(new URL(name, sourceDir), 'utf8').matchAll(/from\s+'([^']+)'|import\('([^']+)'\)/g)) {
+  const sourceDir = new URL('../src/', import.meta.url).pathname
+  const graphDir = new URL('../../graph/src/', import.meta.url).pathname
+  const files = (readdirSync(sourceDir, { recursive: true }) as string[]).filter((name) => /\.(ts|js)$/.test(name))
+  assert.ok(files.includes(join('overlay', 'server.ts')))
+  for (const name of files) {
+    for (const match of readFileSync(join(sourceDir, name), 'utf8').matchAll(/from\s+'([^']+)'|import\('([^']+)'\)/g)) {
       const specifier = (match[1] ?? match[2])!
-      const allowed = specifier.startsWith('./') || specifier.startsWith('node:') || specifier.startsWith('../../graph/src/') || specifier === 'playwright-core'
+      const target = specifier.startsWith('.') ? resolve(sourceDir, dirname(name), specifier) : undefined
+      const allowed = specifier.startsWith('node:') || specifier === 'playwright-core' || (target !== undefined && (target.startsWith(sourceDir) || target.startsWith(graphDir)))
       assert.ok(allowed, `${name} imports ${specifier}`)
     }
   }

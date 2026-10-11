@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# Starts CIVIC's MCP server (review/src/mcp.ts) for Claude Code. All logic lives in CIVIC.
+set -euo pipefail
+if ! home="$("$(dirname "${BASH_SOURCE[0]}")/civic-home")"; then
+  echo "CIVIC plugin: set CIVIC_HOME to a CIVIC checkout (one with review/src/mcp.ts)." >&2
+  exit 1
+fi
+exec node "$home/review/src/mcp.ts"

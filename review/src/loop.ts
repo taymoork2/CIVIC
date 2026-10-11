@@ -127,6 +127,8 @@ export interface AnnotateInput {
   viewport?: CaptureRef['viewport']
   /** The page the annotation was made on. If it is a registered preview, its line and revision are used. */
   url?: string
+  /** The line and revision a preview stamped on itself at build time. Used only when the store knows the line. */
+  stamped?: { line: string; revision: string }
 }
 
 /**
@@ -140,7 +142,8 @@ export function annotate(context: Context, input: AnnotateInput): Annotation {
   return context.store.transact((document) => {
     const writtenBy = ensureActor(document, context.identity)
     const here = ensureLines(document, context.checkout)
-    const seen = (input.url ? lineForUrl(document, input.url) : undefined) ?? { line: here, revision: context.checkout.head }
+    const stamped = input.stamped && document.records.some((record) => record.kind === 'line' && record.id === input.stamped!.line) ? input.stamped : undefined
+    const seen = stamped ?? (input.url ? lineForUrl(document, input.url) : undefined) ?? { line: here, revision: context.checkout.head }
     const anchor: Anchor = {
       targetIds: [...new Set([...(input.targetIds ?? []), ...(input.edges ?? []).map((edge) => edge.from)])],
       ...(input.edges?.length ? { edges: input.edges } : {}),

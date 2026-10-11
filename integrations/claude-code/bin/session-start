@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# SessionStart: tell Claude which CIVIC work requests are open, so it can offer to pick one up.
+# Prints nothing when CIVIC isn't set up for this project. Never fails the session.
+home="$("$(dirname "${BASH_SOURCE[0]}")/civic-home")" || exit 0
+project="${CLAUDE_PROJECT_DIR:-$PWD}"
+open="$(cd "$project" && CIVIC_AGENT=claude-code node "$home/review/src/cli.ts" requests --status open,reopened 2>/dev/null)" || exit 0
+case "$open" in ""|"No work requests.") exit 0 ;; esac
+printf 'Open CIVIC work requests in this repository (claim one with the civic MCP tools, or /civic:next):\n%s\n' "$open"

@@ -264,6 +264,8 @@ function RootDocument() {
           <Toasts />
         </ClientProviders>
         <Scripts />
+        {/* CIVIC's capture overlay (decision 0007): dev builds only, when `civic overlay` is running and VITE_CIVIC_OVERLAY names it. */}
+        {import.meta.env.DEV && import.meta.env.VITE_CIVIC_OVERLAY ? <script src={`${import.meta.env.VITE_CIVIC_OVERLAY}/overlay.js`} defer /> : null}
       </body>
     </html>
   )
