@@ -75,9 +75,9 @@
   --now-ink: var(--on-sig);
   --now-btn-bg: #ffffff;
   --now-btn-ink: var(--sig-ink);
-  --font-brand: 'Source Serif 4', Georgia, 'Times New Roman', serif;
-  --font-text: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  --font-figure: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-brand: 'Laundered Serif Latin', 'Source Serif 4', Georgia, 'Times New Roman', serif;
+  --font-text: 'Laundered Sans Latin', 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-figure: 'Laundered Sans Latin', 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-mono: ui-monospace, Menlo, Monaco, Consolas, monospace;
   --type-value: 0.75rem;
   --type-dock: 0.8125rem;

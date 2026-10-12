@@ -14,7 +14,7 @@ import { DesignIcon } from '@/kit/design-icons'
 /** A titled card of rows. A section without a heading is the lone "Add ..." row. */
 export function RowSection({ heading, caption, children }: { heading?: ReactNode; caption?: ReactNode; children: ReactNode }) {
   return <section className="grid gap-3">
-    {heading === undefined ? null : <div className="flex items-baseline justify-between gap-2 px-1">
+    {heading === undefined ? null : <div className="flex flex-wrap items-baseline justify-between gap-2 px-1">
       <h2 className="text-[length:var(--step-2)] font-semibold">{heading}</h2>
       {caption === undefined ? null : <span className="text-[length:var(--step--1)] text-muted-foreground">{caption}</span>}
     </div>}
@@ -26,25 +26,25 @@ export function RowSection({ heading, caption, children }: { heading?: ReactNode
 export type FactRow = readonly [label: string, value: ReactNode, onEdit?: () => void]
 
 const factRowClassName = cn(
-  "flex min-h-11 w-full items-center justify-between gap-3 border-0 bg-transparent py-2.5 text-start text-[length:var(--step-0)] leading-normal text-foreground",
+  "grid min-h-11 min-w-0 w-full grid-cols-[minmax(0,1fr)_minmax(0,1fr)] items-center gap-3 border-0 bg-transparent py-2.5 text-start text-[length:var(--step-0)] leading-normal text-foreground [overflow-wrap:anywhere] [@container_(width_<_16rem)]:grid-cols-1 [@container_(width_<_16rem)]:gap-1",
   "[&+&]:[border-block-start:1px_solid_var(--line)]",
 )
 
 /** Facts as the prototype draws them: a quiet card, the label muted, the value bold and right-aligned. */
 export function FactsCard({ rows, label }: { rows: readonly FactRow[]; label?: string }) {
-  return <dl aria-label={label} className="m-0 rounded-control bg-background px-3.5">
+  return <div role={label === undefined ? undefined : 'group'} aria-label={label} className="m-0 rounded-control bg-background px-3.5">
     {rows.map(([name, value, onEdit]) => onEdit === undefined
-      ? <div key={name} className={factRowClassName}>
+      ? <dl key={name} className={cn(factRowClassName, 'm-0')}>
         <dt className="text-muted-foreground">{name}</dt>
-        <dd className="m-0 text-end font-semibold [overflow-wrap:anywhere]">{value}</dd>
-      </div>
+        <dd className="m-0 text-end font-semibold [overflow-wrap:anywhere] [@container_(width_<_16rem)]:text-start">{value}</dd>
+      </dl>
       : <div key={name} className="contents">
         <button type="button" className={cn(factRowClassName, "cursor-pointer touch-manipulation focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-ring")} onClick={onEdit}>
           <span className="text-muted-foreground">{name}</span>
-          <span className="flex items-center gap-2 text-end font-semibold [overflow-wrap:anywhere]">{value}<DesignIcon name="chevronRight" size="1em" strokeWidth={2.2} className="size-4 flex-none text-muted-foreground" aria-hidden="true"  /></span>
+          <span className="flex min-w-0 items-center justify-end gap-2 text-end font-semibold [overflow-wrap:anywhere] [@container_(width_<_16rem)]:justify-start [@container_(width_<_16rem)]:text-start"><span className="min-w-0">{value}</span><DesignIcon name="chevronRight" size="1em" strokeWidth={2.2} className="size-4 flex-none text-muted-foreground" aria-hidden="true"  /></span>
         </button>
       </div>)}
-  </dl>
+  </div>
 }
 
 /** A short paragraph in the sheet: muted caption size, or body size. */

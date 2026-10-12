@@ -1,15 +1,15 @@
-import type { IntakePresentation, IntakeReviewState } from '@/closet/add-clothes'
+import type { Presentation } from './adapter'
 import type { ReviewSnapshot } from './store'
 import nodes from './towel-journey.json'
 
-export const towelEdges = [...nodes.slice(0, -1).flatMap((node, i) => node.id === 'origin' ? [{ from: 'origin', to: 'dye', label: 'Newly owned' }, { from: 'origin', to: 'care:wash', label: 'Pre-owned · skip dye' }] : [{ from: node.id, to: nodes[i + 1]!.id, label: node.id === 'fabric' ? 'Next: color' : node.id === 'color' ? 'Next: where from' : 'Continue' }]), { from: 'care:wash', to: 'stain', label: 'Do not wash / dry clean only' }]
+export { towelEdges } from './journey-graph.mjs'
 
-export type Proposal = { id: string; version: number; title: string; edits: IntakePresentation; updatedAt: string; source: string }
-export type JourneyState = IntakeReviewState & { fields: { label: string; value: string }[]; title: string; action: string; proposalVersion: number | null }
-export type JourneyVisit = { id: string; runId: string; source: string; from: string; to: string; action: string; fields: JourneyState['fields']; draft: IntakeReviewState['draft']; at: string; capture?: string; captureError?: string; proposalVersion: number | null }
+export type Proposal = { id: string; version: number; title: string; edits: Presentation; updatedAt: string; source: string }
+export type JourneyState = { screen: string; draft: unknown; dirty: boolean; pending: boolean; error: string | null; fields: { label: string; value: string }[]; title: string; action: string; proposalVersion: number | null }
+export type JourneyVisit = { id: string; runId: string; source: string; from: string; to: string; action: string; fields: JourneyState['fields']; draft: unknown; at: string; capture?: string; captureError?: string; proposalVersion: number | null }
 export type JourneyBridge = {
   state: () => JourneyState | null
-  setPresentation: (edits: IntakePresentation, version: number | null) => void
+  setPresentation: (edits: Presentation, version: number | null) => void
   snapshot: ReviewSnapshot
 }
 declare global { interface Window { towelJourney?: JourneyBridge } }

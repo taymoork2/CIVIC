@@ -1,14 +1,13 @@
-import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
+import { journeyGraph } from '../src/review/journey-graph.mjs'
 
 test.use({ trace: 'off', viewport: { width: 1440, height: 1000 } })
 test.skip(process.env.WASHCLOSET_REVIEW_E2E !== '1', 'Run explicitly against the isolated review server.')
 
 test('one canvas retains the live draft through navigation, review and proposal testing', async ({ page }) => {
-  const key = (await readFile(resolve('../..', '.review-data/access-key'), 'utf8')).trim()
-  expect((await page.request.post('/api/review/login', { data: { key } })).ok()).toBe(true)
   await page.goto('/review?scenario=intake.towel.fabric')
+  const inventory = await (await page.request.get('/api/review/index')).json()
   await expect(page.getByRole('navigation', { name: 'Canvas location' })).toContainText('Fabric')
   await page.getByRole('button', { name: 'Play', exact: true }).click()
   const frame = page.frameLocator('iframe[title="Live towel journey"]')
@@ -21,7 +20,7 @@ test('one canvas retains the live draft through navigation, review and proposal 
   await expect(live).toHaveCount(1)
   await page.getByLabel('Canvas detail', { exact: true }).selectOption('all')
   await expect(overview).toHaveCount(0)
-  await expect(page.locator('.app-screen-grid .app-screen')).toHaveCount(176)
+  await expect(page.locator('.app-screen-grid .app-screen')).toHaveCount(journeyGraph(inventory.scenarios, inventory.project).reduce((count, flow) => count + flow.screens.length, 0))
   await expect(live).toHaveCount(1)
   await page.getByLabel('Canvas detail', { exact: true }).selectOption('compact')
   await expect(overview).toBeVisible()
@@ -38,14 +37,14 @@ test('one canvas retains the live draft through navigation, review and proposal 
   await expect(frame.getByLabel('Other material 1', { exact: true })).toHaveValue('Retained cotton')
   await expect(live).toHaveAttribute('src', initialUrl!)
   await page.getByRole('button', { name: 'Review', exact: true }).click()
-  await page.getByRole('button', { name: 'Capture screen & write review' }).click()
+  await page.getByRole('button', { name: 'Comment on selection' }).click()
   await page.getByLabel('What should change?', { exact: true }).fill('Synthetic consolidation check: clarify the fabric heading.')
   await outline.getByRole('button', { name: /^05 Color/ }).click()
-  await expect(page.getByText(/Frozen fabric/)).toBeVisible()
+  await expect(page.getByText(/Frozen Fabric/)).toBeVisible()
   await expect(frame.getByLabel('Other material 1', { exact: true })).toHaveValue('Retained cotton')
   await page.locator('.rh-map-bar').getByRole('button', { name: /Resume run|App draft · Fabric/ }).click()
   await page.getByRole('button', { name: 'Save review', exact: true }).click()
-  await expect(page.getByText('Review saved with its frozen screen and inputs.')).toBeVisible()
+  await expect(page.getByText('Review saved with its target and frozen evidence.')).toBeVisible()
   await page.getByRole('button', { name: 'Edit proposal', exact: true }).click()
   const candidateHeading = `Towel fibers (${Date.now()})`
   await page.getByLabel('Heading', { exact: true }).fill(candidateHeading)
@@ -55,7 +54,7 @@ test('one canvas retains the live draft through navigation, review and proposal 
   const saved = await (await page.request.get('/api/review/proposals')).json()
   await page.getByRole('button', { name: 'Edit proposal', exact: true }).click()
   await page.getByLabel('Heading', { exact: true }).fill('Unpublished towel heading')
-  await outline.getByRole('button', { name: /[›⌄] Home 7/ }).click()
+  await outline.getByRole('button', { name: /^[›⌄] Home \d+$/ }).click()
   await outline.getByRole('button', { name: '01 Home one', exact: true }).click()
   await page.getByRole('button', { name: 'Play', exact: true }).click()
   await expect(page.getByRole('button', { name: 'Play', exact: true })).toHaveAttribute('aria-pressed', 'true')
@@ -67,8 +66,6 @@ test('one canvas retains the live draft through navigation, review and proposal 
 })
 
 test('app overview avoids the hairline and branches remain separate from the screen timeline', async ({ page }) => {
-  const key = (await readFile(resolve('../..', '.review-data/access-key'), 'utf8')).trim()
-  expect((await page.request.post('/api/review/login', { data: { key } })).ok()).toBe(true)
   await page.goto('/review')
   const overview = page.getByLabel('Application flow overview', { exact: true })
   await expect(overview).toBeVisible()
@@ -81,7 +78,7 @@ test('app overview avoids the hairline and branches remain separate from the scr
   expect(towel.width).toBeGreaterThan(100)
   expect(pack.x).toBe(towel.x)
   expect(pack.y).toBeGreaterThan(towel.y)
-  await expect(overview.locator('svg path[stroke="#2456d6"]')).not.toHaveCount(0)
+  await expect(overview.locator('svg path[marker-end]')).not.toHaveCount(0)
   await page.screenshot({ path: resolve('../..', '.review-data/app-overview-qa.png') })
   await overview.getByRole('button', { name: 'Open Add a towel flow', exact: true }).click()
   const flow = page.getByRole('region', { name: 'Add a towel flow', exact: true })
@@ -106,9 +103,7 @@ test('app overview avoids the hairline and branches remain separate from the scr
   await page.screenshot({ path: resolve('../..', '.review-data/app-overview-narrow-qa.png') })
 })
 
-test('cross-route actions retain parameters and return context while missing destination states stay unmapped', async ({ page }) => {
-  const key = (await readFile(resolve('../..', '.review-data/access-key'), 'utf8')).trim()
-  expect((await page.request.post('/api/review/login', { data: { key } })).ok()).toBe(true)
+test('cross-route actions retain parameters and return context with the five destinations mapped', async ({ page }) => {
   await page.goto('/review?scenario=legacy.me-history')
   await page.getByRole('button', { name: 'Inspect', exact: true }).click()
   const panel = page.getByRole('complementary', { name: 'Contextual panel' })
@@ -118,8 +113,10 @@ test('cross-route actions retain parameters and return context while missing des
   await expect(page.getByRole('navigation', { name: 'Canvas location' })).toContainText('Laundry completed')
   const history = panel.locator('article').filter({ has: page.getByRole('heading', { name: 'Open garment care history', exact: true }) })
   await expect(history.getByText('/closet?item=<textileId>&tab=history', { exact: true })).toBeVisible()
-  await expect(history.getByText('destination state unmapped', { exact: true })).toBeVisible()
-  await expect(history.getByRole('button', { name: 'View destination specimen' })).toHaveCount(0)
+  await expect(history.getByText('source-declared; representative preview', { exact: true })).toBeVisible()
+  await expect(history.getByText(/Return: Originating wash URL/)).toBeVisible()
+  await history.getByRole('button', { name: 'View destination specimen' }).click()
+  await expect(page.getByRole('navigation', { name: 'Canvas location' })).toContainText('Garment · care history')
   await page.getByRole('navigation', { name: 'Canvas location' }).getByRole('button', { name: 'App', exact: true }).click()
   const overview = page.getByLabel('Application flow overview', { exact: true })
   await expect(overview.getByLabel('Open completed wash', { exact: true })).toHaveCount(1)
@@ -128,14 +125,12 @@ test('cross-route actions retain parameters and return context while missing des
 })
 
 test('all screens setting survives reload and narrow canvases can pan without collapsing thumbnails', async ({ page }) => {
-  const key = (await readFile(resolve('../..', '.review-data/access-key'), 'utf8')).trim()
-  expect((await page.request.post('/api/review/login', { data: { key } })).ok()).toBe(true)
   await page.goto('/review')
   await page.getByLabel('Canvas detail', { exact: true }).selectOption('all')
   await page.reload()
   await expect(page.getByLabel('Canvas detail', { exact: true })).toHaveValue('all')
   await expect(page.getByLabel('Application flow overview', { exact: true })).toHaveCount(0)
-  await expect(page.locator('.app-screen-picture img')).toHaveCount(176)
+  await expect(page.locator('.app-screen-picture img')).toHaveCount(183)
   const screen = page.locator('.app-screen-picture').first()
   await expect.poll(() => screen.evaluate((node) => node.getBoundingClientRect().width)).toBeGreaterThan(40)
   await page.screenshot({ path: resolve('../..', '.review-data/all-screens-qa.png') })

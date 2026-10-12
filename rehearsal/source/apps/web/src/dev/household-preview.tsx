@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import type { Id } from '@convex/_generated/dataModel'
-import { HouseholdView, MachinesView, BottlesView } from '@/routes/household'
+import { HouseholdView, MachinesView, BottlesView } from '@/household/household-page'
 import { MembersView, WearerSheetView } from '@/household/household-people'
 import { InviteSheet } from '@/household/household-invite'
 import type { Inventory, Machine, Supply } from '@/household/inventory-types'
@@ -71,20 +71,19 @@ const members = [
 const waterAnswers = { zip: '94610', utility: 'ebmud' as const, area: 'oakland' }
 const waterSetAt = Date.UTC(2026, 9, 6, 12)
 const water: HouseholdWater = { ...waterAnswers, source: 'lookup', ...lookupWater(waterAnswers, waterSetAt), setAt: waterSetAt }
-export { machines as reviewMachines, supplies as reviewSupplies, wearers as reviewWearers, water as reviewWater }
 // The Water sheet saves through its own Convex hook; this client refuses every save locally, so nothing reaches the backend.
 const refusingClient = { mutation: previewUnavailable('save the water setting') } as unknown as ConvexReactClient
 const refusingLaundryDayClient = { mutation: previewUnavailable('save the laundry day setting') } as unknown as ConvexReactClient
 
-export type HouseholdPreviewState = 'index' | 'people' | 'people-member' | 'people-long' | 'invite' | 'profile' | 'water' | 'water-sheet' | 'laundry-day'
+export type HouseholdPreviewState = 'index' | 'people' | 'machines' | 'bottles' | 'people-member' | 'people-long' | 'invite' | 'profile' | 'water' | 'water-sheet' | 'laundry-day'
 
 /** Same page/list/sheet presenters; callbacks never persist preferences, share or mutate records. */
 export function HouseholdPreview({ variant, state }: { variant: HouseholdPreviewState; state?: 'invalid' | 'error' | 'busy' }) {
-  const [section, setSection] = useState<HouseholdSection>(variant === 'water' || variant === 'water-sheet' || variant === 'laundry-day' ? 'machines' : 'people')
+  const [section, setSection] = useState<HouseholdSection>(variant === 'bottles' ? 'bottles' : variant === 'machines' || variant === 'water' || variant === 'water-sheet' || variant === 'laundry-day' ? 'machines' : 'people')
   const [sheet, setSheet] = useState<'invite' | null>(variant === 'invite' ? 'invite' : null)
   const [waterOpen, setWaterOpen] = useState(variant === 'water-sheet')
   const [wearer, setWearer] = useState<Inventory['wearers'][number] | 'new' | null>(variant === 'profile' ? wearers[2]! : null)
-  return <HouseholdView name="Our apartment" section={section} onSection={setSection}>
+  return <HouseholdView name="Our apartment" section={section} onSection={setSection} detail={`${wearers.length} clothing profiles · ${machines.length} appliances · ${supplies.length} products`}>
     {section === 'machines' ? <MachinesView machines={machines} currency="USD" place="shared" onOpen={previewCall('open the machine')} onHomePair={previewCall('pair a home machine')}>
       {variant === 'water' || variant === 'water-sheet' ? <>
         <WaterSection water={water} onOpen={() => setWaterOpen(true)} />
@@ -103,3 +102,5 @@ export function HouseholdPreview({ variant, state }: { variant: HouseholdPreview
         </MembersView>}
   </HouseholdView>
 }
+
+export { machines as reviewMachines, supplies as reviewSupplies, wearers as reviewWearers, water as reviewWater }

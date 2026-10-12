@@ -1,104 +1,76 @@
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import { readFile, readdir } from 'node:fs/promises'
-import { join, relative } from 'node:path'
-import { referenceInputHashes } from './opendesign-reference-inputs.mjs'
-import { coveragePath, checkedContract, coverageReport } from './review-coverage.mjs'
+import { dirname, join, relative, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { loadProject, publicProject, checkedScenarios, projectPath } from './review-project.mjs'
+import { reviewInventory as laundryInventory } from './review-laundry-inventory.mjs'
+import { checkedContract, coverageReport } from './review-coverage.mjs'
+import { fixtureHashes } from './review-fixture-hashes.mjs'
 
-const sha = (bytes) => createHash('sha256').update(bytes).digest('hex')
+const sha = (content) => createHash('sha256').update(content).digest('hex')
+const head = (root) => { try { return execFileSync('git', ['rev-parse', 'HEAD'], { cwd: root, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() } catch { return null } }
 async function files(root) {
   const entries = await readdir(root, { withFileTypes: true })
-  return (await Promise.all(entries.filter((entry) => !['node_modules', '.git', 'dist'].includes(entry.name)).map((entry) => entry.isDirectory() ? files(join(root, entry.name)) : join(root, entry.name)))).flat()
+  return (await Promise.all(entries.filter((entry) => !['node_modules', '.git', '.review-data', 'dist', 'build'].includes(entry.name) && !entry.name.startsWith('.env')).map((entry) => entry.isDirectory() ? files(join(root, entry.name)) : entry.isFile() && /\.(?:[cm]?[jt]sx?|json|css|html|svg|png|webp|jpe?g|woff2?)$/.test(entry.name) ? [join(root, entry.name)] : []))).flat()
 }
-
-/** Source-discovered routes/sheets and named scenarios are separate coverage measures. */
-export async function reviewInventory(repo, designRoot) {
-  const web = join(repo, 'apps/web')
-  const scenarios = JSON.parse(await readFile(join(web, 'src/review/scenarios.json'), 'utf8')).map((scenario) => ({ design: ['DESIGN.md', 'preview/production-patterns.html'], checks: ['apps/web/e2e/review-workspace.spec.ts'], preview: 'working-synthetic', native: 'missing', device: 'unverified', ...scenario }))
-  const journeys = [...new Set(scenarios.map((scenario) => scenario.journey))]
-  const steps = ['type', 'whose', 'details', 'fabric', 'color', 'origin', 'dye', 'care', 'stain', 'final']
-  scenarios.sort((a, b) => journeys.indexOf(a.journey) - journeys.indexOf(b.journey) || (a.renderer === 'intake' && b.renderer === 'intake' ? steps.indexOf(a.step) - steps.indexOf(b.step) : 0))
-  const evidence = new Map()
-  const source = []
-  const surfaces = []
-  const previews = new Set()
-  for (const file of await files(join(web, 'src'))) {
-    if (!/\.(tsx?|json|css)$/.test(file)) continue
-    const path = relative(repo, file)
-    const content = await readFile(file, 'utf8')
-    source.push([path, sha(content)])
-    evidence.set(path, content)
-    if (/\.(test|spec)\./.test(file)) continue
-    for (const match of content.matchAll(/(?:export\s+)?function\s+(\w*Sheet\w*)\s*\(/g)) surfaces.push({ id: `${path}#${match[1]}`, path, name: match[1], kind: 'sheet', scenarios: scenarios.filter((scenario) => scenario.component === path).map((scenario) => scenario.id) })
-    for (const match of content.matchAll(/createFileRoute\(['"]([^'"]+)['"]\)/g)) surfaces.push({ id: `route:${match[1]}`, path, name: match[1], kind: 'route', scenarios: scenarios.filter((scenario) => scenario.component === path).map((scenario) => scenario.id) })
-    if (path === 'apps/web/src/routes/design-preview.tsx') {
-      for (const match of content.matchAll(/['"]((?:closet|home|household|laundry|me|settings|product|profile|outfit|join|setup|reset|invite|drying)-[a-z-]+)['"]/g)) previews.add(match[1])
-      for (const match of content.matchAll(/(?<![\w.])screen === ['"]([a-z-]+)['"]/g)) previews.add(match[1])
-    }
-    for (const [catalog, prefix] of [['dryingPreviewStates', 'drying'], ['laundryDayScreens', 'laundry']]) {
-      const list = content.match(new RegExp(`export const ${catalog}[^=]*= \\[([^\\]]+)\\]`))?.[1]
-      if (list) for (const match of list.matchAll(/'([a-z-]+)'/g)) previews.add(`${prefix}-${match[1]}`)
-    }
+export async function reviewInventory(repo, designRoot, appRepo, connection) {
+  const project = connection ?? loadProject(repo, { ...(appRepo ? { applicationRoot: appRepo } : {}) })
+  const profile = publicProject(project)
+  if (project.manifest.adapter.kind === 'laundry') {
+    const result = await laundryInventory(repo, designRoot, project.root)
+    result.metadata.project = profile
+    result.metadata.revision.source = sha(result.metadata.revision.source + JSON.stringify(project.manifest))
+    result.metadata.fixtureSource = sha(result.metadata.fixtureSource + JSON.stringify(project.manifest))
+    if (result.metadata.validation.receipt?.revision?.source !== result.metadata.revision.source) result.metadata.validation.status = 'stale'
+    result.metadata.coverage = coverageReport(result.metadata, checkedContract(JSON.parse(await readFile(project.coverageFile, 'utf8'))), new Set(result.evidence.keys()))
+    result.metadata.fixtureHashes = fixtureHashes(result.metadata, result.evidence, project, result.metadata.fixtureInputs)
+    delete result.metadata.fixtureInputs
+    result.metadata.fixtureSource = sha(JSON.stringify(Object.entries(result.metadata.fixtureHashes).sort()))
+    return result
   }
-  const design = { project: '43227d24-ee04-414e-a939-eda64e3f4bec', reconciliation: 'Review shell pending; existing component rules reused', hashes: {}, receipt: null }
-  for (const path of ['IDENTITY.md', 'DESIGN.md', 'SKILL.md', 'README.md', 'colors_and_type.css', 'tokens.css', 'COMPONENTS.md', 'preview/production-patterns.html', 'source/render-reference-workflow.md', 'source-reference/receipt.json']) {
-    try { const content = await readFile(join(designRoot, path), 'utf8'); design.hashes[path] = sha(content); evidence.set(`design:${path}`, content); if (path.endsWith('receipt.json')) design.receipt = JSON.parse(content) }
+  const registry = checkedScenarios(JSON.parse(await readFile(project.scenariosPath, 'utf8')), project)
+  const scenarios = registry.map((row) => ({ renderer: project.entry ? 'adapter' : 'legacy', preview: project.entry ? 'working-synthetic' : 'visual-or-partial', implementation: row.component ? 'present' : 'unknown', design: [], checks: [], device: 'unverified', native: 'missing', behavior: 'missing execution evidence', ...row, flow: row.flow ?? `flow:${row.journey}`, section: row.section ?? project.manifest.navigation[0] }))
+  const evidence = new Map(), hashes = new Map(), surfaces = []
+  const add = async (file, key) => { const content = await readFile(file); hashes.set(key, sha(content)); if (/\.(?:[cm]?[jt]sx?|json|css|html)$/.test(file)) evidence.set(key, content.toString()); return content.toString() }
+  for (const file of new Set((await Promise.all([...project.sources, ...(project.publicDir ? [project.publicDir] : [])].map(files))).flat())) {
+    const path = relative(project.root, file)
+    projectPath(project.root, path)
+    const content = await add(file, path)
+    if (/\.(test|spec)\./.test(file)) continue
+    for (const match of content.matchAll(/(?:export\s+)?function\s+(\w*Sheet\w*)\s*\(/g)) surfaces.push({ id: `${path}#${match[1]}`, name: match[1], path, kind: 'sheet', scenarios: scenarios.filter((s) => s.component === path).map((s) => s.id) })
+    for (const match of content.matchAll(/createFileRoute\(['"]([^'"]+)['"]\)/g)) surfaces.push({ id: `route:${match[1]}`, name: match[1], path, kind: 'route', scenarios: scenarios.filter((s) => s.component === path).map((s) => s.id) })
+  }
+  for (const [name, file] of [['project', project.manifestPath], ['scenarios', project.scenariosPath], ['coverage', project.coverageFile], ...(project.entry ? [['adapter', project.entry]] : [])]) await add(file, `project:${name}`)
+  if (project.entry) for (const file of await files(dirname(project.entry))) {
+    const path = relative(project.manifestRoot, file)
+    projectPath(project.manifestRoot, path)
+    await add(file, `adapter:${path}`)
+  }
+  for (const path of ['package.json', 'pnpm-lock.yaml', 'package-lock.json', 'yarn.lock', 'tsconfig.json']) {
+    try { await add(projectPath(project.root, path, false), path) } catch (error) { if (error.code !== 'ENOENT') throw error }
+  }
+  for (const scenario of scenarios) if (scenario.component) scenario.implementation = evidence.has(scenario.component) ? 'present' : 'missing'
+  // Local adapter/bootstrap changes also invalidate renders; project code stays read-only.
+  for (const file of await files(join(repo, 'apps/web/src/review'))) await add(file, `rehearsal:${relative(repo, file)}`)
+  for (const file of await files(join(repo, 'apps/web/scripts'))) if (file.includes('/review-')) await add(file, `rehearsal:${relative(repo, file)}`)
+  const shell = resolve(dirname(fileURLToPath(import.meta.resolve('@civic/shell/server'))), '..')
+  for (const file of await files(shell)) await add(file, `rehearsal:packages/shell/${relative(shell, file)}`)
+  const design = { project: project.manifest.design?.id ?? project.manifest.id, hashes: {}, reconciliation: 'Design references require separate verification' }
+  for (const path of project.manifest.design?.files ?? []) {
+    try { const file = designRoot && projectPath(designRoot, path); design.hashes[path] = file ? sha(await readFile(file)) : null; if (file) evidence.set(`design:${path}`, await readFile(file, 'utf8')) }
     catch (error) { if (error.code !== 'ENOENT') throw error; design.hashes[path] = null }
   }
-  const sourceHashes = await referenceInputHashes(web)
-  const referenceCurrent = design.receipt?.status === 'verified' && JSON.stringify(design.receipt.sourceHashes) === JSON.stringify(sourceHashes)
-  const existing = [...previews].sort().map((screen) => ({ id: `legacy.${screen}`, label: screen, journey: 'Existing specimens', renderer: 'legacy', screen, component: 'apps/web/src/routes/design-preview.tsx', design: ['source-reference/receipt.json'], checks: ['apps/web/src/dev/design-preview.test.ts'], preview: 'visual-or-partial', device: 'unverified', native: 'missing' }))
-  // These are curated source bindings, not observed transitions or automatic route discovery.
-  const routeActions = JSON.parse(await readFile(join(web, 'src/review/route-actions.json'), 'utf8'))
-  const registered = new Map([...scenarios, ...existing].map((scenario) => [scenario.id, scenario]))
-  for (const action of routeActions) {
-    action.status = !evidence.get(action.source)?.includes(action.anchor) ? 'source binding stale' : !registered.has(action.from) ? 'origin preview missing' : !action.destination || !registered.has(action.destination) ? 'destination state unmapped' : 'source-declared; representative preview'
-    const origin = registered.get(action.from)
-    if (!origin) continue
-    origin.routeActions = [...(origin.routeActions ?? []), action]
-    if (action.status === 'source-declared; representative preview') origin.edges = [...(origin.edges ?? []), { action: action.action, destination: action.destination, effect: 'Source-declared navigation; representative specimen, not an observed run' }]
-  }
-  const cases = design.receipt?.cases ?? []
-  for (const scenario of [...scenarios, ...existing]) {
-    scenario.implementation = evidence.has(scenario.component) ? 'present' : 'missing'
-    scenario.designCoverage = scenario.design.every((path) => design.hashes[path]) ? 'rules/bounded specimen; full scenario unverified' : 'missing'
-    scenario.reference = cases.some((entry) => entry.screen === scenario.screen) ? referenceCurrent ? 'source-current; static only' : 'stale' : 'missing'
-    scenario.behavior = 'not verified by this inventory; see scoped checks'
-    scenario.checkCoverage = {}
-    for (const path of scenario.checks) { try { evidence.set(path, await readFile(join(repo, path), 'utf8')); scenario.checkCoverage[path] = 'source present; execution not attested by this index' } catch (error) { if (error.code !== 'ENOENT') throw error; scenario.checkCoverage[path] = 'missing' } }
-  }
-  for (const path of ['pnpm-lock.yaml', 'package.json', 'apps/web/playwright.config.ts', 'apps/web/tsconfig.json', 'apps/web/review.html', 'apps/web/review-frame.html', 'apps/web/vite.config.ts', 'apps/web/package.json', ...[...evidence.keys()].filter((path) => /(?:test|spec)\./.test(path)), ...(await files(join(web, 'scripts'))).filter((path) => /review-[^/]+\.mjs$/.test(path)).map((path) => relative(repo, path))]) {
-    const content = await readFile(join(repo, path), 'utf8'); source.push([path, sha(content)])
-  }
-  // The CIVIƆ shell renders and stores every review, so its source is part of the attested revision.
-  const shell = join(repo, 'packages/shell')
-  for (const file of await files(shell)) {
-    if (file.includes('/node_modules/') || !/\.(tsx?|mjs|css|json)$/.test(file)) continue
-    const path = relative(repo, file)
-    const content = await readFile(file, 'utf8')
-    source.push([path, sha(content)]); evidence.set(path, content)
-  }
-  const head = execFileSync('git', ['rev-parse', 'HEAD'], { cwd: repo, encoding: 'utf8' }).trim()
-  let contract = { version: 1, targets: [] }
-  try { const content = await readFile(join(repo, coveragePath), 'utf8'); contract = checkedContract(JSON.parse(content)); source.push([coveragePath, sha(content)]); evidence.set(coveragePath, content) } catch (error) { if (error.code !== 'ENOENT') throw error }
-  for (const root of ['packages', 'convex']) for (const path of await files(join(repo, root))) {
-    if (/\.(?:tsx?|json|css|mjs|mts)$/.test(path)) source.push([relative(repo, path), sha(await readFile(path))])
-  }
-  const revision = { head, source: sha(JSON.stringify([...new Map(source)].sort())), capturedAt: new Date().toISOString() }
-  // The CIVIC shell draws the review workspace around fixtures, never the fixture frames themselves.
-  const fixtureSource = sha(JSON.stringify([...new Map(source)].filter(([path]) => !/\.(test|spec)\./.test(path) && (path.startsWith('packages/') && !path.startsWith('packages/shell/') || path.startsWith('convex/') || path.startsWith('apps/web/src/') && (!path.includes('/review/') || /\/review\/(frame\.tsx|store\.ts)$/.test(path)))).sort()))
-  const validationPath = 'docs/design/review-validation.json'
-  let validation = { path: validationPath, status: 'missing', receipt: null }
+  const revision = { head: head(repo) ?? '0'.repeat(40), source: sha(JSON.stringify([...hashes].sort())), capturedAt: new Date().toISOString() }
+  let validation = { path: 'docs/design/review-validation.json', status: 'missing', receipt: null }
   try {
-    const content = await readFile(join(repo, validationPath), 'utf8')
-    const receipt = JSON.parse(content)
-    evidence.set(validationPath, content)
-    validation = { path: validationPath, status: receipt.revision?.head === head && receipt.revision?.source === revision.source ? 'source-current' : 'stale', receipt }
-    if (validation.status === 'source-current') for (const scenario of scenarios) scenario.behavior = receipt.behaviorScenarios?.includes(scenario.id) ? 'scoped local behavior passed; other conditions unverified' : receipt.renderScenarios?.includes(scenario.id) ? 'drawer rendering passed; full behavior unverified' : 'missing execution evidence'
+    const receipt = JSON.parse(await readFile(join(repo, validation.path), 'utf8'))
+    validation = { ...validation, receipt, status: receipt.projectKey === project.key && receipt.revision?.head === revision.head && receipt.revision?.source === revision.source ? 'source-current' : 'stale' }
   } catch (error) { if (error.code !== 'ENOENT') throw error }
-  const metadata = { revision, validation, design: { ...design, receipt: design.receipt === null ? null : { baseline: design.receipt.baseline, status: design.receipt.status, generatedAt: design.receipt.generatedAt, current: referenceCurrent } }, scenarios: [...scenarios, ...existing], surfaces, limits: ['Source discovery is not an exhaustive scenario audit.', 'Existing specimens may reject saves or have visual-only callbacks.', 'Photo upload, garment care actions, research and planning are not simulated; unsupported writes fail.', 'Planner/backend authorization is not simulated or proven by local saves.', 'Native implementations, arbitrary canvas editing and simultaneous collaboration remain roadmap work.', 'Physical device acceptance and review-access deployment are unverified.', 'OpenDesign native annotation retrieval is unverified; /api/review/feedback is the explicit agent path.'] }
-  metadata.fixtureSource = fixtureSource
-  metadata.routeActions = routeActions
-  metadata.coverage = coverageReport(metadata, contract, new Set(source.map(([path]) => path)))
+  const metadata = { project: profile, revision, fixtureSource: revision.source, design, scenarios, surfaces, validation, connection: { rehearsalRoot: repo, applicationRoot: project.root, applicationHead: head(project.root), mode: 'read-only-linked-checkout', refresh: 'Inventory updates automatically; open runs retain their rendered revision.' }, limits: ['Personas, fixtures and journey intent are authored, not inferred.', 'Source-discovered routes and sheets remain unconfirmed; discovery is not exhaustive.', 'The project preview adapter owns its synthetic effects; no production backend is connected.'] }
+  const contract = checkedContract(JSON.parse(await readFile(project.coverageFile, 'utf8')))
+  metadata.coverage = coverageReport(metadata, contract, new Set(evidence.keys()))
+  metadata.fixtureHashes = fixtureHashes(metadata, evidence, project, [...hashes])
+  metadata.fixtureSource = sha(JSON.stringify(Object.entries(metadata.fixtureHashes).sort()))
   return { metadata, evidence }
 }

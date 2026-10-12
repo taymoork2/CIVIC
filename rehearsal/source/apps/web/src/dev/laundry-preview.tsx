@@ -15,7 +15,9 @@ import type { MachineFacts } from '@/laundry/machine-step'
 import { GarmentIcon } from '@/kit/garment-icon'
 import { HomePreview } from '@/dev/home-preview'
 import { RunningLoadSheetView, type RunningLoadDetail } from '@/laundry/running-load-sheet'
-import { LoadSummaryView, MachineStepPresenter, ReviewStep, type LoadRecord, StartMinutesField, sessionPageClassName, stepActions, stepOptionLabels, stepRecoveryLabels, type Action } from '@/laundry/session-view'
+import { preparationBackStep, LoadSummaryView, MachineStepPresenter, ReviewStep, type LoadRecord, StartMinutesField, sessionPageClassName, stepActions, stepOptionLabels, stepRecoveryLabels, type Action } from '@/laundry/session-view'
+import { emptyPass, type StoredPlan } from '@/laundry/laundry-pass'
+import { StageBar } from '@/laundry/laundry-kit'
 import { blockingCount, nextCheck, sourceGroups, type IssueAction, type SourceGroup } from '@/products/source-issues'
 import { StainInspectionSheet } from '@/closet/stain-inspection'
 import { WasherPathScreen, type RoomProduct } from '@/laundry/washer-path'
@@ -110,11 +112,13 @@ export const recipeActions: Action[] = [
 /** The same steps with the detergent's printed cap marks recorded, so the step draws the cap filled to the planned mark. */
 const capActions: Action[] = recipeActions.map((action) => action.id === 'preview-detergent' ? { ...action, dose: { amount: 30, unit: 'ml', mark: '3', marks: ['1', '3', '5'] } } : action)
 const recipePieces = [{ label: 'White cotton tee', count: 2, kind: 't_shirt', colorGroup: 'white', media: <GarmentIcon kind="t_shirt" colorGroup="white" /> }]
-export type LaundryPreviewState = 'index' | 'hamper' | 'review' | 'review-stain' | 'room' | 'laundromat' | 'room-picked' | 'room-blocked' | 'chemistry' | 'preparation' | 'preparation-paused' | 'preparation-ball' | 'preparation-long' | 'preparation-cap' | 'session' | 'completed' | 'completed-early'
+export type LaundryPreviewState = 'empty' | 'ready' | 'index' | 'hamper' | 'hamper-scale' | 'hamper-scale-hand' | 'plan' | 'plan-scale' | 'review' | 'review-stain' | 'room' | 'laundromat' | 'room-picked' | 'room-blocked' | 'chemistry' | 'preparation' | 'preparation-paused' | 'preparation-ball' | 'preparation-long' | 'preparation-cap' | 'session' | 'completed' | 'completed-early'
 
 /** Real presenters with synthetic data and no backend, persistence or navigation writes. */
 export function LaundryPreview({ variant, state }: { variant: LaundryPreviewState; state?: 'invalid' | 'error' | 'busy' }) {
   const [atRoom, setAtRoom] = useState(false)
+  if (variant === 'plan' || variant === 'plan-scale') return <PlanPreview scale={variant === 'plan-scale'} />
+  if (variant === 'hamper-scale' || variant === 'hamper-scale-hand') return <HamperScalePreview hand={variant === 'hamper-scale-hand'} />
   if (variant === 'session') return <RunningPreview state={state} />
   if (variant === 'chemistry') return <div className={`${sessionPageClassName} machine-screen`}>
     <ChemistryScreen groups={chemistryGroups(recipeActions, false, { clothes: true })} settings={['Normal · 30°C or lower', '$2.50 recorded wash price']} pieces={recipePieces} washer="Washer 14" machineFact="Washer 14 · HE" unrecorded={false} startAmounts={false} onContinue={previewCall('continue')} continueLabel={chemistryText.startPreparation} disabled={false} back={<BackButton label="Back to the room" onClick={previewCall('go back to the room')} />} extra={<Note>Synthetic visual fixture amounts; not real-use instructions.</Note>} />
@@ -123,10 +127,35 @@ export function LaundryPreview({ variant, state }: { variant: LaundryPreviewStat
   if (variant === 'completed' || variant === 'completed-early') return <CompletedPreview early={variant === 'completed-early'} />
   if (variant === 'preparation-paused' || variant === 'preparation-ball' || variant === 'preparation-long') return <PausedPreparationPreview state={state} ball={variant === 'preparation-ball'} long={variant === 'preparation-long'} />
   // The day plan reads the drying queue itself: answered here (a shared room, nothing drying), never from the backend.
-  if (variant === 'index' || variant === 'hamper') return <FixtureConvex data={{ 'dryingQueue:queue': { pieces: [], runs: [], homeDryerId: null, homeDryerSessionId: null, dryers: [] } }}><LaundryView now={now} householdId="preview-household" viewerKey="preview-user" inventory={inventory} hamper={{ count: textiles.length, loads: variant === 'hamper' ? null : 4 }} draft={null} onDraft={previewCall('save the draft')} planId={null} plan={null} questions={[]} calls={calls} onPlan={previewCall('open the plan')} onSession={previewCall('open the session')} hub={variant === 'hamper' ? undefined : hub} onItemOpen={previewCall('open the garment')}
+  if (variant === 'empty' || variant === 'ready' || variant === 'index' || variant === 'hamper') return <FixtureConvex data={{ 'dryingQueue:queue': { pieces: [], runs: [], homeDryerId: null, homeDryerSessionId: null, dryers: [] } }}><LaundryView now={now} householdId="preview-household" viewerKey="preview-user" inventory={variant === 'empty' ? { ...inventory, textiles: [] } : variant === 'ready' ? { ...inventory, textiles: textiles.map(piece => ({ ...piece, status: 'clean', flag: null })) } : inventory} hamper={{ count: variant === 'empty' || variant === 'ready' ? 0 : textiles.length, loads: variant === 'empty' || variant === 'ready' || variant === 'hamper' ? null : 4 }} draft={null} onDraft={previewCall('save the draft')} planId={null} plan={null} questions={[]} calls={calls} onPlan={previewCall('open the plan')} onSession={previewCall('open the session')} hub={variant === 'empty' || variant === 'ready' ? { kind: 'empty' } : variant === 'hamper' ? undefined : hub} onItemOpen={previewCall('open the garment')}
     renderLink={(_, { className, children }) => <Button variant="unstyled" size="unstyled" className={className} onClick={previewCall('follow the link')}>{children}</Button>} /></FixtureConvex>
   if ((variant === 'review' || variant === 'review-stain') && !atRoom) return <ReviewPreview state={state} inspect={variant === 'review-stain'} onAtRoom={() => setAtRoom(true)} />
   return <WasherArrivalPreview variant={variant} pending={state === 'busy'} blocked={variant === 'room-blocked' || variant === 'review' || variant === 'review-stain'} onBack={() => setAtRoom(false)} />
+}
+
+/** Real overview and review navigation; fixture records and every save remain synthetic. */
+function PlanPreview({ scale }: { scale: boolean }) {
+  const pieces = scale ? Array.from({ length: 1000 }, (_, i): Textile => ({ ...textiles[0]!, textileId: `preview-plan-${i}` as Id<'textiles'>, name: `Family piece ${String(i).padStart(4, '0')}`, wearerId: inventory.wearers[i % 3]!.wearerId, flag: null, firstWash: false })) : textiles.map(piece => ({ ...piece, flag: null, firstWash: false }))
+  const size = scale ? 20 : 4
+  const loads = Array.from({ length: Math.ceil(pieces.length / size) }, (_, i) => ({ id: `preview-load-${i}`, textileIds: pieces.slice(i * size, (i + 1) * size).map(piece => piece.textileId), owners: [], bulkUnits: size, capacityUnits: size,
+    machineId: 'preview-washer', machineModelId: null, cycle: 'normal', temperatureC: 30, soilLevel: 'normal', treatments: [], detergent: null, drying: null, warnings: [], blockers: [], reasonIds: [], ready: true }))
+  const plan = { planId: 'preview-plan', householdId: 'preview-household', status: 'ready', inputHash: 'synthetic-navigation', createdAt: now, pass: emptyPass, textileIds: pieces.map(piece => piece.textileId), machines: [],
+    loadStates: loads.map(entry => ({ loadId: entry.id, startable: false, blockingReasonIds: [], blockedItems: [], sessionId: null, confirmedMachineId: null })),
+    result: { loads, reasons: [], exclusions: [], warnings: [], explanations: [], cost: { currency: 'USD', total: 0 }, inputHash: 'synthetic-navigation', inputSnapshot: {}, status: 'ready', mode: 'normal' } } as unknown as StoredPlan
+  return <FixtureConvex data={{}}>
+    <p role="status" className="text-ink-2">Interactive navigation preview · synthetic records · no real wash can start</p>
+    <LaundryView now={now} householdId="preview-household" viewerKey="preview-user" inventory={{ ...inventory, textiles: pieces }} hamper={{ count: pieces.length, loads: loads.length }} draft={null} onDraft={() => {}} planId={plan.planId} plan={plan} questions={[]} calls={calls} onPlan={previewCall('return to the hamper')} onSession={previewCall('open the session')} />
+  </FixtureConvex>
+}
+
+/** Paging and selection are interactive in memory; this fixture never plans a real wash. */
+function HamperScalePreview({ hand }: { hand: boolean }) {
+  const people = ['Alex', 'Blair', 'Casey', 'Devon', 'Ellis'].map((name, i) => ({ ...inventory.wearers[0]!, name, wearerId: `preview-person-${i}` as Id<'wearers'> }))
+  const pieces = Array.from({ length: 1000 }, (_, i): Textile => ({ ...textiles[0]!, textileId: `preview-hamper-${i}` as Id<'textiles'>, name: `Hamper item ${String(i).padStart(4, '0')}`, wearerId: people[i % 5]!.wearerId, flag: null, care: { ...care, material: 'cotton', ...(hand ? { washMethod: 'hand_wash' } : {}) } }))
+  return <FixtureConvex data={{ 'dryingQueue:queue': { pieces: [], runs: [], homeDryerId: null, homeDryerSessionId: null, dryers: [] } }}>
+    <p role="status" className="text-ink-2">Interactive preview · changes stay on this page</p>
+    <LaundryView now={now} householdId="preview-household" viewerKey="preview-user" inventory={{ ...inventory, textiles: pieces, wearers: people }} hamper={{ count: hand ? 0 : pieces.length, loads: null }} draft={null} onDraft={() => {}} planId={null} plan={null} questions={[]} calls={calls} onPlan={previewCall('open the plan')} onSession={previewCall('open the session')} />
+  </FixtureConvex>
 }
 
 function ReviewPreview({ state, inspect = false, onAtRoom }: { state?: 'invalid' | 'error' | 'busy'; inspect?: boolean; onAtRoom: () => void }) {
@@ -197,6 +226,7 @@ function RunningPreview({ state }: { state?: 'invalid' | 'error' | 'busy' }) {
 
 function PreparationPreview({ actions: recipeActions }: { actions: Action[] }) {
   const [at, setAt] = useState(1)
+  const [recipeOpen, setRecipeOpen] = useState(false)
   const [reviewing, setReviewing] = useState<number | null>(null)
   const [minutes, setMinutes] = useState('')
   const [optionsOpen, setOptionsOpen] = useState(false)
@@ -209,21 +239,20 @@ function PreparationPreview({ actions: recipeActions }: { actions: Action[] }) {
   const minutesOk = Number(minutes) >= 1 && Number(minutes) <= 300
   // The same eligibility as the live step; in this fixture the wash-stage product is the detergent.
   const eligible = stepActions(action, { paused: false, readOnly: false, preparing: true, isDetergent: action.kind === 'treatment' && action.stage === 'wash', hasLoad: true })
+  const previous = { label: preparationBackStep(at, reviewing) === null ? 'Back to what goes in' : preparationText.previousStep, onClick: () => { const back = preparationBackStep(at, reviewing); setReviewing(back); if (back === null) setRecipeOpen(true) } }
+  if (recipeOpen) return <div className={`${sessionPageClassName} machine-screen`}><ChemistryScreen groups={chemistryGroups(recipeActions, false, { clothes: true })} settings={['Normal · 30°C or lower']} pieces={recipePieces} washer="Washer 14" machineFact="Washer 14 · HE" unrecorded={false} startAmounts={false} disabled={false} back={<BackButton label="Back to laundry day" onClick={simulate('Back to laundry day')} />} onContinue={() => setRecipeOpen(false)} continueLabel={chemistryText.continuePreparation} /></div>
   return <div className={`${sessionPageClassName} machine-screen`}>
-    <TaskHeading title={preparationText.title} back={<BackButton label="Back to Laundry" onClick={simulate('Back to Laundry')} />} mark={{ tone: 'waiting', text: 'Not started' }} caption={preparationText.notStarted('Washer 14')} />
-    <Note role="status">{simulated === null ? machineStepText.previewOnly : machineStepText.previewWould(simulated)}</Note>
-    {reviewing !== null ? <ReviewStep action={{ ...recipeActions[reviewing]!, status: 'confirmed' }} facts={facts} progress={`${reviewing + 1} of 5`} drumFullness={null} onNext={() => setReviewing(reviewing + 1 >= at ? null : reviewing + 1)} rememberExplanation={false} /> :
+    <div className="grid gap-2"><TaskHeading compact title={preparationText.title} back={<BackButton {...previous} />} caption="Load 1 of 4 · Whites" /><StageBar at={0} compact /></div>
+    {reviewing !== null ? <ReviewStep action={{ ...recipeActions[reviewing]!, status: 'confirmed' }} facts={facts} progress={`${reviewing + 1} of 5`} drumFullness={null} previous={previous} onNext={() => setReviewing(reviewing + 1 >= at ? null : reviewing + 1)} note={machineStepText.previewOnly} rememberExplanation={false} /> :
       <MachineStepPresenter action={action} facts={facts} titleId="preview-preparation-step" progress={`${at + 1} of 5`}
-        previous={at > 0 ? { label: preparationText.previousStep, onClick: () => setReviewing(at - 1) } : undefined}
+        previous={previous}
         primary={{ label: starts ? preparationText.ivStarted('Washer 14') : preparationText.doneNext, onClick: starts ? simulate(preparationText.ivStarted('Washer 14')) : () => { setSimulated(null); setAt(at + 1) }, disabled: starts && !minutesOk }}
-        note={starts ? minutesOk ? preparationText.timerNote : minutes === '' ? preparationText.enterMinutes : undefined : undefined}
+        note={<><span role="status">{simulated === null ? machineStepText.previewOnly : machineStepText.previewWould(simulated)}</span>{starts ? <><br />{minutesOk ? preparationText.timerNote : minutes === '' ? preparationText.enterMinutes : null}</> : null}</>}
         minutesField={starts ? <StartMinutesField washer="Washer 14" value={minutes} onChange={setMinutes} /> : undefined}
         options={eligible.options.map((key) => ({ key, label: stepOptionLabels[key], onClick: simulate(stepOptionLabels[key]) }))}
         recovery={eligible.recovery.map((key) => ({ key, label: stepRecoveryLabels[key], onClick: simulate(stepRecoveryLabels[key]) }))}
         optionsOpen={optionsOpen} onOptionsOpenChange={setOptionsOpen}
         canRecord={true} error={null} textileName={() => 'White cotton tee'} rememberExplanation={false} />}
-    <GoingInto title="Going into Washer 14" washer="Washer 14" pieces={recipePieces} />
-    <Note>{preparationText.progressNote(at, 5)}</Note>
   </div>
 }
 
@@ -256,7 +285,7 @@ function PausedPreparationPreview({ state, ball = false, long = false }: { state
     ? { id: 'preview-softener', kind: 'treatment', phase: 'with_load', order: 2, supplyId: 'preview-softener', supplyName: 'Fabric softener', dose: { amount: 30, unit: 'ml' }, placement: 'downy_ball', stage: 'rinse', timing: 'Before starting the cycle.', confidence: 'verified', status: 'pending' }
     : { id: 'preview-close', kind: 'task', task: 'close', phase: 'close', order: done, title: 'Close the lid', detail: null, supplyId: '', supplyName: null, dose: null, placement: '', stage: '', timing: null, confidence: 'verified', status: 'pending' }
   return <div className={`${sessionPageClassName} machine-screen`}>
-    <TaskHeading titleRef={titleRef} title={preparationText.title} back={<BackButton label="Back to Laundry" onClick={previewCall('go back to Laundry')} />} mark={{ tone: 'waiting', text: 'Not started' }} caption={preparationText.notStarted('Washer 14')} />
+    <TaskHeading compact titleRef={titleRef} title={preparationText.title} back={<BackButton label="Back to Laundry" onClick={previewCall('go back to Laundry')} />} mark={{ tone: 'waiting', text: 'Not started' }} caption={preparationText.notStarted('Washer 14')} />
     <MachineStepPresenter action={action} facts={{ ...machineFacts, productUse: () => 'softener', preparationSettings: 'Normal, 40°C' }} titleId="preview-paused-step" progress={`${done + 1} of ${stepCount}`}
       primary={{ label: preparationText.doneNext, onClick: ballStep ? () => setBallAdded(true) : previewCall('go to the next step'), disabled: recovered === null }} note={recovered === null ? 'Paused · Choose an option' : recovered === 'left_out' ? 'Fabric softener is left out of this load.' : 'Recipe updated. Continue preparation.'} canRecord={true} error={null} textileName={() => 'Gray bath towel'} rememberExplanation={false} />
     <GoingInto title="Going into Washer 14" washer="Washer 14" pieces={[{ label: 'Gray bath towel', count: 4, media: <GarmentIcon kind="towel" colorGroup="dark" /> }]} />

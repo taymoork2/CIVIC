@@ -84,6 +84,13 @@ import {
 const plannerDocument = v.any()
 
 export default defineSchema({
+  /** Retained save identities prevent a stale tab from recreating a completed intake. */
+  intakeSaves: defineTable({
+    householdId: v.id('households'), principalKey: v.string(),
+    kind: v.union(v.literal('garment'), v.literal('appliance'), v.literal('product'), v.literal('wearer')),
+    key: v.string(), payloadHash: v.string(),
+    result: v.union(v.array(v.id('textiles')), v.array(v.id('machines')), v.id('supplies'), v.id('wearers')),
+  }).index('by_request', ['householdId', 'principalKey', 'kind', 'key']).index('by_principal', ['principalKey']),
   /** Shared factual evidence; private holdings and care permissions stay in household tables. */
   catalogProducts: defineTable({
     key: v.string(), kind: catalogKind, brand: v.string(), name: v.string(), createdAt: v.number(),
@@ -137,7 +144,7 @@ export default defineSchema({
       /** Wash and dryer minutes as the household estimated them, asked once; `askedAt` also records "Not now". */
       times: v.optional(v.object({ washMinutes: v.optional(v.number()), dryerMinutes: v.optional(v.number()), askedAt: v.number() })),
       /** Loads the drying rack or line holds (default 1) and loads a day when spread out (default 2); design 5.6 and 6.2. */
-      day: v.optional(v.object({ rackLoads: v.optional(v.number()), loadsPerDay: v.optional(v.number()) })),
+      day: v.optional(v.object({ rackLoads: v.optional(v.number()), loadsPerDay: v.optional(v.number()), pace: v.optional(v.union(v.literal('all'), v.literal('spread'))), finishBy: v.optional(v.string()) })),
     })),
     /** Closet preferences; each unset value takes its default (7, 1, 7 and 90 days; the creator). */
     closet: v.optional(v.object({
@@ -293,6 +300,7 @@ export default defineSchema({
     routineWashId: v.optional(v.id('sessions')),
     /** Hidden from active care until restored or automatically purged 30 days later. */
     trashedAt: v.optional(v.number()),
+    trashRevision: v.optional(v.number()),
     createdAt: v.number(),
   })
     .index('by_household', ['householdId'])
@@ -424,6 +432,7 @@ export default defineSchema({
     textileIds: v.optional(v.array(v.id('textiles'))),
     inputSnapshot: plannerDocument,
     result: plannerDocument,
+    documentParts: v.optional(v.object({ inputSnapshot: v.number(), result: v.number() })),
     /** Unset is normal planning. */
     mode: v.optional(plannerMode),
     status: v.union(v.literal('ready'), v.literal('needs_confirmation'), v.literal('used'), v.literal('stale'), v.literal('retired')),
@@ -439,6 +448,13 @@ export default defineSchema({
   })
     .index('by_household_status', ['householdId', 'status'])
     .index('by_household_selection', ['householdId', 'selectionKey']),
+
+  planDocuments: defineTable({
+    planId: v.id('plans'),
+    field: v.union(v.literal('inputSnapshot'), v.literal('result')),
+    position: v.number(),
+    text: v.string(),
+  }).index('by_plan', ['planId']),
 
   sessions: defineTable({
     /** Immutable identity/care context when preparation began; old sessions may have none. */
@@ -483,6 +499,7 @@ export default defineSchema({
     .index('by_household', ['householdId'])
     .index('by_household_status', ['householdId', 'status'])
     .index('by_idempotency', ['householdId', 'idempotencyKey'])
+    .index('by_household_status_completed', ['householdId', 'status', 'completedAt'])
     .index('by_plan', ['planId'])
     .index('by_plan_load_status', ['planId', 'loadId', 'status']),
 

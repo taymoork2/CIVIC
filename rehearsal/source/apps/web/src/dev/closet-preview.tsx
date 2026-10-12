@@ -50,14 +50,13 @@ const record: GarmentRecord = { label: 'tumble_dry', preference: null, equipment
 const stainCheck = (answer?: 'still_there') => (piece: Textile): Textile => ({ ...piece, status: 'clean', flag: null, care: { ...recordedCare, material: 'cotton' },
   stainCheck: { reason: 'food', kind: 'protein', tried: [], washes: 1, washedAt: now, ...(answer === undefined ? {} : { answer }) } })
 
-export { textiles as reviewTextiles, record as reviewGarmentRecord }
-
-export type ClosetPreviewState = 'index' | 'record' | 'stain-check' | 'stain-next' | 'tags' | 'tags-long' | 'tags-pending' | 'care-question' | 'care-question-pending' | 'care-wash' | 'care-dry' | 'add-type' | 'add-details' | 'add-color' | 'add-care' | 'add-label' | 'add-stains' | 'add-stain-set-in' | 'add-search' | 'first-wash'
+export type ClosetPreviewState = 'empty' | 'one' | 'index' | 'record' | 'stain-check' | 'stain-next' | 'tags' | 'tags-long' | 'tags-pending' | 'care-question' | 'care-question-pending' | 'care-wash' | 'care-dry' | 'add-type' | 'add-details' | 'add-color' | 'add-care' | 'add-label' | 'add-stains' | 'add-stain-set-in' | 'add-search' | 'first-wash'
 
 /** The real Closet and sheet presenters, supplied only with frozen visual data. */
 export function ClosetPreview({ variant }: { variant: ClosetPreviewState }) {
   const [wearer, setWearer] = useState<Parameters<typeof ClosetView>[0]['wearerChip']>('everyone')
-  const [opened, setOpened] = useState<string | null>(variant === 'index' || variant === 'first-wash' ? null : variant === 'tags-pending' || variant === 'tags-long' ? 'tags' : variant)
+  const [opened, setOpened] = useState<string | null>(['empty', 'one', 'index', 'first-wash'].includes(variant) ? null : variant === 'tags-pending' || variant === 'tags-long' ? 'tags' : variant)
+  const shown = variant === 'empty' ? [] : variant === 'one' ? textiles.slice(0, 1) : textiles
   const members = textiles.filter((piece) => piece.textileId.startsWith(opened === 'tags' ? 'preview-navy-' : 'preview-tee-'))
   const finalStep = opened === 'add-stains' || opened === 'add-stain-set-in'
   const initial = { ...emptyAddDraft, whose: { wearerId: wearers[0]!.wearerId }, name: opened === 'add-color' ? 'Indigo jeans' : 'White cotton tee', kind: opened === 'add-color' ? 'pants' as const : 't_shirt' as const, colour: opened === 'add-color' ? 'dark' as const : 'white' as const, colorName: opened === 'add-color' ? 'Indigo' : 'White', dyeRun: opened === 'add-color' ? 'new' as const : null, tag: opened === 'add-care' || opened === 'add-label' || finalStep ? { ...emptyTag, method: 'machine' as const, dots: 1 as const, bars: 0 as const, ...(opened === 'add-label' || finalStep ? { bleach: 'none' as const, dryer: 'low' as const } : {}) } : emptyTag,
@@ -66,7 +65,7 @@ export function ClosetPreview({ variant }: { variant: ClosetPreviewState }) {
   const openedMembers = opened === 'record' ? members : opened === 'stain-check' || opened === 'stain-next' ? members.map(stainCheck(opened === 'stain-next' ? 'still_there' : undefined)) : textiles.filter((piece) => piece.name === textiles.find((piece) => piece.textileId === opened)?.name)
   const openedWearer = wearers.find((person) => person.wearerId === openedMembers[0]?.wearerId)?.name ?? null
   return <>
-    <ClosetView now={now} attention={{ hamper: { count: 11, loads: null, handWash: 0 }, top: null, cards: [] }} today={today} inventory={{ wearers, textiles }} sessions={[]} meWearerId={wearers[0]!.wearerId} wearerChip={wearer} onWearerChip={setWearer} calls={calls}
+    <ClosetView now={now} attention={{ hamper: { count: shown.filter(piece => piece.status === 'dirty').length, loads: null, handWash: 0 }, top: null, cards: [] }} today={today} inventory={{ wearers, textiles: shown }} sessions={[]} meWearerId={wearers[0]!.wearerId} wearerChip={wearer} onWearerChip={setWearer} calls={calls}
       onItemOpen={(id) => setOpened(id)} addClothes={(_, onClose) => <AddClothesSheet householdId="preview-household" mode={{ kind: 'add', target: 'closet' }} wearers={wearers} calls={addCalls} onClose={onClose} onSaved={onClose} />} />
     {opened === null ? null : opened === 'tags' ? <TagsSheet name="Navy everyday tee" textileIds={members.map((piece) => piece.textileId)} initial={['Everyday']} knownTags={['Everyday', 'Home', 'Work', 'Sport', 'Sleep', ...(variant === 'tags-long' ? ['AlexandriaMontgomeryFamilyShirts'] : [])]} save={variant === 'tags-pending' ? () => new Promise<never>(() => {}) : previewUnavailable('save the tags')} onClose={close} onSaved={previewCall('close the saved tags')} />
       : opened === 'care-question' || opened === 'care-question-pending' || opened === 'care-wash' || opened === 'care-dry' ? <CareQuestionSheet name="White cotton tee" kicker="White · T-shirt · Alex" question={opened === 'care-wash' ? 'wash' : opened === 'care-dry' ? 'dry' : 'bleach'} members={members} save={opened === 'care-question-pending' ? () => new Promise<never>(() => {}) : previewUnavailable('save the care answer')} onClose={close} onSaved={previewCall('close the saved care answer')} />
@@ -79,3 +78,5 @@ export function ClosetPreview({ variant }: { variant: ClosetPreviewState }) {
         renderEdit={(edit, onEditClose) => <EditClothesSheet editing={textiles.filter((piece) => edit.textileIds.includes(piece.textileId))} wearers={wearers} calls={addCalls} careOnly={edit.careOnly} focusField={edit.focusField} renderPhotos={() => null} renderSettings={(section, disabled) => <FixtureConvex data={{}}><GarmentSettings textiles={textiles.filter((piece) => edit.textileIds.includes(piece.textileId))} section={section} disabled={disabled} /></FixtureConvex>} onClose={() => onEditClose()} onSaved={() => onEditClose()} />} />}
   </>
 }
+
+export { textiles as reviewTextiles, record as reviewGarmentRecord }

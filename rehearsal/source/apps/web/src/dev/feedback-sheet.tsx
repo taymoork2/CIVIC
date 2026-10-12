@@ -14,6 +14,7 @@ import { RecordList, RecordRow, type MarkTone } from '@/kit/record-row'
 import { Sheet } from '@/kit/sheet'
 import { ErrorNotice, Loading, relativeTime, useConvexCall } from '@/kit/ui'
 import { DesignIcon } from '@/kit/design-icons'
+import { feedbackScreen } from '@/kit/feedback-context'
 
 /** Set by the build (vite define); absent in tests and tooling. */
 declare const __WASHCLOSET_BUILD__: string | undefined
@@ -26,7 +27,6 @@ const kindIcon: Record<FeedbackKind, ReactNode> = {
   other: <DesignIcon name="chat" size="1em"  />,
 }
 const statusTone: Record<FeedbackStatus, MarkTone> = { new: 'waiting', seen: 'washing', done: 'done' }
-const nextStatus: Record<FeedbackStatus, FeedbackStatus> = { new: 'seen', seen: 'done', done: 'new' }
 
 function buildId(): string | undefined {
   return typeof __WASHCLOSET_BUILD__ === 'string' ? __WASHCLOSET_BUILD__.slice(0, 100) : undefined
@@ -52,10 +52,11 @@ export function FeedbackSettings({ household }: { household: CurrentHousehold })
   </>
 }
 
-function FeedbackSheet({ householdId, onClose }: { householdId: CurrentHousehold['householdId']; onClose: () => void }) {
+export function FeedbackSheet({ householdId, onClose, screen }: { householdId: CurrentHousehold['householdId']; onClose: () => void; screen?: string }) {
   const formId = useId()
   const kindLabelId = useId()
-  const path = useRouterState({ select: (state) => state.location.pathname })
+  const currentPath = useRouterState({ select: (state) => state.location.pathname })
+  const [path] = useState(() => screen ?? feedbackScreen(currentPath))
   const [kind, setKind] = useState<FeedbackKind>('bug')
   const [message, setMessage] = useState('')
   const [includeScreen, setIncludeScreen] = useState(true)
@@ -103,7 +104,18 @@ function FeedbackSheet({ householdId, onClose }: { householdId: CurrentHousehold
 function FeedbackListSheet({ householdId, onClose }: { householdId: CurrentHousehold['householdId']; onClose: () => void }) {
   const rows = useQuery(api.feedback.list, { householdId })
   const setStatus = useConvexCall(api.feedback.setStatus)
+  const [selected, setSelected] = useState<string | null>(null)
   const now = Date.now()
+  const report = rows?.find((row) => row.feedbackId === selected)
+  if (report !== undefined) return <Sheet title={feedbackText.reportTitle} onClose={onClose} onBack={() => setSelected(null)} closeAtTop busy={setStatus.pending} footer={<Button type="button" onClick={() => setSelected(null)}>{feedbackText.backToList}</Button>}>
+    <p className="m-0 text-muted-foreground">{[feedbackText.kinds[report.kind], report.senderName ?? feedbackText.unknownSender, relativeTime(report.createdAt, now)].join(' · ')}</p>
+    <p className="m-0 whitespace-pre-wrap [overflow-wrap:anywhere]">{report.message}</p>
+    <p className="m-0 text-muted-foreground [overflow-wrap:anywhere]">{report.screen ?? feedbackText.unknownScreen}{report.buildId ? ` · ${report.buildId}` : ''}</p>
+    <RadioGroup variant="segment" aria-label={feedbackText.statusLabel} value={report.status} onValueChange={(status) => { if (!setStatus.pending && (status === 'new' || status === 'seen' || status === 'done')) void setStatus.run({ feedbackId: report.feedbackId, status }) }}>
+      {(['new', 'seen', 'done'] as const).map((status) => <RadioGroupItem key={status} variant="segment" value={status} disabled={setStatus.pending}>{feedbackText.statuses[status]}</RadioGroupItem>)}
+    </RadioGroup>
+    <ErrorNotice error={setStatus.error} />
+  </Sheet>
   return <Sheet title={feedbackText.listTitle} onClose={onClose}>
     <div className="grid gap-4">
       {rows === undefined ? <Loading what={feedbackText.listLoading} /> : rows.length === 0
@@ -115,7 +127,7 @@ function FeedbackListSheet({ householdId, onClose }: { householdId: CurrentHouse
               fact={[feedbackText.kinds[row.kind], row.senderName ?? feedbackText.unknownSender, relativeTime(row.createdAt, now), row.screen ?? feedbackText.unknownScreen].join(' · ')}
               mark={{ tone: statusTone[row.status], text: feedbackText.statuses[row.status] }}
               label={feedbackText.rowLabel(feedbackText.kinds[row.kind], line, feedbackText.statuses[row.status])}
-              onOpen={() => void setStatus.run({ feedbackId: row.feedbackId, status: nextStatus[row.status] })} />
+              onOpen={() => { setStatus.clearError(); setSelected(row.feedbackId) }} />
           })}
         </RecordList>}
       <ErrorNotice error={setStatus.error} />

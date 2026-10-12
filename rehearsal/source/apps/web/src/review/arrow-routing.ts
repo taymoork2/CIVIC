@@ -8,9 +8,8 @@ function blocked(a: Point, b: Point, boxes: Obstacle[]) {
 }
 
 // Rectilinear A*: distance plus bend cost, through gutters outside the cards.
-// shortcut: connectors avoid cards, not each other; add crossing costs if denser maps need them.
-export function routeArrow(start: Point, end: Point, boxes: Obstacle[], lane = 0): Point[] {
-  const gap = 24 + lane * 8
+export function routeArrow(start: Point, end: Point, boxes: Obstacle[], lane = 0, occupied: Point[][] = []): Point[] {
+  const gap = 24 + lane % 4 * 8
   const xs = [...new Set([start.x, end.x, ...boxes.flatMap((box) => [box.x - gap, box.x + box.width + gap])])].sort((a, b) => a - b)
   const ys = [...new Set([start.y, end.y, ...boxes.flatMap((box) => [box.y - gap, box.y + box.height + gap])])].sort((a, b) => a - b)
   const distance = (a: Point, b: Point) => Math.abs(a.x - b.x) + Math.abs(a.y - b.y)
@@ -34,7 +33,20 @@ export function routeArrow(start: Point, end: Point, boxes: Obstacle[], lane = 0
       if (x < 0 || y < 0 || x >= xs.length || y >= ys.length) continue
       const next = { x: xs[x]!, y: ys[y]! }
       if (blocked(point, next, boxes)) continue
-      const cost = current.cost + distance(point, next) + (current.direction < 0 || current.direction === direction ? 0 : 48)
+      let congestion = 0
+      for (const path of occupied) for (let i = 1; i < path.length; i++) {
+        const a = path[i - 1]!, b = path[i]!
+        const horizontal = point.y === next.y, otherHorizontal = a.y === b.y
+        if (horizontal === otherHorizontal) {
+          const same = horizontal ? point.y === a.y : point.x === a.x
+          const overlap = horizontal ? Math.min(Math.max(point.x, next.x), Math.max(a.x, b.x)) - Math.max(Math.min(point.x, next.x), Math.min(a.x, b.x)) : Math.min(Math.max(point.y, next.y), Math.max(a.y, b.y)) - Math.max(Math.min(point.y, next.y), Math.min(a.y, b.y))
+          if (same && overlap > 0) congestion += overlap * 3
+        } else {
+          const h = horizontal ? [point, next] : [a, b], v = horizontal ? [a, b] : [point, next]
+          if (v[0]!.x > Math.min(h[0]!.x, h[1]!.x) && v[0]!.x < Math.max(h[0]!.x, h[1]!.x) && h[0]!.y > Math.min(v[0]!.y, v[1]!.y) && h[0]!.y < Math.max(v[0]!.y, v[1]!.y)) congestion += 120
+        }
+      }
+      const cost = current.cost + distance(point, next) + congestion + (current.direction < 0 || current.direction === direction ? 0 : 48)
       const key = `${x}:${y}:${direction}`
       if (cost >= (costs.get(key) ?? Infinity)) continue
       costs.set(key, cost); pending.push({ x, y, direction: direction!, cost, score: cost + distance(next, end), previous: current })

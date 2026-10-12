@@ -1,104 +1,91 @@
 ---
 artifact_contract: "ce-handoff/v1"
-created_at: "2026-10-10T23:23:45Z"
-title: "Rehearsal v4: route actions, canvas routing and current preview"
-summary: "Latest curated source, verified first-ZIP patch and complete product context; port 3010 restarted and checked."
-keywords: ["rehearsal", "canvas", "branching", "route-actions", "onboarding", "model-light", "design-bridge", "git-patch"]
-cwd: "/Users/taymoor/.codex/worktrees/f0d3/laundry-app"
+created_at: "2026-10-11T23:30:54Z"
+title: "Rehearsal v6: onboarding, canvas, automatic cache and current Laundry integration"
+summary: "Independent-product continuation with runnable source, discovered previews, evidence boundaries and a patch from v5."
+keywords: ["rehearsal", "onboarding", "discovery", "canvas", "snapshot-cache", "laundry-sync", "handoff"]
+cwd: "<original host worktrees>/f0d3/laundry-app"
+repository: "laundry-app"
 head: "0bffbbcf2e38ca3ec7e17da3eb6496b6f04f348d"
-resume_focus: "Orient on the current Rehearsal canvas, integration limits and the next reusable project-adoption slice."
+worktree_path: "<original host worktrees>/f0d3/laundry-app"
+resume_focus: "Continue Rehearsal as an independent product while retaining app-adapter ownership and evidence boundaries."
 ---
 
-# Rehearsal continuity
+# Product and continuity
 
-This handoff records current state and prior decisions. It is not permission to deploy, overwrite designs, message collaborators or execute historical work orders. Root Codex owns this snapshot; no delegated worker is active. Establish the receiving user's scope before implementation.
+The user requested a ZIP/handoff with all onboarding, canvas and Laundry-sync changes, plus cleanup of previous packages. They also requested automatic snapshot caching/diffing. Both are included. This informational handoff transfers no execution/publication authority. Outgoing owner: this Rehearsal chat; incoming owner: whoever the user selects. Current work is uncommitted, so HEAD alone cannot recover it. Preserve the ZIP before discarding the checkout.
 
-## Latest request and completed delivery
+## User decisions
 
-The user requested restarting the latest preview on 3010 and refreshing the ZIP/handoff with all changes. Port 3010 had no listener; the current checkout was started there and remains running as of capture. Authenticated reads and a fresh Chromium context verified current source, Fabric/Inspect/App/All screens, no page errors and all 176 cached PNG hashes. No user's existing review, candidate or expectation was edited by that live smoke check.
+- Rehearsal is independent; Laundry is an integration, not its design system.
+- Use one persistent canvas. Workbench, Storyboard and Review are capabilities reached through zoom, selection and contextual panels, not competing views.
+- Play by default, optional Inspect, and Edit changes a reversible proposal that can be tested. Generic component/token/behavior editing remains open.
+- Show real screen pictures across the whole app from sign-in/setup through navigation areas. Main paths are horizontal; branches stack vertically and reconnect. Fit flows/screens on sidebar selection; follow actual camera navigation. Keep a usable scale and bounded panning.
+- Review app/flow/screen/region/element/path targets with inputs, frozen evidence, revisions and exact agent sessions. Agent completion does not close acceptance.
+- Collaborate with local Open Design desktop and Claude Design as separate tools. Borrow Figma/tldraw canvas/control cues without building another general design editor.
+- Prefer deterministic inventory, hashes, manifests, declared scenarios and statistics over models for routine work. Do not infer personas, permissions, safe care or complete journeys from code.
+- Keep the design/component-library/app bridge explicit. Current focus is design collaborators ↔ Rehearsal ↔ Laundry web; universal sync remains open.
+- Rehearsal reads f7ce without owning its source/backend/runtime. Keyless local/private Tailscale access is authorized; public exposure is not.
+- Multiplayer readiness is required but unfinished. Project switching currently affects the host, while runs/drafts are private to the tab.
 
-The new bundle refreshes the complete curated source and the cumulative report. Its Git patch changes 27 source paths from the exact first ZIP: 11 additions and 16 modifications. The patch was checked and applied to a separate fresh baseline extraction; all resulting changed-path hashes match the current checkout. Original repository history, staging and commits were not changed. Previous ZIPs and patches remain historical snapshots.
+## Read first (paths relative to source/)
 
-## Accepted product decisions
+| Reference | What matters |
+|---|---|
+| docs/design/review-product/PRODUCT.md | Product boundary, accepted canvas direction, proposal/alignment and multiplayer intent. |
+| project-onboarding.md, project-picker.md in that directory | Manifest, contexts, registry, mount callbacks, guarded restart and stale-tab isolation. |
+| project-discovery.md | UI confirmation/generation, heuristic limits, provider gaps and completed local text critique. |
+| snapshot-cache.md | Fingerprints, persistent reuse, historical aliases, stale display fallback, automatic retry and visible demand. |
+| agent-bridge.md and coverage-bridge.md | Exact sessions, receipts/replies, uncertainty handling, deterministic gaps and guarded expectation writes. |
+| root-refinement-reconciliation-2026-10-11.md | Native reminder, four scenarios, refused writes, focus and returns, static-design gap. |
+| 2026-10-11-family-simulation.md | Same account/items through wash/drying/partial put-away at 100/500/1000. |
+| docs/design/opendesign/home-state-label-2026-10-11.md | Latest owner's no-duplicate-badge policy, including the timed single-load exception. |
 
-These are user-approved directions:
+Code orientation:
 
-- Rehearsal is its own product, currently useful to Laundry App and intended for later extraction. Its shell need not inherit Laundry's visual system.
-- Use one persistent canvas. Workbench, Storyboard and Review describe capabilities exposed through selection, zoom and contextual panels, rather than three required pages.
-- Main journey/navigation areas run horizontally; alternate and related branches occupy vertically separated lanes. Show actual screen snapshots, visible branch/rejoin arrows, bounded pan/zoom and a sidebar that expands flows into individual screens. Flow selection fits the flow; screen selection focuses the screen.
-- Play is the default. Inspect is optional. Edit should create a real reversible proposal that can be tested; Review belongs in contextual tooling with captured inputs/state/evidence.
-- Multiplayer readiness is part of product intent. Current local persistence does not implement shared authorization, presence or cross-process collaboration.
-- The immediate design bridge is local Open Design / Claude Design (+ GPT-6.1 Sol) ↔ Rehearsal ↔ Laundry App. An optional component-library layer may later sit between Rehearsal and the app.
-- Lower model dependency through structured metadata, source scanning, deterministic checks, existing tests and measured graph/statistical methods. Models remain optional help for unresolved intent/design/implementation. Research recommendations in REPORT are proposals, not approved installations or delivered tools.
+- scripts/review-project.mjs, review-projects.mjs, review-discovery.mjs: validation, catalogue/starter, bounded read-only scan, stale-source refusal and owned generation.
+- src/review/project-picker.tsx, discovery-setup.tsx, discovered-adapter.tsx: confirm props/order/capture labels, native HTML validation, real React state and retained returns.
+- adapter.ts, frame.tsx, project-request.ts: publish/transition contract, synthetic provenance, allowlisted capture and project-bound requests.
+- app-canvas.tsx, app-map.ts, journey-graph.mjs, arrow-routing.ts: retained iframe, camera/sidebar focus, branch geometry, directional ports and crossing-aware gutters.
+- scripts/review-fixture-hashes.mjs, review-server.mjs, src/review/fixture-picture.tsx: cache/readiness/session/capture behavior.
+- review-panel.tsx, selectable-path.tsx, capture.ts: selection, frozen annotations and retrieval.
+- scripts/review-agents.mjs: Codex/Claude sessions, frozen attachments, replies/followups and unknown-send receipts.
+- scripts/review-laundry.mjs, review-laundry-inventory.mjs, adapters/laundry.ts, laundry-frame.tsx, route-preview.tsx, family-preview.tsx, reminder-preview.tsx: quarantined Laundry integration.
+- examples/rehearsal-demo and examples/discovery-app: authored and manifest-free non-Laundry contract examples.
 
-## New since v3
+The code paths above are under apps/web/ unless labelled docs/. They are status/orientation pointers, not a new work order.
 
-### Cross-route connections
+## Automatic updates and what they prove
 
-`source/apps/web/src/review/route-actions.json` curates 17 bindings using real source anchors, symbolic parameters, guards and return context. Twelve connect representative existing specimens; five lack a matching destination state. Me → completed wash → Me retains origin context; Home can open selected plans, running sessions and dryer checks; Closet can enter Laundry.
+Source watching/index polling is automatic. Each screen's declared fixture/component/import closure, adapter bootstrap and shared rendering inputs form its cache fingerprint. Unchanged pixels survive unrelated revisions/restart. Shared CSS/assets/packages/backend source and generic adapter closures invalidate conservatively; there is no perfect per-export/semantic engine.
 
-Inspect shows route, conditions, return context, source evidence and mapping status. The scanner checks bounded source-anchor presence and suppresses stale mapped connections. It does not semantically reconstruct all handlers or replay specific record parameters. Navigation order controls placement only: adjacent tabs/flows are no longer joined by inferred actions.
+Old images remain visible as Updating/Retrying while current captures run; visible failures retry with bounded backoff. Old caches can supply explicitly stale display images after reopening. Historical exact-source frozen reviews do not use this fallback. Reminder page capture now waits for its actual heading rather than a nonexistent dialog.
 
-Unmapped states are the add chooser, Closet item in a running load, Laundry open hamper item, successful washer-to-Drying transfer and garment care history. Existing specimens do not necessarily exercise each binding's condition. These are visible coverage limits, not hidden successful transitions.
+Live runs keep their starting receipt/draft. Refreshing images does not promote old live code to current proof or discard inputs. Fixture jumps are not replay. Generated navigation and retained state are labelled Synthetic/Carried by Rehearsal in the canvas and captures; traversal never attests production paths.
 
-### Routing and complete thumbnails
+## Onboarding/sync boundaries
 
-`arrow-routing.ts` implements card-avoiding rectilinear A* with bend costs, separate lanes and rounded corners. Internal branches and cross-flow/overview links use it. Forward actions are blue, labelled branches teal, returns dashed gray; observed towel transitions retain orange. A blocked path is suppressed. The router avoids cards but does not globally minimize connector crossings; denser graphs may require crossing costs. No new dependency was added.
+Discovery reads source without importing it or calling a model. It recognizes HTML, exported React presenters, literal links/forms and some route declarations. Users confirm graph/props/capture labels before generation into Rehearsal-owned files. Conditions/returns are notes; production behavior is not inferred. Provider-dependent states need an adapter; unsupported imports fail visibly. Onboarding does not install dependencies or start arbitrary app servers.
 
-Canvas detail offers Compact flows or All screens, persisted locally. All screens displays all 176 registered thumbnails with an 18% framing floor and pan; compact overview uses a 35% floor. Selecting a flow/screen still focuses its complete timeline/target, and App returns to the chosen detail. The live iframe remains mounted across these presentations, retaining inputs and unpublished proposals. This is all registered screens, not proof of all possible app states or a complete executable journey.
+Watchers refresh inventory/new frames, but do not continuously rewrite or merge registries. Stable identity reconciliation, rescan/merge, provider composition, complete journey coverage and design/token/component-library sync remain open. React imports execute trusted project code; CSP/server restrictions are defense in depth, not an untrusted-plugin sandbox.
 
-## Current implementation and source identity
+Stores are separated by manifest/checkout identity, with Laundry's legacy store retained. Switching guards edits/captures/active deliveries, acknowledges run termination, restarts only Rehearsal and rejects stale keys. Per-user project selection, presence, permissions/conflicts and shared editing are unfinished.
 
-The first ZIP already contained real towel Play, both ownership branches, cached thumbnails, reversible presentation candidates and captured-state Review. Subsequent coverage work adds 11 declared expectations, 40 unconfirmed source mapping candidates, deterministic briefs/prototypes/React scaffolds, expectation write-back and watched updates. These 51 proposals are not 51 proven missing features.
+## Original-host provenance (not portable settings)
 
-Current inventory: 34 curated working synthetic scenarios plus 139 partial specimens = 173 registry entries, expanded to 176 screen states. Only the towel journey has explicit continuous intake hooks; other specimens can have bounded or visual-only callbacks. App code is not automatically reconstructed into a universal journey. Laundry business components/planner/backend logic were unchanged relative to the first ZIP.
+- Rehearsal: <original host worktrees>/f0d3/laundry-app, port3010, uncommitted source.
+- Read-only application: <original host worktrees>/f7ce/laundry-app; owner chat <id omitted>. The human explicitly authorized coordination. Owner frontend3011, isolated backend3230/3231 and personal backend3220 remain outside Rehearsal ownership.
+- Packaged app source9954ebbc7b11a7c5f8281936a7a3b53fd78cb220, docs HEADb08480287831a8c6db38fbecee858cba32fd3a84. context/source-provenance.json records file inputs; unselected dirty owner documents are excluded.
+- Original private URL: https://<original host>.ts.net:10445/review. Host settings, sessions and Tailscale routing are excluded. No public Funnel was created.
+- Local Rehearsal design project <id omitted>/conversation <id omitted>. Laundry canonical project43227d24-ee04-414e-a939-eda64e3f4bec. Separate initial Claude Design artifact <id omitted>/conversation<session id omitted>.
 
-Current source: `e514dbcd8ee04808602f81432455f43b0f43f233752e05f78c5d289edf55bb77`.
-Fixture identity: `81d9c3604c5ba4b876a8d71f7fdf351fa3a16dea938dd7248f2f511741c3fc85`.
-Baseline HEAD: `0bffbbcf2e38ca3ec7e17da3eb6496b6f04f348d` with uncommitted working source.
+Source composition is intentional: current Rehearsal plus released Laundry, with six compatibility seams applied ONLY in the bundle. context/bundled-laundry-seams.json records them. Neither checkout was modified. Runtime external integrations still use bounded compile overlays until the app adopts native exports.
 
-A recipient's import HEAD will differ, so original HEAD-bound receipts become historical. The old broad `review-validation.json` is stale; it was not rewritten to imply current acceptance.
+## Proof and continuation limits
 
-## Read these sources
+Read PACKAGE-VERIFICATION.md; v5 proof is historical. The local desktop Claude-labelled collaborator completed a text critique, recorded in project-discovery.md. This is not a fresh Claude Design web artifact or pixel-level approval.
 
-Repository-relative paths below are anchored at the bundle's `source/`:
+The owner's twelve current root/Home static frames are separately reconciled. They omit the floating reminder and timed-single-load badge exception. Rehearsal supplies synthetic runtime reminder evidence, not new canonical/backend acceptance. The owner's concurrent one-second mutation deadline remains open; this pass does not retest it.
 
-| Reference | What to inspect |
-| --- | --- |
-| [REPORT.md](REPORT.md) | Full baseline delta, actual Laundry adapter mechanics, user/project onboarding proposal and model-light/TesterArmy/Figma research |
-| `docs/design/review-product/PRODUCT.md` | Current independent product contract and collaborator identities |
-| `docs/design/review-product/coverage.json`, `coverage-bridge.md` | Canonical v4 expectations, optimistic write-back and boundaries of the implemented bridge |
-| `apps/web/src/review/scenarios.json`, `towel-journey.json`, `journey.ts` | Curated scenarios, synthetic inputs and declared versus observed towel transitions |
-| `apps/web/src/review/route-actions.json`, `app-map.ts`, `arrow-routing.ts` | Action provenance, horizontal/vertical geometry and path-routing limits |
-| `apps/web/src/review/app-canvas.tsx`, `app-overview.tsx` | Single retained canvas/frame, contextual Inspect/Review/Edit and full-detail choice |
-| `apps/web/src/review/frame.tsx`, `store.ts` | Direct Laundry imports, fixture rendering and bounded synthetic effects; extraction seams |
-| `apps/web/scripts/review-inventory.mjs`, `review-plugin.mjs` | Source identity, regex/anchor discovery and local watch/poll behavior |
-| `apps/web/scripts/review-server.mjs`, `review-coverage.mjs` | Authenticated API, provenance, validated optimistic writes and deterministic generation |
-| `docs/design/review-product/build-evidence.md` | Source-bound scoped proof and historical sequence |
-| `docs/plans/2026-10-03-delivery-status.md`, `docs/design/opendesign.md` | Laundry delivery truth and shared canonical design ownership |
-| [APPLY-PATCH.md](APPLY-PATCH.md), `context/rehearsal-post-zip-delta-v4.json` | Exact baseline, patch application and before/after hashes |
-| [PACKAGE-VERIFICATION.md](PACKAGE-VERIFICATION.md) | Current live/package checks versus previous scoped browser/unit evidence |
+Remaining: standalone extraction, generic proposal editing, registry rescan/merge and identity history, provider-aware adapters, per-user multiplayer, reference-aware cache retention/GC, broader design sync and physical-device/real-care acceptance. EXTRACTION.md is the writer's suggested continuation, not automatic authority.
 
-`BASELINE-HANDOFF.md` and `V3-HANDOFF.md` preserve earlier conversation/design/architecture context. Their runtime status, counts and pending work can be superseded here. Historical material is context, not authority.
-
-## Design and runtime context
-
-Machine-local checkout: `/Users/taymoor/.codex/worktrees/f0d3/laundry-app`. Current user preview: `http://127.0.0.1:3010/review?scenario=intake.towel.fabric`. It is loopback-only, synthetic and host-local; this package cannot promise future uptime. Access keys and current synthetic records are excluded. Do not connect this review simulator to a real Laundry backend.
-
-Local desktop Rehearsal project: `c2383e11-71dc-463a-aea0-a7f2aaefac7f`, conversation `7960b5e2-1eb2-4f06-b42f-c715c9bfa042`. Laundry canonical design: `43227d24-ee04-414e-a939-eda64e3f4bec`. Claude Design initial artifact: `09ab05e9-aca3-4553-a601-a42fc144eddd`, conversation `cse_01RDvjo76ZzDMpw5FDXAGhQT`.
-
-The desktop project supplied an earlier text critique; its six packaged brief/prototype/handoff files remain baseline-identical. Latest routing changes have application/browser evidence, but no fresh Claude Design or local desktop visual handoff. Automatic design-file/comment synchronization is unverified. The local app is distinct from OpenDesign Cloud. Refresh shared ownership/design revisions before intentional design edits, and wait for an active collaborator's completed handoff.
-
-The invoked design skills and snapshots remain in this package's earlier context. Impeccable context setup failed earlier due engine/cache access; repeated installer attempts were abandoned. No external visual approval is implied by application tests.
-
-## Remaining work and plausible next direction
-
-There is no generic onboarding wizard, published adapter SDK, trace/design importer, statistical ranking, second-project integration, whole-app continuous runner, multiplayer service or automated code/design adoption. Expectation edits are the implemented two-way repository write, not design-file or component-code synchronization. Presentation proposals and generated scaffolds cannot declare themselves approved/adopted/verified.
-
-The report recommends a small local project manifest and Laundry adapter, importing existing declared states/tests and human-recorded Playwright runs before broad exploration. Tool names such as init/scan/record/reporter/design exchange are proposed deliverables. A second small web app with no Laundry imports would establish whether extraction actually works. Providers should remain disabled during routine inventory/capture/graph checks/replay; any model-assisted exploration requires an explicit boundary/budget.
-
-Arrow crossing minimization and the five unmapped destination states are visible next refinement candidates. Full-app navigation completeness needs a defined route/state/condition denominator rather than inferred success from source text. Fresh visual design reconciliation, native/physical-device acceptance and production deployment are separate work.
-
-## Transfer boundaries
-
-This is a curated full source snapshot, not original Git history or a framework-neutral release. Dependencies, private review/candidate state, credentials, personal harnesses and complete collaborator conversations are absent. Portable AGENTS/CLAUDE files replace machine-specific instructions. Use README in an extracted copy, or the tested patch only against the exact first ZIP. Preserve receiver changes; a failed patch check is a reconciliation signal, not permission to reset them.

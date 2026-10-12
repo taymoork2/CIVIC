@@ -3,7 +3,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { RequireHousehold } from '@/account/account'
 import { Drying } from '@/drying/drying-view'
 import { RouteError } from '@/kit/route-error'
-import { useNow } from '@/laundry/session-view'
+import { useNow } from '@/kit/use-now'
 
 export const Route = createFileRoute('/drying')({
   errorComponent: RouteError,

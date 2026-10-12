@@ -2,6 +2,9 @@ import { FieldLabel } from '@/components/ui/field'
 import { buttonVariants } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { NativeSelect } from '@/components/ui/native-select'
+import { useNow } from '@/kit/use-now'
+import { washerName } from '@/laundry/machine-name'
+export { washerName } from '@/laundry/machine-name'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Link, useNavigate, useRouter } from '@tanstack/react-router'
@@ -22,7 +25,7 @@ import { chemistryText, preparationText, runningScreenText, runningText } from '
 import { addTimeText, chemRunText, timerText } from '@/copy-run'
 import { AddTimeSheet } from '@/kit/add-time-sheet'
 import type { Machine, Textile } from '@/household/inventory-types'
-import { DoseBody, FullnessBlock, GarmentList, StepBlock, StepProgress, WhichDryer, dryerChoices, machineProduct, secondaryButtonClassName, stepOptionsTriggerId, stepView, type FullnessOutcome, type MachineFacts, type StepChoice } from '@/laundry/machine-step'
+import { DoseBody, DoseWhy, FullnessBlock, GarmentList, StepBlock, WhichDryer, dryerChoices, machineProduct, secondaryButtonClassName, stepOptionsTriggerId, stepView, type FullnessOutcome, type MachineFacts, type StepChoice } from '@/laundry/machine-step'
 import type { SessionProjection } from '@/private-state'
 import { clearPendingStep, pendingSteps, savePendingStep } from '@/pending-step'
 import { washerGroupIds } from '@/laundry/question-card'
@@ -35,7 +38,7 @@ import { SessionDetergentSheet, isDetergentSupply } from '@/products/detergent-s
 import { toast } from 'sonner'
 import { TaskFooter } from '@/kit/task-footer'
 import { afterWashStage, loadNextAction, sessionStage, stageReached, type AfterWashStage, type SessionStage, type StageFacts } from '@/laundry/session-stage'
-import { Cup, DoseFigure, ErrorNotice, StatusBadge, clockTime, relativeTime, useConvexCall } from '@/kit/ui'
+import { DoseFigure, ErrorNotice, StatusBadge, clockTime, relativeTime, useConvexCall } from '@/kit/ui'
 import { AnswerRow, BackButton, Callout, FooterLink, MachineEntry, Note, Section, TaskHeading, TrialNote, dryerEntryWords, useRecentMachines, largeClassName } from '@/laundry/laundry-ui'
 import { dryerWaitText, noDryerText } from '@/copy-drying'
 import { dryerWaitTrialText } from '@/copy-trial'
@@ -47,19 +50,19 @@ import { dismissItem } from '@/kit/item-navigation'
 import { DesignIcon } from '@/kit/design-icons'
 import { GarmentIcon } from '@/kit/garment-icon'
 import { privateCareWords, type PrivatePiece } from '@/laundry/private-piece'
-import { LoadCard, ReceiptRows, RunningRing, type KitFact } from '@/laundry/laundry-kit'
+import { LoadCard, ReceiptRows, RunningRing, StageBar, type KitFact } from '@/laundry/laundry-kit'
 import { CompletionMark } from '@/kit/completion-mark'
 import { useUnsynced } from '@/connectivity'
 import { useWakeLock } from '@/wake-lock'
 import { PreparationPaused } from '@/laundry/preparation-paused'
 import { AdviceExplanation, AdviceReminderControls } from '@/closet/garment-advice'
-import { displayDose, doseParts, formatDose, localizeTemperatures, storedAmount, useUnits, type UnitSystem } from '@/kit/units'
+import { displayDose, doseParts, localizeTemperatures, storedAmount, useUnits, type UnitSystem } from '@/kit/units'
 import '@/styles/laundry-motion.css'
 
 export const sessionPageClassName = cn(
   "page",
   "[.app-shell.is-focus_&]:max-w-[30rem]",
-  "grid gap-6 max-w-[36rem] mx-auto pt-2",
+  "grid min-w-0 grid-cols-1 gap-6 max-w-[36rem] mx-auto pt-2",
   "md:max-w-[45rem]",
   "[.app-shell.has-navigation:not(.is-focus)_.app-main_>_&]:w-full [.app-shell.has-navigation:not(.is-focus)_.app-main_>_&]:max-w-[none] [.app-shell.has-navigation:not(.is-focus)_.app-main_>_&]:mx-0 [.app-shell.has-navigation:not(.is-focus)_.app-main_>_&]:pt-0 [.app-shell.has-navigation:not(.is-focus)_.app-main_>_&]:content-start [.app-shell.has-navigation:not(.is-focus)_.app-main_>_&]:gap-4",
 )
@@ -305,7 +308,7 @@ export function chooseDryerLocally(store: OptimisticLocalStore, args: FunctionAr
   const query = { sessionId: args.sessionId }
   const detail = store.getQuery(api.execution.sessionDetail, query)
   if (detail === undefined || detail.drying === null) return
-  const machines = store.getQuery(api.inventory.list, { householdId: detail.householdId })?.machines
+  const machines = store.getQuery(api.inventory.list, { householdId: detail.householdId, textileIds: [] })?.machines
   const dryerName = machines?.find((machine) => machine.machineId === args.dryerId)?.name ?? detail.drying.dryerName
   store.setQuery(api.execution.sessionDetail, query, { ...detail, drying: { ...detail.drying, dryerId: args.dryerId, dryerChosen: true, dryerName } })
 }
@@ -341,28 +344,6 @@ export function acceptedStepFeedback(detail: Detail, receipt: StepReceipt | null
     return { recorded: summary, next: `${timer}${next !== null && due !== null ? ` Next: ${next.title ?? next.supplyName ?? 'load step'} at ${clockTime(due)}.` : ''}`, target: 'timer' }
   }
   return { recorded: summary, next: 'Review the recorded steps before continuing.', target: 'task' }
-}
-
-/** The clock, ticking every `intervalMs`, and at once when the app comes back into view (iOS pauses timers). */
-export function useNow(intervalMs: number): number {
-  const [now, setNow] = useState(() => Date.now())
-  useEffect(() => {
-    const tick = () => setNow(Date.now())
-    const timer = window.setInterval(tick, intervalMs)
-    const visible = () => {
-      if (document.visibilityState === 'visible') tick()
-    }
-    document.addEventListener('visibilitychange', visible)
-    window.addEventListener('pageshow', tick)
-    window.addEventListener('focus', tick)
-    return () => {
-      window.clearInterval(timer)
-      document.removeEventListener('visibilitychange', visible)
-      window.removeEventListener('pageshow', tick)
-      window.removeEventListener('focus', tick)
-    }
-  }, [intervalMs])
-  return now
 }
 
 /** Due steps, plus a vibration (and a generic notification when hidden) the first time each becomes due. */
@@ -562,7 +543,13 @@ export function LoadSummaryView({ detail, record, now, system, back, footer, err
 
 export type SessionFrom = 'me' | 'closet'
 
-/** Where Back goes from a load opened elsewhere: the page that opened it, else Laundry. */
+/** Browsing a recorded step never changes an action's saved status. Null returns to the recipe. */
+export function preparationBackStep(current: number, reviewing: number | null): number | null {
+  const at = reviewing ?? current
+  return at > 0 ? at - 1 : null
+}
+
+/** Where the explicit day exit goes: the originating page, else Laundry. */
 export function sessionOrigin(from: SessionFrom | undefined): { label: string; to: '/me' | '/closet' | '/laundry' } {
   if (from === 'me') return { label: sessionText.backToMe, to: '/me' }
   if (from === 'closet') return { label: sessionText.backToCloset, to: '/closet' }
@@ -615,7 +602,7 @@ export function SessionView({ detail, now, online, savedAt, from }: { detail: De
   // waits for its time, so a pocketed phone neither drains nor takes pocket taps.
   useWakeLock(running && (stepToDoNow(current, now) || due.length > 0))
   // Kept while offline: the last answer stays on screen until the connection returns.
-  const inventory = useQuery(api.inventory.list, running && !readOnly ? { householdId: detail.householdId } : 'skip')
+  const inventory = useQuery(api.inventory.list, running && !readOnly ? { householdId: detail.householdId, textileIds: [] } : 'skip')
   const loadRecord = useQuery(api.sessions.loadRecord, !running && detail.status === 'completed' && !readOnly ? { sessionId: detail.sessionId } : 'skip')
   // Before the machine starts, only preparation exists: nothing mid-cycle or for drying belongs to it.
   const preparing = running && detail.machineStartedAt === null
@@ -678,9 +665,7 @@ export function SessionView({ detail, now, online, savedAt, from }: { detail: De
   // Opened from Me or Closet, Back returns there (history first, preserving its state); else Laundry.
   const origin = sessionOrigin(from)
   const leave = () => dismissItem(router, () => void navigate({ to: origin.to, replace: true }))
-  const backLink = from === undefined
-    ? <BackButton label={origin.label} render={<Link to="/laundry" />} />
-    : <BackButton label={origin.label} onClick={leave} />
+  const backLink = <BackButton label={origin.label} onClick={leave} />
 
   // Hang and Wait run after queueFromWasher completed the load, so their failure shows on the summary.
   if (!running) {
@@ -716,7 +701,6 @@ export function SessionView({ detail, now, online, savedAt, from }: { detail: De
   const finish = () => { if (detail.planInputHash !== null) void complete.run({ sessionId: detail.sessionId, planInputHash: detail.planInputHash, idempotencyKey: detail.idempotencyKey }) }
   const dryerRunning = detail.dryerStartedAt !== null
   const washer = washerName(detail.machineName)
-  const stepBack = (index: number) => (index > 0 ? { label: preparationText.previousStep, onClick: () => setReview(index - 1) } : undefined)
   const pieces = loadPieces(detail.textiles).map(({ first, ...piece }) => {
     const garment = inventory?.textiles.find((item) => item.textileId === first.textileId)
     return { ...piece, care: first.private ? privateCareWords(first.privateCare) : undefined, kind: garment?.kind ?? null, colorGroup: garment?.colorGroup ?? null, media: garment === undefined ? undefined : <GarmentIcon kind={garment.kind} colorGroup={garment.colorGroup} /> }
@@ -780,14 +764,25 @@ export function SessionView({ detail, now, online, savedAt, from }: { detail: De
 
   // A preparation step is a task screen: Back and the progress segments on top, no load card (the clothes were just shown).
   const stepping = dots !== undefined && (reviewing !== null || (current !== null && prepSteps.includes(current)))
+  const stepBack = {
+    label: preparationBackStep(prepAt, reviewing) === null ? 'Back to what goes in' : preparationText.previousStep,
+    onClick: () => {
+      if (record.pending) return
+      const previous = preparationBackStep(prepAt, reviewing)
+      setReview(previous)
+      if (previous === null) setChemistryOpen(true)
+    },
+  }
   return (
     <div ref={preparationPage} className={cn(sessionPageClassName, "machine-screen")}>
       {stepping ? (
-        <header className="-mb-2 flex items-center gap-2">
-          {backLink}
-          <StepProgress dots={dots} />
-          <h1 className="sr-only">{preparationText.title}</h1>
-        </header>
+        <>
+          <div className="grid gap-2"><TaskHeading compact title={preparationText.title}
+            back={<BackButton {...stepBack} disabled={record.pending} />}
+            caption={detail.loadNumber == null || detail.loadCount == null ? detail.loadName ?? washer : `Load ${detail.loadNumber} of ${detail.loadCount} · ${detail.loadName ?? washer}`} />
+          <StageBar at={0} compact />
+          <FooterLink disabled={record.pending} onClick={leave}>Back to laundry day</FooterLink></div>
+        </>
       ) : (
         <>
           <TaskHeading
@@ -850,7 +845,7 @@ export function SessionView({ detail, now, online, savedAt, from }: { detail: De
           facts={facts}
           progress={preparationText.stepOf(reviewing + 1, total)}
           drumFullness={detail.drumFullness}
-          previous={stepBack(reviewing)}
+          previous={stepBack}
           onNext={() => setReview(reviewing + 1 >= prepAt ? null : reviewing + 1)}
         />
       ) : current !== null ? (
@@ -859,7 +854,7 @@ export function SessionView({ detail, now, online, savedAt, from }: { detail: De
           hang={hang}
           action={current}
           record={record}
-          previous={preparing && prepSteps.includes(current) ? stepBack(prepSteps.indexOf(current)) : undefined}
+          previous={stepping ? stepBack : undefined}
           detail={detail}
           facts={facts}
           progress={progress}
@@ -1016,8 +1011,8 @@ export function DryTimer({ readyAt, now, drying = null }: { readyAt: number | nu
 export function TimeCard({ big, sub, progress = null, tone = 'washing', expired = false, label }: { big: string; sub: string; progress?: number | null; tone?: 'washing' | 'drying'; expired?: boolean; label?: string }) {
   return (
     <section className="grid gap-3 rounded-card bg-card px-4 py-6 shadow-[var(--shadow-sm)]" aria-label={label ?? sessionText.doneTime}>
-      <div className="flex items-baseline justify-between gap-2">
-        <span className="flex-none whitespace-nowrap text-[length:var(--step-4)] font-semibold leading-[1.1] tabular-nums" role="timer" aria-live="off">{big}</span>
+      <div className="flex min-w-0 flex-wrap items-baseline justify-between gap-2">
+        <span className="min-w-0 text-[length:var(--step-4)] font-semibold leading-[1.1] tabular-nums" role="timer" aria-live="off">{big}</span>
         <span className="min-w-0 flex-1 ps-3 text-end text-[length:var(--step--1)] leading-[1.45] text-muted-foreground text-pretty">{sub}</span>
       </div>
       <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">{expired ? `${big}. ${sub}` : ''}</span>
@@ -1028,11 +1023,6 @@ export function TimeCard({ big, sub, progress = null, tone = 'washing', expired 
       )}
     </section>
   )
-}
-
-/** A washer's own name, without the sample fixture's "pool" grouping word. */
-export function washerName(name: string | null): string {
-  return name === null ? sessionText.theWasher : name.replace(/ pool$/i, '')
 }
 
 /**
@@ -1377,21 +1367,16 @@ export function MachineStepPresenter({ action, facts, titleId, progress, previou
 }) {
   const { system } = useUnits()
   const view = stepView(action, facts)
-  const pouring = action.kind === 'treatment' && action.textileId === undefined && action.phase === 'drum'
-    && action.placement === 'direct_to_drum' && action.dose !== null
-    && ['ml', 'mL', 'l', 'L', 'tsp', 'tbsp', 'fl_oz'].includes(action.dose.unit)
-  const title = pouring ? preparationText.pourIntoEmptyDrum(formatDose(action.dose!.amount, action.dose!.unit, system)) : view.title
+  const title = preparationTitle(action, facts)
   const instructionNote = minutesField != null && action.task === 'start' ? action.detail : view.note
   const readableNote = action.task === 'start' && instructionNote ? instructionNote[0]!.toUpperCase() + instructionNote.slice(1) : instructionNote
-  // The cap, drawn only from its recorded marks and filled to the planned one, is the step's picture.
-  const cap = view.kind === 'dose' && action.dose !== null && action.dose.marks?.length && action.dose.mark ? action.dose : null
   return (
-    <StepBlock titleId={titleId} eyebrow={view.eyebrow} machine={view.machine} progress={progress}
-      picture={cap === null ? undefined : <Cup amount={cap.amount} unit={cap.unit} marks={cap.marks} mark={cap.mark} />}
+    <StepBlock titleId={titleId} eyebrow="" machine={view.machine} progress={progress}
       title={localizeTemperatures(title, system)} previous={previous} note={note} primary={primary}
+      secondary={view.kind === 'dose' ? <DoseWhy action={action} doorLocks={facts.doorLocks} remember={rememberExplanation} /> : undefined}
       options={options} recovery={recovery} optionsOpen={optionsOpen} onOptionsOpenChange={onOptionsOpenChange}>
-      {pouring && action.supplyName !== null ? <p className={machineStepNoteClassName}>{action.supplyName}</p> : null}
-      {view.kind === 'dose' ? <DoseBody action={action} slot={pouring ? null : view.note} doorLocks={facts.doorLocks} rememberExplanation={rememberExplanation} showCup={cap === null} /> : null}
+      {view.kind === 'dose' ? <DoseBody action={action} slot={view.eyebrow} picture={<PreparationPicture action={action} />} /> : null}
+      {view.kind !== 'dose' ? <PreparationPicture action={action} /> : null}
       {view.figure === null || minutesField != null ? null : <p className={machineStepFigureClassName}>{view.figure}</p>}
       {view.kind === 'task' && action.advice !== undefined ? <AdviceExplanation advice={action.advice} /> : view.kind === 'task' && readableNote != null ? <p className={machineStepNoteClassName}>{localizeTemperatures(readableNote, system)}</p> : null}
       {minutesField}
@@ -1405,11 +1390,28 @@ export function MachineStepPresenter({ action, facts, titleId, progress, previou
 
 const recordedStamp: Record<Action['status'], string> = { pending: '', confirmed: preparationText.doneStamp, skipped: preparationText.skippedStamp, missed: preparationText.missedStamp }
 
+function preparationTitle(action: Action, facts: MachineFacts): string {
+  const view = stepView(action, facts)
+  const pouring = action.kind === 'treatment' && action.textileId === undefined && action.phase === 'drum'
+    && action.placement === 'direct_to_drum' && action.dose !== null
+    && ['ml', 'mL', 'l', 'L', 'tsp', 'tbsp', 'fl_oz'].includes(action.dose.unit)
+  return pouring ? preparationText.pourIntoEmptyDrum : view.kind === 'dose' ? view.note ?? view.title : view.title
+}
+
+/** Pictures show the action's destination, never a machine model or a measured dose. */
+function PreparationPicture({ action }: { action: Action }) {
+  const drum = action.kind === 'task' && action.task === 'load' || action.kind === 'treatment' && action.textileId === undefined && action.placement === 'direct_to_drum'
+  const src = drum ? '/design/empty-drum.webp'
+    : action.textileId !== undefined ? '/design/folded-tees.png'
+    : action.task === 'close' || action.task === 'start' ? '/design/laundry-setup.webp' : null
+  return src === null ? null : <div className="overflow-hidden rounded-card bg-surface"><img src={src} alt="" className="block aspect-[2/1] w-full object-cover [mask-image:linear-gradient(to_bottom,_#000_75%,_transparent)]" /></div>
+}
+
 /**
  * An earlier Preparation step, looked at again by swiping. It is already recorded, so it is shown as
  * it was and only moves on; nothing here records the step a second time.
  */
-export function ReviewStep({ action: plannedAction, actualUsage, facts, progress, drumFullness, previous, onNext, rememberExplanation = true }: {
+export function ReviewStep({ action: plannedAction, actualUsage, facts, progress, drumFullness, previous, onNext, note, rememberExplanation = true }: {
   action: Action
   actualUsage?: Pick<Detail['usage'][number], 'amount' | 'unit' | 'mark' | 'fractionOfMark' | 'target' | 'approximate'>
   facts: MachineFacts
@@ -1417,6 +1419,7 @@ export function ReviewStep({ action: plannedAction, actualUsage, facts, progress
   drumFullness: Detail['drumFullness']
   previous?: { label: string; onClick: () => void }
   onNext: () => void
+  note?: ReactNode
   rememberExplanation?: boolean
 }) {
   const titleId = useId()
@@ -1429,9 +1432,9 @@ export function ReviewStep({ action: plannedAction, actualUsage, facts, progress
   } }
   const view = stepView(action, facts)
   return (
-    <StepBlock titleId={titleId} eyebrow={view.eyebrow} machine={view.machine} progress={progress} title={localizeTemperatures(view.title, system)} previous={previous} nextRecorded={onNext} primary={{ label: preparationText.nextStep, onClick: onNext }}>
+    <StepBlock titleId={titleId} eyebrow="" machine={view.machine} progress={progress} title={localizeTemperatures(preparationTitle(action, facts), system)} previous={previous} nextRecorded={onNext} note={note} primary={{ label: preparationText.nextStep, onClick: onNext }} secondary={view.kind === 'dose' ? <DoseWhy action={action} doorLocks={facts.doorLocks} remember={rememberExplanation} /> : undefined}>
       <p className={machineStepNoteClassName}><StatusBadge tone={action.status === 'confirmed' ? 'good' : 'neutral'}>{recordedStamp[action.status]}</StatusBadge></p>
-      {view.kind === 'dose' ? <DoseBody action={action} slot={view.note} doorLocks={facts.doorLocks} rememberExplanation={rememberExplanation} /> : null}
+      {view.kind === 'dose' ? <DoseBody action={action} slot={view.eyebrow} picture={<PreparationPicture action={action} />} /> : <PreparationPicture action={action} />}
       {view.kind === 'fullness' && drumFullness !== null ? <p className={machineStepNoteClassName}>{preparationText.drumWas(loadSizeWords[drumFullness])}</p> : null}
       {view.kind === 'task' && action.advice !== undefined ? <AdviceExplanation advice={action.advice} /> : view.kind === 'task' && view.note !== null ? <p className={machineStepNoteClassName}>{localizeTemperatures(view.note, system)}</p> : null}
     </StepBlock>

@@ -13,6 +13,8 @@ import { IssueNote, RecordRow } from '@/kit/record-row'
 import { Sheet } from '@/kit/sheet'
 import type { IssueAction, SourceGroup } from '@/products/source-issues'
 import { TaskFooter } from '@/kit/task-footer'
+import { SectionNav } from '@/products/product-ui'
+import { LoadCard } from '@/laundry/laundry-kit'
 
 /**
  * One planned load as its own screen (design `loadScreen`): the clothes with a quantity each and
@@ -25,7 +27,7 @@ import { TaskFooter } from '@/kit/task-footer'
 export function LoadScreen({
   view, review, start, pending, loadCount, allowMove, problems, washer, classToggle, otherClassNote, next, onResolve,
   onAtRoom, openLink, onRunAction, onMove, onNotThisTime, onQuantity, onPutBack, onPickDetergent, onToggleSoftener,
-  leftIssues = [], leftNotes = [], extra, onBack, titleRef, startedNote, docked = true,
+  leftIssues = [], leftNotes = [], extra, optionsExtra, onBack, titleRef, startedNote, docked = true,
 }: {
   view: LoadCardView
   /** The garments, products and requirements this load lists, from the real plan and records. */
@@ -58,9 +60,10 @@ export function LoadScreen({
   onToggleSoftener?: (supplyId: string, on: boolean) => void
   /** Garments the plan could not place at all, with what to do about each; shown with the left-out rows. */
   leftIssues?: readonly SourceGroup[]
-  leftNotes?: readonly string[]
+  leftNotes?: readonly { textileId: string; text: string }[]
   /** Rows the plan asks the household for (add a washer or a detergent), under the washer. */
   extra?: ReactNode
+  optionsExtra?: ReactNode
   onBack: () => void
   titleRef?: Ref<HTMLHeadingElement>
   /** A start the server has not answered yet. */
@@ -69,6 +72,7 @@ export function LoadScreen({
   docked?: boolean
 }) {
   const [menu, setMenu] = useState<{ textileId: string; name: string } | null>(null)
+  const [tab, setTab] = useState<'summary' | 'clothes' | 'products' | 'options'>('summary')
   const blocked = start === 'blocked' || start === 'question'
   const started = start === 'open'
   // A piece held for a different product is listed with its own options; it is not a "to resolve" count and the room cannot help it.
@@ -134,7 +138,7 @@ export function LoadScreen({
       issues={noteFor(group)}
     />
   ))
-  const unplacedNotes = leftNotes.map((text) => <RecordRow key={`note:${text}`} media={<DesignIcon name="tag" size="1em" strokeWidth={2.2}  />} title={text} />)
+  const unplacedNotes = leftNotes.map((row) => <RecordRow key={`note:${row.textileId}`} media={<DesignIcon name="tag" size="1em" strokeWidth={2.2}  />} title={row.text} />)
 
   const openDetergent = started || onPickDetergent === undefined ? undefined : onPickDetergent
   const detergentRow = products.detergent === null
@@ -164,17 +168,24 @@ export function LoadScreen({
 
   return (
     <>
-      <TaskHeading title={loadReviewText.title(colourWords(view.items.map((item) => item.colorGroup)))} back={<BackButton label={loadReviewText.back} onClick={onBack} />} titleRef={titleRef} mark={mark} caption={caption} />
+      <TaskHeading title={loadReviewText.title(colourWords(view.items.map((item) => item.colorGroup)))} back={<BackButton label="Back to wash plan" onClick={onBack} />} titleRef={titleRef} mark={mark} caption={`Load ${view.number} of ${loadCount}${caption === undefined ? '' : ` · ${caption}`}`} />
+      <SectionNav label="Load review sections" value={tab} onChange={setTab} items={[
+        { value: 'summary', label: 'Summary' }, { value: 'clothes', label: 'Clothes' }, { value: 'products', label: 'Products' }, { value: 'options', label: 'Options' },
+      ]} />
+      {tab !== 'summary' ? null : <LoadCard label="This load" at={started ? undefined : 0} pieces={review.garments.map(row => ({ key: row.key, kind: row.kind, colorGroup: row.colorGroup, label: row.name, count: row.textileIds.length }))} />}
       {started ? <Callout tone="washing">{loadScreenText.startedBanner}</Callout> : null}
       {startedNote === undefined ? null : <Callout tone="washing">{startedNote}</Callout>}
       {review.requirements === null ? null : <Callout>{loadReviewText.requirements(review.requirements)}</Callout>}
-      {classToggle}
+      <div hidden={tab !== 'options'}>{classToggle}</div>
+      <div hidden={tab !== 'clothes'} role="region" aria-label="Clothes in this load" className="grid min-w-0 gap-4">
       <Section heading={loadScreenText.clothes} caption={countWord(pieces, 'piece')}>
         {garmentRows}
         {leftOutRows}
         {unplaced}
         {unplacedNotes}
       </Section>
+      </div>
+      <div hidden={tab !== 'summary' && tab !== 'products'} role="region" aria-label="Products in this load" className="grid min-w-0 gap-4">
       <Section heading={loadScreenText.products} caption={loadScreenText.fromRecords}>
         {detergentRow}
         {pretreatRows}
@@ -182,13 +193,21 @@ export function LoadScreen({
         {otherRows}
         {unmatchedProducts}
       </Section>
+      </div>
+      <div hidden={tab !== 'summary' && tab !== 'options'} className="grid min-w-0 gap-4">
       <Section heading={loadScreenText.washer}>
         <RecordRow media={<DesignIcon name="washer" strokeWidth={1.6} />} title={washer.title} fact={washer.fact} issues={washerIssues.length === 0 ? undefined : washerIssues} />
       </Section>
       {extra}
+      </div>
+      {problems.filter(group => tab === 'clothes' ? group.source.kind !== 'garment' : tab === 'products' ? group.source.kind !== 'product' : tab === 'summary' ? group.source.kind === 'garment' : group.source.kind !== 'washer').map(group => (
+        <Section key={`${group.source.kind}:${group.source.id}`}><RecordRow title={group.name} issues={noteFor(group)} /></Section>
+      ))}
+      {tab !== 'summary' || leftOutRows.length + unplaced.length + unplacedNotes.length === 0 ? null : <Button type="button" variant="outline" onClick={() => setTab('clothes')}>Review pieces outside this load</Button>}
+      {/* Keep the private draft mounted across section changes without adding it to the default review. */}
+      <div hidden={tab !== 'options'} role="region" aria-label="Optional wash settings" className="grid min-w-0 gap-4">{optionsExtra}{view.why === null ? null : <Note>{loadText.whyTogether(view.why)}</Note>}</div>
       {view.stains.map((line) => <Callout key={line}>{line}</Callout>)}
       {settingsNotes.map((text) => <Note key={text}>{text}</Note>)}
-      {view.why === null ? null : <Note>{loadText.whyTogether(view.why)}</Note>}
       {view.cautions.map((caution) => <Callout key={caution.text}>{caution.text}</Callout>)}
       {problems.length === 0 ? view.blockers.map((text) => <Callout key={text} tone="conflict">{text}</Callout>) : null}
       {otherClassNote === null ? null : <Note>{otherClassNote}</Note>}

@@ -12,6 +12,7 @@ apps/web/.output/
 .amp/portals/*
 .data/
 .review-data/
+rehearsal-projects/
 apps/web/test-results/
 apps/web/playwright-report/
 # Impeccable design-skill working state

@@ -1,3 +1,4 @@
+import { getPlan } from './planStorage'
 import { v } from 'convex/values'
 import { isDryer, isDryerPhase, isHangingDryer, labelFromCeiling, stainReasons, treatmentChemistry, tumbleCeiling, type PlannerInput } from '@washcloset/planner'
 
@@ -179,7 +180,7 @@ export const complete = mutation({
  */
 export async function completeWash(ctx: MutationCtx, session: Doc<'sessions'>, actorKey: string, mode: 'finish' | 'queue') {
     const actor = { key: actorKey }
-    const plan = await ctx.db.get(session.planId)
+    const plan = await getPlan(ctx, session.planId)
     if (plan === null || plan.householdId !== session.householdId) fail('not_found', 'Not found')
     // The session is bound to its plan by id. The hash is not compared: an answer given at the machine
     // re-reads the plan in place, so a Finish queued offline before it carries the plan's earlier hash.

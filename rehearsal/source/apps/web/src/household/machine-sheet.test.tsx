@@ -2,7 +2,7 @@ import { renderToStaticMarkup, renderWithConvex } from '@/test/markup'
 import { expect, test } from 'vitest'
 
 import type { Machine } from '@/household/inventory-types'
-import { MachineFields, MachineSheet, draftFromGroup, machineDraftProblem, machineFieldsFrom, machineGroupLine, machineGroups, machineIntakeSteps, machineStepProblem, newMachineDraft, type MachineDraft } from '@/household/machine-sheet'
+import { MachineFields, MachineSheet, draftFromGroup, machineDraftProblem, machineProblemTarget, machineFieldsFrom, machineGroupLine, machineGroups, machineIntakeSteps, machineStepProblem, newMachineDraft, type MachineDraft } from '@/household/machine-sheet'
 import { assertPlainCopy } from '@/kit/test-copy'
 import { MachineTile } from '@/household/household-tiles'
 
@@ -43,6 +43,18 @@ const machine = (overrides: Partial<Machine> = {}): Machine => ({
 } as Machine)
 
 const ready = (patch: Partial<MachineDraft> = {}): MachineDraft => ({ ...newMachineDraft({ place: 'shared', kind: 'washer' }), door: 'front', ...patch })
+
+test('machine correction targets follow validation order, including hidden optional evidence', () => {
+  expect(machineProblemTarget(ready())).toBeNull()
+  expect(machineProblemTarget(newMachineDraft())).toMatchObject({ section: 'type', label: 'Where is it?' })
+  expect(machineProblemTarget(ready({ name: '', minutes: '0' }))).toMatchObject({ section: 'identity', label: 'Number or label as printed' })
+  expect(machineProblemTarget(ready({ minutes: '0' }))).toMatchObject({ section: 'cycle', label: 'Minutes for a normal wash' })
+  expect(machineProblemTarget(ready({ volume: '99' }))).toMatchObject({ section: 'specifications' })
+  expect(machineProblemTarget(ready({ washProcesses: { delicate: { source: '', programLabel: 'Delicates' } } }))).toMatchObject({ section: 'programs', label: 'Where these settings were checked', occurrence: 0 })
+  expect(machineProblemTarget(ready({ rinseContact: { normal: { minutes: 16, placement: 'center_agitator', source: '' } } }))).toMatchObject({ section: 'contact', label: 'Where the program contact time was checked' })
+  expect(machineProblemTarget(ready({ rinseContact: { normal: { minutes: 16, placement: '', source: 'Manual' } } }))).toMatchObject({ section: 'contact', label: 'Sanitizer release used for this contact time' })
+  expect(machineProblemTarget(ready({ rinseContact: { normal: { minutes: 16, placement: 'direct_to_drum', source: 'Manual' } } }))).toMatchObject({ section: 'contact', label: 'By-hand addition timing from the directions' })
+})
 
 test('checked process settings round trip separately from timers and separate machines with different configurations', () => {
   const process = { source: 'Synthetic exact manual', programLabel: 'Delicates with Extra Rinse', extraRinses: 1, rinseTemperatureC: 20, spinRpm: 400, maximumFillFraction: 0.5 }

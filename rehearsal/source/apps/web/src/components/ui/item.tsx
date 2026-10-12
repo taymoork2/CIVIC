@@ -21,7 +21,7 @@ const itemVariants = cva(
     '[@container_(width_<_16rem)]:[&:has([data-slot=item-media])]:gap-[12px] [@container_(width_<_16rem)]:[&:has([data-slot=item-media])]:px-[16px] [@container_(width_<_16rem)]:[&:has([data-slot=item-media])]:py-[12px]',
     '[@container_(width_<_16rem)]:[&:has([data-slot=item-media])_>[data-slot=item-content]]:col-span-2 [@container_(width_<_16rem)]:[&:has([data-slot=item-media])_>[data-slot=item-content]]:row-start-2',
     '[@container_(width_<_16rem)]:[&:has([data-slot=item-media])_>svg]:col-start-2 [@container_(width_<_16rem)]:[&:has([data-slot=item-media])_>svg]:row-start-1',
-    '[@container_(width_<_16rem)]:[&:has([data-slot=item-media])_>[data-slot=item-actions]]:col-start-2 [@container_(width_<_16rem)]:[&:has([data-slot=item-media])_>[data-slot=item-actions]]:row-start-1',
+    '[@container_(width_<_16rem)]:[&:has([data-slot=item-media])_>[data-slot=item-actions]]:col-span-2 [@container_(width_<_16rem)]:[&:has([data-slot=item-media])_>[data-slot=item-actions]]:col-start-1 [@container_(width_<_16rem)]:[&:has([data-slot=item-media])_>[data-slot=item-actions]]:row-start-3 [@container_(width_<_16rem)]:[&:has([data-slot=item-media])_>[data-slot=item-actions]]:max-w-full [@container_(width_<_16rem)]:[&:has([data-slot=item-media])_>[data-slot=item-actions]]:flex [@container_(width_<_16rem)]:[&:has([data-slot=item-media])_>[data-slot=item-actions]]:justify-between',
   ),
   {
     variants: {

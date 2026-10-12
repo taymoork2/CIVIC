@@ -264,7 +264,7 @@ test('a blocked wash shows each problem under its source with that source\'s act
     excludedItems: [{ reasonId: 'big', source: { kind: 'garment', id: 'towel' }, kind: 'confirm', blocking: false, textileIds: ['towel'] }],
     result: { ...storedPlan().result, reasons: [...storedPlan().result.reasons, reason('restrict', 'product_restriction', { cause: 'garment_product_conflict' }, { loadId: 'load-002' })] },
   } as never)
-  const markup = render({ planId: 'p1', plan, questions: [] })
+  const markup = render({ planId: 'p1', loadId: 'load-002', plan, questions: [] })
   expect(readableText(markup)).toContain('1 to resolve before washing')
   expect(markup).toContain('can&#x27;t be used with Soccer jersey')
   expect(markup).toContain('Use another product')
@@ -296,10 +296,38 @@ const render = (overrides: Partial<LaundryViewProps> = {}, privateQueries = fals
 
 const sentinels = /SENTINEL/
 
+test('a thousand-piece hamper renders forty complete groups without reducing the wash selection', () => {
+  const pieces = Array.from({ length: 1000 }, (_, i) => textile({ name: `Scale tee ${i}`, wearerId: (i % 2 ? 'leo' : 'sam') as Textile['wearerId'] }))
+  const markup = render({ inventory: inventory({ textiles: pieces }), hamper: { count: pieces.length, loads: null } })
+  expect(markup.match(/aria-label="More /g)).toHaveLength(40)
+  expect(readableText(markup)).toContain('1000 of 1000 machine-wash pieces selected across every page.')
+  expect(markup).toContain('Search hamper')
+  expect(markup).toContain('Sort 1000 pieces into loads')
+  expect(markup).not.toContain('Scale tee 999')
+})
+
+test('paging retains whole packs and separate owners with identical garment names', () => {
+  const pieces = Array.from({ length: 42 }, (_, i) => textile({ name: `Other tee ${i}` }))
+  pieces.unshift(...Array.from({ length: 45 }, () => textile({ name: 'Family pack', wearerId: 'sam' as Textile['wearerId'] })), textile({ name: 'Family pack', wearerId: 'leo' as Textile['wearerId'] }))
+  const markup = render({ inventory: inventory({ textiles: pieces }), hamper: { count: pieces.length, loads: null } })
+  expect(readableText(markup)).toContain('45 of 45')
+  expect(markup.match(/aria-label="More /g)).toHaveLength(40)
+  expect(markup).toContain('88 of 88 machine-wash pieces selected across every page.')
+  expect(markup).toContain('Sam, Family pack')
+})
+
+test('large hand-wash hampers are paged and cannot enter machine-wash selection', () => {
+  const pieces = Array.from({ length: 1000 }, (_, i) => textile({ ...silk, textileId: `hand-${i}` as Textile['textileId'], name: `Silk ${i}` }))
+  const markup = render({ inventory: inventory({ textiles: pieces }), hamper: { count: 0, loads: null } })
+  expect(markup.match(/>Washed by hand</g)).toHaveLength(40)
+  expect(markup).not.toContain('Select all machine-wash pieces')
+  expect(markup).toContain('Next 40')
+})
+
 test('the load review mounts one main optional-product display with a private loading fallback', () => {
   const addition = { supplyId: 'boost', status: 'unknown', compatibility: 'unknown', reason: 'Exact optional benefit unknown.', evidence: [], policyVersion: '1' } as const
   const plan = storedPlan({}, [load({ productRecommendations: [addition] })])
-  const output = render({ planId: 'p1', plan, questions: [], inventory: inventory({ supplies: [...inventory().supplies, { supplyId: 'boost', name: 'Optional booster' } as never] }) }, true)
+  const output = render({ planId: 'p1', loadId: 'load-001', plan, questions: [], inventory: inventory({ supplies: [...inventory().supplies, { supplyId: 'boost', name: 'Optional booster' } as never] }) }, true)
   expect(output.match(/Any extra product\?/g)).toHaveLength(1)
   expect(output).toContain('Loading private suggestions. Showing recorded product evidence.')
   expect(output).toContain('Use Optional booster')
@@ -313,8 +341,8 @@ test('Laundry shows counted garment controls and preserves hand-wash and dry-cle
   const markup = render()
   const words = readableText(markup)
   expect(markup).toMatch(/<h1[^>]*>Laundry<\/h1>/)
-  expect(markup).toContain('aria-label="Plan your wash"')
-  expect(words).toContain('3 pieces selected')
+  expect(markup).toContain('aria-label="Laundry day setup"')
+  expect(words).toContain('3 pieces waiting')
   expect(words).toContain('In the hamper')
   expect(words).toContain('Soccer jersey 1 of 1 selected · needed tomorrow')
   expect(markup).toContain('aria-label="Fewer Soccer jersey"')
@@ -337,7 +365,7 @@ test('unselected clothes stay visible and can be added directly; an empty select
   const none = render({ draft: { selectedTextileIds: [], seenTextileIds: ['jersey', 'jeans', 'towel'] } })
   expect(none).toMatch(/<button[^>]*disabled=""[^>]*>Select pieces to sort/)
   expect(readableText(none)).toContain('0 of 1 selected')
-  expect(readableText(none)).toContain('Choose clothes to wash')
+  expect(readableText(none)).toContain('Plan your laundry day')
   expect(none.match(/aria-label="Fewer [^"]+" disabled=""/g)).toHaveLength(3)
   expect(none).not.toContain('aria-label="Leave Soccer jersey out of this wash"')
   expect(readableText(none)).toContain('In the hamper')
@@ -345,19 +373,35 @@ test('unselected clothes stay visible and can be added directly; an empty select
 
 test('empty Laundry offers direct intake and existing closet clothes', () => {
   const markup = render({ hamper: { count: 0, loads: null }, inventory: inventory({ textiles: [ready], machines: [], supplies: [] }) })
-  expect(markup).toContain('Your hamper is clear')
+  expect(markup).toContain('Nothing waiting to wash.')
   expect(markup).not.toContain('data-slot="empty-description"')
-  expect(markup).toContain('Add clothes to wash</button>')
-  expect(markup).toContain('Choose from closet</a>')
+  expect(markup).toContain('Add something else')
+  expect(markup).toContain('Choose from closet')
+  expect(markup).toContain('Plan your laundry day')
+  expect(markup).toContain('Set up your laundry day')
+  expect(markup).toContain('/household?section=machines')
+  expect(markup).toContain('/household?section=bottles')
   expect(markup).not.toContain('18 clothes and linens to wash')
   expect(markup).not.toContain('laundry-example')
   expect(markup).not.toContain('setup-list')
   expect(markup).not.toContain('>Flag something dirty</button>')
-  // Nothing else competes with the block: no segments, no count, no Plan laundry.
+  // The clear hamper still has a planning workspace, without an invented wash or load count.
   expect(markup).not.toContain('class="segment"')
   expect(markup).not.toContain('wash-count')
   expect(markup).not.toContain('primary-dock')
   assertPlainCopy(markup)
+})
+
+test('first laundry day starts with intake while returning households use their actual ready quantity', () => {
+  const first = render({ hamper: { count: 0, loads: null }, inventory: inventory({ textiles: [], machines: [], supplies: [] }) })
+  expect(first).toContain('Start with what needs washing.')
+  expect(first).toContain('/design/empty-hamper.webp')
+  expect(first).toContain('Add clothes to wash')
+  expect(first).not.toContain('Choose from closet')
+  const actual = render({ hamper: { count: 0, loads: null }, inventory: inventory({ textiles: [ready, { ...ready, textileId: 'ready-2' }], planning: { day: { pace: 'spread', loadsPerDay: 1 } } } as never) })
+  expect(readableText(actual)).toContain('2 pieces ready')
+  expect(readableText(actual)).toContain('1 load a day')
+  expect(actual).not.toContain('Your first laundry day')
 })
 
 test('the hamper slot opens the staged intake in the hamper, with first run as captured when it opened', () => {
@@ -377,7 +421,7 @@ test('the hamper slot opens the staged intake in the hamper, with first run as c
 
 test('empty Laundry keeps the same first action even if machines and products are already saved', () => {
   const markup = render({ hamper: { count: 0, loads: null }, inventory: inventory({ textiles: [], machines: [{ machineId: 'w', name: 'Washer', applianceType: 'front_load_washer' }] as never, supplies: [{ supplyId: 's', name: 'Pods', use: 'pods', archived: false, rules: [] }] as never }) })
-  expect(markup).toContain('Your hamper is clear')
+  expect(markup).toContain('Start with what needs washing.')
   expect(markup).toContain('Add clothes to wash')
   expect(markup).not.toContain('setup-list')
 })
@@ -419,13 +463,15 @@ test('dry cleaning: what needs to go and what is at the cleaner, picked with a t
   assertPlainCopy(markup)
 })
 
-test('planning opens one load review with its products and washer, without silently answering questions', () => {
+test('planning opens the complete load overview before any load or care question', () => {
   const markup = render({ planId: 'p1', plan: storedPlan(), questions: [labelQuestion, logoQuestion] })
   const words = readableText(markup)
-  expect(words).toContain('Darks load')
-  expect(words).toContain('Products From saved records Tide')
-  expect(words).toContain('Washer Household washer')
-  expect(markup).toContain('aria-label="Back to Laundry"')
+  expect(words).toContain('Your wash plan')
+  expect(words).toContain('Load 1')
+  expect(words).toContain('Load 2')
+  expect(words).toContain('Review next load')
+  expect(words).not.toContain('Your private product guidance')
+  expect(markup).toContain('aria-label="Back to the hamper"')
   expect(markup).not.toContain('Grab the Tide bottle.')
   expect(markup).not.toContain('Does Washer have this logo?')
   expect(markup).not.toMatch(sentinels)
@@ -437,7 +483,7 @@ test('planning opens one load review with its products and washer, without silen
 })
 
 test('the load needed soonest opens first and explains excluded pieces without planner sentences', () => {
-  const markup = render({ planId: 'p1', plan: storedPlan(), questions: [] })
+  const markup = render({ planId: 'p1', loadId: 'load-002', plan: storedPlan(), questions: [] })
   const words = readableText(markup)
   expect(words).toContain('Soccer jersey')
   expect(words).not.toContain('Leo’s jeans')
@@ -450,7 +496,7 @@ test('the load needed soonest opens first and explains excluded pieces without p
 
 test('a pinned arrangement keeps its loads, shown in the wash order Home and the dock number them by', () => {
   const pinned = storedPlan({ pass: { ...emptyPass, loadPins: [{ textileId: 'jeans' as never, group: 1 }, { textileId: 'jersey' as never, group: 2 }] } })
-  const words = readableText(render({ planId: 'p1', plan: pinned, questions: [] }))
+  const words = readableText(render({ planId: 'p1', loadId: 'load-002', plan: pinned, questions: [] }))
   // The muddy jersey cannot wait, so its load opens first, as the hub would offer it.
   expect(words).toContain('Soccer jersey')
   expect(words).not.toContain('Leo’s jeans')
@@ -462,7 +508,7 @@ test('a started load opens its session while another load remains ready for the 
     machines: [{ machineId: 'washer', name: 'Machine 12', location: 'shared', pricePerStart: 3, applianceType: 'front_load_washer' }] as never,
     loadStates: [{ loadId: 'load-001', startable: false, startableMachineIds: [], blockingReasonIds: [], blockedItems: [], sessionId: 's1' as never, confirmedMachineId: null }, { loadId: 'load-002', startable: true, startableMachineIds: ['washer'], blockingReasonIds: [], blockedItems: [], sessionId: null, confirmedMachineId: null }],
   })
-  const markup = render({ planId: 'p1', plan: shared, questions: [], initialSheet: { kind: 'running', sessionId: 's1' } })
+  const markup = render({ planId: 'p1', loadId: 'load-002', plan: shared, questions: [], initialSheet: { kind: 'running', sessionId: 's1' } })
   expect(readableText(markup)).toContain('Soccer jersey')
   expect(readableText(markup)).toContain('I’m at the laundry room')
   expect(markup).not.toMatch(sentinels)
@@ -725,7 +771,7 @@ test('the started label names the washer, or its kind when the number was skippe
 
 test('a plan with alternates offers "Steps for" at home; the toggle names each class', () => {
   const shared = storedPlan({}, [mixedLoad()])
-  const markup = render({ planId: 'p1', plan: shared, questions: [], inventory: inventory({ machines: [...frontLoaders, ...topLoaders] as never }) })
+  const markup = render({ planId: 'p1', loadId: 'load-001', plan: shared, questions: [], inventory: inventory({ machines: [...frontLoaders, ...topLoaders] as never }) })
   expect(markup).toContain('Steps for:')
   expect(markup).toContain('>Front-loaders<')
   expect(markup).toContain('>Top-loaders<')
@@ -774,7 +820,7 @@ test('a load whose other class is blocked shows a quiet note; Start stays enable
     }],
   } as never)
   const shared = storedPlan({ loadStates: [{ loadId: 'load-001', startable: true, startableMachineIds: ['front1', 'front2'], blockingReasonIds: [], blockedItems: [], sessionId: null, confirmedMachineId: null }] }, [blockedAlt])
-  const markup = render({ planId: 'p1', plan: shared, questions: [], inventory: inventory({ machines: [...frontLoaders, ...topLoaders] as never }) })
+  const markup = render({ planId: 'p1', loadId: 'load-001', plan: shared, questions: [], inventory: inventory({ machines: [...frontLoaders, ...topLoaders] as never }) })
   expect(readableText(markup)).toContain('Top-loaders: Too full for a top-loader. Try a front-loader.')
   // The note is purely informational: with two washers at home, the person says which one, enabled.
   expect(markup).toContain('>I’m at the laundry room</button>')

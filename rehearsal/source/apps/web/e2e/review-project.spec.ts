@@ -1,0 +1,63 @@
+import { expect, test } from '@playwright/test'
+
+test.use({ trace: 'off', viewport: { width: 1440, height: 1000 } })
+test.skip(process.env.REHEARSAL_PROJECT_E2E !== '1', 'Run against the isolated Notebook project adapter.')
+
+test('a project adapter retains input through branches and saves scoped capture and review evidence', async ({ page }) => {
+  const productModules: string[] = [], captures: { context: { scenario: string; persona: string; role: string; state: { fields: { label: string; value: string }[] } }; message: string }[] = []
+  page.on('request', (request) => { if (/\/src\/(closet|dev|laundry)\//.test(request.url())) productModules.push(request.url()) })
+  page.on('response', async (response) => { if (response.url().endsWith('/api/review/capture') && response.ok()) captures.push(await response.json()) })
+  await page.goto('/review?scenario=demo.edit&persona=editor&role=author')
+  await expect(page.getByRole('navigation', { name: 'Canvas location' })).toContainText('Compose note')
+  await page.getByRole('button', { name: 'Play', exact: true }).click()
+  const frame = page.frameLocator('iframe[title="Live Compose note"]')
+  await expect(frame.getByLabel('Title', { exact: true })).toHaveValue('Review draft')
+  await frame.getByLabel('Title', { exact: true }).fill('Onboarding preserves this input')
+  const identity = await page.locator('iframe[title="Live Compose note"]').evaluate((element) => { const win = (element as HTMLIFrameElement).contentWindow!; Reflect.set(win, 'rehearsalRunProof', 'same run'); return win.reviewPreview!.snapshot.revision.source })
+  await frame.getByRole('button', { name: 'Review first', exact: true }).click()
+  await expect(frame.getByRole('heading', { name: 'Review your draft', exact: true })).toBeVisible()
+  await expect(page.getByRole('navigation', { name: 'Canvas location' })).toContainText('Review draft')
+  await expect(page.locator('iframe[title^="Live "]')).toHaveCount(1)
+  await frame.getByRole('button', { name: 'Back to draft' }).click()
+  await expect(frame.getByLabel('Title', { exact: true })).toHaveValue('Onboarding preserves this input')
+  expect(await page.locator('iframe[title="Live Compose note"]').evaluate((element) => Reflect.get((element as HTMLIFrameElement).contentWindow!, 'rehearsalRunProof'))).toBe('same run')
+  await frame.getByRole('button', { name: 'Save', exact: true }).click()
+  await expect(frame.getByRole('heading', { name: 'Note saved', exact: true })).toBeVisible()
+  await expect.poll(() => captures.length).toBe(3)
+  expect(captures.filter((row) => row.context.scenario === 'demo.edit').map((row) => row.context.state.fields)).toEqual([[{ label: 'Title', value: 'Onboarding preserves this input' }], [{ label: 'Title', value: 'Onboarding preserves this input' }]])
+  expect(captures.every((row) => row.context.persona === 'editor' && row.context.role === 'author')).toBe(true)
+  await page.getByRole('button', { name: 'Review', exact: true }).click()
+  await page.getByRole('button', { name: 'Comment on selection' }).click()
+  await page.getByLabel('What should change?').fill('QA: portable project review with its own context.')
+  await page.getByRole('button', { name: 'Save review', exact: true }).click()
+  await expect(page.getByText('Review saved with its target and frozen evidence.', { exact: true })).toBeVisible()
+  const comments = await (await page.request.get('/api/review/feedback')).json()
+  const review = comments.findLast((row: { message: string }) => row.message === 'QA: portable project review with its own context.')
+  expect(review.context.screen).toBe('demo.saved'); expect(review.context.persona).toBe('editor'); expect(review.revision.source).toBe(identity)
+  expect(productModules).toEqual([])
+})
+
+test('project-specific permission and failure presets keep the draft and never report a successful edge', async ({ page }) => {
+  for (const context of ['role=guest', 'role=author&condition=save-error']) {
+    await page.goto(`/review?scenario=demo.edit&${context}`)
+    await page.getByRole('button', { name: 'Play', exact: true }).click()
+    const frame = page.frameLocator('iframe[title="Live Compose note"]')
+    await frame.getByLabel('Title', { exact: true }).fill('Keep the failed draft')
+    await frame.getByRole('button', { name: 'Save', exact: true }).click()
+    await expect(frame.getByRole('status')).toHaveText('Save unavailable. Your draft is kept.')
+    await expect(frame.getByLabel('Title', { exact: true })).toHaveValue('Keep the failed draft')
+    await expect(page.getByText('0 captured visits · Private synthetic run')).toBeVisible()
+    await frame.getByRole('button', { name: 'Cancel' }).click()
+    await expect(frame.getByRole('heading', { name: 'Notebook', exact: true })).toBeVisible()
+    await expect.poll(async () => page.locator('.rh-inspect-content').getByText('Saving evidence…').count()).toBe(0)
+  }
+})
+
+test('unregistered states and adapter errors fail visibly without claiming a ready preview', async ({ page }) => {
+  await page.goto('/review-frame.html?scenario=demo.unknown')
+  await expect(page.getByRole('alert')).toContainText('not registered')
+  await page.route('**/examples/rehearsal-demo/src/rehearsal.js', (route) => route.fulfill({ contentType: 'text/javascript', body: "export function mount(root, context) { context.publish({ screen: 'unmapped.screen' }) }" }))
+  await page.goto('/review-frame.html?scenario=demo.edit')
+  await expect(page.getByRole('alert')).toHaveText('Unmapped adapter screen: unmapped.screen')
+  await expect(page.locator('[data-rehearsal-ready]')).toHaveCount(0)
+})

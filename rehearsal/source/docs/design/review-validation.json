@@ -3,24 +3,31 @@
   "status": "scoped-local-checks-passed",
   "revision": {
     "head": "0bffbbcf2e38ca3ec7e17da3eb6496b6f04f348d",
-    "source": "e204afcb39c3fcc7ad25cefafbb742ebb60cc4e6ba882627cddd5ab39d5ff408",
-    "capturedAt": "2026-10-10T02:06:02.586Z"
+    "source": "5f8927d693ae7e225c1ff754f8503e2e61c37025abecaba929a3e4392f891be1",
+    "capturedAt": "2026-10-11T12:33:25.045Z"
   },
   "checkout": "/Users/taymoor/.codex/worktrees/f0d3/laundry-app",
-  "revisionScope": "Web sources and unit tests, registered browser checks, review scripts, web configuration and root lockfile/package. Shared packages/backend remain at the base HEAD; this is not an exhaustive build-input receipt.",
+  "connection": {
+    "rehearsalRoot": "/Users/taymoor/.codex/worktrees/f0d3/laundry-app",
+    "applicationRoot": "/Users/taymoor/.codex/worktrees/f7ce/laundry-app",
+    "applicationHead": "da568e371026923b854abcd4869eb012220e3610",
+    "mode": "read-only-linked-checkout",
+    "refresh": "Inventory and snapshots update automatically; open runs retain their rendered revision."
+  },
+  "revisionScope": "Rehearsal and linked Laundry App source inventory. Scoped family memory behavior is attested; other journeys, backend behavior and design acceptance are not.",
   "design": {
     "project": "43227d24-ee04-414e-a939-eda64e3f4bec",
-    "reconciliation": "Review shell pending; existing component rules reused",
+    "reconciliation": "Design reconciliation was not performed by these behavior checks.",
     "hashes": {
       "IDENTITY.md": "6dd59e2bbe3ea397af942bb0d34e1c14ae754c06fbd3e20f6e0163b3fa9541ef",
-      "DESIGN.md": "7ca117503c366830ca00707e5dbc5cd8349664e313ea5af6d62909b1fb4ff863",
-      "SKILL.md": "d8ffed09f4561e8910269ac4e6fd0200b4ab8c1801cca88e4e2eccc56b64f798",
-      "README.md": "148663f259fe0fa2d91f2b413d1c9d8d7f2ab417e916c1e2e5eed79dceed0e63",
-      "colors_and_type.css": "687edf39bda74dabb5f374a5e9a1007f911c7c4cff353be40cf8c664c10c9f88",
+      "DESIGN.md": "b2a33f93cba0edef6bf8ae7e8d71ffa909cb4aceaddc8f8a80a9c638bb641cda",
+      "SKILL.md": "20675c6146bffef77be571cac20252100e251c1b61de64cad8e0858c5a747f12",
+      "README.md": "0a1cb17b57c0b2dfd54c932836a50fba32bddb439234b209b5e6cc44111dc973",
+      "colors_and_type.css": "a931372c6bd2f380a85c4f2dfb588a773de0bb769e1ebd07091c908cfa11218c",
       "tokens.css": "b5998546096bd2a3ee234d550894988f3be5828f37072ad3c4e313e8a9b8f4c1",
       "COMPONENTS.md": "ab25b2daa3b64d7e6ef5f54ff5fe555de1fe582fb79c027d988d918b9b0076d6",
-      "preview/production-patterns.html": "fcf04ba4fea8618695a6349ad28171603110847d7a53a28a5ecb7b546685d4d9",
-      "source/render-reference-workflow.md": "7fb197b0cbe377d41bd25978e45bcedcd456310ead3bef65f3552be1b36a42e6",
+      "preview/production-patterns.html": "a2d83ab9d483d91ae6b5bbfbfc854bc088323fd37850345c0602769da7c78bed",
+      "source/render-reference-workflow.md": "17e48f6fd814d99669830a68946bdab93cc5934e45a47ebfe25da600c84f6c72",
       "source-reference/receipt.json": "0cf76b9e8fdb0acde7d774ef8dbe6a7be9a63b530d96f87ed630ff359bd31eda"
     },
     "receipt": {
@@ -31,239 +38,54 @@
     }
   },
   "inventory": {
-    "named": 34,
-    "legacy": 93,
-    "surfaces": 70,
-    "unregistered": 58
+    "registeredScenarios": 196
   },
   "renderScenarios": [
-    "intake.pack.type",
-    "intake.pack.whose",
-    "intake.pack.details",
-    "intake.pack.fabric",
-    "intake.pack.color",
-    "intake.pack.origin",
-    "intake.pack.dye",
-    "intake.pack.care",
-    "intake.pack.stain",
-    "intake.pack.final",
-    "records.pack",
-    "records.pack.edit",
-    "records.towel",
-    "records.towel.edit",
-    "records.profile",
-    "records.water",
-    "intake.towel.type",
-    "intake.towel.whose",
-    "intake.towel.details",
-    "intake.towel.fabric",
-    "intake.towel.color",
-    "intake.towel.origin",
-    "intake.towel.dye",
-    "intake.towel.care",
-    "intake.towel.stain",
-    "intake.towel.final",
-    "records.item.tags",
-    "records.item.care",
-    "intake.appliance",
-    "records.appliance",
-    "records.appliance.edit",
-    "intake.product",
-    "records.product",
-    "records.product.contents"
+    "family.planning",
+    "family.washing",
+    "family.drying",
+    "family.putaway"
   ],
   "behaviorScenarios": [
-    "intake.pack.type",
-    "intake.pack.whose",
-    "intake.pack.details",
-    "intake.pack.fabric",
-    "intake.pack.color",
-    "intake.pack.origin",
-    "intake.pack.dye",
-    "intake.pack.care",
-    "intake.pack.stain",
-    "intake.pack.final",
-    "records.pack",
-    "records.pack.edit",
-    "records.towel",
-    "records.towel.edit",
-    "records.profile",
-    "records.water",
-    "intake.towel.type",
-    "intake.towel.whose",
-    "intake.towel.details",
-    "intake.towel.fabric",
-    "intake.towel.color",
-    "intake.towel.origin",
-    "intake.towel.dye",
-    "intake.towel.care",
-    "intake.towel.stain",
-    "intake.towel.final",
-    "records.item.tags",
-    "intake.appliance",
-    "records.appliance",
-    "records.appliance.edit",
-    "intake.product",
-    "records.product",
-    "records.product.contents"
+    "family.planning",
+    "family.washing",
+    "family.drying",
+    "family.putaway"
   ],
   "checks": [
     {
-      "command": "pnpm --dir apps/web check",
+      "file": "apps/web/e2e/review-family.spec.ts",
+      "tests": 7,
       "status": "passed",
-      "details": "TypeScript plus 1591 static utilities; class collision check passed."
+      "scope": "Twelve size/stage presets; original-ID transfer; complete five-load 100-item care loop; 1000-item partial put-away; failed actions and retained return-path inputs; saved family review."
     },
     {
-      "command": "pnpm --dir apps/web test",
+      "file": "apps/web/e2e/review-snapshots.spec.ts",
+      "tests": 1,
       "status": "passed",
-      "files": 90,
-      "unitTests": 790,
-      "nodeScriptTests": 13
+      "scope": "Visible-only requests and navigation, Play and map-review save while all snapshot responses are blocked."
     },
     {
-      "command": "pnpm --dir apps/web test:review",
+      "file": "apps/web/e2e/review-annotations.spec.ts",
+      "tests": 6,
       "status": "passed",
-      "tests": 3,
-      "details": "Access, durable/idempotent feedback, capture failure, stale rendered receipts, restart, resolution evidence and inventory boundaries."
+      "scope": "Durable flow/app/path/region/live-control reviews and agent conversation receipts; harness dispatch is simulated."
     },
     {
-      "command": "WASHCLOSET_REVIEW_E2E=1 WASHCLOSET_E2E_BASE_URL=http://127.0.0.1:3010 pnpm --dir apps/web exec playwright test e2e/review-workspace.spec.ts --project isolated --workers 1 --retries 0",
-      "status": "passed",
-      "engine": "Chrome",
-      "tests": 12,
-      "retries": 0,
-      "durationSeconds": 24.5
+      "command": "pnpm --dir apps/web run test:review",
+      "tests": 20,
+      "status": "passed"
     },
     {
-      "command": "WASHCLOSET_REVIEW_E2E=1 WASHCLOSET_E2E_BROWSER=webkit WASHCLOSET_E2E_BASE_URL=http://127.0.0.1:3010 pnpm --dir apps/web exec playwright test e2e/review-workspace.spec.ts --project isolated --workers 1 --retries 0",
-      "status": "passed",
-      "engine": "WebKit",
-      "tests": 12,
-      "retries": 0,
-      "durationSeconds": 32.4
-    },
-    {
-      "command": "VITE_CONVEX_URL=http://127.0.0.1:1 VITE_CONVEX_SITE_URL=http://127.0.0.1:1 pnpm --dir apps/web build",
-      "status": "passed",
-      "details": "149 production files inspected; 115 JS files exclude the review store/access API markers. No review HTML entries shipped."
-    },
-    {
-      "command": "git diff --check",
+      "command": "pnpm --dir apps/web run check",
       "status": "passed"
     }
   ],
-  "behaviorScope": [
-    "Pack/towel real intake, Back retention, save acknowledgement, created batch record links and saved edits.",
-    "Basic appliance/product intake, saved tabs and editors; unknown capacity/directions retained.",
-    "Profile/water saved edits and reload persistence; nested tags cancel/discard/save.",
-    "Product Contents direct editor and durable save.",
-    "Single/parent/student, owner/member, save-error/offline/missing-care cases listed below.",
-    "Pointer element/region and keyboard feedback; failed send, retained note, frozen retry, screenshot/state, reload and agent-readable attachments.",
-    "Private filesystem/key routes, outside-repository files, original auth/research and RSC diagnostic routes are refused.",
-    "No requests to personal/source backend ports or placeholder port 1 during the household-isolation browser check."
-  ],
-  "conditions": [
-    {
-      "persona": "single",
-      "role": "owner",
-      "condition": "normal",
-      "theme": "light",
-      "textScale": 1,
-      "previewWidth": 393,
-      "scope": "34 task drawers and scoped flows"
-    },
-    {
-      "persona": "parent",
-      "role": "owner",
-      "condition": "save-error",
-      "theme": "light",
-      "textScale": 1,
-      "previewWidth": 393,
-      "scope": "Towel failure/retry and persona/restart boundary"
-    },
-    {
-      "persona": "single",
-      "role": "owner",
-      "condition": "normal",
-      "theme": "dark",
-      "textScale": 2,
-      "previewWidth": 320,
-      "scope": "Keyboard feedback, state capture and phone outer viewport 393x852"
-    },
-    {
-      "persona": "student",
-      "role": "member",
-      "condition": "missing-care",
-      "theme": "light",
-      "textScale": 1,
-      "previewWidth": 1024,
-      "scope": "Shared equipment, student profile, missing care and refused appliance write"
-    },
-    {
-      "persona": "single",
-      "role": "owner",
-      "condition": "offline",
-      "theme": "light",
-      "textScale": 1,
-      "previewWidth": 393,
-      "scope": "Pack failed save/draft retention/retry"
-    }
-  ],
-  "artifacts": [
-    {
-      "path": "docs/design/review-workspace/chrome/desktop.png",
-      "sha256": "8e5ec3663c639582b402f089f7c2f39aa2e9605fafaa68f1ffcaa05f24688562"
-    },
-    {
-      "path": "docs/design/review-workspace/chrome/phone-dark-enlarged.png",
-      "sha256": "36a1345a86f85ce30823e84643dd673d6cbca67cde1228e03a310d3e46782c90"
-    },
-    {
-      "path": "docs/design/review-workspace/webkit/desktop.png",
-      "sha256": "3736bfc1b67fcec1a1558f2eb055263c80799987f5b9463b83bc660d791f946b"
-    },
-    {
-      "path": "docs/design/review-workspace/webkit/phone-dark-enlarged.png",
-      "sha256": "49ccc00094a11a4250d022c1c7f2e9aab359a957f7bae252e44091f9ab6675f4"
-    }
-  ],
-  "isolation": {
-    "review": "127.0.0.1:3010",
-    "personal": {
-      "frontendPort": 3006,
-      "backendPorts": [
-        3220,
-        3221
-      ],
-      "backendPid": 8259
-    },
-    "source": {
-      "frontendPort": 3005,
-      "backendPorts": [
-        3258,
-        3259
-      ],
-      "backendPid": 64345
-    },
-    "backendChanges": false,
-    "canonicalWrites": false,
-    "dependencyChanges": false,
-    "publication": false
-  },
-  "review": {
-    "simplification": "Inline main-thread pass: reused fixtures/task sheets, centralized scenario defaults, removed redundant product-editor automation and simplified unsent-note persistence.",
-    "manualPass": "Access ordering, request/storage validation, failed saves, durable feedback and code scope inspected; corrected findings have regression coverage.",
-    "independent": "Code review: skipped (ce-code-review unavailable). Sequential-main-thread instruction prevents independent reviewer dispatch; no independent receipt claimed."
-  },
   "limits": [
-    "Scope is the first local delivery; 93 legacy entries remain visual/partial and 58 discovered surfaces lack named entries.",
-    "Only the listed combinations were exercised; no complete journey/preset matrix or exhaustive scenario audit.",
-    "Canonical review-shell reconciliation pending; existing generated design reference is source-stale. Native OpenDesign annotation retrieval unverified.",
-    "Native runners, canvas and simultaneous collaboration remain roadmap work.",
-    "Phone deployment, physical-device behavior and backend/planner authorization are unverified.",
-    "No photo upload, research, planning or garment care-action simulation; unsupported writes fail.",
-    "Screenshots reconstruct synthetic DOM in Chrome, even when the source preview is WebKit; operating-system/native screenshot parity is unverified.",
-    "Reload preview after source changes; restart server after check/configuration/canonical artifact changes.",
-    "The local changes are uncommitted and unpublished."
+    "Memory-only synthetic accounts and declared 20-item wash loads; no actual household, authorization, chemistry, wash planner or backend execution was exercised.",
+    "Whole multi-load execution checked at 100 items; 500-item transfer and 1000-item selection/partial put-away checked. All 12 size/stage presets render.",
+    "Family drying uses declared line-drying fixtures; tumble-dryer operation, hardware calibration, machine choices and reminders remain outside this adapter.",
+    "Review links restore starting presets, not a full replay of retained memory mutations.",
+    "Chromium checked; physical devices, other browsers and design-tool reconciliation were not checked."
   ]
 }

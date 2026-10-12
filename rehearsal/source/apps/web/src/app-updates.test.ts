@@ -3,7 +3,7 @@ import { updateReloadAllowed, watchAppUpdates } from './app-updates'
 
 const connection = { isWebSocketConnected: true, inflightMutations: 0 }
 const client = { connectionState: () => connection } as Parameters<typeof updateReloadAllowed>[0]
-let documentState: EventTarget & { visibilityState: string; querySelector: ReturnType<typeof vi.fn>; activeElement: { matches: ReturnType<typeof vi.fn> } }
+let documentState: EventTarget & { readyState: string; visibilityState: string; querySelector: ReturnType<typeof vi.fn>; activeElement: { matches: ReturnType<typeof vi.fn> } }
 let windowState: EventTarget & { location: { pathname: string; origin: string; reload: ReturnType<typeof vi.fn> }; localStorage: { getItem: ReturnType<typeof vi.fn> }; sessionStorage: { getItem: ReturnType<typeof vi.fn>; setItem: ReturnType<typeof vi.fn> }; setTimeout: typeof setTimeout; clearTimeout: typeof clearTimeout; setInterval: typeof setInterval; clearInterval: typeof clearInterval }
 let registration: EventTarget & { waiting: ServiceWorker | null; installing: ServiceWorker | null; active: ServiceWorker | null }
 let stop: (() => void) | undefined
@@ -12,7 +12,7 @@ const worker = (build: string, state: ServiceWorkerState = 'installed') => Objec
 beforeEach(() => {
   vi.useFakeTimers()
   Object.assign(connection, { isWebSocketConnected: true, inflightMutations: 0 })
-  documentState = Object.assign(new EventTarget(), { visibilityState: 'visible', querySelector: vi.fn(() => null), activeElement: { matches: vi.fn(() => false) } })
+  documentState = Object.assign(new EventTarget(), { readyState: 'complete', visibilityState: 'visible', querySelector: vi.fn(() => null), activeElement: { matches: vi.fn(() => false) } })
   windowState = Object.assign(new EventTarget(), { location: { pathname: '/closet', origin: 'https://test.local', reload: vi.fn() }, localStorage: { getItem: vi.fn(() => null) }, sessionStorage: { getItem: vi.fn<Storage['getItem']>(() => null), setItem: vi.fn() }, setTimeout, clearTimeout, setInterval, clearInterval })
   registration = Object.assign(new EventTarget(), { waiting: worker('new'), installing: null, active: worker('old', 'activated') })
   vi.stubGlobal('document', documentState)
@@ -21,6 +21,22 @@ beforeEach(() => {
   vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, json: async () => ({ build: 'new' }) })))
 })
 afterEach(() => { stop?.(); stop = undefined; vi.unstubAllGlobals(); vi.useRealTimers() })
+
+test('offline installation waits for initial assets and cancels on unmount', async () => {
+  documentState.readyState = 'interactive'
+  stop = watchAppUpdates('new', client, vi.fn())
+  windowState.dispatchEvent(new Event('focus'))
+  await vi.advanceTimersByTimeAsync(61_000)
+  expect(fetch).not.toHaveBeenCalled()
+  documentState.readyState = 'complete'
+  windowState.dispatchEvent(new Event('load'))
+  await vi.advanceTimersByTimeAsync(0)
+  expect(navigator.serviceWorker.register).toHaveBeenCalledOnce()
+  stop()
+  windowState.dispatchEvent(new Event('load'))
+  await vi.advanceTimersByTimeAsync(61_000)
+  expect(navigator.serviceWorker.register).toHaveBeenCalledOnce()
+})
 
 test('reload safety blocks tasks, editors, hidden/offline screens, queued writes and unacknowledged steps', () => {
   expect(updateReloadAllowed(client)).toBe(true)

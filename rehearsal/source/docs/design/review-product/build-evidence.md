@@ -1,5 +1,77 @@
 # Rehearsal build evidence
 
+## Canvas annotations and agent briefs — October 10
+
+The persistent canvas now targets the whole application, a flow, a screen, a
+normalized screen region/control, or a declared path. The shared journey graph
+supplies canvas and server identities; server validation rejects invented paths,
+wrong screen/flow pairs and invalid highlights. Path receipts preserve conditions
+and return paths. Existing scenario-only feedback and unsent drafts remain usable.
+
+The right pane freezes evidence before writing a note. Static reviews copy the
+already captured fixture PNG, including historical fixture hashes, and explicitly
+have no run inputs. Live reviews freeze values/scroll position and retain named
+control selectors from that revision. Map reviews freeze the visible canvas,
+omitting embedded live frames. Pointer drag and keyboard region coordinates are
+available. Arrow hit areas stay usable at different zoom levels; Enter/Space and
+the pane's path list provide keyboard alternatives. Selection/navigation retain
+the frozen draft. Deep links focus the saved flow/path rather than its surrogate
+scenario. The screenshot renderer now uses an authenticated local document origin
+so Strict cookies can load frozen canvas thumbnails; scripts and external resources
+remain blocked.
+
+Saved notes expose copy/download agent briefs and the JSON API. Briefs include
+target, request, screenshot, inputs, source/design receipts, current-source warnings,
+component/check bindings and checkout ownership. Binding context is labeled as
+`serverRevision`, distinct from the rendered capture's `revision`. Resolving still
+requires nonempty evidence. No agent is dispatched automatically.
+
+Verification: 12 focused Node checks, 10 focused Vitest checks, four real Chrome
+annotation workflows, type checking and both style checks pass. The browser cases
+cover app/flow save and agent export, branch keyboard and actual pointer selection,
+condition-preserving deep links, static region mouse drag and keyboard coordinates,
+and live control/input capture retained across navigation and reload. Tests use
+`REHEARSAL_DATA_DIR=/tmp/rehearsal-annotation-qa-20261010` on port 3144, preserving
+the user's normal store. Frozen live and branch PNGs were visually inspected;
+the latter retains authenticated thumbnails and selection highlighting.
+
+Port 3010 was restarted with the feature and the saved read-only `f7ce` connection.
+This pass does not attest every app snapshot or journey, physical-device input,
+simultaneous collaboration, fresh canonical Open Design/Claude Design reconciliation,
+automatic agent dispatch, a new ZIP, or changes to Laundry App/backend state.
+
+## Linked Laundry App source — October 10
+
+Rehearsal remains in `f0d3` and reads Laundry App from `f7ce`, including uncommitted
+files. The local setting is ignored `.review-data/application.json`; the API index
+identifies both roots and the application HEAD. Source and fixture digests cover
+the connected application, public assets and local preview adapter. Application
+files are read-only; synthetic writes and coverage expectations remain local.
+
+Vite resolves application presenters/styles/planner/Convex source in `f7ce`,
+deduplicates shared runtime contexts, watches linked files and invalidates compiled
+modules for new frames. Existing runs retain their rendered revision. A bounded
+in-memory overlay supplies missing intake review hooks and fixture exports without
+overwriting new product code. Incompatible anchors fail visibly instead of silently
+falling back. The app-owning chat received the optional contract; native adoption
+is pending its completed handoff.
+
+Verification: 11 focused Node checks pass. The new disposable-checkout integration
+case changes a linked source file, confirms inventory and fixture hashes change
+without restarting, verifies newly requested modules contain that edit, and rejects
+outside/private filesystem requests. Nine Chrome cases pass against actual `f7ce`
+presenters: six guarded destination/return cases, two linked towel cases covering
+retained inputs, candidate heading/action, both ownership branches and directly
+addressed bleach, and a source-change-during-capture retry that preserves the open
+draft. Local type and style checks pass. The user preview on port 3010 was restarted
+with this saved connection; a source edit in the app-owning chat also invalidated
+an in-progress capture in the real linked server, correctly returning 409.
+
+This is source integration with synthetic state, not a connection to the app's
+running Convex deployment. Complete app journeys, production/backend behavior and
+native/device acceptance are not claimed. Newly discovered routes still need explicit
+synthetic fixtures. Old ZIPs and validation receipts predate this source connection.
+
 Local, uncommitted delivery in `/Users/taymoor/.codex/worktrees/f0d3/laundry-app`.
 The isolated review server runs at `http://127.0.0.1:3010/review`; all application
 providers are synthetic. Existing owner application/backend runtimes were not changed.
@@ -368,3 +440,140 @@ proof, portable payload integrity and historical design evidence are separate;
 private keys, saved review records, environment files and dependencies are not
 transfer assets. No additional product feature or shared design edit is part of
 this packaging pass.
+
+## Five route destinations mapped — October 10
+
+The five previously unmapped destinations now reuse Laundry's actual presenters:
+
+| Destination | Entry condition | Return |
+| --- | --- | --- |
+| Add clothes chooser | Home's first-use Add action | Cancel restores Home; direct Closet entry falls back to Closet |
+| Running wash from Closet | Selected garment has `inLoad=<sessionId>` | Restore the exact Closet item through `itemReturnTo` |
+| Laundry item drawer | Select the garment's dirty-piece count | Close/Done restores the originating Closet item |
+| Washed pieces in Drying | `queueReady`, online, writable, not pending, successful transfer | Back opens Laundry with queued pieces; failure retains the washed screen |
+| Garment care History | Select a piece on the completed-load summary | Restore the completed wash including its Me/Closet origin |
+
+Seven curated scenarios add these destinations and two necessary origins: a
+garment in a running load and a washer-finished transfer-ready session. There
+are 180 registered scenarios (41 working, 139 legacy partial specimens), 183 map
+nodes and 26 source bindings with mapped destinations. Alternate states sit below
+their main screen in separate branch lanes, with conditional entry and return
+arrows. Inspect retains symbolic parameters, preconditions, return context and
+source anchors. Missing/stale bindings still do not become inferred edges.
+
+`route-preview.tsx` supplies a bounded memory router and synthetic query/mutation
+adapter. It reuses the actual Add, Closet, Garment, Session, Laundry and Drying
+components. Home, Closet record and completed-wash fixtures now provide the
+tested origin navigation too. Local washer-finish and queue-transfer effects
+match the production return shapes, retain piece identity, and enforce transfer
+guards and failure/retry. Other writes remain refused; no household request is
+sent. Hamper quantities survive local navigation. Care History opens on History,
+with a seeded recorded wash/dry entry and the exact origin retained on close.
+
+Types/styles, eight routing/map tests, nine server/inventory/coverage checks and
+six isolated Chromium route cases pass. The browser cases cover all five entries
+and returns, retained hamper quantities, absence of the running-wash action for
+an item outside a load, successful transfer and Laundry return, offline/read-only
+refusal, failed transfer staying put, retry, and completed-wash/Me restoration.
+The new hamper and drying captures were visually inspected. The server refuses
+to attest a snapshot of a renderer error or a source revision that changed while
+its capture was queued.
+
+The preview on port 3010 has been restarted with these bindings. The v4 ZIP
+remains the prior immutable snapshot and predates this implementation. Application
+presenters, canonical design files and real backend state were not changed by
+this pass. Cross-route canvas trace recording, durable cross-route sessions,
+full application writes, fresh Claude/local design review, cold installation and
+native/device acceptance are not attested. Source-declared arrows and browser
+execution evidence remain separate.
+
+The final fixture revision is
+`f667d978b02feb996dfc2009fbb24518f39267e8a763844d58897c35b1912d02`.
+All 183 fresh thumbnails were captured on port 3010 with zero errors, then copied
+to disposable QA only after matching its fixture hash. Four canvas Chromium
+cases also pass: retained towel draft/proposal/review state, separate branch
+geometry, mapped History inspection, and all-screen count/persistence/narrow
+panning. Synthetic screenshots and the credential-free binding/snapshot receipts
+are under the session's `rehearsal-route-destinations-2026-10-10` artifact folder.
+
+## Keyless local entry — October 10
+
+Opening any review entry now starts or renews the local HttpOnly, SameSite=Strict
+session automatically. The key prompt, key creation and login endpoint are removed;
+API clients bootstrap through `/review` and retain its cookie. Loopback host checks,
+same-origin browser write checks, API session checks and file boundaries remain.
+Saved records are preserved. Port 3010 was restarted with this behavior.
+
+Three server checks pass, including no generated key, session renewal after
+restart, refused foreign hosts/origins and retained feedback. A fresh Chromium
+context opened the real canvas and retrieved its 180-scenario index without a
+login call; a second fresh context opened garment History directly. No browser
+errors occurred. Remote access and shared deployment were not enabled or tested.
+
+## Saved-review agent conversation — October 11
+
+The saved-review pane now offers an explicit destination picker and Send saved
+review. Server-owned destination bindings include provider, host, cwd and session
+ID. A durable request identity is retained before connecting to the harness;
+uncertain receipts block resending. The frozen PNG and the same brief used for
+copy/download are attached to the provider protocol. Final agent messages return
+beside the review, and follow-ups remain bound to its original session. Agent
+completion does not resolve a review.
+
+The adapters use Codex's shared app-server proxy and Claude Code's headless
+idle-session resume. Configured SSH hosts use the same protocols; no hosted
+transport, credentials in the browser or permission bypass was added. MCP is
+optional future scope for structured, review-bound evidence/proposal tools.
+
+Final checks: 19 focused Node/API checks, six Chromium annotation/conversation
+workflows, TypeScript, style checks and diff whitespace checks pass. Harnesses
+are simulated in those tests; actual review capture/storage is exercised. The
+conversation checks cover returned replies, same-session follow-ups and reload,
+plus lost HTTP acknowledgement without duplicate work. Existing map/branch,
+static-region and live-input annotation workflows still pass.
+
+Port 3010 serves this implementation with f7ce linked read-only. No real agent
+turn, SSH delivery, destination registration, MCP installation, automatic
+resolution or design-package reconciliation is claimed. The default managed
+Codex control socket is absent on this host. Setup instructions, version evidence
+and the live-session limits are in [the agent bridge contract](agent-bridge.md).
+
+## Visible snapshots and connected family care loop — October 11
+
+The canvas now publishes inventory immediately. It requests snapshots only for
+screens intersecting the canvas viewport plus an 80px margin, after initial focus.
+Leaving the viewport cancels unfinished requests; the server skips queued work
+with no remaining consumer and preserves shared visible consumers. One background
+fetch leaves HTTP connections free for Play, navigation and review requests.
+Loaded pictures remain cached when returning. Map captures embed the images
+already rendered at their displayed size and preserve pending placeholders, so
+saving a map review does not wait for unprepared screens. Explicit bulk export
+capture remains available but is not used by canvas navigation.
+
+Family planning, washing, drying and put-away now use one retained memory run with
+the same five wearers and original textile IDs. Every declared 20-item load can
+finish in the real SessionView and transfer only its own items into DryingView.
+The queue retains other loads, partial dryness, selected put-away quantities and
+unsaved check inputs across return paths. Put-away marks the original inventory
+clean and retains its wash count. Failed and unsupported writes retain state.
+The registry declares entry, transfer, completion and return conditions; the
+family coverage target has no missing checkpoint edges. Scoped execution evidence
+clears the missing-runtime warning without claiming full product acceptance.
+
+Fourteen Chromium checks pass: seven family, six annotation/conversation and one
+lazy-snapshot workflow. The snapshot test holds image responses while navigating,
+playing and saving an application-map review. Twenty Node/API checks, TypeScript,
+style checks and tracked diff whitespace checks pass. After the linked app owner
+advanced its source, all seven family checks passed again. A real on-demand family
+PNG returns 200 at 393×852. Port 3010 is restarted, keyless, using f0d3 for Rehearsal
+and f7ce read-only for Laundry App; the current index has 196 scenarios.
+
+[The current validation receipt](../review-validation.json) records only scoped
+family behavior, preserving the [older receipt](evidence/review-validation-2026-10-10.json).
+Full multi-load execution was checked at 100 items; 500-item transfer and
+1000-item selection/partial put-away were checked, with all twelve size/stage
+presets rendered. These are declared wash fixtures and memory-only air-drying
+operations. Backend accounts, wash-plan generation, chemistry, machine operation,
+reminders, physical devices, other browsers and design reconciliation were not
+checked here. Reproduction links restore starting presets rather than replaying
+all memory mutations. The app owner's connected backend results remain separate.

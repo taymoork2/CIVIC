@@ -53,7 +53,7 @@ const sharedMachines = [
   ...['4', '2', '7'].map((number) => machine(`dryer-${number}`, `Dryer ${number}`, { applianceType: 'tumble_dryer', highEfficiency: null, location: 'shared', pricePerStart: 1.5, heatSettings: [{ heat: 'low', label: 'Low' }] })),
 ]
 
-type Load = { readonly key: string; readonly textiles: readonly string[]; readonly wash: number | null; readonly dry: number | null }
+type Load = { readonly key: string; readonly textiles: readonly string[]; readonly ids?: readonly string[]; readonly wash: number | null; readonly dry: number | null }
 // Wash and dryer minutes as the washer and dryer recorded them; a null dryer hangs to dry.
 const whites: Load = { key: 'whites', textiles: ['tee'], wash: 45, dry: 65 }
 const darks: Load = { key: 'darks', textiles: ['towel', 'jeans'], wash: 55, dry: 80 }
@@ -64,7 +64,7 @@ const planId = 'preview-day-plan'
 
 function dayPlan(loads: readonly Load[], sessions: Readonly<Record<string, string>> = {}, timed = true): DayPlan {
   return { planId, loads: loads.map((load) => {
-    const ids = idsFor(...load.textiles)
+    const ids = load.ids ?? idsFor(...load.textiles)
     return { loadId: loadId(load), sessionId: sessions[load.key] ?? null, startable: true, textileIds: ids, washMinutes: timed ? load.wash : null, washLearned: null,
       dryer: load.dry === null ? null : { minutes: timed ? load.dry : null, tumbleCount: ids.length, fit: 'fits' }, blockers: [] }
   }) }
@@ -73,9 +73,9 @@ function dayPlan(loads: readonly Load[], sessions: Readonly<Record<string, strin
 /** The stored plan `plans.get` returns, as far as the day plan reads it: the planner's loads and why the lights were kept apart. */
 function storedPlan(loads: readonly Load[]) {
   return {
-    planId, textileIds: loads.flatMap((load) => idsFor(...load.textiles)), pass: { mode: 'normal', loadPins: [], dismissedQuestions: [], excludedSupplyIds: [] },
+    planId, textileIds: loads.flatMap((load) => load.ids ?? idsFor(...load.textiles)), pass: { mode: 'normal', loadPins: [], dismissedQuestions: [], excludedSupplyIds: [] },
     result: {
-      loads: loads.map((load) => ({ id: loadId(load), textileIds: idsFor(...load.textiles), machineId: 'preview-home-washer', cycle: 'normal', temperatureC: 30,
+      loads: loads.map((load) => ({ id: loadId(load), textileIds: load.ids ?? idsFor(...load.textiles), machineId: 'preview-home-washer', cycle: 'normal', temperatureC: 30,
         bulkUnits: load === darks ? 8 : 2, capacityUnits: 12,
         drying: load.dry === null ? null : { dryerId: 'preview-home-dryer', heatLabel: 'Low', bulkUnits: load === darks ? 8 : 2, capacityUnits: 12 } })),
       // Kept apart only for heavy and light pieces: a preference, so "could go together" may offer it.
@@ -92,16 +92,19 @@ const session = (key: string, facts: Partial<DaySession>): DaySession => ({
 const homeQueue = { pieces: [], runs: [], homeDryerId: 'preview-home-dryer', homeDryerSessionId: null, dryers: [{ machineId: 'preview-home-dryer', name: 'Dryer' }] }
 const sharedQueue = { pieces: [], runs: [], homeDryerId: null, homeDryerSessionId: null, dryers: [] }
 
-export const laundryDayScreens = ['next-joined', 'next-held', 'times', 'day-plan', 'day-home-until', 'day-spread', 'day-strip', 'day-strip-open', 'day-hang-now', 'shared-ask', 'shared-answered', 'early-check', 'early-check-due'] as const
+export const laundryDayScreens = ['next-joined', 'next-held', 'times', 'day-plan', 'day-scale', 'day-home-until', 'day-spread', 'day-strip', 'day-strip-open', 'day-hang-now', 'shared-ask', 'shared-answered', 'early-check', 'early-check-due'] as const
 export type LaundryDayPreviewState = (typeof laundryDayScreens)[number]
 
-type Sample = { plan: DayPlan; loads: readonly Load[]; sessions: DaySession[]; place: 'home' | 'shared'; several?: boolean; steps?: readonly PreviewStep[]; seeds?: readonly PhoneSeed[]; checks?: readonly EarlyCheck[] }
+type Sample = { plan: DayPlan; loads: readonly Load[]; sessions: DaySession[]; place: 'home' | 'shared'; pieces?: Textile[]; several?: boolean; steps?: readonly PreviewStep[]; seeds?: readonly PhoneSeed[]; checks?: readonly EarlyCheck[] }
 
 /** "All today" picked this morning, as the day plan saves it on the phone (`DayPick`). */
 const dayPick = (patch: object): PhoneSeed => ({ key: 'washcloset:private:day-pick', event: 'washcloset:day-pick',
   value: { planId, mode: 'all', day: startOfDay(now), end: null, until: '21:00', rest: 0, perDay: 2, rolled: [], hang: [], hangNow: [], ...patch } })
 const all = [whites, darks, lights, brights]
 const sharedLoads: Load[] = [whites, darks, { ...lights, dry: null }]
+// Twenty pieces per load is declared visual fixture data, not a capacity or care decision.
+const scalePieces = Array.from({ length: 1000 }, (_, i): Textile => ({ ...textiles({}, false)[0]!, textileId: `preview-day-piece-${i}` as Id<'textiles'>, name: `Family piece ${String(i).padStart(4, '0')}`, flag: null }))
+const scaleLoads: Load[] = Array.from({ length: 50 }, (_, i) => ({ key: `family-${i}`, textiles: [], ids: scalePieces.slice(i * 20, (i + 1) * 20).map(piece => piece.textileId), wash: null, dry: null }))
 
 const samples: Record<LaundryDayPreviewState, Sample> = {
   // The whites' wash is done and the home dryer is free: move them, and the next wash joins this trip.
@@ -113,6 +116,7 @@ const samples: Record<LaundryDayPreviewState, Sample> = {
   // No minutes recorded for any machine: nothing is asked or guessed, and no clock until they are known.
   times: { plan: dayPlan(all, {}, false), loads: all, place: 'home', sessions: [] },
   'day-plan': { plan: dayPlan(all), loads: all, place: 'home', sessions: [] },
+  'day-scale': { plan: dayPlan(scaleLoads, {}, false), loads: scaleLoads, pieces: scalePieces, place: 'home', sessions: [] },
   'day-home-until': { plan: dayPlan(all), loads: all, place: 'home', sessions: [], steps: [{ tap: 'All today' }] },
   'day-spread': { plan: dayPlan(all), loads: all, place: 'home', sessions: [], several: true, steps: [{ tap: 'Spread out' }] },
   'day-strip': { plan: dayPlan(all), loads: all, place: 'home', sessions: [], seeds: [dayPick({})] },
@@ -130,7 +134,7 @@ const samples: Record<LaundryDayPreviewState, Sample> = {
 export function laundryDayHub(variant: LaundryDayPreviewState): { state: HubState; inventory: Inventory } {
   const sample = samples[variant]
   const inLoad = Object.fromEntries(sample.sessions.flatMap((entry) => groups.filter((group) => entry.textileIds?.includes(`preview-${group.key}-0`)).map((group) => [group.key, entry.sessionId])))
-  const pieces = textiles(inLoad, sample.several === true)
+  const pieces = sample.pieces ?? textiles(inLoad, sample.several === true)
   const inventory: Inventory = { planning: {}, machines: sample.place === 'home' ? homeMachines : sharedMachines, supplies: [], textiles: pieces, wearers: sample.several === true ? wearers : wearers.slice(0, 1) }
   const waiting = pieces.filter((piece) => piece.inLoad === null)
   const state = hubState({

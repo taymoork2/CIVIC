@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "id": "notebook-demo",
+  "name": "Notebook",
+  "adapter": { "kind": "module", "entry": "src/rehearsal.js" },
+  "sources": ["src"],
+  "scenarios": "rehearsal.scenarios.json",
+  "coverage": "rehearsal.coverage.json",
+  "personas": [
+    { "id": "writer", "label": "Writer", "seed": { "title": "First note" } },
+    { "id": "editor", "label": "Editor", "seed": { "title": "Review draft" } }
+  ],
+  "roles": [{ "id": "author", "label": "Author" }, { "id": "guest", "label": "Guest" }],
+  "conditions": [{ "id": "normal", "label": "Normal" }, { "id": "save-error", "label": "Save unavailable" }],
+  "navigation": ["Main"]
+}

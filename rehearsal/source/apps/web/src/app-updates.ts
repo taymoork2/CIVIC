@@ -44,7 +44,8 @@ export function watchAppUpdates(build: string, client: Pick<ConvexReactClient, '
     reloadIfSafe()
   }
   const check = async () => {
-    if (stopped || checking || document.visibilityState !== 'visible' || !navigator.onLine) return
+    // Offline installation downloads every route; let this page finish first.
+    if (stopped || checking || document.readyState !== 'complete' || document.visibilityState !== 'visible' || !navigator.onLine) return
     checking = true
     lastCheck = Date.now()
     request = new AbortController()
@@ -88,6 +89,7 @@ export function watchAppUpdates(build: string, client: Pick<ConvexReactClient, '
   window.addEventListener('pageshow', resume)
   window.addEventListener('focus', resume)
   window.addEventListener('online', resume)
+  window.addEventListener('load', resume)
   const timer = window.setInterval(() => {
     if (Date.now() - lastCheck >= 60_000) void check()
     reloadIfSafe()
@@ -98,7 +100,7 @@ export function watchAppUpdates(build: string, client: Pick<ConvexReactClient, '
     request?.abort()
     window.clearInterval(timer)
     document.removeEventListener('visibilitychange', resume)
-    for (const event of ['pageshow', 'focus', 'online']) window.removeEventListener(event, resume)
+    for (const event of ['pageshow', 'focus', 'online', 'load']) window.removeEventListener(event, resume)
     cleanups.forEach((cleanup) => cleanup())
   }
 }

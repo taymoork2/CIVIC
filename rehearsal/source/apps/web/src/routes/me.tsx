@@ -1,21 +1,21 @@
-import { createFileRoute, useNavigate, useRouter } from '@tanstack/react-router'
+import { createFileRoute, Link, useNavigate, useRouter } from '@tanstack/react-router'
 import { cn } from '@/lib/utils'
-import { useQuery } from 'convex/react'
+import { usePaginatedQuery, useQuery } from 'convex/react'
 import type { FunctionReturnType } from 'convex/server'
 import { useEffect, useRef, useState } from 'react'
 
 import { RequireHousehold, type CurrentHousehold } from '@/account/account'
-import { pageTitleClassName } from '@/account/account-page'
 import { keepPageFocusVisible } from '@/kit/app-shell'
 import { api } from '../api'
 import { authClient } from '../auth-client'
 import { meText } from '../copy-me'
 import { RecordList, RecordRow } from '@/kit/record-row'
 import { RouteError } from '@/kit/route-error'
-import { useNow } from '@/laundry/session-view'
+import { useNow } from '@/kit/use-now'
 import { Loading } from '@/kit/ui'
-import { useHouseholdData } from '@/household/household-data'
 import { DesignIcon } from '@/kit/design-icons'
+import { CareHero } from '@/products/product-ui'
+import { Button, buttonVariants } from '@/components/ui/button'
 
 export const Route = createFileRoute('/me')({
   errorComponent: RouteError,
@@ -41,14 +41,12 @@ const mePageClassName = cn(
 
 function MePage({ household }: { household: CurrentHousehold }) {
   const householdId = household.householdId
-  const shared = useHouseholdData(householdId)
   const now = useNow(60_000)
   const navigate = useNavigate()
   const router = useRouter()
   const { data: session } = authClient.useSession()
   const members = useQuery(api.households.members, { householdId })
-  const sessions = useQuery(api.execution.householdSessions, { householdId }) ?? shared?.sessions
-  const costs = useQuery(api.costs.entries, { householdId })
+  const { results: sessions, status, loadMore } = usePaginatedQuery(api.execution.completedHistory, { householdId }, { initialNumItems: 5 })
   const role = members?.find((member) => member.isYou)?.role ?? null
   return (
     <Profile
@@ -56,8 +54,11 @@ function MePage({ household }: { household: CurrentHousehold }) {
       email={session?.user.email ?? null}
       householdName={household.name}
       role={role}
-      loading={sessions === undefined}
-      history={completedHistory(sessions ?? [], now, costs)}
+      loading={status === 'LoadingFirstPage'}
+      history={completedHistory(sessions, now, sessions.map(row => ({ id: `wash:${row.sessionId}`, price: row.washPrice })))}
+      canLoadMore={status === 'CanLoadMore'}
+      loadingMore={status === 'LoadingMore'}
+      onLoadMore={() => loadMore(20)}
       onAccount={() => void navigate({ to: '/account' })}
       onSettings={() => void navigate({ to: '/settings' })}
       onOpenWash={(sessionId) => void navigate({ to: '/session/$sessionId', params: { sessionId }, search: { from: 'me' }, state: { itemReturnTo: router.state.location.href } })}
@@ -79,52 +80,54 @@ const recentWashes = 5
 
 /**
  * Completed loads show their recorded washer price directly in each history row.
- * Show the five latest loads, with the rest one tap away.
+ * Show five latest loads, then request older history in bounded pages.
  */
-export function Profile({ name, email, householdName, role, history = [], loading = false, onAccount, onSettings, onOpenWash }: {
+export function Profile({ name, email, householdName, role, history = [], loading = false, canLoadMore = false, loadingMore = false, onLoadMore, onAccount, onSettings, onOpenWash }: {
   name: string | null
   email: string | null
   householdName: string
   role: CurrentHousehold['role'] | null
   history?: readonly CareHistoryRow[]
   loading?: boolean
+  canLoadMore?: boolean
+  loadingMore?: boolean
+  onLoadMore?: () => void
   onAccount: () => void
   onSettings: () => void
   onOpenWash?: (sessionId: CareHistoryRow['sessionId']) => void
 }) {
-  const [showAll, setShowAll] = useState(false)
+  const [limit, setLimit] = useState(recentWashes)
   const pageRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     // Adding rows moves the focused disclosure toward the fixed navigation. Keep
     // that same control in view, without moving focus or animating keyboard use.
     keepPageFocusVisible(pageRef.current)
-  }, [showAll])
-  const shown = showAll ? history : history.slice(0, recentWashes)
+  }, [limit, history.length])
+  const shown = history.slice(0, limit)
   return (
     <div ref={pageRef} className={mePageClassName}>
-      <h1 className={pageTitleClassName}>{meText.title}</h1>
-      <RecordList>
-        <RecordRow media={<DesignIcon name="me" strokeWidth={1.6} />} title={name ?? meText.title} fact={email ?? householdName} mark={role === null ? undefined : { tone: 'done', text: meText.roles[role] }} />
-      </RecordList>
-      {loading ? <Loading what={meText.loadingHistory} /> : <RecordList heading={meText.washes}>
-        {history.length === 0
-          ? <RecordRow media={<DesignIcon name="laundry" strokeWidth={1.6} />} title={meText.noWashes} />
-          : shown.map((row) => <RecordRow
+      <CareHero variant="feature" title={meText.title} art={<img src={history.length === 0 ? '/welcome-household.webp' : '/design/care-complete.webp'} alt="" width={960} height={640} className="block h-auto w-full object-contain" />}
+        detail={<><p className="m-0 text-[length:var(--step-2)] font-semibold text-ink">{name ?? householdName}</p><p className="m-0">{householdName}{role === null ? '' : ` · ${meText.roles[role]}`}</p>{!loading && history.length === 0 ? <p className="m-0">Completed care appears here, with the items and settings you used.</p> : null}</>}
+        action={loading ? undefined : history.length === 0 ? <Link to="/laundry" className={buttonVariants({ variant: 'outline' })}>Go to Laundry</Link> : onOpenWash === undefined ? undefined : <Button type="button" variant="outline" onClick={() => onOpenWash(history[0]!.sessionId)}>Review latest load</Button>} />
+      {loading ? <Loading what={meText.loadingHistory} /> : history.length === 0
+        ? <p className="m-0 text-ink-2">{meText.noWashes}</p>
+        : <RecordList heading={meText.washes}>
+        {shown.map((row) => <RecordRow
             key={row.sessionId}
             media={<DesignIcon name="laundry" strokeWidth={1.6} />}
             title={row.title}
             fact={<>{meText.pieces(row.textileCount)} · <time dateTime={new Date(row.completedAt).toISOString()}>{new Date(row.completedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</time>{row.washPrice === undefined ? null : <> · {row.washPrice === null ? meText.washPriceUnknown : meText.washPrice(new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD' }).format(row.washPrice))}</>}</>}
             onOpen={onOpenWash === undefined ? undefined : () => onOpenWash(row.sessionId)}
           />)}
-        {history.length <= recentWashes ? null : <RecordRow
+        {history.length <= limit && !canLoadMore && !loadingMore ? null : <RecordRow
           media={<DesignIcon name="clock" strokeWidth={1.6} />}
-          title={showAll ? meText.showFewerWashes : meText.showAllWashes(history.length)}
-          expanded={showAll}
-          onOpen={() => setShowAll(!showAll)}
+          title={loadingMore ? 'Loading older loads…' : 'Older loads'}
+          disabled={loadingMore}
+          onOpen={() => { if (history.length <= limit) onLoadMore?.(); setLimit(limit + 20) }}
         />}
       </RecordList>}
       <RecordList>
-        <RecordRow media={<DesignIcon name="me" strokeWidth={1.6} />} title={meText.account} fact={meText.accountHint} onOpen={onAccount} />
+        <RecordRow media={<DesignIcon name="me" strokeWidth={1.6} />} title={meText.account} fact={email ?? meText.accountHint} onOpen={onAccount} />
         <RecordRow media={<DesignIcon name="gear" strokeWidth={1.6} />} title={meText.settings} fact={meText.settingsHint} onOpen={onSettings} />
       </RecordList>
     </div>

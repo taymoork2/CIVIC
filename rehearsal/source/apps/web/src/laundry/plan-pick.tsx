@@ -108,13 +108,13 @@ export function TodayCard({ pace, headline, done, timeline, upNext }: { pace?: R
           <h2 className={headingClassName}>{headline}</h2>
           {done == null ? null : <p className="m-0 text-[length:var(--step-0)] text-ink-2">{done}</p>}
         </div>
-        {timeline.length === 0 ? null : (
+        {timeline.length === 0 || timeline.length > 5 ? null : (
           <div className="grid gap-1.5">
             <div className="flex h-2.5 gap-1" aria-hidden="true">
               {timeline.map((item) => <span key={item.key} style={{ flex: `${item.weight} 1 0` }} className={cn('min-w-0 rounded-full', item.next ? 'bg-[var(--sig)]' : 'bg-accent')} />)}
             </div>
             <ol aria-label={dayPlanText.timeline} className="m-0 flex list-none gap-1 p-0 text-[length:var(--step--1)] text-ink-2">
-              {timeline.map((item) => <li key={item.key} style={{ flex: `${item.weight} 1 0` }} className={cn('grid min-w-0 leading-tight', item.next && 'font-semibold text-[var(--sig-ink)]')}><span className="truncate">{item.name}</span>{item.when === null ? null : <span className="truncate text-[length:0.75rem]">{item.when}</span>}</li>)}
+              {timeline.map((item) => <li key={item.key} style={{ flex: `${item.weight} 1 0` }} className={cn('grid min-w-0 leading-tight', item.next && 'font-semibold text-link')}><span className="truncate">{item.name}</span>{item.when === null ? null : <span className="truncate text-[length:0.75rem]">{item.when}</span>}</li>)}
             </ol>
           </div>
         )}
@@ -147,7 +147,7 @@ function RowBody({ row, chevron = false }: { row: RowView; chevron?: boolean }) 
       <span className="text-[length:1.0625rem] font-semibold [overflow-wrap:anywhere]">{row.title}</span>
       {row.fact === undefined ? null : <span className="text-[length:var(--step--1)] text-ink-2">{row.fact}</span>}
     </span>
-    {row.status === undefined ? null : <span className={cn('flex-none text-[length:var(--step--1)] font-semibold', row.accent ? 'rounded-full bg-accent px-2.5 py-1 text-[var(--sig-ink)]' : 'text-ink-2')}>{row.status}</span>}
+    {row.status === undefined ? null : <span className={cn('flex-none text-[length:var(--step--1)] font-semibold', row.accent ? 'rounded-full bg-accent px-2.5 py-1 text-accent-foreground' : 'text-ink-2')}>{row.status}</span>}
     {chevron ? <DesignIcon name="chevronRight" size="1em" strokeWidth={2.2} className="size-[18px] flex-none text-ink-2" aria-hidden="true"  /> : null}
   </>
 }
@@ -155,6 +155,7 @@ function RowBody({ row, chevron = false }: { row: RowView; chevron?: boolean }) 
 /** Today's loads, one list: a cluster of icons, the name, short facts and a status or time on the right. */
 function LoadList({ rows, options }: { rows: readonly RowView[]; options: readonly { readonly key: string; readonly label: string; readonly disabled?: boolean; readonly onClick: () => void }[] }) {
   const [open, setOpen] = useState(false)
+  const [limit, setLimit] = useState(5)
   return (
     <section aria-label={dayPlanText.loadsHeading} className="grid min-w-0 gap-2.5">
       <div className="flex items-center justify-between px-1">
@@ -169,7 +170,7 @@ function LoadList({ rows, options }: { rows: readonly RowView[]; options: readon
         )}
       </div>
       <ul role="list" className={cn(surfaceClassName, 'm-0 list-none overflow-hidden p-0')}>
-        {rows.map((row) => (
+        {rows.slice(0, limit).map((row) => (
           <li key={row.key} className="[&+&]:[border-block-start:1px_solid_var(--line)]">
             {row.onOpen === undefined
               ? <div className={rowClassName}><RowBody row={row} /></div>
@@ -177,6 +178,7 @@ function LoadList({ rows, options }: { rows: readonly RowView[]; options: readon
           </li>
         ))}
       </ul>
+      {rows.length <= limit ? null : <Button type="button" variant="outline" onClick={() => setLimit(current => current + 5)}>Show next {Math.min(5, rows.length - limit)} loads · {Math.min(limit, rows.length)} of {rows.length} shown</Button>}
     </section>
   )
 }
@@ -233,8 +235,8 @@ export function DayPlan(props: DayProps) {
   const next = nextOf(props.state)
   const loads = next?.loads ?? []
   const picked = next !== null && pick !== null && pick.planId === next.planId && pick.day === startOfDay(props.now) ? pick : null
-  // The pick is offered for 3 or more loads, before any has started (design 6).
-  const offer = picked === null && props.state.kind === 'pass' && next !== null && loads.length >= 3 && loads.length === next.count
+  // Any unstarted day can be planned, including the first single load.
+  const offer = picked === null && props.state.kind === 'pass' && next !== null && loads.length > 0 && loads.length === next.count
   const body = { ...props, next, loads, pick: picked, offer }
   // Only a plan that says which garment each load holds has times, settings and held pieces to read.
   return next !== null && loads.length > 0 ? <DayPlanLive {...body} next={next} /> : <DayBody {...body} queue={undefined} saved={null} />
@@ -272,7 +274,7 @@ function DayBody({ householdId, state, inventory, now, pending, run, onReplan, o
   const name = (load: PlannedLoad) => loadNamed.get(load.loadId) ?? ''
   const { home } = day
   const settled = pick ?? noPick
-  const limitText = pick !== null ? pick.until ?? defaultHomeUntil : lastUntil !== null && lastUntil.day === startOfDay(now) ? lastUntil.until : defaultHomeUntil
+  const limitText = pick !== null ? pick.until ?? inventory.planning.day?.finishBy ?? defaultHomeUntil : lastUntil !== null && lastUntil.day === startOfDay(now) ? lastUntil.until : inventory.planning.day?.finishBy ?? defaultHomeUntil
   const limitAt = todayAt(limitText, now)
   // After a pick the rest of the day is worked out again on every render from what the washer and dryer are
   // doing now, so a late first wash or an extended dryer moves the end and rolls what no longer fits before
@@ -398,7 +400,7 @@ function PaceControl({ householdId, next, loads, plan, inventory, byId, name, no
   limitAt: number | null
 }) {
   const [open, setOpen] = useState(false)
-  const [mode, setMode] = useState<DayPick['mode']>('all')
+  const [mode, setMode] = useState<DayPick['mode']>(inventory.planning.day?.pace ?? 'all')
   const [apart, setApart] = useState(false)
   const lastUntil = untilStore.useValue()
   const [until, setUntil] = useState<string | null>(null)
@@ -411,7 +413,7 @@ function PaceControl({ householdId, next, loads, plan, inventory, byId, name, no
   const timed = day.home && fitDay(fit, now, Infinity, day.rack, day.options).timed
   const names = (ids: readonly string[]) => listWords(ids.flatMap((id) => { const load = loads.find((entry) => entry.loadId === id); return load === undefined ? [] : [name(load)] }))
   // The last answer prefilled (design 6.1).
-  const homeUntil = until ?? lastUntil?.until ?? defaultHomeUntil
+  const homeUntil = until ?? (lastUntil?.day === startOfDay(now) ? lastUntil.until : null) ?? inventory.planning.day?.finishBy ?? defaultHomeUntil
 
   // "2 small loads could go together": only a preference split, never preselected.
   const pinned = new Set<string>(plan?.pass.loadPins.map((pin) => pin.textileId) ?? [])
@@ -470,8 +472,8 @@ function PaceControl({ householdId, next, loads, plan, inventory, byId, name, no
   const spreadHint = dayPlanText.perDay(perDay, dayWord(restBy(loads.length - spreadToday.length, perDay, now), now), spreadToday.length)
   const close = () => { setOpen(false); setProblem(null) }
   return <>
-    <button type="button" className="inline-flex min-h-11 cursor-pointer items-center gap-1 rounded-full border-0 bg-surface-2 px-3 text-[length:var(--step-0)] font-semibold text-ink" aria-haspopup="dialog" onClick={() => setOpen(true)}>
-      {mode === 'all' ? dayPlanText.allToday : dayPlanText.spread}<DesignIcon name="chevronDown" size="1em" strokeWidth={2.2} className="size-3.5" aria-hidden="true"  />
+    <button type="button" className="inline-flex min-h-11 cursor-pointer items-center gap-1 rounded-full border-0 bg-surface-2 px-3 text-[length:var(--step-0)] font-semibold text-ink" aria-haspopup="dialog" disabled={pending} onClick={() => { setMode(inventory.planning.day?.pace ?? 'all'); setUntil(null); setOpen(true) }}>
+      Plan today<DesignIcon name="chevronDown" size="1em" strokeWidth={2.2} className="size-3.5" aria-hidden="true"  />
     </button>
     {!open ? null : (
       <Sheet title={dayPlanText.question} onClose={close} compactActions footer={

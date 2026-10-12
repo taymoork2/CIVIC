@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { balanceFabric, fabricProblem, formatFabric, parseFabric, detailsFromMaterial, detailsForMaterial } from './fabric'
+import { balanceFabric, fabricProblem, formatFabric, parseFabric, detailsFromMaterial, detailsForMaterial, searchFabrics } from './fabric'
 
 test('fabric composition keeps blends, custom names and legacy single fibers', () => {
   for (const material of [null, 'cotton', 'other', '80% cotton, 20% polyester', '95% cotton, 5% elastane', '1.5% silk, 98.5% polyester', 'cashmere']) {
@@ -19,6 +19,16 @@ test('qualified fibers and aliases normalize composition without losing reported
   expect(detailsForMaterial('wool', detailsFromMaterial(material))).toBeUndefined()
   for (const name of ['TENCEL', 'bamboo', 'microfiber', 'GORE-TEX', 'Mystery cotton', 'constructor', '__proto__']) expect(parseFabric(name)[0]!.fiber).toBe('other')
   expect(formatFabric(parseFabric('60% TENCEL Modal, 40% polyamide'))).toBe('60% modal, 40% nylon')
+})
+
+test('fabric search finds optional details and aliases without inferring fiber from an ambiguous brand', () => {
+  for (const query of ['Supima', 'supima cotton', ' SUPIMA® ']) expect(searchFabrics(query)).toEqual([{ fiber: 'cotton', detail: 'Supima', label: 'Supima · Cotton' }])
+  expect(searchFabrics('merino')).toEqual([{ fiber: 'wool', detail: 'Merino', label: 'Merino · Wool' }])
+  expect(searchFabrics('spandex')[0]).toEqual({ fiber: 'elastane', label: 'Elastane / spandex' })
+  expect(searchFabrics('spandex').every((match) => match.fiber === 'elastane')).toBe(true)
+  expect(searchFabrics('TENCEL').map((match) => match.fiber)).toEqual(['modal', 'lyocell'])
+  expect(searchFabrics('microfiber').map((match) => match.fiber)).toEqual(['polyester', 'nylon'])
+  for (const query of ['', 'unknown brand', 'GORE-TEX']) expect(searchFabrics(query)).toEqual([])
 })
 
 test('percentages are optional but partial, invalid and non-totaling compositions cannot advance', () => {

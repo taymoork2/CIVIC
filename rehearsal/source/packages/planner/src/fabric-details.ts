@@ -18,6 +18,21 @@ export interface FabricDetails {
   finishes?: string[]
 }
 
+export interface FiberShare { fiber: typeof fabricFibers[number] | 'other'; name: string; percentage: number | null; details?: string[] }
+export const fabricLabel = (fiber: string) => new Map([['rayon', 'Rayon / viscose'], ['nylon', 'Nylon / polyamide'], ['elastane', 'Elastane / spandex'], ['linen', 'Linen / flax']]).get(fiber) ?? `${fiber.charAt(0).toUpperCase()}${fiber.slice(1)}`
+
+/** Keep older human-readable blends searchable without inferring care permission. */
+export function parseFabric(material: string | null): FiberShare[] {
+  if (!material?.trim()) return []
+  return material.split(/[,/;]\s*/u).map(part => {
+    const match = part.trim().match(/^(-?\d+(?:\.\d+)?)%\s*(.+)$/u)
+    const name = (match?.[2] ?? part).trim()
+    const found = namedFiber(name)
+    const fiber = found?.fiber as FiberShare['fiber'] | undefined ?? 'other'
+    return { fiber, name: fiber === 'other' && name.toLowerCase() !== 'other' ? name : '', percentage: match ? Number(match[1]) : null, ...(found?.details.length ? { details: found.details } : {}) }
+  })
+}
+
 /** Only explicit, qualified names: an unfamiliar adjective or brand stays unknown. */
 export function namedFiber(name: string): { fiber: string; details: string[] } | null {
   const word = name.trim().toLowerCase().replace(/[®™]/gu, '').replace(/\s+/gu, ' ')

@@ -1,0 +1,35 @@
+import towel from './towel-journey.json' with { type: 'json' }
+
+export const towelEdges = [...towel.slice(0, -1).flatMap((node, i) => node.id === 'origin' ? [
+  { from: 'origin', to: 'dye', label: 'Newly owned', when: 'Item is newly owned' },
+  { from: 'origin', to: 'care:wash', label: 'Pre-owned · skip dye', when: 'Item is pre-owned' },
+] : [{ from: node.id, to: towel[i + 1].id, label: node.id === 'fabric' ? 'Next: color' : node.id === 'color' ? 'Next: where from' : 'Continue' }]), { from: 'care:wash', to: 'stain', label: 'Do not wash / dry clean only', when: 'Washing is disallowed or dry clean only' }]
+
+const areas = { home: 'Home', closet: 'Closet', laundry: 'Washing & recovery', drying: 'Drying', household: 'Household', me: 'Me', settings: 'Settings', product: 'Product details', profile: 'Profiles', outfit: 'Outfits' }
+export const entryScreens = ['sign-in', 'create-account', 'reset-email', 'reset-code', 'reset-password', 'household-choice', 'household-name', 'household-setup', 'household-created', 'household-joined', 'setup-first-use', 'setup-closet']
+// The canvas and feedback validator share identities; layout never invents a transition.
+export function journeyGraph(scenarios, project) {
+  if (project?.adapter === 'module') {
+    const flows = new Map()
+    for (const scenario of scenarios) {
+      const id = scenario.flow ?? `flow:${scenario.journey}`
+      if (!flows.has(id)) flows.set(id, { id, label: scenario.journey, screens: [] })
+      flows.get(id).screens.push({ id: scenario.id, label: scenario.label, scenario: scenario.id, partial: scenario.renderer === 'legacy', section: scenario.section, branchOf: scenario.branchOf, edges: scenario.edges ?? [], routeActions: scenario.routeActions })
+    }
+    return [...flows.values()]
+  }
+  const flows = new Map([['towel', { id: 'towel', label: 'Add a towel', screens: towel.map((node) => ({ ...node, partial: false, edges: towelEdges.filter((edge) => edge.from === node.id).map((edge) => ({ action: edge.label, destination: edge.to, when: edge.when })) })) }]])
+  for (const scenario of scenarios) {
+    if (scenario.id.startsWith('intake.towel.')) continue
+    const partial = scenario.renderer === 'legacy'
+    const area = (scenario.screen ?? '').split('-')[0]
+    const isEntry = entryScreens.includes(scenario.screen ?? '') || area === 'join'
+    const label = partial ? isEntry ? 'Sign-in & setup' : area === 'invite' ? 'Household' : areas[area] ?? 'Washing & recovery' : scenario.journey
+    const id = partial || scenario.renderer === 'route-state' || scenario.renderer === 'reminder' ? `area:${label}` : `flow:${label}`
+    if (!flows.has(id)) flows.set(id, { id, label, screens: [] })
+    flows.get(id).screens.push({ id: scenario.id, label: scenario.label, scenario: scenario.id, partial, branchOf: scenario.branchOf, edges: scenario.edges ?? [], routeActions: scenario.routeActions })
+  }
+  return [...flows.values()]
+}
+
+export const pathId = (from, to, action) => JSON.stringify([from, to, action])

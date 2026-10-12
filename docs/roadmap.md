@@ -76,6 +76,8 @@ Validate onboarding with two cases ([onboarding and ingestion](onboarding-and-in
 
 Acceptance: a second small web app connects without importing Laundry code, unsupported features stay visibly unavailable, and source refresh, capture, and replay make zero model calls with providers disabled.
 
+Progress, 2026-10-12: the v6 handoff of the journey engine brings a project manifest (`rehearsal.project.json`), a project picker, static discovery for existing apps with a confirm step, and two example apps that don't import Laundry ([v6 notes](synthesis-v0-import.md#v6-handoff-update)). What step 4 still needs: the engine's journey graph exported into the CIVIC graph, crawl-first discovery (D34), and the frame walk (D33).
+
 ## 5. Identity, permissions, and multiplayer
 
 Real identities, scoped permissions, and versioned shared records, following the spec's [multiplayer boundary](product-spec.md#multiplayer-and-ownership). The single local access key and the portal's collaborator access are not this model.

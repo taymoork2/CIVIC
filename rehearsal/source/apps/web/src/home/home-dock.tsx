@@ -1,5 +1,6 @@
 import { cn } from '@/lib/utils'
 import type { ReactNode } from 'react'
+import { Button } from '@/components/ui/button'
 
 import { countWord, homeText } from '@/copy'
 import { DesignIcon } from '@/kit/design-icons'
@@ -29,16 +30,17 @@ const homeDockClassName = cn(
 )
 
 /** The nudge is one quiet "Up next" row on a frosted surface, never a filled bar with a filled button. */
+const homeDockSurfaceClassName = cn(
+  "glass",
+  "rounded-[24px]",
+  "[background:var(--glass)] shadow-[var(--glass-hi),_var(--e2)] [border:1px_solid_var(--glass-border)]",
+  "[-webkit-backdrop-filter:blur(16px)_saturate(1.5)] [backdrop-filter:blur(16px)_saturate(1.5)]",
+  "[@media_(prefers-reduced-transparency:_reduce)]:[background:var(--glass-solid)] [@media_(prefers-reduced-transparency:_reduce)]:[backdrop-filter:none]",
+)
+
 const homeDockRowClassName = cn(
-  "home-dock-row glass",
+  "home-dock-row",
   "flex min-h-16 items-center gap-3.5 rounded-[24px] px-4 py-3 text-start text-ink no-underline",
-  "[background:var(--glass)]",
-  "[-webkit-backdrop-filter:blur(16px)_saturate(1.5)]",
-  "[backdrop-filter:blur(16px)_saturate(1.5)]",
-  "shadow-[var(--glass-hi),_var(--e2)]",
-  "[border:1px_solid_var(--glass-border)]",
-  "[@media_(prefers-reduced-transparency:_reduce)]:[background:var(--glass-solid)]",
-  "[@media_(prefers-reduced-transparency:_reduce)]:[backdrop-filter:none]",
   "focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-ring",
 )
 
@@ -117,13 +119,20 @@ export function homeDockStep(state: HubState, hamperSetAside = false, hasClothes
       detail: homeText.dock.thenCheck(row.name ?? homeText.dock.load), button: rowAction(row), target: { to: 'session', sessionId: row.sessionId } }
   }
   if (state.kind === 'pass') return { urgent: false, title: loadTitle(state.name, state.number, state.things, state.ready), detail: [state.ready ? state.dose : undefined, state.things === undefined ? null : countWord(state.things, 'laundry item')].filter(Boolean).join(' · ') || homeText.dock.loadOf(state.number, state.count), button: state.ready ? homeText.dock.start : homeText.dock.open, target: state.ready ? passTarget(state) : { to: 'plan', planId: state.planId } }
-  if (state.kind === 'drying') return { urgent: false, title: homeText.dock.airDrying, detail: homeText.dock.hangingToDry(state.count), button: state.sessionIds.length > 0 ? homeText.dock.allDry : homeText.dock.seeThem, target: { to: state.sessionIds.length > 0 ? 'laundry' : 'closet' } }
+  if (state.kind === 'drying') return { urgent: false, title: homeText.dock.airDrying, detail: homeText.dock.hangingToDry(state.count), button: state.runId !== undefined || state.sessionIds.length > 0 ? homeText.dock.checkDryness : homeText.dock.seeThem,
+    target: state.runId !== undefined ? { to: 'drying', run: state.runId } : { to: state.sessionIds.length > 0 ? 'drying' : 'closet' } }
   if (state.kind === 'hamper') return { urgent: false, title: hamperSetAside ? homeText.dock.everythingSetAside : homeText.dock.inHamper(state.count), detail: '', button: hamperSetAside ? homeText.dock.addClothes : homeText.dock.reviewWaiting, target: { to: hamperSetAside ? 'add' : 'laundry' } }
   if (hasClothes) return { urgent: false, title: homeText.dock.checkCloset, detail: '', button: homeText.careForClothes, target: { to: 'closet' } }
   return { urgent: false, title: homeText.dock.hamperEmpty, detail: '', button: homeText.dock.addClothes, target: { to: 'add' } }
 }
 
-export function HomeDock({ state, renderLink, hamperSetAside = false, hasClothes = false }: { state: HubState; renderLink?: Link; hamperSetAside?: boolean; hasClothes?: boolean }) {
+/** Dismissing one task never hides its next stage or a different load. */
+export function homeDockTaskKey(state: HubState): string {
+  const step = homeDockStep(state)
+  return JSON.stringify([state.kind, step.target, step.title, step.detail, state.kind === 'drying' ? state.sessionIds : null])
+}
+
+export function HomeDock({ state, renderLink, hamperSetAside = false, hasClothes = false, onDismiss }: { state: HubState; renderLink?: Link; hamperSetAside?: boolean; hasClothes?: boolean; onDismiss?: () => void }) {
   const step = homeDockStep(state, hamperSetAside, hasClothes)
   const fact = [step.machine, step.clock, step.detail].filter(Boolean).join(' · ')
   const row = renderLink?.(step.target, { className: homeDockRowClassName, children: <>
@@ -136,5 +145,10 @@ export function HomeDock({ state, renderLink, hamperSetAside = false, hasClothes
     <DesignIcon name="chevronRight" size="1em" strokeWidth={2.2} className="size-[18px] flex-none text-ink-2" aria-hidden="true"  />
   </> })
   const next = step.secondary === undefined ? null : renderLink?.(step.secondary.target, { className: homeDockNextClassName, children: <><span className="min-w-0 flex-1 truncate">{step.secondary.label}</span><DesignIcon name="chevronRight" size="1em" strokeWidth={2.2} className="size-4 flex-none text-ink-2" aria-hidden="true"  /></> })
-  return <aside className={homeDockClassName} aria-label={homeText.dock.nextStep}>{row}{next}</aside>
+  return <aside className={homeDockClassName} aria-label={homeText.dock.nextStep}>
+    <div className={cn(homeDockSurfaceClassName, 'flex items-center [&_a]:min-w-0 [&_a]:flex-1')}>
+      {row}
+      {onDismiss === undefined ? null : <Button type="button" variant="ghost" size="icon" className="me-2 shrink-0" aria-label={homeText.dock.dismiss(step.title)} onClick={onDismiss}><DesignIcon name="x" size={18} /></Button>}
+    </div>{next}
+  </aside>
 }

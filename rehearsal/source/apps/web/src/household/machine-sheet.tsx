@@ -4,7 +4,9 @@ import { NativeSelect } from '@/components/ui/native-select'
 import { Button } from '@/components/ui/button'
 import { Collapsible, CollapsiblePanel, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { cn } from '@/lib/utils'
-import { useEffect, useId, useState, type ReactNode } from 'react'
+import { useIntakeRecovery } from '@/kit/device-state'
+import { previousMachineDraftNames, validMachineIntake } from '@/kit/intake-validation'
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { useQuery } from 'convex/react'
 import type { FunctionArgs } from 'convex/server'
 import { dryerHeats, machineRole, washProcessProblem, mechanicalSeverities, type MechanicalSeverity, type DryerHeat } from '@washcloset/planner'
@@ -18,6 +20,7 @@ import { capacityWords } from '@/household/household-facts'
 import type { Machine } from '@/household/inventory-types'
 import { loadWashPlace } from '@/private-state'
 import { Sheet } from '@/kit/sheet'
+import { focusLabeledControl } from '@/kit/focus-field'
 import { ActionRow, FactsCard, SheetText, actionClassName, type FactRow } from '@/household/household-blocks'
 import { DesignIcon } from '@/kit/design-icons'
 import { IconChoiceGrid } from '@/kit/icon-choice-grid'
@@ -105,23 +108,6 @@ const machineHeatRowClassName = cn(
   "[&_label]:font-semibold",
   "[&_input]:min-h-[3rem]",
   "[&_input]:text-[length:max(1rem,_var(--step-0))]",
-)
-
-const noticeClassName = cn(
-  "notice",
-  "[.sheet.has-compact-actions_.sheet-foot_>_&]:[flex:1_0_100%]",
-  "grid gap-2 p-[var(--space-3)_var(--space-4)] rounded-label",
-  "[border:var(--rule-width)_solid_var(--line)]",
-  "[background:var(--label)]",
-  "text-[length:var(--step-0)]",
-)
-
-const badClassName = cn(
-  "bad",
-  "[.notice&]:[border-color:var(--danger)]",
-  "[.notice&]:[color:var(--danger)]",
-  "[.notice&]:[background:var(--label)]",
-  "[.notice&]:font-semibold",
 )
 
 type Place = 'home' | 'shared'
@@ -329,6 +315,35 @@ type MachineStep = 'type' | 'controls' | 'identity' | 'review'
 type MachineSection = Exclude<MachineStep, 'review'> | 'washer' | 'cycle' | 'programs' | 'contact' | 'specifications'
 export type MachineFocus = 'capacity' | 'model' | MachineSection
 
+export function machineProblemTarget(draft: MachineDraft): { section: MachineSection; label: string; occurrence?: number } | null {
+  const problem = machineDraftProblem(draft)
+  if (problem === null) return null
+  if (problem === machineText.problems.place) return { section: 'type', label: machineText.where }
+  if (problem === machineText.problems.kind) return { section: 'type', label: machineText.kind }
+  if (problem === machineText.problems.door) return { section: 'controls', label: machineText.door }
+  if (problem === machineText.problems.name) return { section: 'identity', label: applianceCopy.numberOrLabel }
+  if (problem === machineText.problems.price) return { section: 'identity', label: machineText.pricePerStart }
+  if (problem === applianceCopy.blockMinutesProblem) return { section: 'identity', label: applianceCopy.blockMinutes }
+  if (problem === machineText.problems.minutes) return { section: 'cycle', label: draft.kind === 'dryer' ? machineText.dryerMinutes : machineText.washerMinutes }
+  if (problem === machineText.problems.volume) return { section: 'specifications', label: machineText.drumSize }
+  const processes = ['normal', 'permanent_press', 'delicate']
+  const invalidProcess = processes.find((cycle) => draft.washProcesses?.[cycle] !== undefined && washProcessProblem(draft.washProcesses[cycle]!) !== null)
+  if (invalidProcess !== undefined || Object.values(draft.washProcesses ?? {}).some((process) => washProcessProblem(process) !== null)) {
+    const sourceMissing = invalidProcess !== undefined && draft.washProcesses![invalidProcess]!.programLabel.trim() && !draft.washProcesses![invalidProcess]!.source.trim()
+    return { section: 'programs', label: sourceMissing ? 'Where these settings were checked' : 'Checked program and selected options', occurrence: invalidProcess === undefined ? 0 : (sourceMissing ? processes.filter((cycle) => draft.washProcesses?.[cycle] !== undefined) : processes).indexOf(invalidProcess) }
+  }
+  const contacts = [...new Set(['normal', ...Object.keys(draft.rinseContact ?? {})])]
+  const cycle = contacts.find((cycle) => {
+    const contact = draft.rinseContact?.[cycle]
+    return contact !== undefined && (!Number.isFinite(contact.minutes) || contact.minutes <= 0 || contact.minutes > 300 || !contact.source.trim() || !contact.placement.trim() || contact.placement === 'direct_to_drum' && !contact.timing?.trim())
+  })
+  const contact = cycle === undefined ? undefined : draft.rinseContact?.[cycle]
+  const label = contact === undefined || !Number.isFinite(contact.minutes) || contact.minutes <= 0 || contact.minutes > 300 ? 'Rinse contact minutes'
+    : !contact.placement.trim() ? 'Sanitizer release used for this contact time'
+    : contact.placement === 'direct_to_drum' && !contact.timing?.trim() ? 'By-hand addition timing from the directions' : 'Where the program contact time was checked'
+  return { section: 'contact', label, occurrence: cycle === undefined ? 0 : contacts.indexOf(cycle) }
+}
+
 export function machineIntakeSteps(draft: MachineDraft): readonly MachineStep[] {
   return ['type', ...(draft.kind === 'hanging' ? [] : ['controls' as const]), 'identity', 'review']
 }
@@ -353,7 +368,7 @@ const machineDetailSections: Readonly<Record<Kind, readonly MachineSection[]>> =
  * is, what it is and the door first; optional settings and checked specifications have separate entries.
  * `focusField` opens "Model and drum size" and moves focus to that input once it is drawn.
  */
-export function MachineFields({ draft, editing, onChange, ask = 'all', focusField, section, placeKnown = false, kindKnown = false, more }: {
+export function MachineFields({ draft, editing, onChange, ask = 'all', focusField, section, placeKnown = false, kindKnown = false, more, repair }: {
   draft: MachineDraft
   editing: boolean
   onChange: (draft: MachineDraft) => void
@@ -365,7 +380,21 @@ export function MachineFields({ draft, editing, onChange, ask = 'all', focusFiel
   /** The sheet was opened for one kind ("Add your washer"), so washer or dryer is not asked. */
   kindKnown?: boolean
   more?: ReactNode
+  repair?: { section: MachineSection; label: string; occurrence?: number; at: number }
 }) {
+  const fields = useRef<HTMLDivElement>(null)
+  const handledRepair = useRef<number | undefined>(undefined)
+  const [tab, setTab] = useState('details')
+  useEffect(() => {
+    if (repair === undefined || handledRepair.current === repair.at) return
+    const target = repair.section === 'programs' || repair.section === 'cycle' ? 'programs' : repair.section === 'contact' ? 'sanitizer' : repair.section === 'specifications' ? 'more' : 'details'
+    if (section === undefined && tab !== target) { setTab(target); return }
+    const frame = requestAnimationFrame(() => {
+      handledRepair.current = repair.at
+      focusLabeledControl(fields.current, repair.label, repair.occurrence)
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [repair, section, tab])
   const set = (patch: Partial<MachineDraft>) => onChange({ ...draft, ...patch })
   const [otherKinds, setOtherKinds] = useState(draft.kind === 'hanging')
   const priceId = useId()
@@ -551,15 +580,15 @@ export function MachineFields({ draft, editing, onChange, ask = 'all', focusFiel
   const optional = <>{washerDetails}{cycleTime}{heat}{identity}</>
   if (section !== undefined) {
     const sections: Record<MachineSection, ReactNode> = { type: required, controls: <>{door}{heat}</>, identity, washer: washerDetails, cycle: cycleTime, programs: washPrograms, contact: rinseContact, specifications }
-    return <div className={machineFieldsClassName}>{sections[section]}</div>
+    return <div ref={fields} className={machineFieldsClassName}>{sections[section]}</div>
   }
-  if (editing) return <Tabs defaultValue="details">
+  if (editing) return <div ref={fields}><Tabs value={tab} onValueChange={(value) => { if (value !== null) setTab(value) }}>
     <TabsList aria-label="Appliance editor sections"><TabsTrigger value="details">Details</TabsTrigger>{hanging ? null : <TabsTrigger value="programs">Programs</TabsTrigger>}{draft.kind === 'washer' ? <TabsTrigger value="sanitizer">Sanitizer</TabsTrigger> : null}<TabsTrigger value="more">More</TabsTrigger></TabsList>
     <TabsContent value="details" keepMounted className={machineFieldsClassName}>{required}{door}{washerDetails}{identity}</TabsContent>
     <TabsContent value="programs" keepMounted className={machineFieldsClassName}>{cycleTime}{heat}{washPrograms}</TabsContent>
     {draft.kind === 'washer' ? <TabsContent value="sanitizer" keepMounted className={machineFieldsClassName}>{rinseContact}</TabsContent> : null}
     <TabsContent value="more" keepMounted className={cn(machineFieldsClassName, 'gap-6')}>{specifications}{more}</TabsContent>
-  </Tabs>
+  </Tabs></div>
   return (
     <div className={machineFieldsClassName}>
       {required}
@@ -610,15 +639,30 @@ export function MachineSheet({ householdId, group = null, place = null, kind = n
   const dirty = JSON.stringify(draft) !== JSON.stringify(baseline)
   const [editing, setEditing] = useState(group === null || initialFocus !== undefined)
   const [focus, setFocus] = useState<MachineFocus | undefined>(initialFocus)
+  const [repair, setRepair] = useState<{ section: MachineSection; label: string; occurrence?: number; at: number }>()
   const [step, setStep] = useState<MachineStep>(kind !== null && place !== null ? kind === 'hanging' ? 'identity' : 'controls' : 'type')
+  const [correctingReview, setCorrectingReview] = useState(false)
+  const [recovered, setRecovered] = useState(false)
+  const correctReview = (target: MachineStep) => { setCorrectingReview(true); setStep(target) }
   const [createdIds, setCreatedIds] = useState<readonly Machine['machineId'][] | null>(null)
+  const recovery = useIntakeRecovery({ name: 'machine-intake', title: 'this appliance', previousNames: previousMachineDraftNames, value: { draft, step, correctingReview }, valid: validMachineIntake, active: group === null && createdIds === null, dirty,
+    restore: (saved) => { setDraft(saved.draft); setStep(saved.step); setCorrectingReview(saved.correctingReview ?? false); setRecovered(true) }, close: onClose })
+  const closeIntake = () => { if (group === null && !recovery.attempted) recovery.clear(); onClose() }
   const [detail, setDetail] = useState<MachineFocus | undefined>()
   const [removing, setRemoving] = useState(false)
-  const inventory = useQuery(api.inventory.list, createdIds === null ? 'skip' : { householdId: householdId as FunctionArgs<typeof api.inventory.list>['householdId'] })
+  const inventory = useQuery(api.inventory.list, createdIds === null ? 'skip' : { householdId: householdId as FunctionArgs<typeof api.inventory.list>['householdId'], textileIds: [] })
   const create = useConvexCall(api.inventory.createMachines)
   const update = useConvexCall(api.inventory.updateMachineGroup)
   const archive = useConvexCall(api.inventory.updateMachine)
   const problem = machineDraftProblem(draft)
+  const stepProblem = group === null ? machineStepProblem(draft, step) : problem
+  const fixProblem = () => {
+    const target = machineProblemTarget(draft)
+    if (target === null) return
+    if (group === null) setStep(target.section === 'type' || target.section === 'controls' ? target.section : 'identity')
+    else setFocus(undefined)
+    setRepair((current) => ({ ...target, at: (current?.at ?? 0) + 1 }))
+  }
   const pending = create.pending || update.pending || archive.pending
   // Editing starts from the facts as they are now, at the row's own input when it named one.
   const startEdit = (field?: MachineFocus) => {
@@ -626,10 +670,12 @@ export function MachineSheet({ householdId, group = null, place = null, kind = n
     const current = draftFromGroup(group)
     setBaseline(current)
     setDraft(current)
+    setRepair(undefined)
     setFocus(field)
     setEditing(true)
   }
   const showFacts = () => {
+    setRepair(undefined)
     setFocus(undefined)
     setEditing(false)
   }
@@ -653,9 +699,12 @@ export function MachineSheet({ householdId, group = null, place = null, kind = n
     if (problem !== null) return
     const name = draft.name.trim()
     if (group === null) {
-      const created = await create.run({ householdId: householdId as FunctionArgs<typeof api.inventory.createMachines>['householdId'], name, count: draft.count, ...machineFieldsFrom(draft) })
+      const intakeKey = recovery.saveKey()
+      if (intakeKey === null) return
+      const created = await create.run({ householdId: householdId as FunctionArgs<typeof api.inventory.createMachines>['householdId'], name, count: draft.count, ...machineFieldsFrom(draft), intakeKey })
       if (created === undefined) return
       setCreatedIds(created)
+      recovery.clear()
       onSaved?.(draft.count > 1 ? machineText.addedManyToast(draft.count, name) : machineText.addedToast(name))
     } else {
       const first = group.machines[0]!
@@ -670,10 +719,11 @@ export function MachineSheet({ householdId, group = null, place = null, kind = n
     if (group !== null) showFacts()
   }
   const noun = draft.kind === 'hanging' ? 'hanging dryer' : machineText.nouns[draft.kind ?? 'machine']
-  const steps = machineIntakeSteps(draft).filter((entry) => entry !== 'type' || kind === null || place === null)
+  const steps = machineIntakeSteps(draft).filter((entry) => entry !== 'type' || kind === null || place === null || correctingReview || recovered)
   const index = steps.indexOf(step)
   const titles: Record<MachineStep, string> = { type: 'Add a machine', controls: draft.kind === 'dryer' ? 'What do the heat buttons say?' : 'Front or top loading?', identity: 'Name and number', review: 'Check your appliance' }
   const savedMachines = inventory?.machines.filter((machine) => createdIds?.includes(machine.machineId))
+  if (recovery.prompt !== null) return recovery.prompt
   if (createdIds !== null) {
     if (detail !== undefined && savedMachines?.length === createdIds.length) return <MachineSheet key={createdIds.join(',')} householdId={householdId} group={{ key: createdIds.join(','), name: draft.name.trim(), machines: savedMachines }} initialFocus={detail} currency={currency} onClose={onClose} onSaved={onSaved} />
     return <Sheet title="Appliance added" onClose={onClose} closeAtTop footer={<Button onClick={onClose}>Done</Button>}>
@@ -696,39 +746,42 @@ export function MachineSheet({ householdId, group = null, place = null, kind = n
       headerArt={editing ? undefined : headerArt}
       step={group === null ? step : editing ? `edit:${focus ?? 'all'}` : 'details'}
       progress={group === null ? { step: index + 1, total: steps.length } : undefined}
-      onBack={group === null && index > 0 ? () => { if (!pending) setStep(steps[index - 1]!) } : undefined}
+      onBack={group === null && (index > 0 || correctingReview) ? () => { if (!pending) { setStep(correctingReview ? 'review' : steps[index - 1]!); setCorrectingReview(false) } } : undefined}
       onEdit={group === null || editing ? undefined : () => startEdit()}
       editLabel="Edit settings"
-      onClose={group !== null && editing ? cancelEdit : onClose}
+      onClose={group !== null && editing ? cancelEdit : closeIntake}
+      onKeepDraft={recovery.canKeep ? recovery.keep : undefined}
       closeLabel="Cancel"
-      dirty={editing && dirty}
+      dirty={editing && dirty && !recovery.attempted}
       busy={pending}
       closeAtTop={group === null || !editing}
       tall
       compactActions={group !== null}
       footer={(
-        group === null ? <Button disabled={pending || machineStepProblem(draft, step) !== null} onClick={() => step === 'review' ? void save() : setStep(steps[index + 1]!)}>{step === 'review' ? draft.count > 1 ? machineText.saveN(draft.count, noun) : machineText.saveOne(noun) : 'Next'}</Button> : editing ? <>
+        <>
+        {group === null ? <Button disabled={pending || stepProblem !== null} onClick={() => { if (step === 'review') void save(); else if (correctingReview && problem === null) { setStep('review'); setCorrectingReview(false) } else setStep(steps[index + 1]!) }}>{step === 'review' ? draft.count > 1 ? machineText.saveN(draft.count, noun) : machineText.saveOne(noun) : correctingReview && problem === null ? 'Back to review' : 'Next'}</Button> : editing ? <>
           <Button type="button" disabled={pending || problem !== null} onClick={() => void save()}>
             {machineText.saveOne(noun)}
           </Button>
-        </> : <Button onClick={onClose}>Done</Button>
+        </> : <Button onClick={onClose}>Done</Button>}</>
       )}
     >
+      {recovery.notice}
       {editing ? <fieldset disabled={pending} className="m-0 grid min-w-0 gap-4 border-0 p-0">
         {group === null && step === 'review' ? <FactsCard label="Appliance review" rows={[
-          ['Name', draft.name.trim(), () => setStep('identity')],
-          ['Quantity', String(draft.count), () => setStep('identity')],
-          ['Location', draft.place === 'home' ? machineText.atHome : machineText.sharedRoom],
-          ['Type', defaultName(draft.kind)],
-          ...(draft.kind === 'washer' ? [['Loading', draft.door === 'front' ? machineText.front : machineText.top, () => setStep('controls')] as FactRow] : []),
-          ...(draft.kind === 'dryer' ? [['Heat buttons', dryerHeats.map((heat) => draft.heat[heat]).filter(Boolean).join(' · ') || 'Not recorded', () => setStep('controls')] as FactRow] : []),
-        ]} /> : <MachineFields draft={draft} editing={group !== null} onChange={setDraft} ask={ask} section={group === null ? step as MachineSection : focus === 'capacity' || focus === 'model' ? 'specifications' : focus} focusField={focus} placeKnown={place !== null} kindKnown={kind !== null} more={group === null ? null : <>
+          ['Name', draft.name.trim(), () => correctReview('identity')],
+          ['Quantity', String(draft.count), () => correctReview('identity')],
+          ['Location', draft.place === 'home' ? machineText.atHome : machineText.sharedRoom, () => correctReview('type')],
+          ['Type', defaultName(draft.kind), () => correctReview('type')],
+          ...(draft.kind === 'washer' ? [['Loading', draft.door === 'front' ? machineText.front : machineText.top, () => correctReview('controls')] as FactRow] : []),
+          ...(draft.kind === 'dryer' ? [['Heat buttons', dryerHeats.map((heat) => draft.heat[heat]).filter(Boolean).join(' · ') || 'Not recorded', () => correctReview('controls')] as FactRow] : []),
+        ]} /> : <MachineFields draft={draft} editing={group !== null} onChange={setDraft} ask={ask} repair={repair} section={group === null ? step as MachineSection : focus === 'capacity' || focus === 'model' ? 'specifications' : focus} focusField={focus} placeKnown={place !== null && !correctingReview && !recovered} kindKnown={kind !== null && !correctingReview && !recovered} more={group === null ? null : <>
           {group.machines.map((machine) => <div className="grid gap-2" key={machine.machineId}>{group.machines.length < 2 ? null : <p className="m-0">{machine.name}</p>}<CatalogReference holding={{ kind: 'machine', id: machine.machineId }} binding={machine.catalogBinding} name={machine.name} disabled={pending} /></div>)}
           <div className="border-t border-border pt-4"><ActionRow><Button variant="unstyled" size="unstyled" className={actionClassName} disabled={pending} onClick={() => { archive.clearError(); if (group.machines.every((machine) => machine.archived)) void changeArchived(); else setRemoving(true) }}>{group.machines.every((machine) => machine.archived) ? machineText.restore : `Remove ${group.machines.length > 1 ? 'appliances' : 'appliance'}`}</Button></ActionRow></div>
         </>} />}
-        {dirty && problem !== null && (group !== null || step === 'identity' || step === 'review') ? <p className={cn(noticeClassName, badClassName)} role="alert">{problem}</p> : null}
         <ErrorNotice error={create.error ?? update.error} />
         <ErrorNotice error={archive.error} />
+        {stepProblem === null ? null : <div className="grid w-full gap-1" role="status"><p className="m-0 text-[length:var(--step--1)] text-ink-2">{stepProblem}</p><Button variant="ghost" className="justify-self-start" disabled={pending} onClick={fixProblem}>Fix</Button></div>}
       </fieldset> : group === null ? null : <MachineOverview group={group} currency={currency} onEdit={startEdit} />}
     </Sheet>
   )

@@ -4,6 +4,7 @@ import type { FunctionArgs, FunctionReturnType } from 'convex/server'
 import { useEffect, useId, useRef, useState, type ReactElement, type ReactNode } from 'react'
 import { materialCareProblem, clothingTags, flagReasons, soilForFlag, soilLevels, stainCleanerFirst, stainReasons, stainWashLimit, usedClothingTags, type SoilLevel } from '@washcloset/planner'
 import { toast } from 'sonner'
+import { confirmTrash, type RestoreTextiles } from '@/closet/trash-undo'
 
 import type { api } from '@/api'
 import { closetState, notWornSince, type ClosetState } from '@/closet/closet-groups'
@@ -20,7 +21,8 @@ import { DesignIcon } from '@/kit/design-icons'
 import { CountRow, Facts } from '@/closet/closet-parts'
 import { CareQuestionSheet, CareSymbolRow, careCells } from '@/closet/garment-care'
 import { TaskFooter } from '@/kit/task-footer'
-import { GarmentIcon } from '@/kit/garment-icon'
+import { GarmentIcon, garmentCategoryPhoto } from '@/kit/garment-icon'
+import { CategoryPhoto } from '@/products/product-ui'
 import { ChipRow, Stepper, clockTime, errorMessage } from '@/kit/ui'
 import { Field, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
@@ -163,7 +165,8 @@ export type GarmentCalls = {
   /** A washed stain: "Stain gone?", then one more try, the cleaner, a known mark or retiring it. Without them it is only shown. */
   readonly answerStainCheck?: (args: FunctionArgs<typeof api.closet.answerStainCheck>) => Promise<{ changed: number }>
   readonly resolveStain?: (args: FunctionArgs<typeof api.closet.resolveStain>) => Promise<{ changed: number; skipped: number }>
-  readonly retire?: (args: FunctionArgs<typeof api.inventory.trashTextiles>) => Promise<{ changed: number }>
+  readonly retire?: (args: FunctionArgs<typeof api.inventory.trashTextiles>) => Promise<{ changed: number; trashedAt?: number; revisions?: FunctionReturnType<typeof api.inventory.trashTextiles>['revisions'] }>
+  readonly restoreTextiles?: RestoreTextiles
 }
 
 /** The toast after treating known marks: dry cleaning when every changed piece went there, otherwise the hamper. */
@@ -576,7 +579,10 @@ export function GarmentSheet({ facts, careGroups = [facts], calls, renderLink = 
         ].map((choice) => ({ key: choice, disabled: pending, label: choice === 'try_again' ? garmentTabText.stainTryAgain : choice === 'cleaner' ? garmentTabText.stainCleaner : garmentTabText.stainKeep,
           onClick: () => void run(() => calls.resolveStain!({ textileIds: stainIds(stayed), choice }), (changed) => changed === 0 ? null : garmentTabText.stainNotes[choice === 'try_again' ? 'retry' : choice === 'cleaner' ? 'cleaner' : 'kept']) })),
         ...(calls.retire === undefined ? [] : [{ key: 'retire', quiet: true, disabled: pending, label: garmentTabText.stainRetire,
-          onClick: () => void run(() => calls.retire!({ textileIds: stainIds(stayed) }), (changed) => changed === 0 ? null : garmentTabText.stainNotes.retired) }]),
+          onClick: () => void run(() => calls.retire!({ textileIds: stainIds(stayed) }), (changed, result) => {
+            if (changed > 0) confirmTrash(garmentTabText.stainNotes.retired, result.trashedAt === undefined || result.revisions === undefined ? undefined : { textileIds: stainIds(stayed), trashedAt: result.trashedAt, revisions: result.revisions }, calls.restoreTextiles)
+            return null
+          }) }]),
       ]} />
     </div>}
     {secondary.length === 0 || quantityAction !== null ? null : moreActions(garmentTabText.more)}
@@ -588,6 +594,7 @@ export function GarmentSheet({ facts, careGroups = [facts], calls, renderLink = 
 
   return (
     <Sheet title={view.title} kicker={kicker} tall
+      headerArt={garmentCategoryPhoto(first.kind, first.colorGroup) === undefined ? undefined : <CategoryPhoto src={garmentCategoryPhoto(first.kind, first.colorGroup)!} fallback={<GarmentIcon kind={first.kind} colorGroup={first.colorGroup} className="size-9" />} className="size-full object-cover" loading="eager" />}
       media={<GarmentIcon kind={first.kind} colorGroup={first.colorGroup} className="size-9" />}
       onEdit={planning === undefined && quantityAction === null && facts.members.every((member) => !member.guest) ? () => editAll() : undefined}
       editLabel="Edit item details" busy={pending}

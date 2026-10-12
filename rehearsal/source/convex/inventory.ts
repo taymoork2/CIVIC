@@ -1,7 +1,10 @@
+import { readPlanDocuments } from './planStorage'
 import { text, optionalText, positive, cycleName, provenance, type TextileFields, textileFields, occasionsFrom, tagsFrom, type TextileIdentity, identityFrom, type CareFields, tagEvidence, tagCare, nextSoil, ingredientList, formulation, dryerKind, measureFrom, doseFrom, assertMarksKept, assertUseFits, materialList, chemistryLimit, labelEvidence, type RowShape, sameShape, sameDose, storedShape, conditionsFrom, machineFields, siblingNames, siblingCount, wholeDays } from './inventoryHelpers'
 export { provenance, type CareFields, tagEvidence, tagCare, labelEvidence, maxMachinesLikeIt, siblingNames } from './inventoryHelpers'
 import { v, type Infer } from 'convex/values'
+import { clothingTags } from '@washcloset/planner'
 import { eraseOutcomeData } from './outcomeAssessments'
+import { intakeSave } from './intakeSaves'
 import { dryerProgramMode } from './dryerContextValues'
 
 import { careRequirementProblem, washRequirementKinds, dryRequirementKinds, compileDirections, tagAllowsHighHeat, evidencePolicy, isDryer, isDryingMachine, machineRole, loadSizes, occasions, documentedHeatSettings, soilLevels, useDirections, type CareEvidence, type CompiledRule, type DirectionsRow, type LoadSize, type Occasion, type SoilLevel } from '@washcloset/planner'
@@ -72,18 +75,27 @@ export const migratePlaces = internalMutation({
   },
 })
 
-export const list = query({
-  args: { householdId: v.id('households') },
-  handler: async (ctx, args) => {
+export async function readInventory(ctx: ReadCtx, args: { householdId: Id<'households'>; textileIds?: Id<'textiles'>[]; activeOnly?: boolean; readyWearer?: Id<'wearers'> | null }) {
     const { actor, membership } = await authorize(ctx, 'textile.read', { householdId: args.householdId })
-    const [household, wearers, textiles, supplies, rules, machines, busy] = await Promise.all([
+    const busy = args.textileIds?.length === 0 ? new Map<Id<'textiles'>, Id<'sessions'>>() : await busyTextiles(ctx, args.householdId)
+    const [household, wearers, textiles, supplies, rules, machines] = await Promise.all([
       ctx.db.get(args.householdId),
       ctx.db.query('wearers').withIndex('by_household', (q) => q.eq('householdId', args.householdId)).collect().then((rows) => visible(ctx, actor, rows)),
-      ctx.db.query('textiles').withIndex('by_household', (q) => q.eq('householdId', args.householdId)).collect().then((rows) => visible(ctx, actor, rows.filter((row) => row.trashedAt === undefined))),
+      (args.textileIds === undefined
+        ? args.activeOnly
+          ? Promise.all((['dirty', 'hanging', 'needs_dry_clean', 'at_cleaner', 'needs_refresh'] as const).map(status => ctx.db.query('textiles').withIndex('by_household_status', q => q.eq('householdId', args.householdId).eq('status', status)).collect()))
+            .then(async groups => [...new Map([...groups.flat(), ...(await Promise.all([...busy.keys()].map(id => ctx.db.get(id)))).filter((piece): piece is Doc<'textiles'> => piece !== null)].map(piece => [piece._id, piece])).values()])
+          : args.readyWearer !== undefined
+            ? ctx.db.query('textiles').withIndex('by_household_status', q => q.eq('householdId', args.householdId).eq('status', 'clean')).collect().then(rows => rows.filter(row => (row.wearerId ?? null) === args.readyWearer && !busy.has(row._id)))
+            : ctx.db.query('textiles').withIndex('by_household', (q) => q.eq('householdId', args.householdId)).collect()
+        : Promise.all(args.textileIds.map((id) => ctx.db.get(id))).then((rows) => rows.filter((row): row is Doc<'textiles'> => row !== null)))
+        .then((rows) => {
+          if (rows.some((row) => row.householdId !== args.householdId)) fail('forbidden', 'Forbidden')
+          return visible(ctx, actor, rows.filter((row) => row.trashedAt === undefined))
+        }),
       ctx.db.query('supplies').withIndex('by_household', (q) => q.eq('householdId', args.householdId)).collect(),
       ctx.db.query('rules').withIndex('by_household', (q) => q.eq('householdId', args.householdId)).collect(),
       ctx.db.query('machines').withIndex('by_household', (q) => q.eq('householdId', args.householdId)).collect(),
-      busyTextiles(ctx, args.householdId),
     ])
     const careRows = await Promise.all(textiles.map((textile) =>
       ctx.db.query('care').withIndex('by_textile', (q) => q.eq('textileId', textile._id)).unique()))
@@ -216,7 +228,12 @@ export const list = query({
         provenance: machine.provenance,
       })),
     }
-  },
+}
+
+/** Legacy full read is retained for fixtures; connected pages request only their needed records. */
+export const list = query({
+  args: { householdId: v.id('households'), textileIds: v.optional(v.array(v.id('textiles'))), activeOnly: v.optional(v.boolean()), readyWearer: v.optional(v.union(v.id('wearers'), v.null())) },
+  handler: readInventory,
 })
 
 // ---- Textiles and care -----------------------------------------------------
@@ -452,6 +469,7 @@ export const createTextile = mutation({
  */
 export const createTextiles = mutation({
   args: {
+    intakeKey: v.optional(v.string()),
     householdId: v.id('households'),
     name: v.string(),
     quantity: v.number(),
@@ -470,8 +488,15 @@ export const createTextiles = mutation({
     ...garmentArgs,
   },
   returns: v.array(v.id('textiles')),
-  handler: async (ctx, args) => {
-    if (args.colors === undefined) return insertTextiles(ctx, args, args.quantity)
+  handler: async (ctx, { intakeKey, ...args }) => {
+    const actor = (await authorize(ctx, 'textile.add', { householdId: args.householdId })).actor
+    const save = await intakeSave(ctx, args.householdId, actor.key, 'garment', intakeKey, args)
+    if (save?.previous) return save.previous.result as Id<'textiles'>[]
+    if (args.colors === undefined) {
+      const ids = await insertTextiles(ctx, args, args.quantity)
+      await save?.record(ids)
+      return ids
+    }
     if (!Number.isInteger(args.quantity) || args.quantity < 1 || args.quantity > 20 || args.colors.length < 2 || args.colors.length > 20 || args.colors.reduce((total, color) => total + color.quantity, 0) !== args.quantity) fail('invalid', 'Color quantities must total between 1 and 20 pieces')
     if (args.sameCareInstructions !== true) fail('invalid', 'Check that the care instructions apply to every piece')
     for (const color of args.colors) {
@@ -483,6 +508,7 @@ export const createTextiles = mutation({
       const dye = color.dyeRun ?? 'unknown'
       textileIds.push(...await insertTextiles(ctx, { ...args, ...color, dyeRun: dye, firstWash: dye === 'new' ? true : dye === 'fast' ? false : undefined }, color.quantity))
     }
+    await save?.record(textileIds)
     return textileIds
   },
 })
@@ -529,6 +555,31 @@ export const addMatchingTextiles = mutation({
   },
 })
 
+
+/** Bulk organization never rewrites care or fabric and either changes every authorized piece or none. */
+export const bulkUpdateTextiles = mutation({
+  args: { textileIds: v.array(v.id('textiles')), addTags: v.optional(v.array(v.string())), wearerId: v.optional(v.union(v.id('wearers'), v.null())) },
+  returns: v.object({ changed: v.number() }),
+  handler: async (ctx, args) => {
+    const ids = [...new Set(args.textileIds)]
+    if (ids.length === 0 || ids.length > 200 || args.addTags === undefined && args.wearerId === undefined) fail('invalid', 'Choose between 1 and 200 pieces and a change')
+    const rows = await Promise.all(ids.map(async (textileId) => (await authorize(ctx, 'textile.edit', { textileId })).textile))
+    const householdId = rows[0]!.householdId
+    if (rows.some((row) => row.householdId !== householdId || row.trashedAt !== undefined || row.guest)) fail('forbidden', 'Forbidden')
+    if (args.wearerId !== undefined) {
+      if (args.wearerId !== null) await householdWearer(ctx, householdId, args.wearerId)
+      const busy = await busyTextiles(ctx, householdId)
+      if (rows.some((row) => busy.has(row._id))) fail('conflict', 'Finish the running load before changing who these pieces belong to')
+    }
+    const patches = rows.map((row) => ({
+      ...(args.addTags === undefined ? {} : { tags: tagsFrom([...clothingTags(row), ...args.addTags]) }),
+      ...(args.wearerId === undefined ? {} : { wearerId: args.wearerId ?? undefined }),
+    }))
+    for (let index = 0; index < rows.length; index++) await ctx.db.patch(rows[index]!._id, patches[index]!)
+    if (args.wearerId !== undefined) await invalidatePlans(ctx, householdId)
+    return { changed: rows.length }
+  },
+})
 
 export const updateTextile = mutation({
   args: {
@@ -756,7 +807,7 @@ export const listTrash = query({
 
 export const trashTextiles = mutation({
   args: { textileIds: v.array(v.id('textiles')) },
-  returns: v.object({ changed: v.number() }),
+  returns: v.object({ changed: v.number(), trashedAt: v.optional(v.number()), revisions: v.optional(v.array(v.object({ textileId: v.id('textiles'), revision: v.number() }))) }),
   handler: async (ctx, args) => {
     const ids = [...new Set(args.textileIds)]
     if (ids.length === 0 || ids.length > 200) fail('invalid', 'Remove between 1 and 200 matching pieces at a time')
@@ -767,17 +818,20 @@ export const trashTextiles = mutation({
     const busy = await busyTextiles(ctx, householdId)
     if (rows.some((row) => busy.has(row._id))) fail('conflict', 'A piece is in a running load')
     const trashedAt = Date.now()
+    const revisions: { textileId: Id<'textiles'>; revision: number }[] = []
     for (const row of rows) {
-      await ctx.db.patch(row._id, { trashedAt })
-      await ctx.scheduler.runAfter(trashWindowMs, internal.inventory.purgeTrashed, { textileId: row._id, trashedAt })
+      const revision = (row.trashRevision ?? 0) + 1
+      revisions.push({ textileId: row._id, revision })
+      await ctx.db.patch(row._id, { trashedAt, trashRevision: revision })
+      await ctx.scheduler.runAfter(trashWindowMs, internal.inventory.purgeTrashed, { textileId: row._id, trashedAt, revision })
     }
     await invalidatePlans(ctx, householdId)
-    return { changed: rows.length }
+    return { changed: rows.length, trashedAt, revisions }
   },
 })
 
 export const restoreTextiles = mutation({
-  args: { textileIds: v.array(v.id('textiles')) },
+  args: { textileIds: v.array(v.id('textiles')), expectedTrashedAt: v.optional(v.number()), expectedRevisions: v.optional(v.array(v.object({ textileId: v.id('textiles'), revision: v.number() }))) },
   returns: v.object({ changed: v.number() }),
   handler: async (ctx, args) => {
     const ids = [...new Set(args.textileIds)]
@@ -789,6 +843,11 @@ export const restoreTextiles = mutation({
     if (rows.some((row) => row === null || row.householdId !== householdId)) fail('forbidden', 'Forbidden')
     const now = Date.now()
     const restorable = rows as Doc<'textiles'>[]
+    if (args.expectedTrashedAt !== undefined) {
+      if (!Number.isFinite(args.expectedTrashedAt) || args.expectedTrashedAt > now || now - args.expectedTrashedAt > 60_000) fail('conflict', 'Undo expired. Restore these pieces from Trash')
+      if (restorable.some((row) => row.trashedAt !== args.expectedTrashedAt)) fail('conflict', 'These pieces changed after removal. Check Trash before restoring them')
+      if (args.expectedRevisions === undefined || args.expectedRevisions.length !== restorable.length || restorable.some((row) => args.expectedRevisions!.find((entry) => entry.textileId === row._id)?.revision !== row.trashRevision)) fail('conflict', 'These pieces changed after removal. Check Trash before restoring them')
+    }
     if (restorable.some((row) => row.trashedAt === undefined || row.trashedAt + trashWindowMs <= now)) fail('invalid', 'These pieces are no longer in Trash')
     for (const row of restorable) await ctx.db.patch(row._id, { trashedAt: undefined })
     await invalidatePlans(ctx, householdId)
@@ -811,14 +870,14 @@ async function eraseTextile(ctx: MutationCtx, textile: Doc<'textiles'>): Promise
   await ctx.db.delete(textile._id)
 }
 
-/** The timestamp prevents an older scheduled job from deleting a restored and re-trashed piece. */
+/** Timestamp and revision keep older jobs from deleting restored and re-trashed pieces. */
 export const purgeTrashed = internalMutation({
-  args: { textileId: v.id('textiles'), trashedAt: v.number() },
+  args: { textileId: v.id('textiles'), trashedAt: v.number(), revision: v.optional(v.number()) },
   returns: v.null(),
   handler: async (ctx, args) => {
     if (Date.now() < args.trashedAt + trashWindowMs) return null
     const row = await ctx.db.get(args.textileId)
-    if (row !== null && row.trashedAt === args.trashedAt) await eraseTextile(ctx, row)
+    if (row !== null && row.trashedAt === args.trashedAt && row.trashRevision === args.revision) await eraseTextile(ctx, row)
     return null
   },
 })
@@ -862,10 +921,12 @@ async function requirementsFrom(ctx: ReadCtx, householdId: Id<'households'>, req
 
 /** Who wears the clothes: a name tag, not an account. */
 export const createWearer = mutation({
-  args: { householdId: v.id('households'), name: v.string(), kind: wearerKind, self: v.optional(v.boolean()), requirements: v.optional(wearerRequirements) },
+  args: { householdId: v.id('households'), name: v.string(), kind: wearerKind, self: v.optional(v.boolean()), requirements: v.optional(wearerRequirements), intakeKey: v.optional(v.string()) },
   returns: v.id('wearers'),
-  handler: async (ctx, args) => {
+  handler: async (ctx, { intakeKey, ...args }) => {
     const actor = (await authorize(ctx, 'people.add', { householdId: args.householdId })).actor
+    const save = await intakeSave(ctx, args.householdId, actor.key, 'wearer', intakeKey, args)
+    if (save?.previous) return save.previous.result as Id<'wearers'>
     if (args.self) {
       const mine = await ctx.db.query('wearers').withIndex('by_household_principal', (q) => q.eq('householdId', args.householdId).eq('principalKey', actor.key)).unique()
       if (mine !== null) fail('conflict', 'Your account already has a clothing profile')
@@ -873,6 +934,7 @@ export const createWearer = mutation({
     const requirements = args.requirements === undefined ? undefined : await requirementsFrom(ctx, args.householdId, args.requirements)
     const wearerId = await ctx.db.insert('wearers', { householdId: args.householdId, name: text(args.name, 'Name', 60), kind: args.kind, createdAt: Date.now(), ...(args.self ? { principalKey: actor.key as string } : {}), ...(requirements === undefined ? {} : { requirements }) })
     if (requirements !== undefined) await invalidatePlans(ctx, args.householdId)
+    await save?.record(wearerId)
     return wearerId
   },
 })
@@ -1016,6 +1078,7 @@ async function safetyFrom(ctx: MutationCtx, householdId: Id<'households'>, safet
 
 export const createSupply = mutation({
   args: {
+    intakeKey: v.optional(v.string()),
     householdId: v.id('households'),
     name: v.string(),
     kind: supplyKind,
@@ -1027,8 +1090,10 @@ export const createSupply = mutation({
     provenance: provenanceValidator,
   },
   returns: v.id('supplies'),
-  handler: async (ctx, args) => {
+  handler: async (ctx, { intakeKey, ...args }) => {
     const actor = (await authorize(ctx, 'supply.add', { householdId: args.householdId })).actor
+    const save = await intakeSave(ctx, args.householdId, actor.key, 'product', intakeKey, args)
+    if (save?.previous) return save.previous.result as Id<'supplies'>
     assertUseFits(args.use, args.kind)
     const safety = args.safety === undefined ? undefined : await safetyFrom(ctx, args.householdId, args.safety, args.measure)
     const supplyId = await ctx.db.insert('supplies', {
@@ -1044,6 +1109,7 @@ export const createSupply = mutation({
       createdAt: Date.now(),
     })
     await invalidatePlans(ctx, args.householdId)
+    await save?.record(supplyId)
     return supplyId
   },
 })
@@ -1481,10 +1547,12 @@ export const updateMachine = mutation({
  * are four rows the pass can tell apart.
  */
 export const createMachines = mutation({
-  args: { householdId: v.id('households'), name: v.string(), count: v.number(), provenance: provenanceValidator, ...machineArgs },
+  args: { householdId: v.id('households'), name: v.string(), count: v.number(), provenance: provenanceValidator, intakeKey: v.optional(v.string()), ...machineArgs },
   returns: v.array(v.id('machines')),
-  handler: async (ctx, { count, ...args }) => {
-    await authorize(ctx, 'machine.add', { householdId: args.householdId })
+  handler: async (ctx, { intakeKey, count, ...args }) => {
+    const actor = (await authorize(ctx, 'machine.add', { householdId: args.householdId })).actor
+    const save = await intakeSave(ctx, args.householdId, actor.key, 'appliance', intakeKey, { count, ...args })
+    if (save?.previous) return save.previous.result as Id<'machines'>[]
     const names = siblingNames(args.name, siblingCount(count))
     const fields = machineFields(args, null)
     const evidence = provenance(args.provenance)
@@ -1502,6 +1570,7 @@ export const createMachines = mutation({
       }))
     }
     await invalidatePlans(ctx, args.householdId)
+    await save?.record(machineIds)
     return machineIds
   },
 })
@@ -1627,21 +1696,24 @@ export const setLaundryTimes = mutation({
   },
 })
 
-/** The rack size and loads a day (design 5.6, 6.2): 1 to 3 each. Only laundry-day planning reads them; plans are not re-made. */
+/** Household laundry-day preferences; updating them does not remake or start a plan. */
 export const setLaundryDay = mutation({
-  args: { householdId: v.id('households'), rackLoads: v.optional(v.number()), loadsPerDay: v.optional(v.number()) },
+  args: { householdId: v.id('households'), rackLoads: v.optional(v.number()), loadsPerDay: v.optional(v.number()), pace: v.optional(v.union(v.literal('all'), v.literal('spread'))), finishBy: v.optional(v.union(v.string(), v.null())) },
   returns: v.null(),
   handler: async (ctx, args) => {
     await authorize(ctx, 'household.edit', { householdId: args.householdId })
     for (const value of [args.rackLoads, args.loadsPerDay]) {
       if (value !== undefined && (!Number.isInteger(value) || value < 1 || value > 3)) fail('invalid', 'Choose 1, 2 or 3')
     }
+    if (args.finishBy !== undefined && args.finishBy !== null && !/^([01]\d|2[0-3]):[0-5]\d$/.test(args.finishBy)) fail('invalid', 'Choose a valid finish time')
     const household = await ctx.db.get(args.householdId)
     const day = household?.planning?.day ?? {}
     await ctx.db.patch(args.householdId, { planning: { ...(household?.planning ?? {}), day: {
       ...day,
       ...(args.rackLoads === undefined ? {} : { rackLoads: args.rackLoads }),
       ...(args.loadsPerDay === undefined ? {} : { loadsPerDay: args.loadsPerDay }),
+      ...(args.pace === undefined ? {} : { pace: args.pace }),
+      ...(args.finishBy === undefined ? {} : { finishBy: args.finishBy ?? undefined }),
     } } })
     return null
   },
@@ -1721,7 +1793,9 @@ export const waterDataChanged = internalMutation({
       let differs = false
       for (const status of ['ready', 'needs_confirmation', 'used'] as const) {
         const stored = await ctx.db.query('plans').withIndex('by_household_status', (q) => q.eq('householdId', household._id).eq('status', status)).collect()
-        differs ||= stored.some((plan) => (plan.inputSnapshot as { waterCondition?: unknown }).waterCondition !== current)
+        for (const plan of stored) {
+          if ((await readPlanDocuments(ctx, plan)).inputSnapshot.waterCondition !== current) differs = true
+        }
       }
       if (differs) await invalidatePlans(ctx, household._id, { dosesOnly: true })
       await scheduleWaterWindowEnd(ctx, household._id, water)

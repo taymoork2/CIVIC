@@ -1,22 +1,29 @@
+import { hangingSession } from '@/laundry/hanging-session'
+export { hangingSession } from '@/laundry/hanging-session'
 import { buttonVariants } from '@/components/ui/button'
 import { NativeSelect } from '@/components/ui/native-select'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
-import { clothingTags, usedClothingTags } from '@washcloset/planner'
+import { BrowseSearch } from '@/kit/browse-search'
+import { PageStatus } from '@/kit/page-status'
+import { useDeviceState } from '@/kit/device-state'
+import { BulkClosetSheet, PagedBulkClosetSheet, type BulkUpdate } from '@/closet/bulk-sheet'
+import { matchesClothingSearch, usedClothingTags } from '@washcloset/planner'
+import { usePagedInventory, type BrowseArgs } from '@/closet/paged-inventory'
 import { useMutation, useQuery } from 'convex/react'
 import type { FunctionArgs, FunctionReturnType } from 'convex/server'
-import { useEffect, useId, useMemo, useRef, useState, type ComponentProps, type ReactNode } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useId, useMemo, useRef, useState, type ComponentProps, type ReactNode } from 'react'
 
 import type { Id } from '@convex/_generated/dataModel'
 import type { CurrentHousehold } from '@/account/account'
-import { AddClothesFlow, type AddMode } from '@/closet/add-clothes'
+import type { AddMode } from '@/closet/add-clothes'
 import { api } from '@/api'
 import { closetRails, closetState, kindHeadings, type ClosetGarment, type ClosetRail, type ClosetState, type ClosetTile } from '@/closet/closet-groups'
-import { closetText, colorDisplay, colorWord, countWord, dayWord, kindNameWords, kindWords, monthWord, noWearerWords } from '@/copy'
+import { closetText, colorDisplay, colorWord, countWord, dayWord, kindNameWords, monthWord, noWearerWords } from '@/copy'
 import { closetListText } from '@/copy-closet'
 import { useClientRender } from '@/kit/client-render'
-import { ClosetGlance, glanceCounts, type GlancePerson } from '@/closet/closet-glance'
-import { ChipScroller, Segmented, SearchField, SectionHead, chipClassName } from '@/closet/closet-parts'
+import { ClosetGlance, glanceCounts } from '@/closet/closet-glance'
+import { ChipScroller, SectionHead, chipClassName } from '@/closet/closet-parts'
 import { RecordRow, type MarkTone } from '@/kit/record-row'
 import { ItemGroup } from '@/components/ui/item'
 import { FlagSheet, draftFromFlag, type FlagCall, type FlagGarment } from '@/closet/flag-sheet'
@@ -26,10 +33,10 @@ import type { Inventory, Textile } from '@/household/inventory-types'
 import { effectiveWashMethod } from '@/household/inventory-types'
 import { InstallGuidance } from '@/pwa'
 import { GarmentIcon } from '@/kit/garment-icon'
-import { CareEmpty, CareHero } from '@/products/product-ui'
+import { CareEmpty, CareHero, SectionNav } from '@/products/product-ui'
 import { loadClosetChips, saveClosetChips, type ClosetWearerChip } from '@/private-state'
 import { sessionStage, type StageFacts } from '@/laundry/session-stage'
-import { useNow } from '@/laundry/session-view'
+import { useNow } from '@/kit/use-now'
 import { Sheet } from '@/kit/sheet'
 import { ErrorNotice, Field, Loading, clockTime, useConvexCall } from '@/kit/ui'
 import { ActionError, useActionFeedback } from '@/kit/action-feedback'
@@ -39,6 +46,8 @@ import { useStartup } from '@/startup-context'
 import { Button } from '@/components/ui/button'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { DesignIcon } from '@/kit/design-icons'
+
+const AddClothesFlow = lazy(() => import('@/closet/add-clothes').then(module => ({ default: module.AddClothesFlow })))
 
 const closetManagementClassName = cn(
   "closet-management",
@@ -143,7 +152,7 @@ export type Sessions = FunctionReturnType<typeof api.execution.householdSessions
 type TopSlot = NonNullable<Attention['top']>
 type NeedsYouCard = Attention['cards'][number]
 
-export type ClosetCalls = GarmentCalls & { readonly flagDirty: FlagCall; readonly washedElsewhere: WashedCall }
+export type ClosetCalls = GarmentCalls & { readonly flagDirty: FlagCall; readonly washedElsewhere: WashedCall; readonly bulkUpdate?: BulkUpdate }
 
 /** The "for what" chips: Everyday is every day, so it is not a chip. */
 /** A wearer chip as a chip value: 'everyone', 'me' or `w:{wearerId}`. */
@@ -173,13 +182,6 @@ export function sessionDoneAt(sessions: Sessions, sessionId: string | null, now:
   return session === undefined || session.status !== 'running' ? null : sessionStage(stageFacts(session), now).doneAt
 }
 
-/** The finished load a hanging garment came out of: the latest one that washed it. */
-export function hangingSession(sessions: Sessions, textileId: string): string | null {
-  const loads = sessions
-    .filter((session) => session.status === 'completed' && (session.textileIds as readonly string[]).includes(textileId))
-    .sort((left, right) => (right.completedAt ?? 0) - (left.completedAt ?? 0))
-  return loads[0]?.sessionId ?? null
-}
 
 /** A needed-by day in the top slot: overdue still reads "today". */
 const neededDay = (neededBy: number, now: number) => (neededBy < now ? closetText.today : dayWord(neededBy, now))
@@ -364,16 +366,12 @@ function GarmentRow({ tile, owner, now, onOpen, states }: { tile: ClosetTile<Tex
     title={`${tile.name}${tile.members.length > 1 ? ` ×${tile.members.length}` : ''}`}
     fact={fact}
     mark={rowMark(tile, states)}
-    label={`${owner === '' ? '' : `${owner}, `}${mixed ? `${tile.name}, ${tile.members.length}, ${summary}` : hangerLabel(tile, now)}${first.identity?.brand ? `, ${first.identity.brand}` : ''}`}
+    label={`${owner === '' ? '' : `${owner}, `}${mixed ? `${tile.name}, ${tile.members.length}, ${summary}` : hangerLabel(tile, now)}${first.identity?.brand ? `, ${first.identity.brand}` : ''}${unknownCare(tile) ? `, ${closetListText.markNeedsLabel}` : ''}`}
     onOpen={onOpen} />
 }
 
 export function matchesClosetSearch(tile: ClosetTile<Textile>, owner: string, search: string): boolean {
-  const query = search.trim().toLocaleLowerCase()
-  if (query === '') return true
-  const identity = tile.members[0]?.identity
-  return [tile.name, owner, tile.members[0]?.color, tile.colorGroup, ...(tile.members[0] === undefined ? [] : clothingTags(tile.members[0])), tile.kind === null ? null : kindWords[tile.kind as keyof typeof kindWords], identity?.brand, identity?.styleNumber, identity?.size, identity?.rnNumber, identity?.barcode]
-    .some((value) => value?.toLocaleLowerCase().includes(query))
+  return tile.members.some(piece => matchesClothingSearch(piece, owner, search))
 }
 
 // ---- The view ----------------------------------------------------------------------
@@ -417,23 +415,31 @@ export type ClosetViewProps = {
   trash?: FunctionReturnType<typeof api.inventory.listTrash>
   restoreTextiles?: (args: FunctionArgs<typeof api.inventory.restoreTextiles>) => Promise<FunctionReturnType<typeof api.inventory.restoreTextiles>>
   onSetupMyCloset?: () => void
+  pagination?: ReturnType<typeof usePagedInventory> & { args: BrowseArgs; onBrowse: (search: string, section: 'all' | 'ready' | 'care', tags: string[]) => void }
 }
 
 /**
- * "What can I wear, and what needs me?" The top is for reading: how many are ready and where
- * everything is. Clothes hang on a rail per person, then what needs a tap, and the one thing that
- * needs you now sits low, above the tabs.
+ * Keep everyday scope and grouping visible; management holds less frequent actions.
  */
-export function ClosetView({ now, attention, today, inventory, sessions, meWearerId, wearerChip, onWearerChip, initialFilters, onFiltersChange, calls, renderLink = plainLink, initialSheet = null, itemSheet = null, itemKey, onArrivalClose, onItemOpen, initialSection = 'all', extra = null, addClothes, trash = [], restoreTextiles, onSetupMyCloset }: ClosetViewProps) {
+export function ClosetView({ now, attention, today, inventory, sessions, meWearerId, wearerChip, onWearerChip, initialFilters, onFiltersChange, calls, renderLink = plainLink, initialSheet = null, itemSheet = null, itemKey, onArrivalClose, onItemOpen, initialSection, extra = null, addClothes, trash = [], restoreTextiles, onSetupMyCloset, pagination }: ClosetViewProps) {
   const [sheet, setSheet] = useState<ClosetSheet | null>(initialSheet)
+  const [bulk, setBulk] = useState(false)
+  const [managementOpen, setManagementOpen] = useState(false)
   const activeSheet = itemSheet ?? sheet
   const SheetFlow = itemSheet === null ? ClosetSheets : RoutedClosetSheets
-  const [search, setSearch] = useState('')
-  const [groupBy, setGroupBy] = useState<ClosetGrouping>('type')
+  const [search, setSearch] = useDeviceState('closet-search', '', (value): value is string => typeof value === 'string' && value.length <= 500)
+  const [groupBy, setGroupBy] = useDeviceState<ClosetGrouping>('closet-grouping', 'type', (value): value is ClosetGrouping => closetGroupings.includes(value as ClosetGrouping))
   const [browseFilters, setBrowseFilters] = useState<BrowseFilters>(initialFilters ?? { kinds: [], tags: [] })
   const chooseFilters = (next: typeof browseFilters) => { setBrowseFilters(next); onFiltersChange?.(next) }
   const filtered = browseFilters.tags.length > 0
-  const [section, setSection] = useState<'all' | 'ready' | 'care'>(initialSection)
+  const [section, setSection] = useDeviceState<'all' | 'ready' | 'care'>('closet-section', initialSection ?? 'all', (value): value is 'all' | 'ready' | 'care' => value === 'all' || value === 'ready' || value === 'care', initialSection === undefined)
+  const onBrowse = pagination?.onBrowse
+  const awaitingBrowse = pagination !== undefined && (pagination.args.search !== search || pagination.args.section !== section || JSON.stringify(pagination.args.tags) !== JSON.stringify(browseFilters.tags))
+  const loading = pagination?.loading || awaitingBrowse
+  useEffect(() => { onBrowse?.(search, section, browseFilters.tags) }, [onBrowse, search, section, browseFilters.tags])
+  useEffect(() => {
+    if (initialSection !== undefined) { setSection(initialSection); setSearch('') }
+  }, [initialSection, setSection, setSearch])
   // A confirmation goes to Sonner; an error stays here, inline, next to what failed, until the next try.
   const feedback = useActionFeedback()
   const { pending, say } = feedback
@@ -454,7 +460,7 @@ export function ClosetView({ now, attention, today, inventory, sessions, meWeare
   const soloWearerId = inventory.wearers.length === 1 ? wearerIds[0]! : null
   const unlinkedMe = wearerChip === 'me' && meWearerId === null
   const scopedGarments = unlinkedMe ? [] : garments.filter((garment) => wearerId === undefined || (garment.wearerId !== null && wearerIds.includes(garment.wearerId) ? garment.wearerId : null) === wearerId)
-  const availableTags = usedClothingTags(scopedGarments)
+  const availableTags = pagination?.summary?.tags ?? usedClothingTags(scopedGarments)
   const matchingTypes = scopedGarments
   const railGroups = closetRailGroups(closetRails(matchingTypes, wearerIds, filter, now, today.notWornDays), wearerChip === 'everyone' ? soloWearerId : null, wearerName)
   const shown = railGroups.flatMap(({ rail, name }) => rail.sections.flatMap((section) => section.tiles.map((tile) => ({ tile, owner: name })))).filter(({ tile, owner }) => matchesClosetSearch(tile, owner, search))
@@ -468,27 +474,23 @@ export function ClosetView({ now, attention, today, inventory, sessions, meWeare
     { value: 'everyone' as ClosetWearerChip, label: 'Everyone', count: garments.length },
   ]
   const selectedProfile = profiles.find((profile) => wearerChipValue(profile.value) === wearerChipValue(wearerChip)) ?? profiles.at(-1)!
-  // The glance counts the closet being looked at; the person circles choose whose closet.
-  const glanceMark = (profile: (typeof profiles)[number]): Pick<GlancePerson, 'mark' | 'icon'> => profile.value === 'shared' ? { mark: 'home', icon: true } : profile.value === 'everyone' ? { mark: 'people', icon: true } : { mark: profile.label.trim().charAt(0).toUpperCase() }
-  const glance = <ClosetGlance counts={glanceCounts(scopedGarments)} selected={wearerChipValue(selectedProfile.value)}
-    people={profiles.length <= 2 ? [] : profiles.map((profile) => ({ value: wearerChipValue(profile.value), label: profile.label, ...glanceMark(profile) }))}
-    onPerson={(value) => { onWearerChip(wearerChipFrom(value)); setSearch(''); setSection('all') }} />
+  const counts = pagination?.summary?.counts ?? glanceCounts(scopedGarments)
   const closetTitle = closetText.title
-  const addAction = unlinkedMe ? <Button type="button" variant="outline" onClick={onSetupMyCloset} disabled={onSetupMyCloset === undefined}>Set up my closet</Button> : addClothes === undefined ? null : <Button type="button" variant="outline" aria-label={closetText.addClothes} onClick={() => setSheet({ kind: 'add' })}><DesignIcon name="plus" size="1em" aria-hidden="true"  />{closetText.addClothes}</Button>
-  const addRow = unlinkedMe || addClothes === undefined ? null : <ItemGroup><RecordRow media={<DesignIcon name="plus" strokeWidth={1.6} />} title={closetText.addClothes} label={closetText.addClothes} onOpen={() => setSheet({ kind: 'add' })} /></ItemGroup>
+  const addAction = unlinkedMe ? <Button type="button" variant="outline" onClick={onSetupMyCloset} disabled={onSetupMyCloset === undefined}>Set up my closet</Button> : addClothes === undefined ? null : <Button type="button" variant="outline" className="[.care-feature_&]:min-h-11 [.care-feature_&]:px-3 [.care-feature_&]:py-2" aria-label={closetText.addClothes} onClick={(event) => { event.currentTarget.focus(); setSheet({ kind: 'add' }) }}><DesignIcon name="plus" size="1em" aria-hidden="true" /><span className="hidden [.care-feature_&]:inline">Add</span><span className="[.care-feature_&]:hidden">{closetText.addClothes}</span></Button>
   const management = <div className={closetManagementClassName}>
-    <Popover>
+    <Popover open={managementOpen} onOpenChange={setManagementOpen}>
       <PopoverTrigger render={<Button variant="ghost" size="icon" type="button" className={closetManagementTriggerClassName} aria-label={closetText.manage} />}><DesignIcon name="funnel" size="1em" aria-hidden="true"  /></PopoverTrigger>
       <PopoverContent className="grid w-[min(22rem,calc(100vw-2rem))] gap-4" aria-label="Closet filters and management">
-        <Segmented label={closetListText.groupLabel} value={groupBy} onChange={setGroupBy} options={closetGroupings.map((value) => ({ value, label: closetListText.groups[value] }))} />
+        <SectionNav label="Clothing status" value={section} onChange={setSection} items={(['all', 'ready', 'care'] as const).map(value => ({ value, label: value === 'all' ? closetText.all : value === 'ready' ? closetText.ready : closetText.needsCare }))} />
+        <SectionNav label={closetListText.groupLabel} value={groupBy} onChange={setGroupBy} items={closetGroupings.map(value => ({ value, label: closetListText.groups[value] }))} />
         <ChipScroller label={closetListText.filterLabel}>
-          {(['all', 'ready', 'care'] as const).map((value) => <button key={value} type="button" className={chipClassName} aria-pressed={section === value} onClick={() => setSection(value)}>{value === 'all' ? closetText.all : value === 'ready' ? closetText.ready : closetText.needsCare}</button>)}
           {availableTags.map((tag) => {
             const on = browseFilters.tags.some((chosen) => chosen.toLowerCase() === tag.toLowerCase())
             return <button key={tag} type="button" className={chipClassName} aria-pressed={on} onClick={() => chooseFilters({ ...browseFilters, tags: on ? browseFilters.tags.filter((chosen) => chosen.toLowerCase() !== tag.toLowerCase()) : [...browseFilters.tags, tag] })}>{tag}</button>
           })}
         </ChipScroller>
         <Button variant="ghost" onClick={() => setSheet({ kind: 'trash' })}><DesignIcon name="trash" size="1em" aria-hidden="true"  />{closetText.trashCount(trash.length)}</Button>
+        {calls.bulkUpdate === undefined ? null : <Button type="button" variant="ghost" disabled={loading || visible.length === 0} onClick={() => { setManagementOpen(false); setBulk(true) }}>Select items</Button>}
       </PopoverContent>
     </Popover>
   </div>
@@ -524,11 +526,12 @@ export function ClosetView({ now, attention, today, inventory, sessions, meWeare
 
   // The add sheet sits beside the page in both branches, so saving the first garment keeps the same
   // intake mounted for Add another (Sheet portals, so this placement changes React identity only).
-  if (garments.length === 0) {
+  if ((garments.length === 0 && pagination === undefined) || pagination?.summary?.total === 0) {
     return <>
       <div className={cn(pageClassName, closetClassName)}>
-        <CareHero title={closetTitle} action={management} />
-        <CareEmpty icon="people" title={unlinkedMe ? 'Make this closet yours' : 'Start your closet'} description={unlinkedMe ? 'Choose your clothing profile to see your clothes here.' : 'Add clothes individually or in matching groups, like a pack of tees.'}>{addAction}</CareEmpty>
+        <CareHero title={closetTitle} />
+        <CareEmpty icon="people" art={<img src="/design/care-complete.webp" alt="" width={960} height={640} className="block h-auto w-full object-contain" />} title={unlinkedMe ? 'Make this closet yours' : 'Start your closet'} description={unlinkedMe ? 'Choose your clothing profile to see your clothes here.' : 'Add clothes individually or in matching groups, like a pack of tees.'}>{addAction}</CareEmpty>
+        <div className="flex justify-end">{management}</div>
         {attention.hamper.count > 0 ? <p className={mutedClassName}>{closetText.onTheWay(attention.hamper.count)}</p> : null}
         {extra}
         {errorView}
@@ -539,23 +542,28 @@ export function ClosetView({ now, attention, today, inventory, sessions, meWeare
 
   return <>
     <div className={cn(pageClassName, closetClassName)}>
-      <CareHero title={closetTitle} action={management} />
-      {glance}
-      <SearchField label={closetText.searchLabel} value={search} placeholder={closetListText.searchPlaceholder} onChange={setSearch} />
+      <CareHero variant="feature" photo title={closetTitle} art={<img src="/design/care-complete.webp" alt="" width={960} height={640} />}
+        detail={<ClosetGlance counts={counts} people={[]} selected="" onPerson={() => undefined} />} action={addAction} />
+      <BrowseSearch label={closetText.searchLabel} value={search} placeholder={closetListText.searchPlaceholder} onChange={setSearch}
+        summary={<div className="flex min-w-[min(100%,10rem)] flex-1 flex-wrap items-center gap-2">
+          <div className="min-w-28 max-w-[10rem] flex-1"><NativeSelect size="sm" aria-label="Whose clothes" value={wearerChipValue(selectedProfile.value)} onChange={(event) => { onWearerChip(wearerChipFrom(event.target.value)); setSearch(''); setSection('all') }}>{profiles.map((profile) => <option key={wearerChipValue(profile.value)} value={wearerChipValue(profile.value)}>{profile.label}</option>)}</NativeSelect></div>
+          <p className="m-0 text-[length:var(--step--1)] text-ink-2" role="status">{loading ? 'Finding clothes…' : closetListText.pieces(unlinkedMe ? 0 : pagination?.summary?.matched ?? visible.reduce((total, { tile }) => total + tile.members.length, 0))}<span className="sr-only"> · by {closetListText.groups[groupBy].toLowerCase()}</span></p>
+        </div>}
+        actions={management} />
       {filtered || section !== 'all' ? <div className="flex flex-wrap items-center gap-2">
         <span className="text-[length:var(--step--1)] text-ink-2">{[...browseFilters.tags, ...(section === 'all' ? [] : [section === 'ready' ? closetText.ready : closetText.needsCare])].join(' · ')}</span>
         <Button type="button" variant="outline" onClick={() => { chooseFilters({ kinds: [], tags: [] }); setSection('all') }}>Reset filters</Button>
       </div> : null}
 
-      {visible.length === 0 ? <p className="m-0 text-[length:var(--step--1)] leading-[1.5] text-ink-2" role="status">{search.trim() !== '' ? closetListText.nothingMatches(search.trim()) : unlinkedMe ? 'Choose your clothing profile to see your clothes here.' : scopedGarments.length === 0 ? 'This closet is empty.' : filtered || section !== 'all' ? closetText.searchEmpty : closetListText.none}</p> : null}
+      {loading ? <Loading what="clothes" /> : visible.length === 0 ? <p className="m-0 text-[length:var(--step--1)] leading-[1.5] text-ink-2" role="status">{search.trim() !== '' ? closetListText.nothingMatches(search.trim()) : unlinkedMe ? 'Choose your clothing profile to see your clothes here.' : scopedGarments.length === 0 ? 'This closet is empty.' : filtered || section !== 'all' ? closetText.searchEmpty : closetListText.none}</p> : null}
       {/* The status asks an unlinked person to choose their profile, so the way to do it sits right under it. */}
       {unlinkedMe && search.trim() === '' ? <div>{addAction}</div> : null}
 
-      {groups.map((group) => <section key={group.key} className="grid gap-3" aria-labelledby={`closet-group-${group.key}`}>
-        <SectionHead id={`closet-group-${group.key}`} title={group.heading} caption={closetListText.pieces(group.pieces)} />
+      {loading ? null : groups.map((group) => <section key={group.key} className="grid gap-3" aria-labelledby={`closet-group-${group.key}`}>
+        <SectionHead id={`closet-group-${group.key}`} title={group.heading} caption={groups.length === 1 ? undefined : `${closetListText.pieces(group.pieces)}${pagination === undefined ? '' : ' shown'}`} />
         <ItemGroup>{group.rows.map(({ tile, owner, states }) => <GarmentRow key={`${owner}:${tile.key}`} tile={tile} owner={owner} now={now} states={states} onOpen={() => open(tile.members.map((member) => member.textileId), states.length > 1)} />)}</ItemGroup>
       </section>)}
-      {addRow}
+      {!unlinkedMe && !loading && pagination !== undefined && visible.length > 0 ? <PageStatus shown={visible.reduce((sum, row) => sum + row.tile.members.length, 0)} total={pagination.summary?.matched} more={pagination.more} loading={pagination.loadingMore} onMore={pagination.loadMore} label="Show more clothes" /> : null}
 
       {attention.cards.length === 0 ? null : (
         <details className="grid gap-3">
@@ -605,6 +613,7 @@ export function ClosetView({ now, attention, today, inventory, sessions, meWeare
         wearerName={wearerName} onSheet={(next) => { if (next === null && onArrivalClose !== undefined) onArrivalClose(); else setSheet(next) }} onDone={done} />}
     </div>
     {addSheet}
+    {bulk && calls.bulkUpdate !== undefined ? pagination === undefined ? <BulkClosetSheet groups={visible.map(({ tile }) => ({ key: tile.members[0]!.textileId, members: tile.members }))} wearers={inventory.wearers} knownTags={availableTags} now={now} update={calls.bulkUpdate} flag={calls.flagDirty} onClose={() => setBulk(false)} onDone={(message) => { setBulk(false); say(message) }} /> : <PagedBulkClosetSheet args={pagination.args} wearers={inventory.wearers} now={now} update={calls.bulkUpdate} flag={calls.flagDirty} onClose={() => setBulk(false)} onDone={message => { setBulk(false); say(message) }} /> : null}
   </>
 }
 
@@ -701,7 +710,7 @@ export function Closet({ household, renderLink, initialAdd = false, initialSecti
   const minute = Math.floor(now / 60_000) * 60_000
   const startup = useStartup()
   const status = useQuery(api.households.onboardingStatus, {}) ?? (startup?.seedActive ? startup.data.onboarding : undefined)
-  const inventory = useQuery(api.inventory.list, { householdId }) ?? shared?.inventory
+  const setupInventory = useQuery(api.inventory.list, { householdId, textileIds: [] }) ?? shared?.inventory
   const trash = useQuery(api.inventory.listTrash, { householdId })
   const restoreTextiles = useMutation(api.inventory.restoreTextiles)
   const updateTextile = useMutation(api.inventory.updateTextile)
@@ -719,9 +728,16 @@ export function Closet({ household, renderLink, initialAdd = false, initialSecti
   const [chosen, setChosen] = useState<{ householdId: string; chips: { wearer: ClosetWearerChip; filters: BrowseFilters } }>()
   const chips = chosen?.householdId === householdId ? chosen.chips : saved
   const [setup, setSetup] = useState(false)
-  const meWearerId = inventory?.wearers.find((wearer) => wearer.principalKey !== null && wearer.principalKey === status?.principalKey)?.wearerId ?? null
+  const meWearerId = setupInventory?.wearers.find((wearer) => wearer.principalKey !== null && wearer.principalKey === status?.principalKey)?.wearerId ?? null
+  const [browse, setBrowse] = useState({ search: '', section: initialSection ?? 'all', tags: [] as string[] })
+  const onBrowse = useCallback((search: string, section: 'all' | 'ready' | 'care', tags: string[]) => setBrowse(current => current.search === search && current.section === section && JSON.stringify(current.tags) === JSON.stringify(tags) ? current : { search, section, tags }), [])
+  const wearer = chips === undefined ? undefined : chosenWearer(chips.wearer, meWearerId, setupInventory?.wearers.map(person => person.wearerId) ?? [])
+  const browseArgs: BrowseArgs = { householdId, ...browse, ...(wearer === undefined ? {} : { wearer: wearer as Id<'wearers'> | null }) }
+  const paging = usePagedInventory(chips === undefined ? 'skip' : browseArgs)
+  const arrival = useQuery(api.inventoryBrowse.group, initialItem === undefined ? 'skip' : { householdId, textileId: initialItem as Id<'textiles'> })
+  const inventory = setupInventory === undefined ? undefined : { ...setupInventory, textiles: [...new Map([...paging.pieces, ...(arrival ?? [])].map(piece => [piece.textileId, piece])).values()] }
   // Filtering already happens in ClosetView; its only Today input is the household's not-worn threshold.
-  const today = useQuery(api.closet.today, { householdId }) ?? shared?.today
+  const today = useQuery(api.closet.today, { householdId, summaryOnly: true }) ?? shared?.today
   const calls: ClosetCalls = {
     setRefresh: useMutation(api.closet.setRefresh),
     unflag: useMutation(api.closet.unflag),
@@ -730,6 +746,7 @@ export function Closet({ household, renderLink, initialAdd = false, initialSecti
     allDry: useMutation(api.closet.allDry),
     droppedAtCleaner: useMutation(api.closet.droppedAtCleaner),
     flagDirty: useMutation(api.closet.flagDirty),
+    bulkUpdate: useMutation(api.inventory.bulkUpdateTextiles),
     washedElsewhere: useMutation(api.closet.washedElsewhere),
     answerCare: (args) => answerTagQuestions(args),
     treatKnownStain: useMutation(api.closet.treatKnownStain),
@@ -737,6 +754,7 @@ export function Closet({ household, renderLink, initialAdd = false, initialSecti
     answerStainCheck: useMutation(api.closet.answerStainCheck),
     resolveStain: useMutation(api.closet.resolveStain),
     retire: useMutation(api.inventory.trashTextiles),
+    restoreTextiles,
     updateTags: async ({ textileIds, tags }) => { for (const textileId of textileIds) await updateTextile({ textileId: textileId as Id<'textiles'>, tags: [...tags] }) },
   }
   const choose = (next: NonNullable<typeof chips>) => {
@@ -760,6 +778,7 @@ export function Closet({ household, renderLink, initialAdd = false, initialSecti
       attention={attention}
       today={today}
       inventory={inventory}
+      pagination={{ ...paging, args: browseArgs, onBrowse }}
       trash={trash}
       restoreTextiles={restoreTextiles}
       sessions={sessions}
@@ -777,8 +796,8 @@ export function Closet({ household, renderLink, initialAdd = false, initialSecti
       onItemOpen={onItemOpen}
       onArrivalClose={initialItem === undefined ? undefined : onItemClose}
       initialSection={initialSection}
-      extra={initialItem !== undefined && selected === undefined ? <p className={noticeClassName} role="status">This item is no longer in this closet. <Button variant="unstyled" size="unstyled" type="button" className={secondaryButtonClassName} onClick={onItemClose}>Return to your clothes</Button></p> : sessions.some((session) => session.status === 'completed') ? <InstallGuidance /> : null}
-      addClothes={(mode, onClose) => <AddClothesFlow householdId={householdId} mode={mode} onClose={onClose} />}
+      extra={initialItem !== undefined && arrival !== undefined && selected === undefined ? <p className={noticeClassName} role="status">This item is no longer in this closet. <Button variant="unstyled" size="unstyled" type="button" className={secondaryButtonClassName} onClick={onItemClose}>Return to your clothes</Button></p> : sessions.some((session) => session.status === 'completed') ? <InstallGuidance /> : null}
+      addClothes={(mode, onClose) => <Suspense fallback={<Loading what="item details" />}><AddClothesFlow householdId={householdId} mode={mode} onClose={onClose} /></Suspense>}
     />
     {setup && status !== null && status !== undefined ? <MyClosetSetup householdId={householdId} wearers={inventory.wearers} principalKey={status.principalKey} displayName={status.displayName ?? ''} onClose={() => setSetup(false)} /> : null}
   </>)

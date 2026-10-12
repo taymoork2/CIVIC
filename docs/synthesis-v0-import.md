@@ -83,6 +83,37 @@ Verified on the merge branch with Node 22 and pnpm 12.5.1:
 
 The handoff's `MANIFEST.json` and `SHA256SUMS` describe the v4 bundle as sent, so files this repository moved into `@civic/shell` or changed still report as missing or different there.
 
+## v6 handoff update
+
+On October 11, 2026 the founder sent a v6 handoff of the journey engine. It was merged into `rehearsal/` the same way as v4: a three-way merge whose base is the v4 handoff's source exactly as sent (checked against its `SHA256SUMS`), with this repository's changes on one side and v6 on the other. v6's own `context/since-v5.patch` was checked by rebuilding v5 from it. The v4 handoff documents and context moved to `rehearsal/history/v4/`; `rehearsal/` now carries v6's (`HANDOFF.md`, `CHANGES-SINCE-V5.md`, `EXTRACTION.md`, `history/v5/`). Host paths, the private tailnet address and session IDs are redacted in the committed copies of the handoff notes.
+
+What v5 and v6 add, over v4:
+
+- **A project contract and picker.** `rehearsal.project.json` names an app's sources, scenario registry, coverage file, personas, roles, conditions and preview adapter. The picker connects another app read-only, keeps a separate review store per project, and restarts the engine on a switch. Two non-Laundry examples prove it: an authored Notebook app and a manifest-free discovery app.
+- **Static discovery for existing apps.** A bounded source scan (no imports, no model) proposes screens, props, links and forms. A person confirms them before anything is generated, and the generated files are owned by the engine, never written into the app.
+- **Per-screen snapshot fingerprints.** Each screen's picture is keyed by its own import closure and shared inputs, so unrelated changes keep cached pictures, changed screens re-render, and older pictures show as stale rather than current.
+- **Review targets beyond a screen.** Notes can target the app, a flow, a screen, a region or a declared path, with the journey graph shared by the canvas and the server's validation.
+- **An agent-session bridge.** A saved review, with its frozen picture and source receipts, can be sent to one configured Codex or Claude session. Replies come back to the review, and a finished agent turn never resolves it.
+- **Laundry kept current**: 204 registered scenarios (from 173), 26 cross-route bindings, family-size simulations, native reminder states, and private phone access through one HTTPS Tailscale origin.
+
+Merge decisions made here:
+
+- `@civic/shell` still imports nothing from Laundry. The Laundry adapter now also supplies the journey graph (`journeyGraph`, `pathId`) and v6's fixture renderer; the agent bridge reaches the shell as an optional `agents` option, and the coverage bridge as the existing `coverage` factory. The one test that needs the real Laundry graph moved to `apps/web/scripts/review-adapter.check.mjs`.
+- Local browsers need no key (v6's keyless loopback session). The local key file stays, because CIVIC's re-capture and repro sign in with it and Amp portal visitors who aren't collaborators use it. The portal's collaborator access and v6's Tailscale origin both work.
+- The shell's own source is part of the attested revision but not of any screen's fingerprint, now hashed wherever the workspace link points.
+- v6's discovery and picker tests hard-coded macOS's `/private/tmp`; they use the system temp directory instead.
+- The 176 bundled thumbnails are v4's. v6 looks pictures up by per-screen fingerprint, so they show as stale placeholders until current snapshots render.
+
+How v6 relates to CIVIC's own work:
+
+- **Roadmap step 4.** The manifest, the picker and the two non-Laundry examples are most of step 4's onboarding direction, and they meet its acceptance that a second app connects without Laundry code. What's missing is the graph: the engine's journey graph (`journey-graph.mjs`, the scenario registry's edges with `when` and `returnTo`) should be exported into the CIVIC graph rather than read by the canvas directly. v6's discovery is a static source scan; D34's crawl-first discovery is still to build, and the two can share the same confirm-before-adopt step.
+- **The review loop (decision 0007).** v6's agent bridge pushes one review to one named session; CIVIC's loop records an annotation and lets agents claim a work request. Both keep agents from resolving anything (D38). Kept separate for now: a note still becomes a shared annotation, and sending it to a session is a second, direct path. The bridge fits best later as a delivery channel for a CIVIC work request, so receipts land on the request rather than only in the engine's local store.
+- **The `civic check` gate.** v6 adds no gate. Its unconfirmed discovery candidates, unmapped route destinations and coverage gaps are the kind of findings the gate could report once they are in the graph.
+- **Step 6.** Per-screen fingerprints are the staleness rule step 6 asks for (evidence visibly stale when its inputs change), but fixture capture is not yet in `bin/signoff`.
+- **Step 5.** Project switching is host-wide and the Tailscale origin admits anyone on the tailnet; neither is the identity and permission model.
+
+Verified on the merge branch with Node 22 and pnpm 12.5.1: `pnpm install --frozen-lockfile`, `pnpm run check` and `pnpm --dir apps/web run test:review` (every engine check, the shell's 10 server tests included) pass. The full `pnpm test` result is in the pull request.
+
 ## How to run
 
-The review service is declared in `.amp/services.yaml` (`amp orb services ensure`) and opens through the authenticated Amp portal at the `CIVIC journey engine` portal. Locally: `pnpm --dir rehearsal/source/apps/web run review`, then sign in with the key in `rehearsal/source/.review-data/access-key` (generated at first run, never committed).
+The review service is declared in `.amp/services.yaml` (`amp orb services ensure`) and opens through the authenticated Amp portal at the `CIVIC journey engine` portal. Locally: `pnpm --dir rehearsal/source/apps/web run review` and open the page; a loopback browser needs no key. CIVIC's tools use the key in `rehearsal/source/.review-data/access-key` (generated at first run, never committed).

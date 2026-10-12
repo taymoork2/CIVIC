@@ -4,6 +4,11 @@ import { cn } from '@/lib/utils'
 
 export { garmentIconPaths } from '@washcloset/icons'
 
+/** Category illustration, never a personal photo or evidence of fiber/care facts. */
+export function garmentCategoryPhoto(kind: string | null, colorGroup: string | null) {
+  return kind === 't_shirt' && colorGroup === 'white' ? '/design/ivory-tee.png' : undefined
+}
+
 /** The colour dot beside the icon: the planner's colour groups. Bright is striped and mixed is a grey hatch. */
 const dotFills: Readonly<Record<string, string>> = {
   white: '#fbfbf9',

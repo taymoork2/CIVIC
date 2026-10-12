@@ -1,27 +1,103 @@
 import { useEffect, useRef, useState } from 'react'
-import { feedbackText, type FeedbackKind } from '@/copy/feedback'
+import { feedbackText, type FeedbackKind } from './feedback-copy'
 import type { MapScreen } from './app-map'
 import type { ReviewConfig, ReviewSnapshot } from './store'
 import { readFixtureFields } from './journey'
 import { captureScreen } from '@civic/shell/capture'
 import { reviewApi } from './canvas'
+import { projectFetch } from './project-request'
+import { pathId } from './journey-graph.mjs'
+import { AgentDelivery, type Delivery } from './agent-delivery'
+import type { ProjectProfile } from './adapter'
 
+export type ReviewTarget = { kind: 'app' | 'flow' | 'screen' | 'region' | 'path'; id: string; label: string; flow?: string; screen?: string; from?: string; to?: string; action?: string; when?: string | null; returnTo?: string | null; selector?: string }
+type Anchor = { label: string; x: number; y: number; width: number; height: number }
+type ElementTarget = { label: string; selector: string; tag: string; anchor: Anchor }
 export type Feedback = {
-  id: string; kind: FeedbackKind; message: string; status: string; screenshot: string; reproduction: string; sourceStale?: boolean
+  id: string; kind: FeedbackKind; message: string; status: string; screenshot: string; reproduction: string; sourceStale?: boolean; target?: ReviewTarget
+  evidence?: { kind: 'live' | 'fixture' | 'map'; fixtureSource?: string }
   context: ReviewConfig & { screen?: string; viewport: { width: number; height: number }; state: { dialogs: string[]; tabs: string[]; fields: { label: string; value: string }[] } }
-  anchor: { label: string; x: number; y: number; width: number; height: number }
-  revision: ReviewSnapshot['revision']; resolution?: { evidence: string }
+  anchor: Anchor; revision: ReviewSnapshot['revision']; resolution?: { evidence: string }
+  deliveries?: Delivery[]
 }
 export function feedbackOnScreen(comment: Feedback, screen: MapScreen) {
+  if (comment.target && !['screen', 'region'].includes(comment.target.kind)) return false
   return comment.context.screen ? comment.context.screen === screen.id : comment.context.scenario === screen.scenario
 }
-type Capture = { requestId: string; context: Feedback['context']; anchor: Feedback['anchor']; snapshot: ReviewSnapshot; html: string }
-type NoteDraft = { message: string; kind: FeedbackKind; capture: Capture }
-const noteKey = 'rehearsal:review:draft:v1'
+type Capture = { requestId: string; context: Feedback['context']; anchor: Anchor; snapshot: ReviewSnapshot; html?: string; target: ReviewTarget; evidence: NonNullable<Feedback['evidence']> }
+type NoteDraft = { message: string; kind: FeedbackKind; capture: Capture; elements?: ElementTarget[]; image?: string }
+const whole = { label: 'Whole target', x: 0, y: 0, width: 1, height: 1 }
 
-export function ReviewPanel({ selected, flowScreens, allScreens, frame, focus }: { selected: MapScreen | null; flowScreens: MapScreen[]; allScreens: MapScreen[]; frame: HTMLIFrameElement | null; focus: (screen: MapScreen) => void }) {
+function elementTargets(doc: Document, width: number, height: number): ElementTarget[] {
+  return [...doc.querySelectorAll<HTMLElement>('button,input:not([type=password]):not([type=file]):not([type=hidden]),textarea,select,[role=tab],h1,h2,label')].flatMap((element) => {
+    const rect = element.getBoundingClientRect()
+    const left = Math.max(0, rect.left), top = Math.max(0, rect.top), right = Math.min(width, rect.right), bottom = Math.min(height, rect.bottom)
+    if (right <= left || bottom <= top || element.closest('[inert]')) return []
+    const label = (element.getAttribute('aria-label') ?? (element as HTMLInputElement).labels?.[0]?.textContent ?? element.textContent ?? element.tagName).trim().slice(0, 200) || element.tagName
+    const path: string[] = []
+    for (let node: Element | null = element; node && node.tagName !== 'HTML'; node = node.parentElement) {
+      if (node.id) { path.unshift(`#${CSS.escape(node.id)}`); break }
+      const siblings: Element[] = node.parentElement ? [...node.parentElement.children].filter((child) => child.tagName === node!.tagName) : []
+      path.unshift(`${node.tagName.toLowerCase()}:nth-of-type(${siblings.indexOf(node) + 1})`)
+    }
+    return [{ label, tag: element.tagName.toLowerCase(), selector: path.join(' > '), anchor: { label, x: left / width, y: top / height, width: (right - left) / width, height: (bottom - top) / height } }]
+  }).slice(0, 150)
+}
+
+function FrozenAnnotation({ draft, update, disabled }: { draft: NoteDraft; update: (anchor: Anchor, element?: ElementTarget) => void; disabled: boolean }) {
+  const container = useRef<HTMLDivElement>(null)
+  const pointer = useRef<{ x: number; y: number } | null>(null)
+  const [width, setWidth] = useState(280)
+  useEffect(() => {
+    if (!container.current) return
+    const observer = new ResizeObserver(([entry]) => setWidth(entry!.contentRect.width))
+    observer.observe(container.current); return () => observer.disconnect()
+  }, [])
+  const { viewport } = draft.capture.context
+  const anchor = draft.capture.anchor
+  return <>
+    <p className="rh-muted">Drag a rectangle, click a control, or select one below. This frozen evidence stays attached while you navigate.</p>
+    <div ref={container} className="rh-annotation-preview" style={{ aspectRatio: `${viewport.width} / ${viewport.height}` }}>
+      {draft.image ? <img src={draft.image} alt="Frozen synthetic starting screen" /> : <iframe title="Frozen annotation evidence" sandbox="allow-same-origin" srcDoc={draft.capture.html} onLoad={(event) => { event.currentTarget.contentDocument?.querySelectorAll<HTMLElement>('[data-review-scroll]').forEach((element) => { element.scrollTop = Number(element.dataset.reviewScroll) }) }} style={{ width: viewport.width, height: viewport.height, transform: `scale(${width / viewport.width})` }} />}
+      <div className="rh-annotation-surface" aria-label="Drag to highlight a region in the frozen evidence" onPointerDown={(event) => {
+        if (disabled || event.button !== 0) return
+        const rect = event.currentTarget.getBoundingClientRect()
+        pointer.current = { x: (event.clientX - rect.left) / rect.width, y: (event.clientY - rect.top) / rect.height }
+        event.currentTarget.setPointerCapture(event.pointerId)
+      }} onPointerCancel={() => { pointer.current = null }} onPointerUp={(event) => {
+        const start = pointer.current; pointer.current = null
+        if (!start || disabled) return
+        const rect = event.currentTarget.getBoundingClientRect()
+        const x = Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width)), y = Math.max(0, Math.min(1, (event.clientY - rect.top) / rect.height))
+        if ((Math.abs(x - start.x) + Math.abs(y - start.y)) * rect.width < 8) {
+          const element = draft.elements?.filter(({ anchor: a }) => x >= a.x && x <= a.x + a.width && y >= a.y && y <= a.y + a.height).sort((a, b) => a.anchor.width * a.anchor.height - b.anchor.width * b.anchor.height)[0]
+          if (element) { update(element.anchor, element); return }
+          update({ label: 'Selected point', x: Math.min(x, .98), y: Math.min(y, .98), width: .02, height: .02 }); return
+        }
+        update({ label: 'Selected region', x: Math.min(x, start.x), y: Math.min(y, start.y), width: Math.max(.001, Math.abs(x - start.x)), height: Math.max(.001, Math.abs(y - start.y)) })
+      }} />
+      <div className="rh-annotation-box" style={{ left: `${anchor.x * 100}%`, top: `${anchor.y * 100}%`, width: `${anchor.width * 100}%`, height: `${anchor.height * 100}%` }} />
+    </div>
+    <label>Annotation target<select disabled={disabled} value={draft.capture.target?.selector ?? ''} onChange={(event) => { const element = draft.elements?.find((element) => element.selector === event.target.value); update(element?.anchor ?? whole, element) }}><option value="">Whole target / custom region</option>{draft.elements?.map((element) => <option key={element.selector} value={element.selector}>{element.label}{element.tag ? ` · ${element.tag}` : ''}</option>)}</select></label>
+    <label>Annotation label<input maxLength={300} disabled={disabled} value={anchor.label} onChange={(event) => update({ ...anchor, label: event.target.value })} /></label>
+    <details><summary>Set region with keyboard (%)</summary><div className="rh-region-fields">{(['x', 'y', 'width', 'height'] as const).map((key) => <label key={key}>{key}<input type="number" min={key === 'width' || key === 'height' ? .1 : 0} max={100} step="any" disabled={disabled} value={Number((anchor[key] * 100).toFixed(2))} onChange={(event) => {
+      const value = Number(event.target.value) / 100
+      if (!Number.isFinite(value)) return
+      const next = { ...anchor, label: 'Selected region', [key]: Math.max(key === 'width' || key === 'height' ? .001 : 0, Math.min(1, value)) }
+      next.width = Math.min(next.width, 1 - next.x); next.height = Math.min(next.height, 1 - next.y)
+      if (next.width > 0 && next.height > 0) update(next)
+    }} /></label>)}</div></details>
+  </>
+}
+
+export function ReviewPanel({ project, selected, flowScreens, allScreens, frame, target, canvas, fixture, focus, navigationReady }: {
+  project: ProjectProfile
+  selected: MapScreen | null; flowScreens: MapScreen[]; allScreens: MapScreen[]; frame: HTMLIFrameElement | null; target: ReviewTarget; canvas: HTMLElement | null
+  fixture: { source: string; snapshot: ReviewSnapshot | null }; focus: (target: ReviewTarget) => void; navigationReady: boolean
+}) {
+  const noteKey = project.adapter === 'laundry' ? 'rehearsal:review:draft:v1' : `rehearsal:${project.key}:review:draft:v1`
   const [comments, setComments] = useState<Feedback[]>([])
-  const [scope, setScope] = useState('screen')
+  const [scope, setScope] = useState('selection')
   const [statusFilter, setStatusFilter] = useState('all')
   const [opened, setOpened] = useState<string | null>(new URLSearchParams(location.search).get('feedback'))
   const [draft, setDraft] = useState<NoteDraft | null>(() => { try { return JSON.parse(localStorage.getItem(noteKey) ?? 'null') } catch { return null } })
@@ -40,46 +116,88 @@ export function ReviewPanel({ selected, flowScreens, allScreens, frame, focus }:
   useEffect(() => {
     if (!draft) return
     const protect = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = '' }
-    window.addEventListener('beforeunload', protect)
-    return () => window.removeEventListener('beforeunload', protect)
+    window.addEventListener('beforeunload', protect); return () => window.removeEventListener('beforeunload', protect)
   }, [draft])
   const current = comments.find((comment) => comment.id === opened)
-  const targetOf = (comment: Feedback) => allScreens.find((screen) => feedbackOnScreen(comment, screen))
+  const targetOf = (comment: Feedback): ReviewTarget | undefined => comment.target ?? (() => {
+    const screen = allScreens.find((screen) => feedbackOnScreen(comment, screen))
+    return screen && { kind: 'screen', id: screen.id, screen: screen.id, label: screen.label }
+  })()
   useEffect(() => {
     const linked = comments.find((comment) => comment.id === linkedReview.current)
     const target = linked && targetOf(linked)
-    if (target) { linkedReview.current = null; focus(target) }
-  }, [comments, allScreens])
-  const begin = () => {
-    if (!selected || !frame) return
-    setError(''); setStatus('')
+    if (target && allScreens.length && navigationReady) { linkedReview.current = null; focus(target) }
+  }, [comments, allScreens, navigationReady])
+  const begin = async () => {
+    if (pending) return
+    setPending(true); setError(''); setStatus('')
     try {
-      const doc = frame.contentDocument, bridge = frame.contentWindow?.reviewPreview
-      if (!doc || !bridge || !doc.querySelector('[role="dialog"],h1')) throw Error('The live screen is still loading. Wait and retry.')
-      const runtime = frame.contentWindow?.towelJourney?.state()
-      const capture: Capture = { requestId: crypto.randomUUID(), html: captureScreen(doc), snapshot: bridge.snapshot, anchor: { label: 'Whole screen', x: 0, y: 0, width: 1, height: 1 }, context: { ...bridge.config, scenario: selected.scenario, screen: selected.id, condition: doc.documentElement.dataset.reviewCondition as ReviewConfig['condition'] ?? bridge.config.condition, viewport: { width: 393, height: 852 }, state: { dialogs: [runtime?.title ?? selected.label], tabs: [], fields: runtime?.fields ?? readFixtureFields(doc) } } }
-      setDraft({ message: '', kind: 'confusing', capture }); setOpened(null)
-    } catch (caught) { setError((caught as Error).message) }
-  }
-  const submit = async () => {
-    if (!draft?.message.trim() || pending) return
-    setPending(true); setError('')
-    try {
-      const saved = await reviewApi<Feedback>('feedback', { ...draft.capture, message: draft.message.trim(), kind: draft.kind })
-      setComments((rows) => [...rows.filter((row) => row.id !== saved.id), saved]); setOpened(saved.id); setDraft(null); setStatus('Review saved with its frozen screen and inputs.')
+      const representative = allScreens.find((screen) => screen.id === target.screen) ?? selected ?? flowScreens[0] ?? allScreens[0]
+      if (!representative) throw Error('Wait for the application inventory.')
+      let snapshot: ReviewSnapshot, html: string | undefined, image: string | undefined, elements: ElementTarget[] = []
+      let evidence: Capture['evidence'], config: ReviewConfig = { scenario: representative.scenario, persona: project.personas[0]!.id, role: project.roles[0]!.id, condition: project.conditions[0]!.id, theme: 'light', textScale: 1, width: 393 }
+      let viewport = { width: 393, height: 852 }, state: Feedback['context']['state'] = { dialogs: [], tabs: [], fields: [] }
+      if (['screen', 'region'].includes(target.kind) && frame) {
+        const doc = frame.contentDocument, bridge = frame.contentWindow?.reviewPreview
+        if (!doc || !bridge || !doc.querySelector('[role="dialog"],h1')) throw Error('The live screen is still loading. Wait and retry.')
+        const runtime = frame.contentWindow?.reviewPreview?.state?.() ?? frame.contentWindow?.towelJourney?.state()
+        snapshot = bridge.snapshot; html = captureScreen(doc); evidence = { kind: 'live' }
+        config = { ...bridge.config, condition: doc.documentElement.dataset.reviewCondition as ReviewConfig['condition'] ?? bridge.config.condition }
+        viewport = { width: frame.clientWidth, height: frame.clientHeight }
+        state = { dialogs: [runtime?.title ?? representative.label], tabs: [...doc.querySelectorAll('[role=tab][aria-selected=true]')].map((element) => element.textContent?.trim() || 'Tab'), fields: runtime?.fields ?? readFixtureFields(doc) }
+        elements = elementTargets(doc, viewport.width, viewport.height)
+      } else if (['screen', 'region'].includes(target.kind)) {
+        if (!fixture.source || !fixture.snapshot) throw Error('The starting screen snapshot is still preparing. Play the screen or wait and retry.')
+        snapshot = fixture.snapshot; evidence = { kind: 'fixture', fixtureSource: fixture.source }
+        image = `/api/review/fixture.png?screen=${encodeURIComponent(representative.id)}&source=${fixture.source}`
+        const response = await projectFetch(image)
+        if (!response.ok) throw Error('The starting screen snapshot is unavailable. Play this screen to capture it.')
+      } else {
+        if (!canvas) throw Error('The canvas is unavailable.')
+        snapshot = await reviewApi<ReviewSnapshot>('index'); html = captureScreen(document, canvas); evidence = { kind: 'map' }
+        viewport = { width: Math.max(200, Math.min(1920, canvas.clientWidth)), height: Math.max(200, Math.min(1600, canvas.clientHeight)) }
+      }
+      const capture: Capture = { requestId: crypto.randomUUID(), ...(html ? { html } : {}), snapshot, target, evidence, anchor: whole, context: { ...config, scenario: representative.scenario, ...(target.screen ? { screen: target.screen } : {}), viewport, state } }
+      setDraft({ message: '', kind: 'confusing', capture, elements, image }); setOpened(null)
     } catch (caught) { setError((caught as Error).message) }
     finally { setPending(false) }
   }
-  const filtered = comments.filter((comment) => (statusFilter === 'all' || (comment.status === 'resolved') === (statusFilter === 'resolved')) && (scope === 'all' || (scope === 'flow' ? flowScreens : selected ? [selected] : []).some((screen) => feedbackOnScreen(comment, screen))))
+  const updateAnchor = (anchor: Anchor, element?: ElementTarget) => {
+    if (!draft) return
+    if (!draft.capture.target) { setDraft({ ...draft, capture: { ...draft.capture, anchor } }); return }
+    const target = draft.capture.target ?? { kind: 'screen', id: draft.capture.context.screen!, label: draft.capture.context.screen!, screen: draft.capture.context.screen }
+    const { selector: _selector, ...base } = target
+    const region = anchor.x !== 0 || anchor.y !== 0 || anchor.width !== 1 || anchor.height !== 1
+    setDraft({ ...draft, capture: { ...draft.capture, anchor, target: { ...base, kind: ['screen', 'region'].includes(base.kind) ? region ? 'region' : 'screen' : base.kind, ...(element ? { selector: element.selector } : {}) } } })
+  }
+  const submit = async () => {
+    if (!draft?.message.trim() || !draft.capture.anchor.label.trim() || pending) return
+    setPending(true); setError('')
+    try {
+      const saved = await reviewApi<Feedback>('feedback', { ...draft.capture, message: draft.message.trim(), kind: draft.kind })
+      setComments((rows) => [...rows.filter((row) => row.id !== saved.id), saved]); setOpened(saved.id); setDraft(null); setStatus('Review saved with its target and frozen evidence.')
+    } catch (caught) { setError((caught as Error).message) }
+    finally { setPending(false) }
+  }
+  const filtered = comments.filter((comment) => {
+    if (statusFilter !== 'all' && (comment.status === 'resolved') !== (statusFilter === 'resolved')) return false
+    if (scope === 'all') return true
+    if (scope === 'flow') return !!target.flow && comment.target?.flow === target.flow || flowScreens.some((screen) => feedbackOnScreen(comment, screen))
+    return comment.target ? comment.target.id === target.id && (comment.target.kind === target.kind || ['screen', 'region'].includes(comment.target.kind) && ['screen', 'region'].includes(target.kind)) : !!selected && feedbackOnScreen(comment, selected)
+  })
   const choose = (comment: Feedback) => { setOpened(comment.id); setResolution(''); const target = targetOf(comment); if (target) focus(target) }
   return <div className="rh-review-panel">
-    <div className="rh-review-filters"><label>Show reviews<select value={scope} onChange={(e) => setScope(e.target.value)}><option value="screen">Selected screen</option><option value="flow">Selected flow</option><option value="all">All reviews</option></select></label><label>Status<select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}><option value="all">All statuses</option><option value="open">Open</option><option value="resolved">Resolved</option></select></label></div>
+    <section className="rh-review-target"><small>{target.kind === 'path' ? 'Selected path' : `Selected ${target.kind}`}</small><strong>{target.label}</strong>{target.action && <p>{target.action}</p>}{target.when && <p>When: {target.when}</p>}{target.returnTo && <p>Return: {target.returnTo}</p>}</section>
+    {!draft && target.kind !== 'app' && <details><summary>Choose a path or branch</summary><div className="rh-review-paths">{(selected && target.kind !== 'flow' ? [selected] : flowScreens).flatMap((screen) => screen.edges.map((edge) => <button key={pathId(screen.id, edge.destination, edge.action)} onClick={() => focus({ kind: 'path', id: pathId(screen.id, edge.destination, edge.action), label: edge.action, from: screen.id, to: edge.destination, action: edge.action })}>{screen.label} → {allScreens.find((screen) => screen.id === edge.destination)?.label ?? edge.destination}<small>{edge.action}{edge.when ? ` · ${edge.when}` : ''}</small></button>))}</div></details>}
+    <div className="rh-review-filters"><label>Show reviews<select value={scope} onChange={(e) => setScope(e.target.value)}><option value="selection">Selected target</option><option value="flow">Selected flow</option><option value="all">All reviews</option></select></label><label>Status<select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}><option value="all">All statuses</option><option value="open">Open</option><option value="resolved">Resolved</option></select></label></div>
     <button onClick={() => void refresh().catch((error) => setError(error.message))}>Refresh reviews</button>
     {error && <p role="alert" className="rh-alert">{error}</p>}<p role="status">{status}</p>
-    {draft ? <form onSubmit={(event) => { event.preventDefault(); void submit() }}><h3>New review</h3><p className="rh-muted">Frozen {draft.capture.context.screen} · source {draft.capture.snapshot.revision.source.slice(0, 12)}. Navigation keeps this capture.</p><label>Kind<select value={draft.kind} disabled={pending} onChange={(e) => setDraft({ ...draft, kind: e.target.value as FeedbackKind })}>{Object.entries(feedbackText.kinds).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label><label>What should change?<textarea maxLength={4000} value={draft.message} disabled={pending} onChange={(e) => setDraft({ ...draft, message: e.target.value })} /></label><button type="submit" className="rh-primary" disabled={pending || !draft.message.trim()}>{pending ? 'Capturing and saving…' : 'Save review'}</button><button type="button" disabled={pending} onClick={() => setDiscard(true)}>Discard review…</button>{discard && <div className="rh-alert"><p>Discard this unsent review and its capture?</p><button type="button" onClick={() => { setDiscard(false); setDraft(null) }}>Discard review</button><button type="button" onClick={() => setDiscard(false)}>Keep writing</button></div>}</form> : <><button onClick={begin} disabled={!frame || !selected}>Capture screen & write review</button>{!frame && <p className="rh-muted">Play the selected screen to capture a review. Your existing run is kept while browsing.</p>}</>}
-    <ul className="rh-review-list">{filtered.map((comment) => <li key={comment.id}><button aria-pressed={opened === comment.id} onClick={() => choose(comment)}><strong>{comment.message}</strong><small>{comment.status === 'resolved' ? 'Resolved' : 'Open'} · {targetOf(comment)?.label ?? comment.context.scenario}</small></button></li>)}</ul>
+    {draft ? <form onSubmit={(event) => { event.preventDefault(); void submit() }}><h3>New review</h3><p className="rh-muted">Frozen {draft.capture.target?.label ?? draft.capture.context.screen} · {draft.capture.evidence?.kind ?? 'live'} evidence · source {draft.capture.snapshot.revision.source.slice(0, 12)}.</p>{draft.capture.evidence?.kind === 'fixture' && <p className="rh-muted">Synthetic starting state. Inputs from an earlier run are not included; play a screen to capture its current inputs.</p>}<FrozenAnnotation draft={draft} update={updateAnchor} disabled={pending} /><label>Kind<select value={draft.kind} disabled={pending} onChange={(e) => setDraft({ ...draft, kind: e.target.value as FeedbackKind })}>{Object.entries(feedbackText.kinds).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select></label><label>What should change?<textarea maxLength={4000} value={draft.message} disabled={pending} onChange={(e) => setDraft({ ...draft, message: e.target.value })} /></label><button type="submit" className="rh-primary" disabled={pending || !draft.message.trim() || !draft.capture.anchor.label.trim()}>{pending ? 'Capturing and saving…' : 'Save review'}</button><button type="button" disabled={pending} onClick={() => setDiscard(true)}>Discard review…</button>{discard && <div className="rh-alert"><p>Discard this unsent review and its capture?</p><button type="button" onClick={() => { setDiscard(false); setDraft(null) }}>Discard review</button><button type="button" onClick={() => setDiscard(false)}>Keep writing</button></div>}</form> : <><button className="rh-primary" onClick={() => void begin()} disabled={pending}>{pending ? 'Freezing evidence…' : 'Comment on selection'}</button><p className="rh-muted">Select a flow, screen, or arrow. Use App in the breadcrumb to comment on the entire journey.</p></>}
+    <ul className="rh-review-list">{filtered.map((comment) => <li key={comment.id}><button aria-pressed={opened === comment.id} onClick={() => choose(comment)}><strong>{comment.message}</strong><small>{comment.status === 'resolved' ? 'Resolved' : 'Open'} · {comment.target?.label ?? comment.context.screen ?? comment.context.scenario}</small></button></li>)}</ul>
     {!filtered.length && <p className="rh-muted">No reviews in this selection.</p>}
-    {current && <section className="rh-review-evidence"><div className="rh-inspector-title"><h3>Captured review</h3><button onClick={() => setOpened(null)}>Close review</button></div><p>{current.message}</p><p className="rh-muted">{current.context.screen ?? current.context.scenario} · {current.status === 'resolved' ? 'Resolved' : 'Open'} · source {current.revision.source.slice(0, 12)}</p>{current.sourceStale && <p className="rh-alert">This capture came from an earlier source.</p>}<div className="rh-review-image"><img src={current.screenshot} alt={`Frozen screen: ${current.anchor.label}`} /><div className="review-pin" style={{ left: `${current.anchor.x * 100}%`, top: `${current.anchor.y * 100}%`, width: `${current.anchor.width * 100}%`, height: `${current.anchor.height * 100}%` }} /></div><button disabled={!targetOf(current)} onClick={() => { const target = targetOf(current); if (target) focus(target) }}>Focus screen on canvas</button><p className="rh-muted">Focus preserves your run. This image and its inputs are historical evidence; the fixture does not replay them.</p><details><summary>Captured inputs ({current.context.state.fields.length})</summary><dl className="rh-fields">{current.context.state.fields.map((field, i) => <div key={i}><dt>{field.label}</dt><dd>{field.value || '(empty)'}</dd></div>)}</dl></details><p className="rh-muted">{current.context.persona} · {current.context.role} · {current.context.condition} · {current.context.viewport.width}px · {current.context.theme}</p>{current.resolution ? <p>Resolution evidence: {current.resolution.evidence}</p> : <form onSubmit={(event) => { event.preventDefault(); setPending(true); setError(''); void reviewApi<Feedback>(`feedback/${current.id}/resolve`, { evidence: resolution.trim() }).then((saved) => { setComments((rows) => rows.map((row) => row.id === saved.id ? saved : row)); setResolution(''); setStatus('Review resolved with evidence.') }).catch((error) => setError(error.message)).finally(() => setPending(false)) }}><label>Resolution evidence<input value={resolution} maxLength={2000} disabled={pending} onChange={(e) => setResolution(e.target.value)} placeholder="Passing check or correction receipt" /></label><button disabled={pending || !resolution.trim()}>Resolve with evidence</button></form>}</section>}
+    {current && <section className="rh-review-evidence"><div className="rh-inspector-title"><h3>Captured review</h3><button onClick={() => setOpened(null)}>Close review</button></div><p>{current.message}</p><p className="rh-muted">{current.target?.label ?? current.context.screen ?? current.context.scenario} · {current.status === 'resolved' ? 'Resolved' : 'Open'} · source {current.revision.source.slice(0, 12)}</p>{current.sourceStale && <p className="rh-alert">Source changed since this capture. An agent must check the current implementation.</p>}<div className="rh-review-image"><img src={current.screenshot} alt={`Frozen evidence: ${current.anchor.label}`} /><div className="rh-annotation-box" style={{ left: `${current.anchor.x * 100}%`, top: `${current.anchor.y * 100}%`, width: `${current.anchor.width * 100}%`, height: `${current.anchor.height * 100}%` }} /></div><button disabled={!targetOf(current)} onClick={() => { const target = targetOf(current); if (target) focus(target) }}>Focus target on canvas</button><p className="rh-muted">Focus preserves your run. The capture is historical evidence, not a replay.</p><details><summary>Captured inputs ({current.context.state.fields.length})</summary><dl className="rh-fields">{current.context.state.fields.map((field, i) => <div key={i}><dt>{field.label}</dt><dd>{field.value || '(empty)'}</dd></div>)}</dl></details><a href={`/api/review/feedback/${current.id}/handoff`} download>Download agent brief</a><button onClick={() => {
+      void projectFetch(`/api/review/feedback/${current.id}/handoff`).then(async (response) => { if (!response.ok) throw Error('The agent brief could not be loaded.'); await navigator.clipboard.writeText(await response.text()); setStatus('Agent brief copied. Give it to the agent working on this correction.') }).catch((error) => setError(error.message))
+    }}>Copy agent brief</button><AgentDelivery key={current.id} review={current} saved={(saved) => setComments((rows) => rows.map((row) => row.id === saved.id ? saved : row))} />{current.resolution ? <p>Resolution evidence: {current.resolution.evidence}</p> : <form onSubmit={(event) => { event.preventDefault(); setPending(true); setError(''); void reviewApi<Feedback>(`feedback/${current.id}/resolve`, { evidence: resolution.trim() }).then((saved) => { setComments((rows) => rows.map((row) => row.id === saved.id ? saved : row)); setResolution(''); setStatus('Review resolved with evidence.') }).catch((error) => setError(error.message)).finally(() => setPending(false)) }}><label>Resolution evidence<input value={resolution} maxLength={2000} disabled={pending} onChange={(e) => setResolution(e.target.value)} placeholder="Passing check or correction receipt" /></label><button disabled={pending || !resolution.trim()}>Resolve with evidence</button></form>}</section>}
     <a href="/api/review/feedback" target="_blank" rel="noreferrer">Agent-readable feedback</a>
   </div>
 }

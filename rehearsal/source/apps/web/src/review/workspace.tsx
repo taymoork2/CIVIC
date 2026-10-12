@@ -10,6 +10,7 @@ import '@/app.css'
 import '@/generated/tokens.css'
 import './review.css'
 import { AppCanvas } from './app-canvas'
+import { projectFetch } from './project-request'
 
 type Scenario = { id: string; label: string; journey: string; renderer: string; component: string; design: string[]; checks: string[]; preview: string; implementation: string; designCoverage: string; reference: string; behavior: string; native: string; device: string; edges?: { action: string; destination: string; effect: string }[] }
 type Index = { validation: { path: string; status: string }; revision: { head: string; source: string; capturedAt: string }; design: { project: string; hashes: Record<string, string | null>; reconciliation: string }; scenarios: Scenario[]; surfaces: { id: string; name: string; path: string; kind: string; scenarios: string[] }[]; limits: string[] }
@@ -29,7 +30,7 @@ const initial = () => {
 const search = (config: ReviewConfig) => new URLSearchParams({ view: 'review', scenario: config.scenario, persona: config.persona, role: config.role, condition: config.condition, theme: config.theme, scale: String(config.textScale), width: String(config.width) })
 const noteKey = (config: ReviewConfig) => `laundered-review:note:${search(config)}`
 async function api<T>(path: string, input?: unknown): Promise<T> {
-  const response = await fetch(`/api/review/${path}`, input === undefined ? {} : { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(input) })
+  const response = await projectFetch(`/api/review/${path}`, input === undefined ? {} : { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(input) })
   const result = await response.json()
   if (!response.ok) throw new Error(result.error ?? 'Review request failed. Retry.')
   return result

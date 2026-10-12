@@ -118,7 +118,7 @@ export function LoadSummary({ stage, origins, pieces, action }: {
       {rows.length === 0 && action === undefined ? null : (
         <div className={loadSummaryLineClassName}>
           <ul className={loadSummaryContentsClassName}>
-            {rows.map((row) => (
+            {rows.slice(0, 3).map((row) => (
               <li key={row.key}>
                 <span>{row.label}</span>
                 {row.count > 1 && !row.private ? <span className="ms-1 font-semibold tabular-nums">×{row.count}</span> : null}
@@ -126,6 +126,7 @@ export function LoadSummary({ stage, origins, pieces, action }: {
                 {row.guest ? <span className="text-muted-foreground"> ({loadText.guestItem})</span> : null}
               </li>
             ))}
+            {rows.length > 3 ? <li>{countWord(rows.slice(3).reduce((total, row) => total + row.count, 0), 'more piece')}</li> : null}
           </ul>
           {action}
         </div>

@@ -3,7 +3,7 @@ import { nextStart, sharedStarts } from '@washcloset/planner'
 import { countWord, homeText, hubText } from '@/copy'
 import { dryerRuns as planDryerRuns, washOrder } from '@/laundry/laundry-pass'
 import { dryerWaitText, midCheckText, nextStepText } from '@/copy-drying'
-import { washerName } from '@/laundry/session-view'
+import { washerName } from '@/laundry/machine-name'
 import { loadNextAction, sessionStage, type SessionStage, type StageFacts } from '@/laundry/session-stage'
 import { clockTime } from '@/kit/ui'
 import { doseParts } from '@/kit/units'
@@ -177,7 +177,7 @@ export type HubState =
   | { readonly kind: 'wet'; readonly count: number; readonly tumble: number; readonly wait: WetWait; readonly next: NextLoad | null; readonly rows: readonly RunningRow[]; readonly hamper?: number }
   /** A drying-queue dryer run whose time is up: check what is dry. `early`: its mid-run check is due, naming these pieces. */
   | { readonly kind: 'dryer_check'; readonly runId: string; readonly name: string; readonly doneAt: number; readonly rows: readonly RunningRow[]; readonly early?: string }
-  | { readonly kind: 'drying'; readonly count: number; readonly sessionIds: readonly string[] }
+  | { readonly kind: 'drying'; readonly count: number; readonly sessionIds: readonly string[]; readonly runId?: string }
 
 export type HubInputs = {
   readonly hamper: { readonly count: number; readonly loads: number | null }
@@ -441,7 +441,10 @@ export function hubState({ hamper, plan, sessions, hanging, textileNames, drying
     return sharedStart !== undefined && sharedStartView(pass, sharedStart.entry, sharedStart.washers)?.kind === 'ask' ? { ...pass, askFree: true } : pass
   }
   if (hamper.count > 0) return { kind: 'hamper', count: hamper.count, loads: hamper.loads }
-  if (hanging.count > 0) return { kind: 'drying', count: hanging.count, sessionIds: hanging.sessionIds }
+  if (hanging.count > 0) {
+    const run = drying?.runs.find((run) => run.kind === 'air')
+    return { kind: 'drying', count: hanging.count, sessionIds: hanging.sessionIds, ...(run === undefined ? {} : { runId: run.runId }) }
+  }
   return { kind: 'empty' }
 }
 

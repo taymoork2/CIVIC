@@ -1,0 +1,4 @@
+{
+  "version": 1,
+  "targets": [{ "id": "note.save", "kind": "journey", "title": "Write and save a note", "component": "src/screens.js", "scenarios": ["demo.home", "demo.edit", "demo.review", "demo.saved"], "acceptance": ["Review and return preserve the title.", "A guest or save failure preserves the draft.", "Only an author in the normal condition can save."] }]
+}

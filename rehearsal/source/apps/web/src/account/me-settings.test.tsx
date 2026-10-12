@@ -1,5 +1,11 @@
 import { renderToStaticMarkup } from '@/test/markup'
-import { expect, test } from 'vitest'
+import { expect, test, vi } from 'vitest'
+import type { ComponentProps } from 'react'
+
+vi.mock('@tanstack/react-router', async (importOriginal) => ({
+  ...await importOriginal<typeof import('@tanstack/react-router')>(),
+  Link: ({ to, ...props }: ComponentProps<'a'> & { to: string }) => <a href={to} {...props} />,
+}))
 
 import { currentTab } from '@/kit/app-shell'
 import { Profile, completedHistory } from '@/routes/me'
@@ -36,10 +42,26 @@ test('Me places Account above Settings and keeps credential operations on their 
   const markup = renderToStaticMarkup(<Profile name="Taymoor" email="me@example.com" householdName="Home" role="owner" onAccount={() => {}} onSettings={() => {}} />)
   for (const text of ['Taymoor', 'me@example.com', 'Owner', 'No completed loads yet']) expect(markup).toContain(text)
   expect(markup).not.toContain('Your finished loads will appear here.')
-  expect(markup).not.toContain('Home')
+  expect(markup).toContain('href="/laundry"')
+  expect(markup).toContain('Go to Laundry')
+  expect(markup).toContain('Home · Owner')
   expect(markup.indexOf('>Account<')).toBeLessThan(markup.indexOf('>Settings<'))
   for (const text of ['Change password', 'Sign out', 'Delete account', 'Hide laundry costs']) expect(markup).not.toContain(text)
   assertPlainCopy(markup)
+})
+
+test('completed history is the first Me action and never invents a new wash entry', () => {
+  const html = renderToStaticMarkup(<Profile name="Taymoor" email="me@example.com" householdName="Home" role="member" history={[{ sessionId, title: 'White tee', textileCount: 4, completedAt: now }]} onAccount={() => {}} onSettings={() => {}} onOpenWash={() => {}} />)
+  expect(html.indexOf('White tee')).toBeLessThan(html.indexOf('>Account<'))
+  expect(html.indexOf('Review latest load')).toBeLessThan(html.indexOf('White tee'))
+  expect(html).not.toContain('Go to Laundry')
+  expect(html).not.toContain('No completed loads yet')
+})
+
+test('Me offers paged older history instead of claiming the recent feed is all history', () => {
+  const html = renderToStaticMarkup(<Profile name="Pat" email={null} householdName="Home" role="member" history={[{ sessionId, title: 'Tee', textileCount: 1, completedAt: now }]} canLoadMore onLoadMore={() => {}} onAccount={() => {}} onSettings={() => {}} />)
+  expect(html).toContain('Older loads')
+  expect(html).not.toContain('Show all')
 })
 
 test('Settings contains device preferences and truthful alert availability, without account actions', () => {

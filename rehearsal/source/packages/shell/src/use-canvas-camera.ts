@@ -54,7 +54,7 @@ export function useCanvasCamera(initial: Camera, world: { width: number; height:
   const controls: HTMLAttributes<HTMLDivElement> = {
     tabIndex: 0,
     onKeyDown(event) {
-      if ((event.target as Element).closest('input,select,textarea,button,[contenteditable=true]')) return
+      if ((event.target as Element).closest('input,select,textarea,button,[role=button],[contenteditable=true]')) return
       if (event.code === 'Space') { event.preventDefault(); setSpace(true) }
       if (event.code === 'Escape') setPan(false)
     },
@@ -62,7 +62,7 @@ export function useCanvasCamera(initial: Camera, world: { width: number; height:
     onBlur() { setSpace(false) },
     onPointerDownCapture(event) {
       if (event.button !== 0 && event.button !== 1) return
-      if (!pan && !space && event.button !== 1 && (event.target as Element).closest('button,input,select,iframe')) return
+      if (!pan && !space && event.button !== 1 && (event.target as Element).closest('button,[role=button],input,select,iframe')) return
       event.preventDefault(); event.stopPropagation()
       stage.current!.focus(); stage.current!.setPointerCapture(event.pointerId)
       drag.current = { x: event.clientX, y: event.clientY, camera: current.current }

@@ -168,7 +168,7 @@ const neededWords: Readonly<Record<Needed, string>> = flagText.needed
  * "It's dirty": what happened, how dirty, needed by when, and where the stain is, one question per
  * step. Selected garments are answered and saved one at a time.
  */
-export function FlagSheet({ garments, now, flag, onClose, onDone, initial, initials, start = 'reasons', laundryPersonName = null, stainOnly = false, saveLabel, saveAriaLabel }: {
+export function FlagSheet({ garments, now, flag, onClose, onDone, initial, initials, start = 'reasons', laundryPersonName = null, stainOnly = false, saveLabel, saveAriaLabel, together = false }: {
   garments: readonly FlagGarment[]
   now: number
   flag: FlagCall
@@ -183,6 +183,8 @@ export function FlagSheet({ garments, now, flag, onClose, onDone, initial, initi
   stainOnly?: boolean
   saveLabel?: string
   saveAriaLabel?: string
+  /** The quantity preview explicitly applies these answers to all selected pieces on one care path. */
+  together?: boolean
 }) {
   const [garmentIndex, setGarmentIndex] = useState(0)
   const [draft, setDraft] = useState<FlagDraft>(initials?.[0] ?? initial ?? emptyDraft)
@@ -210,14 +212,14 @@ export function FlagSheet({ garments, now, flag, onClose, onDone, initial, initi
     setPending(true)
     setError(null)
     try {
-      const result = await flag(flagArgs([garment], draft, now))
+      const result = await flag(flagArgs(together ? garments : [garment], draft, now))
       const total = {
         changed: saved.changed + result.changed,
         skipped: saved.skipped + result.skipped,
         toDryClean: [...saved.toDryClean, ...result.toDryClean],
         alerted: saved.alerted || result.alerted,
       }
-      if (garmentIndex === garments.length - 1) onDone(flagToast(garments, total, laundryPersonName))
+      if (together || garmentIndex === garments.length - 1) onDone(flagToast(garments, total, laundryPersonName))
       else {
         const nextIndex = garmentIndex + 1
         setSaved(total)
@@ -233,8 +235,8 @@ export function FlagSheet({ garments, now, flag, onClose, onDone, initial, initi
   }
   const next = () => (last ? void save() : setStep(steps[index + 1]!))
   const title = flagText.titles[step]
-  const subtitle = garment === undefined ? '' : garments.length === 1 ? garment.name : flagText.itemProgress(garment.name, garmentIndex + 1, garments.length)
-  const action = !last ? flagText.next : garmentIndex < garments.length - 1 ? flagText.nextItem : saveLabel ?? (dryCleanOnly ? flagText.putInDryCleaning : flagText.putInHamper)
+  const subtitle = together ? `Applies to all ${garments.length} selected ${garments.length === 1 ? 'piece' : 'pieces'}` : garment === undefined ? '' : garments.length === 1 ? garment.name : flagText.itemProgress(garment.name, garmentIndex + 1, garments.length)
+  const action = !last ? flagText.next : !together && garmentIndex < garments.length - 1 ? flagText.nextItem : saveLabel ?? (dryCleanOnly ? flagText.putInDryCleaning : flagText.putInHamper)
 
   return (
     <Sheet

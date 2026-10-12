@@ -1,14 +1,25 @@
 import { renderToStaticMarkup } from '@/test/markup'
 import { expect, test } from 'vitest'
 
-import { HomeDock, homeDockStep } from '@/home/home-dock'
+import { HomeDock, homeDockStep, homeDockTaskKey } from '@/home/home-dock'
 import { hubState } from '@/home/hub-state'
 
 const now = new Date(2026, 8, 27, 15, 55).getTime()
 const link = (target: { to: string }, { className, children }: { className: string; children: React.ReactNode }) => <a className={className} href={target.to}>{children}</a>
 
 test('hanging clothes are drying until the user confirms they are dry', () => {
-  expect(homeDockStep({ kind: 'drying', count: 4, sessionIds: ['s'] })).toMatchObject({ title: 'Hanging to dry', button: 'All dry', target: { to: 'laundry' } })
+  expect(homeDockStep({ kind: 'drying', count: 4, sessionIds: ['s'] })).toMatchObject({ title: 'Hanging to dry', button: 'Check dryness', target: { to: 'drying' } })
+  expect(homeDockStep({ kind: 'drying', count: 4, sessionIds: ['s'], runId: 'air-run' }).target).toEqual({ to: 'drying', run: 'air-run' })
+})
+
+test('dismissal identifies the current task and uses a sibling control outside its link', () => {
+  const state = { kind: 'drying' as const, count: 4, sessionIds: ['s'] }
+  expect(homeDockTaskKey(state)).toBe(homeDockTaskKey({ ...state }))
+  expect(homeDockTaskKey(state)).not.toBe(homeDockTaskKey({ ...state, count: 3 }))
+  expect(homeDockTaskKey(state)).not.toBe(homeDockTaskKey({ ...state, sessionIds: ['other'] }))
+  const markup = renderToStaticMarkup(<HomeDock state={state} renderLink={link} onDismiss={() => {}} />)
+  expect(markup).toContain('aria-label="Dismiss Hanging to dry reminder"')
+  expect(markup.match(/<a\b[^>]*>[\s\S]*?<\/a>/)?.[0]).not.toContain('<button')
 })
 
 test('urgent move has the machine and dot together, its clock and the next-step button', () => {

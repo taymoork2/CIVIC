@@ -1,10 +1,12 @@
 import { cn } from '@/lib/utils'
 import { createContext, useCallback, useContext, useEffect, useId, useLayoutEffect, useRef, useState, type Dispatch, type ReactNode, type SetStateAction } from 'react'
+import { FeedbackContext } from '@/kit/feedback-context'
 import { sheetText } from '@/copy'
 import { Button } from '@/components/ui/button'
 import { SheetBackdrop, SheetContent, SheetPopup, SheetPortal, SheetRoot, SheetTitle } from '@/components/ui/sheet'
 import { DesignIcon } from '@/kit/design-icons'
 import { FormProgress } from '@/kit/form-progress'
+import { inputKeyHint, nextSheetInput } from '@/kit/keyboard'
 
 const parentSheet = createContext<Dispatch<SetStateAction<number>> | null>(null)
 
@@ -55,6 +57,8 @@ const sheetHeaderArtClassName = cn(
   "after:absolute after:[inset:0] after:[content:''] after:[background:linear-gradient(180deg,rgba(0,0,0,0)_30%,var(--surface-fade)_62%,var(--sheet)_100%)]",
   "[&_>_img]:w-full [&_>_img]:h-full [&_>_img]:object-cover",
   "[&_>_img]:[object-position:center_40%]",
+  // Category-image failures and icon headers keep their glyph above the photo blend.
+  "[&_svg]:relative [&_svg]:z-[1]",
 )
 
 const sheetBackClassName = cn(
@@ -118,7 +122,7 @@ const sheetDiscardClassName = cn(
 
 const sheetBodyClassName = cn(
   "sheet-body",
-  "min-w-0 grid content-start gap-4 p-[var(--space-2)_var(--space-5)_var(--space-5)]",
+  "min-w-0 grid grid-cols-[minmax(0,_1fr)] content-start gap-4 p-[var(--space-2)_var(--space-5)_var(--space-5)]",
 )
 
 const sheetScrollClassName = cn(
@@ -215,7 +219,7 @@ export function watchSystemBack(Watcher: CloseWatcherConstructor, attempt: () =>
  * The parent owns whether it is open: render it to open it, and stop rendering it in `onClose`.
  * Focus returns to whatever had it before the sheet opened.
  */
-export function Sheet({ title, kicker, subtitle, progress, headerArt, media, mediaTint, onClose, onBack, onEdit, editLabel = 'Edit', closeLabel = sheetText.close, footer, tall = false, compactActions = false, closeAtTop = false, step, dirty = false, busy = false, initialFocus, titleId: givenTitleId, className, children }: {
+export function Sheet({ title, kicker, subtitle, progress, headerArt, media, mediaTint, onClose, onKeepDraft, onBack, onEdit, editLabel = 'Edit', closeLabel = sheetText.close, closeIconLabel = sheetText.close, footer, tall = false, compactActions = false, closeAtTop = false, step, dirty = false, busy = false, initialFocus, titleId: givenTitleId, className, children }: {
   className?: string
   title: string
   /** A small line above the title: what the record belongs to ("from Washer 3", a household's name). */
@@ -229,12 +233,15 @@ export function Sheet({ title, kicker, subtitle, progress, headerArt, media, med
   /** A composed image header; the title retains its accessible heading. */
   headerArt?: ReactNode
   onClose: () => void
+  /** Available only after an intake draft is safely stored on this device. */
+  onKeepDraft?: () => boolean | void
   /** A step back inside a multi-step sheet; shown beside Close. */
   onBack?: () => void
   /** Edit this saved record, beside Back when present. */
   onEdit?: () => void
   editLabel?: string
   closeLabel?: string
+  closeIconLabel?: string
   /** The sheet's own actions, above Close. */
   footer?: ReactNode
   /** A fixed-height sheet for work that stays open across steps or tabs. */
@@ -272,6 +279,8 @@ export function Sheet({ title, kicker, subtitle, progress, headerArt, media, med
   const [swipeDisabled, setSwipeDisabled] = useState(false)
   const parent = useContext(parentSheet)
   const [nestedSheets, setNestedSheets] = useState(0)
+  const feedback = useContext(FeedbackContext)
+  const [reporting, setReporting] = useState(false)
   // Count mounted children so Edit stays disabled through their closing animation.
   useLayoutEffect(() => {
     if (parent === null) return
@@ -284,6 +293,9 @@ export function Sheet({ title, kicker, subtitle, progress, headerArt, media, med
   busyRef.current = busy
   const closeRef = useRef(onClose)
   closeRef.current = onClose
+  const keepingDraft = useRef(false)
+  const keepDraftRef = useRef(onKeepDraft)
+  keepDraftRef.current = onKeepDraft
   // Every dismissal goes through here so an unsaved draft is never dropped without asking.
   const attemptClose = (): 'closed' | 'asked' => {
     if (busyRef.current || dismissalFor(dirtyRef.current) === 'confirm-discard') {
@@ -362,12 +374,13 @@ export function Sheet({ title, kicker, subtitle, progress, headerArt, media, med
   const closeRow = compactActions ? closeButton : <div className={sheetFootRowClassName}>{closeButton}</div>
 
   const discardPrompt = (
-    <div className={sheetDiscardClassName} role="alert">
-      <p className={cn("font-semibold")}>{sheetText.discardTitle}</p>
+    <div className={cn(sheetDiscardClassName, onKeepDraft === undefined ? undefined : 'bg-surface-2 text-ink [&_button:focus-visible]:[outline-color:var(--focus)]')} role="alert">
+      <p className={cn("font-semibold")}>{onKeepDraft === undefined ? sheetText.discardTitle : 'Keep this draft for later?'}</p>
       <div className="grid min-w-0 grid-cols-2 gap-2 [@container_(width_<_16rem)]:grid-cols-1">
-        <Button ref={keepEditing} type="button" variant="alert" className="h-auto min-h-12 min-w-0 whitespace-normal px-2 py-2 leading-snug" onClick={() => { setConfirmingDiscard(false); heading.current?.focus({ preventScroll: true }) }}>{sheetText.keepEditing}</Button>
+        <Button ref={keepEditing} type="button" variant={onKeepDraft === undefined ? 'alert' : 'outline'} className="h-auto min-h-12 min-w-0 whitespace-normal px-2 py-2 leading-snug" onClick={() => { setConfirmingDiscard(false); heading.current?.focus({ preventScroll: true }) }}>{sheetText.keepEditing}</Button>
         <Button type="button" variant="destructive" className="h-auto min-h-12 min-w-0 whitespace-normal px-2 py-2 leading-snug" onClick={() => setClosing(true)}>{sheetText.discard}</Button>
       </div>
+      {onKeepDraft === undefined ? null : <Button type="button" variant="outline" className="h-auto min-h-12 w-full whitespace-normal" onClick={() => { keepingDraft.current = true; setClosing(true) }}>Keep draft and close</Button>}
     </div>
   )
 
@@ -377,7 +390,12 @@ export function Sheet({ title, kicker, subtitle, progress, headerArt, media, med
       if (open) return
       if (details.reason === 'escape-key' && watcherOwnsEscape) { details.cancel(); return }
       if (attemptClose() === 'asked') details.cancel()
-    }} onOpenChangeComplete={(open) => { if (!open && closing) closeRef.current() }}>
+    }} onOpenChangeComplete={(open) => {
+      if (open || !closing) return
+      if (keepingDraft.current && keepDraftRef.current !== undefined) {
+        if (keepDraftRef.current() === false) { keepingDraft.current = false; setClosing(false) }
+      } else closeRef.current()
+    }}>
       <SheetPortal keepMounted>
         <SheetBackdrop />
         <SheetPopup ref={openWhenReady} initialFocus={focusOnOpen} aria-labelledby={titleId} data-base-ui-swipe-ignore={swipeDisabled ? '' : undefined} className={cn(sheetClassName, tall ? ' is-tall' : '', compactActions ? ' has-compact-actions' : '', headerArt !== undefined ? ' has-photo-header' : media !== undefined ? ' has-icon-header' : '', className)}>
@@ -403,15 +421,22 @@ export function Sheet({ title, kicker, subtitle, progress, headerArt, media, med
             </div>
             {subtitle === undefined ? null : <p className={sheetSubClassName}>{subtitle}</p>}
             {progress === undefined ? null : <div className="absolute top-[var(--space-3)] start-[calc(var(--space-3)_+_3.25rem)] end-[calc(var(--space-3)_+_3.25rem)] flex min-h-11 items-center justify-center"><FormProgress {...progress} /></div>}
-            <Button type="button" variant="unstyled" size="unstyled" className={sheetCloseIconClassName} aria-label={sheetText.close} onClick={attemptClose}><DesignIcon name="x" size="1em" strokeWidth={2.2} aria-hidden="true"  /></Button>
+            <Button type="button" variant="unstyled" size="unstyled" className={sheetCloseIconClassName} aria-label={closeIconLabel} onClick={attemptClose}><DesignIcon name="x" size="1em" strokeWidth={2.2} aria-hidden="true"  /></Button>
           </header>
           <div ref={body} className={sheetScrollClassName}>
-          <SheetContent className={sheetBodyClassName}>
+          <SheetContent className={sheetBodyClassName} onFocusCapture={(event) => {
+            if (event.target instanceof HTMLInputElement) event.target.enterKeyHint = inputKeyHint(event.target, event.currentTarget)
+          }} onKeyDown={(event) => {
+            if (event.defaultPrevented || event.key !== 'Enter' || event.nativeEvent.isComposing || event.shiftKey || event.altKey || event.ctrlKey || event.metaKey || !(event.target instanceof HTMLInputElement) || !['text', 'number', 'search', 'email', 'tel', 'url', 'password'].includes(event.target.type)) return
+            event.preventDefault()
+            nextSheetInput(event.target, event.currentTarget)
+          }}>
             {kicker === undefined && subtitle === undefined ? null : <div className="hidden min-w-0 gap-1 text-ink-2 [overflow-wrap:anywhere] [@container_(width_<_16rem)]:grid">
               {kicker === undefined ? null : <p className="m-0 text-[length:var(--step--1)] leading-[1.45]">{kicker}</p>}
               {subtitle === undefined ? null : <p className="m-0 text-[length:var(--step-0)] leading-normal">{subtitle}</p>}
             </div>}
             {children}
+            {feedback === null ? null : <Button type="button" variant="ghost" className="justify-self-start whitespace-normal text-start" disabled={busy || nestedSheets > 0} onClick={() => setReporting(true)}><DesignIcon name="chat" size="1em" aria-hidden="true" />Report a problem</Button>}
           </SheetContent>
           </div>
           <footer className={sheetFootClassName} data-base-ui-swipe-ignore>
@@ -424,6 +449,7 @@ export function Sheet({ title, kicker, subtitle, progress, headerArt, media, med
         </SheetPopup>
       </SheetPortal>
     </SheetRoot>
+    {reporting && feedback !== null ? feedback(() => setReporting(false), step) : null}
     </parentSheet.Provider>
   )
 }

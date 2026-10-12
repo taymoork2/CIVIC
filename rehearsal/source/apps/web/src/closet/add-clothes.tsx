@@ -2,7 +2,7 @@ import { cn } from '@/lib/utils'
 import { materialCareProblem, clothingTags, usedClothingTags, dyeRunStates, smells, type Smell, garmentKinds, soilLevels, wearerKinds, type DyeRun, type GarmentKind, type Occasion, type SoilLevel, type WearerKind } from '@washcloset/planner'
 import { useAction, useMutation, useQuery } from 'convex/react'
 import type { FunctionArgs, FunctionReturnType } from 'convex/server'
-import { useId, useRef, useState, useLayoutEffect, type FormEvent, type ReactNode } from 'react'
+import { useLayoutEffect, useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { toast } from 'sonner'
 
 import type { Id } from '@convex/_generated/dataModel'
@@ -10,8 +10,8 @@ import { api } from '@/api'
 import { CarePhotos, uploadCarePhoto } from '@/closet/care-photos'
 import { addClothesText, bulkText, helpTipText, colorWord, careSymbolWords, colourHint, colourWords, kindNameWords, kindTileWords, soilButtonWords, wearerKindWords } from '@/copy'
 import { ClothingTagsEditor } from '@/closet/clothing-tags'
-import { fabrics, moreFabrics, fabricLabel, fabricProblem, formatFabric, parseFabric, balanceFabric, detailsFromMaterial, detailsForMaterial, type FiberShare } from '@/closet/fabric'
-import { fiberDetailSuggestions, fabricConstructions, fabricFinishes, type FabricDetails, type fabricFibers } from '@washcloset/planner'
+import { fabrics, moreFabrics, fabricLabel, fabricProblem, formatFabric, parseFabric, balanceFabric, detailsFromMaterial, detailsForMaterial, searchFabrics, type FiberShare } from '@/closet/fabric'
+import { sha256, fiberDetailSuggestions, fabricConstructions, fabricFinishes, type FabricDetails, type fabricFibers } from '@washcloset/planner'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldDescription, FieldGroup, FieldLabel, FieldSet } from '@/components/ui/field'
@@ -26,6 +26,7 @@ import { GarmentTypePicker, type TypePick } from '@/closet/garment-type-picker'
 import { MoreSection } from '@/kit/more-section'
 import { Sheet } from '@/kit/sheet'
 import { TaskFooter } from '@/kit/task-footer'
+import { focusLabeledControl } from '@/kit/focus-field'
 import { TagStep, emptyTag, tagAnswers, tagComplete, tagDraftFromCare, tagRows, type TagDraft } from '@/laundry/tag-step'
 import { TagRows, bleachWords, dryerWords, tubWords } from '@/closet/tag-rows'
 import { PersonChoices, Swatch } from '@/closet/closet-parts'
@@ -43,6 +44,9 @@ import { CatalogReference } from '@/products/catalog-reference'
 import { GarmentPrintDetails, factGroups } from '@/closet/garment-advice'
 import { GarmentPrivacy } from '@/closet/garment-privacy'
 import { CareInstructions } from '@/closet/care-instructions'
+import { useIntakeRecovery } from '@/kit/device-state'
+import { confirmTrash, type TrashReceipt } from '@/closet/trash-undo'
+import { validGarmentIntake } from '@/kit/intake-validation'
 
 /** Add clothes saves them ready; Add to hamper saves them needing a wash. */
 const noticeClassName = cn(
@@ -195,8 +199,6 @@ const saveSummaryClassName = cn(
 export type AddTarget = 'closet' | 'hamper'
 
 export type AddStep = 'type' | 'whose' | 'details' | 'fabric' | 'color' | 'origin' | 'dye' | 'care' | 'label' | 'stain' | 'final'
-export type IntakeReviewState = { screen: string; draft: AddDraft; dirty: boolean; pending: boolean; error: string | null }
-export type IntakePresentation = Record<string, { title?: string; action?: string; color?: string }>
 type IntakeStain = NonNullable<FunctionArgs<typeof api.inventory.createTextiles>['stain']>
 const intakeStains = ['none', 'food', 'grease', 'ink', 'other'] as const satisfies readonly IntakeStain[]
 type StainAge = NonNullable<FunctionArgs<typeof api.inventory.createTextiles>['stainAge']>
@@ -538,6 +540,7 @@ export type AddSaved = {
   readonly careReturned?: number
   readonly addedMatching?: number
   readonly movedToTrash?: number
+  readonly trashReceipt?: TrashReceipt
   /** Add only: everything saved before Done; `textileIds` then covers every save. */
   readonly tally?: AddTally
 }
@@ -548,7 +551,9 @@ export type AddSaved = {
  * garments stay out of Ready and go to the hamper. A save shows what landed, with Add another,
  * Same again in another color, and Done; Done (or closing after a save) reports the tally to `onSaved`.
  */
-export function AddClothesSheet({ householdId, mode, wearers, calls, initial, initialStep = 'type', initialCareStep, initialQuery, firstRun = false, emptyCloset = false, onClose, onSaved, knownTags = [], presentation, onReviewState, onReviewTransition }: {
+export type IntakeReviewState = { screen: string; draft: AddDraft; dirty: boolean; pending: boolean; error: string | null }
+export type IntakePresentation = Record<string, { title?: string; action?: string; color?: string }>
+export function AddClothesSheet({ initialCareStep, presentation, onReviewState, onReviewTransition, householdId, mode, wearers, calls, initial, initialStep = 'type', initialQuery, firstRun = false, emptyCloset = false, onClose, onSaved, knownTags = [] }: {
   householdId: string
   mode: Extract<AddMode, { kind: 'add' }>
   wearers: readonly AddWearer[]
@@ -556,6 +561,9 @@ export function AddClothesSheet({ householdId, mode, wearers, calls, initial, in
   initial?: AddDraft
   initialStep?: AddStep
   initialCareStep?: CareQuestion
+  presentation?: IntakePresentation
+  onReviewState?: (state: IntakeReviewState) => void
+  onReviewTransition?: (from: string, to: string) => void
   /** What the type step's search starts with: previews and tests of the results. */
   initialQuery?: string
   /** The first laundry intake: "What needs washing?". */
@@ -563,9 +571,6 @@ export function AddClothesSheet({ householdId, mode, wearers, calls, initial, in
   /** shortcut: first means empty visible inventory; upgrade to durable milestone history post-trial. */
   emptyCloset?: boolean
   knownTags?: readonly string[]
-  presentation?: IntakePresentation
-  onReviewState?: (state: IntakeReviewState) => void
-  onReviewTransition?: (from: string, to: string) => void
   /** Closed before anything was saved. */
   onClose: () => void
   /** Done, or closed after at least one save: everything added since the sheet opened. */
@@ -578,6 +583,7 @@ export function AddClothesSheet({ householdId, mode, wearers, calls, initial, in
   // The draft lives here, above the steps, so Back and Next never lose an answer.
   const [draft, setDraft] = useState<AddDraft>(start)
   const [step, setStep] = useState<AddStep>(initialStep)
+  const [correctingReview, setCorrectingReview] = useState(false)
   const [careStep, setCareStep] = useState<CareQuestion>(() => initialCareStep ?? firstCareStep(start.tag))
   const [destination, setDestination] = useState<AddTarget>(mode.target)
   // Until the person picks how dirty, it follows where the clothes go.
@@ -586,6 +592,8 @@ export function AddClothesSheet({ householdId, mode, wearers, calls, initial, in
   const [someoneNew, setSomeoneNew] = useState(false)
   const [newName, setNewName] = useState('')
   const [photo, setPhoto] = useState<File | null>(null)
+  const [recoverPhoto, setRecoverPhoto] = useState(false)
+  const [failedPhotoId, setFailedPhotoId] = useState<Id<'textiles'> | null>(null)
   const [pending, setPending] = useState(false)
   const [savingTarget, setSavingTarget] = useState<AddTarget | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -599,6 +607,7 @@ export function AddClothesSheet({ householdId, mode, wearers, calls, initial, in
   const [pestOpen, setPestOpen] = useState(false)
   // "Same again" keeps the care answers; the color step says so.
   const [carried, setCarried] = useState(false)
+  const [lastBrand, setLastBrand] = useState('')
   const id = useId()
   const saving = useRef(false)
   // Done reports once, however many taps reach it.
@@ -616,6 +625,14 @@ export function AddClothesSheet({ householdId, mode, wearers, calls, initial, in
   const whoseComplete = draft.whose !== null && !someoneNew
   const detailsComplete = (draft.kind !== 'other' || name.length > 0) && colorDrafts(draft).every((color) => Number.isInteger(color.count) && color.count >= 1) && pieceCount(draft) <= 20
   const dirty = landed === null && (!same(draft, baseline.draft) || destination !== baseline.destination || photo !== null || newName !== '')
+  const recovery = useIntakeRecovery({ name: 'garment-intake', title: 'adding clothes', photo: true, previousNames: [`garment-intake:${mode.target}`, `garment-intake:${mode.target === 'closet' ? 'hamper' : 'closet'}`], value: { draft, step, careStep, destination, soilChosen, carried, someoneNew, newName, correctingReview }, valid: validGarmentIntake, active: landed === null, dirty,
+    close: onClose, restore: (saved) => {
+      const knownOwner = saved.draft.whose === null || saved.draft.whose === 'shared' || everyone.some((wearer) => typeof saved.draft.whose === 'object' && saved.draft.whose !== null && wearer.wearerId === saved.draft.whose.wearerId)
+      setDraft({ ...saved.draft, whose: knownOwner ? saved.draft.whose : null })
+      setStep(knownOwner ? saved.step as AddStep : 'whose')
+      setCareStep(saved.careStep); setDestination(saved.destination); setSoilChosen(saved.soilChosen); setCarried(saved.carried)
+      setSomeoneNew(saved.someoneNew ?? false); setNewName(saved.newName ?? ''); setCorrectingReview(saved.correctingReview ?? false)
+    } })
   const screen = landed !== null ? 'saved' : step === 'care' ? `care:${careStep}` : step
   useLayoutEffect(() => { onReviewState?.({ screen, draft, dirty, pending, error }) }, [screen, draft, dirty, pending, error, onReviewState])
   const go = (to: AddStep, question = careStep) => { onReviewTransition?.(screen, to === 'care' ? `care:${question}` : to); setError(null); setStep(to) }
@@ -635,10 +652,12 @@ export function AddClothesSheet({ householdId, mode, wearers, calls, initial, in
   const addWearer = async (kind: WearerKind) => {
     const typed = newName.trim()
     if (pending || !typed) return
+    const intakeKey = recovery.saveKey(false)
+    if (intakeKey === null) return
     setPending(true)
     setError(null)
     try {
-      const created = await calls.createWearer({ householdId: householdId as Id<'households'>, name: typed, kind })
+      const created = await calls.createWearer({ householdId: householdId as Id<'households'>, name: typed, kind, intakeKey: `${intakeKey}:wearer:${sha256(typed).slice(0,40)}` })
       setNewWearers((current) => [...current, { wearerId: created, name: typed, kind }])
       set({ whose: { wearerId: created } })
       setSomeoneNew(false)
@@ -648,6 +667,38 @@ export function AddClothesSheet({ householdId, mode, wearers, calls, initial, in
   }
 
   const stepComplete = step === 'type' ? draft.kind !== null : step === 'whose' ? whoseComplete : step === 'details' ? detailsComplete : step === 'fabric' ? fabricProblem(draft.material) === null : step === 'color' ? colorsComplete(draft) : step === 'stain' ? draft.stain !== null && stainAnswered(draft) : true
+  const blocker = step === 'final' ? !whoseComplete ? { step: 'whose' as const, message: 'Choose who this belongs to.' }
+    : draft.kind === null ? { step: 'type' as const, message: 'Choose an item type.' }
+    : !detailsComplete || !name ? { step: 'details' as const, message: !name ? 'Give this item a name.' : 'Use whole-piece quantities between 1 and 20, with at most 20 pieces in total.' }
+    : fabricProblem(draft.material) !== null ? { step: 'fabric' as const, message: fabricProblem(draft.material)! }
+    : !colorsComplete(draft) ? { step: 'color' as const, message: 'Choose a color and valid quantity for each group.' }
+    : !tagComplete(draft.tag) || careProblem !== null ? { step: 'care' as const, message: careProblem ?? 'Record the care instructions, or choose unknown where the tag doesn’t say.' }
+    : !stainAnswered(draft) ? { step: 'stain' as const, message: 'Choose a stain answer and whether the mark is new or set in.' }
+    : draft.additionalColors?.length && draft.sameCareInstructions !== true ? { step: 'final' as const, message: 'Confirm these pieces have the same care instructions, or add them separately.' } : null
+    : stepComplete ? null : { step, message: step === 'whose' ? someoneNew ? 'Enter a name and choose a person type to add them.' : 'Choose who this belongs to.' : step === 'fabric' ? fabricProblem(draft.material)! : step === 'color' ? 'Choose a color and valid quantity for each group.' : step === 'details' ? !name ? 'Give this item a name.' : 'Use whole-piece quantities between 1 and 20, with at most 20 pieces in total.' : 'Choose a stain answer and whether the mark is new or set in.' }
+  const [repair, setRepair] = useState(0)
+  const handledRepair = useRef(0)
+  useEffect(() => {
+    if (handledRepair.current === repair) return
+    const frame = requestAnimationFrame(() => {
+      handledRepair.current = repair
+      const form = document.getElementById(id)
+      if (step === 'details' || step === 'whose' && someoneNew) focusLabeledControl(form, step === 'details' && name ? addGarmentText.countLabel : addClothesText.name)
+      else {
+        const control = form?.querySelector<HTMLElement>('input, [role="checkbox"], [role="radio"], button')
+        control?.focus({ preventScroll: true })
+        control?.scrollIntoView({ block: 'center' })
+      }
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [repair, id, step, someoneNew, name])
+  const fixProblem = () => {
+    if (blocker === null) return
+    if (blocker.step === 'care') setCareStep(firstCareStep(draft.tag))
+    if (step === 'final' && blocker.step !== 'final') setCorrectingReview(true)
+    go(blocker.step)
+    setRepair((current) => current + 1)
+  }
 
   const pickDestination = (to: AddTarget) => {
     setDestination(to)
@@ -661,20 +712,25 @@ export function AddClothesSheet({ householdId, mode, wearers, calls, initial, in
       const next = careSteps[careIndex + 1]
       if (pending) return
       set({ tag: careTag })
+      if (correctingReview) { setCorrectingReview(false); go('final'); return }
       if (next === undefined) go('stain')
       else { onReviewTransition?.(screen, `care:${next}`); setCareStep(next) }
       return
     }
-    if (step !== 'final') { if (!pending && stepComplete && followingStep !== undefined) { if (step === 'dye' && draft.dyeRun === null) set({ dyeRun: 'unknown' }); go(followingStep) } return }
-    if (saving.current || pending || !complete || careProblem !== null) return
+    if (step !== 'final') { if (!pending && stepComplete && followingStep !== undefined) { if (step === 'dye' && draft.dyeRun === null) set({ dyeRun: 'unknown' }); if (correctingReview) { setCorrectingReview(false); go('final') } else go(followingStep) } return }
+    if (saving.current || pending || !complete || blocker !== null || careProblem !== null) return
     const args = createArgs(householdId, target, draft)
     if (args === null) return
+    const intakeKey = recovery.saveKey()
+    if (intakeKey === null) return
     saving.current = true
     setPending(true)
     setSavingTarget(target)
     setError(null)
     try {
-      const textileIds = await calls.createTextiles(args)
+      const textileIds = await calls.createTextiles({ ...args, intakeKey })
+      recovery.clear()
+      setLastBrand(draft.identity.brand.trim())
       const names = args.colors?.flatMap((color) => Array.from({ length: color.quantity }, () => color.name))
       setLastAdded(textileIds.map((textileId, index) => ({ textileId, name: names?.[index] ?? name })))
       let photoFailed = false
@@ -682,6 +738,7 @@ export function AddClothesSheet({ householdId, mode, wearers, calls, initial, in
         try { await calls.uploadPhoto(textileIds[0], photo) }
         catch { photoFailed = true }
       }
+      setFailedPhotoId(photoFailed ? textileIds[0] ?? null : null)
       const added = textileIds.length
       setSaved((current) => ({
         target,
@@ -706,21 +763,26 @@ export function AddClothesSheet({ householdId, mode, wearers, calls, initial, in
     setDraft(next)
     setBaseline({ draft: next, destination })
     setCareStep('wash')
+    setCorrectingReview(false)
     setSoilChosen(false)
     setCarried(keepCare)
     setLanded(null)
     setLastAdded([])
     setRoutineOpen(false)
+    setRecoverPhoto(false)
+    setFailedPhotoId(null)
     go(to)
   }
   const finish = () => {
     if (finished.current) return
     finished.current = true
+    if (!recovery.attempted) recovery.clear()
     if (saved === null) onClose()
     else onSaved(saved)
   }
 
   // The running tally rides under the title once anything is saved.
+  if (recovery.prompt !== null) return recovery.prompt
   const tally = saved?.tally === undefined ? undefined : addGarmentText.tally(saved.tally.closet + saved.tally.hamper)
   if (landed !== null) {
     const firstSave = startingCloset && saved?.tally?.groups === 1
@@ -733,6 +795,7 @@ export function AddClothesSheet({ householdId, mode, wearers, calls, initial, in
         <CompletionMark animate={firstSave} className="size-12" />
         <p className={addLandedLineClassName} role="status">{landed}</p>
       </div>
+      {failedPhotoId === null ? null : <div className="grid gap-2" role="status"><p className="m-0">The item was saved, but its label photo didn’t upload.</p><Button type="button" variant="outline" className="justify-self-start" onClick={() => setRecoverPhoto(true)}>Add the photo again</Button></div>}
       {/* Done is the footer's one action; routine and repeat choices stay in the list. */}
       <ActionList label={addGarmentText.addMore} chevrons actions={[
         { key: 'routine', label: 'Wash & dry preferences', onClick: () => setRoutineOpen(true) },
@@ -740,37 +803,40 @@ export function AddClothesSheet({ householdId, mode, wearers, calls, initial, in
         { key: 'another', label: addGarmentText.addAnother, onClick: () => startNext(addAnother(draft, destination), 'type', false) },
       ]} />
       <PersonalRoutine textiles={lastAdded} open={routineOpen} onClose={() => setRoutineOpen(false)} />
+      {!recoverPhoto || failedPhotoId === null ? null : <Sheet title="Care label photo" onClose={() => setRecoverPhoto(false)} closeAtTop footer={<Button type="button" onClick={() => setRecoverPhoto(false)}>Done</Button>}><CarePhotos textileId={failedPhotoId} onUploaded={() => { setRecoverPhoto(false); setFailedPhotoId(null) }} /></Sheet>}
     </Sheet>
   }
 
   const care = step === 'care'
   const back = () => {
+    if (correctingReview) { setCorrectingReview(false); go('final'); return }
     const previousCare = careSteps[careIndex - 1]
     if (care && previousCare !== undefined) { onReviewTransition?.(screen, `care:${previousCare}`); setError(null); setCareStep(previousCare) }
     else if (previous !== undefined) go(previous)
   }
   const override = presentation?.[screen]
   const title = override?.title ?? (care ? careQuestionText[careStep].title : firstRun && step === 'type' ? bulkText.firstTitle : addGarmentText.steps[step].title)
-  const next = override?.action ?? (care ? addGarmentText.careNext : followingStep === undefined ? '' : addGarmentText.steps[followingStep].to)
   const primaryStyle = override?.color ? { backgroundColor: override.color, color: '#fff' } : undefined
+  const next = override?.action ?? (correctingReview ? 'Back to review' : care ? addGarmentText.careNext : followingStep === undefined ? '' : addGarmentText.steps[followingStep].to)
 
   const primary = step === 'final'
-    ? <Button type="submit" form={id} size="lg" style={primaryStyle} disabled={pending || !complete || careProblem !== null}>{savingTarget === null ? override?.action ?? addGarmentText.save : addClothesText.adding}</Button>
+    ? <Button type="submit" form={id} size="lg" style={primaryStyle} disabled={pending || !complete || blocker !== null}>{savingTarget === null ? override?.action ?? addGarmentText.save : addClothesText.adding}</Button>
     // Picking a tile advances, so the type step offers Next only when coming back to a picked type; without it the sheet keeps no empty footer bar.
     : step === 'type' && draft.kind === null ? null : <Button type="submit" form={id} size="lg" style={primaryStyle} disabled={pending || !stepComplete}>{next}</Button>
 
   const carePosition = steps.indexOf('care')
   const progress = { step: stepIndex + 1 + (care ? careIndex : stepIndex > carePosition ? careSteps.length - 1 : 0), total: steps.length + careSteps.length - 1 }
-  return <Sheet title={title} progress={progress} subtitle={tally} onClose={finish} closeAtTop onBack={previous === undefined ? undefined : back} step={care ? `care:${careStep}` : step} dirty={dirty} busy={pending} titleId={`${id}-title`} tall={!care} footer={<>
-    {error === null && (step !== 'final' || careProblem === null) ? null : <p className={cn(noticeClassName, badClassName)} role="alert">{error ?? careProblem}</p>}
+  return <Sheet title={title} progress={progress} subtitle={tally} onClose={finish} onKeepDraft={recovery.canKeep ? recovery.keep : undefined} closeAtTop onBack={previous === undefined ? undefined : back} step={care ? `care:${careStep}` : step} dirty={dirty && !recovery.attempted} busy={pending} titleId={`${id}-title`} tall={!care} footer={<>
     {primary === null ? null : <TaskFooter>{primary}</TaskFooter>}
   </>}>
+    {recovery.notice}
     <form id={id} className={addClothesFormClassName} onSubmit={(event) => void submit(event)} aria-busy={pending}>
+      {step !== 'details' || lastBrand === '' || draft.identity.brand !== '' ? null : <Button type="button" variant="ghost" className="justify-self-start" onClick={() => set({ identity: { ...draft.identity, brand: lastBrand } })}>Use {lastBrand} again</Button>}
       <FieldSet disabled={pending} className={addClothesFieldsClassName}>
         <FieldGroup>
           {step === 'type' ? <>
             {/* The sheet's heading names the tiles and the results. */}
-            <GarmentTypePicker labelledBy={`${id}-title`} kinds={intakeKinds(everyone)} value={draft.kind} initialQuery={initialQuery}
+            <GarmentTypePicker labelledBy={`${id}-title`} kinds={intakeKinds(everyone)} value={draft.kind} article={draft.article} initialQuery={initialQuery}
               onPick={(pick) => { setDraft((current) => pickType(current, pick)); go('whose') }} />
           </> : null}
           {step === 'whose' ? <>
@@ -843,7 +909,7 @@ export function AddClothesSheet({ householdId, mode, wearers, calls, initial, in
             <section className="grid gap-3" aria-label={addGarmentText.careReview}>
             <h3 className="m-0 text-[length:var(--step-1)] font-semibold">{addGarmentText.careReview}</h3>
             <div className="grid min-w-0 rounded-control bg-surface shadow-[inset_0_0_0_1px_var(--line)]">
-              {careSteps.map((question) => <button key={question} type="button" aria-label={`Edit ${careQuestionText[question].cell.toLowerCase()}`} className="flex min-h-14 w-full cursor-pointer items-center gap-3 border-0 bg-transparent px-3 text-start text-ink [&+&]:[border-block-start:1px_solid_var(--line)]" onClick={() => { setCareStep(question); go('care', question) }}>
+              {careSteps.map((question) => <button key={question} type="button" aria-label={`Edit ${careQuestionText[question].cell.toLowerCase()}`} className="flex min-h-14 w-full cursor-pointer items-center gap-3 border-0 bg-transparent px-3 text-start text-ink [&+&]:[border-block-start:1px_solid_var(--line)]" onClick={() => { setCorrectingReview(true); setCareStep(question); go('care', question) }}>
                 <CareSymbol kind={question === 'wash' && draft.tag.method === 'dry_clean_only' ? 'dry_clean_p' : question === 'wash' && draft.tag.method === 'do_not_wash' ? 'do_not_wash' : careReviewSymbol[question]} size={28} decorative />
                 <span className="grid min-w-0 flex-1"><span className="text-ink-2 text-[length:var(--step--1)]">{careQuestionText[question].cell}</span><span className="font-semibold [overflow-wrap:anywhere]">{question === 'wash' ? tubWords(tagRows(draft.tag)) : question === 'bleach' ? bleachWords[draft.tag.bleach ?? 'unknown'] : draft.tag.dryer === 'no_tumble' && draft.tag.natural !== null ? careSymbolWords[draft.tag.natural === 'flat' ? 'dry_flat' : draft.tag.natural === 'line' ? 'line_dry' : 'drip_dry'] : dryerWords[draft.tag.dryer ?? 'unknown']}</span></span>
                 <DesignIcon name="chevronRight" size="1em" strokeWidth={2.2} className="size-4 flex-none text-muted-foreground" aria-hidden="true"  />
@@ -856,6 +922,8 @@ export function AddClothesSheet({ householdId, mode, wearers, calls, initial, in
           </> : null}
         </FieldGroup>
       </FieldSet>
+      {error === null ? null : <p className={cn(noticeClassName, badClassName)} role="alert">{error}</p>}
+      {primary === null || blocker === null ? null : <div className="grid w-full gap-1" role="status"><p className="m-0 text-[length:var(--step--1)] text-ink-2">{blocker.message}</p><Button type="button" variant="ghost" className="justify-self-start" disabled={pending} onClick={fixProblem}>Fix</Button></div>}
     </form>
     {!pestOpen || draft.preOwned === undefined ? null : <Sheet title="Pest treatment" onClose={() => setPestOpen(false)} closeAtTop footer={<Button type="button" onClick={() => setPestOpen(false)}>Back to garment</Button>}>
       <p className="m-0 text-ink-2">For suspected pest exposure only, separate from normal care.</p>
@@ -964,7 +1032,7 @@ function ColorBreakdown({ draft, onChange }: { draft: AddDraft; onChange: (patch
         const label = color.colorName || `Color ${index + 1}`
         return <div key={index} className="flex min-w-0 flex-wrap items-center gap-2">
           <button type="button" className={cn(choiceChipVariants(), 'min-w-[44px] flex-1 whitespace-normal [@container_(width_<_16rem)]:basis-full')} aria-pressed={index === selected} onClick={() => setEditing(index)}>{label}</button>
-          <div className="min-w-0 flex-none [&_.field-label]:sr-only [&_.stepper-controls]:grid-cols-[44px_minmax(2ch,auto)_44px]">
+          <div className="min-w-0 flex-none [&_.field-label]:sr-only [&_.stepper-controls]:w-auto [&_.stepper-controls]:grid-cols-[44px_minmax(2ch,auto)_44px]">
             <Stepper label={label} value={color.count} min={1} max={20 - pieceCount(draft) + color.count} onChange={(count) => change(index, { count })} />
           </div>
           <Button type="button" variant="outline" size="icon" className="w-[44px]" aria-label={`Remove ${label}`} onClick={() => remove(index)}><DesignIcon name="x" size={18} /></Button>
@@ -980,6 +1048,8 @@ function ColorBreakdown({ draft, onChange }: { draft: AddDraft; onChange: (patch
 function FabricChoices({ value, details, onDetails, onChange, heading = true, editing = false }: { value: string | null; details?: FabricDetails; onDetails: (details: FabricDetails | undefined) => void; onChange: (value: string | null) => void; /** The intake step's own heading already asks it. */ heading?: boolean; editing?: boolean }) {
   const id = useId()
   const [parts, setParts] = useState(() => parseFabric(value))
+  const [query, setQuery] = useState('')
+  const matches = searchFabrics(query)
   const change = (next: FiberShare[]) => { const parts = next.length === 1 ? next.map((part) => ({ ...part, percentage: null })) : next; setParts(parts); onChange(formatFabric(parts)) }
   const problem = fabricProblem(value)
   const pick = (fiber: FiberShare['fiber']) => change(parts.some((part) => part.fiber === fiber) ? parts.filter((part) => part.fiber !== fiber) : [...parts, { fiber, name: '', percentage: null }])
@@ -987,6 +1057,21 @@ function FabricChoices({ value, details, onDetails, onChange, heading = true, ed
   return <div className="grid gap-2">
     {heading ? <QuestionTitle title={addGarmentText.fabricTitle} /> : null}
     <span className="text-[length:var(--step--1)] leading-[1.45] text-ink-2">{addGarmentText.fabricHint}</span>
+    <Field>
+      <FieldLabel htmlFor={`${id}-fabric-search`}>Search fibers or fabric details</FieldLabel>
+      <Input id={`${id}-fabric-search`} type="search" value={query} autoComplete="off" placeholder="e.g. Supima, merino or spandex" onChange={(event) => setQuery(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') event.preventDefault() }} />
+    </Field>
+    {query.trim() === '' ? null : <div role="group" aria-label="Fabric search results" className="grid gap-2">
+      {matches.length === 0 ? <p role="status" className="m-0 text-ink-2">No matches. You can record the label’s wording under More fibers → Other.</p> : matches.map((match) => {
+        const selected = parts.some((part) => part.fiber === match.fiber) && (match.detail === undefined || (details?.fibers?.find((entry) => entry.fiber === match.fiber)?.details ?? []).includes(match.detail))
+        return <button key={match.label} type="button" className={choiceChipVariants()} aria-pressed={selected} onClick={() => {
+          if (match.detail === undefined) { pick(match.fiber); return }
+          if (!parts.some((part) => part.fiber === match.fiber)) change([...parts, { fiber: match.fiber, name: '', percentage: null }])
+          const values = details?.fibers?.find((entry) => entry.fiber === match.fiber)?.details ?? []
+          onDetails({ ...details, fibers: [...details?.fibers?.filter((entry) => entry.fiber !== match.fiber) ?? [], { fiber: match.fiber, details: toggle(values, match.detail) }].filter((entry) => entry.details.length > 0) })
+        }}>{match.label}</button>
+      })}
+    </div>}
     <ChoiceTiles label={addGarmentText.fabricTitle} value={parts.map((part) => part.fiber)} onPick={pick} options={fabrics.map((fabric) => ({ value: fabric, label: addGarmentText.fabrics[fabric], art: fabricArt[fabric] }))} />
     <MoreSection title="More fibers" variant={editing ? 'section' : 'card'}>
       <div role="group" aria-label="More fibers" className="flex min-w-0 flex-wrap gap-2">
@@ -1191,6 +1276,9 @@ export function EditClothesSheet({ editing, wearers, calls, onClose, onSaved, re
   const [pending, setPending] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [tab, setTab] = useState('details')
+  const fieldsRoot = useRef<HTMLFieldSetElement>(null)
+  const [repair, setRepair] = useState(0)
+  const handledRepair = useRef(0)
   const [initialPrivate] = useState(() => editing.every((piece) => piece.private === true))
   const [privateItem, setPrivateItem] = useState(initialPrivate)
   const id = useId()
@@ -1204,8 +1292,22 @@ export function EditClothesSheet({ editing, wearers, calls, onClose, onSaved, re
   const offered = intakeKinds(wearers)
   const kinds = before.kind === null || offered.includes(before.kind) ? offered : [...offered, before.kind]
   const focusOnOpen = focusField === undefined ? undefined : () => editFieldControl(id, focusField)
+  const problem = careOnly ? tagComplete(draft.tag) ? null : addClothesText.finishCareLabel
+    : !draft.name?.trim() ? 'Give this item a name.' : fabricProblem(draft.material) ?? (!same(draft.tag, before.tag) && !tagComplete(draft.tag) ? addClothesText.finishCareLabel : null)
+  const problemSection = !draft.name?.trim() ? 'details' : fabricProblem(draft.material) !== null ? 'fabric' : 'care'
+  useEffect(() => {
+    if (handledRepair.current === repair) return
+    const frame = requestAnimationFrame(() => {
+      handledRepair.current = repair
+      const control = problemSection === 'details' ? editFieldControl(id, 'name') : fieldsRoot.current?.querySelector<HTMLElement>(focusField === undefined ? `[data-validation-section="${problemSection}"] input, [data-validation-section="${problemSection}"] button` : 'input, button')
+      control?.focus({ preventScroll: true })
+      control?.scrollIntoView({ block: 'center' })
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [repair, problemSection, id, focusField])
+  const validation = problem === null ? null : <div className="grid w-full gap-1" role="status"><p className="m-0 text-[length:var(--step--1)] text-ink-2">{problem}</p>{careOnly ? null : <Button variant="ghost" className="justify-self-start" disabled={pending} onClick={() => { setTab(problemSection); setRepair((current) => current + 1) }}>Fix</Button>}</div>
   const titles: Record<EditField, string> = { name: addClothesText.name, whose: addClothesText.belongsTo, kind: addGarmentText.clothingType, color: addClothesText.color, dyeRun: 'Dye', material: 'Fabric', quantity: addClothesText.quantity, brand: 'Brand and size', size: 'Brand and size', reference: addClothesText.wearAndItemDetails }
-  if (careOnly) return <Sheet title={extrasOnly ? addGarmentText.moreOnLabel : 'Check the care label'} subtitle={`${editing[0]!.name} · ${editing.length} ${editing.length === 1 ? 'item' : 'matching items'}`} onClose={onClose} tall compactActions dirty={dirty} busy={pending} initialFocus={focusOnOpen} footer={<><Button disabled={pending || !tagComplete(draft.tag)} onClick={async () => {
+  if (careOnly) return <Sheet title={extrasOnly ? addGarmentText.moreOnLabel : 'Check the care label'} subtitle={`${editing[0]!.name} · ${editing.length} ${editing.length === 1 ? 'item' : 'matching items'}`} onClose={onClose} tall compactActions dirty={dirty} busy={pending} initialFocus={focusOnOpen} footer={<><Button disabled={pending || problem !== null} onClick={async () => {
     const answers = tagAnswers(draft.tag)
     if (answers === null || pending) return
     setPending(true); setError(null)
@@ -1218,6 +1320,7 @@ export function EditClothesSheet({ editing, wearers, calls, onClose, onSaved, re
     <p className={mutedClassName}>Copy the label. Apply these answers only to matching items with the same label.</p>
     <TagStep material={draft.material} value={draft.tag} onChange={(tag) => set({ tag })} only={extrasOnly ? 'more' : undefined} />
     {renderPhotos(editing[0]!.textileId)}
+    {validation}
     {error === null ? null : <p className={cn(noticeClassName, badClassName)} role="alert">{error}</p>}
   </Sheet>
   const save = async () => {
@@ -1236,8 +1339,9 @@ export function EditClothesSheet({ editing, wearers, calls, onClose, onSaved, re
       const addedMatching = Math.max(0, quantity - editing.length)
       const movedToTrash = Math.max(0, editing.length - quantity)
       if (addedMatching > 0) await calls.addMatchingTextiles({ textileId: editing[0]!.textileId as Id<'textiles'>, quantity: addedMatching })
-      if (movedToTrash > 0) await calls.trashTextiles({ textileIds: editing.slice(quantity).map((garment) => garment.textileId as Id<'textiles'>) })
-      onSaved({ textileIds: [], name: garmentName(draft), photoFailed: false, careReturned, addedMatching, movedToTrash })
+      const textileIds = editing.slice(quantity).map((garment) => garment.textileId as Id<'textiles'>)
+      const removed = movedToTrash > 0 ? await calls.trashTextiles({ textileIds }) : null
+      onSaved({ textileIds: [], name: garmentName(draft), photoFailed: false, careReturned, addedMatching, movedToTrash, ...(removed?.trashedAt === undefined || removed.revisions === undefined ? {} : { trashReceipt: { textileIds, trashedAt: removed.trashedAt, revisions: removed.revisions } }) })
     } catch (caught) {
       setError(errorMessage(caught))
     } finally {
@@ -1246,7 +1350,7 @@ export function EditClothesSheet({ editing, wearers, calls, onClose, onSaved, re
   }
   const fields = (section: string) => {
     const shows = (field: EditField) => focusField !== undefined ? focusField === field : section === (field === 'material' ? 'fabric' : field === 'dyeRun' ? 'care' : field === 'reference' ? 'more' : 'details')
-    return <div className={editClothesFieldsClassName}>
+    return <div className={editClothesFieldsClassName} data-validation-section={section}>
       {shows('name') ? <Field className={fieldClassName}><FieldLabel htmlFor={`${id}-name`}>{addClothesText.name}</FieldLabel><Input id={`${id}-name`} value={draft.name ?? ''} maxLength={80} onChange={(event) => set({ name: event.target.value })} /></Field> : null}
       {shows('whose') ? <Field className={fieldClassName}><FieldLabel htmlFor={`${id}-owner`}>{addClothesText.belongsTo}</FieldLabel><NativeSelect id={`${id}-owner`} value={selectedWearer ?? 'shared'} onChange={(event) => set({ whose: event.target.value === 'shared' ? 'shared' : { wearerId: event.target.value } })}><option value="shared">{addClothesText.sharedItem}</option>{wearers.map((wearer) => <option key={wearer.wearerId} value={wearer.wearerId}>{wearer.name}</option>)}</NativeSelect></Field> : null}
       {shows('kind') ? <MoreSection variant="section" title={addGarmentText.clothingType}>
@@ -1282,14 +1386,16 @@ export function EditClothesSheet({ editing, wearers, calls, onClose, onSaved, re
     </div>
   }
   return <Sheet title={focusField === undefined ? editing.length === 1 ? addClothesText.clothingDetails : addClothesText.matchingPieces(editing.length) : titles[focusField]} onClose={onClose} closeLabel={addClothesText.cancel} tall compactActions dirty={dirty} busy={pending} initialFocus={focusOnOpen}
-    footer={<>{error === null ? null : <p className={cn(noticeClassName, badClassName, 'order-first')} role="alert">{error}</p>}<Button type="button" className={largeClassName} disabled={pending || !draft.name?.trim() || fabricProblem(draft.material) !== null} onClick={() => void save()}>{addClothesText.saveChanges}</Button></>}>
+    footer={<Button type="button" className={largeClassName} disabled={pending || problem !== null} onClick={() => void save()}>{addClothesText.saveChanges}</Button>}>
     {editing.length > 1 ? <p className={mutedClassName}>{addClothesText.changesApply(editing.length)}</p> : null}
-    <fieldset disabled={pending} className="m-0 min-w-0 border-0 p-0">
+    <fieldset ref={fieldsRoot} disabled={pending} className="m-0 min-w-0 border-0 p-0">
       {focusField !== undefined ? fields('details') : <Tabs value={tab} onValueChange={(value) => { if (!pending && value !== null) setTab(String(value)) }}>
         <TabsList aria-label="Item editor sections">{['details', 'fabric', 'care', 'more'].map((section) => <TabsTrigger key={section} value={section} disabled={pending}>{section === 'details' ? 'Details' : section === 'fabric' ? 'Fabric' : section === 'care' ? 'Care' : 'More'}</TabsTrigger>)}</TabsList>
         {['details', 'fabric', 'care', 'more'].map((section) => <TabsContent key={section} value={section} keepMounted>{fields(section)}</TabsContent>)}
       </Tabs>}
     </fieldset>
+    {validation}
+    {error === null ? null : <p className={cn(noticeClassName, badClassName)} role="alert">{error}</p>}
   </Sheet>
 }
 
@@ -1319,9 +1425,11 @@ export type EditOutcome = { readonly removedAll: boolean }
 
 /** The intake or edit form with live household data and a confirmation after saving. */
 export function AddClothesFlow({ householdId, mode, firstRun = false, onClose }: { householdId: string; mode: AddMode; firstRun?: boolean; onClose: (outcome?: EditOutcome) => void }) {
-  const inventory = useQuery(api.inventory.list, { householdId: householdId as Id<'households'> })
+  const inventory = useQuery(api.inventory.list, { householdId: householdId as Id<'households'>, textileIds: mode.kind === 'edit' ? [...mode.textileIds] as Id<'textiles'>[] : [] })
+  const summary = useQuery(api.inventoryBrowse.summary, { householdId: householdId as Id<'households'>, search: '', section: 'all', tags: [] })
   const generateUploadUrl = useMutation(api.photos.generateUploadUrl)
   const attach = useAction(api.photos.attach)
+  const restoreTextiles = useMutation(api.inventory.restoreTextiles)
   const calls: AddCalls = {
     createTextiles: useMutation(api.inventory.createTextiles),
     addMatchingTextiles: useMutation(api.inventory.addMatchingTextiles),
@@ -1334,19 +1442,19 @@ export function AddClothesFlow({ householdId, mode, firstRun = false, onClose }:
     clearCare: useMutation(api.closet.unflag),
     uploadPhoto: (textileId, file) => uploadCarePhoto({ generateUploadUrl, attach }, textileId, file),
   }
-  if (inventory === undefined) return null
+  if (inventory === undefined || summary === undefined) return null
   const editing = mode.kind === 'edit' ? inventory.textiles.filter((textile) => mode.textileIds.includes(textile.textileId)) : []
   if (mode.kind === 'edit') {
     if (editing.length === 0) return null
-    return <EditClothesSheet editing={editing} wearers={inventory.wearers} calls={calls} onClose={onClose} careOnly={mode.careOnly} focusField={mode.focusField} knownTags={usedClothingTags(inventory.textiles)}
+    return <EditClothesSheet editing={editing} wearers={inventory.wearers} calls={calls} onClose={onClose} careOnly={mode.careOnly} focusField={mode.focusField} knownTags={summary.tags}
       renderPhotos={(textileId) => <CarePhotos textileId={textileId as Id<'textiles'>} />}
       renderSettings={(section, disabled) => <GarmentSettings textiles={editing} section={section} disabled={disabled} />}
       onSaved={(saved) => {
-        toast.success([saved.careReturned ? addClothesText.careReturned(saved.careReturned) : '', saved.addedMatching ? addClothesText.matchingAdded(saved.addedMatching) : '', saved.movedToTrash ? addClothesText.movedToTrash(saved.movedToTrash) : ''].filter(Boolean).join(' ') || addClothesText.saved)
+        confirmTrash([saved.careReturned ? addClothesText.careReturned(saved.careReturned) : '', saved.addedMatching ? addClothesText.matchingAdded(saved.addedMatching) : '', saved.movedToTrash ? addClothesText.movedToTrash(saved.movedToTrash) : ''].filter(Boolean).join(' ') || addClothesText.saved, saved.trashReceipt, restoreTextiles)
         onClose({ removedAll: (saved.movedToTrash ?? 0) > 0 && (saved.movedToTrash ?? 0) >= editing.length })
       }} />
   }
-  return <AddClothesSheet householdId={householdId} mode={mode} wearers={inventory.wearers} calls={calls} firstRun={firstRun} emptyCloset={inventory.textiles.length === 0} onClose={onClose} knownTags={usedClothingTags(inventory.textiles)}
+  return <AddClothesSheet householdId={householdId} mode={mode} wearers={inventory.wearers} calls={calls} firstRun={firstRun} emptyCloset={summary.total === 0} onClose={onClose} knownTags={summary.tags}
     onSaved={(saved) => {
       toast.success(savedToast(saved, mode.target))
       onClose()
@@ -1445,7 +1553,7 @@ export function NamedColourGrid({ value, group, onPick }: { value: string; group
   return (
     <div className={colourStepClassName}>
       <p className={colourHintClassName}>{colourHint}</p>
-      <div className="grid grid-cols-4 gap-x-2 gap-y-3" role="radiogroup" aria-label={colourQuestion}>
+      <div className="grid grid-cols-4 gap-x-2 gap-y-3 [@container_(width_<_20rem)]:grid-cols-3 [@container_(width_<_14rem)]:grid-cols-2" role="radiogroup" aria-label={colourQuestion}>
         {namedColours.map((entry) => <Swatch key={entry.name} label={entry.name} fill={chosen?.name === entry.name ? sample?.fill ?? entry.fill : entry.fill} chosen={chosen?.name === entry.name} onPick={() => onPick(entry.unnamed === true ? '' : entry.name, entry.group)} />)}
       </div>
       {hint == null ? null : <p className={colourHintClassName} role="status">{hint}</p>}

@@ -7,6 +7,7 @@ import { RequireHousehold } from '@/account/account'
 import { notFoundText, routeErrorText } from '@/copy'
 import { errorCode, errorMessage } from '@/kit/ui'
 import { DesignIcon } from '@/kit/design-icons'
+import { Button } from '@/components/ui/button'
 
 /**
  * Shown when a page's data cannot be read. Lost access falls back to sign-in or onboarding
@@ -65,20 +66,24 @@ export function NotFound() {
 }
 
 export function RouteError({ error }: { error: unknown }) {
+  const router = useRouter()
+  return <RequireHousehold>{() => <RouteErrorView error={error} onRetry={() => void router.invalidate()} />}</RequireHousehold>
+}
+
+export function RouteErrorView({ error, onRetry }: { error: unknown; onRetry: () => void }) {
   const code = errorCode(error)
   // A link with a malformed id fails argument validation before any code runs: treat it like one that no longer exists.
   const malformed = code === null && error instanceof Error && /ArgumentValidationError|does not match validator/i.test(error.message)
   const denied = code === 'forbidden' || code === 'not_found' || code === 'unauthenticated' || malformed
   return (
-    <RequireHousehold>
-      {() => (
-        <MessagePage
-          symbol={<DesignIcon name="alert" size={26}  />}
-          title={denied ? routeErrorText.denied : routeErrorText.failed}
-          detail={denied ? routeErrorText.deniedDetail : errorMessage(error)}
-          actions={<Link className={cn(buttonVariants({ size: 'lg' }), "w-full")} to="/">{routeErrorText.home}</Link>}
-        />
-      )}
-    </RequireHousehold>
+    <MessagePage
+      symbol={<DesignIcon name="alert" size={26} />}
+      title={denied ? routeErrorText.denied : routeErrorText.failed}
+      detail={denied ? routeErrorText.deniedDetail : errorMessage(error)}
+      actions={<>
+        {denied ? null : <Button size="lg" onClick={onRetry}>Try again</Button>}
+        <Link className={cn(buttonVariants({ variant: denied ? 'default' : 'outline', size: 'lg' }), "w-full")} to="/">{routeErrorText.home}</Link>
+      </>}
+    />
   )
 }

@@ -17,6 +17,10 @@
 .app-screen small { color: #526880; display: block; font-size: 15px; margin-top: 6px; }
 .app-screen .app-screen-picture { min-height: 0; display: block; width: 271px; padding: 0; border: 1px solid #dbe5ed; border-radius: 10px; overflow: hidden; }
 .app-screen-picture img { width: 271px; height: 588px; display: block; background: #fff; }
+.rh-fixture-picture { display: block; width: 271px; height: 588px; overflow: hidden; background: #f4f5f7; }
+.rh-fixture-picture { position: relative; }
+.rh-fixture-picture > .rh-snapshot-state { position: absolute; inset: auto 0 0; height: auto; padding: 4px; background: #ffffffeb; font-size: 10px; }
+.rh-fixture-picture > span { display: grid; height: 100%; place-content: center; padding: 12px; color: #526880; font-size: 12px; }
 .app-live-screen { position: relative; width: 271px; height: 588px; border: 2px solid #328360; border-radius: 10px; overflow: hidden; background: #fff; }
 .app-live-screen iframe { width: 393px; height: 852px; border: 0; transform: scale(.69); transform-origin: top left; }
 .app-screen-placeholder { width: 271px; height: 588px; display: grid; place-items: center; text-align: center; padding: 20px; color: #526880; background: #fff; font-size: 16px; border-radius: 10px; }

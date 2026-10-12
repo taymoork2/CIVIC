@@ -47,14 +47,14 @@ export function ClosetGlance({ counts, people, selected, onPerson }: {
   // Counts stay quiet; the person circles choose which clothes appear below.
   return (
     <div className="grid min-w-0 gap-3">
-    <section aria-label={text.label} className="grid min-w-0 [container-type:inline-size]">
+    <section aria-label={text.label} className="grid min-w-0 rounded-control bg-surface-2 p-[12px] [container-type:inline-size] sm:p-4">
       <ul role="list" className="m-0 grid list-none grid-cols-1 gap-x-4 gap-y-2 p-0 [@container_(width_>=_16em)]:grid-cols-2 [@container_(width_>=_32em)]:grid-cols-4">
         {countsOrder.map((key) => (
-          <li key={key} className="flex min-w-0 items-center gap-2.5">
-            <span className={cn('grid size-8 flex-none place-items-center rounded-[10px]', countSymbols[key].tone)} aria-hidden="true"><DesignIcon name={countSymbols[key].icon} size="1.25rem" /></span>
-            <span className="flex min-w-0 items-baseline gap-2 leading-tight">
+          <li key={key} className="flex min-w-0 items-center gap-[10px]">
+            <span className={cn('grid size-[32px] flex-none place-items-center rounded-[10px] [@container_(width_<_12em)]:hidden', countSymbols[key].tone)} aria-hidden="true"><DesignIcon name={countSymbols[key].icon} size={20} /></span>
+            <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 gap-y-0.5 leading-tight">
               <span className={cn('font-bold tabular-nums', counts[key] === 0 && 'text-ink-2')}>{counts[key]}</span>
-              <span className="text-[length:var(--step--1)] text-ink-2">{text[key]}</span>
+              <span className="max-w-full text-[length:var(--step--1)] text-ink-2 [overflow-wrap:normal]">{text[key]}</span>
             </span>
           </li>
         ))}

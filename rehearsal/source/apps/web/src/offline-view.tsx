@@ -1,6 +1,7 @@
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Link } from '@tanstack/react-router'
+import { Button } from '@/components/ui/button'
 import { offlineText } from './copy'
 
 import { offlineSessionCopies, type SessionProjection } from './private-state'
@@ -60,12 +61,16 @@ export function OfflineNotice({ sessionId }: { sessionId?: string }) {
       </>
     )
   }
+  return <OfflineUnavailable others={others} />
+}
+
+export function OfflineUnavailable({ others = [] }: { others?: SessionProjection[] }) {
   return (
     <div className={pageClassName}>
       <section className={cn(labelCardClassName, paddedClassName, offlineNoticeClassName)} role="status">
         <h1>{offlineText.title}</h1>
         <p className={mutedClassName}>{offlineText.explanation}</p>
-        <Link className={cn(buttonVariants(), "secondary")} to="/">{offlineText.retry}</Link>
+        <Button type="button" onClick={() => window.location.reload()}>{offlineText.retry}</Button>
       </section>
       <OtherLoads loads={others} />
     </div>

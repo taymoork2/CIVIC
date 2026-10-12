@@ -20,6 +20,40 @@ function input(textiles: readonly TextileEvidence[], extra: Partial<PlannerInput
 const modes: Partial<PlannerInput>[] = [{}, { mode: 'rush' },
   { preferences: { colorPolicy: 'allow' }, loadPins: [{ textileId: 'a', group: 1 }, { textileId: 'b', group: 1 }] }]
 
+test('100, 500 and 1,000 mixed pieces keep their safety boundaries in every planning mode', () => {
+  for (const size of [100, 500, 1_000]) for (const options of modes) {
+    const textiles = Array.from({ length: size }, (_, i): TextileEvidence => {
+      const base = garment(`piece-${i}`, i % 2 ? 'white' : 'black')
+      switch (i % 8) {
+        case 0: return { ...base, care: null }
+        case 1: return { ...base, care: { ...base.care!, washMethod: 'dry_clean_only' } }
+        case 2: return { ...base, material: 'wool', care: { ...base.care!, cycle: 'normal', maxTemperatureC: 60 } }
+        case 3: return { ...base, care: { ...base.care!, maxTemperatureC: 20, bleach: 'none', dryMethod: 'line_dry' } }
+        case 4: return { ...base, care: { ...base.care!, cycle: 'delicate', dryMethod: 'tumble_dry', dryHeat: 'low' } }
+        default: return { ...base, care: { ...base.care!, bleach: 'none', dryMethod: 'dry_flat' } }
+      }
+    })
+    const result = plan(input(textiles, { ...options, machines: [{ ...washer, supportedCycles: ['normal', 'delicate'] }] }))
+    const byId = new Map(textiles.map(piece => [piece.id, piece]))
+    const planned = result.loads.flatMap(load => load.textileIds)
+    assert.equal(new Set(planned).size, planned.length, 'a piece is assigned only once')
+    assert.deepEqual(new Set(planned), new Set(textiles.filter((_, i) => i % 8 >= 3).map(piece => piece.id)), 'unknown, dry-clean-only and conflicting wool care stay excluded')
+    for (const load of result.loads) {
+      assert.ok(load.bulkUnits <= load.capacityUnits)
+      for (const id of load.textileIds) {
+        const care = byId.get(id)!.care!
+        assert.ok(load.temperatureC <= care.maxTemperatureC!)
+        if (care.cycle === 'delicate') assert.equal(load.cycle, 'delicate')
+        assert.ok(load.treatments.every(step => step.supplyId === detergent.id))
+      }
+    }
+    const oxygenDetergent = plan(input(textiles, { ...options, supplies: [{ ...detergent, bleachKind: 'oxygen' }], machines: [{ ...washer, supportedCycles: ['normal', 'delicate'] }] }))
+    for (const load of oxygenDetergent.loads) {
+      if (load.textileIds.some(id => byId.get(id)!.care!.bleach === 'none')) assert.ok(load.treatments.every(step => step.supplyId !== detergent.id), 'bleach within detergent cannot bypass the item label')
+    }
+  }
+})
+
 const instructions = { source: 'Synthetic sewn label', preparation: [], washing: [], beforeDrying: [], drying: [], afterDrying: [], ironing: [] }
 
 test('material conflicts block old confirmed labels in planning and drying, including small wool blends', () => {

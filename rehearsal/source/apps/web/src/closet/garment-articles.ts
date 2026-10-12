@@ -17,6 +17,7 @@ export const garmentArticles: readonly GarmentArticle[] = [
   { name: 'T-shirt', kind: 't_shirt', aliases: ['tee', 'tshirt'] },
   { name: 'Tank top', kind: 't_shirt', aliases: ['tank'] },
   { name: 'Long-sleeve tee', kind: 't_shirt' },
+  { name: 'Henley', kind: 't_shirt', aliases: ['henley shirt', 'short-sleeve henley', 'long-sleeve henley'] },
   { name: 'Undershirt', kind: 't_shirt' },
   { name: 'Sweater', kind: 'sweater', aliases: ['jumper', 'pullover', 'knit'] },
   { name: 'Cardigan', kind: 'sweater' },
@@ -24,7 +25,7 @@ export const garmentArticles: readonly GarmentArticle[] = [
   { name: 'Sweatshirt', kind: 'sweater', aliases: ['crewneck'] },
   { name: 'Fleece', kind: 'sweater' },
   { name: 'Turtleneck', kind: 'sweater', aliases: ['mock neck'] },
-  { name: 'Shirt', kind: 'shirt', aliases: ['button-up', 'button-down'] },
+  { name: 'Button-up shirt', kind: 'shirt', aliases: ['shirt', 'button-down', 'button-front shirt'] },
   { name: 'Blouse', kind: 'shirt' },
   { name: 'Oxford shirt', kind: 'shirt', aliases: ['oxford'] },
   { name: 'Polo', kind: 'shirt', aliases: ['polo shirt'] },
@@ -72,6 +73,18 @@ export const garmentArticles: readonly GarmentArticle[] = [
   { name: 'Sheets', kind: 'sheets', aliases: ['bed sheets', 'fitted sheet', 'flat sheet'] },
   { name: 'Pillowcase', kind: 'sheets', aliases: ['pillow case'] },
   { name: 'Duvet cover', kind: 'sheets' },
+]
+
+/** Every article is browseable; these groups do not create new care rules. */
+export const garmentArticleGroups: readonly { label: string; kinds: readonly GarmentKind[] }[] = [
+  { label: 'Tops', kinds: ['t_shirt', 'shirt', 'sweater'] },
+  { label: 'Bottoms', kinds: ['pants', 'shorts'] },
+  { label: 'Dresses & skirts', kinds: ['dress', 'skirt'] },
+  { label: 'Jackets & suits', kinds: ['outerwear', 'suit'] },
+  { label: 'Underwear & sleepwear', kinds: ['underwear', 'socks', 'pajamas'] },
+  { label: 'Workout', kinds: ['workout'] },
+  { label: 'Baby clothes', kinds: ['baby_bodysuit'] },
+  { label: 'Household textiles', kinds: ['towel', 'sheets'] },
 ]
 
 /** Lower case, with hyphens and other punctuation read as spaces: "T-Shirt " matches "t shirt". */

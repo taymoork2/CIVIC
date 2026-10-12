@@ -7,7 +7,7 @@ import { ClosetView, chosenWearer, hangerLabel, hangingSession, matchesClosetSea
 import { closetRails } from '@/closet/closet-groups'
 import { consolidatedClosetTiles } from '@/closet/closet-view'
 import type { Textile } from '@/household/inventory-types'
-import { assertPlainCopy } from '@/kit/test-copy'
+import { assertPlainCopy, readableText } from '@/kit/test-copy'
 import { WornChip } from '@/kit/ui'
 
 // The editor slot each record is given, kept so a test can open Edit outside the static render.
@@ -100,8 +100,9 @@ const render = (overrides: Partial<ClosetViewProps> = {}) => renderToStaticMarku
   />,
 )
 
-/** The person circle that is on: the closet being looked at. */
-const chosenCircle = (markup: string) => /role="radio" aria-checked="true"[^>]*>.*?<span class="leading-tight">([^<]+)<\/span><\/button>/.exec(markup.slice(markup.indexOf('aria-label="Whose clothes"')))?.[1]
+/** The profile selector is visible above the garment groups. */
+const scopeSelect = (markup: string) => /<select[^>]*aria-label="Whose clothes"[^>]*>[\s\S]*?<\/select>/.exec(markup)?.[0] ?? ''
+const chosenCircle = (markup: string) => /<option value="[^"]+" selected="">([^<]+)<\/option>/.exec(scopeSelect(markup))?.[1]
 
 test('Closet search matches garment details and wearer without matching unrelated clothes', () => {
   const [rail] = closetRails([textile({ identity: { brand: 'AS Colour', size: 'M', styleNumber: '5001R' } })], ['sam'], {}, now, 90)
@@ -110,6 +111,15 @@ test('Closet search matches garment details and wearer without matching unrelate
   expect(matchesClosetSearch(tile, 'Sam', 'as colour')).toBe(true)
   expect(matchesClosetSearch(tile, 'Sam', 'sam')).toBe(true)
   expect(matchesClosetSearch(tile, 'Sam', 'jeans')).toBe(false)
+})
+
+test('Saved search finds only recorded fibers, qualifiers and construction without changing care', () => {
+  const item = textile({ care: { material: '90% cotton, 10% spandex', fabricDetails: { fibers: [{ fiber: 'cotton', details: ['Supima'] }], construction: ['Jersey'], finishes: ['Pre-shrunk'] } } as Textile['care'] })
+  const before = JSON.stringify(item)
+  const tile = closetRails([item], ['sam'], {}, now, 90)[0]!.sections[0]!.tiles[0]!
+  for (const word of ['supima', 'cotton', 'elastane', 'spandex', 'jersey', 'pre-shrunk']) expect(matchesClosetSearch(tile, '', word)).toBe(true)
+  for (const word of ['silk', 'Henley', 'Egyptian']) expect(matchesClosetSearch(tile, '', word)).toBe(false)
+  expect(JSON.stringify(item)).toBe(before)
 })
 
 test('Trash stays reachable from Closet and offers recovery before deletion', () => {
@@ -188,13 +198,13 @@ test('garment rows show owner, count and care state without a false hanger', () 
   expect(chosenCircle(markup)).toBe('Everyone')
   expect(markup).toContain('2 ready')
   expect(markup).toContain('1 hamper')
-  expect(markup).toContain('aria-label="Sam, Navy tee, 2, ready, worn 3 times since washed"')
+  expect(markup).toContain('aria-label="Sam, Navy tee, 2, ready, worn 3 times since washed, Needs label"')
   expect(markup).toContain('Navy · Sam · 2 ready')
   expect(markup).toContain('Navy tee ×2')
-  expect(markup).toContain('aria-label="Sam, Soccer jersey, waiting to wash"')
+  expect(markup).toContain('aria-label="Sam, Soccer jersey, waiting to wash, Needs label"')
   expect(markup).toContain('class="garment-icon"')
   expect(markup).toContain('data-colour="dark"')
-  expect(markup).not.toContain('<img')
+  expect(markup.match(/class="record-row"[\s\S]*?<\/li>/g)?.join('')).not.toContain('<img')
   expect(markup).not.toContain('garment-hook')
   expect(markup).not.toContain('Guest shirt')
   assertPlainCopy(markup)
@@ -228,14 +238,14 @@ test('a one-wearer household puts shared items in the same ready list', () => {
   })
   expect(markup).not.toContain('Shared (towels, sheets)')
   expect(chosenCircle(markup)).toBe('Everyone')
-  expect(markup).toContain('aria-label="Navy tee, ready"')
-  expect(markup).toContain('aria-label="Bath towel, ready"')
+  expect(markup).toContain('aria-label="Navy tee, ready, Needs label"')
+  expect(markup).toContain('aria-label="Bath towel, ready, Needs label"')
 })
 
 test('not-worn age remains in the garment’s accessible name', () => {
   const old = { lastWornAt: new Date(2026, 5, 10).getTime(), lastCleanedAt: null }
   const markup = render({ inventory: { wearers, textiles: [textile({ name: 'Linen shirt', kind: 'shirt', ...old })] } })
-  expect(markup).toContain('aria-label="Linen shirt, ready, not worn since June"')
+  expect(markup).toContain('aria-label="Linen shirt, ready, not worn since June, Needs label"')
   expect(markup).not.toContain('Needs you')
   // Never worn or washed: counted from when it was added.
   const added = render({ inventory: { wearers, textiles: [textile({ name: 'New coat', lastWornAt: null, lastCleanedAt: null, createdAt: now - 100 * day })] } })
@@ -244,10 +254,10 @@ test('not-worn age remains in the garment’s accessible name', () => {
   expect(fresh).not.toContain('not worn since')
 })
 
-test('family closets are visible with Me first and without a duplicate personal profile', () => {
+test('owner stays visible and grouping stays in the management control, with no duplicate personal profile', () => {
   const markup = render({ initialFilters: { kinds: ['shirt'], tags: [] } })
-  const profiles = markup.slice(markup.indexOf('aria-label="Whose clothes"'), markup.indexOf('</section>', markup.indexOf('aria-label="Whose clothes"')))
-  const at = (name: string) => profiles.indexOf(`>${name}</span>`)
+  const profiles = scopeSelect(markup)
+  const at = (name: string) => profiles.indexOf(`>${name}</option>`)
   expect(at('Me')).toBeGreaterThan(-1)
   expect(at('Me')).toBeLessThan(at('Sam'))
   expect(at('Sam')).toBeLessThan(at('Shared'))
@@ -255,7 +265,12 @@ test('family closets are visible with Me first and without a duplicate personal 
   expect(markup).not.toContain('aria-label="Family closets"')
   expect(profiles).not.toContain('Alex')
   expect(markup).not.toContain('Whose clothes<select>')
-  expect(markup).toContain('aria-label="Group clothes by"')
+  expect(markup.indexOf('aria-label="Closet filters and management"')).toBeLessThan(markup.indexOf('aria-label="Group clothes by"'))
+  expect(markup.indexOf('aria-label="Whose clothes"')).toBeLessThan(markup.indexOf('aria-label="Manage closet"'))
+  expect(markup).toContain('aria-label="Manage closet"')
+  expect(readableText(markup)).toContain('by type')
+  expect(markup).toContain('care-feature')
+  expect(markup).toContain('aria-label="Your clothes at a glance"')
   expect(markup).not.toContain('Any occasion')
 })
 
@@ -273,19 +288,19 @@ test('personal, family and shared closets show only their clothes and their read
   const inventory = { wearers, textiles: [textile({ name: 'Personal shirt', wearerId: 'alex' as never }), textile({ name: 'Sam shirt' }), textile({ name: 'Shared towel', wearerId: null }), textile({ name: 'Old owner towel', wearerId: 'gone' as never })] }
   const mine = render({ inventory, wearerChip: 'me' })
   expect(mine).toContain('Closet</h1>')
-  expect(mine).toContain('aria-label="Personal shirt, ready"')
-  expect(mine).not.toContain('aria-label="Sam shirt, ready"')
+  expect(mine).toContain('aria-label="Personal shirt, ready, Needs label"')
+  expect(mine).not.toContain('aria-label="Sam shirt, ready, Needs label"')
   expect(mine).toContain('1 ready')
   const shared = render({ inventory, wearerChip: 'shared' })
   expect(chosenCircle(shared)).toBe('Shared')
-  expect(shared).toContain('aria-label="Shared towel, ready"')
-  expect(shared).toContain('aria-label="Old owner towel, ready"')
-  expect(shared).not.toContain('aria-label="Personal shirt, ready"')
-  expect(shared.match(/, ready"/g)).toHaveLength(2)
+  expect(shared).toContain('aria-label="Shared towel, ready, Needs label"')
+  expect(shared).toContain('aria-label="Old owner towel, ready, Needs label"')
+  expect(shared).not.toContain('aria-label="Personal shirt, ready, Needs label"')
+  expect(shared.match(/, ready, Needs label"/g)).toHaveLength(2)
   const unlinked = render({ inventory, wearerChip: 'me', meWearerId: null })
   expect(unlinked).toContain('Choose your clothing profile to see your clothes here.')
-  expect(unlinked).not.toContain('aria-label="Personal shirt, ready"')
-  expect(unlinked).not.toContain('aria-label="Sam shirt, ready"')
+  expect(unlinked).not.toContain('aria-label="Personal shirt, ready, Needs label"')
+  expect(unlinked).not.toContain('aria-label="Sam shirt, ready, Needs label"')
 })
 
 test('empty closet and not-ready garments have clear states', () => {
@@ -296,7 +311,7 @@ test('empty closet and not-ready garments have clear states', () => {
   expect(empty).toContain('aria-label="Add clothes"')
   const none = render({ today: today({ readyCount: 0 }), inventory: { wearers, textiles: [textile({ status: 'hanging' })] } })
   expect(none).not.toContain(', ready"')
-  expect(none).toContain('aria-label="Navy tee, hanging to dry"')
+  expect(none).toContain('aria-label="Navy tee, hanging to dry, Needs label"')
 })
 
 test('a hanging garment dries with the latest finished load that washed it', () => {
@@ -369,13 +384,16 @@ test('Add clothes lives in the Closet, for the person selected', () => {
   expect(asked).toEqual({ kind: 'add', target: 'closet' })
 })
 
-test('the Closet opens on a glance: four counts by where the clothes stand, and whose closet it is as circles', () => {
+test('Closet leads with a live summary and retains search, owner scope and one Add action', () => {
   const textiles = [textile(), textile({ name: 'Tank' }), textile({ name: 'Jersey', status: 'dirty' }), textile({ name: 'Blazer', status: 'needs_dry_clean' }), textile({ name: 'Socks', status: 'hanging' })]
   expect(glanceCounts(textiles)).toEqual({ ready: 2, laundry: 1, hamper: 1, care: 1 })
   const markup = render({ inventory: { textiles, wearers } })
   expect(markup).toContain('aria-label="Your clothes at a glance"')
   for (const word of ['Ready', 'In the laundry', 'In the hamper', 'Needs care']) expect(markup).toContain(`>${word}</span>`)
-  // More than one closet to choose from: circles named by person, the chosen one checked.
   expect(markup).toContain('aria-label="Whose clothes"')
+  expect(markup).not.toContain('>Whose clothes</label>')
+  expect(markup.indexOf('type="search"')).toBeLessThan(markup.indexOf('aria-label="Manage closet"'))
+  expect(markup.indexOf('aria-label="Your clothes at a glance"')).toBeLessThan(markup.indexOf('type="search"'))
+  expect(markup.match(/aria-label="Add clothes"/g)).toHaveLength(1)
   assertPlainCopy(markup)
 })

@@ -37,6 +37,7 @@ import { BottleFields, draftFromSupply, newBottleDraft, suggestedBottle, type Bo
 import type { Supply } from '@/household/inventory-types'
 import { machineStepText, productText } from '../copy'
 import { previewCall } from '@/dev/preview-calls'
+import { RecoveryPreview, recoveryScreens } from '@/dev/recovery-preview'
 
 /**
  * Dev-only samples of the real screen components. Indexed drying samples update local
@@ -87,22 +88,24 @@ function DesignPreview() {
   const navigate = useNavigate()
   return <DesignPreviewScreen screen={screen} state={state} onBack={() => void navigate({ to: '/design-preview', search: { screen: 'laundry-index', state: undefined, textScale } })} />
 }
-
-/** The same specimens mount in isolated review without the app's live shell. */
 export function DesignPreviewScreen({ screen, state, onBack }: { screen: string; state?: 'invalid' | 'error' | 'busy'; onBack: () => void }) {
   const [last, setLast] = useState<QuestionAction | null>(null)
   const question = samples[screen] ?? samples['dose-question']!
+  if (screen === 'closet-empty' || screen === 'closet-one') return <ClosetPreview key={screen} variant={screen === 'closet-empty' ? 'empty' : 'one'} />
+  if (screen === 'laundry-empty' || screen === 'laundry-ready') return <PreviewUnits><LaundryPreview key={screen} variant={screen === 'laundry-empty' ? 'empty' : 'ready'} state={state} /></PreviewUnits>
+  if ((recoveryScreens as readonly string[]).includes(screen)) return <RecoveryPreview key={screen} screen={screen as typeof recoveryScreens[number]} />
   if (screen.startsWith('drying-') && (dryingPreviewStates as readonly string[]).includes(screen.slice(7))) return <PreviewUnits><DryingPreview key={`${screen}:${state}`} variant={screen.slice(7) as DryingPreviewState} state={state} onBack={onBack} /></PreviewUnits>
+  if (screen === 'laundry-plan' || screen === 'laundry-plan-scale') return <PreviewUnits><LaundryPreview key={`${screen}:${state}`} variant={screen === 'laundry-plan-scale' ? 'plan-scale' : 'plan'} state={state} /></PreviewUnits>
   if (screen === 'preparation' || screen === 'running') return <PreviewUnits><LaundryPreview key={`${screen}:${state}`} variant={screen === 'preparation' ? 'preparation' : 'session'} state={state} /></PreviewUnits>
   if (screen === 'product-new' || screen === 'product-barcode' || screen === 'product-sheets') return <ProductFormPreview key={screen} draft={productDrafts[screen]} title={screen === 'product-sheets' ? sampleSheets.name : productText.addProduct} />
   if ((laundryDayScreens as readonly string[]).includes(screen.slice(8)) && screen.startsWith('laundry-')) return <PreviewUnits><LaundryDayPreview key={screen} variant={screen.slice(8) as LaundryDayPreviewState} /></PreviewUnits>
-  if (['laundry-index', 'laundry-hamper', 'laundry-review', 'laundry-review-stain', 'laundry-room', 'laundry-laundromat', 'laundry-room-picked', 'laundry-room-blocked', 'laundry-chemistry', 'laundry-preparation', 'laundry-preparation-paused', 'laundry-preparation-ball', 'laundry-preparation-long', 'laundry-preparation-cap', 'laundry-session', 'laundry-completed', 'laundry-completed-early'].includes(screen)) return <PreviewUnits><LaundryPreview key={`${screen}:${state}`} variant={screen.slice(8) as LaundryPreviewState} state={state} /></PreviewUnits>
+  if (['laundry-index', 'laundry-hamper', 'laundry-hamper-scale', 'laundry-hamper-scale-hand', 'laundry-review', 'laundry-review-stain', 'laundry-room', 'laundry-laundromat', 'laundry-room-picked', 'laundry-room-blocked', 'laundry-chemistry', 'laundry-preparation', 'laundry-preparation-paused', 'laundry-preparation-ball', 'laundry-preparation-long', 'laundry-preparation-cap', 'laundry-session', 'laundry-completed', 'laundry-completed-early'].includes(screen)) return <PreviewUnits><LaundryPreview key={`${screen}:${state}`} variant={screen.slice(8) as LaundryPreviewState} state={state} /></PreviewUnits>
   if (screen === 'me-index' || screen === 'me-costs' || screen === 'me-history') return <MePreview key={screen} variant={screen === 'me-history' ? 'history' : screen === 'me-costs' ? 'priced' : 'empty'} loading={state === 'busy'} />
   if (screen === 'settings-index' || screen === 'settings-password' || screen === 'settings-password-saved' || screen === 'me-account') return <SettingsPreview key={`${screen}:${state}`} password={screen.startsWith('settings-password')} passwordState={screen === 'settings-password-saved' ? 'saved' : state} account={screen === 'me-account'} />
-  if (['household-index', 'household-people', 'household-people-member', 'household-people-long', 'household-invite', 'household-profile', 'household-water', 'household-water-sheet', 'household-laundry-day'].includes(screen)) return <HouseholdPreview key={`${screen}:${state}`} variant={screen.slice(10) as HouseholdPreviewState} state={state} />
+  if (['household-index', 'household-people', 'household-machines', 'household-bottles', 'household-people-member', 'household-people-long', 'household-invite', 'household-profile', 'household-water', 'household-water-sheet', 'household-laundry-day'].includes(screen)) return <HouseholdPreview key={`${screen}:${state}`} variant={screen.slice(10) as HouseholdPreviewState} state={state} />
   if (screen === 'profile-form' || screen === 'profile-form-long') return <ProfileFormPreview key={`${screen}:${state}`} long={screen === 'profile-form-long'} state={state} />
   if (['closet-index', 'closet-record', 'closet-stain-check', 'closet-stain-next', 'closet-add-details', 'closet-add-stain-set-in', 'closet-tags', 'closet-tags-long', 'closet-tags-pending', 'closet-care-question', 'closet-care-question-pending', 'closet-care-wash', 'closet-care-dry', 'closet-add-type', 'closet-add-color', 'closet-add-care', 'closet-add-label', 'closet-add-stains', 'closet-add-search', 'closet-first-wash'].includes(screen)) return <ClosetPreview key={screen} variant={screen.slice(7) as ClosetPreviewState} />
-  if (['home-empty', 'home-one', 'home-planned', 'home-running', 'home-sequential', 'home-dryer-busy', 'home-check-now'].includes(screen)) return <HomePreview variant={screen.slice(5) as HomePreviewState} />
+  if (['home-empty', 'home-one', 'home-planned', 'home-running', 'home-sequential', 'home-dryer-busy', 'home-check-now', 'home-drying'].includes(screen)) return <HomePreview variant={screen.slice(5) as HomePreviewState} />
   if (screen === 'care-family') return <div className="page grid gap-3">
     <HomeCareOverview title={homeHeroText.overview.title} caption={homeHeroText.overview.pieces(500)}
       counts={[

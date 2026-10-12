@@ -1,19 +1,256 @@
 [
-  {"from":"legacy.home-one","action":"Open Closet","destination":"legacy.closet-index","route":"/closet","when":"At least one garment exists","source":"apps/web/src/home/home-sections.tsx","anchor":"renderLink({ to: 'closet' }"},
-  {"from":"legacy.home-one","action":"Open ready garment","destination":"legacy.closet-record","route":"/closet?item=<textileId>&section=ready&returnTo=home","when":"Choose a ready garment tile","returnTo":"Home; itemReturnTo=/, with returnTo masked from the visible URL","source":"apps/web/src/routes/index.tsx","anchor":"search={{ ...itemSearch, returnTo: 'home' }}"},
-  {"from":"legacy.home-planned","action":"Review planned load","destination":"legacy.laundry-review","route":"/laundry?plan=<planId>","when":"The hero targets an existing plan","source":"apps/web/src/routes/index.tsx","anchor":"search={{ plan: target.planId }}"},
-  {"from":"legacy.home-running","action":"Open running wash","destination":"legacy.laundry-session","route":"/session/<sessionId>","when":"Choose a running load","source":"apps/web/src/home/home-sections.tsx","anchor":"renderLink({ to: 'session', sessionId: load.sessionId }"},
-  {"from":"legacy.home-sequential","action":"Open running wash","destination":"legacy.laundry-session","route":"/session/<sessionId>","when":"A single load is running","source":"apps/web/src/home/home-hero.ts","anchor":"target: { to: 'session', sessionId: row.sessionId }"},
-  {"from":"legacy.home-check-now","action":"Open dryer early check","destination":"legacy.drying-take-out-early","route":"/drying?run=<runId>","when":"The dryer run has an early check due","source":"apps/web/src/home/hub-state.ts","anchor":"target: { to: 'drying', run: state.runId }"},
-  {"from":"legacy.closet-index","action":"Plan laundry","destination":"legacy.laundry-index","route":"/laundry","when":"The Closet attention card offers Plan laundry","source":"apps/web/src/closet/closet-view.tsx","anchor":"button: closetText.planLaundry"},
-  {"from":"legacy.me-index","action":"Open account","destination":"legacy.me-account","route":"/account","when":"Choose Account","source":"apps/web/src/routes/me.tsx","anchor":"onAccount={() => void navigate({ to: '/account' })}"},
-  {"from":"legacy.me-index","action":"Open settings","destination":"legacy.settings-index","route":"/settings","when":"Choose Settings","source":"apps/web/src/routes/me.tsx","anchor":"onSettings={() => void navigate({ to: '/settings' })}"},
-  {"from":"legacy.me-history","action":"Open completed wash","destination":"legacy.laundry-completed","route":"/session/<sessionId>?from=me","when":"Choose a completed history row","returnTo":"Me; itemReturnTo preserves the originating URL","source":"apps/web/src/routes/me.tsx","anchor":"search: { from: 'me' }, state: { itemReturnTo: router.state.location.href }"},
-  {"from":"legacy.laundry-completed","action":"Back to Me","destination":"legacy.me-history","route":"/me","when":"The completed wash was opened from Me","returnTo":"Restore the history origin when available; otherwise /me","source":"apps/web/src/laundry/session-view.tsx","anchor":"const leave = () => dismissItem(router"},
-  {"from":"legacy.drying-index","action":"Back to Laundry","destination":"legacy.laundry-index","route":"/laundry","when":"Choose Back","source":"apps/web/src/routes/drying.tsx","anchor":"onBack={() => void navigate({ to: '/laundry' })}"},
-  {"from":"legacy.home-empty","action":"Add clothes","route":"/closet?add=choose","when":"First-use hero offers Add clothes","source":"apps/web/src/routes/index.tsx","anchor":"search={{ add: 'choose' }}"},
-  {"from":"legacy.closet-record","action":"Open garment's running wash","route":"/session/<sessionId>?from=closet","when":"The garment belongs to a running load; the current specimen has no running load","returnTo":"Closet; itemReturnTo preserves the originating item URL","source":"apps/web/src/routes/closet.tsx","anchor":"search={{ from: 'closet' }}"},
-  {"from":"legacy.closet-record","action":"Open hamper item in Laundry","route":"/laundry?item=<textileId>","when":"Choose the garment's dirty-piece count","returnTo":"Originating Closet item URL","source":"apps/web/src/closet/garment-sheet.tsx","anchor":"renderLink({ to: 'laundry', item: hamperMembers[0]!.textileId }"},
-  {"from":"legacy.laundry-session","action":"Move washed pieces to Drying","route":"/drying","when":"queueReady; online, writable, not pending; queueFromWasher succeeds. The running specimen does not exercise this state","source":"apps/web/src/laundry/session-view.tsx","anchor":"if (result !== undefined) void navigate({ to: '/drying' })"},
-  {"from":"legacy.laundry-completed","action":"Open garment care history","route":"/closet?item=<textileId>&tab=history","when":"Choose a garment on the completed-load summary","returnTo":"Originating wash URL via itemReturnTo","source":"apps/web/src/laundry/session-view.tsx","anchor":"search={{ item: textileId, tab: 'history' }}"}
+  {
+    "from": "legacy.home-one",
+    "action": "Open Closet",
+    "destination": "legacy.closet-index",
+    "route": "/closet",
+    "when": "At least one garment exists",
+    "source": "apps/web/src/home/home-sections.tsx",
+    "anchor": "renderLink({ to: 'closet' }"
+  },
+  {
+    "from": "legacy.home-one",
+    "action": "Open ready garment",
+    "destination": "legacy.closet-record",
+    "route": "/closet?item=<textileId>&returnTo=home",
+    "when": "Choose a ready garment tile",
+    "returnTo": "Home; itemReturnTo=/, with returnTo masked from the visible URL",
+    "source": "apps/web/src/home/home-page.tsx",
+    "anchor": "search={{ item: target.textileId, returnTo: 'home' }}",
+    "alternatives": [{"source":"apps/web/src/routes/index.tsx","anchor":"search={{ ...itemSearch, returnTo: 'home' }}","route":"/closet?item=<textileId>&section=ready&returnTo=home"}]
+  },
+  {
+    "from": "legacy.home-planned",
+    "action": "Review planned load",
+    "destination": "legacy.laundry-review",
+    "route": "/laundry?plan=<planId>",
+    "when": "The hero targets an existing plan",
+    "source": "apps/web/src/routes/index.tsx",
+    "anchor": "search={{ plan: target.planId }}",
+    "alternatives": [{"source":"apps/web/src/home/home-page.tsx","anchor":"search={{ plan: target.planId }}"}]
+  },
+  {
+    "from": "legacy.home-running",
+    "action": "Open running wash",
+    "destination": "legacy.laundry-session",
+    "route": "/session/<sessionId>",
+    "when": "Choose a running load",
+    "source": "apps/web/src/home/home-sections.tsx",
+    "anchor": "renderLink({ to: 'session', sessionId: load.sessionId }"
+  },
+  {
+    "from": "legacy.home-sequential",
+    "action": "Open running wash",
+    "destination": "legacy.laundry-session",
+    "route": "/session/<sessionId>",
+    "when": "A single load is running",
+    "source": "apps/web/src/home/home-hero.ts",
+    "anchor": "target: { to: 'session', sessionId: row.sessionId }"
+  },
+  {
+    "from": "legacy.home-check-now",
+    "action": "Open dryer early check",
+    "destination": "legacy.drying-take-out-early",
+    "route": "/drying?run=<runId>",
+    "when": "The dryer run has an early check due",
+    "source": "apps/web/src/home/hub-state.ts",
+    "anchor": "target: { to: 'drying', run: state.runId }"
+  },
+  {
+    "from": "legacy.closet-index",
+    "action": "Plan laundry",
+    "destination": "legacy.laundry-index",
+    "route": "/laundry",
+    "when": "The Closet attention card offers Plan laundry",
+    "source": "apps/web/src/closet/closet-view.tsx",
+    "anchor": "button: closetText.planLaundry"
+  },
+  {
+    "from": "legacy.me-index",
+    "action": "Open account",
+    "destination": "legacy.me-account",
+    "route": "/account",
+    "when": "Choose Account",
+    "source": "apps/web/src/routes/me.tsx",
+    "anchor": "onAccount={() => void navigate({ to: '/account' })}"
+  },
+  {
+    "from": "legacy.me-index",
+    "action": "Open settings",
+    "destination": "legacy.settings-index",
+    "route": "/settings",
+    "when": "Choose Settings",
+    "source": "apps/web/src/routes/me.tsx",
+    "anchor": "onSettings={() => void navigate({ to: '/settings' })}"
+  },
+  {
+    "from": "legacy.me-history",
+    "action": "Open completed wash",
+    "destination": "legacy.laundry-completed",
+    "route": "/session/<sessionId>?from=me",
+    "when": "Choose a completed history row",
+    "returnTo": "Me; itemReturnTo preserves the originating URL",
+    "source": "apps/web/src/routes/me.tsx",
+    "anchor": "search: { from: 'me' }, state: { itemReturnTo: router.state.location.href }"
+  },
+  {
+    "from": "legacy.laundry-completed",
+    "action": "Back to Me",
+    "destination": "legacy.me-history",
+    "route": "/me",
+    "when": "The completed wash was opened from Me",
+    "returnTo": "Restore the history origin when available; otherwise /me",
+    "source": "apps/web/src/laundry/session-view.tsx",
+    "anchor": "const leave = () => dismissItem(router"
+  },
+  {
+    "from": "legacy.drying-index",
+    "action": "Back to Laundry",
+    "destination": "legacy.laundry-index",
+    "route": "/laundry",
+    "when": "Choose Back",
+    "source": "apps/web/src/routes/drying.tsx",
+    "anchor": "onBack={() => void navigate({ to: '/laundry' })}"
+  },
+  {
+    "from": "legacy.home-empty",
+    "action": "Add clothes",
+    "route": "/closet?add=choose",
+    "when": "First-use hero offers Add clothes",
+    "source": "apps/web/src/routes/index.tsx",
+    "anchor": "search={{ add: 'choose' }}",
+    "alternatives": [{"source":"apps/web/src/home/home-page.tsx","anchor":"search={{ add: 'choose' }}"}],
+    "destination": "route.closet.add-choose",
+    "returnTo": "Cancel returns to the Home origin; a direct chooser falls back to Closet"
+  },
+  {
+    "from": "route.closet.running",
+    "action": "Open garment's running wash",
+    "route": "/session/<sessionId>?from=closet",
+    "when": "The selected garment has inLoad=<sessionId>; the running-load fixture seeds this condition",
+    "returnTo": "Closet; itemReturnTo preserves the originating item URL",
+    "source": "apps/web/src/routes/closet.tsx",
+    "anchor": "search={{ from: 'closet' }}",
+    "destination": "route.laundry.session-closet"
+  },
+  {
+    "from": "legacy.closet-record",
+    "action": "Open hamper item in Laundry",
+    "route": "/laundry?item=<textileId>",
+    "when": "Choose the garment's dirty-piece count",
+    "returnTo": "Originating Closet item URL",
+    "source": "apps/web/src/closet/garment-sheet.tsx",
+    "anchor": "renderLink({ to: 'laundry', item: hamperMembers[0]!.textileId }",
+    "destination": "route.laundry.hamper-item"
+  },
+  {
+    "from": "route.laundry.washed",
+    "action": "Move washed pieces to Drying",
+    "route": "/drying",
+    "when": "queueReady: running session, washer started, wash finish confirmed, no dryer started, all non-dryer actions resolved; online, writable, not pending; queueFromWasher succeeds",
+    "source": "apps/web/src/laundry/session-view.tsx",
+    "anchor": "if (result !== undefined) void navigate({ to: '/drying' })",
+    "destination": "route.drying.washer-queued",
+    "returnTo": "Drying Back goes to Laundry; transfer failure stays on the washer-finished screen"
+  },
+  {
+    "from": "legacy.laundry-completed",
+    "action": "Open garment care history",
+    "route": "/closet?item=<textileId>&tab=history",
+    "when": "Choose a garment on the completed-load summary",
+    "returnTo": "Originating wash URL via itemReturnTo",
+    "source": "apps/web/src/laundry/session-view.tsx",
+    "anchor": "search={{ item: textileId, tab: 'history' }}",
+    "destination": "route.closet.history"
+  },
+  {
+    "from": "legacy.closet-index",
+    "action": "Open garment in running load",
+    "destination": "route.closet.running",
+    "route": "/closet?item=<textileId>",
+    "when": "Choose a garment whose inLoad is not null",
+    "returnTo": "Closet list",
+    "source": "apps/web/src/routes/closet.tsx",
+    "anchor": "onItemOpen={(item, group) => void navigate"
+  },
+  {
+    "from": "legacy.laundry-session",
+    "action": "Confirm washer finished",
+    "destination": "route.laundry.washed",
+    "route": "/session/<sessionId>",
+    "when": "Washer has started; finish is confirmed by washFinished; no unresolved non-dryer action remains",
+    "returnTo": "Laundry unless an explicit Me/Closet origin was retained",
+    "source": "apps/web/src/laundry/session-view.tsx",
+    "anchor": "void washFinished.run({ sessionId: detail.sessionId, at: Date.now() })"
+  },
+  {
+    "from": "route.closet.add-choose",
+    "action": "Return to Home (cancel add clothes)",
+    "destination": "legacy.home-empty",
+    "route": "/",
+    "when": "Chooser opened by the first-use Home action; no item saved",
+    "returnTo": "Restore the Home origin; direct Closet entry uses /closet",
+    "source": "apps/web/src/closet/add-clothes.tsx",
+    "anchor": "onClose={onClose}"
+  },
+  {
+    "from": "route.closet.add-choose",
+    "action": "Back to Closet",
+    "destination": "legacy.closet-index",
+    "route": "/closet",
+    "when": "Chooser opened directly or from Closet; no item saved",
+    "returnTo": "Restore the Closet origin",
+    "source": "apps/web/src/routes/closet.tsx",
+    "anchor": "initialAdd={initialAdd}"
+  },
+  {
+    "from": "route.laundry.session-closet",
+    "action": "Back to Closet garment",
+    "destination": "route.closet.running",
+    "route": "/closet?item=<textileId>",
+    "when": "Running wash opened with from=closet and itemReturnTo",
+    "returnTo": "Restore the exact item URL through history; otherwise /closet",
+    "source": "apps/web/src/laundry/session-view.tsx",
+    "anchor": "const leave = () => dismissItem(router"
+  },
+  {
+    "from": "route.laundry.hamper-item",
+    "action": "Return to Closet garment",
+    "destination": "legacy.closet-record",
+    "route": "/closet?item=<textileId>",
+    "when": "Hamper drawer was opened from Closet with itemReturnTo; close without recording a wash",
+    "returnTo": "Restore exact Closet item URL; direct Laundry drawer falls back to /laundry",
+    "source": "apps/web/src/routes/laundry.tsx",
+    "anchor": "dismissItem(router"
+  },
+  {
+    "from": "route.closet.history",
+    "action": "Return to completed wash",
+    "destination": "legacy.laundry-completed",
+    "route": "/session/<sessionId>?from=<origin>",
+    "when": "History drawer opened from a completed-load summary with itemReturnTo",
+    "returnTo": "Restore the originating completed wash including from=me or from=closet",
+    "source": "apps/web/src/routes/closet.tsx",
+    "anchor": "dismissItem(router"
+  },
+  {
+    "from": "route.laundry.session-closet",
+    "action": "Confirm washer finished",
+    "destination": "route.laundry.washed",
+    "route": "/session/<sessionId>?from=closet",
+    "when": "Washer has started; washFinished accepts the confirmation; all non-dryer actions resolved",
+    "returnTo": "Preserve itemReturnTo and from=closet while the session advances in place",
+    "source": "apps/web/src/laundry/session-view.tsx",
+    "anchor": "void washFinished.run({ sessionId: detail.sessionId, at: Date.now() })"
+  },
+  {
+    "from": "route.drying.washer-queued",
+    "action": "Back to Laundry",
+    "destination": "legacy.laundry-index",
+    "route": "/laundry",
+    "when": "Transfer has succeeded and the washed pieces are in the drying queue",
+    "returnTo": "Laundry shows the queued pieces; Back does not undo the transfer",
+    "source": "apps/web/src/routes/drying.tsx",
+    "anchor": "onBack={() => void navigate({ to: '/laundry' })}"
+  }
 ]

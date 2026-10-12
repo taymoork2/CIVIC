@@ -14,6 +14,8 @@ import { previewUnavailable } from '@/dev/preview-calls'
 export function FixtureConvex({ data, children }: { data: Readonly<Record<string, unknown>>; children: ReactNode }) {
   const [client] = useState(() => ({
     watchQuery: (query: FunctionReference<'query'>) => ({ localQueryResult: () => data[getFunctionName(query)], onUpdate: () => () => {}, journal: () => undefined }),
+    connectionState: () => ({ isWebSocketConnected: true, inflightMutations: 0 }),
+    subscribeToConnectionState: () => () => {},
     mutation: previewUnavailable('save to the household'),
     action: previewUnavailable('run a server action'),
   }) as unknown as ConvexReactClient)
@@ -55,7 +57,7 @@ export function SeedPhone({ seeds }: { seeds: readonly PhoneSeed[] }) {
 }
 
 /** One step a person would take: tap the button whose text starts with `tap`, type into `type`'s input, or open a `<details>`. */
-export type PreviewStep = { readonly tap: string } | { readonly click: string } | { readonly type: string; readonly value: string } | { readonly open: string }
+export type PreviewStep = { readonly tap: string } | { readonly type: string; readonly value: string } | { readonly click: string } | { readonly open: string }
 
 /**
  * Takes `steps` once after the specimen mounts, in order, to show a state the presenter only reaches

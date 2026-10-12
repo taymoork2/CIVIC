@@ -1,35 +1,27 @@
-# Verification for the v4 snapshot
+# Verification · v6
 
-The bundle contains current curated source, its Laundry adapter, cumulative report, historical design context, 176 fixed synthetic screen captures and the verified first-ZIP patch. It is not an extracted framework-neutral release.
+The final package is tested as an extracted copy, not merely by starting the original worktree. QA host: disposable `/private/tmp/rehearsal-v6-portable-davi2u1d/source`, port3146. It contains no Git history, original connection/store, design directory or agent destination. The server is stopped after checks; dependencies/private QA state are excluded from the ZIP.
 
-## Current live-preview checks
+## Portable checks
 
-Port 3010 had no listener before launch. The current checkout was started explicitly at the user's request with the isolated synthetic review environment and no real Convex endpoint. It remains running at capture time.
+- `pnpm install --offline --frozen-lockfile --ignore-scripts`: 310 cached packages reused, zero downloaded, pnpm12.10.1 / Node26.10.0. Online install was not tested.
+- `pnpm --dir apps/web run check`: TypeScript and style checks pass; 1,659 native static utilities compile.
+- `pnpm --dir apps/web run test:review`: all32 service checks pass, including read-only paths, project isolation, generated adapters, source fingerprints and cache/history/restart behavior.
+- Focused Vitest app-map/app-overview/arrow-routing/review-panel/store: 17 checks pass.
+- Eight Chromium cases pass across review-project-picker, review-discovery, review-reminder and review-snapshots. They cover UI creation, inventory-only connection, generated HTML/React, branches/return inputs, frozen captures, native reminder dismissal/focus/exact run and returns, stale image replacement, transient retry, visible-demand loading and cold import recovery.
 
-Authenticated inventory reads passed on Node 26.10.0 and identify source `e514dbcd8ee04808602f81432455f43b0f43f233752e05f78c5d289edf55bb77`: 173 scenarios, 176 mapped screen states and 17 route bindings (12 representative targets, five unmapped destination states).
+The generic tests used the manifest-free discovery example, an empty existing-app source folder and the authored Notebook connection, registered only on the disposable host. New generated projects/settings/stores are not included. The default bundled Laundry produced204 scenarios /207 fixture fingerprints, unavailable application HEAD and zero revision HEAD plus actual content hashes. Counts describe this snapshot, not completeness. `context/portable-verification.json` is its structured receipt.
 
-All 176 cached PNG responses matched their on-disk hashes and fixture identity `81d9c3604c5ba4b876a8d71f7fdf351fa3a16dea938dd7248f2f511741c3fc85`. A fresh Chrome context verified Fabric, Inspect, App and All screens, with no page errors. It did not write feedback, proposals or expectations, or alter the user's existing browser draft. See `context/rehearsal-live-3010-v4-VERIFICATION.json` and `evidence/rehearsal-live-3010-v4.png`.
+Two first-run issues were found and corrected before final packaging: three Home source bindings still pointed to the old route file; explicit new/old presenter alternatives now resolve both versions. A Vite optimization reload rejected the first preview import; only an unmounted frame retries that failure up to twice. The final browser rerun passes, including an explicitly aborted module import. No live draft is replaced.
 
-## Latest implementation proof retained from the preceding pass
+## Patch and integrity
 
-- Types and styles passed; 1,591 utility candidates were checked.
-- Six focused routing/map tests passed, covering card avoidance, distinct gutters, blocked endpoints, horizontal/vertical geometry and declared action connections.
-- Six inventory/coverage checks passed.
-- Four isolated Chrome canvas cases passed without retries: retained live input through navigation/Review/Edit, visible separate branches, route parameters/return context/unmapped states, all 176 thumbnails, setting persistence and narrow panning.
-- Desktop overview, towel branches and desktop/narrow All screens captures were inspected in two bounded rounds. See `evidence/app-overview-qa.png`, `towel-branches-qa.png`, `all-screens-qa.png` and `all-screens-narrow-qa.png`.
+The source has924 files. Relative to v5 there are66 additions,142 modifications and no deletions; most product changes are reference-integration updates. `context/since-v5.patch` is binary-compatible, passed `git apply --check`, was actually applied to a fresh copy of v5 source and reproduced every final file hash. `context/patch-verification.json` binds that proof to the patch SHA. Current top-level docs/design/evidence are outside the source patch.
 
-Those checks used a disposable copy updated with the current implementation and contained copies of local dependencies. Its coverage-test contract mutation stayed there. They were not repeated against the user's live state. This packaging pass changes documentation only; final source copies are checked byte-for-byte. The older coverage pass's broader 66-test and nine-service-check results remain historical, documented in `V3-PACKAGE-VERIFICATION.md` and build evidence; they are not counted as fresh full-suite proof.
+`MANIFEST.json` records payload file hashes/size and source composition. `SHA256SUMS` verifies payload and manifest; it excludes itself. The adjacent ZIP SHA and archive verification receipt bind the final archive. ZIP paths, CRCs, private/dependency/Git exclusions and extracted-file hashes are checked. Original v5 is preserved in the historical archive; older expanded directories are removed only after proving they match their preserved ZIP, or storing divergent content separately.
 
-## Patch and archive integrity
+## Evidence and limits
 
-The first ZIP's CRC and all payload hashes were verified before comparison. Its SHA-256 remains `fb1738009443993ef0dc9d7b059973747d8f9556fe54c6e9d46e997c89fca5ad`. The v3 archive remains `f4b110d6baee0c70a72d171826d8955be02b7fdd9b128ca9cf4e1aa4fc9c6f31`.
+`evidence/portable/` contains fresh default-reminder and onboarding captures from the extracted source. `evidence/current/` retains the earlier October11 toolbar/narrow layout and linked-reminder inspection; these are contextual, not blanket proof of every final pixel/state. `design/` retains historical proposals/skills. The completed local text critique is documented in source/docs/design/review-product/project-discovery.md; no new Claude Design web artifact or final visual-fidelity approval is claimed.
 
-The versioned Git patch was generated in a disposable baseline import. `git apply --check` and actual application passed on a separate fresh extraction; all 27 changed-path hashes matched current source. Original checkout staging, commits and history were not changed. The receipt is in `context/rehearsal-since-first-zip-v4-PATCH-VERIFICATION.json`.
-
-The finalizer checks every source file against the current checkout except portable AGENTS/CLAUDE replacements, rejects symlinks/private stores/dependency and environment paths, checks exact original access-key absence and scans bounded credential patterns. It writes MANIFEST/SHA256SUMS, checks ZIP CRC and every manifest payload hash, and verifies preservation of the first/v3 archives. The adjacent external `rehearsal-handoff-2026-10-10-v4-ARCHIVE-VERIFICATION.json` records results; `.zip.sha256` provides the final archive hash. The secret checks are bounded, not a forensic audit.
-
-## Setup and remaining limits
-
-No cold dependency installation was performed. Dependencies were copied inside the disposable test project after confirming the unchanged lockfile. An earlier outside-root dependency symlink failed the isolated Vite allowlist; the allowlist was not broadened. A later pnpm invocation attempted store reconciliation in that disposable copy and failed offline; contained dependency copies and direct installed binaries were used instead. No original dependency installation was changed.
-
-No fresh full Laundry E2E suite, native/physical-device acceptance, generic onboarding, second-project adapter, multiplayer, whole-app continuous execution, TesterArmy trial or new external design handoff is claimed. Routing avoids cards but does not globally minimize edge crossings. All screens means all registered states; inferred or unmapped paths remain incomplete. Historical design files and stale broad receipts are clearly separate from current application proof.
+No production backend, physical phone/VoiceOver, public exposure, clean online install, universal framework adapter, per-user multiplayer or full standalone extraction was tested. The owner's timed badge exception and concurrent backend deadline retain their separate owner evidence. Historical snapshot GC was not added because reviews may still reference those captures.

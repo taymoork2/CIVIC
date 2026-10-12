@@ -13,6 +13,15 @@ class MemoryStorage {
 }
 
 let storage: MemoryStorage
+
+test('a thousand-piece planning draft preserves off-page exclusions and the entire seen set', () => {
+  const seen = Array.from({ length: 1000 }, (_, i) => `piece-${i}`)
+  const selected = seen.slice(1, -1)
+  saveDraft({ householdId: 'family', selectedTextileIds: selected, seenTextileIds: seen, planId: null, inputHash: null })
+  expect(loadDraft('family')?.selectedTextileIds).toEqual(selected)
+  expect(loadDraft('family')?.seenTextileIds).toEqual(seen)
+  expect(loadDraft('another-household')).toBeNull()
+})
 beforeEach(() => {
   storage = new MemoryStorage()
   const proxy = new Proxy(storage, { ownKeys: (target) => target.keys(), getOwnPropertyDescriptor: () => ({ enumerable: true, configurable: true }) })
