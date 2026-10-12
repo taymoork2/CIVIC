@@ -1,91 +1,64 @@
 ---
 artifact_contract: "ce-handoff/v1"
-created_at: "2026-10-11T23:30:54Z"
-title: "Rehearsal v6: onboarding, canvas, automatic cache and current Laundry integration"
-summary: "Independent-product continuation with runnable source, discovered previews, evidence boundaries and a patch from v5."
-keywords: ["rehearsal", "onboarding", "discovery", "canvas", "snapshot-cache", "laundry-sync", "handoff"]
+created_at: "2026-10-12T04:32:15Z"
+title: "Rehearsal v7 shared runtime and towel migration"
+summary: "Portable Rehearsal with real isolated Laundry actions, first curated towel migration, saved replay, proposal commands and adapter direction."
+keywords: ["rehearsal", "runtime-bridge", "towel", "replay", "onboarding", "vite", "native-adapters"]
 cwd: "<original host worktrees>/f0d3/laundry-app"
-repository: "laundry-app"
 head: "0bffbbcf2e38ca3ec7e17da3eb6496b6f04f348d"
 worktree_path: "<original host worktrees>/f0d3/laundry-app"
-resume_focus: "Continue Rehearsal as an independent product while retaining app-adapter ownership and evidence boundaries."
+resume_focus: "Continue curated fixture migration and standalone extraction while retaining actual app behavior and isolated replay."
 ---
 
-# Product and continuity
+This is an informational handoff requested by the user. It transfers no authority over the original source, backends or design projects. Start with README.md, PACKAGE-VERIFICATION.md and CHANGES-SINCE-V6.md. Repository-relative references below are anchored in source/.
 
-The user requested a ZIP/handoff with all onboarding, canvas and Laundry-sync changes, plus cleanup of previous packages. They also requested automatic snapshot caching/diffing. Both are included. This informational handoff transfers no execution/publication authority. Outgoing owner: this Rehearsal chat; incoming owner: whoever the user selects. Current work is uncommitted, so HEAD alone cannot recover it. Preserve the ZIP before discarding the checkout.
+## User direction
 
-## User decisions
+Rehearsal is its own product; Laundry is the reference integration. The user approved one persistent bounded canvas, Play by default, optional Inspect, contextual Review, and Edit proposal that changes a testable candidate. Claude Design's Workbench, Storyboard and Review are capabilities within that canvas. Actual screen images appear along horizontal journeys; alternate branches stack vertically and reconnect. Flow selection fits its bounds and expands its screens; screen selection focuses it. The outline follows camera navigation. Compact/all-screens views share the retained run and lazy snapshots. The shell has its own design identity rather than inheriting Laundry's system.
 
-- Rehearsal is independent; Laundry is an integration, not its design system.
-- Use one persistent canvas. Workbench, Storyboard and Review are capabilities reached through zoom, selection and contextual panels, not competing views.
-- Play by default, optional Inspect, and Edit changes a reversible proposal that can be tested. Generic component/token/behavior editing remains open.
-- Show real screen pictures across the whole app from sign-in/setup through navigation areas. Main paths are horizontal; branches stack vertically and reconnect. Fit flows/screens on sidebar selection; follow actual camera navigation. Keep a usable scale and bounded panning.
-- Review app/flow/screen/region/element/path targets with inputs, frozen evidence, revisions and exact agent sessions. Agent completion does not close acceptance.
-- Collaborate with local Open Design desktop and Claude Design as separate tools. Borrow Figma/tldraw canvas/control cues without building another general design editor.
-- Prefer deterministic inventory, hashes, manifests, declared scenarios and statistics over models for routine work. Do not infer personas, permissions, safe care or complete journeys from code.
-- Keep the design/component-library/app bridge explicit. Current focus is design collaborators ↔ Rehearsal ↔ Laundry web; universal sync remains open.
-- Rehearsal reads f7ce without owning its source/backend/runtime. Keyless local/private Tailscale access is authorized; public exposure is not.
-- Multiplayer readiness is required but unfinished. Project switching currently affects the host, while runs/drafts are private to the tab.
+The user wants existing/greenfield project onboarding, source-change sync, explicit missing coverage, screen/flow/region/path annotations and two-way agent communication. Design intent, libraries, app source, recordings and user acceptance keep independent identities/revisions. Initial design collaboration is local Open Design and Claude Design plus Local Codex; do not substitute OpenDesign Cloud or require a cloud account. Figma/Paper and native integrations are roadmap candidates.
 
-## Read first (paths relative to source/)
+Latest request: migrate remaining curated fixtures to the shared bridge, starting with towel, preserving branches/inputs/proposals/replay, then refresh this package. The annotation also asked how adapters should work for Vite/Vite+, TanStack Start/Convex and eventually native iOS/Android. Towel is the first completed curated migration; the rest remain open.
 
-| Reference | What matters |
+## Current implementation
+
+| Capability | Landing point and meaning |
 |---|---|
-| docs/design/review-product/PRODUCT.md | Product boundary, accepted canvas direction, proposal/alignment and multiplayer intent. |
-| project-onboarding.md, project-picker.md in that directory | Manifest, contexts, registry, mount callbacks, guarded restart and stale-tab isolation. |
-| project-discovery.md | UI confirmation/generation, heuristic limits, provider gaps and completed local text critique. |
-| snapshot-cache.md | Fingerprints, persistent reuse, historical aliases, stale display fallback, automatic retry and visible demand. |
-| agent-bridge.md and coverage-bridge.md | Exact sessions, receipts/replies, uncertainty handling, deterministic gaps and guarded expectation writes. |
-| root-refinement-reconciliation-2026-10-11.md | Native reminder, four scenarios, refused writes, focus and returns, static-design gap. |
-| 2026-10-11-family-simulation.md | Same account/items through wash/drying/partial put-away at 100/500/1000. |
-| docs/design/opendesign/home-state-label-2026-10-11.md | Latest owner's no-duplicate-badge policy, including the timed single-load exception. |
+| Canvas | apps/web/src/review/app-canvas.tsx, app-map.ts, app-overview.tsx, arrow-routing.ts and camera modules. Persistent preview, snapshots, branches, selectable paths and contextual panes. |
+| Onboarding | scripts/review-project*.mjs, review-discovery.mjs and src/review/project-picker.tsx/discovery-setup.tsx. Connect configured apps, confirm source candidates or create a starter. Generated navigation stays labelled synthetic. |
+| Shared recorder | src/review/runtime-bridge.ts and runtime-dom.ts. Project/source/seed/clock-bound gestures, semantic checkpoints, operation receipts and refusal on drift/ambiguity. |
+| Generic host | frame.tsx and adapter.ts. Mount/publish compatibility, runtime ports, input policies and custom interaction drivers/commands. |
+| Isolated backend | review-runtime.mjs/review-runtime-worker.mjs, adapters/laundry-backend.ts and convex-runtime-client.ts. One database/worker per run, actual schema/functions/authorization; no deployed app endpoint. |
+| Laundry session | adapters/laundry-session.ts. Shared data/identity/reset, frozen clock, repeatable review-only UUIDs and memory-only storage. |
+| Native routes | adapters/laundry-runtime.tsx and laundry-app-root.tsx. Actual routes/components/search validation; Home Wear and Drying/check/put-away. |
+| Towel | adapters/laundry-towel.tsx. Actual AddClothesFlow and native mutation hooks/recovery; both origin branches, care substeps, retained inputs, proposals, save/recovery and fresh replay. |
+| Reviews/agents | review-panel.tsx, run-controls.tsx, review-server.mjs, review-recording.mjs and review-agents.mjs. Frozen reviews attach recordings; cards/briefs link to download/replay. Exact configured sessions and harness receipts/replies remain explicit. |
+| Sync/cache | review-plugin.mjs, review-fixture-hashes.mjs and fixture-picture.tsx. Source watching, content-addressed PNGs, stale evidence, visible-demand scheduling and draft boundaries. |
 
-Code orientation:
+scripts/review-laundry.mjs passes fixture/presentation/state props through the existing Flow without changing its mutation hooks. The checked in-memory overlay fails when source shape drifts. The towelJourney object is now a compatibility view for canvas/proposals, not another data store or replay engine. The portable copy applies six checked seams so TypeScript sees review exports; context/bundled-laundry-seams.json records their hashes. App behavior stays unchanged when review props are absent.
 
-- scripts/review-project.mjs, review-projects.mjs, review-discovery.mjs: validation, catalogue/starter, bounded read-only scan, stale-source refusal and owned generation.
-- src/review/project-picker.tsx, discovery-setup.tsx, discovered-adapter.tsx: confirm props/order/capture labels, native HTML validation, real React state and retained returns.
-- adapter.ts, frame.tsx, project-request.ts: publish/transition contract, synthetic provenance, allowlisted capture and project-bound requests.
-- app-canvas.tsx, app-map.ts, journey-graph.mjs, arrow-routing.ts: retained iframe, camera/sidebar focus, branch geometry, directional ports and crossing-aware gutters.
-- scripts/review-fixture-hashes.mjs, review-server.mjs, src/review/fixture-picture.tsx: cache/readiness/session/capture behavior.
-- review-panel.tsx, selectable-path.tsx, capture.ts: selection, frozen annotations and retrieval.
-- scripts/review-agents.mjs: Codex/Claude sessions, frozen attachments, replies/followups and unknown-send receipts.
-- scripts/review-laundry.mjs, review-laundry-inventory.mjs, adapters/laundry.ts, laundry-frame.tsx, route-preview.tsx, family-preview.tsx, reminder-preview.tsx: quarantined Laundry integration.
-- examples/rehearsal-demo and examples/discovery-app: authored and manifest-free non-Laundry contract examples.
+## Onboarding and remaining migration
 
-The code paths above are under apps/web/ unless labelled docs/. They are status/orientation pointers, not a new work order.
+Read docs/design/review-product/project-onboarding.md, project-discovery.md, runtime-bridge.md and platform-adapters.md. Source scanning finds candidates; it cannot infer business state, identity, safe fixture data or exhaustive branches. Each project supplies a root router/data/identity adapter. Ordinary new screens using it need no separate recorder or mutation handler.
 
-## Automatic updates and what they prove
+The author's recommendation separates build connectors, runtime/data adapters and interaction drivers. Vite/TanStack/Convex is first. Later SwiftUI/Compose drivers should share semantic IDs and recording/review envelopes, not the DOM implementation. That is a researched direction, not shipped native support. Routine scanning, recording, caching and comparisons require no model calls.
 
-Source watching/index polling is automatic. Each screen's declared fixture/component/import closure, adapter bootstrap and shared rendering inputs form its cache fingerprint. Unchanged pixels survive unrelated revisions/restart. Shared CSS/assets/packages/backend source and generic adapter closures invalidate conservatively; there is no perfect per-export/semantic engine.
+Multicolor intake is the closest next fixture: reuse the real Flow/session with an authored pack state. Saved records/nested editors should use actual Closet routing and concrete seeded IDs. Appliance/product, profile/water, family/reminder and route specimens still use earlier bounded adapters. Do not wrap the simulated store and call that debt paid. Test each fixture's real writes, guards, branches and returns before retiring it.
 
-Old images remain visible as Updating/Retrying while current captures run; visible failures retry with bounded backoff. Old caches can supply explicitly stale display images after reopening. Historical exact-source frozen reviews do not use this fallback. Reminder page capture now waits for its actual heading rather than a nonexistent dialog.
+The host remains in apps/web with Laundry dependencies; this is a runnable monorepo snapshot, not a published standalone SDK. EXTRACTING-REHEARSAL.md identifies the boundary. Keep the non-Laundry Notebook as a contract test and generated HTML/React as labelled synthetic discovery. Coverage expectations remain authoritative; generated prototypes do not establish implementation or acceptance.
 
-Live runs keep their starting receipt/draft. Refreshing images does not promote old live code to current proof or discard inputs. Fixture jumps are not replay. Generated navigation and retained state are labelled Synthetic/Carried by Rehearsal in the canvas and captures; traversal never attests production paths.
+## Ownership and machine-local state
 
-## Onboarding/sync boundaries
+Rehearsal owns <original host worktrees>/f0d3/laundry-app, detached at the head above; dirty/untracked Rehearsal work is included. Linked app <original host worktrees>/f7ce/laundry-app was read-only, captured at c325b5ef848b90fa8a68ea1beec5602f3b7a11f8. Per-file hashes in context/source-provenance.json bind working-tree inputs more precisely than HEAD.
 
-Discovery reads source without importing it or calling a model. It recognizes HTML, exported React presenters, literal links/forms and some route declarations. Users confirm graph/props/capture labels before generation into Rehearsal-owned files. Conditions/returns are notes; production behavior is not inferred. Provider-dependent states need an adapter; unsupported imports fail visibly. Onboarding does not install dependencies or start arbitrary app servers.
+The linked owner is Codex chat <id omitted>. The user authorized coordination; the owner was notified about real Flow/recovery integration. This package grants no authority to message it. Do not restart that owner's 3011 frontend, 3230/3231 backend or personal 3220 backend. Original Rehearsal uses 3010 and a private Tailscale proxy; host settings/reviews are excluded. Receiving hosts use bundled source and must configure their own connections.
 
-Watchers refresh inventory/new frames, but do not continuously rewrite or merge registries. Stable identity reconciliation, rescan/merge, provider composition, complete journey coverage and design/token/component-library sync remain open. React imports execute trusted project code; CSP/server restrictions are defense in depth, not an untrusted-plugin sandbox.
+Excluded: private .review-data, generated user projects, credentials/environment, account/catalogue/backend state, agent destinations, Git internals and dependencies. Keep review data and product households separate. Workers execute trusted project code; fetch blocking and Node workers are not an OS sandbox for hostile repositories.
 
-Stores are separated by manifest/checkout identity, with Laundry's legacy store retained. Switching guards edits/captures/active deliveries, acknowledges run termination, restarts only Rehearsal and rejects stale keys. Per-user project selection, presence, permissions/conflicts and shared editing are unfinished.
+## Evidence and limits
 
-## Original-host provenance (not portable settings)
+PACKAGE-VERIFICATION.md records exact lanes and portable proof. Towel checks actual arguments/results, branch routes, input retention, proposal persistence/color, recovery and reset. Snapshot regression checks portal-mounted screens using the attached ready marker rather than visibility of the empty/inert root behind a modal. evidence/historical is labelled older visual context, not current acceptance.
 
-- Rehearsal: <original host worktrees>/f0d3/laundry-app, port3010, uncommitted source.
-- Read-only application: <original host worktrees>/f7ce/laundry-app; owner chat <id omitted>. The human explicitly authorized coordination. Owner frontend3011, isolated backend3230/3231 and personal backend3220 remain outside Rehearsal ownership.
-- Packaged app source9954ebbc7b11a7c5f8281936a7a3b53fd78cb220, docs HEADb08480287831a8c6db38fbecee858cba32fd3a84. context/source-provenance.json records file inputs; unselected dirty owner documents are excluded.
-- Original private URL: https://<original host>.ts.net:10445/review. Host settings, sessions and Tailscale routing are excluded. No public Funnel was created.
-- Local Rehearsal design project <id omitted>/conversation <id omitted>. Laundry canonical project43227d24-ee04-414e-a939-eda64e3f4bec. Separate initial Claude Design artifact <id omitted>/conversation<session id omitted>.
+Replay compares semantic fields/views/routes and effect receipts, not every pixel/query. Transport is JSON-safe; full Convex OCC/optimistic/auth, server actions, external services and native drivers remain unsupported. Multiplayer editing and complete design-tool sync are unfinished. Physical-phone, production-backend and fresh canonical-design acceptance were not claimed. The user remains acceptance owner.
 
-Source composition is intentional: current Rehearsal plus released Laundry, with six compatibility seams applied ONLY in the bundle. context/bundled-laundry-seams.json records them. Neither checkout was modified. Runtime external integrations still use bounded compile overlays until the app adopts native exports.
-
-## Proof and continuation limits
-
-Read PACKAGE-VERIFICATION.md; v5 proof is historical. The local desktop Claude-labelled collaborator completed a text critique, recorded in project-discovery.md. This is not a fresh Claude Design web artifact or pixel-level approval.
-
-The owner's twelve current root/Home static frames are separately reconciled. They omit the floating reminder and timed-single-load badge exception. Rehearsal supplies synthetic runtime reminder evidence, not new canonical/backend acceptance. The owner's concurrent one-second mutation deadline remains open; this pass does not retest it.
-
-Remaining: standalone extraction, generic proposal editing, registry rescan/merge and identity history, provider-aware adapters, per-user multiplayer, reference-aware cache retention/GC, broader design sync and physical-device/real-care acceptance. EXTRACTION.md is the writer's suggested continuation, not automatic authority.
-
+context/since-v6.patch applies only to exact v6 source and is checked against every resulting file hash. Use this source snapshot to start a new checkout; do not apply the patch to an unrelated Laundry branch. Confirm new work scope with the receiving user before continuing.

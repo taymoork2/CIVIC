@@ -22,6 +22,9 @@ export async function reviewInventory(repo, designRoot, appRepo = repo) {
   const journeys = [...new Set(scenarios.map((scenario) => scenario.journey))]
   const steps = ['type', 'whose', 'details', 'fabric', 'color', 'origin', 'dye', 'care', 'stain', 'final']
   scenarios.sort((a, b) => journeys.indexOf(a.journey) - journeys.indexOf(b.journey) || (a.renderer === 'intake' && b.renderer === 'intake' ? steps.indexOf(a.step) - steps.indexOf(b.step) : 0))
+  for (const scenario of scenarios.filter((scenario) => scenario.id.startsWith('intake.towel.'))) {
+    scenario.renderer = 'towel-runtime'; scenario.preview = 'isolated-app-runtime'; scenario.checks.push('apps/web/e2e/review-towel-runtime.spec.ts')
+  }
   const evidence = new Map()
   const source = []
   const surfaces = []
@@ -55,6 +58,15 @@ export async function reviewInventory(repo, designRoot, appRepo = repo) {
   const sourceHashes = await referenceInputHashes(appWeb)
   const referenceCurrent = design.receipt?.status === 'verified' && JSON.stringify(design.receipt.sourceHashes) === JSON.stringify(sourceHashes)
   const existing = [...previews].sort().map((screen) => ({ id: `legacy.${screen}`, label: screen, journey: 'Existing specimens', renderer: 'legacy', screen, component: 'apps/web/src/routes/design-preview.tsx', design: ['source-reference/receipt.json'], checks: ['apps/web/src/dev/design-preview.test.ts'], preview: 'visual-or-partial', device: 'unverified', native: 'missing' }))
+  for (const surface of surfaces.filter((surface) => surface.kind === 'route' && !surface.name.startsWith('/api/') && !['/design-preview', '/sign-in', '/create-account', '/forgot-password', '/care-photo', '/product-lookup'].includes(surface.name))) {
+    const name = surface.name === '/' ? 'home' : surface.name.slice(1).replaceAll('$', '').replace(/[^a-z0-9]+/gi, '.').toLowerCase()
+    scenarios.push({ id: `app.${name}`, label: `Live ${name.replaceAll('.', ' ')}`, journey: 'Live application', renderer: 'runtime', route: surface.name, component: surface.path, design: ['DESIGN.md'], checks: ['apps/web/e2e/review-runtime.spec.ts'], preview: surface.name.includes('$') ? 'requires-start-state' : 'isolated-app-runtime', native: 'missing', device: 'unverified' })
+  }
+  for (const [id, label, route, component] of [
+    ['app.home.no-ready', 'Home · no ready outfit', '/', 'apps/web/src/routes/index.tsx'],
+    ['app.drying.empty', 'Drying · empty queue', '/drying', 'apps/web/src/routes/drying.tsx'],
+    ['app.drying.putaway-one', 'Drying · one item to put away', '/drying', 'apps/web/src/routes/drying.tsx'],
+  ]) scenarios.push({ id, label, journey: 'Live application', renderer: 'runtime', route, component, branchOf: id.startsWith('app.home') ? 'app.home' : 'app.drying', design: ['DESIGN.md'], checks: ['apps/web/e2e/review-runtime.spec.ts'], preview: 'isolated-app-runtime', native: 'missing', device: 'unverified' })
   // These are curated source bindings, not observed transitions or automatic route discovery.
   const routeActions = JSON.parse(await readFile(join(web, 'src/review/route-actions.json'), 'utf8'))
   const registered = new Map([...scenarios, ...existing].map((scenario) => [scenario.id, scenario]))

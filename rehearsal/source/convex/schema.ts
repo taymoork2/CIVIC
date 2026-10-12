@@ -87,7 +87,7 @@ export default defineSchema({
   /** Retained save identities prevent a stale tab from recreating a completed intake. */
   intakeSaves: defineTable({
     householdId: v.id('households'), principalKey: v.string(),
-    kind: v.union(v.literal('garment'), v.literal('appliance'), v.literal('product'), v.literal('wearer')),
+    kind: v.union(v.literal('garment'), v.literal('appliance'), v.literal('product'), v.literal('wearer'), v.literal('outfit')),
     key: v.string(), payloadHash: v.string(),
     result: v.union(v.array(v.id('textiles')), v.array(v.id('machines')), v.id('supplies'), v.id('wearers')),
   }).index('by_request', ['householdId', 'principalKey', 'kind', 'key']).index('by_principal', ['principalKey']),

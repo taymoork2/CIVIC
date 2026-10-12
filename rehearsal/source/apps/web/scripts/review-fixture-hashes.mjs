@@ -28,9 +28,10 @@ export function fixtureHashes(metadata, evidence, project, inputs = []) {
       for (const match of text.matchAll(/(?:\bfrom\s*|\bimport\s*(?:\(\s*)?)["']([^"']+)["']/g)) visit(dependency(path, match[1]))
     }
     visit(scenario.component)
+    if (['runtime', 'towel-runtime'].includes(scenario.renderer)) for (const [path, content] of code) if (/\/review\/(?:runtime-[^/]+|convex-runtime-client|adapters\/laundry-[^/]+)\.[cm]?[jt]sx?$|\/review-(?:runtime|recording|plugin|laundry)(?:-worker)?\.mjs$/.test(path)) seen.set(path, sha(content))
     // Generic adapters can share arbitrary runtime state. Keep their module closure conservative.
     if (metadata.project?.adapter === 'module') for (const [path, content] of code) if (path !== 'project:coverage') seen.set(path, sha(content))
-    const { id, label, renderer, fixture, step, screen, component, edges, captureFields } = scenario
-    return [node.id, sha(shared + JSON.stringify([node.id, { id, label, renderer, fixture, step, screen, component, edges, captureFields }, [...seen].sort()]))]
+    const { id, label, renderer, fixture, step, screen, component, route, edges, captureFields } = scenario
+    return [node.id, sha(shared + JSON.stringify([node.id, { id, label, renderer, fixture, step, screen, component, route, edges, captureFields }, [...seen].sort()]))]
   }))
 }

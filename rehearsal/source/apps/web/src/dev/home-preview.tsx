@@ -1,8 +1,9 @@
 import type { Id } from '@convex/_generated/dataModel'
+import { outfitGroupKey } from '@washcloset/planner'
 import { Button } from '@/components/ui/button'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import type { Today } from '@/closet/closet-view'
-import { DailyOutfitCard, DailyOutfitSummary } from '@/closet/daily-outfit'
+import { DailyOutfitActionLabel, DailyOutfitCard, DailyOutfitSummary } from '@/closet/daily-outfit'
 import { FixtureConvex } from '@/dev/fixture-preview'
 import { dryingFacts, hubState, type HubState } from '@/home/hub-state'
 import type { Inventory, Textile } from '@/household/inventory-types'
@@ -73,8 +74,10 @@ export function HomePreview({ variant }: { variant: HomePreviewState }) {
       blocker: { source: 'product', name: supply.name, code: 'needs_confirmation', details: { cause: 'insufficient_product_evidence' } },
     } : variant === 'drying' ? { kind: 'drying', count: textiles.length, sessionIds: ['preview-wash'], runId: 'preview-air' } : { kind: 'empty' }
   const inventory: Inventory = { planning: {}, wearers: [], textiles, machines: variant === 'empty' ? [] : [machine], supplies: variant === 'empty' ? [] : [supply] }
+  const outfitData = { 'inventory:list': inventory, 'outfits:today': [{ planId: 'preview-outfit', signature: 'preview-outfit-version', wearRecorded: false, isYou: true, items: ready.slice(0, 1).map(piece => ({ key: outfitGroupKey(piece), name: piece.name, kind: piece.kind, colorGroup: piece.colorGroup, quantity: 1 })) }] }
   return <div inert className="contents"><HomeOverview inventory={inventory} today={today} state={state} now={now} washPlace={variant === 'empty' ? null : variant === 'sequential' || variant === 'dryer-busy' ? 'home' : 'shared'}
-    outfitSummary={variant === 'one' ? <FixtureConvex data={{ 'outfits:today': [{ isYou: true, items: [{ key: 'tee', name: 'White cotton tee', kind: 't_shirt', colorGroup: 'white', quantity: 1 }] }] }}><DailyOutfitSummary householdId="preview-household" wearerId={null} now={now} /></FixtureConvex> : undefined}
+    outfitSummary={variant === 'one' ? <FixtureConvex data={outfitData}><DailyOutfitSummary householdId="preview-household" wearerId={null} now={now} /></FixtureConvex> : undefined}
+    outfitActionLabel={variant === 'one' ? <FixtureConvex data={outfitData}><DailyOutfitActionLabel householdId="preview-household" wearerId={null} now={now} /></FixtureConvex> : undefined}
     outfit={<><DailyOutfitCard items={['tee', 'jeans'].map((key) => {
       const group = groups.find((item) => item.key === key)!
       return { key, name: group.name, color: group.color, colorGroup: group.colorGroup, kind: group.kind, brand: null, wearerId: null, quantity: 1 }

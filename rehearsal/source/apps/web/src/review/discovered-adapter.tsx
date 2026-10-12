@@ -17,6 +17,7 @@ function Ready({ children, ready }: { children: ReactNode; ready: () => void }) 
 export async function mountDiscovered(container: HTMLElement, context: AdapterContext, screens: Screen[]) {
   const mounted = new Map<string, { element: HTMLElement; root?: Root }>()
   let current = screens.find((row) => row.id === context.scenario.id)!, dirty = false, moving = false, disposed = false
+  let navigation = Promise.resolve()
   if (!current) throw Error('Generated adapter has no matching screen')
   const status = document.createElement('p'); status.setAttribute('role', 'status')
   const stage = document.createElement('div'); container.append(stage, status)
@@ -57,13 +58,15 @@ export async function mountDiscovered(container: HTMLElement, context: AdapterCo
     for (const [id, mountedScreen] of mounted) { mountedScreen.element.hidden = id !== screen.id; mountedScreen.element.style.display = id === screen.id ? '' : 'none' }
     current = screen; publish()
   }
-  const go = async (edge: NonNullable<AdapterScenario['edges']>[number]) => {
+  const go = (edge: NonNullable<AdapterScenario['edges']>[number]) => {
     if (moving || disposed) return
     moving = true
     // Capture the departing real DOM before hiding it. Return visits retain mounted component state.
-    try { context.transition(edge.destination, edge.action, 'synthetic'); await show(screens.find((screen) => screen.id === edge.destination)!); report('') }
-    catch (error) { report(`Cannot open this screen: ${(error as Error).message}`); for (const [id, entry] of mounted) { entry.element.hidden = id !== current.id; entry.element.style.display = id === current.id ? '' : 'none' } }
-    finally { moving = false; if (!disposed) publish() }
+    navigation = (async () => {
+      try { context.transition(edge.destination, edge.action, 'synthetic'); await show(screens.find((screen) => screen.id === edge.destination)!); report('') }
+      catch (error) { report(`Cannot open this screen: ${(error as Error).message}`); for (const [id, entry] of mounted) { entry.element.hidden = id !== current.id; entry.element.style.display = id === current.id ? '' : 'none' } }
+      finally { moving = false; if (!disposed) publish() }
+    })()
   }
   const findEdge = (action: string, href?: string) => current.edges?.find((edge) => edge.action === action) ?? current.edges?.find((edge) => {
     const destination = screens.find((screen) => screen.id === edge.destination)
@@ -93,5 +96,10 @@ export async function mountDiscovered(container: HTMLElement, context: AdapterCo
   const dispose = () => { disposed = true; stage.removeEventListener('click', click, true); stage.removeEventListener('submit', submit, true); stage.removeEventListener('input', changed); stage.removeEventListener('change', changed); for (const entry of mounted.values()) entry.root?.unmount(); container.replaceChildren() }
   stage.addEventListener('click', click, true); stage.addEventListener('submit', submit, true); stage.addEventListener('input', changed); stage.addEventListener('change', changed)
   try { await show(current) } catch (error) { dispose(); throw error }
+  context.connectRuntime({ seed: { scenario: context.scenario.id }, now: context.recording?.now ?? Date.now(), route: () => current.route, screen: () => current.id, captureInputs: [...new Set(screens.flatMap((screen) => screen.captureFields ?? []))], data: () => ({ screen: current.id, navigation: 'synthetic' }),
+    settle: async () => { await navigation; await new Promise<void>((resolve) => requestAnimationFrame(() => resolve())) },
+    reset: async () => { await navigation; for (const entry of mounted.values()) entry.root?.unmount(); mounted.clear(); stage.replaceChildren(); dirty = false; await show(screens.find((screen) => screen.id === context.scenario.id)!); report('') },
+    assertSource: async () => { const response = await fetch('/api/review/index'); if (!response.ok || (await response.json()).revision.source !== context.snapshot.revision.source) throw Error('Source changed. Start a new run.') },
+  })
   return dispose
 }

@@ -24,7 +24,7 @@ import { useStartup } from '../startup-context'
 import { garmentKey, groupGarments } from '@/closet/garment-groups'
 import { GarmentIcon, garmentCategoryPhoto } from '@/kit/garment-icon'
 import { useHouseholdData } from '@/household/household-data'
-import { DailyOutfit, DailyOutfitSummary } from '@/closet/daily-outfit'
+import { DailyOutfit, DailyOutfitActionLabel, DailyOutfitSummary } from '@/closet/daily-outfit'
 
 const pageClassName = cn(
   "page",
@@ -79,6 +79,7 @@ function HomePage({ householdId, washPlace }: { householdId: string; washPlace: 
   if (state === undefined || inventory === undefined || today === undefined || overview === undefined) return <div className={cn(pageClassName, homeOverviewClassName)}>{initialSummary ?? <CareHero variant="home" title={homeText.loadingTitle} />}<Loading what={homeText.loadingLaundry} /></div>
 
   const meWearerId = inventory.wearers.find((wearer) => wearer.principalKey !== null && wearer.principalKey === status?.principalKey)?.wearerId ?? null
+  const outfitWearerId = meWearerId ?? inventory.wearers[0]?.wearerId ?? null
   const guidance = status?.households.find((household) => household.householdId === householdId)?.guidance
   return <HomeOverview inventory={inventory} overview={overview} readyPreview={readyPreview ?? []} today={today} state={state} now={now} washPlace={washPlace} checks={earlyChecks(queue === undefined ? undefined : dryingFacts(queue))}
     guidance={guidance === undefined ? undefined : { status: guidance, pending: guidanceCall.pending, notice: <ErrorNotice error={guidanceCall.error} />, onResume: (stage) => {
@@ -89,7 +90,8 @@ function HomePage({ householdId, washPlace }: { householdId: string; washPlace: 
         if (saved !== undefined) void navigate(guidanceDestination(saved.stage))
       })()
     } }}
-    outfitSummary={<DailyOutfitSummary householdId={householdId} now={now} wearerId={meWearerId ?? inventory.wearers[0]?.wearerId ?? null} />}
+    outfitSummary={<DailyOutfitSummary householdId={householdId} now={now} wearerId={outfitWearerId} />}
+    outfitActionLabel={<DailyOutfitActionLabel householdId={householdId} now={now} wearerId={outfitWearerId} />}
     outfit={<DailyOutfit key={householdId} householdId={householdId} inventory={inventory} now={now} meWearerId={meWearerId} />} />
 }
 
@@ -119,7 +121,7 @@ export type HomeGuidanceInput = {
   readonly onResume: (stage: Exclude<GuidanceStage, 'intent'>) => void
 }
 
-export function HomeOverview({ inventory, today, state, now, outfit, outfitSummary, guidance, washPlace = null, checks = [], overview: inventoryOverview, readyPreview }: { inventory: Inventory; today: Today; state: HubState; now: number; outfit?: ReactNode; outfitSummary?: ReactNode; guidance?: HomeGuidanceInput; washPlace?: WashPlace | null; checks?: readonly EarlyCheck[]; overview?: import('convex/server').FunctionReturnType<typeof api.inventoryBrowse.summary>; readyPreview?: import('convex/server').FunctionReturnType<typeof api.inventoryBrowse.readyPreview> }) {
+export function HomeOverview({ inventory, today, state, now, outfit, outfitSummary, outfitActionLabel, guidance, washPlace = null, checks = [], overview: inventoryOverview, readyPreview }: { inventory: Inventory; today: Today; state: HubState; now: number; outfit?: ReactNode; outfitSummary?: ReactNode; outfitActionLabel?: ReactNode; guidance?: HomeGuidanceInput; washPlace?: WashPlace | null; checks?: readonly EarlyCheck[]; overview?: import('convex/server').FunctionReturnType<typeof api.inventoryBrowse.summary>; readyPreview?: import('convex/server').FunctionReturnType<typeof api.inventoryBrowse.readyPreview> }) {
   const readyIds = new Set<string>(today.ready.map((textile) => textile._id))
   const facts = inventoryOverview?.facts ?? heroFacts(inventory.textiles)
   const hasClothes = facts.garmentGroups > 0
@@ -158,7 +160,7 @@ export function HomeOverview({ inventory, today, state, now, outfit, outfitSumma
         <HomeCareOverview title={overview.title} caption={overview.pieces(facts.pieces)} counts={counts} renderLink={homeLink}
           labelFlag={firstNeedsCare === null || (hero.primary?.target.to === 'garment' && hero.primary.target.textileId === firstNeedsCare) ? null : { text: overview.labelFlag, target: { to: 'garment', textileId: firstNeedsCare } }} />
         <HomeQuickLinks renderLink={homeLink} />
-        {outfit === undefined ? null : <HomeOutfitAction summary={outfitSummary}>{outfit}</HomeOutfitAction>}
+        {outfit === undefined ? null : <HomeOutfitAction summary={outfitSummary} actionLabel={outfitActionLabel}>{outfit}</HomeOutfitAction>}
         {readyTiles.length === 0 ? null : <HomeReadyTiles title="Ready to wear or use" closetLabel="Closet" closetLink={props => homeLink({ to: 'closet' }, props)} tiles={readyTiles.map(({ textile, count }) => ({
           key: textile.textileId, name: textile.name, count, tags: [],
           art: garmentCategoryPhoto(textile.kind, textile.colorGroup) === undefined ? <GarmentIcon kind={textile.kind} colorGroup={textile.colorGroup} /> : <CategoryPhoto src={garmentCategoryPhoto(textile.kind, textile.colorGroup)!} fallback={<GarmentIcon kind={textile.kind} colorGroup={textile.colorGroup} />} className={cn('size-full object-cover', photoBlendClassName)} />,

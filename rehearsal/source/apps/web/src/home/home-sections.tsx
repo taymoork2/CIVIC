@@ -138,15 +138,15 @@ export function HomeQuickLinks({ renderLink }: { renderLink: HeroLink }) {
 
 export type OverviewCount = { readonly key: string; readonly label: string; readonly count: number; readonly dot: string }
 
-export function HomeOutfitAction({ children, summary }: { children: ReactNode; summary?: ReactNode }) {
+export function HomeOutfitAction({ children, summary, actionLabel = 'Choose today’s outfit' }: { children: ReactNode; summary?: ReactNode; actionLabel?: ReactNode }) {
   const [open, setOpen] = useState(false)
   return <section aria-labelledby="home-outfit-title" className="home-outfit grid overflow-hidden rounded-card bg-surface shadow-[var(--e1)]">
     <div className="grid gap-3 p-4">
-      <div className="flex items-center gap-3"><span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-field bg-accent text-link"><DesignIcon name="tee" size={24} /></span>
+      <div className="flex flex-wrap items-center gap-3"><span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-field bg-accent text-link"><DesignIcon name="tee" size={24} /></span>
       <h2 id="home-outfit-title" className="m-0 text-[length:var(--step-2)] font-semibold">Today’s outfit</h2></div>
       {summary ?? <p className="m-0 text-[length:var(--step--1)] text-ink-2">Choose from what’s ready. One less decision when you get dressed.</p>}
     </div>
-    <button type="button" className={cn(heroRowClassName, 'bg-accent text-link font-semibold')} onClick={() => setOpen(true)}><span className="min-w-0 flex-1">Choose today’s outfit</span>{rowCaret}</button>
+    <button type="button" className={cn(heroRowClassName, 'bg-accent text-link font-semibold')} onClick={(event) => { event.currentTarget.focus({ preventScroll: true }); setOpen(true) }}><span className="min-w-0 flex-1">{actionLabel}</span>{rowCaret}</button>
     {open ? <Sheet title="Today’s outfit" onClose={() => setOpen(false)}>{children}</Sheet> : null}
   </section>
 }
@@ -174,8 +174,8 @@ export function HomeCareOverview({ title, caption, counts, labelFlag, renderLink
             {counts.map(({ key, count, dot }) => <span key={key} className={cn('h-full motion-safe:[transition:width_var(--dur-step)_var(--ease-out)]', dot)} style={{ width: `${total === 0 ? 0 : count / total * 100}%` }} />)}
           </span>
           <span className="grid min-w-0 grid-cols-[repeat(var(--overview-columns),minmax(0,1fr))] gap-2 [@container_(width_<_10rem)]:grid-cols-2" style={{ '--overview-columns': counts.length } as CSSProperties}>
-            {counts.map(({ key, label, count }) => <span key={key} className="flex min-w-0 flex-col gap-1 [overflow-wrap:anywhere]">
-            <span className="text-[length:var(--step-1)] font-semibold tabular-nums">{count}</span>
+            {counts.map(({ key, label, count }, index) => <span key={key} className={cn('grid min-w-0 content-start justify-items-center gap-1 text-center [overflow-wrap:anywhere]', index > 0 && 'border-s border-line ps-2')}>
+            <span className="flex flex-wrap items-center justify-center gap-x-2 gap-y-1 text-[length:var(--step-1)] font-semibold tabular-nums"><DesignIcon name={key === 'ready' ? 'tee' : key === 'hamper' ? 'laundry' : key === 'washing' ? 'washer' : key === 'drying' ? 'hang' : key === 'refresh' ? 'spray' : 'fold'} size={18} className="shrink-0 text-ink-2" aria-hidden="true" />{count}</span>
             <span className="text-[length:var(--step--1)] text-ink-2">{label}</span>
             </span>)}
           </span>

@@ -97,6 +97,9 @@ export function Profile({ name, email, householdName, role, history = [], loadin
   onOpenWash?: (sessionId: CareHistoryRow['sessionId']) => void
 }) {
   const [limit, setLimit] = useState(recentWashes)
+  // Keep the first render identical on server and device, then use the device's locale and zone.
+  const [format, setFormat] = useState({ locale: 'en-US', timeZone: 'UTC' })
+  useEffect(() => { setFormat(Intl.DateTimeFormat().resolvedOptions()) }, [])
   const pageRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
     // Adding rows moves the focused disclosure toward the fixed navigation. Keep
@@ -106,9 +109,9 @@ export function Profile({ name, email, householdName, role, history = [], loadin
   const shown = history.slice(0, limit)
   return (
     <div ref={pageRef} className={mePageClassName}>
-      <CareHero variant="feature" title={meText.title} art={<img src={history.length === 0 ? '/welcome-household.webp' : '/design/care-complete.webp'} alt="" width={960} height={640} className="block h-auto w-full object-contain" />}
+      <CareHero variant="feature" photo title={meText.title} art={<img src={history.length === 0 ? '/welcome-household.webp' : '/design/care-complete.webp'} alt="" width={960} height={640} />}
         detail={<><p className="m-0 text-[length:var(--step-2)] font-semibold text-ink">{name ?? householdName}</p><p className="m-0">{householdName}{role === null ? '' : ` · ${meText.roles[role]}`}</p>{!loading && history.length === 0 ? <p className="m-0">Completed care appears here, with the items and settings you used.</p> : null}</>}
-        action={loading ? undefined : history.length === 0 ? <Link to="/laundry" className={buttonVariants({ variant: 'outline' })}>Go to Laundry</Link> : onOpenWash === undefined ? undefined : <Button type="button" variant="outline" onClick={() => onOpenWash(history[0]!.sessionId)}>Review latest load</Button>} />
+        action={loading ? undefined : history.length === 0 ? <Link to="/laundry" className={cn(buttonVariants({ variant: 'outline' }), 'min-w-0 max-w-full whitespace-normal')}>Go to Laundry</Link> : onOpenWash === undefined ? undefined : <Button type="button" variant="outline" className="min-w-0 max-w-full whitespace-normal" onClick={() => onOpenWash(history[0]!.sessionId)}>Review latest load</Button>} />
       {loading ? <Loading what={meText.loadingHistory} /> : history.length === 0
         ? <p className="m-0 text-ink-2">{meText.noWashes}</p>
         : <RecordList heading={meText.washes}>
@@ -116,7 +119,7 @@ export function Profile({ name, email, householdName, role, history = [], loadin
             key={row.sessionId}
             media={<DesignIcon name="laundry" strokeWidth={1.6} />}
             title={row.title}
-            fact={<>{meText.pieces(row.textileCount)} · <time dateTime={new Date(row.completedAt).toISOString()}>{new Date(row.completedAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</time>{row.washPrice === undefined ? null : <> · {row.washPrice === null ? meText.washPriceUnknown : meText.washPrice(new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD' }).format(row.washPrice))}</>}</>}
+            fact={<>{meText.pieces(row.textileCount)} · <time dateTime={new Date(row.completedAt).toISOString()}>{new Date(row.completedAt).toLocaleDateString(format.locale, { month: 'short', day: 'numeric', year: 'numeric', timeZone: format.timeZone })}</time>{row.washPrice === undefined ? null : <> · {row.washPrice === null ? meText.washPriceUnknown : meText.washPrice(new Intl.NumberFormat(format.locale, { style: 'currency', currency: 'USD' }).format(row.washPrice))}</>}</>}
             onOpen={onOpenWash === undefined ? undefined : () => onOpenWash(row.sessionId)}
           />)}
         {history.length <= limit && !canLoadMore && !loadingMore ? null : <RecordRow

@@ -51,4 +51,4 @@ Before a pull request merges, run [`bin/signoff`](bin/signoff) from a clean chec
 
 ## Status
 
-The journey engine is at the v6 handoff, with a project manifest and picker, static discovery for existing apps, per-screen snapshot fingerprints and a direct agent-session bridge, alongside the Contract panel. It runs in an orb. Web implementation evidence covers all 204 registered screens; design reference, native, and QA evidence are the next gaps.
+The journey engine is at the v7 handoff: the real Laundry app runs in review with real effects in an isolated backend per run, and runs can be recorded, saved and replayed. It keeps v6's project manifest and picker, static discovery and per-screen snapshot fingerprints, alongside the Contract panel. It runs in an orb. Web implementation evidence covers all 204 registered screens; design reference, native, and QA evidence are the next gaps.

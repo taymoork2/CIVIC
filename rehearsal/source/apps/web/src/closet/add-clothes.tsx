@@ -1424,7 +1424,7 @@ function TagPhoto({ photo, onPhoto }: { photo: File | null; onPhoto: (file: File
 export type EditOutcome = { readonly removedAll: boolean }
 
 /** The intake or edit form with live household data and a confirmation after saving. */
-export function AddClothesFlow({ householdId, mode, firstRun = false, onClose }: { householdId: string; mode: AddMode; firstRun?: boolean; onClose: (outcome?: EditOutcome) => void }) {
+export function AddClothesFlow({ householdId, mode, firstRun = false, onClose, review }: { householdId: string; mode: AddMode; firstRun?: boolean; review?: ReviewIntakeProps; onClose: (outcome?: EditOutcome) => void }) {
   const inventory = useQuery(api.inventory.list, { householdId: householdId as Id<'households'>, textileIds: mode.kind === 'edit' ? [...mode.textileIds] as Id<'textiles'>[] : [] })
   const summary = useQuery(api.inventoryBrowse.summary, { householdId: householdId as Id<'households'>, search: '', section: 'all', tags: [] })
   const generateUploadUrl = useMutation(api.photos.generateUploadUrl)
@@ -1454,7 +1454,7 @@ export function AddClothesFlow({ householdId, mode, firstRun = false, onClose }:
         onClose({ removedAll: (saved.movedToTrash ?? 0) > 0 && (saved.movedToTrash ?? 0) >= editing.length })
       }} />
   }
-  return <AddClothesSheet householdId={householdId} mode={mode} wearers={inventory.wearers} calls={calls} firstRun={firstRun} emptyCloset={summary.total === 0} onClose={onClose} knownTags={summary.tags}
+  return <AddClothesSheet {...review} householdId={householdId} mode={mode} wearers={inventory.wearers} calls={calls} firstRun={firstRun} emptyCloset={summary.total === 0} onClose={onClose} knownTags={summary.tags}
     onSaved={(saved) => {
       toast.success(savedToast(saved, mode.target))
       onClose()
@@ -1560,3 +1560,5 @@ export function NamedColourGrid({ value, group, onPick }: { value: string; group
     </div>
   )
 }
+
+export type ReviewIntakeProps = { initial: AddDraft; initialStep: AddStep; initialCareStep?: CareQuestion; presentation: IntakePresentation; onReviewState: (state: IntakeReviewState) => void; onReviewTransition: (from: string, to: string) => void }

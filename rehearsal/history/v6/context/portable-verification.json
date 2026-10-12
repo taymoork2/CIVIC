@@ -1,0 +1,29 @@
+{
+  "git_internals_present": false,
+  "application_head": null,
+  "revision_head": "0000000000000000000000000000000000000000",
+  "scenarios": 204,
+  "fixture_fingerprints": 207,
+  "adapter": "laundry",
+  "backend_connected": false,
+  "dependency_install": {
+    "offline": true,
+    "frozen": true,
+    "scripts_ignored": true,
+    "reused": 310,
+    "downloaded": 0
+  },
+  "verification": {
+    "service": 32,
+    "unit": 17,
+    "browser": 8,
+    "types": true,
+    "styles": true,
+    "static_utilities": 1659
+  },
+  "cold_import_failure": {
+    "initially_observed": true,
+    "bounded_startup_retry_added": true,
+    "regression_passed": true
+  }
+}

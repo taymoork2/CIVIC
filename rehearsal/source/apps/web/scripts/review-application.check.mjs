@@ -42,7 +42,8 @@ test('linked application inventory uses product sources and local Rehearsal owne
   const hostWeb = join(host, 'apps/web')
   await mkdir(hostWeb, { recursive: true })
   await cp(join(repo, 'apps/web/scripts'), join(hostWeb, 'scripts'), { recursive: true })
-  for (const name of ['src', 'e2e', 'node_modules']) await symlink(join(repo, 'apps/web', name), join(hostWeb, name))
+  await cp(join(repo, 'apps/web/src'), join(hostWeb, 'src'), { recursive: true })
+  for (const name of ['e2e', 'node_modules']) await symlink(join(repo, 'apps/web', name), join(hostWeb, name))
   for (const name of ['package.json', 'playwright.config.ts', 'tsconfig.json', 'vite.config.ts', 'review.html', 'review-frame.html']) await cp(join(repo, 'apps/web', name), join(hostWeb, name))
   for (const name of ['package.json', 'pnpm-lock.yaml', 'rehearsal.project.json']) await cp(join(repo, name), join(host, name))
   await symlink(join(repo, '.git'), join(host, '.git'))
@@ -86,7 +87,13 @@ test('preview hook overlay is bounded, preserves app code, and refuses drift', a
   for (const name of paths) {
     const path = `apps/web/src/${name}.tsx`
     const current = await readFile(join(repo, path), 'utf8')
-    assert.equal(reviewOverlay(path, current), current, 'existing review hooks remain unchanged')
+    const overlaid = reviewOverlay(path, current)
+    if (name === 'closet/add-clothes') {
+      assert.match(overlaid, /review\?: ReviewIntakeProps/)
+      const nativeCalls = (code) => code.match(/const calls: AddCalls = \{[\s\S]*?\n  \}/)?.[0]
+      assert.equal(nativeCalls(overlaid), nativeCalls(current), 'native mutation hooks stay unchanged')
+      assert.equal(reviewOverlay(path, overlaid), overlaid, 'overlay is idempotent')
+    } else assert.equal(overlaid, current, 'existing review hooks remain unchanged')
   }
   // Remove only the fixture export to exercise the account-free external adapter.
   const path = 'apps/web/src/dev/closet-preview.tsx'

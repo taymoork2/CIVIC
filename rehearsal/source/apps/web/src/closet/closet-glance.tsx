@@ -52,8 +52,8 @@ export function ClosetGlance({ counts, people, selected, onPerson }: {
         {countsOrder.map((key) => (
           <li key={key} className="flex min-w-0 items-center gap-[10px]">
             <span className={cn('grid size-[32px] flex-none place-items-center rounded-[10px] [@container_(width_<_12em)]:hidden', countSymbols[key].tone)} aria-hidden="true"><DesignIcon name={countSymbols[key].icon} size={20} /></span>
-            <span className="flex min-w-0 flex-1 flex-wrap items-baseline gap-x-2 gap-y-0.5 leading-tight">
-              <span className={cn('font-bold tabular-nums', counts[key] === 0 && 'text-ink-2')}>{counts[key]}</span>
+            <span className="grid min-w-0 flex-1 grid-cols-[max-content_minmax(0,1fr)] items-baseline gap-x-2 leading-tight">
+              <span className={cn('min-w-[1ch] font-bold tabular-nums', counts[key] === 0 && 'text-ink-2')}>{counts[key]}</span>
               <span className="max-w-full text-[length:var(--step--1)] text-ink-2 [overflow-wrap:normal]">{text[key]}</span>
             </span>
           </li>

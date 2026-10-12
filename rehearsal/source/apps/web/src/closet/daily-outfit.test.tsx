@@ -1,8 +1,19 @@
 import { expect, test } from 'vitest'
 import { outfitGroupKey } from '@washcloset/planner'
-import { OutfitPickerSheet, outfitWearPieces } from '@/closet/daily-outfit'
+import { dailyOutfitActionLabel, OutfitPickerSheet, outfitWearPieces } from '@/closet/daily-outfit'
 import type { Textile } from '@/household/inventory-types'
+import type { Id } from '@convex/_generated/dataModel'
 import { renderToStaticMarkup } from '@/test/markup'
+
+test('the Home action reflects your saved outfit, not a loading result or another person’s suggestion', () => {
+  const item = { key: 'tee', name: 'Tee', kind: 't_shirt' as const, color: 'White', colorGroup: 'white', brand: null, wearerId: null, quantity: 1 }
+  const pick = { planId: 'test-plan' as Id<'dailyOutfits'>, signature: 'test-version', wearRecorded: false, isYou: true, authorName: 'Me', items: [item] }
+  expect(dailyOutfitActionLabel(undefined)).toBe('Open today’s outfit')
+  expect(dailyOutfitActionLabel([])).toBe('Choose today’s outfit')
+  expect(dailyOutfitActionLabel([pick])).toBe('View today’s outfit')
+  expect(dailyOutfitActionLabel([{ ...pick, items: [] }])).toBe('Choose today’s outfit')
+  expect(dailyOutfitActionLabel([{ ...pick, isYou: false }])).toBe('Choose today’s outfit')
+})
 
 test('wearing an outfit reuses matching ready pieces worn today and excludes busy or other-person clothes', () => {
   const piece = { textileId: 'ready', name: 'Tee', kind: 't_shirt', color: 'White', colorGroup: 'white', wearerId: null, identity: null, guest: false, status: 'clean', inLoad: null, lastWornAt: null } as Textile

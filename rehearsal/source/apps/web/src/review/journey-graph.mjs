@@ -14,18 +14,19 @@ export function journeyGraph(scenarios, project) {
     for (const scenario of scenarios) {
       const id = scenario.flow ?? `flow:${scenario.journey}`
       if (!flows.has(id)) flows.set(id, { id, label: scenario.journey, screens: [] })
-      flows.get(id).screens.push({ id: scenario.id, label: scenario.label, scenario: scenario.id, partial: scenario.renderer === 'legacy', section: scenario.section, branchOf: scenario.branchOf, edges: scenario.edges ?? [], routeActions: scenario.routeActions })
+      flows.get(id).screens.push({ id: scenario.id, label: scenario.label, scenario: scenario.id, partial: scenario.renderer === 'legacy' || scenario.preview === 'requires-start-state', section: scenario.section, branchOf: scenario.branchOf, edges: scenario.edges ?? [], routeActions: scenario.routeActions })
     }
     return [...flows.values()]
   }
   const flows = new Map([['towel', { id: 'towel', label: 'Add a towel', screens: towel.map((node) => ({ ...node, partial: false, edges: towelEdges.filter((edge) => edge.from === node.id).map((edge) => ({ action: edge.label, destination: edge.to, when: edge.when })) })) }]])
   for (const scenario of scenarios) {
     if (scenario.id.startsWith('intake.towel.')) continue
-    const partial = scenario.renderer === 'legacy'
-    const area = (scenario.screen ?? '').split('-')[0]
+    const partial = scenario.renderer === 'legacy' || scenario.preview === 'requires-start-state'
+    const runtime = scenario.renderer === 'runtime'
+    const area = runtime ? (scenario.route?.split('/')[1] || 'home') : (scenario.screen ?? '').split('-')[0]
     const isEntry = entryScreens.includes(scenario.screen ?? '') || area === 'join'
-    const label = partial ? isEntry ? 'Sign-in & setup' : area === 'invite' ? 'Household' : areas[area] ?? 'Washing & recovery' : scenario.journey
-    const id = partial || scenario.renderer === 'route-state' || scenario.renderer === 'reminder' ? `area:${label}` : `flow:${label}`
+    const label = partial || runtime ? isEntry ? 'Sign-in & setup' : area === 'invite' ? 'Household' : areas[area] ?? (runtime ? scenario.journey : 'Washing & recovery') : scenario.journey
+    const id = partial || runtime || scenario.renderer === 'route-state' || scenario.renderer === 'reminder' ? `area:${label}` : `flow:${label}`
     if (!flows.has(id)) flows.set(id, { id, label, screens: [] })
     flows.get(id).screens.push({ id: scenario.id, label: scenario.label, scenario: scenario.id, partial, branchOf: scenario.branchOf, edges: scenario.edges ?? [], routeActions: scenario.routeActions })
   }

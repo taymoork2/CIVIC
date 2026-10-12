@@ -43,10 +43,10 @@ const dryers: DryingQueue['dryers'] = [{ number: 4, capacityUnits: 28 }, { numbe
   heatSettings: [{ heat: 'low', label: 'Low' }, { heat: 'medium', label: 'Medium' }], pricePerStart: 1.5,
 }))
 
-export type DryingPreviewState = 'index' | 'unknown' | 'method-conflict' | 'preference' | 'second-wash' | 'dryer' | 'check' | 'check-empty' | 'putaway' | 'home' | 'stain'
+export type DryingPreviewState = 'index' | 'empty' | 'putaway-one' | 'unknown' | 'method-conflict' | 'preference' | 'second-wash' | 'dryer' | 'check' | 'check-empty' | 'putaway' | 'home' | 'stain'
   | 'scale-plan' | 'scale-mixed' | 'scale-check' | 'scale-putaway'
   | 'wait' | 'wait-smell' | 'none-free' | 'early-check' | 'check-marks' | 'take-out-early' | 'check-missed'
-export const dryingPreviewStates: readonly DryingPreviewState[] = ['index', 'unknown', 'method-conflict', 'preference', 'second-wash', 'dryer', 'check', 'check-empty', 'putaway', 'home', 'stain',
+export const dryingPreviewStates: readonly DryingPreviewState[] = ['index', 'empty', 'putaway-one', 'unknown', 'method-conflict', 'preference', 'second-wash', 'dryer', 'check', 'check-empty', 'putaway', 'home', 'stain',
   'wait', 'wait-smell', 'none-free', 'early-check', 'check-marks', 'take-out-early', 'check-missed', 'scale-plan', 'scale-mixed', 'scale-check', 'scale-putaway']
 const atHome = (variant: DryingPreviewState) => variant === 'home' || variant === 'wait' || variant === 'wait-smell'
 const ids = (list: readonly Piece[], ...keys: string[]) => list.filter((piece) => keys.some((key) => piece.pieceId.startsWith(`preview-dry-${key}-`))).map((piece) => piece.pieceId)
@@ -123,7 +123,7 @@ export function DryingPreview({ variant = 'index', state, pieceCount = 1000, onB
     : variant === 'early-check' ? { kind: 'dryer', number: 1, heat: 'low', pieceIds: ids(selectedPieces, 'tee', 'towel'), dryerId: 'preview-dryer-4' }
     : variant === 'take-out-early' || variant === 'check-missed' ? { kind: 'check', runId: 'preview-run-4' }
     : variant === 'check' || variant === 'check-empty' || variant === 'scale-check' ? { kind: 'check', runId: 'preview-drying-run' }
-    : variant === 'putaway' || variant === 'scale-putaway' ? { kind: 'putaway' } : { kind: 'plan' }
+    : variant === 'putaway' || variant === 'putaway-one' || variant === 'scale-putaway' ? { kind: 'putaway' } : { kind: 'plan' }
   const nextRunId = () => `preview-drying-run-${++sequence.current}` as Id<'dryingRuns'>
   const calls: DryingCalls = {
     setPiece: { ...previewConvexCall('save the piece'), run: async (args) => {
@@ -219,6 +219,8 @@ const previewSteps: Partial<Record<DryingPreviewState, readonly PreviewStep[]>> 
 }
 
 function piecesFor(variant: DryingPreviewState, pieceCount: 100 | 500 | 1000): Piece[] {
+  if (variant === 'empty') return []
+  if (variant === 'putaway-one') return [{ ...pieces.find(piece => piece.kind === 'towel')!, name: 'Cream towel', status: 'dry', washerName: 'Washer', driedIn: 'Air dried' }]
   if (variant.startsWith('scale-')) return Array.from({ length: pieceCount }, (_, index) => ({
     ...pieces[0]!, pieceId: `scale-${index}` as Id<'dryingPieces'>, textileId: `scale-textile-${index}` as Id<'textiles'>,
     name: `Family item ${String(index).padStart(4, '0')}`, washerName: `Washer ${index % 5 + 1}`,
