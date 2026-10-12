@@ -12,7 +12,7 @@ export interface ScreenFacts {
   paths: { action?: string; to?: string; toTitle?: string; unmapped?: string; status: LinkStatus; counts: boolean }[]
   /** `stale` says why, when the code the evidence proves changed since it was captured. */
   evidence: (Pick<Evidence, 'id' | 'title' | 'outcome' | 'finding' | 'tier' | 'method' | 'capturedAt' | 'source'> & { stale?: string })[]
-  /** The gate's findings on this screen or on evidence about it: whether the baseline holds each, and whether it blocks the gate. */
+  /** The gate's findings on this screen, on evidence about it, or on open collaboration records about it: whether the baseline holds each, and whether it blocks the gate. */
   findings: (Finding & { baselined: boolean; blocks: boolean })[]
 }
 
@@ -20,7 +20,9 @@ export function screenFacts(graph: Graph, label: string, targetId: string, optio
   const target = graph.get(targetId)
   if (target?.kind !== 'target') throw new Error(`${targetId} is not a target in ${label}.`)
   const evidence = graph.ofKind('evidence').filter((item) => item.subjectIds.includes(targetId))
-  const subjects = new Set([targetId, ...evidence.map((item) => item.id)])
+  // Open collaboration records about this screen, such as a coverage gap, reach the viewer through the gate's finding on them.
+  const records = graph.ofKind('collaboration').filter((item) => item.status === 'open' && item.subjectIds.includes(targetId))
+  const subjects = new Set([targetId, ...evidence.map((item) => item.id), ...records.map((item) => item.id)])
   const held = new Set((options.baseline?.findings ?? []).filter((entry) => entry.graph === label).map((entry) => entry.key))
   const title = (id: string) => graph.get(id)?.title ?? id
   return {

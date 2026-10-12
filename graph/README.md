@@ -193,7 +193,7 @@ Two read-only queries over a graph (D31). Both are deterministic and print Markd
 
 ## One screen: `civic screen`
 
-`civic screen <target-id> [<file>...] [--json]` answers what the graphs know about one screen ([`src/screen.ts`](src/screen.ts)): the journeys that contain it, its paths on and whether they count, the evidence about it, and the gate's findings on it or its evidence, each marked as blocking, advisory or held by the baseline, and which evidence is stale. With no files it reads the graphs and baseline in `civic.check.json` and uses the first graph that has the screen. It is how a viewer reads the graph: the journey canvas's Contract panel shows it for the selected screen (decision 0004).
+`civic screen <target-id> [<file>...] [--json]` answers what the graphs know about one screen ([`src/screen.ts`](src/screen.ts)): the journeys that contain it, its paths on and whether they count, the evidence about it, and the gate's findings on it, its evidence or an open [collaboration record](#collaboration-records) about it (such as a coverage gap), each marked as blocking, advisory or held by the baseline, and which evidence is stale. With no files it reads the graphs and baseline in `civic.check.json` and uses the first graph that has the screen. It is how a viewer reads the graph: the journey canvas's Contract panel shows it for the selected screen (decision 0004).
 
 ## The gate: `civic check`
 
