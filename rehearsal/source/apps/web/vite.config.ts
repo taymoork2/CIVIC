@@ -13,7 +13,7 @@ const buildId = process.env.WASHCLOSET_BUILD_ID ?? new Date().toISOString()
 const review = process.env.WASHCLOSET_REVIEW === '1'
 
 export default defineConfig({
-  cacheDir: '.vite',
+  cacheDir: process.env.REHEARSAL_VITE_CACHE ?? '.vite',
   define: {
     // Versions the cache and push service worker together so each build installs as an update.
     __WASHCLOSET_BUILD__: JSON.stringify(buildId),

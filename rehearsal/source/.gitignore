@@ -17,3 +17,4 @@ apps/web/test-results/
 apps/web/playwright-report/
 # Impeccable design-skill working state
 .impeccable/
+.vite-runtime-*/

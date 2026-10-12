@@ -1,0 +1,4626 @@
+{
+  "rehearsal_head": "0bffbbcf2e38ca3ec7e17da3eb6496b6f04f348d",
+  "laundry_head": "b08480287831a8c6db38fbecee858cba32fd3a84",
+  "source_files": 924,
+  "files": [
+    {
+      "path": ".gitignore",
+      "origin": "current-rehearsal",
+      "input_sha256": "ae4ce1871e5915fdf7284b542d2b4a325a8a687aeae7a9b84876dc67123d52b6"
+    },
+    {
+      "path": "AGENTS.md",
+      "origin": "current-rehearsal",
+      "input_sha256": "b15950cc42e54ba2b2beb1c890112ae8eb4138bc7a5c28c0d067a3877b86da38"
+    },
+    {
+      "path": "apps/web/.gitignore",
+      "origin": "current-rehearsal",
+      "input_sha256": "c1be9a7b83075864153509fa626722510fd2507fe18e4548a4a89e11023048ea"
+    },
+    {
+      "path": "apps/web/DESIGN.md",
+      "origin": "current-rehearsal",
+      "input_sha256": "c626317a91c0ae10f3bfc002c21db39c4def7a3d9bb59f3a17f69ea11601a838"
+    },
+    {
+      "path": "apps/web/PRODUCT.md",
+      "origin": "current-rehearsal",
+      "input_sha256": "02c94745413eb4c7354d92d3b5920e9ee8282657dc3832eb6302e4c40e3e619d"
+    },
+    {
+      "path": "apps/web/components.json",
+      "origin": "current-rehearsal",
+      "input_sha256": "f38c815fd00a0dedb790dff1584eeadb681b6cf2d6cfb18f959d1c042b6215c6"
+    },
+    {
+      "path": "apps/web/convex.json",
+      "origin": "current-rehearsal",
+      "input_sha256": "44643295a1e89475978156f5b1d8e5868debf0f723633a5ec60fc136bbc5f24d"
+    },
+    {
+      "path": "apps/web/e2e/a8-preview.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "d688a6dba5841297a5b70b47a760f7619febab674f173537633630f703457a0f"
+    },
+    {
+      "path": "apps/web/e2e/account.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "e41e88ce750d108e17bda672a5955718ce86916e9f34a52e053ae509630854b0"
+    },
+    {
+      "path": "apps/web/e2e/app-header.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "a084c648d3d5381bb8bc170181b2eae888104b6fa608be66e925f2273ff1d12c"
+    },
+    {
+      "path": "apps/web/e2e/app-updates.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "5a4244cda5565cb0855858385e3c2e9d95962ca5a11a15f4446ec70ce56bb311"
+    },
+    {
+      "path": "apps/web/e2e/auth-motion.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "8282602fa35d74f64aba0166b65040b4b8f9bf857836c9d513a4612fb307a5e8"
+    },
+    {
+      "path": "apps/web/e2e/auth-recovery.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "923afb243b844962dbbe4780c0f446369327d397e6e5b9d3ba19aa0990e3c84e"
+    },
+    {
+      "path": "apps/web/e2e/bulk-colors-fabric.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "5ca9a213641cf36a3d8c9b4ca7d77a98030b70ffd67c09eed155c5d3424761de"
+    },
+    {
+      "path": "apps/web/e2e/care-grouping.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "facd480bcf28840468049cf48e2927678c5a0b869d599a3028a69441f96b44b3"
+    },
+    {
+      "path": "apps/web/e2e/care-instructions.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "e6144b58242c10bdcee066885ded50ca922a07117dd73f947b491589f1b2b4a8"
+    },
+    {
+      "path": "apps/web/e2e/care-polish.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "31f04757651e4a1ce4eebb41f24e4d3c5128d2f6224b996ace94808f2244245f"
+    },
+    {
+      "path": "apps/web/e2e/care-process.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "22aa39b0c3140ef74dc66438d722f08644483eafeddc5414ea5af8ba88b6799a"
+    },
+    {
+      "path": "apps/web/e2e/care-wash-duration.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "ef7df22e051d4ff70205554b708c8dabeae6be09b5fd7e440d4d33442bb3c3c0"
+    },
+    {
+      "path": "apps/web/e2e/catalog-directions.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "449af3b35cc818b046ac23c7fe7e3cece3fe308c4f37a0ccbc206879509aea85"
+    },
+    {
+      "path": "apps/web/e2e/catalog-identifier.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "0a1a289306797ba1bfb49d3b3ceff687ef80c478359d6559ea263b99220bbc61"
+    },
+    {
+      "path": "apps/web/e2e/catalog.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "6b86e92b4bb6dc83898f8b4e57cf79c35e0633d9975da2bba52f910a1abf3cf6"
+    },
+    {
+      "path": "apps/web/e2e/chemistry.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "2a5c38714e536d60238e2cf9f436841720eccd5ffc9ab44d4aca7e964698726f"
+    },
+    {
+      "path": "apps/web/e2e/color-shades.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "0599327093beab3831f9318cb8dae40dbfdddf4323f7a5aba573901e57975ae8"
+    },
+    {
+      "path": "apps/web/e2e/conditional-care.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "7fd9329eb128bcbdf6de9955232cbf546a9dbff081e5c41ef91cee1b5b9a9c6b"
+    },
+    {
+      "path": "apps/web/e2e/contextual-intake.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "754f18bb09bc55d565992bfb12570e209609555badf7fdd8842f6985e3b06cd3"
+    },
+    {
+      "path": "apps/web/e2e/day-plan.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "fec08d63f490194712697c9c0850d6a7efbea836349f1dd6a9c31e0d47d43508"
+    },
+    {
+      "path": "apps/web/e2e/dryer-busy.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "82ce4dd444705070c2cf331a49a83ff040d93ab3f04ad7e281e50d96463241a1"
+    },
+    {
+      "path": "apps/web/e2e/dryer-context.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "0736111c5cacaf59785a4d624a3c41aa8102c3f4d0f6965bf0ab3bd4a38d13ed"
+    },
+    {
+      "path": "apps/web/e2e/dryer-guidance.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "0bba7261dc19305efe2379b6a5f567ad1f5c901ca712a8ca0b362ce84365eb4d"
+    },
+    {
+      "path": "apps/web/e2e/drying-continuity.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "f0daf57aa9969e137aa27ea12f948a7c2265cd67bd79135067f4be48ddbb1436"
+    },
+    {
+      "path": "apps/web/e2e/drying-label-choices.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "b450ff53fe0fb767e00fae5baee41a4ea3459f6e0b80373beef8fef5217e0fb2"
+    },
+    {
+      "path": "apps/web/e2e/drying-preview.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "73b6a7d3365fb41d867621c38e09c2a4faa0a0812906ce43fcbae0d38014a6c6"
+    },
+    {
+      "path": "apps/web/e2e/dye-run-help.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "cfeea13b1b17ac720bd132d720659219c166c933c1b2fdc586b579c5b311be16"
+    },
+    {
+      "path": "apps/web/e2e/fabric-blends.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "cd33db769cf3cc0bd0a77aec7940a7053bedf040a791b80fb62897c4fc384d05"
+    },
+    {
+      "path": "apps/web/e2e/fabric-safety.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "18c1643cf064869cbc335ee0ec26702a5c9e28bec2fdc47606b9b84f75d65ed5"
+    },
+    {
+      "path": "apps/web/e2e/flows.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "e1eef2dfa2cd5eb4b9cc1fec0974aa443bfb5ef3b60b5a84c9466894d530a15e"
+    },
+    {
+      "path": "apps/web/e2e/focused-edits.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "4669aa97219bb16211fa655379e0419637a804e75b201d2e080c572c69c1e1ab"
+    },
+    {
+      "path": "apps/web/e2e/g2-smoke.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "5fca5dda9bfe3507c2d1da0d1a6b04be5863e2f896b72e678912c064d0dc7e09"
+    },
+    {
+      "path": "apps/web/e2e/garment-advice.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "bc1cf9e1c67d45528fa62430aae332e7ebe789415d41a7e224267e5a6cd11572"
+    },
+    {
+      "path": "apps/web/e2e/garment-details.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "b6b69a0d6859d2d07dbfd4fa9b11c4375721d6b51b3032f44784d830ccd25df6"
+    },
+    {
+      "path": "apps/web/e2e/garment-precautions.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "3bd72864794461f5cef98f638f7ecb0047046a2bf978f1b93698444956f8ef18"
+    },
+    {
+      "path": "apps/web/e2e/guidance.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "a9ce05b2ed4e75b84512a48febf5fe454a71117e57721ed96c14d8bf3c1d01b5"
+    },
+    {
+      "path": "apps/web/e2e/guided-intake.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "838305a3c1f7464ffcbd7aa1f13fb3d493097928b5991757f35d56471247092d"
+    },
+    {
+      "path": "apps/web/e2e/household-navigation.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "9d2c6ef40357b08d4ea5230319502c25c01d986ed144bcd0db685270d8a02cb7"
+    },
+    {
+      "path": "apps/web/e2e/ingredient-tags.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "0d016d550a858c4529378c81ba3fd9de62d1cb8ad2d6a28bc1b1d7786e5a31f1"
+    },
+    {
+      "path": "apps/web/e2e/inventory-records.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "1959e1a5538910773f6e89240a9f713772f11f44a68a443cfdd13e895024665e"
+    },
+    {
+      "path": "apps/web/e2e/item-routing.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "d6c2186f11db4c15afe868b11db15beb8903d41a7f9a1fabb7692f9f0c35ee0e"
+    },
+    {
+      "path": "apps/web/e2e/journey-report.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "f1dd50f209c7242daeecce74628e83a40dfd1fd17e7f72b905d64e5a76caa25c"
+    },
+    {
+      "path": "apps/web/e2e/laundry-interaction.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "04bacc49a1deb2301e1bfb6654a6c4bbebad8f14211c72545c1d8199d77d6f6d"
+    },
+    {
+      "path": "apps/web/e2e/like-colors-intake.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "56415d0e22c3ae26047727d717c36c356be88c882a734b70cca8aec56c4de1c7"
+    },
+    {
+      "path": "apps/web/e2e/machine-validation.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "322b5e2987d500306674f96c9a482c9431a34f7ea10c573d2b38bcc5cd550d36"
+    },
+    {
+      "path": "apps/web/e2e/material-care-intake.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "50dcb5f3cd239b1c65dc18a37343834b5f33d7743a73873ef6c6391b1ca6ed8c"
+    },
+    {
+      "path": "apps/web/e2e/mid-run-check.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "14c3e273f8390e42a253e67c6fc178b89daf9c92f2fd7ee671b0aef177ff7090"
+    },
+    {
+      "path": "apps/web/e2e/mvp.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "90a93afc9f239c5d0068996ddf8b1f3684d81eeb7f4a030621fc0df581bdc8b0"
+    },
+    {
+      "path": "apps/web/e2e/next-step.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "d7b0ce3bb73e618f874ccc425d23805b98058f09ff9323bf852dbde759096c7b"
+    },
+    {
+      "path": "apps/web/e2e/onboarding.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "087c1eae3b67575e93f35900e96bd4fc35f9d9751382c26aa420faadaa97f481"
+    },
+    {
+      "path": "apps/web/e2e/outcome-assessments.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "faeb26d5e76aa85732142e86423be819ee9ae83082721a7641d3358f901dcda1"
+    },
+    {
+      "path": "apps/web/e2e/owner-flow.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "e7273d214b9f35d14b972b97b8f34a5b0fe68df5b0a8f7fda3a67ed0609a6297"
+    },
+    {
+      "path": "apps/web/e2e/page-balance.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "f488f5078faf7ab961b5f126ac243a18ce4c1d2b13e66e62662f3c4de564012d"
+    },
+    {
+      "path": "apps/web/e2e/partial-mark.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "80ace18fce6129de435ecaff31180d6528b45c79621d82e07ffb23fe4bd2bc48"
+    },
+    {
+      "path": "apps/web/e2e/people-management.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "20ecf58c3e054bc324e68c7712db4f0133cfbbe250791333b1d46e52da2852f6"
+    },
+    {
+      "path": "apps/web/e2e/personal-adaptation.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "0da1ed28de0fd60bc121126eafdc55dcef1034d8745159604fc9e290ff1740d8"
+    },
+    {
+      "path": "apps/web/e2e/personal-routine.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "0cab4ee6410e2f8403fb240b3313628a90dd855d810b6b792dc466f6950d857d"
+    },
+    {
+      "path": "apps/web/e2e/photos.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "76fd9acbce0c1e63fd0699a0f299c7d759e5023cdf8c1208ac7f580d1ab6e3e8"
+    },
+    {
+      "path": "apps/web/e2e/polish.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "60be7c0da50bf9155a609871701d2caa02449c5cdcf260442de3e40e4a17f6ed"
+    },
+    {
+      "path": "apps/web/e2e/pre-owned-intake.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "32b91a29621d0ce4ec1b036444b56a03b54e778ea57562b0b62d1a8f1f94f62b"
+    },
+    {
+      "path": "apps/web/e2e/preparation.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "2926a2f129cf0b719fd2a744a597c79938b5b1df7e2fc7ab83ae9491761ba5ff"
+    },
+    {
+      "path": "apps/web/e2e/product-benefits.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "08c2f982c2427ad583f765b223dc86768e2a18cd39c28c6c01a0555ed587e4d8"
+    },
+    {
+      "path": "apps/web/e2e/product-load-checks.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "c0e02771255fd2ca699a3344b751e8279765aa74e2c9d6906d1e1e3d7332105d"
+    },
+    {
+      "path": "apps/web/e2e/product-record.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "201949cf7d1efbd8b36ed7fb57550edee3c792eb8a83947b05dc001b7b046c32"
+    },
+    {
+      "path": "apps/web/e2e/pwa.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "0e096208b1864b0a700782906ef46baf228237d12b4d27cb1b335e507526abb0"
+    },
+    {
+      "path": "apps/web/e2e/record-edit-header.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "b42020089cb1c2ddbb4380d875149888c0134599a89b06c8d58daefacd09bfff"
+    },
+    {
+      "path": "apps/web/e2e/record-editor-sections.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "f84991ddc15160a380ef99646307dca7deb7f2728e05e93469d8a42b06f216cd"
+    },
+    {
+      "path": "apps/web/e2e/record-rows.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "1e8bf771f3c7754ff7238125e0c3218009433c9caec8cf3dd38792fbd7963f7f"
+    },
+    {
+      "path": "apps/web/e2e/recovery.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "aa1724c75bae3e4da7f2453f7500327a026655de787178251901bae8a7c6293e"
+    },
+    {
+      "path": "apps/web/e2e/remaining-care.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "74e05cdc9cf173396fe36abb6c779ad912d24941424868391981da993288e61b"
+    },
+    {
+      "path": "apps/web/e2e/review-annotations.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "0c9513962f12ffba5c5faf9c71ef6d1504213fc5316d0709650faec9ba9a6c83"
+    },
+    {
+      "path": "apps/web/e2e/review-canvas.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "c187a57760aa1f66de9fdaae3bc2349388e575b23fc833ba752ade7e45144490"
+    },
+    {
+      "path": "apps/web/e2e/review-coverage.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "127d5e84744c2786fb2d710deb72fed063ea02cb0fb61decc0f72f84ecf739c4"
+    },
+    {
+      "path": "apps/web/e2e/review-discovery.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "5e916dcf2073cd5dd571ef3d277ee731842c24eabd56ceec61d380330c7447a0"
+    },
+    {
+      "path": "apps/web/e2e/review-family.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "85648cc37a441141b6542c2c89f12dce839bfa9b38068299dbceba571b1f2a7e"
+    },
+    {
+      "path": "apps/web/e2e/review-linked-source.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "d417a2bd547d1541140d582874bbc134711db3dcb250e4777ac06b8e589edb9c"
+    },
+    {
+      "path": "apps/web/e2e/review-project-picker.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "3056cd4b52768ec3dfc6434391f50bd245d13e885d1fc9101923f37a6c25b7a0"
+    },
+    {
+      "path": "apps/web/e2e/review-project.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "8cc3d6372afc1c9a7b4a3a48d3a757638423e8cb96b07a1ea544a1c700fb94fb"
+    },
+    {
+      "path": "apps/web/e2e/review-reminder.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "f1ce295b213a664177fdfdae2d7c860ba1c26b765b152316dda1407975736f61"
+    },
+    {
+      "path": "apps/web/e2e/review-route-states.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "065ccccf6618d59815ea4bc037f02bd38f3fbe6fdcce8266f0a5d999e88745b6"
+    },
+    {
+      "path": "apps/web/e2e/review-snapshots.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "ef14dadb1bf12196094f91797e0f0f5f196c48d0fe0205774b455d316496b26e"
+    },
+    {
+      "path": "apps/web/e2e/review-workspace.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "054f04cc48e41f511be37328661e27d791f860afdbb41c25f265a3cbc9704b8e"
+    },
+    {
+      "path": "apps/web/e2e/sanitizer.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "e6198dda175f4d954733f8f4db5d28d1cb8ddadc8f5e799ebe1aefe1863cc2fa"
+    },
+    {
+      "path": "apps/web/e2e/selection-controls.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "4877db0078e4ff6bea19e91cf3220dceca08b349e31c4d202fcd258532f1faf7"
+    },
+    {
+      "path": "apps/web/e2e/shared-start.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "ebddaf019312f6126aee16970d17fa8bda6cf21452d32349bc3106d7c9f6b6d8"
+    },
+    {
+      "path": "apps/web/e2e/stain-second-try.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "cffd00df5dc61ca739ee42866de6058dd582ae411bf130924288d25872dbb02f"
+    },
+    {
+      "path": "apps/web/e2e/unified-intake.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "7b2b916854dedfbccb2f27d0e775c1596684129e26ab5d1fa449ff07f7f038b6"
+    },
+    {
+      "path": "apps/web/e2e/water.spec.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "f8f5501f9f409c1f0a52b88b2e4d34c6225147583b64db5c6ccf293a8c0bf975"
+    },
+    {
+      "path": "apps/web/examples/discovery-app/README.md",
+      "origin": "current-rehearsal",
+      "input_sha256": "bc74d39f7b81d77267c58908164e011aebc0e011baadb253badca9937b1bde1a"
+    },
+    {
+      "path": "apps/web/examples/discovery-app/src/Account.jsx",
+      "origin": "current-rehearsal",
+      "input_sha256": "8327058b95509c3431632c8a7a2198ced60563932a4208e45105a8eda9b4bd88"
+    },
+    {
+      "path": "apps/web/examples/discovery-app/src/Counter.jsx",
+      "origin": "current-rehearsal",
+      "input_sha256": "bec9bb07ab2027aa84baabc914ee93c733dabd6aac65695a4623e6d6f6e77863"
+    },
+    {
+      "path": "apps/web/examples/discovery-app/src/archive.html",
+      "origin": "current-rehearsal",
+      "input_sha256": "0dd27bbeb0b6d6abd5a859bb0db6d1e761c2af5263d501101633ea77d23e4d1f"
+    },
+    {
+      "path": "apps/web/examples/discovery-app/src/draft.html",
+      "origin": "current-rehearsal",
+      "input_sha256": "67ba5adcf2ac21bb43fd5382958ac9712eb0bab36f53a0d8fb906f114c120f60"
+    },
+    {
+      "path": "apps/web/examples/discovery-app/src/index.html",
+      "origin": "current-rehearsal",
+      "input_sha256": "9ad9361bdd63e6d5a2c3c0417a02f8cb6fcae591e792a5e4e915502b44fa90e8"
+    },
+    {
+      "path": "apps/web/examples/discovery-app/src/saved.html",
+      "origin": "current-rehearsal",
+      "input_sha256": "5342aa4e2df2b83624f56cdc8ae189b27924a97e4ccf35bd9867e8dd76682d64"
+    },
+    {
+      "path": "apps/web/examples/discovery-app/src/style.css",
+      "origin": "current-rehearsal",
+      "input_sha256": "2cbd3c1fa42cc7c25f7c6f6e15d7ed246e6ded9e32d32d1bb684babfea761fce"
+    },
+    {
+      "path": "apps/web/examples/rehearsal-demo/rehearsal.coverage.json",
+      "origin": "current-rehearsal",
+      "input_sha256": "a7c4d4234f06d47396c3bf37c1df75335e73ac028ddd3c1e26d3544b9fa91f66"
+    },
+    {
+      "path": "apps/web/examples/rehearsal-demo/rehearsal.project.json",
+      "origin": "current-rehearsal",
+      "input_sha256": "342a477ca959e7dd1957df00bf08d67093fab0c258c3e65aea952a582dce5f93"
+    },
+    {
+      "path": "apps/web/examples/rehearsal-demo/rehearsal.scenarios.json",
+      "origin": "current-rehearsal",
+      "input_sha256": "6b042cb7ec9da8fcdc2784f7f0ad904b6016b34ca952e8b21cc58de5e8f78b02"
+    },
+    {
+      "path": "apps/web/examples/rehearsal-demo/src/rehearsal.js",
+      "origin": "current-rehearsal",
+      "input_sha256": "7101e5cb89f76a06ed7c4ca906559f0f207002c52c0e97db0e270a393c0487c2"
+    },
+    {
+      "path": "apps/web/examples/rehearsal-demo/src/screens.css",
+      "origin": "current-rehearsal",
+      "input_sha256": "8173ca70d3b25f71df51416c688366f9fc5aefd09d1cae64896b65396b4be58a"
+    },
+    {
+      "path": "apps/web/examples/rehearsal-demo/src/screens.js",
+      "origin": "current-rehearsal",
+      "input_sha256": "7795a16e189ee56b0ac435bf4045b5b59a7c9358e826f447d1dd00c0682328e9"
+    },
+    {
+      "path": "apps/web/package.json",
+      "origin": "current-rehearsal",
+      "input_sha256": "1ebf791caba22c584d1b6734da55bed48a2ff3a44b07fa7fdc6744927879432f"
+    },
+    {
+      "path": "apps/web/playwright.config.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "2e525b674ed114fd6f89c7fe207652b33bfba63fe0f789a9d411158b9b8b568f"
+    },
+    {
+      "path": "apps/web/public/design/care-complete.webp",
+      "origin": "released-laundry-source",
+      "input_sha256": "92f16000ad8d44e4f953ed734d45168131fda884d09edda26532120c125032e4"
+    },
+    {
+      "path": "apps/web/public/design/detergent-photo.webp",
+      "origin": "released-laundry-source",
+      "input_sha256": "12da334f149830d10de75b643d4d47bda1bf7cb2c9142b17d6dbce6da044f6c6"
+    },
+    {
+      "path": "apps/web/public/design/detergent-pods-photo.webp",
+      "origin": "released-laundry-source",
+      "input_sha256": "cc34e0cb5fc67ea58b719ef16eb04dc7f7b69249e00b8afd64e01db6af4cdad8"
+    },
+    {
+      "path": "apps/web/public/design/dispensing-ball-v2-photo.webp",
+      "origin": "released-laundry-source",
+      "input_sha256": "01dea553896993c1c70d34f67b347ecf2277c5117b482f049b4f730677594aa8"
+    },
+    {
+      "path": "apps/web/public/design/dryer-photo.webp",
+      "origin": "released-laundry-source",
+      "input_sha256": "d30cfb79d0304624472bc87e6f4351107790f1b7b08c2a43e54f7c0cab6e772a"
+    },
+    {
+      "path": "apps/web/public/design/empty-drum.webp",
+      "origin": "released-laundry-source",
+      "input_sha256": "c8134b5a1e6505934e55b8e281448b42451236aad123f90b94acc29d1d36c155"
+    },
+    {
+      "path": "apps/web/public/design/empty-hamper.webp",
+      "origin": "released-laundry-source",
+      "input_sha256": "c9a454199e4f6760b657fd398ce0e072d08e43004b70875e0338e5cfaa530d3d"
+    },
+    {
+      "path": "apps/web/public/design/folded-tees.png",
+      "origin": "released-laundry-source",
+      "input_sha256": "f706f70e2b6331db2b70be248c6ee899491d754ac91a6e98d45343017238da11"
+    },
+    {
+      "path": "apps/web/public/design/front-loader-photo.webp",
+      "origin": "released-laundry-source",
+      "input_sha256": "e69b43506db6ca129afaac1c191f0ab9c1475b99e61f895878ba8cf5e0bd3272"
+    },
+    {
+      "path": "apps/web/public/design/home-care-scene.webp",
+      "origin": "released-laundry-source",
+      "input_sha256": "3d14c0a6eb1659111f75c623ae06f4c1cb0618ec007e5463fb7e4dc46ca66503"
+    },
+    {
+      "path": "apps/web/public/design/ivory-tee.png",
+      "origin": "released-laundry-source",
+      "input_sha256": "945737d59cc9a98c3b5068fd3058e8681b41b14675a0a5e8bdede512ee1b7464"
+    },
+    {
+      "path": "apps/web/public/design/laundry-setup.webp",
+      "origin": "released-laundry-source",
+      "input_sha256": "e1bf6d109dfc1c9809f8abd4f1e13aae1d029ea22c8c3c0ef8e6f003a14a6776"
+    },
+    {
+      "path": "apps/web/public/design/powder-photo.webp",
+      "origin": "released-laundry-source",
+      "input_sha256": "cba676fd4958deab574b5a7aea13353649bb246c06f50905309a82eece9d2387"
+    },
+    {
+      "path": "apps/web/public/design/rinse-photo.webp",
+      "origin": "released-laundry-source",
+      "input_sha256": "eb4f61c3d0f086283b159183e2c6dab89ebb79865438d54c07c7543dedcd9bb4"
+    },
+    {
+      "path": "apps/web/public/design/sanitizer-photo.webp",
+      "origin": "released-laundry-source",
+      "input_sha256": "3b9c1fb5619e0382498777bf3873086c2f8f3511ebca7326c9490b754c86cead"
+    },
+    {
+      "path": "apps/web/public/design/top-loader-photo.webp",
+      "origin": "released-laundry-source",
+      "input_sha256": "5a5236f7de7785da157e11cf2f74bac89f4a415198866883a52ccebc221e1bc4"
+    },
+    {
+      "path": "apps/web/public/design/wool-balls-photo.webp",
+      "origin": "released-laundry-source",
+      "input_sha256": "ca30431fb4855fbf6c0409b4a98a6ad6c28fdf601d86a0f29bd011f9f4a156c7"
+    },
+    {
+      "path": "apps/web/public/first-wash-complete.webp",
+      "origin": "released-laundry-source",
+      "input_sha256": "92f16000ad8d44e4f953ed734d45168131fda884d09edda26532120c125032e4"
+    },
+    {
+      "path": "apps/web/public/icons/laundered-closet-192.png",
+      "origin": "released-laundry-source",
+      "input_sha256": "93ccee9bc8db00323f3e3ec32427cd6d17e93309327b8860ea2112c72ccc2227"
+    },
+    {
+      "path": "apps/web/public/icons/laundered-closet-512.png",
+      "origin": "released-laundry-source",
+      "input_sha256": "4f86e6f42f82cda2cc1bec5a0c512012a25e22b27ea54773e888ebedc565b416"
+    },
+    {
+      "path": "apps/web/public/icons/laundered-closet-apple-touch.png",
+      "origin": "released-laundry-source",
+      "input_sha256": "a0f93e6b93f60cd31f3ccbfd6be7a4036c69ef8c063fb4ecc777f804389eabe0"
+    },
+    {
+      "path": "apps/web/public/icons/laundered-closet-maskable-512.png",
+      "origin": "released-laundry-source",
+      "input_sha256": "4f86e6f42f82cda2cc1bec5a0c512012a25e22b27ea54773e888ebedc565b416"
+    },
+    {
+      "path": "apps/web/public/icons/laundered-closet.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "82357359753a02d2e64f17f955065fa805131fe4a7b055926e9d7cfa026e84da"
+    },
+    {
+      "path": "apps/web/public/laundry-invitation.png",
+      "origin": "released-laundry-source",
+      "input_sha256": "318730b5ce5847f4a799fd9655962a6e920a482cc293fe782afb76b114adf9b0"
+    },
+    {
+      "path": "apps/web/public/manifest.webmanifest",
+      "origin": "released-laundry-source",
+      "input_sha256": "ce55776b899861995e6a7fc575edf5e26dbd4db42e87eb6812a2f6a500324d22"
+    },
+    {
+      "path": "apps/web/public/service-worker.js",
+      "origin": "released-laundry-source",
+      "input_sha256": "55e1eee9505d218ab30c98efa79fea3449f971ca927810379e9caf03b85016f8"
+    },
+    {
+      "path": "apps/web/public/welcome-household.webp",
+      "origin": "released-laundry-source",
+      "input_sha256": "9f84ceb4edd3a3236a66899568f85513ea4ae89c21ff6a6c7a51804b5fdaea0a"
+    },
+    {
+      "path": "apps/web/public/welcome-join.webp",
+      "origin": "released-laundry-source",
+      "input_sha256": "a7a5bd0f12a7bc909296a9ff7efacb94d5f3e68386703002e4c00d460725c721"
+    },
+    {
+      "path": "apps/web/public/welcome-register.webp",
+      "origin": "released-laundry-source",
+      "input_sha256": "76ac29037d612c638785fdbd4fd378acfda023d2346dd6dc9d42160e78684164"
+    },
+    {
+      "path": "apps/web/public/welcome-setup.webp",
+      "origin": "released-laundry-source",
+      "input_sha256": "e1bf6d109dfc1c9809f8abd4f1e13aae1d029ea22c8c3c0ef8e6f003a14a6776"
+    },
+    {
+      "path": "apps/web/public/welcome-signin-warm.webp",
+      "origin": "released-laundry-source",
+      "input_sha256": "a5b7774ca4d4b4a93c8479d37fd426d99cda0e0252fbfb21ea494318bff24cec"
+    },
+    {
+      "path": "apps/web/public/welcome-welcome.webp",
+      "origin": "released-laundry-source",
+      "input_sha256": "02248039297b647007c10677829605cfdbfa62d3866432bd625272d30276d375"
+    },
+    {
+      "path": "apps/web/review-frame.html",
+      "origin": "current-rehearsal",
+      "input_sha256": "e6e25f1e1930b46b3f5066d39fc2bf59ff9082e0aa956a98f27d10edc32a30df"
+    },
+    {
+      "path": "apps/web/review.html",
+      "origin": "current-rehearsal",
+      "input_sha256": "630a8d2f33eed3986809d08663cb79580eeb144d12bd109962cc0af67dfe23b1"
+    },
+    {
+      "path": "apps/web/scripts/audit-experience.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "42c23594ff2c407291b1d627ed105cd1af31dd0f8772bc148713d350793bf870"
+    },
+    {
+      "path": "apps/web/scripts/build-icons.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "f6fa45b952a8b32df1af0bed4af9386eb715d0d54aeb945a7490ef4d9f09a6e6"
+    },
+    {
+      "path": "apps/web/scripts/catalog-extract.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "e731d7a3dbe42bd3053c689771aaeb91ad83b1abe4c1778396c621499b681526"
+    },
+    {
+      "path": "apps/web/scripts/catalog-ingest.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "eb1d85c7b3df8f5d35b64fbfce95b82f4465fecfaa7d3ccc732a3fd1ee4ff507"
+    },
+    {
+      "path": "apps/web/scripts/catalog-retrieve.check.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "d1ef55bb85a351f57c854ec14b59ef491cdb1c3aec67add91560fc33f67211fb"
+    },
+    {
+      "path": "apps/web/scripts/catalog-retrieve.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "ae50e8688cfc666e9685cc227d74f2a2de71f4436fd7f98b4e326cf356667d70"
+    },
+    {
+      "path": "apps/web/scripts/check-classes.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "a5579c53d65b5d355a677c0d687f579bf5f80def402ac84145d11b6230fa15bc"
+    },
+    {
+      "path": "apps/web/scripts/check-opendesign-reference.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "1ecd053163d2080436f2fc0bdc90135b97d5db7ecba7bc49fd092f0aaa63d499"
+    },
+    {
+      "path": "apps/web/scripts/class-collision.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "8a06980c62f2416103af863ddc864ddeba37aa64558f220453867e02106a22ae"
+    },
+    {
+      "path": "apps/web/scripts/configure-trial-push.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "1c3a9e450d55335c0b00d0891f2e8625cc48e9861b434980e67ce5991d290e81"
+    },
+    {
+      "path": "apps/web/scripts/dev-worktree.sh",
+      "origin": "current-rehearsal",
+      "input_sha256": "e7856fa95aecdd08e14fd26154c60c0cb0ad4f3c4d5a50b6acd08b34f3ce4fcd"
+    },
+    {
+      "path": "apps/web/scripts/e2e-quiet.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "bdf22046d0899a68932ef35e81b798ccc873ef31a334a603018e29d36064b34a"
+    },
+    {
+      "path": "apps/web/scripts/export-opendesign-reference.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "74099eb807b4d1a6af56f89783dad9c50670ecba11cd1d7453a16077cc8e0911"
+    },
+    {
+      "path": "apps/web/scripts/fixture-accounts.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "590693c1a13f289e1ee38e1b31f643b2c7977e6e52cae423e98e43ae0caf39d6"
+    },
+    {
+      "path": "apps/web/scripts/flow-test-account.check.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "b64424a3b71097ed0795675c001d7dec4353c09eae4bcdd1051ca72d299cd737"
+    },
+    {
+      "path": "apps/web/scripts/flow-test-account.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "4fc7eaa2fa75a8ff9374640e755546d7428674e4260c93e32d27b7d98bc67688"
+    },
+    {
+      "path": "apps/web/scripts/journey-report.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "8eb3b5acb321931cbc9b882e1a3ba21d544a5f3e6b29f743a2a7b815b653dd32"
+    },
+    {
+      "path": "apps/web/scripts/opendesign-onboarding-cases.json",
+      "origin": "current-rehearsal",
+      "input_sha256": "23e77591e5dcba44c157d9c41b3f543ded1aed5c82e0a80b298aaab14457d848"
+    },
+    {
+      "path": "apps/web/scripts/opendesign-reference-inputs.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "d4a04427e9636c7944d95a0ecf13ca190db9de7f59fb872c868e9a21550755e7"
+    },
+    {
+      "path": "apps/web/scripts/phone-runtime.py",
+      "origin": "current-rehearsal",
+      "input_sha256": "4e236d6098c9263b5de02c8e4b3fb73e6b8b85248d71ea11a2dc44fbc1b5e80b"
+    },
+    {
+      "path": "apps/web/scripts/review-agents.check.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "eaa997d8a30e746d58c202957af5177cbd2b104aafe0d946e163bfe1985ef3dc"
+    },
+    {
+      "path": "apps/web/scripts/review-agents.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "e7f14072f349dfc35e6fd0a4a5701cd9b3eb139c2fb4064de34578bc893a0c63"
+    },
+    {
+      "path": "apps/web/scripts/review-application.check.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "199f50d7a6cc3a128a1138b673df474631da6213719628ef3c93d95b306b956b"
+    },
+    {
+      "path": "apps/web/scripts/review-application.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "e5dd1a28aa87796e045b725a2df7d2a20a799c1e5919574c94758317408acd31"
+    },
+    {
+      "path": "apps/web/scripts/review-coverage.check.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "dbbfc4843ca96b339c1ddb19bf28872348fa3517115e0c834dd839e4b4d76491"
+    },
+    {
+      "path": "apps/web/scripts/review-coverage.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "4e1cf59cd9393febe8a7e6a6da815ff70bb02c5cb335d8f5797031c2ce809b02"
+    },
+    {
+      "path": "apps/web/scripts/review-discovery.check.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "20f62d90c25d282012f155ec810577b4307c6219f33cc7d60f980af2f47aa222"
+    },
+    {
+      "path": "apps/web/scripts/review-discovery.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "4b910fb991b8b991e3a07ad801c07a06a45419aaf4b704524721707b624def86"
+    },
+    {
+      "path": "apps/web/scripts/review-fixture-hashes.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "f0f564df00c896bcf5c3a972ee5e46df56d94201a0a963701d8e484041c0ec62"
+    },
+    {
+      "path": "apps/web/scripts/review-inventory.check.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "49caad265225e12671d5c1962b3f3b256f394ef25d6c8924480945a7062b101d"
+    },
+    {
+      "path": "apps/web/scripts/review-inventory.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "e692c20e444e1fbfda6926d6429566680a21c6aec238421b68ebe5d0b74901cd"
+    },
+    {
+      "path": "apps/web/scripts/review-laundry-inventory.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "5d1300bb10327d5e4b005b2b69842f6dc81b8f9059bdc149ce18792504c2fa2c"
+    },
+    {
+      "path": "apps/web/scripts/review-laundry.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "1902f0d21b2ef5d10f3a81fa3455f614cffff897f965e0ea4b837270f2186d19"
+    },
+    {
+      "path": "apps/web/scripts/review-plugin.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "97b2e5b72eb416efeea3354875e77ba3936c833d293f0238240e9e0de47e1d87"
+    },
+    {
+      "path": "apps/web/scripts/review-project.check.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "b44302fce24789cae467fdbeb471af2c2b1532d3599964be520e9b7cb7dc4391"
+    },
+    {
+      "path": "apps/web/scripts/review-project.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "f66b147959e166a01f395a6f97122cfdd5ec85245843f3ce031b93b3baa71a56"
+    },
+    {
+      "path": "apps/web/scripts/review-projects.check.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "0c5c10f3a13ebd35815cb44853af1f9ade42c842d6815d4859699b1f3afe1f93"
+    },
+    {
+      "path": "apps/web/scripts/review-projects.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "48c5f4fa3e345b717fc724e43011b6a7ebad44b61f24e76f622fb2c9b03db95f"
+    },
+    {
+      "path": "apps/web/scripts/review-server.check.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "adfdb82a4d52ff02e53bce50ac03e1882590b768edb23575ad228bd70beadbcb"
+    },
+    {
+      "path": "apps/web/scripts/review-server.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "b97f2981aa066255061cdedc68a92453c23c6f1768c6b1f14e3d62760d229ee1"
+    },
+    {
+      "path": "apps/web/scripts/serve-local.sh",
+      "origin": "current-rehearsal",
+      "input_sha256": "c32a365830a0b00cdb10165b813c1355a3e362916be3a350def2389c9e2970c6"
+    },
+    {
+      "path": "apps/web/scripts/trial-recovery-access.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "0679b5021dc159d12a60b65ad1b6a0df9f0dbd3a515ee75159115dc774b59a3e"
+    },
+    {
+      "path": "apps/web/scripts/trial-recovery.py",
+      "origin": "current-rehearsal",
+      "input_sha256": "2d99a1588321478dde1003c1269673caddc157e6bf31c46d41e1901f83400116"
+    },
+    {
+      "path": "apps/web/scripts/trial-recovery.test.py",
+      "origin": "current-rehearsal",
+      "input_sha256": "246c1f287e37709dac82df721b8aabddd8f7dff14b039b03722968d8a2b03c42"
+    },
+    {
+      "path": "apps/web/scripts/trial-worktree.sh",
+      "origin": "current-rehearsal",
+      "input_sha256": "86d1d7e9a2a1783096a93d9b80ee9baf8b52597a4dd8285e5d6034257ce6be22"
+    },
+    {
+      "path": "apps/web/scripts/verify-flow-account.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "dee47bd9718caf4de4253891539de6726661c01400e6c36abdb797df7ac33b9f"
+    },
+    {
+      "path": "apps/web/src/account/account-invite.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "352ae3e9bf13657566c426d3aa5fa1936709082c273d0fc7d735c2acd39410ac"
+    },
+    {
+      "path": "apps/web/src/account/account-page.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "f9ca44cdcccdc9c0337dba0cf731227013a09f1c15263375888e337943337f74"
+    },
+    {
+      "path": "apps/web/src/account/account-settings.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "21972ae2e6a885b3d1a86ba69786b724584bc0208d2d4d4caae7eac1a505f11f"
+    },
+    {
+      "path": "apps/web/src/account/account.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "3e31e49246979a67045c6d043b8100efb2a502850744df1d1bb75599a926b343"
+    },
+    {
+      "path": "apps/web/src/account/auth-pages.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "5eb22b7f226b6d6601dcd765c674d23888e07c2ba437694e705fc08a70c18db8"
+    },
+    {
+      "path": "apps/web/src/account/auth-pages.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "4f176a85fff3adc31d0cdd160ae312c4de7fa13a232b270585da7c7468e641d3"
+    },
+    {
+      "path": "apps/web/src/account/first-run.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "22a3a322ff5628d87b3d3924d67b3e6a17f85d4114175a116a98c9a909c89e91"
+    },
+    {
+      "path": "apps/web/src/account/first-run.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "44b2fa36166e8d1850c8c4de4c94c0316a2b303dc6b37e554d45906f63caadea"
+    },
+    {
+      "path": "apps/web/src/account/join-flow.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "edc4614ab3ed1c2df61115fa9ef98419a2c3edbe5b83ea57257576e191e11427"
+    },
+    {
+      "path": "apps/web/src/account/me-settings.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "73119438f4ac745e5daa3c437d22991ba24de701c8633e5a5b57ce768e77cde2"
+    },
+    {
+      "path": "apps/web/src/account/onboarding-screens.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "a8fa17f8afd198e7d00465cb8f1037a539b0e7daf1476e43f5d85a58ceeb04f5"
+    },
+    {
+      "path": "apps/web/src/account/onboarding-state.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "be29d8053db9485569d5399bbceab265fc30c9543e3de7a5b15591804fa9aecb"
+    },
+    {
+      "path": "apps/web/src/account/onboarding-state.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "22aae16002360379684f8d0607c83e7328cd388b10b7a438e631194cbfe0f111"
+    },
+    {
+      "path": "apps/web/src/account/push-settings.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "b749ed7d1dabc72fdd44797d7bd0fda9d29cd0efa299853e79318f340ead00c9"
+    },
+    {
+      "path": "apps/web/src/account/push-settings.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "bf7c076c9b81c4e9bb68c9ba8db7c6b98243381c1575c5c6c6b7a966454f5194"
+    },
+    {
+      "path": "apps/web/src/account/safe-redirect.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "605c59079c0d3678a1975b0c653c4db0371d7ebe0fe928a35a4d2e04cfea60e2"
+    },
+    {
+      "path": "apps/web/src/api.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "125c70691b03819c390a0086f61f624a1ec8421eff0a4ec66623c8f8327d4296"
+    },
+    {
+      "path": "apps/web/src/app-updates.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "3d614225065683cd3f8d4f72175e2da9950ed57ab2482ea8d745b78219a9760d"
+    },
+    {
+      "path": "apps/web/src/app-updates.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "19140941efb0393e42fe5659b37ad89d6f29a01282d9d5ba7b7527ecbbba5448"
+    },
+    {
+      "path": "apps/web/src/app.css",
+      "origin": "released-laundry-source",
+      "input_sha256": "ad658c014a29533fb5fe0e2aad8c306609aef7c6ff3401ab1808df1aac945d78"
+    },
+    {
+      "path": "apps/web/src/auth-client.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "fe1682d1b1f1fc740e33a2906558a4f7f86c01b2f7db35a0fbc4816b44b3b586"
+    },
+    {
+      "path": "apps/web/src/client-providers.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "2b3af874d11fe883584823e05a076516cfbbf36b4f423328b2ce963ec8e063d0"
+    },
+    {
+      "path": "apps/web/src/client-providers.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "88296bb1c6af30873e6ccfa7b8f7bc36e2a14ac33d2739e94a81f68f854670ac"
+    },
+    {
+      "path": "apps/web/src/closet/add-clothes.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "e289120e5f0f570def12374c901c16d63485b112a7ae20adc0958da5e21f700f"
+    },
+    {
+      "path": "apps/web/src/closet/add-clothes.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "99610dd017de18af222b64514bc5f8c131a2d07512cf1c3a1dd10b09fe62d3d9"
+    },
+    {
+      "path": "apps/web/src/closet/bulk-sheet.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "bb41ba22b7e8782033a4e8c7275854258a2b00914d1db3449af68bece9a6e16a"
+    },
+    {
+      "path": "apps/web/src/closet/care-instructions.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "d0f895fb58e2b3d580dfd770c06cdb3e1445b92edac7c047290570af1be899b6"
+    },
+    {
+      "path": "apps/web/src/closet/care-instructions.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "862748dc3d2fb65cd7bd8db634a756ed410df0e20d0ad9f0a820ef45c3260a38"
+    },
+    {
+      "path": "apps/web/src/closet/care-photos.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "cf3157137ba9a42512b616ababc00688f794fdb58d04677de179ac58adf42af3"
+    },
+    {
+      "path": "apps/web/src/closet/care-photos.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "c9ee57c7665d76982f38b42e06dc81ca42877eb767ad79a9ff54f90427862fa7"
+    },
+    {
+      "path": "apps/web/src/closet/care-symbols.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "e0ace895e748084ee32755ff35a4454a874f821397a52132969c4105809e6e34"
+    },
+    {
+      "path": "apps/web/src/closet/care-symbols.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "79ff63e1015cc598b9a094be2bc50f9f3d712ec00deafd523404fee8ef32840c"
+    },
+    {
+      "path": "apps/web/src/closet/closet-glance.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "2bd9a4b75e942acd528b0739aa380c0cee1fefc005e6d84ad18bab799797cbb2"
+    },
+    {
+      "path": "apps/web/src/closet/closet-groups.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "5bfc9262eae3dd75d7d3e90a8ad74374916b59802c0e849dde929e3f46453055"
+    },
+    {
+      "path": "apps/web/src/closet/closet-groups.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "2a18d2dc2c28625655e08f9165fe1b8fecda87b8c12823fdc46998f28d7a3560"
+    },
+    {
+      "path": "apps/web/src/closet/closet-parts.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "f99c204af02eb4066a730afbf43437084061fd70601e2c04ec18fbdf68e3ffc0"
+    },
+    {
+      "path": "apps/web/src/closet/closet-view.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "ee07be83585a88752a654eb974ddc493560da652b426c91cd73c31d16a21996f"
+    },
+    {
+      "path": "apps/web/src/closet/closet-view.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "313630f5ce15b3e8103f92bf45fe269b751b7cf69da93bb34371f8c273ebe746"
+    },
+    {
+      "path": "apps/web/src/closet/clothing-tags.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "a8e710132aa35bb89171b91827669c5e5fffc8ec621b28ce8c1dfbd469b2d5b5"
+    },
+    {
+      "path": "apps/web/src/closet/clothing-tags.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "108ecac1de34a3e50ea987640ec16fb854a18b096788d4fa6c774b1223d2d4ec"
+    },
+    {
+      "path": "apps/web/src/closet/daily-outfit.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "a782db038869be69a090c741bd945fdb4c10b587efd3e393fc7b51a3e1f1c309"
+    },
+    {
+      "path": "apps/web/src/closet/daily-outfit.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "8330b503f725b4c0b18e74cd1648747b4ba67a56f0633f60c2effad69b1e2fca"
+    },
+    {
+      "path": "apps/web/src/closet/fabric.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "dbe5c05a8f9708b4ab8fe370185b4b323e2631a785b632109a3b40b0178b6fe7"
+    },
+    {
+      "path": "apps/web/src/closet/fabric.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "84c38c5cc1089a83590d8437bd644dea5a5921e8b81f54a39fb2dccacd8ec349"
+    },
+    {
+      "path": "apps/web/src/closet/flag-sheet.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "18cda5a50786d7e60812b27679e29047d3576ed1b384bc382a6ae9e333b75c9c"
+    },
+    {
+      "path": "apps/web/src/closet/flag-sheet.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "2d80884c7c75e26ef8bc386a9ddfc6905fcb1e77ae395568001441e067a42f58"
+    },
+    {
+      "path": "apps/web/src/closet/garment-advice.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "80fbd5b573a677066201b857473f451b883ed0104258b7a2ebdebaf2daa54009"
+    },
+    {
+      "path": "apps/web/src/closet/garment-advice.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "f093146df31519bc62ea78f3b6e926dd65fcd18e01bf9033ac1d182302ea7a95"
+    },
+    {
+      "path": "apps/web/src/closet/garment-articles.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "016704fdb37dbfa22afa8162fbc675987f4a7786cd74096d4cf66d0e03cf3dc9"
+    },
+    {
+      "path": "apps/web/src/closet/garment-articles.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "d80b689a75cc8dcd630ba3834433dd2ba0ec23eec1975bd3d02e0fd313f1ac2f"
+    },
+    {
+      "path": "apps/web/src/closet/garment-care.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "aab7de2599e4cae7fbe87f98d1c62b287324cee5990c867449850e6e5f62134e"
+    },
+    {
+      "path": "apps/web/src/closet/garment-care.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "9509dd8ca9c4caa8400d27747a842260833327df106228ba26240ca196636491"
+    },
+    {
+      "path": "apps/web/src/closet/garment-groups.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "5f2f89fa23935f899479e18b24ee7a5debcb09be23e48814736017a7d7876c8d"
+    },
+    {
+      "path": "apps/web/src/closet/garment-groups.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "c834514b8cb05a66be42a9f20c633c30055366de3a8393c3ee7a551bcdbf518e"
+    },
+    {
+      "path": "apps/web/src/closet/garment-privacy.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "04a86da3c38b80e56f3365ab1bfb635e33819e66e253f451311616e147bfbae1"
+    },
+    {
+      "path": "apps/web/src/closet/garment-privacy.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "db170537b52d3e739796a4dd4121939cd8f550f5b27d01808a4dc94d14afcd0d"
+    },
+    {
+      "path": "apps/web/src/closet/garment-record.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "14722638483bb7b1ec729c8d662f6b3ccf44428ddb3bac0f1856d3eac892dbf8"
+    },
+    {
+      "path": "apps/web/src/closet/garment-record.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "62be49633737dbc3142846d6a091aedae28b55b56af2ff9a4ccc209a05d77271"
+    },
+    {
+      "path": "apps/web/src/closet/garment-sheet.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "1fb38c209ed54e1d16389b06d2071ab9cf0ed8641edb679d75632c1ec333369c"
+    },
+    {
+      "path": "apps/web/src/closet/garment-sheet.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "92bcc3b206e16735894be53316c007fb3490aaaba82805cd67c28e83f63911ba"
+    },
+    {
+      "path": "apps/web/src/closet/garment-type-picker.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "88ab5c6b7dc8b904dcc5d3771f23a75ee57f767afbc49b337e6aa186004b168a"
+    },
+    {
+      "path": "apps/web/src/closet/paged-inventory.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "1de5c23d703e66c110f41890df7e6873da67aaaed5cb4b946080ea9f4556b260"
+    },
+    {
+      "path": "apps/web/src/closet/personal-product-guidance.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "bb72f5c412ca0782684ddb5373f4e5362d4cfb551946eb9e5046a4688daf20b4"
+    },
+    {
+      "path": "apps/web/src/closet/personal-product-guidance.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "96b8870ca8e271887dff0a990e4326912985fded7621909bc21a6b5bff8e75dc"
+    },
+    {
+      "path": "apps/web/src/closet/personal-routine.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "3e3cd152f275f273740ed838d9a807116ff22dbb7aaa749712d78dfbc36bc7f0"
+    },
+    {
+      "path": "apps/web/src/closet/personal-routine.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "04c1012727180232eca2ddc61bb67ae37cb5c45eda20fe982be684b1a7b9a2ff"
+    },
+    {
+      "path": "apps/web/src/closet/stain-inspection.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "9df7eb9937ee91dd13e6b87b7a458b04d8fa7396a43114f3d2333793353c79cb"
+    },
+    {
+      "path": "apps/web/src/closet/stain-inspection.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "080b49a4ac559c59d1c72759f46a36922fd1bf07d7342684e35371877d3a7814"
+    },
+    {
+      "path": "apps/web/src/closet/tag-rows.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "b686050cb81097f2379e1e2945c4a14ca8ff7e881226edfa91173134b0ecfe70"
+    },
+    {
+      "path": "apps/web/src/closet/tags-sheet.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "afa94660e6bcdfc5388fef4793962e6e58417120c61827d741299d50b6e83b84"
+    },
+    {
+      "path": "apps/web/src/closet/trash-undo.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "a9db65f9e218f4dee8909c4cf76342177edef39694546498102d78acda7f7cdd"
+    },
+    {
+      "path": "apps/web/src/closet/washed-sheet.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "bcd94afce2c089b35781a7794a4d448f9b6f915bfb4ffc88b4712f462cac43e0"
+    },
+    {
+      "path": "apps/web/src/components/ui/.gitkeep",
+      "origin": "released-laundry-source",
+      "input_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "apps/web/src/components/ui/alert.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "80773a702750100e34dd0b957d04aedead32988aef16b1d67c2fa47f68d79837"
+    },
+    {
+      "path": "apps/web/src/components/ui/badge.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "82d40587aa91582233019593428ddb99c7f6724e8c42779641f7b0728e577914"
+    },
+    {
+      "path": "apps/web/src/components/ui/button.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "30ed064fbfebd7451109a3ad8bd21f2ecf2880a69ba8abcc91870244da8ed16d"
+    },
+    {
+      "path": "apps/web/src/components/ui/checkbox.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "c84dec4c60247ec02ee5efc476a754b8733862e5071e8488526f20b7edc9f916"
+    },
+    {
+      "path": "apps/web/src/components/ui/collapsible.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "37658982b690655aec6228f17bbf391b8b09b68f241bf95be22b4ef1f3963ee8"
+    },
+    {
+      "path": "apps/web/src/components/ui/empty.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "333d1ab1ae31d939354263d38661fa70565992f2d48f8a3d9688afecb48a1db0"
+    },
+    {
+      "path": "apps/web/src/components/ui/field.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "16909349ae028496407c1eddf8df87301c09ac8432e9ebbd98525362e192c91e"
+    },
+    {
+      "path": "apps/web/src/components/ui/input.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "1c24e766bfe7b33456b009b814ec1fee56ca551c17041b722064afa686288ed3"
+    },
+    {
+      "path": "apps/web/src/components/ui/item.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "63d3c9b2f535514c20240c32b1ea6475f84b5716d5158dcd6f31c00e220c72e3"
+    },
+    {
+      "path": "apps/web/src/components/ui/label.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "1434ac66e78c91c3452dd293f61c98d67e63cc2af09d8dadc0064f9f12f7349d"
+    },
+    {
+      "path": "apps/web/src/components/ui/native-select.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "a994360fa65607b9c13b8e0bfa1eab88a0821d5eff960b2dd560e70ecb85ccf6"
+    },
+    {
+      "path": "apps/web/src/components/ui/popover.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "684abe3322d08b986d335bbbac69d9106879a6ebe8a1769577519a8817f19b67"
+    },
+    {
+      "path": "apps/web/src/components/ui/radio-group.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "6ebc8157c868573ab3a1539594bfa84dea550350a4d679afc7a485d66a1788b3"
+    },
+    {
+      "path": "apps/web/src/components/ui/separator.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "3c0c7bf0315f5d25dca3b908d7a03a146777a89eb37070e31eb2c62dc6370619"
+    },
+    {
+      "path": "apps/web/src/components/ui/sheet.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "4e5a304cb9c33cb28734f73895dcc5ac312554a6199f2ed79979c36930de2fdb"
+    },
+    {
+      "path": "apps/web/src/components/ui/skeleton.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "f3b3faa09087aa32fe8680de0244fb4faf060e1c0547e8806429679332c83fc5"
+    },
+    {
+      "path": "apps/web/src/components/ui/tabs.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "c0b2ec194282ce1dbea6ae5de088b4b715cadc5b35e105592f5a4b8a481062ef"
+    },
+    {
+      "path": "apps/web/src/components/ui/textarea.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "3563d6e3501781f81390447f16ac7b266601e64b233d30d609b9103ebbfd9913"
+    },
+    {
+      "path": "apps/web/src/components/ui/toggle-group.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "78199b8756e4f67a2d7eb4902ed8e2cab510c7ed02fbc1f1586a040a9264072c"
+    },
+    {
+      "path": "apps/web/src/components/ui/toggle.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "079c963ed4aec83b798de45db1829a260b8dd3f3ebc91da2a7fee7fefc637afd"
+    },
+    {
+      "path": "apps/web/src/connectivity.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "e60d215d8d087249f376a22e77fd633d7220b7297869c2a933802103039487b2"
+    },
+    {
+      "path": "apps/web/src/convex-site.server.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "98fe066d774145848c5acb52ac7ef8295b9e7a3f0c159404c5b4299583763496"
+    },
+    {
+      "path": "apps/web/src/convex-url.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "bc503c8e56ddfcad3845ddb5c038ffb735dd9a7bf466fe6b7010dde585dd8b35"
+    },
+    {
+      "path": "apps/web/src/convex-url.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "e859aa3a008bdf47c606f1e3bb97de490365dd6e8c488d1148297724a58ebddb"
+    },
+    {
+      "path": "apps/web/src/copy-account.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "300072cc675906fa67391c02856d6439d8c46114055b5759931e412fb0d63154"
+    },
+    {
+      "path": "apps/web/src/copy-closet.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "63eaeb06dfb6159974fb6493086e3e89ff70601f8fcbd0fa4fb46c325a501c02"
+    },
+    {
+      "path": "apps/web/src/copy-detergent.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "a751d17c2a6ef8869d17f8fa1bc2d7b7ab6c4722f057e439190c06a33eab64e3"
+    },
+    {
+      "path": "apps/web/src/copy-drawer.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "d436e387e5a09a02c19bde1fc95b78ff29016534a09cd375f472e5122821dc36"
+    },
+    {
+      "path": "apps/web/src/copy-drying.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "967389c3b347bca13aba62cbba7943835b27383518ff53569ca0667f3c5a7710"
+    },
+    {
+      "path": "apps/web/src/copy-feedback.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "3b0882c0e5fa79dffc7d142fb77eeef4fc84bfb42ab3d702d0c26f28148d7d8f"
+    },
+    {
+      "path": "apps/web/src/copy-household.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "3ff07f6fda1007a9d3462220927d4a246c48753e7c19581371973e2f7aa93625"
+    },
+    {
+      "path": "apps/web/src/copy-laundry.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "e3d5330493b84aca391f2035ca714bb131c1baf3d6681f4902fc53655b6c72f1"
+    },
+    {
+      "path": "apps/web/src/copy-load.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "3d65c9972994a7634aa564fd6785e9d18be962ef0ec0d2019fca66187244f39b"
+    },
+    {
+      "path": "apps/web/src/copy-me.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "2f1785b465a394fd648e3fa8cc30f81f8eafc8a575c9e8d6028c6695b6ed199c"
+    },
+    {
+      "path": "apps/web/src/copy-question.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "a0b8c2a62951005f98e33352e06f70dd4c878a12e79ec37bc1bc7d759210892a"
+    },
+    {
+      "path": "apps/web/src/copy-run.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "3aa4cba4812870709e113b2b1ebfe5626c81bc09026a87db4bb378578a2615eb"
+    },
+    {
+      "path": "apps/web/src/copy-setup.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "5e49f6cca5328fd0b690d02a1e8dc5de88a6d297f777b0d6bba18ad95234c10e"
+    },
+    {
+      "path": "apps/web/src/copy-trial.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "2b4cfc56b23f73ee86835a798bb4ed51bb500be3c9580d66a032a74fb99b50e8"
+    },
+    {
+      "path": "apps/web/src/copy.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "4e22087008274c52191ffdd1a9e73d30fa264557a69a95cf9d086d5737b1a714"
+    },
+    {
+      "path": "apps/web/src/copy.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "a41ca0e8eabc216c434459b398a40f07bad4090d8e58723f18404c4c6fabee3d"
+    },
+    {
+      "path": "apps/web/src/copy/account.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "a806ca515be71121073cab124c15df75d362f26030600f67b6dfa4fe8e6a6566"
+    },
+    {
+      "path": "apps/web/src/copy/closet.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "531ac135ebb820ff1a1381c6e8400a2caf1bd356e4b93099e2f16506584b345e"
+    },
+    {
+      "path": "apps/web/src/copy/detergent.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "52eef147d95a6ab7522226da651f3817c18ec27c63b04660f5c2e235c60f19cb"
+    },
+    {
+      "path": "apps/web/src/copy/drawer.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "57ae914123069deeaad9e64e1e96f172f4942904672a39f5ef515ab35665aca5"
+    },
+    {
+      "path": "apps/web/src/copy/drying.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "45e7b9efd2df373c9f9ae40bd40ef3b0b009dfa48da5b4e3676b51cee66e40d2"
+    },
+    {
+      "path": "apps/web/src/copy/feedback.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "8e7690c1dc1316a141ae7b95f95781358b7b8a3902916d35f989f8a2deed14a2"
+    },
+    {
+      "path": "apps/web/src/copy/household.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "f3db5bcd118bd614bdfc695de99d18fc1028b0a32da49748bedba4e1d4c4b7be"
+    },
+    {
+      "path": "apps/web/src/copy/laundry.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "7556cee2d4fd18ee654995df166a3055407a2002ecc139f8815aaff4c329b551"
+    },
+    {
+      "path": "apps/web/src/copy/load.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "b70ae4e3e06e6a9a88ff5c27fbc8e131e119d003a105b4c95075a0c44dbbe4d3"
+    },
+    {
+      "path": "apps/web/src/copy/me.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "acc7299385c9c2fb2b4e181b149621ebe292c12ccad82bebf18e30854dbe88e5"
+    },
+    {
+      "path": "apps/web/src/copy/question.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "92f362474dacb3098c76b2bb64ae03506854245c364a85611852c5b992c0d296"
+    },
+    {
+      "path": "apps/web/src/copy/run.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "6e32944fdd02e9271c1899bcd1acc4e736f243da96eff37190f70164be7282b4"
+    },
+    {
+      "path": "apps/web/src/copy/setup.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "5661cb3dc2e840d5cac0d254eea319bfb99b171c9b37ea4fbd807574ebc42929"
+    },
+    {
+      "path": "apps/web/src/copy/shared.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "22e02c9d47236ea6d79daed019491eb7955d1b89cb04d3dc9c1d450467b150ad"
+    },
+    {
+      "path": "apps/web/src/copy/trial.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "f511109654f8e74108a5150d173b5d730a7465996859679cd48d4205d3f126a3"
+    },
+    {
+      "path": "apps/web/src/dev/closet-preview.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "c53f2505b1296acc1c855efd33682517fcc3b4e811029d06b4222c16d7ce9cff"
+    },
+    {
+      "path": "apps/web/src/dev/design-preview.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "9c9734137d8e5bdd97f5741b8028fb4ed595bbf569da823ec56b209128fde478"
+    },
+    {
+      "path": "apps/web/src/dev/drying-preview.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "ffeffca21a3565ac76f5b01522efc5f3635c768d764e3d41753850adf29ac035"
+    },
+    {
+      "path": "apps/web/src/dev/feedback-sheet.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "a86c6176ef2ac635a9063e7846e9f177a472d968075540d33a516ee8bbc4a822"
+    },
+    {
+      "path": "apps/web/src/dev/fixture-preview.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "7f7809d26321c5ea771458bc9c9c2f6cab40777b0cdcfa7e8955c41b8e7f645e"
+    },
+    {
+      "path": "apps/web/src/dev/home-preview.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "fd2b6a9e6ec57f07d829e0543daeb73623a1fd21c262e8d54d8b2586c427dd48"
+    },
+    {
+      "path": "apps/web/src/dev/household-preview.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "69c953048941b88c0e3d4e253d3c43647af0ed150a371921a462bc250587839b"
+    },
+    {
+      "path": "apps/web/src/dev/laundry-day-preview.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "f72340ba355448c2cc53057e5d528bb3894ec1b90a4ab83508ef2a2a36975d0e"
+    },
+    {
+      "path": "apps/web/src/dev/laundry-preview.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "2c6cc22657c91eb05a95cfcc2b949d18709a0b9a690e4ef9d869da6aff180641"
+    },
+    {
+      "path": "apps/web/src/dev/me-preview.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "6e2515347a61007df8ca14972d0650d4645163e1553a331adcc8e6ca5c965e9e"
+    },
+    {
+      "path": "apps/web/src/dev/preview-calls.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "e02fa00b873b5111f3caf7a7031efb8d4b5f873da981e649a0a4220b02da7ac6"
+    },
+    {
+      "path": "apps/web/src/dev/recovery-preview.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "25f63882385368c64cd9564c777585f08ea8afa6aff706fb17609f366d833ce6"
+    },
+    {
+      "path": "apps/web/src/dev/settings-preview.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "c8fd65caac14f4e4cb897e1cdf525cb72fe4fa3e82e0fdfeaa96da83d761fba4"
+    },
+    {
+      "path": "apps/web/src/dev/trial-note.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "5828f2e396b99d4b18477da909f8d83bf161ce5d6730b9aa282c6f227640f2e1"
+    },
+    {
+      "path": "apps/web/src/dev/workspace.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "3cacffb8e11d49d7338305d7c9d3cd6bfd8d3f5814346c60d8aae8bdf327fdb2"
+    },
+    {
+      "path": "apps/web/src/drying/drying-method.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "d948af602d07283ac240bd0b74f4c5bc21afdeb09adfcdffe6b41069f36b5742"
+    },
+    {
+      "path": "apps/web/src/drying/drying-view.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "18bd5a2c0a4937a3ffb50a96720dd60accfbf9a4a1d787a70b9752c4bfb30337"
+    },
+    {
+      "path": "apps/web/src/drying/drying-view.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "f66def881cee659a702ad7bf499234cbb2641cd3723fce2ff5c720f6ac6dc8a1"
+    },
+    {
+      "path": "apps/web/src/drying/early-check-card.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "c320539cfc9f30654c84c3f18cd4b4a8a79b15220a7c1f7393725ea1b1a317c9"
+    },
+    {
+      "path": "apps/web/src/env.d.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "8914fa5b2d171caca45744cade8dfce6ea6cef23e7f9b18bf19a48ff1f4cb7f7"
+    },
+    {
+      "path": "apps/web/src/fonts/LaunderedSansLatin.woff2",
+      "origin": "released-laundry-source",
+      "input_sha256": "1b8bcea41cb57a33e16e5f290e43d47b7b4194240f5960759654ef533d55be48"
+    },
+    {
+      "path": "apps/web/src/fonts/LaunderedSerifLatin-Italic.woff2",
+      "origin": "released-laundry-source",
+      "input_sha256": "2cdc47dd7288c9d121d91eed6df6ee948c9ce71110cd5c3847eb8fa426b9e8a7"
+    },
+    {
+      "path": "apps/web/src/fonts/LaunderedSerifLatin-Roman.woff2",
+      "origin": "released-laundry-source",
+      "input_sha256": "e2cfa6e72906d84603b971cf42b47969510874462b1080e5f80c8134106ebf20"
+    },
+    {
+      "path": "apps/web/src/fonts/README.md",
+      "origin": "released-laundry-source",
+      "input_sha256": "dc025ceca4ae1cbdf686434352a697281a00025ea858e9a75eefe0dd909dd9a2"
+    },
+    {
+      "path": "apps/web/src/fonts/SourceSans3-LICENSE.md",
+      "origin": "released-laundry-source",
+      "input_sha256": "56af9b9c6715597e458284a474dc118a50a4150e9d547c70f7b4a33c3e6a9328"
+    },
+    {
+      "path": "apps/web/src/fonts/SourceSans3-Variable.woff2",
+      "origin": "released-laundry-source",
+      "input_sha256": "5f16566f7a40d39b339ad26be151fa5a1ab1f0c2574c7a2e619765584a1acbd8"
+    },
+    {
+      "path": "apps/web/src/fonts/SourceSerif4-Italic.woff2",
+      "origin": "released-laundry-source",
+      "input_sha256": "9d28b5749a1ad096a295cb607c521bd1af4cd9979b6f37332daf70143149fb44"
+    },
+    {
+      "path": "apps/web/src/fonts/SourceSerif4-LICENSE.md",
+      "origin": "released-laundry-source",
+      "input_sha256": "c21d7293d87b6d7ab1d0229a2f55b77f33a7613a6a4e66f6693d68d7d8d09464"
+    },
+    {
+      "path": "apps/web/src/fonts/SourceSerif4-Roman.woff2",
+      "origin": "released-laundry-source",
+      "input_sha256": "940a76eda1388de39d38c8e7a79bf6ea058a387faee0a9f33c8d25c6ba05e1be"
+    },
+    {
+      "path": "apps/web/src/generated/tailwind-theme.css",
+      "origin": "released-laundry-source",
+      "input_sha256": "65a7663711f23ecd5417fb4aa30ca2574a2e1ce7e90a1e8c020cbb261be589c5"
+    },
+    {
+      "path": "apps/web/src/generated/tokens.css",
+      "origin": "released-laundry-source",
+      "input_sha256": "f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f"
+    },
+    {
+      "path": "apps/web/src/home/home-clock.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "b556a007bab3b181f66866ead6bc2571eaaef20e67752d68d23ff65e9128cb74"
+    },
+    {
+      "path": "apps/web/src/home/home-dock.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "228ed005975c7d9a3dba130d48f7df83f1f5c0b1133fd0debd3c430553469b67"
+    },
+    {
+      "path": "apps/web/src/home/home-dock.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "d8cbe4183e52bbac39c4401df2afab0344e1e88eca8415b5d2ec7f95b9240d3a"
+    },
+    {
+      "path": "apps/web/src/home/home-hero.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "6c26724b1ff261bc2f056d9aa652dc6be1e9643911d8d81711d3695e7cb67727"
+    },
+    {
+      "path": "apps/web/src/home/home-overview.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "a8bbff9f336166d275de1c01c5379f50ce5944456a1331d52d72edcbc5ad98f1"
+    },
+    {
+      "path": "apps/web/src/home/home-page.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "1c52fad5a37be2e31e0291a58d6190951f838358e984210f6e7c1242e45c84d1"
+    },
+    {
+      "path": "apps/web/src/home/home-ready-tiles.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "c4f20528a181e320defb950ff465552ec7be478145cd436b264d7ba1043320b7"
+    },
+    {
+      "path": "apps/web/src/home/home-sections.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "5295b0d587b26217f7a7b6af961aacb0f573370bb4c1fb250c25580b3fd539ae"
+    },
+    {
+      "path": "apps/web/src/home/hub-state.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "c4988a06486ac8efcbd8b3c757da51296af57555ad8a9d5de733fbf927467fb9"
+    },
+    {
+      "path": "apps/web/src/home/hub-state.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "fd0528e1e6921a4518b9355187bd1c685bea434e58751e8c2d252ed3016ca5ce"
+    },
+    {
+      "path": "apps/web/src/household/household-art.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "7f63909369886a24596caf042166cf54100c9d7d8af19cf19686bb34f36a7e75"
+    },
+    {
+      "path": "apps/web/src/household/household-art.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "40219eb5cb9b5ea713292c014c6d5b5b124218dfe3a93245ccbe4fdc93799889"
+    },
+    {
+      "path": "apps/web/src/household/household-blocks.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "4be12c4a482134d676be21b19d1afcf047a0d8f52df08da9f321acb0e28c3b76"
+    },
+    {
+      "path": "apps/web/src/household/household-data.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "35541d45d59a835535db10bc192f5580c415ee2cf5c0a53feeef8a7f06d20b7b"
+    },
+    {
+      "path": "apps/web/src/household/household-facts.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "b1e6a018b1795e8273ed2c9862d8e370f3d72e5bdff8f35571d692888ecae7b3"
+    },
+    {
+      "path": "apps/web/src/household/household-invite.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "1b938bafa975c5c135e6ddabcec9e1a40607888358a599e4ba7d81b647b84360"
+    },
+    {
+      "path": "apps/web/src/household/household-page.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "8e4974b01d3c93cc6c0367ed1e6fe9bfa32a7eebb9d8ccd42f99718f33c5f6c5"
+    },
+    {
+      "path": "apps/web/src/household/household-people.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "7871438aef684fa218c12f40193fb784d080b8a4b984560e9f36d59e888e9958"
+    },
+    {
+      "path": "apps/web/src/household/household-people.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "1ab021bf8fade9bdbbd959ca6e090c0295fbc0c3ba32f98724cc661568fc94bc"
+    },
+    {
+      "path": "apps/web/src/household/household-search.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "407e91733cd3b9975e2a9f9510fb1e643dbd88fec84f165459f021fac3fe2371"
+    },
+    {
+      "path": "apps/web/src/household/household-tiles.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "3652b77ec61ae303bcef2d269a89e7d5175917cdc38303c82b5f05ae6cfc3835"
+    },
+    {
+      "path": "apps/web/src/household/ingredient-tags.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "1619aed3330b7c338e9ed716a05cc466cb2a183755872a43a1d743809abf8474"
+    },
+    {
+      "path": "apps/web/src/household/ingredient-tags.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "ef008469d91b055df3be3826c9057ec3701e4f1174d45a10ab2dd24e3ec64a8e"
+    },
+    {
+      "path": "apps/web/src/household/inventory-types.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "b3a04b87ebf0c4313d2399ab26fbf407d9e1669c76046ed711637fc87deac5a4"
+    },
+    {
+      "path": "apps/web/src/household/machine-sheet.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "1e043e28861f4bf4fa66ecb376d12353bb8770a8c84ea73d0468653d9bf4dcb9"
+    },
+    {
+      "path": "apps/web/src/household/machine-sheet.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "243345f7c2e862e891434bc7427f79ddc192dcde3e02fabaf4f5de3ede350ae6"
+    },
+    {
+      "path": "apps/web/src/household/room-choices.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "e42ceedf2336a8e5419eded7e8d1490661e7030b3cf8ba09cdc2bfd33b4cc34d"
+    },
+    {
+      "path": "apps/web/src/household/room-choices.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "294f035ebb971a561bc8064e31e3c94f9ca0f6067b514f9979d06e37b1357a70"
+    },
+    {
+      "path": "apps/web/src/household/water-sheet.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "9fa53ebfa406d3c6efe2c0b35dce44cc2345ba96e196d4b02d4f9e36e19c9b83"
+    },
+    {
+      "path": "apps/web/src/household/water-sheet.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "b7e7d0a64a8d36850a2fd72c5416174978411b3e4a9a5ef57e6081e97c60bd8b"
+    },
+    {
+      "path": "apps/web/src/kit/action-feedback.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "b05b35fe8c9b31ee82f52264233a805f57a2ef09e9ce05e5bde2d5c921413e24"
+    },
+    {
+      "path": "apps/web/src/kit/action-feedback.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "1ed8473cf52bdae812f8a25f03bab80ee79ab0dca94d56acab1b975734a8ee0d"
+    },
+    {
+      "path": "apps/web/src/kit/add-time-sheet.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "6f7b3d1604ad15e7593efd9d362c790ff65693cadec7f94ddf62a717b7f66020"
+    },
+    {
+      "path": "apps/web/src/kit/app-shell.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "95d617f2a34178db3c218ccd6b1723cabeebda1255399aec51afece1af49dbba"
+    },
+    {
+      "path": "apps/web/src/kit/app-shell.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "899f55bc543f799425b8e4122d57cd98532a6ff27b15cb361ef50ce76f92503e"
+    },
+    {
+      "path": "apps/web/src/kit/appearance.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "865754e722e4992fa14ec7e6e50babd3086b65ef554d467d7eee6903c01037f7"
+    },
+    {
+      "path": "apps/web/src/kit/appearance.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "634e0cc413497ae4fdfb7fb3a9ff279f66829276f6a4de6098fb06c43d2fa60b"
+    },
+    {
+      "path": "apps/web/src/kit/browse-search.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "77902ddb8c6ef654e12b3a23a960cb0caacc34477843f096055168a7969bf048"
+    },
+    {
+      "path": "apps/web/src/kit/client-render.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "4e1f12c5f669dfe7c83e1ed34805bba13097064f3df23ce9358f6316569c6286"
+    },
+    {
+      "path": "apps/web/src/kit/completion-mark.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "e8f345a0e67b8b3c3d7a5c65b46112540fc1047e0ed8d371810e16c5bf8dd910"
+    },
+    {
+      "path": "apps/web/src/kit/design-icons.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "d57e43945aae5af41172579006a484a90a44bd0fcae523260aad8526070e6892"
+    },
+    {
+      "path": "apps/web/src/kit/design-icons.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "82c056fdda6ebe73f5fdedd5320c7ece27ca4c6fc1e43e0995bdeb28304f721b"
+    },
+    {
+      "path": "apps/web/src/kit/device-state.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "eda20fa0d34f98d1ea05d4f2ee147c50204cfd1f24ee83a2aff263b540e69f1b"
+    },
+    {
+      "path": "apps/web/src/kit/device-state.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "a4ebe0e1b3de3567553a5b465fe4727d20227a36c36ce38614df8e666a4f2e17"
+    },
+    {
+      "path": "apps/web/src/kit/disclosure.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "8469cdc331695176fd064f7d63a15f67e620f9c59a14841e08dfd2a611cbb480"
+    },
+    {
+      "path": "apps/web/src/kit/dock-link.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "f5ff82d8bffaa7a18ec344118c27300ee2d1b1873b9bac7abec57ccfdc08cfbe"
+    },
+    {
+      "path": "apps/web/src/kit/feedback-context.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "58c09e9299c207c335b0d376f05fb7230e3da86ca2e932160967b0de37bd05f4"
+    },
+    {
+      "path": "apps/web/src/kit/feedback-context.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "2bd83a7c115ae2e6cfc2230573128f5d836f06009ff797cc55d97c4d9795fe08"
+    },
+    {
+      "path": "apps/web/src/kit/focus-field.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "ddb440cd27c4d626c406671e98e521ebe043b83586b902886be4c9f147b690a4"
+    },
+    {
+      "path": "apps/web/src/kit/form-progress.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "22d89debc5c5e2364c02ac2cb6fc4255562dcd2d1c7ef6f3c924cbfd0df14672"
+    },
+    {
+      "path": "apps/web/src/kit/garment-icon.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "b6f74ad575b66f85e95508b29041aacb97e5aab2b61daaeae920f763643cf7b5"
+    },
+    {
+      "path": "apps/web/src/kit/help-tip.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "0af3b8057d3cd837834bcdd7a540bde6b89586d0e5e19d567161a3a9394d6002"
+    },
+    {
+      "path": "apps/web/src/kit/household-invitation.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "c85e4c8320deb03c18fe34529e08405cbc25f3f68bcd44b9f27af4ed25740794"
+    },
+    {
+      "path": "apps/web/src/kit/icon-choice-grid.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "22b819b9fa5a5820e50f254383f1682c7078a0cbce00734129f4e52165e6b995"
+    },
+    {
+      "path": "apps/web/src/kit/icon-choice-grid.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "01ba00e87229e901615952b740c35a4f21162c86c1697dc5e3e205427e26dfba"
+    },
+    {
+      "path": "apps/web/src/kit/intake-validation.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "eb4b35d33287559bfb3101c2826060b14c1bb6eaf707ce8e02f85ab9d67541b4"
+    },
+    {
+      "path": "apps/web/src/kit/item-navigation.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "c74f817be7a0cb564293946c418a8b8f194e5415e7f018c7193fe98b70f8065f"
+    },
+    {
+      "path": "apps/web/src/kit/keyboard.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "d632f9fa02c06c0b9f7b00d170c5fa3f7edaed9623fe16f76302bc8c9b472377"
+    },
+    {
+      "path": "apps/web/src/kit/more-section.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "c9a46da0a896750e611d11615844e26dddb5af0e094fc594b57ecfc628acb9ce"
+    },
+    {
+      "path": "apps/web/src/kit/page-status.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "f387c4075ae4e30a7e2a1ee45de658c30eba0c6ff15e4bcc1bbde9df5512b601"
+    },
+    {
+      "path": "apps/web/src/kit/record-row.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "6ab9eac9034f69076eef28cda3f134252f7e3b81d31f1e3d1cc38426b1480418"
+    },
+    {
+      "path": "apps/web/src/kit/record-row.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "7a7be95c372af48fab5db7074ec6b135fe465ffe681f982435d3085f7ad63228"
+    },
+    {
+      "path": "apps/web/src/kit/route-error.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "16c801d6b7daf2f900dfb18350281c34c45fedcf9ad0735051906ffb215b98cf"
+    },
+    {
+      "path": "apps/web/src/kit/route-error.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "25c8c506a79d43005b56ab52539610959d1c6dbcbe30ce34b673a5fd891184a2"
+    },
+    {
+      "path": "apps/web/src/kit/sheet.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "1bdd4b8906411c34f79dab6e4fc0a3a22619390a31ca52c63edf9392bee292af"
+    },
+    {
+      "path": "apps/web/src/kit/sheet.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "86973ec68a5471347a2daa5b8c6bd24edcbc04f9af1a7e10946b6dedfd07eb0f"
+    },
+    {
+      "path": "apps/web/src/kit/tag-editor.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "1bb61286ea04b16a150e58369a8b3bbaf0a45c9a04a1d3e2ccff89622152209f"
+    },
+    {
+      "path": "apps/web/src/kit/task-footer.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "90611a9508811c5fc52ed64ef00bb69fb5ab44b3a5babfc9ab7a6f82a6180523"
+    },
+    {
+      "path": "apps/web/src/kit/task-layout.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "87fad0fabf03b870e19fc4d6c2dee0137f946772b3cc2bf8506ea3736ad3abbc"
+    },
+    {
+      "path": "apps/web/src/kit/test-copy.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "d18eb5e15ef04ccaf3513d4ce4473f846977d2519ffce507458e6e99228d9f3c"
+    },
+    {
+      "path": "apps/web/src/kit/ui.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "51399913cb6999807b323328e1b54317611e5222acad225828a63ca9b347c527"
+    },
+    {
+      "path": "apps/web/src/kit/ui.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "e2153dfed7e6bd24384711be1c13d948f9172b801875888227b29942aa1e2348"
+    },
+    {
+      "path": "apps/web/src/kit/units.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "eed4ed7a27d79104cb9847a2feb6da7494abdcb639e94bc7e5dcc07b4485dc15"
+    },
+    {
+      "path": "apps/web/src/kit/units.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "1b9de31d72312fe8037f8b6f2203241c608a1780f03269c8f9a8fe59ffa6b532"
+    },
+    {
+      "path": "apps/web/src/kit/use-now.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "094c56724244e286ba8923820e354d37e38bff9e67afbd6097ab12a8ff8df8b4"
+    },
+    {
+      "path": "apps/web/src/kit/use-steady.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "23d4533e4ca3cedcd26ec4868d9fb5159153f6fd17333b0c28419393f45553e0"
+    },
+    {
+      "path": "apps/web/src/kit/welcome-art.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "4d7a01d73430615e2b4b4c3e175bbafdf5e0549bd437659297c5eeb220a8dec4"
+    },
+    {
+      "path": "apps/web/src/laundry/chemistry-place.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "5b08048eadfc004eb51e8c02f0138c9099d94fe974c5ec0637d055053f09d366"
+    },
+    {
+      "path": "apps/web/src/laundry/chemistry-view.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "57052a16ea63633766619b9701e8ccbef73c47ecbb9812583e7746fd9eee094d"
+    },
+    {
+      "path": "apps/web/src/laundry/day-plan.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "2e918e6df19f70892c878e5c9dd129e03fd336ad1cd2e5f2aaabb6094afb70a9"
+    },
+    {
+      "path": "apps/web/src/laundry/day-plan.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "c1838f9ec8cec7ed86de8009eef108c5f4e0d24c03785cc7aefaca79f57e9736"
+    },
+    {
+      "path": "apps/web/src/laundry/fullness-step.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "0f60475f07072a86f4b7b658001e99ad56bebd741645bd2096cd1fccdd8288e7"
+    },
+    {
+      "path": "apps/web/src/laundry/fullness-step.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "14e71502a539bb69fd8d997ece36c77b4153160e573adb668a7d5a260ab72e1e"
+    },
+    {
+      "path": "apps/web/src/laundry/hanging-session.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "e9a3a079ada5e1bf062dc92fd2679c7c94d53867cabf824aa4170a9fd1d52fc8"
+    },
+    {
+      "path": "apps/web/src/laundry/laundry-day.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "32048dc348c87e7783fa9a1649d754feeeb3989d4deb5640d8894ccfbb68b11d"
+    },
+    {
+      "path": "apps/web/src/laundry/laundry-day.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "a34b163a7665399dda623645e57b4fdd333d193a41358bea7d0d1d06e01364fd"
+    },
+    {
+      "path": "apps/web/src/laundry/laundry-kit.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "08d216648b6c07cd48169f362ac5c561b670c3e932c734870df5648da6bf0d4c"
+    },
+    {
+      "path": "apps/web/src/laundry/laundry-kit.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "78526f50a9f6501f4dc9c5628cb0830e6899a03cd2d9322e5bc24146cb86c6c5"
+    },
+    {
+      "path": "apps/web/src/laundry/laundry-pass.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "a600db70c5fe959847e5d0df1158b7d83c7dd35d409731ac922a46e9624e73aa"
+    },
+    {
+      "path": "apps/web/src/laundry/laundry-pass.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "6732c4eb1d635445aa747cd9ae590e5a6c9a0b870c86c51691eb8fe3864ffb68"
+    },
+    {
+      "path": "apps/web/src/laundry/laundry-search.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "cb471b872002de0fc144e669b9425a0a7afad0870de9395f250c45528ea85a60"
+    },
+    {
+      "path": "apps/web/src/laundry/laundry-search.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "50a8dac9e57caf12ee45e8568781728663311a326c1cee78e1f69cd6eda086ec"
+    },
+    {
+      "path": "apps/web/src/laundry/laundry-ui.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "cfacea511d74ad14480338632f4093303f5377b5b750986d4ed57fe49b6eb009"
+    },
+    {
+      "path": "apps/web/src/laundry/laundry-ui.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "8ab3ef1c5e462d75640e8b52e7b7ef59e0e9c738cd9e2bea4c8695027f337ec3"
+    },
+    {
+      "path": "apps/web/src/laundry/laundry-view.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "47c5923aacd8a7fcb39f175a3d39955255e71b854a363ba2acf128cc453cbdf3"
+    },
+    {
+      "path": "apps/web/src/laundry/laundry-view.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "b7511095858d4d4e1bb7483a9fadc2587bbed8c41607814e9a96466dfac2d53f"
+    },
+    {
+      "path": "apps/web/src/laundry/laundry-workspace.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "f45ae558148e442f7a2ded54f113a2ee5d82bda53973394f58f4d49db64ae1b7"
+    },
+    {
+      "path": "apps/web/src/laundry/laundry-workspace.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "90c066eb66f4fd6b6f9844de95b9aff180261ca83e4f5a58d77f82e82f140f19"
+    },
+    {
+      "path": "apps/web/src/laundry/load-card.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "86c95e43696f23d2334c47376da9a4b2caf534d4e84a0ab89aacccc8c40444fd"
+    },
+    {
+      "path": "apps/web/src/laundry/load-card.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "52b95311114f91c6359e04b7f48f3489e1df337a153d71e510eede0bd1809d29"
+    },
+    {
+      "path": "apps/web/src/laundry/load-review.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "fc4398be9a362ea50d9743869aa99529c8f7b44b276fb4445e2b026abdc82190"
+    },
+    {
+      "path": "apps/web/src/laundry/load-screen.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "a4bce8b538738908485ca4cb2591c65545a198d1f4faa9183ee6e108cedb8839"
+    },
+    {
+      "path": "apps/web/src/laundry/load-screen.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "16bc67b1bc82006d98109bb54057e58225b399a80f724ecabb18ccc8276a3a9e"
+    },
+    {
+      "path": "apps/web/src/laundry/load-summary.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "4368154de75d707ea5882e89965cbb304110eeae2e1ad2037d31526f8b6dd64d"
+    },
+    {
+      "path": "apps/web/src/laundry/load-summary.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "fde9457e233803c28e276f1467c98728472a8df1a3c96265bd7e865e48546505"
+    },
+    {
+      "path": "apps/web/src/laundry/machine-name.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "6c65043bd7f7c9f22f028933e84cca8bd28ccc867c9bd2c764e3cc49a25ecc1a"
+    },
+    {
+      "path": "apps/web/src/laundry/machine-problem.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "be74ba607ee704ef5f52dac2dcee74ab26c32b606c18675c8e7edf8027305728"
+    },
+    {
+      "path": "apps/web/src/laundry/machine-step.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "80b792b5c822bbed1c334bc17578309af0f8ddf450f0dd5295bd2f2cc96edc23"
+    },
+    {
+      "path": "apps/web/src/laundry/machine-step.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "1bb7c1c2bd92c7c3c1aaa614002715c0f7327a47a5cf5c7e1c47a5715cb0181b"
+    },
+    {
+      "path": "apps/web/src/laundry/next-step.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "e6c4170687e885a9bb81ff1eb719a8d14485fe91b1f023678ccaf6c8373f07e5"
+    },
+    {
+      "path": "apps/web/src/laundry/outcome-assessment.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "46477ae878e7451e640a556d3f5d28842aada693438efff64c4b5b3476c9741f"
+    },
+    {
+      "path": "apps/web/src/laundry/outcome-assessment.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "c79c40b1ca7703ae7c8c4d1e8fae41605fc5a64dfd2c3f83395c279dbf976c9a"
+    },
+    {
+      "path": "apps/web/src/laundry/plain-reasons.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "9b3ad40955922df7993c9fa054eed534fa9e4d7b22900e90d36ed002fdff2ff5"
+    },
+    {
+      "path": "apps/web/src/laundry/plain-reasons.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "d3de1883be6f3e22b1855b02fbebeab1e0903df4bf81b60b4600095d414d40f5"
+    },
+    {
+      "path": "apps/web/src/laundry/plan-pick.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "9cec64f9d8756828a8ba91938830c1fa6de8a2d7d8d9367fe4321aab3b274301"
+    },
+    {
+      "path": "apps/web/src/laundry/plan-pick.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "7422ff0ef1e4253cd83dcb96044fbdd4e71276a1c320efa8c42661b4fcb4da03"
+    },
+    {
+      "path": "apps/web/src/laundry/preparation-paused.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "70deef1f9c29311aaf548cc767d1a85a5b90ec5874c5c73ece739e7ef7c126c6"
+    },
+    {
+      "path": "apps/web/src/laundry/private-piece.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "c6e0763174acda792d9c7177cfeddca1252b07aeb0f0f8b1ce7ccfc73d6da748"
+    },
+    {
+      "path": "apps/web/src/laundry/private-piece.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "7dc087abe20b97f7f63630acc1278c51af5067abc6583e782e469428a752403c"
+    },
+    {
+      "path": "apps/web/src/laundry/question-card.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "6ea5e989c6e86273bf8d7928bf107c714c98ad0a196c19b85d5baf9d60320bde"
+    },
+    {
+      "path": "apps/web/src/laundry/question-card.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "7f18e031f7b6008702815387233bfb818d2d1c48023fa3d84a0fad66f54f870f"
+    },
+    {
+      "path": "apps/web/src/laundry/question-parts.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "7ebe2ee816105a07a44e38d22d7f93b6635d5975018adce7f0ef43d60ec5cd8c"
+    },
+    {
+      "path": "apps/web/src/laundry/running-load-sheet.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "1a1ba779effa86a79be13a750720778b824bf8c313f6f4fa9adda00e87e18bf8"
+    },
+    {
+      "path": "apps/web/src/laundry/running-load-sheet.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "f8b3eb99a9350e0f589db2be00bc20e4166e0fa445a8780c99b2868d3cc90939"
+    },
+    {
+      "path": "apps/web/src/laundry/session-stage.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "43ad289ad4b2a05cdaba2b006e9d7c750e1a6c441880d2f9bbfff4fe6cc0bd56"
+    },
+    {
+      "path": "apps/web/src/laundry/session-stage.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "9ad0f467ea9c535e02eb33353ea9e099715a5c1f39605bf0bc4788fa893d2dc9"
+    },
+    {
+      "path": "apps/web/src/laundry/session-view.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "2b8dcb6079609c6f2e0e505479af310021fb82dcf4f4882a5b6e38825968019d"
+    },
+    {
+      "path": "apps/web/src/laundry/session-view.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "6f2feffc6998a6611d3e1928d7124b88c0ea04eb4547ed28a5bfcb258235df1f"
+    },
+    {
+      "path": "apps/web/src/laundry/tag-step.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "120e6d108d8db2c434df12d87a7adfcfc979f5fb4373e69931f2ad8158781364"
+    },
+    {
+      "path": "apps/web/src/laundry/tag-step.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "c4979baf468f49c28bab2bcbad2579c0780aca3a8966671d6ad05b38d47a05dd"
+    },
+    {
+      "path": "apps/web/src/laundry/timer-notices.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "0ff4beb7194b04bf442a73f294da24badebbc2ab6a94884a46c2d2093e89b3bc"
+    },
+    {
+      "path": "apps/web/src/laundry/washer-path.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "b1deb33285dda74126d75a1b4615a9dbd691a59c42368a09464564a7a11dfeb5"
+    },
+    {
+      "path": "apps/web/src/laundry/washer-path.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "916ddd6f32d72d15d9acbe8604db95e940caa7e9b5f7b3034427b12ac0e2dfdb"
+    },
+    {
+      "path": "apps/web/src/laundry/why-lines.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "edead1dd26c0f266e81a8d90c4470804c187f912c70f3367f5dd1a0e137c03a3"
+    },
+    {
+      "path": "apps/web/src/laundry/why-lines.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "5e87972ac28b7fd4ad9370a58238038dc7e81edc581d9828c826c86b3645d81f"
+    },
+    {
+      "path": "apps/web/src/lib/utils.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "90876ec8f5944fd5c089a0125310457dbc4adebf36856e223af9ed0909b57211"
+    },
+    {
+      "path": "apps/web/src/lib/utils.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "2df85bc06aa005e4bff10364aad3c6e2d6ab41c016d6dccb734ce975dd6f1595"
+    },
+    {
+      "path": "apps/web/src/offline-view.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "fefdb6c0b2cc69202708295281df606234bdfffc9e286305b65c743a03bbad11"
+    },
+    {
+      "path": "apps/web/src/pending-step.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "a04b18fd0ba25545695d5a76c39016a1750a7c5d948688fe908631ef92889b18"
+    },
+    {
+      "path": "apps/web/src/pending-step.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "b4300e518b3db87dd81735544061bd38b548068e527137e4167c6fb0fca90f93"
+    },
+    {
+      "path": "apps/web/src/private-state.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "5e0eb09e0f96d52a81e0206348708a6f9dfbb621e0a3dd3ac1c1c54b823fce66"
+    },
+    {
+      "path": "apps/web/src/private-state.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "be32156657cc39cf35fd16dfccc2c3db503021016c78bccd06ef21da7c4c5836"
+    },
+    {
+      "path": "apps/web/src/products/bottle-sheet.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "ecffbe6df25697d8c5c082ba923a7a7315da87df169c27c6673bacc4f57ade58"
+    },
+    {
+      "path": "apps/web/src/products/bottle-sheet.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "599052d17381dce693dda2b3d89b9f68e43a0d0b8155775733ef34944edbfc98"
+    },
+    {
+      "path": "apps/web/src/products/catalog-directions.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "5414b27210faed234809dc007725639393a45ff17f1aed869d8daa49f1a81dd8"
+    },
+    {
+      "path": "apps/web/src/products/catalog-directions.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "2a282f1df0f13351230e81b2cd97bd19f4f924100611e560a3f151413e5f0049"
+    },
+    {
+      "path": "apps/web/src/products/catalog-identifier-lookup.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "461c0ff48bbcfa7448aec8a98189332a64e27c968310b33883d4987d724fe244"
+    },
+    {
+      "path": "apps/web/src/products/catalog-identifier-lookup.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "0c0f0aa24be8d78b3fbedd5649ecb89c54872eae3167dd0c8daf1273365c60ca"
+    },
+    {
+      "path": "apps/web/src/products/catalog-reference.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "ff06e55b1b38f39e71072e10061449839140f3d6ed8ae9e60bae6f16264a2d03"
+    },
+    {
+      "path": "apps/web/src/products/catalog-reference.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "dfa2ab1efc439a03591a3e63fc5fb33df564b5d1f2aff4ab5f126f9c8f79eb46"
+    },
+    {
+      "path": "apps/web/src/products/detergent-sheet.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "0b6de63e608f308b7f09ca70ea7009a47ce9d19d468ea7f2fe3191d0f565cf2d"
+    },
+    {
+      "path": "apps/web/src/products/product-benefits.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "d6bf198614665861334f065347a54e2884f5f40b1a046c1bd43e328c006b0cd9"
+    },
+    {
+      "path": "apps/web/src/products/product-benefits.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "794c5658b553d2a1ed46ad8bb6f62f9c01830d0bf53727c2d00c4b13e445b124"
+    },
+    {
+      "path": "apps/web/src/products/product-capabilities.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "6bc508f341d2e589784f804c1f261cc225eb8496529af26577c218a759f038b2"
+    },
+    {
+      "path": "apps/web/src/products/product-ui.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "2f9d54022d3326878171dcfb030741e81839d6da8419982f3f46101598d83ed7"
+    },
+    {
+      "path": "apps/web/src/products/source-issues.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "e495ab38ce25e10c639f90e49eb1a0e2e08476fe6fa7948c452487a912c20e69"
+    },
+    {
+      "path": "apps/web/src/products/source-issues.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "58e27eed2c32155f0274824e7f049fa398df4a19a9572242e328654d44d9a271"
+    },
+    {
+      "path": "apps/web/src/pwa.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "b3de0c534bac195bcec31e017763b4536ab2d605bb5046ea063c5b9de3ab74bc"
+    },
+    {
+      "path": "apps/web/src/pwa.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "c3b881d8e2483b2dd0403c473d1cae88417539cb560efb6c7a1230052d7b23e4"
+    },
+    {
+      "path": "apps/web/src/review/adapter.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "d92b12ed22612d2254edcde2fa342ebc097e77c090e64c279349bddbcbfa5cf9"
+    },
+    {
+      "path": "apps/web/src/review/adapters/laundry.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "d8b1a04b8d233f1555f097f8ae325a473b01d669d20d4c4e223dba0000c80237"
+    },
+    {
+      "path": "apps/web/src/review/agent-delivery.tsx",
+      "origin": "current-rehearsal",
+      "input_sha256": "c9ad10c51e583634773a50e6a96a703dad224d5effafe3ae7b585f3f8948187c"
+    },
+    {
+      "path": "apps/web/src/review/app-canvas.css",
+      "origin": "current-rehearsal",
+      "input_sha256": "643881c213ccf967225c61c69751b974daa911f9755b08d4103ab85a9797799a"
+    },
+    {
+      "path": "apps/web/src/review/app-canvas.tsx",
+      "origin": "current-rehearsal",
+      "input_sha256": "7f0a070e7d3e64888e177fbb50a49fa49512dffc35cf9939381f07a21088d0f5"
+    },
+    {
+      "path": "apps/web/src/review/app-map.test.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "955c2af571b54bece5cb345fd3228b35c9a901429e1d267064b7362206bfe70f"
+    },
+    {
+      "path": "apps/web/src/review/app-map.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "bb57c30268f3a16ff3892620d9fd2ad4de2f23dd689c70adb3885a1a74debf0e"
+    },
+    {
+      "path": "apps/web/src/review/app-overview.test.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "61a2190ec20a6f5f92676c2343604e48f20c7ff9edaf8d39dc94b0fed291b67e"
+    },
+    {
+      "path": "apps/web/src/review/app-overview.tsx",
+      "origin": "current-rehearsal",
+      "input_sha256": "2a5613ce7b59ff11bb48a55223d13a0232a13f5460d575d3b504eb72585bb79d"
+    },
+    {
+      "path": "apps/web/src/review/arrow-routing.test.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "b1bc71f2e96af4352eaccbd757970403ee88a59734f7e5be9313b2ebbeee8b62"
+    },
+    {
+      "path": "apps/web/src/review/arrow-routing.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "518e327ef38fe3a3b9a6f5be23bc154d6015c1243af1ab7e62f70d5dbbdf9bcf"
+    },
+    {
+      "path": "apps/web/src/review/canvas-camera.test.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "18c9411bd237dad30152d78979178526e8b55dd45dcea0c45f4652c3dd505cd8"
+    },
+    {
+      "path": "apps/web/src/review/canvas-camera.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "fc78868345657bbc0331759b93d5bdf5a038a358d5384294494ce0e4ec85302d"
+    },
+    {
+      "path": "apps/web/src/review/canvas-chrome.css",
+      "origin": "current-rehearsal",
+      "input_sha256": "4b606762ad88496446d1511c6739cc88181c991c220507d2696c73006b62c555"
+    },
+    {
+      "path": "apps/web/src/review/canvas-controls.test.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "ed80a4e2cf5c3249a2a3a806d78a4a8a2f1b0e12daa86fa964377b1a19bff9e1"
+    },
+    {
+      "path": "apps/web/src/review/canvas-controls.tsx",
+      "origin": "current-rehearsal",
+      "input_sha256": "2b11d75033a8a386060ec60ff50e9c6315bf906c011f736f19bc645ada3d5b9d"
+    },
+    {
+      "path": "apps/web/src/review/canvas.css",
+      "origin": "current-rehearsal",
+      "input_sha256": "740515d464351d08db1c8a3966fdf6aff4618438e6ddeee7babb68cfb76a8026"
+    },
+    {
+      "path": "apps/web/src/review/canvas.tsx",
+      "origin": "current-rehearsal",
+      "input_sha256": "86867cbed3e85c68b289331d88b4f986de5e4811e2ddc95b0b3c5c3b57367202"
+    },
+    {
+      "path": "apps/web/src/review/capture.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "0124c8eb9ec3f6053793df923c71f3834cf2f326bba1049fe8b192309d421055"
+    },
+    {
+      "path": "apps/web/src/review/coverage-panel.tsx",
+      "origin": "current-rehearsal",
+      "input_sha256": "7fde8269df495e957b6fa8ad950b2b8ea132e2b300f0ca4b1620948c61d7adf7"
+    },
+    {
+      "path": "apps/web/src/review/discovered-adapter.tsx",
+      "origin": "current-rehearsal",
+      "input_sha256": "f1ab6fd0542c044dfd5a0cfa18dfa60edfd4a0ec1acba32e1e524949f006640c"
+    },
+    {
+      "path": "apps/web/src/review/discovery-setup.tsx",
+      "origin": "current-rehearsal",
+      "input_sha256": "bfdd6ed10421c049e367cc1f71e23f9564b07e5f5395dc701472b39b09bc2599"
+    },
+    {
+      "path": "apps/web/src/review/family-preview.tsx",
+      "origin": "current-rehearsal",
+      "input_sha256": "c3ebec91d2f5ef7df0cb11ff127b1b8ba724f51eed83e5f08774189624b971fd"
+    },
+    {
+      "path": "apps/web/src/review/feedback-copy.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "f41995b907028263f2f4dec7fe0821aa2c455583786c5e2df5d2f1a38cf70c9a"
+    },
+    {
+      "path": "apps/web/src/review/fixture-picture.tsx",
+      "origin": "current-rehearsal",
+      "input_sha256": "14a9d914084788e9910ba8a71e6674ee5f8aa38f4c990dc68fd1e6862e79d34a"
+    },
+    {
+      "path": "apps/web/src/review/frame.tsx",
+      "origin": "current-rehearsal",
+      "input_sha256": "0b03ed713c6fdfd59b05071ba1d94d601362a5bd894bc22097b41cddb6386e94"
+    },
+    {
+      "path": "apps/web/src/review/journey-graph.d.mts",
+      "origin": "current-rehearsal",
+      "input_sha256": "efe046c5f66e6d24d2ae49b4253a81a15e3b2f80d640b27932746852e9d4b302"
+    },
+    {
+      "path": "apps/web/src/review/journey-graph.mjs",
+      "origin": "current-rehearsal",
+      "input_sha256": "37fc5561c87917289d6dd70f5dbff73147d74fc1c2f2e51de1f85aa16f7a3cd3"
+    },
+    {
+      "path": "apps/web/src/review/journey.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "2b27e378c4200adeba9f325db51f11218a66e95827875e5fbdbe73f81472b2bd"
+    },
+    {
+      "path": "apps/web/src/review/laundry-frame.tsx",
+      "origin": "current-rehearsal",
+      "input_sha256": "e7773b9bef09cc0ea7c4b65d34c0f9ecd98323131afe9d8425c5479aef218f45"
+    },
+    {
+      "path": "apps/web/src/review/main.tsx",
+      "origin": "current-rehearsal",
+      "input_sha256": "a93fc6db10a31b3ed95e87bab6a33774d30ca841fbb81db9efc8b95253e554dc"
+    },
+    {
+      "path": "apps/web/src/review/project-picker.css",
+      "origin": "current-rehearsal",
+      "input_sha256": "770e2c9300060f62710fe23bf27152ac6fed5f357a2db462e7b254d55bdcec62"
+    },
+    {
+      "path": "apps/web/src/review/project-picker.tsx",
+      "origin": "current-rehearsal",
+      "input_sha256": "0c1d068f637880117e3879970640505ed62e24b88549d10b644cc110464b145c"
+    },
+    {
+      "path": "apps/web/src/review/project-request.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "79e8bf7dcc0448138a59e13a6ee45c08441f81dc540e3ee7b1ed0d7afb938f15"
+    },
+    {
+      "path": "apps/web/src/review/reminder-preview.tsx",
+      "origin": "current-rehearsal",
+      "input_sha256": "ba99fa0bc1da258aef6aadb36c516df501c2f7b5a0b1629949a60f779c464289"
+    },
+    {
+      "path": "apps/web/src/review/reveal-navigation.test.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "538a9dbab67a3648b912429928e2da89ba12b169906cd478034f26aa6793301e"
+    },
+    {
+      "path": "apps/web/src/review/reveal-navigation.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "9ad2cb31cde8f25639fcdb1b6b368ac1e4808e378b637892b73f68ee938fbde5"
+    },
+    {
+      "path": "apps/web/src/review/review-panel.test.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "963fcb1383c9f070b7d485cfd5aaa3a9de95423770ec941bd87685281d909cea"
+    },
+    {
+      "path": "apps/web/src/review/review-panel.tsx",
+      "origin": "current-rehearsal",
+      "input_sha256": "8d6160d3d0e33228c682324704150257d60868f40d250689135fe0ea7b5ad4c3"
+    },
+    {
+      "path": "apps/web/src/review/review.css",
+      "origin": "current-rehearsal",
+      "input_sha256": "78f9408a98d5ddd6b257afc4d73313d23db516ea67dda93f16db913254a8801b"
+    },
+    {
+      "path": "apps/web/src/review/route-actions.json",
+      "origin": "current-rehearsal",
+      "input_sha256": "8cf12883746aaef6cb90f031f69a436dace1a1189a3900f37ad478a6d49516b1"
+    },
+    {
+      "path": "apps/web/src/review/route-preview.tsx",
+      "origin": "current-rehearsal",
+      "input_sha256": "fca2c3d6b5bac91189e0f85120f876d6c144a8d5601d74d73550031a00a9e730"
+    },
+    {
+      "path": "apps/web/src/review/scenarios.json",
+      "origin": "current-rehearsal",
+      "input_sha256": "4632f331ec6923f2abf4d2277238edbd0f8c3a9e82897cc3bbfe101d1c7cc19a"
+    },
+    {
+      "path": "apps/web/src/review/selectable-path.tsx",
+      "origin": "current-rehearsal",
+      "input_sha256": "e2c55f5d83713988e577502da49a7ec69a05cc59aae612f7de6cd926b92537bd"
+    },
+    {
+      "path": "apps/web/src/review/shell.css",
+      "origin": "current-rehearsal",
+      "input_sha256": "c741f364ab5368a8abe8ead8435885224ac0fcb92c59c137cbb62bbb80a77313"
+    },
+    {
+      "path": "apps/web/src/review/store.test.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "8c179184b98a56790b6e8575d452f41f3fcbde198a6fea47e080acfc3d4f6d1b"
+    },
+    {
+      "path": "apps/web/src/review/store.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "9cbeffcbd7d68a8bfdb5af08f6141cca96a2506086e4372a3477faa8165f70b6"
+    },
+    {
+      "path": "apps/web/src/review/towel-journey.json",
+      "origin": "current-rehearsal",
+      "input_sha256": "a1b6386890cba2751a244722d123280a8a6c73055bf1daf5396980d66733ada5"
+    },
+    {
+      "path": "apps/web/src/review/use-canvas-camera.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "d3c26c93ee095cacbaa94899afde9efc82e24d40db2dd24a2f2281995f76be5a"
+    },
+    {
+      "path": "apps/web/src/review/virtual.d.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "db032b846f7531e2573401ac2d3aa5bf2bcbd691e39ee92ca101d45c5c27b79c"
+    },
+    {
+      "path": "apps/web/src/review/workspace.tsx",
+      "origin": "current-rehearsal",
+      "input_sha256": "495e32591264d1bd44c76d1753c24cd7edc6ca00f01daa5cb22dc5e47311e5d0"
+    },
+    {
+      "path": "apps/web/src/routeTree.gen.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "65aa966a2f3a8063290a9f24eb30e9c5925042d8b406ff4ff28dbf28028a5473"
+    },
+    {
+      "path": "apps/web/src/router.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "0474fbe313d39eddda9b866d547da568c3d16852fe8bb20b29f4cb849ed9ee40"
+    },
+    {
+      "path": "apps/web/src/routes/__root.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "457a49cfd0a7b68839e8a4e96c8c25bd2e406aa64be76aa7056bf8f51814eeb3"
+    },
+    {
+      "path": "apps/web/src/routes/account.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "1cf05107785a597b4886706eaa1ad5fb23b2405539a5f6a684f5a345b55153f2"
+    },
+    {
+      "path": "apps/web/src/routes/api/auth/$.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "366545dc841de2163cd7c6e3e0a6d36564db3cc36a456f62708e3c894569e712"
+    },
+    {
+      "path": "apps/web/src/routes/care-photo.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "9495637e7400ab14eccd90e78939da618595b4ab5232605b59fdb44071dc7384"
+    },
+    {
+      "path": "apps/web/src/routes/closet.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "819fa4116696f447aefa3ce10de2c0fe5c2ec947c3c4983c4d5a21c0dc32f2fd"
+    },
+    {
+      "path": "apps/web/src/routes/create-account.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "06a85f5072b746c1c03674a53071ee9b270d7878f9b68aac02dd6c4b99f3301a"
+    },
+    {
+      "path": "apps/web/src/routes/design-preview.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "44a69b7ab271e8c29e00a117894c51402d8d902480ba91176756d819477e7553"
+    },
+    {
+      "path": "apps/web/src/routes/drying.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "0b0d9a521d3d6a1257f30660ea88dfd90550aaf8b07248d0c20462244c22d1ef"
+    },
+    {
+      "path": "apps/web/src/routes/forgot-password.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "199b14eec1b66cab349d9af0e722254e3ab88395e9840f8c9dd2b912ee6ff26e"
+    },
+    {
+      "path": "apps/web/src/routes/household.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "495641247d1baf0a57401e22f31636a4d43724b6fb8880b0818d0e59e4d4572d"
+    },
+    {
+      "path": "apps/web/src/routes/index.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "fab30f45e21a777c37290cd56ff98013d297695393817bf1b469e9d15790e62e"
+    },
+    {
+      "path": "apps/web/src/routes/join.$code.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "d74db7bff0d883461d326157415e5b4494414058d5f13fb07d6ad5efca0867a0"
+    },
+    {
+      "path": "apps/web/src/routes/laundry.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "0cae06792d0c6941e338cae7d5f56dee5e7952938817069f3d1cc4b57d29efa0"
+    },
+    {
+      "path": "apps/web/src/routes/me.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "41f32ac1877838ef8e92c908b459c32658d62fd3421bb9cddb426fa28f5ec3d4"
+    },
+    {
+      "path": "apps/web/src/routes/product-lookup.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "ed68001dbc11fb078a777ad05bb2d76f35dcf1ea81050f4424c0e96bffe7d992"
+    },
+    {
+      "path": "apps/web/src/routes/session.$sessionId.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "4925c8cf3c0cb5504b61a6d028bdc12792ba686f4583386db1ddb5abb63bed1c"
+    },
+    {
+      "path": "apps/web/src/routes/settings.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "ae43d6a522365dd92a87d96875e83f2c1f5e316f3effd078704a29c61f6cf44b"
+    },
+    {
+      "path": "apps/web/src/routes/setup.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "4cae6ae0cfb4da6c71be0cd99355e6be4d72c03a2a53aba478c4e6d7837d4e4a"
+    },
+    {
+      "path": "apps/web/src/routes/sign-in.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "004816d46db38c9771d0266e1ada6e54e138d334c4b52210c30b93405c4b85ca"
+    },
+    {
+      "path": "apps/web/src/startup-context.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "5243379feec09504b31c1c9ea94b32176b3387cb772935045c35c6247be1baf2"
+    },
+    {
+      "path": "apps/web/src/startup.server.test.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "fc60ee479f1aa7ea44d88211bea7f3923ef4823740237a5af8f8a0dca7c2403e"
+    },
+    {
+      "path": "apps/web/src/startup.server.tsx",
+      "origin": "released-laundry-source",
+      "input_sha256": "de8c19a968b8c44f2d2aacb72edc1048215776fdd75c9b1b6849a8fb5ce907ab"
+    },
+    {
+      "path": "apps/web/src/startup.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "a39051912a364644e9df9be6adf2c5c8f8f858613bc8239df81c5a3de2ebbdd4"
+    },
+    {
+      "path": "apps/web/src/styles/account-motion.css",
+      "origin": "released-laundry-source",
+      "input_sha256": "ad45166b2a1f7f7ee0bfbd69a3b134bd034f5f023d6fc5496097b27b09df9a1b"
+    },
+    {
+      "path": "apps/web/src/styles/laundry-motion.css",
+      "origin": "released-laundry-source",
+      "input_sha256": "b37062add2a26b573d4e913a9f82b05315e78bf3a2ed0d4225578e0c7738c16b"
+    },
+    {
+      "path": "apps/web/src/test/markup.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "53c46cf6dfff239c59d1624161caca8746fda29afc7ccbeb4b3c7f5ad0719681"
+    },
+    {
+      "path": "apps/web/src/test/markup.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "12ffe0dce98f69593d21a831706977cfdbea00f1e590af4cd728a9bb3a45f1c4"
+    },
+    {
+      "path": "apps/web/src/test/setup.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "bf7582dcf83fe8e71de9892a35ac7a43a93be50cc69597dbdb84ce857ac64a0e"
+    },
+    {
+      "path": "apps/web/src/wake-lock.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "968d9f574a9a10509004798dc5d7b25c79defde446845b3c32dd4d7b566a496a"
+    },
+    {
+      "path": "apps/web/tsconfig.json",
+      "origin": "current-rehearsal",
+      "input_sha256": "b1412fac9d2b930d6614c513fb90c29c146c4ef0d48cf92865966a95d141f01d"
+    },
+    {
+      "path": "apps/web/vite.config.ts",
+      "origin": "current-rehearsal",
+      "input_sha256": "949b2f22bfd182b5f8269fc003754432ed0e937fe5fbf56ab26f3970e309d42e"
+    },
+    {
+      "path": "convex/_generated/api.d.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "35dbcb1004af97346b3e3f7bbc134c29177651a81b8e933536c33d5471206152"
+    },
+    {
+      "path": "convex/_generated/api.js",
+      "origin": "released-laundry-source",
+      "input_sha256": "f513058549831e85376f8d19cafaf2a4a770b6eb1b859fb371141f2c9dec0d70"
+    },
+    {
+      "path": "convex/_generated/dataModel.d.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "db177073d16a4393c7a96bcdc3a2a904e88c2432d54d138ca7715cc431982c17"
+    },
+    {
+      "path": "convex/_generated/server.d.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "2b536ee08d434dd044efe0302aeaf4ccb00cd08af10c9f8c7bc7a6734e4aa49b"
+    },
+    {
+      "path": "convex/_generated/server.js",
+      "origin": "released-laundry-source",
+      "input_sha256": "0cdd1d842b9458d8a6f2444c35eb9929312316a384ca76a4b1d964bedde8a6f2"
+    },
+    {
+      "path": "convex/access.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "f84d432500342002f04d6744d1efdd84700a3c7f635c334af6fb41ab2035bcae"
+    },
+    {
+      "path": "convex/access.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "98dbb6b96e6d57db641d3f406c6683019fa52a8a1325cc4438d0d69592052e80"
+    },
+    {
+      "path": "convex/actions.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "e4ad341aaebccbb73ffaace3472d0e21e7616ee5b6770f7cace01d71b1643f44"
+    },
+    {
+      "path": "convex/actions.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "ca640eb090aa28a3877e1e83f6f53287d3781a0765804fd2e64d3ea1dc5c3d12"
+    },
+    {
+      "path": "convex/auth.config.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "1ad3e3b56abb769a3c855761d03d4e17b874b5e142eb1bce8cf99c218dda231e"
+    },
+    {
+      "path": "convex/auth.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "ccf3bb68f6f2e1bad151979308c87c10404e4dc4b07ead757766717e9401253a"
+    },
+    {
+      "path": "convex/authOrigin.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "dc20c48962f1b3b9f37a68c72082a7eb1b54149c3394746ae0f14af0fbe8690c"
+    },
+    {
+      "path": "convex/authOrigin.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "2b0cb0dc47964b33b8acd62b1d9cf5a83e4369af4ebf9c6fb21348526fc8e657"
+    },
+    {
+      "path": "convex/careInstructions.testing.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "e4de899dd043f0f7e4a125d72b5a79a828002dc0afd96d092e54883e1fce584b"
+    },
+    {
+      "path": "convex/careInstructions.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "fe79561c260c37bc295cc76bf7b2406c073fa192251dd79368ba7a7a7d9d5139"
+    },
+    {
+      "path": "convex/careRequiredDetergent.testing.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "661f69d9009db2b0edf1889c9428c332a3b0f5ff6ce34fcdccf95785cf29e4bc"
+    },
+    {
+      "path": "convex/careWashDuration.testing.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "792a7f658bb9aaeb1c78f4f6df5f71f3c4e9d14c2ba78eee1405420b8d4cd86b"
+    },
+    {
+      "path": "convex/catalog.directions.testing.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "091578cff6f3e4c91efd72bf68d2d0e2c4304d7e246b44fec13418225678be9b"
+    },
+    {
+      "path": "convex/catalog.lookup.testing.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "516e1e58698a9dafccfff07f5f2669ca8bb2a49c0c130c8df97b7e44c4075dcc"
+    },
+    {
+      "path": "convex/catalog.testing.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "15334cc4d45258518ae29486737e1e02958e369a45078a898009be691778d52f"
+    },
+    {
+      "path": "convex/catalog.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "c411c299a602092549bb5063debeb356f8e747fa98e3f3720ac78683a4f0f995"
+    },
+    {
+      "path": "convex/catalogDirectionAdapter.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "c0deffd18485cdcc4df6bcbc388e0b014027f7ecdb1880114102a8c4d583dbf5"
+    },
+    {
+      "path": "convex/catalogDirectionAdapter.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "195b0a072cdadeac65f1928b14cd01ca6a2b53351c2c8f021f4dc12a515d10a4"
+    },
+    {
+      "path": "convex/catalogIdentity.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "c680b8e40a04fd7491fd547cc33be200db621c1b20632835480eaf8e0e00b75e"
+    },
+    {
+      "path": "convex/catalogIdentity.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "77d305d3280585dc9f94dad55f205ef67eaa68d2751482018d5543be8c15d40e"
+    },
+    {
+      "path": "convex/catalogValues.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "d09f256f56313f2fafc7fabedffa18b340dd2dbcde1c39b2d8614e192af205e1"
+    },
+    {
+      "path": "convex/chemistry.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "24ca57d50bcb97aa1e1319b1b277a24634356c6359697855d55f26e01b0b28aa"
+    },
+    {
+      "path": "convex/closet.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "d3466ffa76e28c4ee88334487130b95e093142f4b2b192163c8c536ffbaaf499"
+    },
+    {
+      "path": "convex/closet.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "130e2ebaea9214a4432ebecbb84c1f1720aa9474c37dd3fc7ffafccaeb3d7e70"
+    },
+    {
+      "path": "convex/conditionalSeparation.testing.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "cba4ff8daf57cd5864c2047f7efc6cce4f3d65c2c60effb6e1d0f4326daa2305"
+    },
+    {
+      "path": "convex/convex.config.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "c83db8487d7f2983326133b606266bd66fbfa9cdf680ddfb4b984cefbf315665"
+    },
+    {
+      "path": "convex/costs.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "fcef8ba397d4f5e3ada4410168f66c20ce0a6e2d80486931316083679a407640"
+    },
+    {
+      "path": "convex/directions.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "8d1ad72cc1957a0f2a0611e8f29631d84f95bd716c9e9d34af02029bcf25fcaa"
+    },
+    {
+      "path": "convex/drawer.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "439482f8d0cc7409ecb61e6ba9bb608a861d60815c2a94bbb76a27a629966b35"
+    },
+    {
+      "path": "convex/dryerContext.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "1055f583754ea2ab82f3575605909de0fe45f338be03cf9780d4dce963a47ba2"
+    },
+    {
+      "path": "convex/dryerContext.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "16d15d108c202e7786b833231e62605a6b6921a6d4298ce2c27f310405347c99"
+    },
+    {
+      "path": "convex/dryerContextValues.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "7f52a4cf2869fb5b7921f83a5224f1166f9deffc076d88656a1f645a81518cc8"
+    },
+    {
+      "path": "convex/drying.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "23b3dc3f5f9cee682ef57febeb245d01037df95a0f5748a163d03c89871bc05a"
+    },
+    {
+      "path": "convex/dryingQueue.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "580d801fad4d096178d16e4c90ae5669dc7ed2a0e39ccc5851a95e03459e3d66"
+    },
+    {
+      "path": "convex/dryingQueue.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "0c74942a1f4e92db620112a8d47e41c20068613294c04079e9f10edf13ea335a"
+    },
+    {
+      "path": "convex/errors.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "e24c0d70fe4630811da4ecae073bb331a9267f21324c9536bbf4bba61416d668"
+    },
+    {
+      "path": "convex/execution.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "70bcb6cb203c6118c1fce07c3ad68571cd8330305407b4d12c8f010730c38ed1"
+    },
+    {
+      "path": "convex/execution.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "dfcb03e73d5429f881861134fd9b9c07a88606c6504e53009f3fdfde9eccd39e"
+    },
+    {
+      "path": "convex/executionHelpers.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "456cae3fcca5308e0ea429b29ac24658808bf7e77ab3a0327fff6042209063e6"
+    },
+    {
+      "path": "convex/familyScale.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "ba7b290ec38934c4dfd94a2d132f37ddb1e7920a6213a60fc8333e86637083ba"
+    },
+    {
+      "path": "convex/feedback.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "9a37eb6962e632fb2fe758d8378484b3458cc3d78241626b94c1272835787cfe"
+    },
+    {
+      "path": "convex/fixtures.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "2c3e000468cfaf724ebdbab998edce44d77958694970d97269bc3e33c0d209fd"
+    },
+    {
+      "path": "convex/fixtures.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "7a0c2d8388ca1d83784fc70f5ee46c9c7bb29924b88114e3c303819c9f8b6952"
+    },
+    {
+      "path": "convex/garmentAdvice.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "0a8729ba7854b18caea39032fd882ccc6b389a0ab976aae463c6ffd0c05ee0fe"
+    },
+    {
+      "path": "convex/garmentAdvice.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "f816285cf1ff127178aa0b1e2be75b64cf388eaf46040cf59c813ed4aee2dfc7"
+    },
+    {
+      "path": "convex/garmentAdviceValues.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "abbbb2a54f37651220d9889ed7826fe83ca8e6afa8f645173849446ebfa4a5fc"
+    },
+    {
+      "path": "convex/guidance.testing.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "60322dfa109729c58ec7463d8313a32a0eb6b8358ba6c2e952a699c78eb90fba"
+    },
+    {
+      "path": "convex/hangRule.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "e2edd164c1871036bf09eee31373e192797e4ed9a089a9e6ef74db01e3ed4b93"
+    },
+    {
+      "path": "convex/harness.testing.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "f06a8a4750ac54babe893f83f0f48bfae81f05293bd19b2a3a755b0a18233154"
+    },
+    {
+      "path": "convex/health.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "4ed8ea00d90c6bf4d9b147764eddb45a075fbc92a84e53c832075348286a320f"
+    },
+    {
+      "path": "convex/historyScale.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "86c359c183a30cc5f610cbe57e3d185e2794a8863f02f212749d52445a7170d1"
+    },
+    {
+      "path": "convex/households.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "a3225f5e176a94efeb3b302385ef93350b2382695d21aad23e3c789af423364b"
+    },
+    {
+      "path": "convex/households.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "8cbc70bfd27db26f2fc61f56e700ba4fc4d7c79b6ee5ed1a04eb1dba5d10730b"
+    },
+    {
+      "path": "convex/http.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "60bd54c903bae0956d59ab8db3d986c8fd7198bf484796fe1c4cf330c66a8167"
+    },
+    {
+      "path": "convex/identity.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "3742ba32b0ff10b62405908fade5b910c4cdd5366aecc3182808b177a65f2bf5"
+    },
+    {
+      "path": "convex/intakeSaves.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "c6d05f44a8815d7dc19c83dc54fa1bef4851370b6cc79d01bf41151d5ce3ba9a"
+    },
+    {
+      "path": "convex/intakeSaves.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "33c2fbb57e1af411f224769f4dae28aca297ad00c2426840b85001ba12d9e8eb"
+    },
+    {
+      "path": "convex/inventory.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "35e0a1f50eda13783cb8ba27608f64a5340f722e9676a8e5a6f06d651255e942"
+    },
+    {
+      "path": "convex/inventory.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "26dc3ebf61359514fec600ad82c50df6c05d4b164a19b78734c9edc088cd5ec5"
+    },
+    {
+      "path": "convex/inventoryBrowse.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "4e69dcd4a9894c9cfb62242cebf0ec07943227064f0526d6742375c17b873113"
+    },
+    {
+      "path": "convex/inventoryBrowse.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "ea744812842a6cc74e272e273816754a40318a0d56db6376b5309b23282b463f"
+    },
+    {
+      "path": "convex/inventoryHelpers.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "828ed9a2c7fd65658b406e1059df45e900ef7c5b0fa5d974548bc13a850f47e2"
+    },
+    {
+      "path": "convex/journey.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "b19c6de74034783897396a9e1c551410860c747890f8f5ed5b6ba18420f6c625"
+    },
+    {
+      "path": "convex/milestones.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "9e04af1294ad1d0a63284721704e131117201bbfa9b660d677fc6ffe48d6d12d"
+    },
+    {
+      "path": "convex/notifications.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "fe37a35799b1d193b3789c6fef38c1b5878b89c8515175d263cb318188446949"
+    },
+    {
+      "path": "convex/notifications.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "8d444fe02cbbe2213d5c53af40b0086c38163cb87ca1289407a85a279580186f"
+    },
+    {
+      "path": "convex/outcomeAssessments.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "deba2d37c88a87dd1c13657d31d433f4906faf203f51cff42e39183b8b82d603"
+    },
+    {
+      "path": "convex/outcomeAssessments.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "422a7d9c60ef5a4ef7ebc9e5293f01073c3ebfe736e17ac76ad0cb737224dbd4"
+    },
+    {
+      "path": "convex/outcomeValues.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "65589cc853a1d5c3c20920a23dc2ac0c1d7d0bef596f20547febbbdd2e376c96"
+    },
+    {
+      "path": "convex/outfits.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "a9fde6a489ea34583fe2ef7d80fd6ecff9b5e62370cc7d0994d617203ff779a6"
+    },
+    {
+      "path": "convex/outfits.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "a75075fcce2e37e2bcc8546cbe83ddc81b47bf0537344d63c53390a3e266f9cb"
+    },
+    {
+      "path": "convex/package.json",
+      "origin": "released-laundry-source",
+      "input_sha256": "7a062739e2bd7acfc86ef340ef7b1b042593fa0308c55505a7454283c412c082"
+    },
+    {
+      "path": "convex/personalAdaptation.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "88d39f32c94a28f1589a53610f2bb5c844af584ab35c07acbb343bea16b69257"
+    },
+    {
+      "path": "convex/personalAdaptation.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "45d2a876f38d4fc41bb815a2071879966187f0974b4fdde201f5dc9dcf9c89ea"
+    },
+    {
+      "path": "convex/personalOutcomeContext.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "ece9c457ad9ca4159a42e7c8e3d25409a689c9c64101a0cfca9732249f4c96ec"
+    },
+    {
+      "path": "convex/personalOutcomeHistory.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "dc1ce32b6d930cb8efc3a0b269f00154eccdd1e2efacd247d8b24e9acaf5c141"
+    },
+    {
+      "path": "convex/personalPlanStorage.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "f37e2e5117f4392744b3eb351808ebcdc0ca91809812af2d2d2729c9cd9c4d2e"
+    },
+    {
+      "path": "convex/personalRoutineValues.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "0998fdf5e9512045136e2a875c8dd56e85e1af910345e6b3d107e4ff06d3177a"
+    },
+    {
+      "path": "convex/personalRoutines.testing.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "066e8cee0550243e1ec5f101290a82aad8f0742c0478787a0cee94bfa0f6a96a"
+    },
+    {
+      "path": "convex/personalRoutines.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "b28c01629830a3edfcf7f2b16c5f39eb9d668fc8ff066967fcbea66ef860d0a7"
+    },
+    {
+      "path": "convex/personalSuggestions.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "dac90b9d90b359154d3efdca83839a7f0e0a5e11a5c23c00d09ec65c089a5186"
+    },
+    {
+      "path": "convex/personalSuggestions.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "ce9818e7095188b05ffcaabb6ac94bd4a45e327525e73329175ea04bf7251df2"
+    },
+    {
+      "path": "convex/photos.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "80c934a9c1155b94dbabbb7b7748c7c419386c3fa5eafb0c3d14e4fab12f5964"
+    },
+    {
+      "path": "convex/photos.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "fad1b689652e4efaa6945ca53abe28016bee7cdaa1ce5723e6220c74c520f173"
+    },
+    {
+      "path": "convex/places.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "043060bba9d507034a75e08bdc324a5dbea9c54f21a24387ac381fbaef2d6e77"
+    },
+    {
+      "path": "convex/planStorage.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "a70f20788767add2841d2117bd7e2c5760a0495cfd5acc2c56968f96fbe0fe20"
+    },
+    {
+      "path": "convex/planStorage.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "62d11b5b94fcfec1ea7c6f078d67359ea7d6b4ce46b344a040a2212785bfdc8d"
+    },
+    {
+      "path": "convex/plans.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "8d6452c1f00274010a7311e344b4c7c870548aadb8d707c7c76b6fb39895c51e"
+    },
+    {
+      "path": "convex/plans.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "e002cac37df59487f6af50ce038ad4706def5e309a7af0954f7a42aafd951ff3"
+    },
+    {
+      "path": "convex/plansHelpers.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "b7c215538b2dd2c96186a703b34980c1ab159368c9676b7dc36cb8d19e7f1488"
+    },
+    {
+      "path": "convex/principal.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "9a73bada66c37d9775d649b6007af72dd33467f2057b09da28923949d2e43dc5"
+    },
+    {
+      "path": "convex/principal.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "fea4d95261c0c239b0f4786e2f837dfe10d66b76941da03630fef0283898e160"
+    },
+    {
+      "path": "convex/privacy.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "dd38bbb5a8d88d9751004a822c7e7e8568231c25d42b843b0b8486d9aadcd5fe"
+    },
+    {
+      "path": "convex/productBenefits.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "70176e6ae4782a743aa570a55a4617d4c53391e732649a3da406303949fff4f6"
+    },
+    {
+      "path": "convex/push.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "8feabd9d514b5cf81194343d0451154694d04eb92db8956959c926692846e015"
+    },
+    {
+      "path": "convex/pushDelivery.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "7946416ae3a143db894fe6e7e82703f2ed73182744d13f24b942331e02538f0d"
+    },
+    {
+      "path": "convex/pushDelivery.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "99e06855f651a3130c78f730f4968759d2575a337ba11a5d749ed664dc357f3b"
+    },
+    {
+      "path": "convex/pushPolicy.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "a36c990a7536799954a66898dc8c1de35e2657e5042120f6fbb91564640bfc66"
+    },
+    {
+      "path": "convex/recovery.testing.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "67323963ab89ffa98cf8f8ad450fd21ae8764a93d7d602ea60f877d0a238549f"
+    },
+    {
+      "path": "convex/reminders.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "c3160aebdc159bb4bff2726f36442febb3b91830d9a642d558128efb79f7ef29"
+    },
+    {
+      "path": "convex/sanitizer.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "372d28a7236454ebb299860b0e3805da1f231946c9ebf7b3b02d63447cf8aba3"
+    },
+    {
+      "path": "convex/schema.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "61da309a4391e2563f7e161b4fccd746a494326730f9eae3d118d7e8d9056a22"
+    },
+    {
+      "path": "convex/schema.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "5466a90d820e8a9210555a64e7f9065d248a4b09e3639f8ab43c512616f55f38"
+    },
+    {
+      "path": "convex/sessionTime.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "693798e66da5c2d07b0ef2b13ce2835a65fa082b5769289819a57603496c98c6"
+    },
+    {
+      "path": "convex/sessionTime.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "ea73caa3d15d7742d67d7487500e0a4ca1885976757cd6d98ec6b90c5268b3c3"
+    },
+    {
+      "path": "convex/sessions.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "714bc515d727e23b606dea34ba4dcd1c5660466de670f527b5a19e4abe853708"
+    },
+    {
+      "path": "convex/sessions.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "56fb8855d39b5d490d320895200d8ed99cfeae9cda7b9103783db036875442c1"
+    },
+    {
+      "path": "convex/testing.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "5cc183a0e83bab6b50a3564a1612449ab19e168cd738342068d748975f116283"
+    },
+    {
+      "path": "convex/tsconfig.json",
+      "origin": "released-laundry-source",
+      "input_sha256": "afb50de4702d328e8dbd6f7c48c54aacee3df30bcf56191ce5f064b940c68fd4"
+    },
+    {
+      "path": "convex/validators.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "07cc784c95bc82a5bbcaa6882b54af5f160372b911986001efd42d2267619f80"
+    },
+    {
+      "path": "convex/vitest.config.mts",
+      "origin": "released-laundry-source",
+      "input_sha256": "9f4a2066052f7f91c3185e52ea593496a2be332d8e39d58643102fa7baf8ddbd"
+    },
+    {
+      "path": "convex/waterHardness.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "2c1cebcfc7cafd501ccae18d800eb6439272f5d975497180a2d4a408baea985e"
+    },
+    {
+      "path": "convex/waterHardness.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "83ffcaf4853c8e731cf0585430c169d516bd807c9c0d9ee0fb95014357a4d04d"
+    },
+    {
+      "path": "design-qa.md",
+      "origin": "current-rehearsal",
+      "input_sha256": "0f8b5a6a9130e4c520d92b1a83a11859f0c1c34bd5d551fceb17971e9d03d0c5"
+    },
+    {
+      "path": "docs/design/2026-10-09-connected-review-workspace.md",
+      "origin": "current-rehearsal",
+      "input_sha256": "a2622657cedaddce5b5b7560e5e328814aedae9cca84e7197b490eb72fe90dea"
+    },
+    {
+      "path": "docs/design/connected-review-workspace.md",
+      "origin": "current-rehearsal",
+      "input_sha256": "c3f65c071b46227b63484323fc5712d455aa2aa71cc4af0774749fb88a0443d8"
+    },
+    {
+      "path": "docs/design/opendesign.md",
+      "origin": "current-rehearsal",
+      "input_sha256": "6f9d266174132207ca9e2a225afc1ac93c989ee6efaf59ae4d143f8b5c8dbaa6"
+    },
+    {
+      "path": "docs/design/opendesign/home-state-label-2026-10-11.md",
+      "origin": "released-laundry-evidence",
+      "input_sha256": "eede0a7b1688d059f125f9da1d7339cdee3483ad12a3f9e1cbfb882354a01504"
+    },
+    {
+      "path": "docs/design/opendesign/preparation-redesign-2026-10-11.md",
+      "origin": "released-laundry-evidence",
+      "input_sha256": "1ac6abdff322a2bc67e61ab3f7c3d7b24b04887a890472d5cea8153353a5e253"
+    },
+    {
+      "path": "docs/design/opendesign/root-polish-2026-10-11.md",
+      "origin": "released-laundry-evidence",
+      "input_sha256": "4f4a77a7f34ef3d72dc22ad023d8f4acac21dd77ebdc7e0258f51d9e56ad2a01"
+    },
+    {
+      "path": "docs/design/review-product/2026-10-10-post-zip-report.md",
+      "origin": "current-rehearsal",
+      "input_sha256": "60b3849636b8552bcc874fe5fc6c4ddeabc64b0535c395bb1ece1c863c406f1f"
+    },
+    {
+      "path": "docs/design/review-product/2026-10-11-family-simulation.md",
+      "origin": "current-rehearsal",
+      "input_sha256": "6ac9a83c5695259f628d54eabb04b0341e454438ce2b252c5e5ed65b03e808cd"
+    },
+    {
+      "path": "docs/design/review-product/PRODUCT.md",
+      "origin": "current-rehearsal",
+      "input_sha256": "10be48127273962ee8d16be620b67746b86824d97438925f8d6570c81839d3b8"
+    },
+    {
+      "path": "docs/design/review-product/agent-bridge.md",
+      "origin": "current-rehearsal",
+      "input_sha256": "ee6b0d30eeba262cd7c6fc258d14e05155813eae52bb8753765264453beeb235"
+    },
+    {
+      "path": "docs/design/review-product/build-evidence.md",
+      "origin": "current-rehearsal",
+      "input_sha256": "07dca578ee9f0e199e5b577d4670ff6bb33ac3dfab7a10a463b38aba4f41ba61"
+    },
+    {
+      "path": "docs/design/review-product/coverage-bridge.md",
+      "origin": "current-rehearsal",
+      "input_sha256": "95cc5a2c6d50d38cfa5fa08db1187dfa099633ac377f66fcd49802e0efe658e3"
+    },
+    {
+      "path": "docs/design/review-product/coverage.json",
+      "origin": "current-rehearsal",
+      "input_sha256": "8b3987535f82040ae59fb65acd44330a7154ca91df5bcc7395f2a9e81cf2263a"
+    },
+    {
+      "path": "docs/design/review-product/evidence/review-validation-2026-10-10.json",
+      "origin": "current-rehearsal",
+      "input_sha256": "b6b1f6981f5640c33132ef3552d46eaddd02121aaf4ae159e2a2cbfb8a19001c"
+    },
+    {
+      "path": "docs/design/review-product/journeys-and-collaboration.md",
+      "origin": "current-rehearsal",
+      "input_sha256": "50d1592714d6fc5e021c1e7040f48b6fbdd4f2846ce169113cd2fd4d2c5dbd02"
+    },
+    {
+      "path": "docs/design/review-product/project-discovery.md",
+      "origin": "current-rehearsal",
+      "input_sha256": "57ca8283e3c53267efec66e7973fa3ba374224afaaecd60b238490cd84bcc7f5"
+    },
+    {
+      "path": "docs/design/review-product/project-onboarding.md",
+      "origin": "current-rehearsal",
+      "input_sha256": "d9c3c1d782b9ba7a1ad68f71ac8f64be1c465a0aba729ae0468c732bb66deea6"
+    },
+    {
+      "path": "docs/design/review-product/project-picker.md",
+      "origin": "current-rehearsal",
+      "input_sha256": "fe24d9bc717b01aebdac6f6a1a262eaddf3ea5ee4e63f58173d4ff7151ac4e76"
+    },
+    {
+      "path": "docs/design/review-product/proposals.md",
+      "origin": "current-rehearsal",
+      "input_sha256": "37b24ce4c1aba1b87cc80a5d801653256fc2d9d6591765453578fb62fa07982c"
+    },
+    {
+      "path": "docs/design/review-product/root-refinement-reconciliation-2026-10-11.md",
+      "origin": "current-rehearsal",
+      "input_sha256": "31a43245246e1e0ecfd26b8072963cea9d0ca4871a576eb7f496e92b49da5bc5"
+    },
+    {
+      "path": "docs/design/review-product/screen-canvas.md",
+      "origin": "current-rehearsal",
+      "input_sha256": "93602a3ed6647f197cc0d47ddb9fdcf36db312a5344000918d66c8758b2f9abb"
+    },
+    {
+      "path": "docs/design/review-product/snapshot-cache.md",
+      "origin": "current-rehearsal",
+      "input_sha256": "07bbd0d3f5289fe8ab3aff02c76ca41cc2ab7d2a57053e9dc6f0ea3b74ba8c04"
+    },
+    {
+      "path": "docs/design/review-product/tailscale-access.md",
+      "origin": "current-rehearsal",
+      "input_sha256": "40cd92a8ee390522d379b974a2cd9e260ea4b7a2c36745550cee1cc86ad77ed6"
+    },
+    {
+      "path": "docs/design/review-product/workspace-observations.md",
+      "origin": "current-rehearsal",
+      "input_sha256": "b189c486ea678d1a118ba96c290447698be42098489d1f24c3a31e42ea46cfaf"
+    },
+    {
+      "path": "docs/design/review-validation.json",
+      "origin": "current-rehearsal",
+      "input_sha256": "28a270f05747b9627ed7ffcb209df8adf46c6301584a6da289bf0af77438d162"
+    },
+    {
+      "path": "docs/design/review-workspace/chrome/desktop.png",
+      "origin": "current-rehearsal",
+      "input_sha256": "8e5ec3663c639582b402f089f7c2f39aa2e9605fafaa68f1ffcaa05f24688562"
+    },
+    {
+      "path": "docs/design/review-workspace/chrome/phone-dark-enlarged.png",
+      "origin": "current-rehearsal",
+      "input_sha256": "36a1345a86f85ce30823e84643dd673d6cbca67cde1228e03a310d3e46782c90"
+    },
+    {
+      "path": "docs/design/review-workspace/webkit/desktop.png",
+      "origin": "current-rehearsal",
+      "input_sha256": "3736bfc1b67fcec1a1558f2eb055263c80799987f5b9463b83bc660d791f946b"
+    },
+    {
+      "path": "docs/design/review-workspace/webkit/phone-dark-enlarged.png",
+      "origin": "current-rehearsal",
+      "input_sha256": "49ccc00094a11a4250d022c1c7f2e9aab359a957f7bae252e44091f9ab6675f4"
+    },
+    {
+      "path": "docs/plans/2026-10-03-delivery-status.md",
+      "origin": "current-rehearsal",
+      "input_sha256": "435d5f501adf1b647805964b1cda45f50c6960d423c6c58d870dbb17ad0b1803"
+    },
+    {
+      "path": "docs/research/2026-10-03-product-source-candidates.json",
+      "origin": "current-rehearsal",
+      "input_sha256": "628dfd977d7e0923b240a98e458a271ab13d8de93513c2928e31c3e31e343a56"
+    },
+    {
+      "path": "docs/research/owner-product-integration/input/2026-10-04-owner-product-evidence.json",
+      "origin": "current-rehearsal",
+      "input_sha256": "a8617b85bede9dafd697f8f0bccccd24126198381608b401c4c6f99818c50176"
+    },
+    {
+      "path": "docs/research/owner-product-integration/input/2026-10-04-owner-product-evidence.md",
+      "origin": "current-rehearsal",
+      "input_sha256": "061da19d46b0750fa5376d322705f9e43617f88db16caae4f3f469b9bd72e13a"
+    },
+    {
+      "path": "docs/research/owner-product-integration/input/2026-10-04-product-intelligence-workflow.json",
+      "origin": "current-rehearsal",
+      "input_sha256": "fc4e90a080b79490e45fdfa05451fd969e8a7f76cbcd417a72fe0d6746ac7b57"
+    },
+    {
+      "path": "docs/research/owner-product-integration/input/2026-10-04-repeatable-product-intelligence.md",
+      "origin": "current-rehearsal",
+      "input_sha256": "5be7cd2855a47dca4f8eef6d38e3371fb46d4d6fbd8a3e635c90eb2dfdabae23"
+    },
+    {
+      "path": "docs/research/owner-product-integration/output/manifest.json",
+      "origin": "current-rehearsal",
+      "input_sha256": "f465e840b5438e678c8f52604da23f9e726c75b9f2458ff3e9aaac5cb31cc95e"
+    },
+    {
+      "path": "docs/research/owner-product-integration/review.json",
+      "origin": "current-rehearsal",
+      "input_sha256": "c741a06e4eebf1a898904b4ede2260411d70f09b9f562ac590286ad9ac321e8b"
+    },
+    {
+      "path": "docs/research/owner-product-integration/tide-additions/input/evidence.json",
+      "origin": "current-rehearsal",
+      "input_sha256": "1ddda711eb0c03ea35989c6ec605236427febe75b6b5abf59111dc21347aa24d"
+    },
+    {
+      "path": "docs/research/owner-product-integration/tide-additions/output/manifest.json",
+      "origin": "current-rehearsal",
+      "input_sha256": "82e7f292d8af320e1c83b69c38d80316a593975f6bfb390f77fee3d47772e453"
+    },
+    {
+      "path": "package.json",
+      "origin": "current-rehearsal",
+      "input_sha256": "a0aacd9b40278a2c944ff51bbb30f4fb5318e4fcd95b449a38004330d53e03fc"
+    },
+    {
+      "path": "packages/icons/LICENSE-lucide",
+      "origin": "released-laundry-source",
+      "input_sha256": "23fa9b1340eb2f79cfa013bf19dd3745a7b38e5a2a0fd328e0beaa67c9df3814"
+    },
+    {
+      "path": "packages/icons/README.md",
+      "origin": "released-laundry-source",
+      "input_sha256": "1d303e14eaca2f75bb0680640ca93e2542a33a2c39d853b01d22241c294faa9d"
+    },
+    {
+      "path": "packages/icons/package.json",
+      "origin": "released-laundry-source",
+      "input_sha256": "13cb493d6798e81fff28e093044084522ac477cda496acf9eb62ea4f2354122f"
+    },
+    {
+      "path": "packages/icons/scripts/export-svg.mjs",
+      "origin": "released-laundry-source",
+      "input_sha256": "64490f80885fd0a5381ee559ca54363908f1847526a4b064d5573944ae16c1f2"
+    },
+    {
+      "path": "packages/icons/scripts/vendor-lucide.mjs",
+      "origin": "released-laundry-source",
+      "input_sha256": "7525495652afc27de5d7eeb6291c1b22d7523bc98bb6c559af5b49664ff0e65d"
+    },
+    {
+      "path": "packages/icons/src/index.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "3c92373ad3f5817f251bd735b5c333602720e9679174d8e2f94f5b4005f5bbc9"
+    },
+    {
+      "path": "packages/icons/src/lucide-paths.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "4c8b6bb56244404289119619a330abb817e85b3ad093b8fa8a5ce1c471d86aca"
+    },
+    {
+      "path": "packages/icons/svg/alert.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "73353b1fa784699d4e295bf8625f357497b3a769d866a493ed3506cf8c955275"
+    },
+    {
+      "path": "packages/icons/svg/arrowLeft.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "7512aae6b37c209dfb262fd70524e46a516de662051d685958e4e6d8b4999cbe"
+    },
+    {
+      "path": "packages/icons/svg/baby_bodysuit.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "dab7b7fe4d31ab260eea89ccd0abdd8e4cb7e6bc78477bfbe4eca6dc7e1c2855"
+    },
+    {
+      "path": "packages/icons/svg/beads.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "8d1fc86f1b3b2b51174f03c52a3ab248a18a751d83895ab3059bce556ad8b7f3"
+    },
+    {
+      "path": "packages/icons/svg/bottle.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "ed9483bae191f208773ce49d34066ebec0bcd1bf76779c716d3f45ec35fc8a09"
+    },
+    {
+      "path": "packages/icons/svg/bug.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "23ad7006a19221200e36006e1cb2cbe35c7d50b6aca4ec2fc887c59a00b3554d"
+    },
+    {
+      "path": "packages/icons/svg/chat.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "2fcf398c1b0b950f92dacb67699cc2c95eae9d121e257e7bcc10a7a3ade9eb8e"
+    },
+    {
+      "path": "packages/icons/svg/check.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "3f7734560c4c3c962ac267e6263df7db278403189b66cc678f99e8ea4241c487"
+    },
+    {
+      "path": "packages/icons/svg/chevronDown.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "f479f644c2a031648c9eb385e7c00b0006aeca726cefeae72d0fb72de7d15bca"
+    },
+    {
+      "path": "packages/icons/svg/chevronLeft.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "8ad871c7af07109e7cb0348b57f74070d16aa09fa9f372cc86e088c1e08a0aac"
+    },
+    {
+      "path": "packages/icons/svg/chevronRight.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "97927dd2f470e55d6c0e929f3e0ebd06f937989607b8369122db534730100a50"
+    },
+    {
+      "path": "packages/icons/svg/circleCheck.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "695b642a865f84c63ebb6499f376698095f781dc9cd1456a97a73e8b9b0255e0"
+    },
+    {
+      "path": "packages/icons/svg/clock.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "ac7e4efccb27f3e808cf5a12842a9a0cecd71cc4335002dc3bf26fcf52699b61"
+    },
+    {
+      "path": "packages/icons/svg/closet.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "01c920526aebe689fc272a6b807d2060c7f94d86f9d211a6332fac955e53af49"
+    },
+    {
+      "path": "packages/icons/svg/cloud.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "d5067fd92f423f1ee4d7da3031263bd063e9d06cdda5c6e584c372da3e2cb6fd"
+    },
+    {
+      "path": "packages/icons/svg/dispenser.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "8d93a3727d770dbeb89203c6af079337f51974942662b59d9e09cf363284d901"
+    },
+    {
+      "path": "packages/icons/svg/door.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "92c429467ae38073020719e165ff59f5066e88d1807755b21ca5c4f7f1b376d0"
+    },
+    {
+      "path": "packages/icons/svg/drawer.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "8e3b833321e8b33772a0354634a8bc68f9f0579f579bb4b4e2ab508574b4d2ac"
+    },
+    {
+      "path": "packages/icons/svg/dress.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "6febb0b4a84b0378d0098ca8fb32e831ace469140610ab99610be8fbe8e32969"
+    },
+    {
+      "path": "packages/icons/svg/drop.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "533356586457bb3704df7b4c4db1b2c49141259b957dc920103dacec1616af4b"
+    },
+    {
+      "path": "packages/icons/svg/dryer.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "70a3902002aa79a2f559d2be5e5c62203d0552c3eb7ea8bd3c85c8abf111b19d"
+    },
+    {
+      "path": "packages/icons/svg/dryerBalls.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "3d960003f703f257bd99b2c9f78220e16227491f44603d291d206c147c044688"
+    },
+    {
+      "path": "packages/icons/svg/dryerSheet.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "62766ee317acb722959327f290bc41246eed52d8754a512a3f5c56422c66d0f0"
+    },
+    {
+      "path": "packages/icons/svg/ellipsis.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "bffa4a2e4b306baaaf104cc4c02bc89dbaa791f022e58e7cd96ff364c13c74ae"
+    },
+    {
+      "path": "packages/icons/svg/flask.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "cc8fcd81af2a85295619dcd342dfb13f2f5e08d2f60e50e99cd6ea4bb5a423bf"
+    },
+    {
+      "path": "packages/icons/svg/flower.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "f142cd47ce519c891f767d47b23c429bbce8ea97946a405020402ba4e17db8bd"
+    },
+    {
+      "path": "packages/icons/svg/fold.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "7f79efecac83daaa17f7cd4f9f3fd34d0cafc1b8238b1fabd8337a8d5049445e"
+    },
+    {
+      "path": "packages/icons/svg/funnel.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "c5e89d47e30bf2a6bd072913787c1cf9b4b695eb1f1c4914ee9330a6e19735ff"
+    },
+    {
+      "path": "packages/icons/svg/gear.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "6cc3e24dcff712c09bb436149044b510763e2bdd30c4beb8c8ad14e499b8a54c"
+    },
+    {
+      "path": "packages/icons/svg/hand.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "b5f312b393d91bd407f8b7050b2dbfc98077798d9513a382bd9ab3e449a86e80"
+    },
+    {
+      "path": "packages/icons/svg/hang.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "ed8503077a6753b8705725a3637b557678ecbab402cd206fc238c9adaba2d40d"
+    },
+    {
+      "path": "packages/icons/svg/help.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "818c05ff3a2c297ce984f7081d54045fb342bfda41991ba2dd970e3f49545fa7"
+    },
+    {
+      "path": "packages/icons/svg/history.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "f2923c185a36a58b68b93e849cbf05d6dacfe44802672b577f949635a60a4528"
+    },
+    {
+      "path": "packages/icons/svg/home.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "c8389a73cca4cca1e5a4905227147b10869798607f2469c887759d07eae736ea"
+    },
+    {
+      "path": "packages/icons/svg/key.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "6c90475d0bcad399f824f980c0f06161fec0e9e70925d63db21ede59eddc6b3f"
+    },
+    {
+      "path": "packages/icons/svg/laundry.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "671eb3519a1da8f4512b736d53df0d97745b423f2631266321dd6e0274382b04"
+    },
+    {
+      "path": "packages/icons/svg/leaf.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "b27e25db97601fb402abdc74ac553f095be775538cf67870f7aec4b104d68019"
+    },
+    {
+      "path": "packages/icons/svg/lightbulb.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "097603af78b7a0197e9fa05d8ea99bf00b96823cf68395a72f93032575b2bdfb"
+    },
+    {
+      "path": "packages/icons/svg/mail.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "a9e39d597a3c15a8a4fc65aaa60bf9456ec95f5620b642b7a37043ba7811b495"
+    },
+    {
+      "path": "packages/icons/svg/me.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "c5ddc34be5eb5ff72ab3cd275947b33edf61d3af6b4dca18240b2b162e669ef0"
+    },
+    {
+      "path": "packages/icons/svg/minus.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "067e70bbbd78e2e7f60dc00b0dcaa6c639ab973154f18234f3f5d3527c072b91"
+    },
+    {
+      "path": "packages/icons/svg/offline.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "8a69463093e1141a96b8a62fc6c5323e7733368df6cbaf8ef732c478693fd5be"
+    },
+    {
+      "path": "packages/icons/svg/other.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "0880c352d47a81f3a5daf1bf2bf1df258a8cc7d571ae2e35732bb27f4d10a34e"
+    },
+    {
+      "path": "packages/icons/svg/outerwear.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "45ffab20eaf663739961b74016eb80f974c07d4c76d885baaf62336c1c66b32f"
+    },
+    {
+      "path": "packages/icons/svg/pajamas.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "4831e6d49a399116d639a71d9f0fff178ba7479eb4f43b390220561bf46657ec"
+    },
+    {
+      "path": "packages/icons/svg/pants.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "5f9614ee463877c6edd72e12116f882bc55ce62b1437c57ae65952b2cb89a82c"
+    },
+    {
+      "path": "packages/icons/svg/pen.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "98cd1cbe27598ff11a3c32203afbe07ecef36ecb8e8793b968231a272a325e2d"
+    },
+    {
+      "path": "packages/icons/svg/pencil.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "55f65f71c03290b864f1f9f690b331cb6c0f99d68c21c24617f8d797e46de34c"
+    },
+    {
+      "path": "packages/icons/svg/people.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "63f72893708f679e9ebb2a94eede33259496ff58a933db373ee2a51dd6f0939a"
+    },
+    {
+      "path": "packages/icons/svg/pin.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "a9213f18473b38ffda73b938169215fe4ccb0fe7ecfd1001ec6052b8c29d72fb"
+    },
+    {
+      "path": "packages/icons/svg/plus.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "c787f9982582ef36d43f018e3c86f6bbe767be9f58e87316d932bc34e0a5f327"
+    },
+    {
+      "path": "packages/icons/svg/pod.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "dc6bf0fcd1b978000416fcb94d941c872fc179eb166cb7e4ac45289879c93cb2"
+    },
+    {
+      "path": "packages/icons/svg/powder.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "5e7c6f55b72d89c1750a245fabf003e64c18697b29ad4fe451a492d133f65185"
+    },
+    {
+      "path": "packages/icons/svg/sanitizer.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "810d992a57bd726abb1bc3a410d216ed871a4231fd04c7a93fc2d3997d412ad5"
+    },
+    {
+      "path": "packages/icons/svg/search.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "bc1143049731d2290f80bf90d0bacb791cacbfc7c9a93d8d6fb2e8870c6ef3c3"
+    },
+    {
+      "path": "packages/icons/svg/sheets.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "63b7d654460aa6cb85cf9f44c0b9fe184c33d38c9934694d79ad89678a815166"
+    },
+    {
+      "path": "packages/icons/svg/shieldCheck.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "e01e4287ff336ccedc3cb77eee8ab306429456481c9430922cbce3fccdea4a4c"
+    },
+    {
+      "path": "packages/icons/svg/shirt.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "96b5b629830a2e1d7b1b3ae98bf2f583e4765002d1fe05bd8cf4ba72dd54ee9d"
+    },
+    {
+      "path": "packages/icons/svg/shorts.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "ff3153d4be9ab7d7d6b42fd6c0ef995741ec8c3b5969e47eb11250d0c09668e6"
+    },
+    {
+      "path": "packages/icons/svg/signout.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "e285271ae1e1d26c4a96973d1b9533ee6c252f1d84f0775ea54193ffcf33b007"
+    },
+    {
+      "path": "packages/icons/svg/signpost.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "9d866b582bbf593f74e8650a96a6c8fdd307cc9c9fc3e61dfe5ee29ba32bb1fe"
+    },
+    {
+      "path": "packages/icons/svg/skip.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "5c846c11bf6366d7cc23e32f1cd0a8a56d19c580557feff4979e322921535273"
+    },
+    {
+      "path": "packages/icons/svg/skirt.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "60c9eb1ed737a9aedbd2c565db27760d7f7b2425ebbc06e884a5eba9e450d10e"
+    },
+    {
+      "path": "packages/icons/svg/sliders.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "5124bd99a57cd4e6e6a9fc011553de6fb1b3ce0ca3ca6906505c9500135fabdb"
+    },
+    {
+      "path": "packages/icons/svg/socks.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "b2ec7b26b9a1500808fb44e706878487534e586bd9f9f366cc31fe5a5ccfe6da"
+    },
+    {
+      "path": "packages/icons/svg/softener.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "251b4b44b9394592cbbe17029ec3151e4d77ce346c9f54224e4765d072fa40d2"
+    },
+    {
+      "path": "packages/icons/svg/sparkles.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "f8bb04ee3ac3b6e54cfcbf2ab7192ab12f660d20343b2fb466c8b5507e897abf"
+    },
+    {
+      "path": "packages/icons/svg/spray.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "03788aac15b4c9ddc075b5f659a6c8d529314ed168977487c6a31eee135e7d94"
+    },
+    {
+      "path": "packages/icons/svg/storefront.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "992d65aecf45a5af9819517702f0222dbcf0fd195bc09d3ec1a6e404cfd9bb23"
+    },
+    {
+      "path": "packages/icons/svg/suit.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "da4d3912c01c454c8203e56472a789834379ea52a88f774799b7f05523ae508b"
+    },
+    {
+      "path": "packages/icons/svg/swap.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "ac75f4259235e6947e3d8b101e325ea7247d3df9bea36a6473ec7b798fca1744"
+    },
+    {
+      "path": "packages/icons/svg/sweater.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "097e3ee870e7724f99279212fa6a797b940a58a391eb2f6edc9a093824f11324"
+    },
+    {
+      "path": "packages/icons/svg/t_shirt.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "dc52be0b76858b2f10132568506fcfd9acc3a81ee38969d92c0e874e7ef69793"
+    },
+    {
+      "path": "packages/icons/svg/tag.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "a01390a3d474bbac40536fa34989b7c6fd01aa6f487e74430fcbc441a21f0955"
+    },
+    {
+      "path": "packages/icons/svg/tee.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "dc52be0b76858b2f10132568506fcfd9acc3a81ee38969d92c0e874e7ef69793"
+    },
+    {
+      "path": "packages/icons/svg/towel.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "a306cd96a560c4bb3ef5a181dc7c58676f1c97200d9482877fa6ac7fd185c754"
+    },
+    {
+      "path": "packages/icons/svg/trash.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "707e8f646383b61783d0f23f6b01250eddbb24e56290688ee31e42a43a2a3b2c"
+    },
+    {
+      "path": "packages/icons/svg/trousers.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "5f9614ee463877c6edd72e12116f882bc55ce62b1437c57ae65952b2cb89a82c"
+    },
+    {
+      "path": "packages/icons/svg/underwear.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "99d843cd1d1ebc86093d963d4d7ccfc0627cc74d36bc6c2a75d878f2ad11c97b"
+    },
+    {
+      "path": "packages/icons/svg/utensils.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "6289258c97950cc1df4aa9a0549db75fa0e0321186c76d6e6d7dfb55c65c0bf9"
+    },
+    {
+      "path": "packages/icons/svg/washer.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "3730355dc8c5f26d6982e6e6d38e6eb2ba0d45fed1d8fec9f6a4397404e321fb"
+    },
+    {
+      "path": "packages/icons/svg/waves.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "b889358f4c685ce536553ac2558d0053bb2f8c1581149ce6f1f7a5996a2d54ed"
+    },
+    {
+      "path": "packages/icons/svg/wind.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "35bcce73f9fc731d4ea6e65f80fea250094ba01af36125a9adf5864f8de27d2e"
+    },
+    {
+      "path": "packages/icons/svg/workout.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "45ca60e89c320e685bd107b3d441502815ca35a45abc3c75269767c7ee2e96a7"
+    },
+    {
+      "path": "packages/icons/svg/x.svg",
+      "origin": "released-laundry-source",
+      "input_sha256": "d76602fdb6b424d779d6ee42df422bf33ef3d776a1d38927949e33290feb7b20"
+    },
+    {
+      "path": "packages/planner/package.json",
+      "origin": "released-laundry-source",
+      "input_sha256": "1b8ca8cd076f0b4161f16cc28f893a57280ca6ed7bf6e992816c04d9cce972bc"
+    },
+    {
+      "path": "packages/planner/scripts/README.md",
+      "origin": "released-laundry-source",
+      "input_sha256": "6d00d17865a062354507639b881a794db6ed94cfb2e7e490d32825fd81cf252a"
+    },
+    {
+      "path": "packages/planner/scripts/archive-catalog-evidence.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "c9b71ba517c8aad668205713aff176fd544971b1a7b5410f3039a0e179510ce5"
+    },
+    {
+      "path": "packages/planner/scripts/chemistry-trial-audit.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "b27dd2ce04395b380ef0e5b89f779ea46b8e0dfc4e69d2b94b6fd08f29b8d9ab"
+    },
+    {
+      "path": "packages/planner/scripts/compile-owner-product-evidence.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "34198440fd0130521317657619eadebf1c42cf1317b79395361162ca30eef4b6"
+    },
+    {
+      "path": "packages/planner/src/care-constraints.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "e392d680446491b1ad89767457e6f356fd3736e33738a3dd43b2a6c495dde5fe"
+    },
+    {
+      "path": "packages/planner/src/care-process.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "1897ecfdb3fc5ef692cab017c3a320d4ee9874dbce0b5ab084ff6400a6d1a6a6"
+    },
+    {
+      "path": "packages/planner/src/care-required-detergent.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "7aca3bda121b740a7e597e7e0bc9d3ed9918bf485e99eb30590ac2faa06cb9d6"
+    },
+    {
+      "path": "packages/planner/src/care-wash-duration.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "ce9a67b8bdec7b5fdab70f0655b0f0a507a2c6679ee826f22808ff7650579b2a"
+    },
+    {
+      "path": "packages/planner/src/care.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "cb05a7a1f02cdd2729a12ca231918a0e3d2c154fe63eed8c6c6d53f0f23250a6"
+    },
+    {
+      "path": "packages/planner/src/closet-search.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "9f9b05f96ec3e7c4cf4db1c71a6cc9f3f3859dc9b1b980fe357fa63703fdd912"
+    },
+    {
+      "path": "packages/planner/src/clothing-tags.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "e8986bb9a1cb06cfd2e329db1d3edc3b8673b44bf6c20af02533cfb575ef11a8"
+    },
+    {
+      "path": "packages/planner/src/conditional-separation.integration.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "e5dfe664ec2437ee4d24d2ec077b542835dbe51f5ae3dcaf0aed4ed63ad1967f"
+    },
+    {
+      "path": "packages/planner/src/conditional-separation.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "f5b1051b8aaf26e3129a714a40b8aa1fd7dd6963c56eae02ba7338bd3feb992b"
+    },
+    {
+      "path": "packages/planner/src/conditional-separation.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "a1cf19e2a2678c2333e43b3b0a9b20d2f532dc9caf35294c1724fbe1e948704f"
+    },
+    {
+      "path": "packages/planner/src/detergent.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "6f627a0d4bfdfa447d20f5453d836f433cb097a849d09a85bc7c5fe66c73434b"
+    },
+    {
+      "path": "packages/planner/src/directions.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "010e4116262d40f5074cce8f4149891baa8a0504ecdd493204b7d57224b7f770"
+    },
+    {
+      "path": "packages/planner/src/directions.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "c119859bf7413fb16079316b0430072815af0f2c00cf7b0dcf25717f2daaae8f"
+    },
+    {
+      "path": "packages/planner/src/dose.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "d41a6efa5916d61c72a87c3e7fa6e1e6b003076f371a90463bea56d4145724d5"
+    },
+    {
+      "path": "packages/planner/src/dryer-loads.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "74dc43d7f88b61540d1490873e2fd4b16cb2a77ec4405ab7a63ba4d082fd55f8"
+    },
+    {
+      "path": "packages/planner/src/dryer-loads.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "fafe958cf7e834d1604628d7139c60835b810f8e786dc594bee61d90c5bb8baa"
+    },
+    {
+      "path": "packages/planner/src/dryer-setting.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "02818b1668280e9511dd30b05f828de750f713ab2f80a742350dc449b8dfedfd"
+    },
+    {
+      "path": "packages/planner/src/drying.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "82441407ac5b8619405be613cb1386047090475ca6a207a0137ad4a7cc6364ef"
+    },
+    {
+      "path": "packages/planner/src/drying.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "2e459421c975631ae63720458a621f3276f7bda624dc7e71cb0e8fdf0efe5bd3"
+    },
+    {
+      "path": "packages/planner/src/evidence.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "775048cd101dbaeb156f87b46bc40522fae2806b5f62ff3c5a021d31d3758438"
+    },
+    {
+      "path": "packages/planner/src/fabric-details.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "6470cfbbaf2bd9170024696fe6b5694a590d726ac99abe4d629953270c018fa4"
+    },
+    {
+      "path": "packages/planner/src/fixture-catalog.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "45891eae173c4a6fc96174eb28fd99b0741eae5d59bf62171ec9bf79bfc1976f"
+    },
+    {
+      "path": "packages/planner/src/fixtures.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "8280407acbe02ea49305b3c1f9e2c5ce9f8d63662d00d8be518cb2e759b846c6"
+    },
+    {
+      "path": "packages/planner/src/garment-advice.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "c0e6347a3138f0db20a30cb9c2928355d89d15229111b210d352fa16eda93bf8"
+    },
+    {
+      "path": "packages/planner/src/garment-advice.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "418057e9570ff06252f48048c6871456f9f0c7ead3f9be7375484b0145eb9824"
+    },
+    {
+      "path": "packages/planner/src/hash.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "fddda48d3a7f6ca428daad815eb983170a43745a0d35bf1d57fc4d592da866c8"
+    },
+    {
+      "path": "packages/planner/src/index.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "424bde7428495f48fae1be4ad7ad3c5b87d8445f9ab33602a87d038c7c06f3ff"
+    },
+    {
+      "path": "packages/planner/src/index.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "922a513803310e30aa6a37f3655bf3b3b2840b2973296440583c2c4dea459ccc"
+    },
+    {
+      "path": "packages/planner/src/loads.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "653c2f7322e0a250985cb7d8e9dfef82129a8e93e1ab5b5c1c416cdcf9e59196"
+    },
+    {
+      "path": "packages/planner/src/mark-fraction.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "a222cc846c4b13ea4251c443a36be1a1d609d1bd1f16e5d724dcff105313a6e7"
+    },
+    {
+      "path": "packages/planner/src/material-care.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "60d4a8b322ff1e22e943c8dafc92c29ea935d1145338e70a4be1b4ffd27fe38d"
+    },
+    {
+      "path": "packages/planner/src/outfits.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "a80b4b9fd2750b9adde818bd36567ba66681c9655f8baafe5a9371346ff69cff"
+    },
+    {
+      "path": "packages/planner/src/owner-product-evidence.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "0ec836f2603cc106c41a28a0b37f4607c995d3ff7b4830a2a6c23bb0335b0c02"
+    },
+    {
+      "path": "packages/planner/src/owner-product-evidence.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "75b0bae74487c2d6bd36230a5544c2c8371ad93c3dfc18de3fa5e44053eb8da5"
+    },
+    {
+      "path": "packages/planner/src/pass-order.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "f7281e8181bb9405cafefd034ca6c05ad79098dc7703fcf17c00e9323094f5bc"
+    },
+    {
+      "path": "packages/planner/src/pass-order.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "6bdaaae7ec224d40b30d0489cb55f2293f9643df3f3c87a79b3319b59fb25103"
+    },
+    {
+      "path": "packages/planner/src/personal-outcomes.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "c38f8223346545f7f388f0530630ae804daaf20c3ab14ad9b17043baaa06fa5d"
+    },
+    {
+      "path": "packages/planner/src/personal-outcomes.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "4dd862339eb68a829bc60c210aa8aa735d1ca2e28577f6fe6be9773aa376c040"
+    },
+    {
+      "path": "packages/planner/src/personal-planner.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "c9ace1c32523cb12ff3926f9ee516048f414b9d74aa41997ee099452ee5b7131"
+    },
+    {
+      "path": "packages/planner/src/personal-planner.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "240a9abe2a852f538ad42b052cd05c1e64ba08394ce731fdf85fa816fbb9a4ea"
+    },
+    {
+      "path": "packages/planner/src/personal-suggestions.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "a75b44321cac4e99efcb02edcb032aabe73e955953490236c391ef3f633333fa"
+    },
+    {
+      "path": "packages/planner/src/personal-suggestions.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "1f356a245c4c58e2609232c1b4e6cb19c848b10e0265d827c14e416bd7ee442d"
+    },
+    {
+      "path": "packages/planner/src/physical.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "855da874c3f4eaf19ad5480f744cf2514b6f9113ac543f8902b1f130a6c64fc7"
+    },
+    {
+      "path": "packages/planner/src/physical.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "74d44ab7e655c0c4e084c50f48ef5da03895a04679dc3e831ae27a6f8f26a0de"
+    },
+    {
+      "path": "packages/planner/src/pre-owned.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "52612e1e7246b94b209565722a75ccf56cef5b66f7d90b14cbf043f1b2aa024e"
+    },
+    {
+      "path": "packages/planner/src/pre-owned.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "9aeebb827cb634ca5e0ffe47120d131a1a9e01521e4f61e6922f3ebdd111b4ff"
+    },
+    {
+      "path": "packages/planner/src/product-benefits.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "3c0088ef43fae56c7ea17ce690dc69f667bb49d47750713a9b2884299c87f173"
+    },
+    {
+      "path": "packages/planner/src/product-benefits.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "7ee10fcee9cbab3b93a84a075e5e3243dd0b34320c8977fc92cd6f1535910434"
+    },
+    {
+      "path": "packages/planner/src/product-contract.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "6f1d3a9b7d0dd47641dbb95afa1d41aaf12e165fa2415354507f00b76fd2a1d4"
+    },
+    {
+      "path": "packages/planner/src/product-contract.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "6deb4881cda9fcbf28038f4739e46d788ceb9636accefc0ac88d2a55e832fce1"
+    },
+    {
+      "path": "packages/planner/src/requirements.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "1552d6629df7fd1480a18bcd26dfe71d00c2ebe246c7205c496aa5275049d133"
+    },
+    {
+      "path": "packages/planner/src/room.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "7237bc43769e721730483566a716a13d8ad39591ac6b79c2ad3a2074da77831e"
+    },
+    {
+      "path": "packages/planner/src/rules.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "5f4c27d5eec38e6acbdc49f19545f149f705653ec77aacd81455c1555af9742d"
+    },
+    {
+      "path": "packages/planner/src/sizes.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "3858a9f4beb953448f50e07051d10cc660e46f5ca89f0f92b582eeefe82ddf01"
+    },
+    {
+      "path": "packages/planner/src/types.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "5502539169199bbaa0f99de53957ac411d48cfc136d2f70a762dcf68910aec90"
+    },
+    {
+      "path": "packages/planner/src/vocabulary.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "5263c9ff0dbbaed75802ec0afe14c433bb5eaef3db25bd2d4696ba0561757072"
+    },
+    {
+      "path": "packages/planner/src/vocabulary.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "73bf44893c10ebc108d760edfd99d9a3f6f97deed734cf1e0aee282b77f0a0c6"
+    },
+    {
+      "path": "packages/tokens/build.mjs",
+      "origin": "released-laundry-source",
+      "input_sha256": "2d3fef7a63a7ac615434d4b79a9f666761f8468beb9b0ecd1f19f1bd36c15433"
+    },
+    {
+      "path": "packages/tokens/package.json",
+      "origin": "released-laundry-source",
+      "input_sha256": "786c9449f347b433b1e477c8f00067e10a31f3244cbfbd3f9ebecf3e05407a7f"
+    },
+    {
+      "path": "packages/tokens/src/build.test.ts",
+      "origin": "released-laundry-source",
+      "input_sha256": "2b05cdbb4454f78369a1f392ff29d07bcc094f90f8a1cbd2aac8b00eaaed723e"
+    },
+    {
+      "path": "packages/tokens/src/color/day.tokens.json",
+      "origin": "released-laundry-source",
+      "input_sha256": "dfd62d813d688fc9c520affe1ea4fb1467735377c0fef6d6086afd6b6fa80640"
+    },
+    {
+      "path": "packages/tokens/src/color/night.tokens.json",
+      "origin": "released-laundry-source",
+      "input_sha256": "b0f6b2f1b5f5328785b3c4429ef1038b46668f0794a4a85895a203d19260aaa2"
+    },
+    {
+      "path": "packages/tokens/src/elevation.tokens.json",
+      "origin": "released-laundry-source",
+      "input_sha256": "39254736ec317a3d559ab172e0ea98d332687902968cb3bde86cbd3aeffb154a"
+    },
+    {
+      "path": "packages/tokens/src/layout.tokens.json",
+      "origin": "released-laundry-source",
+      "input_sha256": "65a68d7355a3cdd6bff9018244848e371495f79ba0416eaa9dafdcbaa77cc8b6"
+    },
+    {
+      "path": "packages/tokens/src/legacy.tokens.json",
+      "origin": "released-laundry-source",
+      "input_sha256": "cedd15a610346e4eab171c01c789495bb904b014d4d5bb0c3fd9a36379a329dd"
+    },
+    {
+      "path": "packages/tokens/src/motion.tokens.json",
+      "origin": "released-laundry-source",
+      "input_sha256": "dd7a4ccda49b84b6bc2d5f57815701c4302ea45bea8f2b4deb7fe2d23668eb87"
+    },
+    {
+      "path": "packages/tokens/src/palette/cobalt.tokens.json",
+      "origin": "released-laundry-source",
+      "input_sha256": "8edb56721223e2510238056b47ebe8bad6f2a888494a0caf4899753828989472"
+    },
+    {
+      "path": "packages/tokens/src/palette/marigold.tokens.json",
+      "origin": "released-laundry-source",
+      "input_sha256": "f700b625aa4632d9fbbd38a1c083db39a35fd57aa88cf94a7d59336db2fe3a8c"
+    },
+    {
+      "path": "packages/tokens/src/radius.tokens.json",
+      "origin": "released-laundry-source",
+      "input_sha256": "04869b8f3d4401bce8939bf41aafa08910c20098759ae60e1d52824bae5db802"
+    },
+    {
+      "path": "packages/tokens/src/space.tokens.json",
+      "origin": "released-laundry-source",
+      "input_sha256": "9067c687f27e075b7cdc40f6c81534ec87d831cb3e749681c23b2a785995b2b7"
+    },
+    {
+      "path": "packages/tokens/src/type.tokens.json",
+      "origin": "released-laundry-source",
+      "input_sha256": "beac96d383573c885488933bc7dc8d826fb9cfd8bccd9f612ed93a33c391e761"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "origin": "current-rehearsal",
+      "input_sha256": "8931c6befea5adc8fe427df7c142e266391adbd50d57594eaec4221146131c41"
+    },
+    {
+      "path": "pnpm-workspace.yaml",
+      "origin": "current-rehearsal",
+      "input_sha256": "e744a014471c6bad4f3ac8e3eb0634cd3850429ba46c25fc7af7078817989a37"
+    },
+    {
+      "path": "rehearsal.project.json",
+      "origin": "current-rehearsal",
+      "input_sha256": "d34cd152deb8cf0cacdcc7f5badbe02e588046cb7a0b6800e2dd119deebaaaed"
+    }
+  ],
+  "package_generated_paths": [
+    "source/AGENTS.md",
+    "source/README.md"
+  ]
+}

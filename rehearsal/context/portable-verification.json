@@ -1,29 +1,7 @@
 {
-  "git_internals_present": false,
-  "application_head": null,
-  "revision_head": "0000000000000000000000000000000000000000",
-  "scenarios": 204,
-  "fixture_fingerprints": 207,
-  "adapter": "laundry",
-  "backend_connected": false,
-  "dependency_install": {
-    "offline": true,
-    "frozen": true,
-    "scripts_ignored": true,
-    "reused": 310,
-    "downloaded": 0
-  },
-  "verification": {
-    "service": 32,
-    "unit": 17,
-    "browser": 8,
-    "types": true,
-    "styles": true,
-    "static_utilities": 1659
-  },
-  "cold_import_failure": {
-    "initially_observed": true,
-    "bounded_startup_retry_added": true,
-    "regression_passed": true
-  }
+  "verified_on": "2026-10-11",
+  "source_copy": "/private/tmp/rehearsal-v7-portable-t_fb7kv1/source",
+  "install": {"frozen_lockfile": true, "offline": true, "reused": 310, "downloaded": 0},
+  "verification": {"typecheck": true, "styles": true, "compiled_utilities": 1661, "server_checks": 36, "towel_browser_cases": 5, "uses_bundled_source": true},
+  "limits": ["compatible-cache install, not clean-machine network install", "Chromium only", "no physical device or production backend acceptance"]
 }

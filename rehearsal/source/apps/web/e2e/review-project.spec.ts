@@ -3,6 +3,29 @@ import { expect, test } from '@playwright/test'
 test.use({ trace: 'off', viewport: { width: 1440, height: 1000 } })
 test.skip(process.env.REHEARSAL_PROJECT_E2E !== '1', 'Run against the isolated Notebook project adapter.')
 
+test('the same runtime bridge replays a DOM-only app and saved recordings without Laundry modules', async ({ page }) => {
+  const modules: string[] = []
+  page.on('request', (request) => { if (/\/src\/(closet|laundry|dev)\//.test(request.url())) modules.push(request.url()) })
+  await page.goto('/review-frame.html?scenario=demo.home&persona=editor&role=author')
+  await page.getByRole('button', { name: 'New note', exact: true }).click()
+  await page.getByRole('textbox', { name: 'Title', exact: true }).fill('Shared bridge note')
+  await page.getByRole('button', { name: 'Review first', exact: true }).click()
+  await page.getByRole('button', { name: 'Back to draft', exact: true }).click()
+  await expect(page.getByRole('textbox', { name: 'Title', exact: true })).toHaveValue('Shared bridge note')
+  await page.getByRole('button', { name: 'Save', exact: true }).click()
+  await page.getByRole('button', { name: 'Back home', exact: true }).click()
+  const tape = await page.evaluate(() => window.reviewPreview!.recording!())
+  expect(tape.steps.some((step) => step.fields.some((field) => field.label === 'Title' && field.value === 'Shared bridge note'))).toBe(true)
+  expect(await page.evaluate((input) => window.reviewPreview!.replay!(input), tape)).toEqual({ verified: tape.steps.length })
+  const response = await page.request.post('/api/review/runs', { data: tape }); expect(response.ok()).toBe(true)
+  const saved = await response.json()
+  await page.goto(`/review-frame.html?recording=${saved.id}`)
+  await expect(page.locator('#review-root')).toHaveAttribute('data-rehearsal-ready', 'true')
+  await expect(page.getByRole('heading', { name: 'Notebook', exact: true })).toBeVisible()
+  expect(await page.evaluate(() => window.reviewPreview!.recording!())).toEqual(tape)
+  expect(modules).toEqual([])
+})
+
 test('a project adapter retains input through branches and saves scoped capture and review evidence', async ({ page }) => {
   const productModules: string[] = [], captures: { context: { scenario: string; persona: string; role: string; state: { fields: { label: string; value: string }[] } }; message: string }[] = []
   page.on('request', (request) => { if (/\/src\/(closet|dev|laundry)\//.test(request.url())) productModules.push(request.url()) })
@@ -34,6 +57,9 @@ test('a project adapter retains input through branches and saves scoped capture 
   const comments = await (await page.request.get('/api/review/feedback')).json()
   const review = comments.findLast((row: { message: string }) => row.message === 'QA: portable project review with its own context.')
   expect(review.context.screen).toBe('demo.saved'); expect(review.context.persona).toBe('editor'); expect(review.revision.source).toBe(identity)
+  expect(review.recording).toEqual(expect.any(String))
+  expect((await (await page.request.get(`/api/review/runs/${review.recording}`)).json()).steps.length).toBeGreaterThan(0)
+  expect(await (await page.request.get(`/api/review/feedback/${review.id}/handoff`)).text()).toContain(`/review-frame.html?recording=${review.recording}`)
   expect(productModules).toEqual([])
 })
 

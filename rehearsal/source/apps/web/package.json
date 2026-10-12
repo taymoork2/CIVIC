@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "vite dev",
     "review": "WASHCLOSET_REVIEW=1 VITE_CONVEX_URL=http://127.0.0.1:1 VITE_CONVEX_SITE_URL=http://127.0.0.1:1 vite dev --host 127.0.0.1 --port ${PORT:-3010} --strictPort",
-    "test:review": "node --test scripts/review-agents.check.mjs scripts/review-inventory.check.mjs scripts/review-adapter.check.mjs scripts/review-coverage.check.mjs scripts/review-application.check.mjs scripts/review-project.check.mjs scripts/review-projects.check.mjs scripts/review-discovery.check.mjs scripts/review-civic.check.mjs && pnpm --filter @civic/shell run test:server",
+    "test:review": "node --test scripts/review-agents.check.mjs scripts/review-inventory.check.mjs scripts/review-adapter.check.mjs scripts/review-coverage.check.mjs scripts/review-application.check.mjs scripts/review-project.check.mjs scripts/review-projects.check.mjs scripts/review-discovery.check.mjs scripts/review-civic.check.mjs scripts/review-runtime.check.mjs && pnpm --filter @civic/shell run test:server",
     "build": "vite build",
     "build:icons": "node scripts/build-icons.mjs",
     "check": "tsc --noEmit && pnpm run check:styles",

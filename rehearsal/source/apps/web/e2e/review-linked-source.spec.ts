@@ -6,25 +6,24 @@ test.beforeEach(async ({ page }) => {
   await page.route('**/*', async (route) => {
     const request = route.request()
     const url = new URL(request.url())
-    if (url.origin === new URL(process.env.WASHCLOSET_E2E_BASE_URL!).origin && (request.method() === 'GET' || url.pathname === '/api/review/snapshots')) await route.continue()
+    if (url.origin === new URL(process.env.WASHCLOSET_E2E_BASE_URL!).origin && (request.method() === 'GET' || ['/api/review/snapshots', '/api/review/runtime'].includes(url.pathname))) await route.continue()
     else await route.abort()
   })
 })
 
-test('canvas retries source changes during capture and preserves the open draft', async ({ page }) => {
+test('a stale thumbnail never blocks Play or replaces the open linked draft', async ({ page }) => {
   let attempts = 0
-  await page.route('**/api/review/snapshots', async (route) => {
+  await page.route('**/api/review/fixture.png?*', async (route) => {
+    if (new URL(route.request().url()).searchParams.get('screen') !== 'fabric') return route.continue()
     attempts++
     if (attempts === 1) return route.fulfill({ status: 409, json: { error: 'Source changed during capture' } })
-    const index = await (await page.request.get('/api/review/index')).json()
-    const errors = [...index.scenarios.map((s: { id: string }) => s.id), 'type', 'whose', 'details', 'fabric', 'color', 'origin', 'dye', 'care:wash', 'care:bleach', 'care:dry', 'stain', 'final', 'saved']
-    await route.fulfill({ json: { source: index.fixtureSource, count: 0, errors } })
+    await route.continue()
   })
   await page.goto('/review?scenario=intake.towel.fabric')
   await page.getByRole('button', { name: 'Play', exact: true }).click()
   const frame = page.frameLocator('iframe[title="Live towel journey"]')
   await frame.getByLabel('Other material 1', { exact: true }).fill('Keep this linked draft')
-  await expect.poll(() => attempts).toBeGreaterThanOrEqual(2)
+  expect(attempts).toBeGreaterThanOrEqual(1)
   await expect(frame.getByLabel('Other material 1', { exact: true })).toHaveValue('Keep this linked draft')
   await expect(page.locator('.rehearsal')).toHaveAttribute('data-application-root', process.env.REHEARSAL_APP_ROOT!)
   await expect(page.getByRole('alert')).toHaveCount(0)

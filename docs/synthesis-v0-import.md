@@ -114,6 +114,34 @@ How v6 relates to CIVIC's own work:
 
 Verified on the merge branch with Node 22 and pnpm 12.5.1: `pnpm install --frozen-lockfile`, `pnpm run check` and `pnpm --dir apps/web run test:review` (every engine check, the shell's 10 server tests included) pass. The full `pnpm test` result is in the pull request.
 
+## v7 handoff update
+
+On October 12, 2026 the founder sent a v7 handoff of the journey engine, with a note on platform adapters. It was merged into `rehearsal/` the same way as v6: a three-way merge whose base is the v6 handoff's source exactly as sent (checked against its `SHA256SUMS`), with this repository's changes on one side and v7 on the other. v7's own `context/since-v6.patch` was checked by applying it to v6's source, which reproduced v7's source exactly. The v6 handoff documents, context and evidence moved to `rehearsal/history/v6/` and `rehearsal/evidence/historical/`; `rehearsal/` now carries v7's (`HANDOFF.md`, `CHANGES-SINCE-V6.md`, `EXTRACTING-REHEARSAL.md`, `PACKAGE-VERIFICATION.md`). Host paths and the owner's session ID are redacted in the committed `HANDOFF.md`.
+
+What v7 adds, over v6:
+
+- **A shared runtime bridge.** One framework-independent recorder (`runtime-bridge.ts`, `runtime-dom.ts`) records gestures, routes and effect receipts bound to the project, source revision, seed and clock, and refuses to replay on drift or ambiguity. Any adapter's live run can be recorded; the Inspect panel gets run controls.
+- **Real effects in isolation.** Each run gets its own worker and in-memory database running Laundry's actual Convex schema, queries, mutations and authorization (`review-runtime.mjs`), with external requests and server actions blocked. Nothing reaches a deployed backend.
+- **The actual Laundry app in review.** The real route tree mounts with a synthetic identity, frozen clock and review-only IDs. Home Wear and Drying run their shipped handlers.
+- **Towel is the first curated migration.** The towel journey mounts the real `AddClothesFlow` instead of the simulated mutation switch, with both origin branches, retained inputs, proposals, save, failed-save recovery and fresh replay. The other curated fixtures still use the older bounded adapters.
+- **Saved recordings.** A run can be saved (`/api/review/runs`), attached to a review, downloaded and replayed; agent briefs carry the links. Sensitive or deeply nested payloads are refused.
+- **An adapter direction** (`docs/design/review-product/platform-adapters.md`, researched, not built): a build connector, a runtime and data adapter, and an interaction driver.
+
+Merge decisions made here:
+
+- `@civic/shell` still imports nothing from Laundry. v7 put recording storage, the runtime endpoint and its new fixture renderer in the review server. The recording endpoints and their validation (`review-recording.mjs`, which only knows a project's presets) moved into the shell, exported as `@civic/shell/server/recording`, with its check in the shell's `test:server`. The runtime arrives as an optional `runtime` option, like `agents`. v7's fixture renderer, which now waits for isolated runs and closes them, lives in the Laundry adapter (`apps/web/scripts/review-adapter.mjs`), and the shell fills each declared screen with its registered scenario's fields.
+- Replay from start (PR #28) stays for project adapters, beside v7's run controls and saved-run replay. The Contract panel and the shell's shared styles are unchanged.
+- The access-key file stays for CIVIC's tools, as in v6.
+
+How v7 relates to CIVIC's own work:
+
+- **The adapter split and the roadmap.** v7's three responsibilities map onto CIVIC's pieces. Its build connector is the Vite plugin and static discovery, which CIVIC's crawl (D34) complements: the crawl finds states from outside, the connector finds code from inside, and both should stay discovered until a person confirms. Its interaction driver is what CIVIC's crawl drivers already are: the web driver on Playwright and the Appium driver from PR #25, which reads native states as roles and accessible names. v7's recommendation for native (shared semantic IDs and the same recording envelope, drivers written in the platform's own runtime, every receipt bound to platform, source, driver and fixture version) is the shape a native capture should take when a device runner exists. Its runtime and data adapter (seed, identity, clock, isolated effects) has no CIVIC counterpart yet; native apps will need one through their dependency boundary. No new adapter is built here.
+- **The graph.** A recording's receipts are run evidence the graph could hold: a path walked with a source revision, a seed and per-step effect receipts. They aren't exported yet; Laundry's graph (`projects/laundry`) still reads the review index and review specs, and the canvas reads the graph through `civic screen`.
+- **Step 6.** v7 built a recorder, where step 6 said to record with Playwright's own tooling. It is deterministic and makes no model calls, so it meets step 6's acceptance; whether CIVIC adopts its tape format as the recording record is open.
+- **Step 5.** Saved runs live in the engine's local store, not in the shared review records `civic sync` publishes.
+
+Verified on the merge branch with Node 22 and pnpm 12.5.1: `pnpm install --frozen-lockfile`, `pnpm run check`, `pnpm --dir apps/web run test:review` and the shell's server tests pass. The full `pnpm test` and `bin/signoff` results are in the pull request.
+
 ## How to run
 
 The review service is declared in `.amp/services.yaml` (`amp orb services ensure`) and opens through the authenticated Amp portal at the `CIVIC journey engine` portal. Locally: `pnpm --dir rehearsal/source/apps/web run review` and open the page; a loopback browser needs no key. CIVIC's tools use the key in `rehearsal/source/.review-data/access-key` (generated at first run, never committed).

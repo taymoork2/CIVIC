@@ -23,6 +23,7 @@ export function projectPath(root, path, required = true, strict = true) {
 export function checkedProject(input) {
   if (!input || input.version !== 1 || !id(input.id) || !words(input.name)) fail('use version 1, a stable id and a name')
   if (!['module', 'laundry'].includes(input.adapter?.kind) || input.adapter.entry !== undefined && !words(input.adapter.entry)) fail('unsupported adapter or entry')
+  if (input.adapter.runtime !== undefined && !words(input.adapter.runtime, 500)) fail('invalid isolated runtime entry')
   for (const field of ['sources', 'navigation']) if (!Array.isArray(input[field]) || !input[field].length || input[field].length > 50 || new Set(input[field]).size !== input[field].length || input[field].some((s) => !words(s))) fail(`invalid ${field}`)
   for (const field of ['personas', 'roles', 'conditions']) {
     const rows = input[field]
@@ -47,15 +48,17 @@ export function loadProject(repo, options = {}) {
   const scenariosPath = projectPath(manifestRoot, manifest.scenarios, true, strict)
   const coverageFile = projectPath(manifestRoot, manifest.coverage, true, strict)
   const entry = manifest.adapter.entry ? projectPath(manifestRoot, manifest.adapter.entry, true, strict) : null
+  const runtimeEntry = manifest.adapter.runtime ? projectPath(manifestRoot, manifest.adapter.runtime) : null
+  if (runtimeEntry && !/\.(?:[cm]?js|ts)$/.test(runtimeEntry)) fail('runtime entry must be JavaScript or TypeScript')
   if (entry && !/\.(?:[cm]?js|tsx?)$/.test(entry)) fail('preview entry must be JavaScript or TypeScript')
   const publicDir = manifest.publicDir ? projectPath(root, manifest.publicDir, true, strict) : false
   const aliases = Object.fromEntries(Object.entries(manifest.aliases ?? {}).map(([name, path]) => [name, projectPath(root, path, true, strict)]))
   const key = `${manifest.id}-${createHash('sha256').update(JSON.stringify([manifestPath, root])).digest('hex').slice(0, 12)}`
-  return { manifest, manifestPath, manifestRoot, root, sources, scenariosPath, coverageFile, entry, publicDir, aliases, key, local }
+  return { manifest, manifestPath, manifestRoot, root, sources, scenariosPath, coverageFile, entry, runtimeEntry, publicDir, aliases, key, local }
 }
 export function publicProject(project) {
   const { manifest: m, key } = project
-  return { id: m.id, key, name: m.name, adapter: m.adapter.kind, preview: Boolean(project.entry), personas: m.personas, roles: m.roles, conditions: m.conditions, navigation: m.navigation }
+  return { id: m.id, key, name: m.name, adapter: m.adapter.kind, preview: Boolean(project.entry), runtime: Boolean(project.runtimeEntry), personas: m.personas, roles: m.roles, conditions: m.conditions, navigation: m.navigation }
 }
 export function checkedScenarios(rows, project) {
   if (!Array.isArray(rows) || rows.length > 2000) fail('invalid scenario registry')

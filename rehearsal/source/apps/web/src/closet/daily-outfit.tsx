@@ -1,10 +1,11 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import { useQuery } from 'convex/react'
+import { Link } from '@tanstack/react-router'
 import type { FunctionArgs, FunctionReturnType } from 'convex/server'
 import { clothingTags, outfitGroupKey, usedClothingTags } from '@washcloset/planner'
 import { api } from '@/api'
 import type { Inventory, Textile } from '@/household/inventory-types'
-import { Button } from '@/components/ui/button'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { NativeSelect } from '@/components/ui/native-select'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
@@ -21,15 +22,35 @@ export function localOutfitDate(now: number) {
   return `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`
 }
 
-/** Root summary stays small; loading the recipient's ready wardrobe waits until the picker opens. */
-export function DailyOutfitSummary({ householdId, now, wearerId }: { householdId: string; now: number; wearerId: string | null }) {
+type OutfitScope = { householdId: string; now: number; wearerId: string | null }
+
+function useTodayOutfit({ householdId, now, wearerId }: OutfitScope) {
   const [date, setDate] = useState<string | null>(null)
   useEffect(() => setDate(localOutfitDate(now)), [now])
-  const plans = useQuery(api.outfits.today, date === null ? 'skip' : { householdId: householdId as FunctionArgs<typeof api.outfits.today>['householdId'], wearerId: wearerId as FunctionArgs<typeof api.outfits.today>['wearerId'], date })
-  const items = plans?.find(plan => plan.isYou)?.items ?? []
-  return plans === undefined ? <Loading what="today’s outfit" /> : items.length === 0 ? <p className="m-0 text-[length:var(--step--1)] text-ink-2">Choose ready clothes and record what you wear.</p> : <ul aria-label="Your planned outfit" className="m-0 grid list-none gap-2 p-0">
+  return useQuery(api.outfits.today, date === null ? 'skip' : { householdId: householdId as FunctionArgs<typeof api.outfits.today>['householdId'], wearerId: wearerId as FunctionArgs<typeof api.outfits.today>['wearerId'], date })
+}
+
+export function dailyOutfitActionLabel(plans: FunctionReturnType<typeof api.outfits.today> | undefined) {
+  return plans === undefined ? 'Open today’s outfit' : (plans.find(plan => plan.isYou)?.items.length ?? 0) > 0 ? 'View today’s outfit' : 'Choose today’s outfit'
+}
+
+export function DailyOutfitActionLabel(props: OutfitScope) {
+  return dailyOutfitActionLabel(useTodayOutfit(props))
+}
+
+/** Ready-clothes data is requested only when this person's own outfit has been planned. */
+export function DailyOutfitSummary(props: OutfitScope) {
+  const plans = useTodayOutfit(props)
+  const plan = plans?.find(plan => plan.isYou)
+  const items = plan?.items ?? []
+  return plans === undefined ? <Loading what="today’s outfit" /> : items.length === 0 ? <p className="m-0 text-[length:var(--step--1)] text-ink-2">Choose ready clothes and record what you wear.</p> : <div className="flex min-w-0 flex-wrap items-center justify-between gap-3"><ul aria-label="Your planned outfit" className="m-0 grid min-w-0 flex-[1_1_10rem] list-none gap-2 p-0">
     {items.map(item => <li key={item.key} className="flex min-w-0 items-center gap-3"><GarmentIcon kind={item.kind} colorGroup={item.colorGroup} /><span className="min-w-0 text-[length:var(--step--1)] font-semibold [overflow-wrap:anywhere]">{item.name}{item.quantity > 1 ? ` ×${item.quantity}` : ''}</span></li>)}
-  </ul>
+  </ul>{plan ? <HomeOutfitWear {...props} plan={plan} /> : null}</div>
+}
+
+function HomeOutfitWear({ plan, ...props }: OutfitScope & { plan: FunctionReturnType<typeof api.outfits.today>[number] }) {
+  const inventory = useQuery(api.inventory.list, { householdId: props.householdId as FunctionArgs<typeof api.inventory.list>['householdId'], readyWearer: props.wearerId as FunctionArgs<typeof api.inventory.list>['readyWearer'] })
+  return <OutfitWearAction householdId={props.householdId} wearerId={props.wearerId as FunctionArgs<typeof api.outfits.wear>['wearerId']} plan={plan} inventory={inventory} date={localOutfitDate(props.now)} />
 }
 
 /** Reuse pieces already worn today before recording another wear of the same style. */
@@ -37,6 +58,29 @@ export function outfitWearPieces(items: FunctionReturnType<typeof api.outfits.to
   return items.flatMap((item) => textiles.filter((textile) => !textile.guest && textile.status === 'clean' && textile.inLoad === null && outfitGroupKey(textile) === item.key)
     .sort((left, right) => Number(right.lastWornAt !== null && localOutfitDate(right.lastWornAt) === date) - Number(left.lastWornAt !== null && localOutfitDate(left.lastWornAt) === date))
     .slice(0, item.quantity))
+}
+
+function wearingToday(plan: FunctionReturnType<typeof api.outfits.today>[number] | undefined, pieces: readonly Textile[], date: string) {
+  return plan !== undefined && plan.signature !== '' && (plan.wearRecorded || pieces.length > 0 && pieces.every(piece => piece.lastWornAt !== null && localOutfitDate(piece.lastWornAt) === date))
+}
+
+function OutfitWearAction({ householdId, wearerId, plan, inventory, date }: { householdId: string; wearerId: FunctionArgs<typeof api.outfits.wear>['wearerId']; plan: FunctionReturnType<typeof api.outfits.today>[number]; inventory: Inventory | undefined; date: string }) {
+  const wear = useConvexCall(api.outfits.wear)
+  const { items } = plan
+  const pieces = outfitWearPieces(items, inventory?.textiles ?? [], date)
+  const unavailable = plan.signature === '' || inventory !== undefined && pieces.length !== items.reduce((sum, item) => sum + item.quantity, 0)
+  const wearing = wearingToday(plan, pieces, date)
+  const markWorn = async () => {
+    if (inventory === undefined || unavailable || wearing || wear.pending) return
+    await wear.run({ householdId: householdId as FunctionArgs<typeof api.outfits.wear>['householdId'], wearerId, planId: plan.planId, signature: plan.signature, date, timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone })
+  }
+  return <div className="grid gap-2">
+    <div className="flex flex-wrap items-center justify-end gap-2">
+      {unavailable && !wearing ? <p className="m-0 min-w-0 flex-1 text-[length:var(--step--1)] text-ink-2">Some clothes are no longer ready. View your outfit to update it.</p> : null}
+      <Button variant="outline" size="sm" className="outfit-wear min-h-11 shrink-0 px-3.5 text-[length:var(--step-1)]" disabled={inventory === undefined || wear.pending || unavailable || wearing} onClick={markWorn}>{wearing ? 'Wearing ✓' : inventory === undefined ? 'Checking clothes…' : wear.pending ? 'Recording…' : 'Wear this'}</Button>
+    </div>
+    <ErrorNotice error={wearing ? null : wear.error} />
+  </div>
 }
 
 export function DailyOutfit({ householdId, inventory, now, meWearerId }: {
@@ -147,7 +191,6 @@ function DailyOutfitPick({ householdId, inventory, date, wearerId, recipientCont
   const plans = useQuery(api.outfits.today, args)
   const plan = plans?.find((pick) => pick.isYou)
   const save = useConvexCall(api.outfits.save)
-  const wear = useConvexCall(api.closet.markWorn)
   const [draft, setDraft] = useState<Record<string, number> | null>(null)
   const [baseline, setBaseline] = useState<Record<string, number>>({})
   const [tag, setTag] = useState<string | null>(null)
@@ -191,14 +234,8 @@ function DailyOutfitPick({ householdId, inventory, date, wearerId, recipientCont
   const shownItems = mine ? items : shown.items
   const wearPieces = outfitWearPieces(shownItems, inventory.textiles, date)
   const shownUnavailable = wearPieces.length !== shownItems.reduce((sum, item) => sum + item.quantity, 0)
-  const wearing = wearPieces.length > 0 && wearPieces.every((piece) => piece.lastWornAt !== null && localOutfitDate(piece.lastWornAt) === date)
-  const markWorn = async () => {
-    const textileIds = wearPieces.filter((piece) => piece.lastWornAt === null || localOutfitDate(piece.lastWornAt) !== date).map((piece) => piece.textileId)
-    if (shownUnavailable) return
-    for (let offset = 0; offset < textileIds.length; offset += 200) {
-      if (await wear.run({ textileIds: textileIds.slice(offset, offset + 200) }) === undefined) return
-    }
-  }
+  const shownPlan = shown ?? plan
+  const wearing = wearingToday(shownPlan, wearPieces, date)
   const action = items.length > 0 ? 'Change today’s outfit' : 'Choose today’s outfit'
 
   return <div className="grid gap-3">
@@ -206,14 +243,14 @@ function DailyOutfitPick({ householdId, inventory, date, wearerId, recipientCont
       unavailableKeys={new Set(shownItems.filter((item) => (groups.get(item.key)?.count ?? 0) < item.quantity).map((item) => item.key))}
       emptyTitle={scoped.length === 0 ? 'A fresh start for this closet' : 'Your next outfit is already here'}
       emptyText={scoped.length === 0 ? 'No ready clothes yet. Check Laundry or choose another person to see what’s ready.' : 'Choose from your ready clothes now. One less decision when it’s time to get dressed.'}
-      emptyAction={mine && plans !== undefined && scoped.length > 0 ? <Button variant="secondary" size="lg" className="w-full" onClick={start}>Choose today’s outfit</Button> : null}
-      by={shownUnavailable ? 'Update your outfit before getting dressed.' : wearing ? 'Marked as worn today' : mine ? 'Your pick' : `Suggested by ${shown.authorName} · household`}
-      wearAction={<Button variant="outline" size="sm" className="shrink-0 px-3.5 text-[length:var(--step-1)]" aria-pressed={wearing} disabled={wear.pending || shownUnavailable || wearing} onClick={markWorn}>{wear.pending ? 'Recording…' : wearing ? 'Wearing ✓' : 'Wear this'}</Button>}
+      emptyAction={mine && plans !== undefined ? scoped.length > 0 ? <Button variant="secondary" size="lg" className="w-full" onClick={start}>Choose today’s outfit</Button> : <Link to="/laundry" className={buttonVariants({ variant: 'secondary', size: 'lg' })}>Go to Laundry</Link> : null}
+      by={wearing ? 'Marked as worn today' : shownUnavailable ? 'Update your outfit before getting dressed.' : mine ? 'Your pick' : `Suggested by ${shown.authorName} · household`}
+      wearAction={shownPlan ? <OutfitWearAction key={shownPlan.planId} householdId={householdId} wearerId={wearerId} plan={shownPlan} inventory={inventory} date={date} /> : null}
       controls={<>{recipientControl}{others.length === 0 ? null : <RadioGroup variant="segment" aria-label="Whose outfit" value={mine ? 'mine' : String(view)} onValueChange={(value) => setView(value === 'mine' ? 'mine' : Number(value))} className="max-w-full overflow-x-auto [&_button]:whitespace-nowrap">
         <RadioGroupItem variant="segment" value="mine">Mine</RadioGroupItem>
         {others.map((pick, index) => <RadioGroupItem key={index} variant="segment" value={String(index)}>From {pick.authorName}</RadioGroupItem>)}
       </RadioGroup>}</>} />
-    {draft === null ? <><ErrorNotice error={save.error} /><ErrorNotice error={wear.error} /></> : null}
+    {draft === null ? <ErrorNotice error={save.error} /> : null}
     {mine && plans !== undefined && items.length > 0 ? <Button variant="outline" size="lg" className="w-full" onClick={start}>{action}</Button> : null}
     {draft === null ? null : <OutfitPickerSheet choices={choices} tags={tags} tag={tag} draft={draft} dirty={dirty} pending={save.pending} staleDraft={staleDraft} selectedCount={selectedCount} hasOutfit={items.length > 0} error={save.error} onClose={close} onSave={commit} onTag={setTag} onChange={change} />}
   </div>

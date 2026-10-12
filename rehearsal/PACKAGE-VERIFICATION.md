@@ -1,27 +1,34 @@
-# Verification · v6
+# Verification, 2026-10-11
 
-The final package is tested as an extracted copy, not merely by starting the original worktree. QA host: disposable `/private/tmp/rehearsal-v6-portable-davi2u1d/source`, port3146. It contains no Git history, original connection/store, design directory or agent destination. The server is stopped after checks; dependencies/private QA state are excluded from the ZIP.
+## Workspace proof
 
-## Portable checks
+Rehearsal source: f0d3, detached 0bffbbcf2e38ca3ec7e17da3eb6496b6f04f348d plus dirty/untracked work. Linked Laundry source was read-only; package captures c325b5ef848b90fa8a68ea1beec5602f3b7a11f8 plus working-tree hashes. Source/provenance and binary delta describe exported inputs; neither HEAD alone proves the snapshot.
 
-- `pnpm install --offline --frozen-lockfile --ignore-scripts`: 310 cached packages reused, zero downloaded, pnpm12.10.1 / Node26.10.0. Online install was not tested.
-- `pnpm --dir apps/web run check`: TypeScript and style checks pass; 1,659 native static utilities compile.
-- `pnpm --dir apps/web run test:review`: all32 service checks pass, including read-only paths, project isolation, generated adapters, source fingerprints and cache/history/restart behavior.
-- Focused Vitest app-map/app-overview/arrow-routing/review-panel/store: 17 checks pass.
-- Eight Chromium cases pass across review-project-picker, review-discovery, review-reminder and review-snapshots. They cover UI creation, inventory-only connection, generated HTML/React, branches/return inputs, frozen captures, native reminder dismissal/focus/exact run and returns, stale image replacement, transient retry, visible-demand loading and cold import recovery.
+- `pnpm --dir apps/web test`: 98 Vitest files / 810 tests plus 13 Node catalogue/account checks passed. This is the working Rehearsal checkout's web suite, not the entire linked app/backend/native suite.
+- `pnpm --dir apps/web run test:review`: 36 server/integration checks passed, including actual isolated effects, identity/condition boundaries, source refusal, overlays, onboarding, command validation, caches and review persistence.
+- TypeScript and style checks passed: 1591 static utilities compile in the working checkout. Tracked `git diff --check` passed.
+- Five towel browser cases cover both branches through native save and fresh replay, proposal copy/color persistence, failed-save recovery, and real Fabric/Bleach/Saved PNG snapshots.
+- Four canvas and three linked-source cases passed: draft retained across navigation/review/proposals, recording attached to the live towel review, bounded overview/branches, route evidence, all-screen layout with lazy images, stale thumbnail failover, linked proposal edits and care substeps.
+- Eight existing Home/Drying browser cases passed after sharing the Laundry session: real Wear, portalled editing, empty/partial put-away, returned route, captured quantities, error receipts, fresh replay and privacy/ambiguity refusal.
 
-The generic tests used the manifest-free discovery example, an empty existing-app source folder and the authored Notebook connection, registered only on the disposable host. New generated projects/settings/stores are not included. The default bundled Laundry produced204 scenarios /207 fixture fingerprints, unavailable application HEAD and zero revision HEAD plus actual content hashes. Counts describe this snapshot, not completeness. `context/portable-verification.json` is its structured receipt.
+Initial browser failures exposed obsolete test expectations (old arrow accessibility labels, fixed eager image count, and blocked isolated POSTs). Tests were updated to assert current behavior. A real snapshot failure was fixed: a portal can leave the React root hidden/inert while ready; capture now waits for the attached ready marker. The new snapshot case was observed failing before the fix and passing afterward.
 
-Two first-run issues were found and corrected before final packaging: three Home source bindings still pointed to the old route file; explicit new/old presenter alternatives now resolve both versions. A Vite optimization reload rejected the first preview import; only an unmounted frame retries that failure up to twice. The final browser rerun passes, including an explicitly aborted module import. No live draft is replaced.
+## Receiving-host copy
 
-## Patch and integrity
+An independent copy under /private/tmp/rehearsal-v7-portable-t_fb7kv1/source was installed with `pnpm install --frozen-lockfile --offline`: 310 packages reused, zero downloads. It uses exported/bundled app source, no f7ce binding, no original review store and no live Laundry backend.
 
-The source has924 files. Relative to v5 there are66 additions,142 modifications and no deletions; most product changes are reference-integration updates. `context/since-v5.patch` is binary-compatible, passed `git apply --check`, was actually applied to a fresh copy of v5 source and reproduced every final file hash. `context/patch-verification.json` binds that proof to the patch SHA. Current top-level docs/design/evidence are outside the source patch.
+- Portable TypeScript/style checks passed (1661 compiled utilities in the newer bundled app snapshot).
+- Portable `test:review` passed all 36 checks.
+- All five portable towel browser cases passed, including actual effects, fresh saved proposal replay, recovery and real snapshots.
 
-`MANIFEST.json` records payload file hashes/size and source composition. `SHA256SUMS` verifies payload and manifest; it excludes itself. The adjacent ZIP SHA and archive verification receipt bind the final archive. ZIP paths, CRCs, private/dependency/Git exclusions and extracted-file hashes are checked. Original v5 is preserved in the historical archive; older expanded directories are removed only after proving they match their preserved ZIP, or storing divergent content separately.
+This verifies an unchanged lockfile against an existing compatible cache, not an online clean-machine install. Dependencies and Chrome are not in the ZIP. Temporary dependency symlinks/live stores stay outside the archive.
 
-## Evidence and limits
+## Running preview and integrity
 
-`evidence/portable/` contains fresh default-reminder and onboarding captures from the extracted source. `evidence/current/` retains the earlier October11 toolbar/narrow layout and linked-reminder inspection; these are contextual, not blanket proof of every final pixel/state. `design/` retains historical proposals/skills. The completed local text critique is documented in source/docs/design/review-product/project-discovery.md; no new Claude Design web artifact or final visual-fidelity approval is claimed.
+Only Rehearsal's 3010 process was restarted. Loopback and the existing private Tailscale /review and inventory returned 200 with the same source and towel-runtime adapter. A primary-preview proposal/fresh-replay smoke check was run. Laundry's frontend/backends and canonical design were not restarted or edited.
 
-No production backend, physical phone/VoiceOver, public exposure, clean online install, universal framework adapter, per-user multiplayer or full standalone extraction was tested. The owner's timed badge exception and concurrent backend deadline retain their separate owner evidence. Historical snapshot GC was not added because reviews may still reference those captures.
+context/since-v6.patch has 21 added, 39 modified and zero deleted source files. `git apply --check` passed on exact v6 source; applying it reproduced every final source file hash. context/patch-verification.json retains the patch digest and counts. MANIFEST.json, SHA256SUMS and the external ZIP verification sidecar bind payload hashes, safe paths, CRC and excluded private/runtime paths. Source provenance distinguishes original inputs, package-only seams and portable receiving guides.
+
+## Limits
+
+This is local Chromium, source/API and portable development-host proof. No physical-phone, native platform, production auth/OCC/optimistic backend, external/server-action, multiplayer or fresh design acceptance is claimed. Native/bundler integration direction is researched only. Remaining curated fixtures still use legacy adapters. Historical design/images are context, not current acceptance. Existing saved recordings are refused on changed source and are not silently migrated.

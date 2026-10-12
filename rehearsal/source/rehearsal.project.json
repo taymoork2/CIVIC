@@ -2,7 +2,7 @@
   "version": 1,
   "id": "laundry-app",
   "name": "Laundry App",
-  "adapter": { "kind": "laundry", "entry": "apps/web/src/review/adapters/laundry.ts" },
+  "adapter": { "kind": "laundry", "entry": "apps/web/src/review/adapters/laundry.ts", "runtime": "apps/web/src/review/adapters/laundry-backend.ts" },
   "sources": ["apps/web/src", "packages", "convex"],
   "publicDir": "apps/web/public",
   "aliases": { "@": "apps/web/src", "@convex": "convex", "@washcloset/icons": "packages/icons/src/index.ts", "@washcloset/planner": "packages/planner/src/index.ts" },

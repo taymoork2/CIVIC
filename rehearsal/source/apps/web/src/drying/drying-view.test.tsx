@@ -232,10 +232,21 @@ test('put away is partial and keeps the washer and the dryer', () => {
   expect(markup).toContain('Put away 1 piece')
   expect(markup).toContain('Not dry yet')
   expect(markup).toContain('from Washer 5 · in the drying queue')
-  // The header summary covers only the dry pieces; putting away stays the footer's own tap.
-  expect(markup).toContain('aria-label="This load"')
-  expect(markup).toContain('To put away')
-  expect(markup).toContain('From Washer 3<')
+  // The quantity rows carry contents and origins without a second summary above them.
+  expect(markup).not.toContain('aria-label="This load"')
+  expect(markup).not.toContain('From Washer 3<')
+  expect(markup).toContain('1 of 1 selected')
+  expect(markup).toContain('Clear selection')
+  expect(markup).not.toContain('Select all dry pieces')
+})
+
+test('empty drying explains the next step and provides a way back without claiming completed care', () => {
+  const markup = render({ kind: 'plan' }, queue({ pieces: [], runs: [], plan: { loads: [], natural: [], unset: [], mixedHeats: false } }))
+  expect(markup).toContain('No clothes to dry right now')
+  expect(markup).toContain('When a wash finishes, bring it here to dry, check and put away.')
+  expect(markup).toContain('Back to Laundry')
+  expect(markup).not.toContain('Nothing waiting to dry')
+  expect(markup).not.toContain('All put away')
 })
 
 test('a dryness check opens with the load card, keeping every wash its run combines', () => {

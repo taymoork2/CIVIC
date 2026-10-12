@@ -10,12 +10,13 @@
     "./contract": "./src/contract.ts",
     "./capture": "./src/capture.ts",
     "./styles/*.css": "./styles/*.css",
-    "./server": "./server/review-server.mjs"
+    "./server": "./server/review-server.mjs",
+    "./server/recording": "./server/review-recording.mjs"
   },
   "scripts": {
     "check": "tsc --noEmit",
     "test": "vitest run && pnpm run test:server",
-    "test:server": "node --test server/review-server.check.mjs"
+    "test:server": "node --test server/review-server.check.mjs server/review-recording.check.mjs"
   },
   "peerDependencies": {
     "react": "19.3.0"

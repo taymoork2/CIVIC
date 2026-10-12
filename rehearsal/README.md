@@ -1,8 +1,8 @@
-# Rehearsal · current handoff v6
+# Rehearsal v7
 
-Start with [HANDOFF.md](HANDOFF.md), [CHANGES-SINCE-V5.md](CHANGES-SINCE-V5.md) and [PACKAGE-VERIFICATION.md](PACKAGE-VERIFICATION.md). Rehearsal is its own product; Laundry is the reference integration. This is a runnable monorepo development snapshot, with standalone extraction unfinished.
+Start with [HANDOFF.md](HANDOFF.md), [CHANGES-SINCE-V6.md](CHANGES-SINCE-V6.md), [PACKAGE-VERIFICATION.md](PACKAGE-VERIFICATION.md) and [EXTRACTING-REHEARSAL.md](EXTRACTING-REHEARSAL.md). Rehearsal is its own product; Laundry is the reference integration. Standalone extraction is unfinished.
 
-## Start on a receiving host
+## Run on a receiving host
 
 ```sh
 cd source
@@ -10,31 +10,26 @@ pnpm install --frozen-lockfile
 pnpm --dir apps/web run review
 ```
 
-Open http://127.0.0.1:3010/review. No review key, account, model provider or production backend is needed. Dependencies require a registry connection or compatible cache and are excluded. Tested tools: Node 26.10.0, pnpm 12.10.1 and Chrome. Git is optional; missing commit identity is reported rather than fabricated.
+Open http://127.0.0.1:3010/review. No review key, account, model provider or running Laundry backend is required. Verification used Node 26.10.0, pnpm 12.10.1 and Chrome. Dependencies are excluded: portable install reused cache with zero downloads; another host needs a compatible cache or registry access. Chrome is needed for snapshots/browser checks. Missing Git identity stays explicit.
 
-The default uses the bundled current Laundry source with six documented compatibility seams applied to this snapshot only. It does not point at the original host. Existing-app onboarding: project picker → Connect existing app → host folder/source folder → Discover screens → confirm screens, props, capture fields and paths → Generate preview → Open project. HTML/native forms and isolated React are supported; provider-dependent states remain gaps. New project creates a runnable note-writing starter. Host switching is shared, not per-person multiplayer.
+Try /review?scenario=intake.towel.fabric. Play, enter fibers, follow either origin branch, and save. Inspect → Recorded run replays/resets or downloads the run. Edit proposal changes copy/color without discarding input. Live reviews attach recordings; fresh replay restores branch/clock and proposal commands. Changed source is refused rather than silently upgrading evidence.
 
-Try manifest-free discovery by connecting the absolute path to source/apps/web/examples/discovery-app. The authored example can also start directly:
+Project picker → Connect existing app → Discover screens → confirm candidates/props/capture fields/paths → Generate preview provides bounded synthetic onboarding. Provider-dependent apps need a declared adapter. The independent Notebook example can start directly:
 
 ```sh
 REHEARSAL_PROJECT=apps/web/examples/rehearsal-demo/rehearsal.project.json pnpm --dir apps/web run review
 ```
 
-Do not run two servers on 3010. For a disposable host:
-
-```sh
-WASHCLOSET_REVIEW=1 VITE_CONVEX_URL=http://127.0.0.1:1 VITE_CONVEX_SITE_URL=http://127.0.0.1:1 pnpm --dir apps/web exec vite --host 127.0.0.1 --port 3146 --strictPort
-```
+The discovery example is source/apps/web/examples/discovery-app. Project selection is shared host state, not per-user multiplayer. Do not run two processes on 3010. Disposable previews use another explicit port and REHEARSAL_DATA_DIR.
 
 ## Contents and integrity
 
-- source/: current Rehearsal, examples, contracts/tests/config/lockfile and released Laundry presenters/dependencies.
-- design/: historical local desktop/Claude Design exports, proposals and requested skills. They do not override current product decisions.
-- evidence/: labelled onboarding, canvas and reminder captures; provenance and limits are in the verification document.
-- context/: source provenance, package-only seams, exact binary source patch/delta against v5 and verification receipts.
-- history/v5/: clearly superseded handoff/report/verification.
+- source/: current Rehearsal, contracts/examples/config/tests and a hashed Laundry snapshot with checked seams.
+- context/: source provenance, seam hashes, exact binary patch/delta from v6 and verification receipts.
+- design/: retained local Open Design/Claude Design concepts/skills, historical rather than freshly accepted.
+- evidence/historical/: labelled prior canvas captures.
+- history/v6/: superseded narrative and verification.
 
-Excluded: Git internals, dependencies, environment files, review stores, saved personal reviews, local catalogue/settings, Tailscale configuration, harness credentials/destinations and generated user projects. Configure trusted exact agent sessions separately. No production household records are supplied.
+Private stores/reviews, credentials/environment, dependencies, Git, generated user projects, backend/catalogue data, harness destinations and Tailscale settings are excluded. Configure trusted agent sessions explicitly on the receiving host.
 
-Verify with `shasum -a 256 -c SHA256SUMS`. Apply context/since-v5.patch only to a copy of the exact v5 source/; run `git apply --check` first. It includes binary asset changes, not the surrounding handoff/design/evidence. Older packages remain recoverable through the adjacent historical archive/index. [EXTRACTION.md](EXTRACTION.md) maps the remaining standalone work.
-
+Verify with `shasum -a 256 -c SHA256SUMS` at package root. context/since-v6.patch applies only to exact v6 source; use `git apply --check` on a copy. This is a source snapshot, not a deployment/database restore. Towel is the first migrated curated fixture; other fixture adapters remain open.

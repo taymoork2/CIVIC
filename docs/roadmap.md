@@ -86,6 +86,8 @@ Progress, 2026-10-12: the canvas reads the graph. `civic screen` answers what th
 
 Progress, 2026-10-12: the crawl has a native driver. It speaks WebDriver to an Appium server (UiAutomator2 for Android, XCUITest for iOS), reads each state from the page source as roles and accessible names, starts every try in a fresh session, and records but doesn't explore another app it lands in. It is tested against a stand-in server on Android and iOS sources and against a real Appium 3 server with Appium's fake driver. No emulator or device runs in the cloud, so no native app has been crawled yet. Native crawls can't block network writes the way the web driver does, so they need a test build. Still to come: a first native crawl on a device or emulator, and the frame walk (D33).
 
+Progress, 2026-10-12: the v7 handoff of the journey engine mounts the real Laundry app in review with real effects in an isolated backend per run, records runs with one shared recorder, and proposes splitting adapters into a build connector, a runtime and data adapter, and an interaction driver ([v7 notes](synthesis-v0-import.md#v7-handoff-update)). CIVIC's crawl drivers (Playwright and Appium) are its interaction drivers; a runtime and data adapter for native apps is still to come.
+
 ## 5. Identity, permissions, and multiplayer
 
 Real identities, scoped permissions, and versioned shared records, following the spec's [multiplayer boundary](product-spec.md#multiplayer-and-ownership). The single local access key and the portal's collaborator access are not this model.
@@ -105,6 +107,8 @@ Acceptance: ordinary refresh and replay make zero model calls with providers dis
 Progress, 2026-10-12: evidence becomes visibly stale. A freshness rule in `civic.check.json` says which evidence proves code in this repository and where that code is. The gate reports evidence whose code changed since its revision as advisory, with a count, and `civic screen` and the journey canvas's Contract panel mark it. `bin/signoff --capture` recaptures Laundry's evidence when it's stale and stops so the new evidence is reviewed and committed. Still to come: replay from start in the scenario player, and native captures.
 
 Progress, 2026-10-12: replay from start is built for project adapters. In the Inspect panel, "Replay from start" opens a fresh run at the journey's first screen and walks the shortest chain of declared paths to the selected screen, clicking each path's action by its accessible name and waiting for the adapter to land where the path says. A missing control or a wrong landing stops the replay with an alert naming the step, and nothing past it is claimed. Only the app's own transitions are captured, so a failed save never becomes an edge. Laundry's towel journey keeps its own player. Still to come: native captures.
+
+Progress, 2026-10-12: the v7 handoff adds a deterministic recorder with saved, downloadable runs that replay from the same seed and stop on drift ([v7 notes](synthesis-v0-import.md#v7-handoff-update)). It is the engine's own recorder rather than Playwright's tooling; whether its tape becomes CIVIC's recording record is open.
 
 ## 7. Repository hygiene
 

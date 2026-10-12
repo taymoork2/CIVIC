@@ -32,9 +32,10 @@ import { privateCareWords } from '@/laundry/private-piece'
 import { privatePieceText } from '@/copy-load'
 import { warnBeforeUnload } from '@/kit/sheet'
 import { matchingGroups, type MatchingIdentity } from '@/closet/garment-groups'
-import { LoadSummary, loadStageAt, washOrigins } from '@/laundry/load-summary'
+import { loadStageAt } from '@/laundry/load-summary'
 import { useUnits, doseParts, dryerBlocks, money } from '@/kit/units'
 import { SearchField } from '@/closet/closet-parts'
+import { CareEmpty, CategoryPhoto } from '@/products/product-ui'
 
 export type DryingQueue = FunctionReturnType<typeof api.dryingQueue.queue>
 type Piece = DryingQueue['pieces'][number]
@@ -541,8 +542,11 @@ function PlanScreen({ queue, householdId, byId, now, onNote, onBack, combine, on
     <TaskHeading
       title={dryingText.title}
       back={<BackButton label={dryingText.back} onClick={() => planBack(unsaved, onBack, () => setConfirmingLeave(true))} />}
-      caption={queued.length > 0 ? dryingDesignText.waitingCount(queued.length) : queue.runs.length > 0 ? dryingDesignText.dryingCount(queue.pieces.filter((piece) => piece.status === 'drying').length) : dry.length > 0 ? dryingText.dryToPutAway(dry.length) : dryingText.empty}
+      caption={queued.length > 0 ? dryingDesignText.waitingCount(queued.length) : queue.runs.length > 0 ? dryingDesignText.dryingCount(queue.pieces.filter((piece) => piece.status === 'drying').length) : dry.length > 0 ? dryingText.dryToPutAway(dry.length) : undefined}
     />
+    {queue.pieces.length === 0 && queue.runs.length === 0 ? <CareEmpty icon="hang" title="No clothes to dry right now" description="When a wash finishes, bring it here to dry, check and put away." art={<CategoryPhoto src="/design/care-complete.webp" fallback={<DesignIcon name="hang" className="size-12" />} className="block h-auto w-full object-contain" loading="eager" />}>
+      <Button onClick={() => planBack(unsaved, onBack, () => setConfirmingLeave(true))}>Back to Laundry</Button>
+    </CareEmpty> : null}
     {confirmingLeave && hasUnsavedChecks(unsaved) ? <DiscardChecksCallout onKeep={() => setConfirmingLeave(false)} onDiscard={() => { setConfirmingLeave(false); onBack() }} /> : null}
     {queued.length > 0 && satWetLong(facts.wet.since, now) ? <SmellCheck /> : null}
     {held === null || tumbling.length === 0 ? null : <DryerWaitCallout dryer={held} rackIsFull={rackFull(facts)}
@@ -1153,17 +1157,15 @@ function PutAwayScreen({ queue, householdId, onPlan, onDone, calls }: ScreenProp
     <TaskHeading
       title={dryingText.putAway}
       back={<BackButton label={dryingText.title} onClick={onPlan} />}
-      // The load summary carries the stage while pieces are dry; only an empty put-away needs its own mark.
       {...(dry.length === 0 ? { mark: { tone: 'ready' as const, text: dryingText.allPutAway } } : {})}
       caption={dryingText.partialFine}
     />
-    {dry.length === 0 ? null : <LoadSummary stage="to_put_away" origins={washOrigins(dry.map((piece) => piece.washerName))} pieces={dry} />}
     {dry.length === 0 ? <Note>{dryingText.nothingDry}</Note> : (
       <Section heading={dryingText.dryList} caption={dryingText.acrossDryers}>
-        <li className="grid gap-3 p-4"><p className="m-0 text-ink-2" role="status">{count} of {dry.length} pieces selected across every page.</p>
-        <div className="flex flex-wrap gap-2">
-          <Button type="button" variant="outline" disabled={putAway.pending} onClick={() => setCounts({})}>Select all dry pieces</Button>
-          <Button type="button" variant="outline" disabled={putAway.pending} onClick={() => setCounts(Object.fromEntries(groups.map(group => [group.key, 0])))}>Clear selection</Button>
+        <li className="flex min-w-0 flex-wrap items-center justify-between gap-2 px-4 py-2"><p className="m-0 min-w-0 flex-[1_1_8rem] text-[length:var(--step--1)] text-ink-2" role="status">{groups.length > 40 ? `${count} of ${dry.length} pieces selected across every page.` : `${count} of ${dry.length} selected`}</p>
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
+          {count === dry.length ? null : <Button type="button" variant="ghost" size="sm" aria-label="Select all dry pieces" disabled={putAway.pending} onClick={() => setCounts({})}>Select all</Button>}
+          {count === 0 ? null : <Button type="button" variant="ghost" size="sm" disabled={putAway.pending} onClick={() => setCounts(Object.fromEntries(groups.map(group => [group.key, 0])))}>Clear selection</Button>}
         </div></li>
         <DryingPieceList groups={groups.map(group => group.pieces)} label="dry clothes">{(pieces) => {
           const group = groups.find(group => group.pieces === pieces)!

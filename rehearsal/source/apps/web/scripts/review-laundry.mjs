@@ -75,5 +75,11 @@ export function AddClothesSheet({ initialCareStep, presentation, onReviewState, 
     replace('<Sheet title={firstSave ? addGarmentText.firstSavedTitle(saved.textileIds.length) : addGarmentText.savedTitle}', '<Sheet title={presentation?.saved?.title ?? (firstSave ? addGarmentText.firstSavedTitle(saved.textileIds.length) : addGarmentText.savedTitle)}')
     replace('<Button type="button" size="lg" onClick={finish}>{addGarmentText.done}</Button>', '<Button type="button" size="lg" onClick={finish} style={presentation?.saved?.color ? { backgroundColor: presentation.saved.color, color: \'#fff\' } : undefined}>{presentation?.saved?.action ?? addGarmentText.done}</Button>')
   }
+  if (path === 'apps/web/src/closet/add-clothes.tsx' && !code.includes('review?: ReviewIntakeProps')) {
+    code += '\nexport type ReviewIntakeProps = { initial: AddDraft; initialStep: AddStep; initialCareStep?: CareQuestion; presentation: IntakePresentation; onReviewState: (state: IntakeReviewState) => void; onReviewTransition: (from: string, to: string) => void }\n'
+    replace('export function AddClothesFlow({ householdId, mode, firstRun = false, onClose }:', 'export function AddClothesFlow({ householdId, mode, firstRun = false, onClose, review }:')
+    replace('firstRun?: boolean; onClose: (outcome?: EditOutcome)', 'firstRun?: boolean; review?: ReviewIntakeProps; onClose: (outcome?: EditOutcome)')
+    replace('return <AddClothesSheet householdId={householdId} mode={mode} wearers={inventory.wearers}', 'return <AddClothesSheet {...review} householdId={householdId} mode={mode} wearers={inventory.wearers}')
+  }
   return code
 }
