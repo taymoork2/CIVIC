@@ -6,15 +6,20 @@ Every step follows [decision 0006](decisions/0006-deterministic-civic-for-agenti
 
 ## Order of work
 
-Reprioritized on 2026-10-11. Steps 1 and 2, the review to agent loop's Laundry slice, the gate (step 8) and step 3's decision loop (Proposal, Decision, Adoption, Verification) are built. Step numbers are stable names that other documents cite, so the order of work is listed here rather than by renumbering:
+Reprioritized on 2026-10-12. The 2026-10-11 order is done: the gate (step 8), step 3's decision loop (Proposal, Decision, Adoption, Verification), real inputs (step 9), a second app through the manifest and crawl (step 4), live runs for apps with sign-in and for TanStack Start server functions (step 4), Codex packaging and PR previews, step 6 and step 5 are built, apart from the pieces listed under "Waiting" below. Step numbers are stable names that other documents cite, so the order of work is listed here rather than by renumbering:
 
-1. **[Step 9: real inputs](#9-real-inputs-replace-the-stand-ins)** replace the stand-in Figma files and illustrative decisions.
-2. **[Step 4](#4-the-journey-engine-as-a-graph-viewer):** a second app onboards through the manifest and crawl-first discovery, gated by `civic check`.
-3. **The review loop's next items** ([below](#next-the-review-to-agent-loop), item 3): Codex packaging and PR previews (built), then design drafts once real Figma inputs exist.
-4. **[Step 6](#6-journey-completeness-and-replay), then [step 5](#5-identity-permissions-and-multiplayer).** Multiplayer stays last while there is one user.
+1. **[Step 10](#10-checks-where-each-role-works): checks where each role works.** Decision 0005 says most people meet CIVIC through checks in their own tools, and today that is one `civic` commit status. Route each finding to the side that moved, and put it on the pull request, the test run and the library release, together with the decided fix it turns into.
+2. **[Design drafts](#next-the-review-to-agent-loop)** as review lines (item 3). Real Figma kits are in, so drafts are no longer blocked.
+3. **[Step 3](#3-typed-contract-and-change-records)'s collaboration records:** Ambiguity, Constraint, Coverage gap, Divergence, Risk and Exception, on the record shape the decision loop set.
+4. **The frame walk (D33)** in [step 4](#4-the-journey-engine-as-a-graph-viewer), now that real design files exist to walk.
 5. **[Step 7](#7-repository-hygiene)** happens opportunistically.
 
-[Step 8, the gate](#8-the-gate-civic-check), came first because decision 0005 says most people meet CIVIC through checks in their own tools (part 2), and until it existed the checks only printed. The graph and the shared space (parts 1 and 3) were already well along.
+Waiting on something other than a build:
+
+- **A device.** The first native crawl and native captures (steps 4 and 6) need a device or simulator. The cloud has none, so the iOS crawl runs on the founder's Mac.
+- **A hosted remote.** Presence, following and shared driving ([step 5](#5-identity-permissions-and-multiplayer)) need a live service; records sync through git today.
+
+Step 10 comes before the remaining record types because the gate's findings only reach people who run `bin/signoff`.
 
 ## 1. CIVIC graph schema
 
@@ -58,7 +63,7 @@ Built ahead of the Card demo ([decision 0007](decisions/0007-review-to-agent-loo
 
    Progress, 2026-10-12: Codex packaging is built. The [plugin](../integrations/claude-code#codex) carries a Codex manifest next to the Claude Code one, so Codex installs it from the same marketplace with the same skill and hook, and runs the MCP server as `codex`. PR previews and design drafts wait on real Figma inputs.
 
-   Progress, 2026-10-12: PR previews are built. `civic pr <number> --preview <url>` (or the MCP `register_pr` call an agent makes after opening one) records a pull request as its own line at the head its remote serves (`refs/pull/<n>/head`), with its hosted preview. Annotations made on that preview land on the PR's line and revision, and fixes can be re-captured there. Running it again follows the PR as it moves, and it marks the line merged once the head is on the default branch. Design drafts still wait on real Figma inputs.
+   Progress, 2026-10-12: PR previews are built. `civic pr <number> --preview <url>` (or the MCP `register_pr` call an agent makes after opening one) records a pull request as its own line at the head its remote serves (`refs/pull/<n>/head`), with its hosted preview. Annotations made on that preview land on the PR's line and revision, and fixes can be re-captured there. Running it again follows the PR as it moves, and it marks the line merged once the head is on the default branch. Design drafts were waiting on real Figma inputs, which are now in ([step 9](#9-real-inputs-replace-the-stand-ins)), so they are next in this item.
 
 Acceptance: an annotation made in one worktree is claimed by an agent in another, the reported fix is re-captured on that worktree's preview with no model call, and the request resolves through its lane.
 
@@ -147,6 +152,20 @@ Acceptance: the Button conflict is raised from the real export, or the demo reco
 Progress, 2026-10-11: the Button demo reads the real Android kit export. The kit predates Figma variants and draws only Primary and Text buttons, so there is no Neutral button to conflict with. The real conflict runs the other way: Compose ships `OutlinedButton` (Brand outline) and the kit doesn't draw it.
 
 Progress, 2026-10-12: [Laundry's graph](../projects/laundry) is built from real inputs. `readJourneyIndex` reads the journey engine's review index (204 scenarios, their journeys and declared paths), and Laundry's own review specs run unchanged into a Playwright report that `readPlaywrightReport` ties to those scenarios through the checks each one declares. The gate reads it with the demo graphs: 3 of 27 tests fail and 12 of 49 journey screens are dead ends, all held by the baseline. This is also the first piece of [step 4](#4-the-journey-engine-as-a-graph-viewer): the engine's journey graph now reaches the CIVIC graph. Still to come: the Card demo's library file from a real Fluent kit export (the Shop product file stays illustrative), and Laundry's full browser suite, which needs its local Convex backend.
+
+Progress, 2026-10-12: the demos read real Fluent 2 kits, trimmed to what they use. The Card's library file is the Fluent 2 Web kit, and the Button's iOS side reads the Fluent 2 iOS kit, which raises two conflicts: iOS ships Danger and Transparent neutral buttons the kit doesn't draw. The Card raises three more where iOS `CardView` can't build library-default content (body, footer, header action). Fluent is the demo's example design system, not one CIVIC's team owns, so illustrative decisions settle all five: the iOS kit gains a Danger button, Transparent neutral stays iOS-only, iOS `CardView` gains a body slot, and iOS goes without the footer and header action as an accepted limitation. The Shop product file stays illustrative. Laundry's review suite is 39 of 39 passing after stale tests were fixed.
+
+## 10. Checks where each role works
+
+Part 2 of [decision 0005](decisions/0005-what-civic-is.md): raise each finding at the change that caused it, in the tool where that change lives ([onboarding and ingestion, 4d](onboarding-and-ingestion.md#4d-raising-violations-and-drift-to-the-right-roles)). Today the gate posts one `civic` commit status, and its summary is read only by whoever runs `bin/signoff`.
+
+- **Find the side that moved.** Compare each side with the last revision where they agreed, ask the owner of the change that introduced the difference, and tell the other side's owners.
+- **Engineering:** a pull request check whose summary lists the new findings with their owners, through the same local signoff and no GitHub Actions.
+- **QA:** a Playwright reporter that writes run evidence into the graph and prints the scenarios a run left uncovered.
+- **Design Engineering:** a check on a library release that names the variants left without a mapping and the product overrides the release breaks.
+- **Design:** findings on a Figma frame wait for the Figma plugin ([later](#later-not-scheduled)); until then they reach designers through the review loop.
+
+Acceptance: a change to one side of the Button or Card raises its finding on that change only, names who is asked and who is told, and makes no model calls.
 
 ## Later, not scheduled
 

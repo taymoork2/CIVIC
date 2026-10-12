@@ -1,6 +1,6 @@
 {
   "schema": "civic.decisions/0",
-  "note": "Decision records (roadmap step 3) for the demo, so the graph shows a conflict being classified and decided. The conflict is real: it comes from the Microsoft Fluent Android Community file as exported on 2026-10-11. The call and the deciders are the demo's placeholder owners, not a real Fluent team's. Replace them with your own team's call, or add one with `civic decide`.",
+  "note": "Decision records (roadmap step 3) for the demo, so the graph shows a conflict being classified and decided. The conflicts are real: they come from the Microsoft Fluent Android Community file (exported 2026-10-11) and the Fluent 2 iOS kit (2026-10-12). The iOS kit gains a Danger button, and Transparent neutral stays an iOS-only button. The call and the deciders are the demo's placeholder owners, not a real Fluent team's. Replace them with your own team's call, or add one with `civic decide`.",
   "decisions": [
     {
       "id": "decision:button.android.brand-outline",
@@ -21,6 +21,45 @@
         "evidence:fluent-android.compose-button.variants"
       ],
       "revisitTrigger": "The kit gains an Outlined button, or Compose drops OutlinedButton."
+    },
+    {
+      "id": "decision:button.ios.danger",
+      "kind": "decision",
+      "title": "Add a Danger button to the iOS kit",
+      "conflictId": "conflict:button.ios.danger",
+      "outcome": "update-design",
+      "classification": "outdated-design-source",
+      "alignment": "awaiting-adoption",
+      "decidedBy": {
+        "role": "design",
+        "who": "design-system-maintainers"
+      },
+      "at": "2026-10-12T00:00:00Z",
+      "rationale": "Fluent iOS ships Danger for destructive actions, and the contract keeps it, so Design adds a Danger button to the iOS kit. A destructive action needs a designed look, not one improvised per product. Until it lands, iOS designers take Danger from the contract, not the kit.",
+      "evidenceIds": [
+        "evidence:figma.ios-kit.button",
+        "evidence:fluent-apple.button.variants"
+      ]
+    },
+    {
+      "id": "decision:button.ios.transparent-neutral",
+      "kind": "decision",
+      "title": "Keep Transparent neutral as an iOS-only button",
+      "conflictId": "conflict:button.ios.transparent-neutral",
+      "outcome": "approve-exception",
+      "classification": "platform-convention",
+      "alignment": "approved-adaptation",
+      "decidedBy": {
+        "role": "design",
+        "who": "design-system-maintainers"
+      },
+      "at": "2026-10-12T00:00:00Z",
+      "rationale": "Transparent neutral is iOS's borderless bar button, a platform convention with no counterpart on web or Android. It stays an iOS-only variant, built from the iOS component rather than drawn in the shared kit.",
+      "evidenceIds": [
+        "evidence:figma.ios-kit.button",
+        "evidence:fluent-apple.button.variants"
+      ],
+      "revisitTrigger": "Another platform adds Transparent neutral, or the iOS kit starts drawing it."
     }
   ]
 }

@@ -1,6 +1,6 @@
 {
   "schema": "civic.decisions/0",
-  "note": "Decision records (roadmap step 3) by the Card's maintainers. The local corner radius is rejected. The selectable Card is left undecided on purpose, so the design stays not yet adoptable. The real Fluent 2 web kit draws the header quick action and the footer by default, so Shop's use of them is not an override and needs no decision. The deciders are the demo's placeholder owners, not real Fluent teams. Add or change a call with `civic decide`.",
+  "note": "Decision records (roadmap step 3) by the Card's maintainers. The local corner radius is rejected. The selectable Card is left undecided on purpose, so the design stays not yet adoptable. The real Fluent 2 web kit draws the header quick action and the footer by default, so Shop's use of them is not an override and needs no decision. iOS CardView can't show the library's default body, footer or header quick action: the body gets a slot in CardView, and iOS products go without the footer and header action as an accepted limitation. The deciders are the demo's placeholder owners, not real Fluent teams. Add or change a call with `civic decide`.",
   "decisions": [
     {
       "id": "decision:shop.order-summary.card.corner-radius",
@@ -20,6 +20,65 @@
         "evidence:figma.shop.shop-checkout-civic-stand-in",
         "evidence:figma.library.card"
       ]
+    },
+    {
+      "id": "decision:card.ios.default.body",
+      "kind": "decision",
+      "title": "Give iOS CardView a body slot",
+      "conflictId": "conflict:card.ios.default.body",
+      "outcome": "change-implementation",
+      "classification": "temporary-gap",
+      "alignment": "awaiting-adoption",
+      "decidedBy": {
+        "role": "design-engineering",
+        "who": "fluent-ios"
+      },
+      "at": "2026-10-12T00:00:00Z",
+      "rationale": "A Card without its body loses its point, so iOS doesn't get to drop it. Design engineering adds a body content slot to iOS CardView, and the Card reads Awaiting adoption on iOS until the slot ships.",
+      "evidenceIds": [
+        "evidence:figma.library.card",
+        "evidence:fluent-apple.card-view.variants"
+      ]
+    },
+    {
+      "id": "decision:card.ios.default.actions",
+      "kind": "decision",
+      "title": "Accept iOS Cards without footer actions",
+      "conflictId": "conflict:card.ios.default.actions",
+      "outcome": "approve-exception",
+      "classification": "technical-limitation",
+      "alignment": "accepted-limitation",
+      "decidedBy": {
+        "role": "design",
+        "who": "design-system-maintainers"
+      },
+      "at": "2026-10-12T00:00:00Z",
+      "rationale": "iOS CardView is a fixed UIKit widget with no footer, and the whole card is the tap target. iOS products put actions on the screen the Card opens instead of in the Card.",
+      "evidenceIds": [
+        "evidence:figma.library.card",
+        "evidence:fluent-apple.card-view.variants"
+      ],
+      "revisitTrigger": "iOS CardView gains a footer or actions slot."
+    },
+    {
+      "id": "decision:card.ios.default.header-action",
+      "kind": "decision",
+      "title": "Accept iOS Cards without a header quick action",
+      "conflictId": "conflict:card.ios.default.header-action",
+      "outcome": "approve-exception",
+      "classification": "technical-limitation",
+      "alignment": "accepted-limitation",
+      "decidedBy": {
+        "role": "design",
+        "who": "design-system-maintainers"
+      },
+      "at": "2026-10-12T00:00:00Z",
+      "rationale": "iOS CardView has no accessory slot in its header, and a second tap target inside a tappable card is hard to hit on a phone. iOS products offer the quick action on the screen the Card opens.",
+      "evidenceIds": [
+        "evidence:figma.library.card",
+        "evidence:fluent-apple.card-view.variants"
+      ],
+      "revisitTrigger": "iOS CardView gains a header accessory slot."
     }
   ]
 }

@@ -1,11 +1,8 @@
-13 gap(s)
+12 gap(s)
 
-## open-conflict (4)
+## open-conflict (1)
 
 - The product design changes the Card's state.selected (set-property, true) and no maintainer has reviewed it. Classification unclassified. Owners: design shop-design, design design-system-maintainers. (`conflict:shop.order-summary.card.state-selected`)
-- [ios] The library's Card shows actions by default (Footer), and Fluent iOS CardView has no extension point that expresses it. Classification unclassified. Owners: design design-system-maintainers, design-engineering fluent-ios. (`conflict:card.ios.default.actions`)
-- [ios] The library's Card shows body by default (Body), and Fluent iOS CardView has no extension point that expresses it. Classification unclassified. Owners: design design-system-maintainers, design-engineering fluent-ios. (`conflict:card.ios.default.body`)
-- [ios] The library's Card shows header.action by default (.Card header / Header quick action), and Fluent iOS CardView has no extension point that expresses it. Classification unclassified. Owners: design design-system-maintainers, design-engineering fluent-ios. (`conflict:card.ios.default.header-action`)
 
 ## missing-variant (1)
 
@@ -27,3 +24,8 @@
 - [android] No automated or device evidence for Fluent Android Compose BasicCard; only static analysis. Owners: qa card-qa. (`platform:fluent-android.basic-card`)
 - [ios] No automated or device evidence for Fluent iOS CardView; only static analysis. Owners: qa card-qa. (`platform:fluent-apple.card-view`)
 - [web] No automated or device evidence for Fluent React v9 Card; only static analysis. Owners: qa card-qa. (`platform:fluent-react-v9.card`)
+
+## approved-exception (2)
+
+- [ios] Default actions in the Card on ios: accepted as accepted-limitation. Revisit when: iOS CardView gains a footer or actions slot. Owners: design design-system-maintainers, design-engineering fluent-ios. (`conflict:card.ios.default.actions`)
+- [ios] Default header.action in the Card on ios: accepted as accepted-limitation. Revisit when: iOS CardView gains a header accessory slot. Owners: design design-system-maintainers, design-engineering fluent-ios. (`conflict:card.ios.default.header-action`)

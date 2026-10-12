@@ -24,12 +24,13 @@ test('the real Android kit raises exactly the Brand outline conflict, from read 
   assert.ok(kit?.kind === 'evidence' && kit.source.revision !== 'civic-stand-in-1')
 })
 
-test('the real iOS kit draws four styles, so iOS Danger and Transparent neutral have no design, undecided', () => {
+test('the real iOS kit draws four styles, so iOS Danger and Transparent neutral have no design, and the demo decides both', () => {
   const raised = indexGraph(load('raised'))
   const ios = raised.ofKind('contract-conflict').filter((conflict) => conflict.platform === 'ios')
   assert.deepEqual(ios.map((conflict) => conflict.id).sort(), ['conflict:button.ios.danger', 'conflict:button.ios.transparent-neutral'])
   const resolved = indexGraph(load('resolved'))
-  assert.ok(ios.every((conflict) => conflictState(resolved, resolved.get(conflict.id) as ContractConflict).status === 'open'))
+  const states = ios.map((conflict) => conflictState(resolved, resolved.get(conflict.id) as ContractConflict))
+  assert.deepEqual(states.map((state) => [state.status, state.decision?.outcome]), [['decided', 'update-design'], ['decided', 'approve-exception']])
   const kit = raised.get('evidence:figma.ios-kit.button')
   assert.ok(kit?.kind === 'evidence' && kit.source.revision === '2409334717272340147' && kit.source.path === 'Microsoft Fluent 2 iOS (Community) / Button / Button')
 })

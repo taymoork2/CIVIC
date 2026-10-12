@@ -13,7 +13,7 @@ Everything in [`out/`](out) is built by `node build.ts` from the inputs below. T
 | Who must act? | Both files name owners: Design for the kit and Design Engineering for the Compose library. |
 | How is the decision kept? | [`out/resolved.context.android.brand-outline.md`](out/resolved.context.android.brand-outline.md) and [`out/resolved.graph.json`](out/resolved.graph.json): a Decision record classifies the kit as an outdated design source and decides the conflict as a design update, with its evidence and the trigger for revisiting it. |
 
-The two graphs are the same import before and after the Decision record in [`contract/decisions.json`](contract/decisions.json). The conflict is real; that decision is an illustration with the demo's placeholder owners. It is not a real Fluent team's call. `civic check` fails on the raised graph. On the resolved graph the Android conflict is decided, and the two undecided iOS conflicts are held by the project's baseline. Record your own call with `civic decide` ([graph README](../../graph/README.md#decisions)) and rebuild.
+The two graphs are the same import before and after the Decision record in [`contract/decisions.json`](contract/decisions.json). The conflicts are real; the decisions are illustrations with the demo's placeholder owners. It is not a real Fluent team's call. `civic check` fails on the raised graph. On the resolved graph all three are decided: the Android kit and the iOS kit each gain the button they don't draw (Brand outline, Danger), and Transparent neutral stays an iOS-only button. Record your own call with `civic decide` ([graph README](../../graph/README.md#decisions)) and rebuild.
 
 Query the graphs yourself:
 
