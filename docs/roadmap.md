@@ -76,7 +76,7 @@ Validate onboarding with two cases ([onboarding and ingestion](onboarding-and-in
 
 Acceptance: a second small web app connects without importing Laundry code, unsupported features stay visibly unavailable, and source refresh, capture, and replay make zero model calls with providers disabled.
 
-Progress, 2026-10-12: the v6 handoff of the journey engine brings a project manifest (`rehearsal.project.json`), a project picker, static discovery for existing apps with a confirm step, and two example apps that don't import Laundry ([v6 notes](synthesis-v0-import.md#v6-handoff-update)). What step 4 still needs: the engine's journey graph exported into the CIVIC graph, crawl-first discovery (D34), and the frame walk (D33).
+Progress, 2026-10-12: the v6 handoff of the journey engine brings a project manifest (`rehearsal.project.json`), a project picker, static discovery for existing apps with a confirm step, and two example apps that don't import Laundry ([v6 notes](synthesis-v0-import.md#v6-handoff-update)). What step 4 still needs: the canvas reading the CIVIC graph back (the [Laundry graph](../projects/laundry) now carries the engine's journeys into it), crawl-first discovery (D34), and the frame walk (D33).
 
 ## 5. Identity, permissions, and multiplayer
 
@@ -109,7 +109,9 @@ The Figma importers already read the real `GET /v1/files/:key` export shape; wha
 
 Acceptance: the Button conflict is raised from the real export, or the demo records that the real kit doesn't disagree. Either result is evidence; decision 0001 was based on a reading of the kit, not an export.
 
-Progress, 2026-10-11: the Button demo reads the real Android kit export. The kit predates Figma variants and draws only Primary and Text buttons, so there is no Neutral button to conflict with. The real conflict runs the other way: Compose ships `OutlinedButton` (Brand outline) and the kit doesn't draw it. The Card demo's two Figma files and Laundry's Playwright reports are still stand-ins.
+Progress, 2026-10-11: the Button demo reads the real Android kit export. The kit predates Figma variants and draws only Primary and Text buttons, so there is no Neutral button to conflict with. The real conflict runs the other way: Compose ships `OutlinedButton` (Brand outline) and the kit doesn't draw it.
+
+Progress, 2026-10-12: [Laundry's graph](../projects/laundry) is built from real inputs. `readJourneyIndex` reads the journey engine's review index (204 scenarios, their journeys and declared paths), and Laundry's own review specs run unchanged into a Playwright report that `readPlaywrightReport` ties to those scenarios through the checks each one declares. The gate reads it with the demo graphs: 3 of 27 tests fail and 12 of 49 journey screens are dead ends, all held by the baseline. This is also the first piece of [step 4](#4-the-journey-engine-as-a-graph-viewer): the engine's journey graph now reaches the CIVIC graph. Still to come: the Card demo's library file from a real Fluent kit export (the Shop product file stays illustrative), and Laundry's full browser suite, which needs its local Convex backend.
 
 ## Later, not scheduled
 

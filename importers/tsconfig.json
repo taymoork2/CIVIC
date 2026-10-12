@@ -22,6 +22,7 @@
     "src",
     "test",
     "../demo/fluent-button/*.ts",
-    "../demo/card/*.ts"
+    "../demo/card/*.ts",
+    "../projects/laundry/*.ts"
   ]
 }

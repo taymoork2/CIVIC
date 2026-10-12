@@ -9,6 +9,7 @@ import {
   readDtcgTokens,
   readFigmaComponentSet,
   readPlatformComponent,
+  readJourneyIndex,
   readPlaywrightReport,
   type DesignKitMapping,
   type PlatformMapping,
@@ -197,6 +198,55 @@ test('a Playwright test can record that it observed a Storybook story', () => {
   assert.equal(evidence?.id, 'evidence:storybook.appearance-story-renders')
   assert.deepEqual([evidence?.method, evidence?.tier, evidence?.source.path, evidence?.source.anchor], ['storybook', 'automated', 'stories/Button.stories.tsx', 'components-button--appearance'])
   assert.throws(() => readPlaywrightReport(story('source-analysis'), 'web'), /not a run method/)
+})
+
+test('a report without CIVIC annotations takes its subjects from the project\'s declared mapping', () => {
+  const report = {
+    config: { metadata: { 'civic.revision': 'abc123' } },
+    suites: [{ specs: [
+      { title: 'Opens the drawer', file: 'drawer.spec.ts', line: 4, tests: [{ annotations: [], results: [{ status: 'passed', startTime: '2026-10-12T00:00:00Z' }] }] },
+      { title: 'Annotated wins', file: 'drawer.spec.ts', line: 9, tests: [{ annotations: [{ type: 'civic.subject', description: 'target:app.b' }], results: [{ status: 'failed', startTime: '2026-10-12T00:00:00Z' }] }] },
+    ] }],
+  }
+  const evidence = readPlaywrightReport(report, 'web', { subjectsFor: (spec) => (spec.file === 'drawer.spec.ts' ? ['target:app.a'] : []), pathFor: (file) => `apps/web/e2e/${file}` })
+  assert.deepEqual(evidence.map((item) => [item.subjectIds, item.outcome, item.source.path, item.source.anchor]), [
+    [['target:app.a'], 'pass', 'apps/web/e2e/drawer.spec.ts', 'line 4'],
+    [['target:app.b'], 'fail', 'apps/web/e2e/drawer.spec.ts', 'line 9'],
+  ])
+  assert.deepEqual(readPlaywrightReport(report, 'web').map((item) => item.title), ['Annotated wins'])
+})
+
+test('reads the journey engine\'s review index into screens, journeys, paths and declared checks', () => {
+  const index = {
+    revision: { head: 'abc123', source: 'hash' },
+    scenarios: [
+      { id: 'intake.type', label: 'Type', journey: 'Add a towel', checks: ['apps/web/e2e/intake.spec.ts'], edges: [{ action: 'Continue', destination: 'intake.final' }] },
+      { id: 'intake.final', label: 'Final', journey: 'Add a towel', checks: ['apps/web/e2e/intake.spec.ts'], edges: [{ action: 'Open closet', destination: 'closet.index', when: 'Saved' }] },
+      { id: 'legacy.home', label: 'Home', journey: 'Existing specimens', edges: [{ action: 'Open', destination: 'intake.type' }] },
+    ],
+    routeActions: [{ from: 'legacy.home', action: 'Open', destination: 'intake.type', route: '/add', source: 'apps/web/src/home.tsx', anchor: 'renderLink' }],
+  }
+  const { fragment: read, checks } = readJourneyIndex(index, { prefix: 'app', platform: 'web', owners: [{ role: 'qa', who: 'qa' }], catalogs: ['Existing specimens'], path: 'scenarios.json' })
+  const graph = assemble(read)
+  assert.deepEqual(validateGraph(graph).filter((issue) => issue.severity === 'error'), [])
+  const targets = Object.fromEntries(graph.records.map((record) => [record.id, record.kind === 'target' ? record.scale : record.kind]))
+  assert.deepEqual(targets, {
+    'target:app.catalog.existing-specimens': 'surface',
+    'target:app.intake.final': 'screen',
+    'target:app.intake.type': 'screen',
+    'target:app.journey.add-a-towel': 'journey',
+    'target:app.legacy.home': 'screen',
+  })
+  const paths = graph.links.filter((link) => link.relation === 'navigates')
+  assert.deepEqual(paths.map((link) => [link.from, link.to ?? `unmapped ${link.unmapped}`, link.status]), [
+    ['target:app.intake.final', 'unmapped closet.index', 'declared'],
+    ['target:app.intake.type', 'target:app.intake.final', 'declared'],
+    ['target:app.legacy.home', 'target:app.intake.type', 'declared'],
+  ])
+  const fromSource = paths.find((link) => link.from === 'target:app.legacy.home')
+  assert.deepEqual([fromSource?.route, fromSource?.source?.path, fromSource?.source?.anchor], ['/add', 'apps/web/src/home.tsx', 'renderLink'])
+  assert.deepEqual(checks.get('apps/web/e2e/intake.spec.ts'), ['target:app.intake.type', 'target:app.intake.final'])
+  assert.throws(() => readJourneyIndex({ scenarios: [] } as never, { prefix: 'app', platform: 'web', owners: [], path: 'x' }), /review index/)
 })
 
 test('reads DTCG tokens with inherited types and nested paths', () => {

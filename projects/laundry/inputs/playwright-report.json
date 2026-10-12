@@ -1,0 +1,603 @@
+{
+  "config": {
+    "metadata": {
+      "civic.revision": "ea0d4e83a6b0bb9f5702055735101bef84ca81e1",
+      "civic.tool": "playwright"
+    }
+  },
+  "suites": [
+    {
+      "title": "review-family.spec.ts",
+      "file": "review-family.spec.ts",
+      "specs": [
+        {
+          "title": "family size and stage changes require reset; 1000-item selection survives paging and partial put-away",
+          "file": "review-family.spec.ts",
+          "line": 9,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T02:20:41.043Z",
+                  "duration": 2486,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "each preset renders the real presenter at 100, 500 and 1000 items without contacting a backend",
+          "file": "review-family.spec.ts",
+          "line": 37,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T02:20:43.729Z",
+                  "duration": 13062,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "a completed load transfers only its original twenty items into drying",
+          "file": "review-family.spec.ts",
+          "line": 52,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T02:20:56.801Z",
+                  "duration": 1411,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "canvas reviews retain the family preset and an agent can retrieve its brief",
+          "file": "review-family.spec.ts",
+          "line": 67,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T02:20:58.223Z",
+                  "duration": 3819,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "all five loads retain their items through washing, partial drying and put-away",
+          "file": "review-family.spec.ts",
+          "line": 87,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T02:21:02.059Z",
+                  "duration": 4058,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "failed wash or drying actions preserve the current items and selected inputs",
+          "file": "review-family.spec.ts",
+          "line": 115,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T02:21:06.128Z",
+                  "duration": 2294,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "returning to the family plan retains a completed wash and an unfinished drying selection",
+          "file": "review-family.spec.ts",
+          "line": 128,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "unexpected",
+              "results": [
+                {
+                  "status": "failed",
+                  "startTime": "2026-10-12T02:21:08.434Z",
+                  "duration": 16260,
+                  "retry": 0,
+                  "errors": [
+                    {
+                      "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n  - waiting for getByRole('link', { name: 'Back to Laundry', exact: true })\n\n\n  129 |   await page.goto('/review-frame.html?scenario=family.washing&familySize=100')\n  130 |   await page.getByRole('button', { name: /Washer.*done|Washer.*finished|Wash.*done/i }).click()\n> 131 |   await page.getByRole('link', { name: 'Back to Laundry', exact: true }).click()\n      |                                                                          ^\n  132 |   await page.getByRole('button', { name: 'Wash next load', exact: true }).click()\n  133 |   await expect(page.getByRole('button', { name: 'Move to drying queue', exact: true })).toBeVisible()\n  134 |   await page.getByRole('button', { name: 'Move to drying queue', exact: true }).click()\n    at rehearsal/source/apps/web/e2e/review-family.spec.ts:131:74"
+                    }
+                  ]
+                },
+                {
+                  "status": "failed",
+                  "startTime": "2026-10-12T02:21:25.435Z",
+                  "duration": 16292,
+                  "retry": 1,
+                  "errors": [
+                    {
+                      "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n  - waiting for getByRole('link', { name: 'Back to Laundry', exact: true })\n\n\n  129 |   await page.goto('/review-frame.html?scenario=family.washing&familySize=100')\n  130 |   await page.getByRole('button', { name: /Washer.*done|Washer.*finished|Wash.*done/i }).click()\n> 131 |   await page.getByRole('link', { name: 'Back to Laundry', exact: true }).click()\n      |                                                                          ^\n  132 |   await page.getByRole('button', { name: 'Wash next load', exact: true }).click()\n  133 |   await expect(page.getByRole('button', { name: 'Move to drying queue', exact: true })).toBeVisible()\n  134 |   await page.getByRole('button', { name: 'Move to drying queue', exact: true }).click()\n    at rehearsal/source/apps/web/e2e/review-family.spec.ts:131:74"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "review-reminder.spec.ts",
+      "file": "review-reminder.spec.ts",
+      "specs": [
+        {
+          "title": "the real reminder dismisses only the task, restores focus and keeps Home access to its exact check",
+          "file": "review-reminder.spec.ts",
+          "line": 19,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T02:21:42.633Z",
+                  "duration": 1973,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "a changed run/count reappears after dismissal and opens that run without recording dryness",
+          "file": "review-reminder.spec.ts",
+          "line": 44,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T02:21:44.798Z",
+                  "duration": 1628,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "review-route-states.spec.ts",
+      "file": "review-route-states.spec.ts",
+      "specs": [
+        {
+          "title": "first-use Add clothes opens the actual chooser and cancel restores Home",
+          "file": "review-route-states.spec.ts",
+          "line": 19,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T02:21:46.443Z",
+                  "duration": 1733,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "an in-load garment opens its running wash, returns to the item and can confirm washer finish",
+          "file": "review-route-states.spec.ts",
+          "line": 28,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T02:21:48.186Z",
+                  "duration": 1903,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "the hamper drawer keeps its quantity inputs and returns to the originating Closet item",
+          "file": "review-route-states.spec.ts",
+          "line": 43,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T02:21:50.101Z",
+                  "duration": 1984,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "washer transfer succeeds locally and Back retains the queued pieces in Laundry",
+          "file": "review-route-states.spec.ts",
+          "line": 57,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T02:21:52.097Z",
+                  "duration": 1197,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "failed, offline and read-only transfers stay on the washed screen; a failed transfer can retry",
+          "file": "review-route-states.spec.ts",
+          "line": 69,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T02:21:53.309Z",
+                  "duration": 3203,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "completed wash opens the actual History tab and restores the completed wash and Me origin",
+          "file": "review-route-states.spec.ts",
+          "line": 83,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T02:21:56.523Z",
+                  "duration": 1744,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "review-workspace.spec.ts",
+      "file": "review-workspace.spec.ts",
+      "specs": [
+        {
+          "title": "review opens real synthetic sheets without a household connection",
+          "file": "review-workspace.spec.ts",
+          "line": 13,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "unexpected",
+              "results": [
+                {
+                  "status": "failed",
+                  "startTime": "2026-10-12T02:21:58.297Z",
+                  "duration": 15277,
+                  "retry": 0,
+                  "errors": [
+                    {
+                      "message": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('heading', { name: 'A Laundered Closet · review' })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" getByRole('heading', { name: 'A Laundered Closet · review' }) with timeout 15000ms\n  - waiting for getByRole('heading', { name: 'A Laundered Closet · review' })\n\n\n  19 |   await expect(page.getByLabel('Review key', { exact: true })).toHaveCount(0)\n  20 |   expect((await page.request.get('/api/review/index')).ok()).toBe(true)\n> 21 |   await expect(page.getByRole('heading', { name: 'A Laundered Closet · review' })).toBeVisible()\n     |                                                                                    ^\n  22 |   const frame = page.frameLocator('iframe')\n  23 |   await expect(frame.getByRole('button', { name: 'Save item', exact: true })).toBeEnabled()\n  24 |   await expect(frame.locator('.sheet[data-starting-style]')).toHaveCount(0)\n    at rehearsal/source/apps/web/e2e/review-workspace.spec.ts:21:84"
+                    }
+                  ]
+                },
+                {
+                  "status": "failed",
+                  "startTime": "2026-10-12T02:22:14.289Z",
+                  "duration": 15406,
+                  "retry": 1,
+                  "errors": [
+                    {
+                      "message": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('heading', { name: 'A Laundered Closet · review' })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" getByRole('heading', { name: 'A Laundered Closet · review' }) with timeout 15000ms\n  - waiting for getByRole('heading', { name: 'A Laundered Closet · review' })\n\n\n  19 |   await expect(page.getByLabel('Review key', { exact: true })).toHaveCount(0)\n  20 |   expect((await page.request.get('/api/review/index')).ok()).toBe(true)\n> 21 |   await expect(page.getByRole('heading', { name: 'A Laundered Closet · review' })).toBeVisible()\n     |                                                                                    ^\n  22 |   const frame = page.frameLocator('iframe')\n  23 |   await expect(frame.getByRole('button', { name: 'Save item', exact: true })).toBeEnabled()\n  24 |   await expect(frame.locator('.sheet[data-starting-style]')).toHaveCount(0)\n    at rehearsal/source/apps/web/e2e/review-workspace.spec.ts:21:84"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "failure retains the intake draft and retries it; a scenario change has a restart boundary",
+          "file": "review-workspace.spec.ts",
+          "line": 38,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T02:22:30.670Z",
+                  "duration": 3367,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "feedback pins a keyboard target, retains a failed send, captures state and survives reload",
+          "file": "review-workspace.spec.ts",
+          "line": 58,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T02:22:34.213Z",
+                  "duration": 3649,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "every initial named scenario renders a real task drawer",
+          "file": "review-workspace.spec.ts",
+          "line": 88,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "unexpected",
+              "results": [
+                {
+                  "status": "failed",
+                  "startTime": "2026-10-12T02:22:37.882Z",
+                  "duration": 15320,
+                  "retry": 0,
+                  "errors": [
+                    {
+                      "message": "Error: route.home.reminder-visible\n\nexpect(locator).toBeVisible() failed\n\nLocator: locator('iframe').contentFrame().getByRole('dialog').first()\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n  - route.home.reminder-visible locator('iframe').contentFrame().getByRole('dialog').first() with timeout 15000ms\n  - waiting for locator('iframe').contentFrame().getByRole('dialog').first()\n\n\n  90 |     await page.goto(`/review?legacy=1&scenario=${scenario.id}`)\n  91 |     const frame = page.frameLocator('iframe')\n> 92 |     await expect(frame.getByRole('dialog').first(), scenario.id).toBeVisible()\n     |                                                                  ^\n  93 |     await expect(frame.getByRole('heading', { name: 'Preview unavailable' }), scenario.id).toHaveCount(0)\n  94 |     if (scenario.id === 'records.item.tags') await expect(frame.getByRole('button', { name: 'Save tags', exact: true })).toBeVisible()\n  95 |     if (scenario.id === 'records.item.care') await expect(frame.getByRole('heading', { name: 'How does it wash?', exact: true })).toBeVisible()\n    at rehearsal/source/apps/web/e2e/review-workspace.spec.ts:92:66"
+                    }
+                  ]
+                },
+                {
+                  "status": "failed",
+                  "startTime": "2026-10-12T02:22:53.932Z",
+                  "duration": 15312,
+                  "retry": 1,
+                  "errors": [
+                    {
+                      "message": "Error: route.home.reminder-visible\n\nexpect(locator).toBeVisible() failed\n\nLocator: locator('iframe').contentFrame().getByRole('dialog').first()\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n  - route.home.reminder-visible locator('iframe').contentFrame().getByRole('dialog').first() with timeout 15000ms\n  - waiting for locator('iframe').contentFrame().getByRole('dialog').first()\n\n\n  90 |     await page.goto(`/review?legacy=1&scenario=${scenario.id}`)\n  91 |     const frame = page.frameLocator('iframe')\n> 92 |     await expect(frame.getByRole('dialog').first(), scenario.id).toBeVisible()\n     |                                                                  ^\n  93 |     await expect(frame.getByRole('heading', { name: 'Preview unavailable' }), scenario.id).toHaveCount(0)\n  94 |     if (scenario.id === 'records.item.tags') await expect(frame.getByRole('button', { name: 'Save tags', exact: true })).toBeVisible()\n  95 |     if (scenario.id === 'records.item.care') await expect(frame.getByRole('heading', { name: 'How does it wash?', exact: true })).toBeVisible()\n    at rehearsal/source/apps/web/e2e/review-workspace.spec.ts:92:66"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "new basic appliance and product connect to their saved records and editors",
+          "file": "review-workspace.spec.ts",
+          "line": 99,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T02:23:10.294Z",
+                  "duration": 5789,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "saved profile and water editors persist local changes",
+          "file": "review-workspace.spec.ts",
+          "line": 137,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T02:23:16.279Z",
+                  "duration": 4876,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "pack intake keeps answers through Back, saves, and connects to the item record",
+          "file": "review-workspace.spec.ts",
+          "line": 160,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T02:23:21.167Z",
+                  "duration": 4339,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "towel intake keeps answers through Back, saves, and connects to the item record",
+          "file": "review-workspace.spec.ts",
+          "line": 160,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T02:23:25.516Z",
+                  "duration": 4451,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "nested tags guard a draft, dismiss back to the record, and save through the local adapter",
+          "file": "review-workspace.spec.ts",
+          "line": 189,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T02:23:29.982Z",
+                  "duration": 2840,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "pointer pins capture an element and a region; unsent feedback survives reload",
+          "file": "review-workspace.spec.ts",
+          "line": 210,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T02:23:32.837Z",
+                  "duration": 4443,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "student, member and missing-care presets affect a desktop preview; offline retains its draft",
+          "file": "review-workspace.spec.ts",
+          "line": 244,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T02:23:37.295Z",
+                  "duration": 3315,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "the direct product Contents editor saves through the real form and local adapter",
+          "file": "review-workspace.spec.ts",
+          "line": 265,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T02:23:40.625Z",
+                  "duration": 3391,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "startTime": "2026-10-12T02:20:40.202Z",
+    "duration": 183936.31199999998,
+    "expected": 24,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "name": "@civic/project-laundry",
+  "private": true,
+  "type": "module",
+  "description": "Laundry's CIVIC graph from its real inputs: the journey engine's review index and a Playwright report of Laundry's own review specs. Captured by node capture.ts, built by node build.ts."
+}
