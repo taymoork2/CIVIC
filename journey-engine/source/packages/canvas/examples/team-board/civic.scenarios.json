@@ -1,0 +1,4 @@
+[
+  { "id": "board.sign-in", "label": "Sign in", "journey": "Use the board", "section": "Account", "component": "src/app.js", "identity": "signed-out", "captureFields": ["Email"], "edges": [{ "action": "Sign in", "destination": "board.home", "when": "The persona's email and the review credential" }] },
+  { "id": "board.home", "label": "Team board", "journey": "Use the board", "section": "Main", "component": "src/app.js", "captureFields": ["Message"], "edges": [{ "action": "Sign out", "destination": "board.sign-in" }] }
+]

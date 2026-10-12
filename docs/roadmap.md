@@ -6,22 +6,20 @@ Every step follows [decision 0006](decisions/0006-deterministic-civic-for-agenti
 
 ## Order of work
 
-Reprioritized on 2026-10-12. The 2026-10-11 order is done: the gate (step 8), the Decision record, real inputs (step 9), a second app through the manifest and crawl (step 4), Codex packaging and PR previews, step 6 and step 5 are built, apart from the pieces listed under "Waiting" below. Step numbers are stable names that other documents cite, so the order of work is listed here rather than by renumbering:
+Reprioritized on 2026-10-12. The 2026-10-11 order is done: the gate (step 8), step 3's decision loop (Proposal, Decision, Adoption, Verification), real inputs (step 9), a second app through the manifest and crawl (step 4), live runs for apps with sign-in and for TanStack Start server functions (step 4), Codex packaging and PR previews, step 6 and step 5 are built, apart from the pieces listed under "Waiting" below. Step numbers are stable names that other documents cite, so the order of work is listed here rather than by renumbering:
 
-1. **[Step 3](#3-typed-contract-and-change-records): finish the decision loop.** Proposal, Adoption and Verification records, so a decided conflict becomes a tracked fix that the gate re-checks. In progress.
-2. **[Step 4](#4-the-journey-engine-as-a-graph-viewer): more apps run live in the canvas.** A generic sign-in adapter, and a runtime for TanStack Start server functions. Both in progress, alongside item 1.
-3. **[Step 10](#10-checks-where-each-role-works): checks where each role works.** Decision 0005 says most people meet CIVIC through checks in their own tools, and today that is one `civic` commit status. Route each finding to the side that moved, and put it on the pull request, the test run and the library release.
-4. **[Design drafts](#next-the-review-to-agent-loop)** as review lines (item 3). Real Figma kits are in, so drafts are no longer blocked.
-5. **[Step 3](#3-typed-contract-and-change-records)'s collaboration records:** Ambiguity, Constraint, Coverage gap, Divergence, Risk and Exception, once the decision loop shows the record shape.
-6. **The frame walk (D33)** in [step 4](#4-the-journey-engine-as-a-graph-viewer), now that real design files exist to walk.
-7. **[Step 7](#7-repository-hygiene)** happens opportunistically.
+1. **[Step 10](#10-checks-where-each-role-works): checks where each role works.** Decision 0005 says most people meet CIVIC through checks in their own tools, and today that is one `civic` commit status. Route each finding to the side that moved, and put it on the pull request, the test run and the library release, together with the decided fix it turns into.
+2. **[Design drafts](#next-the-review-to-agent-loop)** as review lines (item 3). Real Figma kits are in, so drafts are no longer blocked.
+3. **[Step 3](#3-typed-contract-and-change-records)'s collaboration records:** Ambiguity, Constraint, Coverage gap, Divergence, Risk and Exception, on the record shape the decision loop set.
+4. **The frame walk (D33)** in [step 4](#4-the-journey-engine-as-a-graph-viewer), now that real design files exist to walk.
+5. **[Step 7](#7-repository-hygiene)** happens opportunistically.
 
 Waiting on something other than a build:
 
 - **A device.** The first native crawl and native captures (steps 4 and 6) need a device or simulator. The cloud has none, so the iOS crawl runs on the founder's Mac.
 - **A hosted remote.** Presence, following and shared driving ([step 5](#5-identity-permissions-and-multiplayer)) need a live service; records sync through git today.
 
-Step 10 comes before the remaining record types because the gate's findings only reach people who run `bin/signoff`. The decision loop comes first because step 10 should deliver a finding together with the fix it turns into.
+Step 10 comes before the remaining record types because the gate's findings only reach people who run `bin/signoff`.
 
 ## 1. CIVIC graph schema
 
@@ -77,6 +75,8 @@ The journey engine already has working examples: `coverage.json` is a Coverage g
 
 The Decision record is built in [`graph/`](../graph#decisions). A conflict keeps what the import raised, and its status, classification and alignment state are read from the Decision in force on it. A changed call supersedes the earlier decision instead of overwriting it, and an agent can't write one (D35). Each demo keeps its decisions in a `civic.decisions/0` file next to its contract, and `civic decide` records a new one after checking it against the graph. The gate counts a conflict as decided only when a Decision is in force on it, so the Button's brand outline conflict fails on the raised graph and passes once its decision is recorded.
 
+Progress, 2026-10-12: the decision loop is built ([`graph/`](../graph#the-decision-loop)). Proposal, Adoption and Verification are separate records in the same decision file, written by `civic propose`, `civic adopt` and `civic verify` after a check against the graph. A decision names the proposal it approves, and an `update-contract` decision must approve one. Each decided fix has a stage read from its records: awaiting adoption, adopted, verified (the conflict then reads aligned), failed or regressed. The gate re-checks every fix on every run. It blocks when an import that read the adopted revision still raises the conflict, when a verification fails, and when evidence a verification cited fails later; unadopted and unverified fixes and undecided proposals are advisory. A re-import that no longer raises an adopted conflict settles it, and its records stay in the file as history. Agents may propose and record an adoption but never verify (D35). The collaboration record types (Ambiguity, Constraint, Coverage gap, Divergence, Risk, Exception) are still to come.
+
 ## 4. The journey engine as a graph viewer
 
 Point the journey engine's canvas and Contract panel at the graph, with Laundry as one web adapter. Generalize the `@civic/shell` adapter boundary now that Fluent is a second consumer ([decision 0003](decisions/0003-civic-shell-package.md) was paused until then). Follow the v4 handoff's onboarding direction: a local project manifest plus a supported web adapter.
@@ -101,7 +101,11 @@ Progress, 2026-10-12: the build connector is a package. [`@civic/vite-connector`
 
 Progress, 2026-10-12: the canvas runs on its own. [`@civic/canvas`](../journey-engine/source/packages/canvas) holds the journey canvas UI, its frame entry, the Notebook example and a standalone host (`civic-canvas --project <app>/civic.project.json`) that keeps its store outside the app. Laundry-only layout and the towel journey's guided run reach the canvas through a canvas extension that Laundry's connector supplies; a module app gets CIVIC's own layout. Still to come: a runtime and data adapter beyond Laundry's Convex.
 
-Progress, 2026-10-12: live runs work beyond Laundry's Convex. The run service is in `@civic/canvas`, and an app whose screens call their own HTTP API runs against an isolated copy of that API per run: its `fetch` calls are routed to the app's real handler over seeded in-memory data, with a fixed clock, and writes are recorded and checked on replay. The [Tasks example](../journey-engine/source/packages/canvas/examples/tasks) proves it in a browser check. Still to come: an auth adapter, and TanStack Start server functions.
+Progress, 2026-10-12: live runs work beyond Laundry's Convex. The run service is in `@civic/canvas`, and an app whose screens call their own HTTP API runs against an isolated copy of that API per run: its `fetch` calls are routed to the app's real handler over seeded in-memory data, with a fixed clock, and writes are recorded and checked on replay. The [Tasks example](../journey-engine/source/packages/canvas/examples/tasks) proves it in a browser check. Still to come: an auth adapter.
+
+Progress, 2026-10-12: TanStack Start server functions run live too. In the preview, each `createServerFn` call goes to the run (GET as a query, POST as a recorded mutation); in the run's worker the app's own handlers, middleware and validators execute against that run's module state. The page never loads a handler or a module only handlers use. The [Reading list example](../journey-engine/source/packages/canvas/examples/reading-list) proves it in a browser check.
+
+Progress, 2026-10-12: apps with sign-in run live too. Personas carry synthetic review identities (reserved example domains only), each run gets a fresh credential and starts signed in through the app's own sign-in, and the session stays in the run. Password fields are filled with the credential and recordings hold only a placeholder. The [Team board example](../journey-engine/source/packages/canvas/examples/team-board) proves it in a browser check.
 
 ## 5. Identity, permissions, and multiplayer
 

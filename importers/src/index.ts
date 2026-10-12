@@ -6,6 +6,6 @@ export { readFigmaLibraryComponent, readFigmaProductFile, type LibraryComponentM
 export { readPlaywrightReport, type PlaywrightReportOptions } from './playwright.ts'
 export { readJourneyIndex, scenarioTarget, type JourneyIndex, type JourneyIndexOptions } from './journey.ts'
 export { compareDesignKit, compareLibraryDefaults, raiseOverrideDrift } from './compare.ts'
-export { applyDecisions } from './decisions.ts'
+export { applyDecisions, settledConflicts, type SettledConflict } from './decisions.ts'
 export * from './source.ts'
 export { applyConfirmations, readCrawl, type ConfirmationFile, type CrawlImportOptions } from './crawl.ts'

@@ -3,7 +3,8 @@ import { bindProjectRequests, projectFetch } from './project-request'
 import type { AdapterContext, AdapterState, AdapterScenario, ReviewConfig, ReviewSnapshot, ProjectChoice } from './adapter'
 import { readFixtureFields } from './journey'
 import { createRuntimeBridge } from './runtime-bridge'
-import { openRuntimeSession, routeFetch } from './runtime-session'
+import { fillCredentials, openRuntimeSession, routeFetch } from './runtime-session'
+import { routeServerFunctions } from './server-functions'
 import { observeRuntime, replayGesture, runtimeFields, runtimeView, trackCloseWatchers } from './runtime-dom'
 import type { RuntimeBridge, RuntimeRecording } from './runtime-bridge'
 
@@ -99,8 +100,13 @@ try {
     async startRuntime(options) {
       if (!project.runtime) throw Error('This project declares no runtime entry. Add adapter.runtime to its civic.project.json.')
       const run = await openRuntimeSession(context)
-      const restore = routeFetch(run.transport, options.routes ?? ['/api/'])
+      const identity = run.session.identity
+      const restoreFetch = routeFetch(run.transport, options.routes ?? ['/api/'], identity?.credential)
+      const restoreServerFunctions = routeServerFunctions(run.transport)
+      const stopFilling = identity ? fillCredentials(root, identity.credential) : () => {}
+      const stop = () => { stopFilling(); restoreServerFunctions(); restoreFetch(); run.close() }
       try {
+        await options.load?.()
         const bridge = context.connectRuntime({
           seed: run.seed, now: run.session.now, captureInputs: options.captureInputs ?? 'synthetic',
           screen: options.screen, route: options.route ?? options.screen, subscribe: options.subscribe, status: options.status,
@@ -108,10 +114,9 @@ try {
           reset: async () => { await run.reset(); await options.reset() },
         })
         run.transport.bind(bridge)
-        const close = () => { restore(); run.close() }
-        window.addEventListener('pagehide', close, { once: true })
-        return { bridge, close }
-      } catch (error) { restore(); run.close(); throw error }
+        window.addEventListener('pagehide', stop, { once: true })
+        return { bridge, close: stop, identity: identity && { id: identity.id, name: identity.name, email: identity.email, signedIn: identity.signedIn } }
+      } catch (error) { stop(); throw error }
     },
   }
   const dispose = await mount(root, context)

@@ -1,0 +1,4 @@
+{
+  "version": 1,
+  "targets": [{ "id": "book.add", "kind": "journey", "title": "Add a book", "component": "src/app.tsx", "scenarios": ["books.list", "books.add"], "acceptance": ["A saved book appears in the list.", "A viewer or a service failure keeps the draft and says why.", "Each run starts from its persona's books."] }]
+}

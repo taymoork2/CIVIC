@@ -35,10 +35,30 @@ export function checkedProject(input) {
     const rows = input[field]
     if (!Array.isArray(rows) || !rows.length || rows.length > 50 || rows.some((row) => !row || !id(row.id) || !words(row.label) || row.description !== undefined && !words(row.description, 2000)) || new Set(rows.map((row) => row.id)).size !== rows.length) fail(`invalid or duplicate ${field}`)
   }
+  if (input.identity !== undefined || input.personas.some((persona) => persona.identity !== undefined)) checkedIdentity(input)
   if (input.aliases !== undefined && (!input.aliases || typeof input.aliases !== 'object' || Array.isArray(input.aliases) || Object.entries(input.aliases).some(([name, path]) => !/^[@a-z][@a-z0-9/_-]*$/i.test(name) || !words(path, 500)))) fail('invalid aliases')
   if (input.design !== undefined && (!input.design || !words(input.design.id) || !Array.isArray(input.design.files) || input.design.files.some((path) => !words(path, 500)))) fail('invalid design references')
   if (JSON.stringify(input).length > 250_000) fail('manifest too large; keep fixtures in the preview adapter')
   return input
+}
+/**
+ * Review identities are synthetic: an id, a display name and an email on a reserved domain (RFC 2606/6761),
+ * never a real account. Runs get a fresh credential for them, so a manifest never holds one.
+ */
+export const syntheticEmail = /^[a-z0-9._+-]{1,64}@(?:[a-z0-9-]{1,63}\.)*(?:example(?:\.(?:com|net|org))?|test|invalid|localhost)$/i
+function checkedIdentity(input) {
+  const config = input.identity ?? {}, sign = config.signIn
+  if (!config || typeof config !== 'object' || Array.isArray(config) || Object.keys(config).some((key) => !['signIn', 'signedOut'].includes(key))) fail('identity takes signIn and signedOut')
+  if (config.signedOut !== undefined && (!Array.isArray(config.signedOut) || config.signedOut.some((condition) => !input.conditions.some((row) => row.id === condition)))) fail('identity.signedOut must name declared conditions')
+  if (sign !== undefined && (!sign || typeof sign !== 'object' || Object.keys(sign).some((key) => !['method', 'path', 'body', 'token'].includes(key)) || !['POST', 'PUT', undefined].includes(sign.method) || !words(sign.path, 500) || !/^\/[\w/.~%-]*$/.test(sign.path) || sign.path.includes('..') || sign.body !== undefined && (typeof sign.body !== 'object' || Array.isArray(sign.body) || JSON.stringify(sign.body).length > 2000) || sign.token !== undefined && !/^[a-zA-Z_][\w]*(?:\.[a-zA-Z_][\w]*)*$/.test(sign.token))) fail('identity.signIn is { method?, path, body?, token? }')
+  const written = (value) => value && typeof value === 'object' && Object.entries(value).some(([key, child]) => /password|secret|token|credential|pin\b/i.test(key) && typeof child === 'string' && child !== '{credential}' || written(child))
+  if (written(sign?.body)) fail('identity.signIn sends {credential}, never a written secret')
+  for (const persona of input.personas) {
+    const who = persona.identity
+    if (who === undefined) continue
+    if (!who || typeof who !== 'object' || Object.keys(who).some((key) => !['id', 'name', 'email'].includes(key)) || !id(who.id) || !words(who.name, 120) || typeof who.email !== 'string' || !syntheticEmail.test(who.email)) fail(`persona ${persona.id}: identity is { id, name, email } with a reserved example domain such as @team.example`)
+  }
+  if (input.identity && !input.personas.some((persona) => persona.identity)) fail('identity needs at least one persona with a synthetic identity')
 }
 export function loadProject(repo, options = {}) {
   let local = {}
@@ -77,6 +97,7 @@ export function checkedScenarios(rows, project) {
     if (row.component !== undefined) projectPath(project.root, row.component, false, project.manifest.adapter.kind === 'module')
     if (row.section !== undefined && !project.manifest.navigation.includes(row.section)) fail(`unknown navigation section: ${row.section}`)
     if (row.edges !== undefined && (!Array.isArray(row.edges) || row.edges.length > 100 || row.edges.some((edge) => !edge || !id(edge.destination) || !words(edge.action) || edge.when !== undefined && !words(edge.when, 1000) || edge.returnTo !== undefined && !words(edge.returnTo, 1000)))) fail(`invalid edges: ${row.id}`)
+    if (row.identity !== undefined && row.identity !== 'signed-out') fail(`identity is "signed-out" or absent: ${row.id}`)
     if (row.captureFields !== undefined && (!Array.isArray(row.captureFields) || row.captureFields.length > 100 || row.captureFields.some((s) => !words(s, 300)))) fail(`invalid capture fields: ${row.id}`)
   }
   if (project.manifest.adapter.kind === 'module') for (const row of rows) {

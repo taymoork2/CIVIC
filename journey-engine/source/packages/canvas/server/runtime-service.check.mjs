@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { loadProject } from '@civic/vite-connector/project'
+import { checkedProject, loadProject } from '@civic/vite-connector/project'
 import { canvasRoot } from './canvas-root.mjs'
 import { runtimeService } from './runtime-service.mjs'
 
@@ -31,9 +31,77 @@ test('a fetch-handler backend runs per run with its persona, role and condition,
   await assert.rejects(service.handle({ action: 'query', run: a.id, name: 'CONNECT:/api/tasks', args: {} }), /Invalid request name/)
 })
 
+test('an app with sign-in runs signed in as its persona\'s synthetic identity, or signed out, and never sees a written secret', async (t) => {
+  const board = loadProject(canvasRoot, { manifest: `${canvasRoot}/examples/team-board/civic.project.json` })
+  const service = runtimeService(board, () => 'source-one')
+  t.after(() => service.close())
+  const start = (fields = {}) => service.handle({ action: 'start', scenario: 'board.home', persona: 'lead', role: 'member', condition: 'normal', now, ...fields })
+  const call = (run, method, path, body) => service.handle({ action: ['GET', 'HEAD'].includes(method) ? 'query' : 'mutation', run, name: `${method}:${path}`, args: { query: '', ...(body ? { body: JSON.stringify(body), type: 'application/json' } : {}) } })
+  const lead = await start()
+  assert.deepEqual({ ...lead.identity, credential: undefined }, { id: 'alex', name: 'Alex Rivera', email: 'alex@team.example', credential: undefined, signedIn: true })
+  assert.match(lead.identity.credential, /^review-[\w-]{24}$/)
+  assert.ok(!JSON.stringify(lead.seed).includes(lead.identity.credential), 'the seed never carries the credential')
+  assert.equal(JSON.parse((await call(lead.id, 'GET', '/api/me')).body).name, 'Alex Rivera', 'the run holds a session from the app\'s own sign-in')
+  assert.equal((await call(lead.id, 'POST', '/api/posts', { text: 'Lunch at noon' })).status, 201)
+  await service.handle({ action: 'reset', run: lead.id })
+  assert.equal((await call(lead.id, 'GET', '/api/me')).status, 200, 'a reset signs in again')
+  assert.equal((await call(lead.id, 'DELETE', '/api/session')).status, 204)
+  assert.equal((await call(lead.id, 'GET', '/api/me')).status, 401, 'signing out clears the session cookie')
+
+  const reader = await start({ role: 'reader', persona: 'newcomer' })
+  assert.equal((await call(reader.id, 'POST', '/api/posts', { text: 'Hi' })).status, 403)
+
+  assert.equal((await start({ scenario: 'board.sign-in' })).identity.signedIn, false, 'a sign-in screen starts signed out')
+  const out = await start({ condition: 'signed-out' })
+  assert.equal(out.identity.signedIn, false)
+  assert.equal((await call(out.id, 'GET', '/api/me')).status, 401)
+  assert.equal((await call(out.id, 'POST', '/api/session', { email: 'alex@team.example', password: 'guess' })).status, 401)
+  const signed = await call(out.id, 'POST', '/api/session', { email: 'alex@team.example', password: '[review credential]' })
+  assert.equal(signed.status, 200, 'the page sends a placeholder and the run swaps in its credential')
+  assert.equal((await call(out.id, 'GET', '/api/me')).status, 200)
+  assert.equal((await call(lead.id, 'POST', '/api/session', { email: 'alex@team.example', password: out.identity.credential })).status, 401, 'credentials belong to one run')
+})
+
+test('a manifest\'s review identities are synthetic and its sign-in request never writes a secret', () => {
+  const base = { version: 1, id: 'app', name: 'App', adapter: { kind: 'module' }, sources: ['src'], navigation: ['Main'], roles: [{ id: 'r', label: 'R' }], conditions: [{ id: 'normal', label: 'Normal' }] }
+  const persona = (identity) => ({ ...base, identity: { signIn: { path: '/api/session' } }, personas: [{ id: 'p', label: 'P', identity }] })
+  assert.ok(checkedProject(persona({ id: 'pat', name: 'Pat', email: 'pat@team.example' })))
+  assert.ok(checkedProject(persona({ id: 'pat', name: 'Pat', email: 'pat@example.com' })))
+  assert.throws(() => checkedProject(persona({ id: 'pat', name: 'Pat', email: 'pat@gmail.com' })), /reserved example domain/)
+  assert.throws(() => checkedProject(persona({ id: 'pat', name: 'Pat', email: 'pat@example.com', password: 'hunter2' })), /identity is \{ id, name, email \}/)
+  assert.throws(() => checkedProject({ ...persona({ id: 'pat', name: 'Pat', email: 'pat@example.com' }), identity: { signIn: { path: '/api/session', body: { user: { password: 'hunter2' } } } } }), /never a written secret/)
+  assert.throws(() => checkedProject({ ...persona({ id: 'pat', name: 'Pat', email: 'pat@example.com' }), identity: { signedOut: ['nope'] } }), /declared conditions/)
+  assert.throws(() => checkedProject({ ...base, personas: [{ id: 'p', label: 'P', identity: { id: 'pat', name: 'Pat', email: 'pat@corp.com' } }] }), /reserved example domain/, 'persona identities are checked even without an identity block')
+})
+
 test('a project without a runtime entry refuses live runs', async () => {
   const notebook = loadProject(canvasRoot, { manifest: `${canvasRoot}/examples/notebook/civic.project.json` })
   const service = runtimeService(notebook, () => 'source-one')
   await assert.rejects(service.handle({ action: 'start', scenario: 'demo.home', role: 'author', condition: 'normal' }), /no isolated data runtime/)
   await service.close()
+})
+
+test('TanStack Start server functions run in the run\'s worker, with their middleware, validators and the run\'s own module state', async (t) => {
+  const books = loadProject(canvasRoot, { manifest: `${canvasRoot}/examples/reading-list/civic.project.json` })
+  const service = runtimeService(books, () => 'source-one')
+  t.after(() => service.close())
+  const start = (fields = {}) => service.handle({ action: 'start', scenario: 'books.list', persona: 'reader', role: 'editor', condition: 'normal', now, ...fields })
+  const call = (run, kind, name, data) => service.handle({ action: kind, run, name: `serverFn:src/books.functions.ts:${name}`, args: { data, context: {} } })
+  const a = await start(), b = await start()
+  assert.deepEqual(a.seed, { books: 2 })
+  const added = (await call(a.id, 'mutation', 'addBook', { title: ' Middlemarch ', author: 'George Eliot' })).value
+  assert.equal(added.title, 'Middlemarch', 'the input validator ran')
+  assert.deepEqual(added.addedOn, { $civic: 'date', v: new Date(now).toISOString() }, 'dates survive and the run clock is fixed')
+  assert.equal((await call(a.id, 'query', 'listBooks')).value.length, 3)
+  assert.equal((await call(b.id, 'query', 'listBooks')).value.length, 2, 'runs never share the app\'s server state')
+  await service.handle({ action: 'reset', run: a.id })
+  assert.deepEqual((await service.handle({ action: 'state', run: a.id })).books.map((book) => book.title), ['The Left Hand of Darkness', 'Piranesi'])
+  await assert.rejects(call(a.id, 'mutation', 'addBook', { title: '', author: 'Nobody' }), /title and an author/)
+  const viewer = await start({ role: 'viewer' })
+  await assert.rejects(call(viewer.id, 'mutation', 'markRead', { id: '1', read: true }), /Viewers cannot change the list/, 'middleware sees the run\'s context')
+  const down = await start({ condition: 'service-down' })
+  await assert.rejects(call(down.id, 'query', 'listBooks'), /unavailable/)
+  await assert.rejects(call(a.id, 'query', 'addBook', {}), /POST server functions are mutations/)
+  await assert.rejects(call(a.id, 'query', 'missing'), /Unknown server function/)
+  await assert.rejects(service.handle({ action: 'query', run: a.id, name: 'serverFn:node_modules/vite/index.js:x', args: {} }), /Unknown server function/)
 })
