@@ -8,3 +8,4 @@ export { readJourneyIndex, scenarioTarget, type JourneyIndex, type JourneyIndexO
 export { compareDesignKit, raiseOverrideDrift } from './compare.ts'
 export { applyDecisions } from './decisions.ts'
 export * from './source.ts'
+export { applyConfirmations, readCrawl, type ConfirmationFile, type CrawlImportOptions } from './crawl.ts'

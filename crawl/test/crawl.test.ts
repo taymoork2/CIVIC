@@ -1,0 +1,128 @@
+import assert from 'node:assert/strict'
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
+import { test } from 'node:test'
+import { actionsIn, crawl, launchBrowser, serveFolder, stripValues, webDriver, type Action, type Driver, type Observation } from '../src/index.ts'
+
+/** A tiny app as a table: each screen's tree and where each action leads. */
+function fakeApp(screens: Record<string, { actions: (Action & { to?: string })[]; tree?: string }>): Driver & { visits: string[] } {
+  let at = 'home'
+  const visits: string[] = []
+  return {
+    visits,
+    async reset() {
+      at = 'home'
+    },
+    async observe(): Promise<Observation> {
+      const screen = screens[at]!
+      return { location: `${at}.html`, title: at, tree: screen.tree ?? `heading ${at}`, actions: screen.actions.map(({ to: _to, ...action }) => action) }
+    },
+    async act(action) {
+      const found = screens[at]!.actions.find((candidate) => candidate.role === action.role && candidate.name === action.name)
+      if (!found?.to) throw new Error(`No ${action.name} on ${at}`)
+      visits.push(`${at}>${found.to}`)
+      at = found.to
+    },
+  }
+}
+
+const options = { seed: 'home.html', platform: 'web', driver: 'fake', revision: 'r1' }
+
+test('explores breadth first, groups states by tree and records each transition once', async () => {
+  const app = fakeApp({
+    home: { actions: [{ role: 'link', name: 'Write', to: 'draft' }, { role: 'link', name: 'Archive', to: 'archive' }] },
+    draft: { actions: [{ role: 'link', name: 'Back home', to: 'home' }] },
+    archive: { actions: [{ role: 'link', name: 'Back home', to: 'home' }, { role: 'link', name: 'Home again', to: 'home' }] },
+  })
+  const result = await crawl(app, options)
+  assert.deepEqual(result.states.map((state) => [state.id, state.depth]), [['home', 0], ['draft', 1], ['archive', 1]])
+  assert.deepEqual(result.transitions.map((edge) => `${edge.from} ${edge.action.name} ${edge.to}`), [
+    'home Write draft',
+    'home Archive archive',
+    'draft Back home home',
+    'archive Back home home',
+    'archive Home again home',
+  ])
+  assert.equal(result.truncated, false)
+  assert.deepEqual(await crawl(fakeApp({ home: { actions: [] } }), options).then((again) => again.states.length), 1)
+})
+
+test('blocks destructive actions and never takes them', async () => {
+  const app = fakeApp({
+    home: { actions: [{ role: 'button', name: 'Delete note', to: 'gone' }, { role: 'link', name: 'Sign out', to: 'gone' }, { role: 'button', name: 'Wipe', to: 'gone' }] },
+    gone: { actions: [] },
+  })
+  const result = await crawl(app, { ...options, block: ['^wipe$'] })
+  assert.deepEqual(result.blocked.map((skip) => skip.action.name), ['Delete note', 'Sign out', 'Wipe'])
+  assert.deepEqual(app.visits, [])
+  assert.equal(result.states.length, 1)
+})
+
+test('submits a form only when every required field has an allowlisted value', async () => {
+  const screens = {
+    home: { actions: [{ role: 'button' as const, name: 'Save', requires: ['Title'], to: 'saved' }] },
+    saved: { actions: [] },
+  }
+  const without = await crawl(fakeApp(screens), options)
+  assert.deepEqual(without.unreached.map((skip) => skip.reason), ['no allowlisted value for Title'])
+  assert.equal(without.states.length, 1)
+  const withValue = await crawl(fakeApp(screens), { ...options, inputs: { Title: 'Crawl note' } })
+  assert.deepEqual(withValue.states.map((state) => state.id), ['home', 'saved'])
+  assert.deepEqual(withValue.transitions[0]?.action, { role: 'button', name: 'Save' })
+})
+
+test('a state limit stops the crawl and says so', async () => {
+  const app = fakeApp({
+    home: { actions: [{ role: 'link', name: 'A', to: 'a' }, { role: 'link', name: 'B', to: 'b' }] },
+    a: { actions: [] },
+    b: { actions: [] },
+  })
+  const result = await crawl(app, { ...options, maxStates: 2 })
+  assert.equal(result.truncated, true)
+  assert.deepEqual(result.unreached.map((skip) => [skip.action.name, skip.reason]), [['B', 'state limit 2']])
+})
+
+test('two screens at one location with different trees are two states with distinct IDs', async () => {
+  const app = fakeApp({
+    home: { actions: [{ role: 'button', name: 'Expand', to: 'open' }] },
+    open: { actions: [], tree: 'heading home\nlist' },
+  })
+  // Same location for both: the fake reports `<screen>.html`, so make it collide.
+  const colliding: Driver = { ...app, observe: async () => ({ ...(await app.observe()), location: 'home.html', title: 'Home' }) }
+  const result = await crawl(colliding, options)
+  assert.deepEqual(result.states.map((state) => state.id), ['home', 'home.home'])
+})
+
+test('reads actions and strips input values from an accessibility snapshot', () => {
+  const tree = '- main:\n  - heading "Compose" [level=1]\n  - textbox "Title": my secret draft\n  - button "Save note"\n  - link "Back home":\n    - /url: index.html\n  - link "Say \\"hi\\""'
+  assert.equal(stripValues(tree).includes('secret'), false)
+  assert.ok(stripValues(tree).includes('- textbox "Title"'))
+  assert.deepEqual(actionsIn(tree), [{ role: 'button', name: 'Save note' }, { role: 'link', name: 'Back home' }, { role: 'link', name: 'Say "hi"' }])
+})
+
+test('crawls a real static app in a browser, without writing anything', async () => {
+  const site = mkdtempSync(join(tmpdir(), 'civic-crawl-'))
+  const page = (title: string, body: string) => `<!doctype html><html lang="en"><head><title>${title}</title></head><body><main><h1>${title}</h1>${body}</main></body></html>`
+  writeFileSync(join(site, 'index.html'), page('Notes', '<a href="draft.html">Write note</a><button type="button" onclick="fetch(\'/api\', { method: \'POST\' })">Delete all</button>'))
+  writeFileSync(join(site, 'draft.html'), page('Compose', '<form action="saved.html"><label for="t">Title</label><input id="t" name="t" required><button>Save note</button></form><a href="index.html">Back home</a>'))
+  writeFileSync(join(site, 'saved.html'), page('Saved', '<a href="index.html">Back home</a>'))
+  const server = await serveFolder(site)
+  const browser = await launchBrowser()
+  try {
+    const seed = `${server.url}index.html`
+    const blind = await crawl(webDriver(browser, seed), { ...options, seed: 'index.html' })
+    assert.deepEqual(blind.states.map((state) => state.id), ['index', 'draft'])
+    assert.deepEqual(blind.unreached.map((skip) => [skip.from, skip.action.name, skip.reason]), [['draft', 'Save note', 'no allowlisted value for Title']])
+    assert.deepEqual(blind.blocked.map((skip) => skip.action.name), ['Delete all'])
+    const result = await crawl(webDriver(browser, seed), { ...options, seed: 'index.html', inputs: { Title: 'Crawl note' } })
+    assert.deepEqual(result.states.map((state) => [state.id, state.title]), [['index', 'Notes'], ['draft', 'Compose'], ['saved', 'Saved']])
+    assert.ok(result.transitions.some((edge) => edge.from === 'draft' && edge.to === 'saved' && edge.action.name === 'Save note'))
+    assert.deepEqual(readdirSync(site).sort(), ['draft.html', 'index.html', 'saved.html'])
+    assert.equal(readFileSync(join(site, 'index.html'), 'utf8').includes('Delete all'), true)
+  } finally {
+    await browser.close()
+    await server.close()
+    rmSync(site, { recursive: true, force: true })
+  }
+})

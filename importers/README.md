@@ -12,6 +12,8 @@ Importers read what each role's tools already produce and turn it into [CIVIC gr
 | Source readers (`source.ts`) | TypeScript declarations, compiled JS, Swift and Kotlin | Narrow facts: a prop's union, an enum's cases and deprecations, defaults, public members, tokens per style arm |
 | `readPlaywrightReport` | Playwright's JSON reporter output | `automated` evidence for each test that names CIVIC IDs in a `civic.subject` annotation. A `civic.method` annotation (such as `storybook`) and a `civic.source` of `<path>#<anchor>` (such as a story file and story ID) say how and where the test observed them. For a suite with no annotations, `subjectsFor` takes the subjects from the project's own declared mapping. |
 | `readJourneyIndex` | The journey engine's review index (`GET /api/review/index`): scenarios, their journeys, declared paths, the cross-route actions found in source, and each scenario's checks | An expected screen per scenario, a journey (or, for a catalog of specimens, a surface) that contains them, declared `navigates` links with route and source anchor, and the targets each check file is declared to cover |
+| `readCrawl` | A crawl from CIVIC's crawl loop (`civic.crawl/0`, D34) | A discovered screen per state and a proposed `navigates` link per transition; neither counts until confirmed |
+| `applyConfirmations` | A person's confirmation file (`civic.confirmations/0`) | Confirmed screens made expected, confirmed paths declared, and declared journeys over confirmed screens; confirming what the crawl didn't find fails |
 | `compareDesignKit` | A design kit and the same platform's component | Open, unclassified Contract Conflicts, one per variant they disagree on |
 | `raiseOverrideDrift` | A product's overrides on a library component | Open, unclassified Contract Conflicts in Unreviewed drift, one per override, asking its maker and the contract's design owners |
 | `applyDecisions` | A decision file (`civic.decisions/0`) of people's Decision records | The raised graph with those Decision records added; a decision on a conflict the import didn't raise fails |
@@ -25,11 +27,11 @@ Importers read what each role's tools already produce and turn it into [CIVIC gr
 - **Pinned.** Every record carries the tool, importer, exact revision and, for files, a content hash.
 - **Deterministic.** The same inputs give byte-identical output.
 
-The [Fluent Button demo](../demo/fluent-button), the [Card demo](../demo/card) and [Laundry's graph](../projects/laundry) use the importers here.
+The [Fluent Button demo](../demo/fluent-button), the [Card demo](../demo/card) and [Laundry's graph](../projects/laundry) and the [discovery example](../projects/discovery-app) use the importers here.
 
 ```sh
 cd importers
 pnpm install --frozen-lockfile
-pnpm run check   # types, including the demo and Laundry build scripts
+pnpm run check   # types, including the demo and project build scripts
 pnpm test        # readers, importers, boundary and demo-output tests
 ```

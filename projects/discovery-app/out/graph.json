@@ -1,0 +1,183 @@
+{
+  "schema": "civic.graph/0",
+  "records": [
+    {
+      "id": "target:notes.archive",
+      "kind": "target",
+      "title": "Archive",
+      "scale": "screen",
+      "presence": "discovered",
+      "platforms": [
+        "web"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "playwright-core",
+        "importer": "crawl",
+        "revision": "08350211daddb0a2df07eadf51585af76ff39123",
+        "path": "projects/discovery-app/inputs/crawl.json",
+        "anchor": "archive.html 2e4f035794b11e85"
+      }
+    },
+    {
+      "id": "target:notes.draft",
+      "kind": "target",
+      "title": "Compose",
+      "scale": "screen",
+      "presence": "discovered",
+      "platforms": [
+        "web"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "playwright-core",
+        "importer": "crawl",
+        "revision": "08350211daddb0a2df07eadf51585af76ff39123",
+        "path": "projects/discovery-app/inputs/crawl.json",
+        "anchor": "draft.html d79b18b2d51a7493"
+      }
+    },
+    {
+      "id": "target:notes.index",
+      "kind": "target",
+      "title": "Notes",
+      "scale": "screen",
+      "presence": "discovered",
+      "platforms": [
+        "web"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "playwright-core",
+        "importer": "crawl",
+        "revision": "08350211daddb0a2df07eadf51585af76ff39123",
+        "path": "projects/discovery-app/inputs/crawl.json",
+        "anchor": "index.html 55aa699093476ce3"
+      }
+    },
+    {
+      "id": "target:notes.saved",
+      "kind": "target",
+      "title": "Saved",
+      "scale": "screen",
+      "presence": "discovered",
+      "platforms": [
+        "web"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "playwright-core",
+        "importer": "crawl",
+        "revision": "08350211daddb0a2df07eadf51585af76ff39123",
+        "path": "projects/discovery-app/inputs/crawl.json",
+        "anchor": "saved.html 7a230ab4730e70bb"
+      }
+    }
+  ],
+  "links": [
+    {
+      "from": "target:notes.archive",
+      "relation": "navigates",
+      "to": "target:notes.index",
+      "status": "proposed",
+      "action": "Back home",
+      "source": {
+        "tool": "playwright-core",
+        "importer": "crawl",
+        "revision": "08350211daddb0a2df07eadf51585af76ff39123",
+        "path": "projects/discovery-app/inputs/crawl.json",
+        "anchor": "link \"Back home\""
+      }
+    },
+    {
+      "from": "target:notes.draft",
+      "relation": "navigates",
+      "to": "target:notes.index",
+      "status": "proposed",
+      "action": "Back home",
+      "source": {
+        "tool": "playwright-core",
+        "importer": "crawl",
+        "revision": "08350211daddb0a2df07eadf51585af76ff39123",
+        "path": "projects/discovery-app/inputs/crawl.json",
+        "anchor": "link \"Back home\""
+      }
+    },
+    {
+      "from": "target:notes.draft",
+      "relation": "navigates",
+      "to": "target:notes.saved",
+      "status": "proposed",
+      "action": "Save note",
+      "source": {
+        "tool": "playwright-core",
+        "importer": "crawl",
+        "revision": "08350211daddb0a2df07eadf51585af76ff39123",
+        "path": "projects/discovery-app/inputs/crawl.json",
+        "anchor": "button \"Save note\""
+      }
+    },
+    {
+      "from": "target:notes.index",
+      "relation": "navigates",
+      "to": "target:notes.archive",
+      "status": "proposed",
+      "action": "Browse archive",
+      "source": {
+        "tool": "playwright-core",
+        "importer": "crawl",
+        "revision": "08350211daddb0a2df07eadf51585af76ff39123",
+        "path": "projects/discovery-app/inputs/crawl.json",
+        "anchor": "link \"Browse archive\""
+      }
+    },
+    {
+      "from": "target:notes.index",
+      "relation": "navigates",
+      "to": "target:notes.draft",
+      "status": "proposed",
+      "action": "Write note",
+      "source": {
+        "tool": "playwright-core",
+        "importer": "crawl",
+        "revision": "08350211daddb0a2df07eadf51585af76ff39123",
+        "path": "projects/discovery-app/inputs/crawl.json",
+        "anchor": "link \"Write note\""
+      }
+    },
+    {
+      "from": "target:notes.saved",
+      "relation": "navigates",
+      "to": "target:notes.index",
+      "status": "proposed",
+      "action": "Back home",
+      "source": {
+        "tool": "playwright-core",
+        "importer": "crawl",
+        "revision": "08350211daddb0a2df07eadf51585af76ff39123",
+        "path": "projects/discovery-app/inputs/crawl.json",
+        "anchor": "link \"Back home\""
+      }
+    }
+  ]
+}
