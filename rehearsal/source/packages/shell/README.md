@@ -28,7 +28,7 @@ It also takes an optional `coverage({ dataDir, metadata })` factory that opens t
 The canvas UI itself is now [`@civic/canvas`](../canvas), and the Vite plugin, manifest, picker, discovery, inventory and coverage bridge are [`@civic/vite-connector`](../vite-connector). These remain in `apps/web` because they import Laundry components, fixtures or vocabulary:
 
 - Laundry's connector (`apps/web/scripts/review-laundry-connector.mjs`) and its canvas extension (`apps/web/src/review/canvas-extension.ts`): the flow layout, the towel journey's guided run (`towel-session.tsx`) and the older workspace.
-- The fixture frames, synthetic store and Convex runtime adapter (`laundry-frame.tsx`, `store.ts`, `adapters/`, `scripts/review-runtime.mjs`), and the cross-route bindings (`route-actions.json`).
+- The fixture frames, synthetic store and Convex runtime adapter (`laundry-frame.tsx`, `store.ts`, `adapters/`, and `scripts/review-runtime.mjs`, which indexes its Convex functions for CIVIC's run service), and the cross-route bindings (`route-actions.json`).
 - The feedback context vocabulary in `server/review-server.mjs` (personas, roles and conditions) is still Laundry's.
 
 ## Checks

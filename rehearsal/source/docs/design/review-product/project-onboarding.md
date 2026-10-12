@@ -131,6 +131,18 @@ export function mount(container, context) {
 
 `publish` must report a registered screen. `transition` must match a declared source/action/destination edge. Authored adapters report transitions only when the app confirms them; failed saves retain the current screen and inputs. Generated adapters pass `transition(destination, action, 'synthetic')`; receipts label synthetic navigation and state carried by CIVIC, without attesting production behavior. Publish the first ready screen before mount resolves. CIVIC captures departing DOM and allowlisted inputs, then follows the same iframe. Direct fixture entry never implies preceding paths were traversed.
 
+### Live runs against the app's own API
+
+An app whose screens call their own HTTP API with `fetch` can run live against that API instead of stubs. Declare a runtime entry in the manifest, `"adapter": { "kind": "module", "entry": "src/preview.js", "runtime": "server/civic-runtime.js" }`, that exports `createFetchRuntime({ scenario, persona, role, condition, now, timeZone })` and returns `{ fetch(request), state?(), seed? }`. `fetch` is the app's real handler (a Hono or itty-router app, or any `Request -> Response` function) over an in-memory store seeded from the persona, role and condition. Each run gets its own worker and store, a fixed clock and no network.
+
+In the preview, start the run before loading data:
+
+```js
+const run = await context.startRuntime({ routes: ['/api/'], screen: () => app.screen, subscribe, captureInputs: ['Title'], reset: () => app.restart() })
+```
+
+The page's `fetch` calls under `routes` then reach the run: reads as queries, writes recorded with their requests and responses, so a saved run replays and is checked step by step. The clock, random IDs and browser storage are pinned for the run. `packages/canvas/examples/tasks` is a complete example (`node packages/canvas/bin/civic-canvas.mjs --project packages/canvas/examples/tasks/civic.project.json`). Backends written as named functions, like Laundry's Convex functions, export `createRuntime(seed)` instead and bring their own client.
+
 Project adapters are trusted executable code: use actual presenters with synthetic data, stub queries/mutations locally, and do not mount production providers. The generic frame blocks external connections through CSP and the review server rejects application/backend routes and writes. This is defense in depth, not a sandbox for untrusted plugins. Screenshots and frozen HTML include visible synthetic content; `captureFields` restricts structured inputs, not every visible pixel. Never put real credentials or household/user records in fixtures. Password/file/hidden input values are scrubbed by the capture helper.
 
 Structured input labels must match accessible field labels; undeclared inputs are omitted, and secret/credential labels are excluded. Server validation also rejects fields outside the scenario's allowlist. Transition receipts persist screenshot, input/context, action description and source/design receipt. Current-tab run history is in Inspect; failed captures keep their payload in that tab, offer retry and warn before closing while unsaved. Successful receipts survive server restart. Generic proposal property editing is not yet supported; the UI disables it and the API refuses Laundry-only edits for module adapters.

@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "id": "tasks-demo",
+  "name": "Tasks",
+  "adapter": { "kind": "module", "entry": "src/preview.js", "runtime": "server/civic-runtime.js" },
+  "sources": ["src", "server"],
+  "scenarios": "civic.scenarios.json",
+  "coverage": "civic.coverage.json",
+  "personas": [
+    { "id": "planner", "label": "Planner", "seed": { "tasks": ["Water the plants", "Book the dentist"] } },
+    { "id": "newcomer", "label": "New user", "seed": { "tasks": [] } }
+  ],
+  "roles": [{ "id": "member", "label": "Member" }, { "id": "viewer", "label": "Viewer" }],
+  "conditions": [{ "id": "normal", "label": "Normal" }, { "id": "api-down", "label": "API unavailable" }],
+  "navigation": ["Main"]
+}

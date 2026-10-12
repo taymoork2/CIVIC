@@ -9,6 +9,7 @@
     ".": "./server/canvas-host.mjs",
     "./root": "./server/canvas-root.mjs",
     "./module-adapter": "./server/module-adapter.mjs",
+    "./runtime": "./server/runtime-service.mjs",
     "./journey-graph": "./src/journey-graph.mjs",
     "./adapter": "./src/adapter.ts",
     "./extension": "./src/extension.ts",
@@ -17,13 +18,14 @@
     "./project-request": "./src/project-request.ts",
     "./runtime-bridge": "./src/runtime-bridge.ts",
     "./runtime-dom": "./src/runtime-dom.ts",
+    "./runtime-session": "./src/runtime-session.ts",
     "./review-api": "./src/review-api.ts",
     "./styles/*.css": "./src/*.css"
   },
   "scripts": {
     "check": "tsc --noEmit",
     "test": "vitest run && pnpm run test:host",
-    "test:host": "node --test server/canvas-host.check.mjs"
+    "test:host": "node --test server/runtime-service.check.mjs server/canvas-host.check.mjs"
   },
   "dependencies": {
     "@civic/shell": "workspace:*",

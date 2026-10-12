@@ -8,7 +8,7 @@ CIVIC's journey canvas: the review page (`review.html`), the frame that mounts a
 node packages/canvas/bin/civic-canvas.mjs --project /path/to/app/civic.project.json
 ```
 
-Then open `http://127.0.0.1:3020/review`. The canvas binds to loopback only. Reviews, connections and fixture snapshots live in the store, `~/.civic/canvas` by default (`--store` or `CIVIC_STORE` to change it), so nothing is written into the app. Later runs reopen the last app chosen in the canvas's project picker, which can also connect more apps or create a starter from the Notebook example (`examples/notebook`). Snapshots use an installed Chrome, or Playwright's Chromium when there is none (`CIVIC_BROWSER` names another channel).
+Then open `http://127.0.0.1:3020/review`. Two examples are included: `examples/notebook` (screens only) and `examples/tasks` (live runs against its own HTTP API). The canvas binds to loopback only. Reviews, connections and fixture snapshots live in the store, `~/.civic/canvas` by default (`--store` or `CIVIC_STORE` to change it), so nothing is written into the app. Later runs reopen the last app chosen in the canvas's project picker, which can also connect more apps or create a starter from the Notebook example (`examples/notebook`). Snapshots use an installed Chrome, or Playwright's Chromium when there is none (`CIVIC_BROWSER` names another channel).
 
 Without a connector, the standalone host opens `module` apps: a manifest, a scenario registry, and a preview entry that exports `mount(container, context)` (see [`@civic/vite-connector`](../vite-connector) for `init` and `check`).
 
@@ -22,9 +22,19 @@ A connector's `canvasExtension(project)` names a module whose default export is 
 
 The canvas imports only React, `@civic/shell`, its own virtual modules and itself; its checks enforce that.
 
+## Live runs
+
+An app with a runtime entry (`adapter.runtime`) runs live in an isolated worker per run (`server/runtime-service.mjs`). Two backends are supported:
+
+- **HTTP APIs** (`createFetchRuntime(seed)` returning `{ fetch(request) }`): the preview calls `context.startRuntime({ routes: ['/api/'], ... })`, and the page's own `fetch` calls go to the run. Writes are recorded with their requests and responses and checked on replay. See `examples/tasks`.
+- **Function backends** (`createRuntime(seed)` returning `{ execute(kind, name, args) }`): Laundry's Convex functions, through its own client.
+
+Either way the run's clock, random IDs and browser storage are pinned (`src/runtime-session.ts`).
+
 ## Not covered yet
 
-- Runtime and data adapters (seed, identity, clock, isolated effects) exist only for Laundry's Convex backend, so live runs against a backend need the Laundry host.
+- Identity is whatever the runtime entry seeds from the persona and role; there is no generic auth adapter.
+- TanStack Start server functions and other RPC transports that don't go through `fetch` under a route prefix.
 - Other bundlers are not verified. See `docs/design/review-product/platform-adapters.md`.
 
 ## Checks

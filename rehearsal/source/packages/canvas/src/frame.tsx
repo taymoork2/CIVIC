@@ -1,8 +1,9 @@
 import project from 'virtual:civic-project'
 import { bindProjectRequests, projectFetch } from './project-request'
-import type { AdapterState, AdapterScenario, ReviewConfig, ReviewSnapshot, ProjectChoice } from './adapter'
+import type { AdapterContext, AdapterState, AdapterScenario, ReviewConfig, ReviewSnapshot, ProjectChoice } from './adapter'
 import { readFixtureFields } from './journey'
 import { createRuntimeBridge } from './runtime-bridge'
+import { openRuntimeSession, routeFetch } from './runtime-session'
 import { observeRuntime, replayGesture, runtimeFields, runtimeView, trackCloseWatchers } from './runtime-dom'
 import type { RuntimeBridge, RuntimeRecording } from './runtime-bridge'
 
@@ -48,7 +49,7 @@ try {
   document.documentElement.dataset.reviewCondition = config.condition
   document.documentElement.style.fontSize = config.textScale === 2 ? '200%' : '100%'
   window.reviewPreview = { config, snapshot, state: () => state ? { ...state, fields: fields(state.screen) } : null, data: () => ({ screen: state?.screen }), restart: () => location.reload(), retryWrites: () => { throw Error('Restart with a declared condition to change this adapter run.') } }
-  const dispose = await mount(root, {
+  const context: AdapterContext = {
     config, scenario, persona: structuredClone(persona), role, condition, snapshot, recording,
     publish(next) {
       if (!index.scenarios.some((s) => s.id === next.screen)) throw Error(`Unmapped adapter screen: ${next.screen}`)
@@ -95,7 +96,25 @@ try {
       publish()
       return bridge
     },
-  })
+    async startRuntime(options) {
+      if (!project.runtime) throw Error('This project declares no runtime entry. Add adapter.runtime to its civic.project.json.')
+      const run = await openRuntimeSession(context)
+      const restore = routeFetch(run.transport, options.routes ?? ['/api/'])
+      try {
+        const bridge = context.connectRuntime({
+          seed: run.seed, now: run.session.now, captureInputs: options.captureInputs ?? 'synthetic',
+          screen: options.screen, route: options.route ?? options.screen, subscribe: options.subscribe, status: options.status,
+          data: run.data, assertSource: run.assertSource, settle: run.settle,
+          reset: async () => { await run.reset(); await options.reset() },
+        })
+        run.transport.bind(bridge)
+        const close = () => { restore(); run.close() }
+        window.addEventListener('pagehide', close, { once: true })
+        return { bridge, close }
+      } catch (error) { restore(); run.close(); throw error }
+    },
+  }
+  const dispose = await mount(root, context)
   if (!state && project.adapter === 'module') throw Error('The preview adapter did not publish a ready screen.')
   if (recording) {
     if (!window.reviewPreview?.replay) throw Error('This adapter does not support replay.')

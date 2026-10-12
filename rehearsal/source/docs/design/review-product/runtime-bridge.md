@@ -34,7 +34,7 @@ Passwords, hidden/file inputs and credential fields are excluded. Persisted runs
 
 ## Verification
 
-Focused checks live in `runtime-bridge.test.ts`, `review-runtime.check.mjs`, `review-recording.check.mjs`, `e2e/review-runtime.spec.ts` and `e2e/review-project.spec.ts`. They exercise real Wear/save handlers, portalled input and quantity capture, Escape cancellation, empty and partial put-away branches, return navigation, failure receipts, replay reset, fresh saved-run playback, privacy, ambiguous controls, source refusal and independent databases. The existing review server/project checks cover authentication, onboarding, scoped stores, cache invalidation and durable review evidence.
+Focused checks live in `runtime-bridge.test.ts`, `review-runtime.check.mjs`, `packages/canvas/server/runtime-service.check.mjs`, `review-recording.check.mjs`, `e2e/review-runtime.spec.ts` and `e2e/review-project.spec.ts`. They exercise real Wear/save handlers, portalled input and quantity capture, Escape cancellation, empty and partial put-away branches, return navigation, failure receipts, replay reset, fresh saved-run playback, privacy, ambiguous controls, source refusal and independent databases. The existing review server/project checks cover authentication, onboarding, scoped stores, cache invalidation and durable review evidence.
 
 Commands: `pnpm --dir apps/web run test:review`; focused Vitest; `tsc --noEmit`; `check:styles`. Browser tests use separately started isolated previews: Laundry against its selected source, Notebook against `packages/canvas/examples/notebook/civic.project.json`. They do not need or mutate Laundry's running backend.
 
