@@ -249,7 +249,7 @@ export function checkChange(actorId: string | undefined, before: GraphDocument, 
     const author = authorOf(record)
     if (record.kind !== 'line' && record.kind !== 'actor' && !own(author)) problems.push(`${actorId} changed ${record.id} as ${author ?? 'nobody'}.`)
     if (record.kind === 'actor' && !own(record.id) && previous) problems.push(`${actorId} changed someone else's actor record, ${record.id}.`)
-    const scope = record.kind === 'work-request' && record.changed ? (SCOPE_OF[record.changed.what] ?? 'write') : 'write'
+    const scope = record.kind === 'work-request' && record.changed ? (SCOPE_OF[record.changed.what] ?? 'write') : record.kind === 'draft-choice' ? 'approve' : 'write'
     if (!scopes.has(scope)) problems.push(`${actorId} changed ${record.id}${record.kind === 'work-request' && record.changed ? ` (${record.changed.what})` : ''} without the ${scope} scope.`)
   }
   return problems

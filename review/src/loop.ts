@@ -196,6 +196,8 @@ export interface AnnotateInput {
   url?: string
   /** The line and revision a preview stamped on itself at build time. Used only when the store knows the line. */
   stamped?: { line: string; revision: string }
+  /** A line the store knows, such as a design draft, annotated at its latest revision. */
+  line?: string
 }
 
 /**
@@ -211,7 +213,8 @@ export function annotate(context: Context, input: AnnotateInput): Annotation {
     const writtenBy = ensureActor(document, context.identity)
     const here = ensureLines(document, context.checkout)
     const stamped = input.stamped && document.records.some((record) => record.kind === 'line' && record.id === input.stamped!.line) ? input.stamped : undefined
-    const seen = stamped ?? (input.url ? lineForUrl(document, input.url) : undefined) ?? { line: here, revision: context.checkout.head }
+    const named = input.line ? find<Line>(document, input.line, 'line') : undefined
+    const seen = (named && { line: named.id, revision: named.head }) ?? stamped ?? (input.url ? lineForUrl(document, input.url) : undefined) ?? { line: here, revision: context.checkout.head }
     const anchor: Anchor = {
       targetIds: [...new Set([...(input.targetIds ?? []), ...(input.edges ?? []).map((edge) => edge.from)])],
       ...(input.edges?.length ? { edges: input.edges } : {}),

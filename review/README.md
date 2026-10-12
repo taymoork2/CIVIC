@@ -52,6 +52,8 @@ The line is read from the checkout: main for the default branch, a worktree line
 
 A pull request is a line of its own. `civic pr <number> --preview <url>` fetches the head its remote serves (`refs/pull/<n>/head` on GitHub) and records it as `line:github.pr.<n>`, with the hosted preview that serves it. Annotations made on that preview's URL land on the PR's line and revision, and fixes reported there can be re-captured on it. Run it again when the PR moves. Its previews then serve the new head, since a hosted preview redeploys on every push. Once the head is on the default branch, the line is marked merged. Agents call the MCP `register_pr` after opening a PR.
 
+A designer's draft is a line too. CIVIC reads it from the Figma file export (`GET /v1/files/:key`, D27), as it reads the main file. `civic design <export> --file <key>` records the file's main line, `line:figma.<key>`, at the export's version. `civic draft <export> --file <key> --name "<draft>" [--branch <key>]` records a draft branched from it, `line:figma.<key>.draft.<name>`, and lists its frames. A Figma branch passes its branch key; a draft page or frame set in the main file is named only. Annotate a frame with `civic annotate "..." --line <draft line> --figma-node <node id>` (the MCP `annotate` takes `line` and `figma_node`). The comment stays on that draft and revision. Registering the draft again moves it to the new version and says whether each annotated frame is still there, by node ID only. A person chooses between drafts with `civic choose-draft <line> --why "..."`. That writes a draft choice naming the chosen line and revision and marks the other open drafts from the same base abandoned, not deleted, so their comments keep their answer. `--merged-as <version>` marks the chosen draft merged once the designer has merged it into the main file. Choosing needs the approve scope, and an agent can't choose.
+
 ## The loop
 
 ```sh
@@ -81,7 +83,7 @@ Request IDs can be shortened to a unique prefix, as in `civic claim 3f2a`.
 
 ### Anchors
 
-An annotation can point at graph target IDs (`--target`), a path or branch (`--edge <from>><to>[:<action>]`), and an element locator (`--test-id`, or `--role` with `--name`). Re-capture finds it by target ID through `data-civic-id` (space-separated IDs on the element), then by the exact locator matching one element. Otherwise it reports it not found on that revision. It never moves an anchor to the nearest element (D37). An annotation with none of these, such as an imported screenshot, is unanchored. It's handed off and resolved like any other, but only a person can judge whether it's fixed.
+An annotation can point at graph target IDs (`--target`), a path or branch (`--edge <from>><to>[:<action>]`), and an element locator (`--test-id`, `--role` with `--name`, or `--figma-node` for a design draft's frame). Re-capture finds it by target ID through `data-civic-id` (space-separated IDs on the element), then by the exact locator matching one element. Otherwise it reports it not found on that revision. It never moves an anchor to the nearest element (D37). An annotation with none of these, such as an imported screenshot, is unanchored. It's handed off and resolved like any other, but only a person can judge whether it's fixed.
 
 ### Lanes
 

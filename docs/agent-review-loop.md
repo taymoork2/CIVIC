@@ -65,7 +65,7 @@ The canvas marks every target that has open lines changing it ("2 open lines cha
 
 ### Designers' drafts
 
-Several drafts of one design are several design-draft lines from the same base. Comments made on a draft stay on that draft. Choosing a draft is a Decision record naming the chosen line and revision; the others are marked abandoned, not deleted, so "why didn't we do B" keeps its answer. CIVIC reads drafts from the Figma file export (D27) as it reads main, so no new integration is needed, only the line label on import.
+Several drafts of one design are several design-draft lines from the same base. Comments made on a draft stay on that draft. Choosing a draft is a Decision for drafts, a draft choice record, naming the chosen line and revision; the others are marked abandoned, not deleted, so "why didn't we do B" keeps its answer. CIVIC reads drafts from the Figma file export (D27) as it reads main, so no new integration is needed, only the line label on import.
 
 ## 2. What you can annotate, and how it survives a change of revision
 

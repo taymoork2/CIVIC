@@ -157,6 +157,22 @@ export function validateGraph(input: unknown): Issue[] {
           error('annotation-empty', at, 'An annotation with no target, edge or locator keeps its capture; otherwise there is nothing to look at.')
         }
         break
+      case 'draft-choice': {
+        // D35: only a person chooses between drafts.
+        if (!record.writtenBy) error('draft-choice', at, 'A draft choice names the person who chose (`writtenBy`).')
+        else if (actorOf(record.writtenBy)?.type === 'agent') error('agent-decision', at, `${record.writtenBy} is an agent; agents can't choose between drafts. A person does.`)
+        ref(at, 'base', record.base, ['line'])
+        const chosen = ref(at, 'chosen.line', record.chosen.line, ['line'])
+        if (chosen?.kind === 'line' && (chosen.type !== 'design-draft' || chosen.base !== record.base)) error('draft-choice', at, `${chosen.id} is not a design draft of ${record.base}.`)
+        for (const id of record.over) {
+          const other = ref(at, 'over', id, ['line'])
+          if (other?.kind !== 'line') continue
+          if (id === record.chosen.line) error('draft-choice', at, `${id} is both chosen and passed over.`)
+          else if (other.type !== 'design-draft' || other.base !== record.base) error('draft-choice', at, `${id} is not a design draft of ${record.base}.`)
+          else if (other.status !== 'abandoned') error('draft-choice', at, `${id} was passed over, so it is marked abandoned.`)
+        }
+        break
+      }
       case 'work-request':
         checkWorkRequest(record, at, error, ref, actorRef, actorOf, (id) => {
           const annotation = records.get(id)
@@ -611,6 +627,7 @@ function checkRecordShape(raw: unknown, at: string, error: Report) {
     case 'line':
     case 'annotation':
     case 'work-request':
+    case 'draft-choice':
       checkReviewShape(kind, raw, at, error)
       break
   }
@@ -675,6 +692,18 @@ function checkReviewShape(kind: RecordKind, raw: Record<string, unknown>, at: st
           }
         })
       })
+      break
+    case 'draft-choice':
+      id(raw.base, `${at}.base`)
+      if (!isObject(raw.chosen)) error('shape', at, '`chosen` names the chosen line and revision.')
+      else {
+        const chosen = fieldChecker(raw.chosen, `${at}.chosen`, error)
+        chosen.string('line')
+        chosen.string('revision')
+      }
+      field.list('over', id)
+      field.string('rationale')
+      field.string('at')
       break
     case 'work-request':
       field.string('ask')

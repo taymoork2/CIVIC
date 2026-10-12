@@ -9,7 +9,7 @@ Every step follows [decision 0006](decisions/0006-deterministic-civic-for-agenti
 Reprioritized on 2026-10-12. The 2026-10-11 order is done: the gate (step 8), step 3's decision loop (Proposal, Decision, Adoption, Verification), real inputs (step 9), a second app through the manifest and crawl (step 4), live runs for apps with sign-in and for TanStack Start server functions (step 4), Codex packaging and PR previews, step 6 and step 5 are built, apart from the pieces listed under "Waiting" below. Step numbers are stable names that other documents cite, so the order of work is listed here rather than by renumbering:
 
 1. **[Step 10](#10-checks-where-each-role-works): checks where each role works.** Decision 0005 says most people meet CIVIC through checks in their own tools, and today that is one `civic` commit status. Route each finding to the side that moved, and put it on the pull request, the test run and the library release, together with the decided fix it turns into.
-2. **[Design drafts](#next-the-review-to-agent-loop)** as review lines (item 3). Real Figma kits are in, so drafts are no longer blocked.
+2. **[Design drafts](#next-the-review-to-agent-loop)** as review lines (item 3) are built.
 3. **[Step 3](#3-typed-contract-and-change-records)'s collaboration records:** Ambiguity, Constraint, Coverage gap, Divergence, Risk and Exception, on the record shape the decision loop set.
 4. **The frame walk (D33)** in [step 4](#4-the-journey-engine-as-a-graph-viewer), now that real design files exist to walk.
 5. **[Step 7](#7-repository-hygiene)** happens opportunistically.
@@ -64,6 +64,8 @@ Built ahead of the Card demo ([decision 0007](decisions/0007-review-to-agent-loo
    Progress, 2026-10-12: Codex packaging is built. The [plugin](../integrations/claude-code#codex) carries a Codex manifest next to the Claude Code one, so Codex installs it from the same marketplace with the same skill and hook, and runs the MCP server as `codex`. PR previews and design drafts wait on real Figma inputs.
 
    Progress, 2026-10-12: PR previews are built. `civic pr <number> --preview <url>` (or the MCP `register_pr` call an agent makes after opening one) records a pull request as its own line at the head its remote serves (`refs/pull/<n>/head`), with its hosted preview. Annotations made on that preview land on the PR's line and revision, and fixes can be re-captured there. Running it again follows the PR as it moves, and it marks the line merged once the head is on the default branch. Design drafts were waiting on real Figma inputs, which are now in ([step 9](#9-real-inputs-replace-the-stand-ins)), so they are next in this item.
+
+   Progress, 2026-10-12: design drafts are built. `civic design` and `civic draft` read a Figma file export as a design line or a draft branched from it, and list the draft's frames. Annotations on a draft frame anchor by Figma node ID and stay on that draft; registering a new version says which annotated frames are still there. A person chooses between drafts with `civic choose-draft`, which writes a draft choice and marks the other drafts abandoned. See [the review store](../review#lines). Not built yet: the canvas's design lens, which compares a draft's frames with the selected code line.
 
 Acceptance: an annotation made in one worktree is claimed by an agent in another, the reported fix is re-captured on that worktree's preview with no model call, and the request resolves through its lane.
 

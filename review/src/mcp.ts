@@ -35,7 +35,7 @@ export const TOOLS = [
   { name: 'report_fix', description: 'Report a fix as ready, with the preview that serves it (commit first: the revision is your checkout\'s HEAD). This only moves the request to Fix ready for review. CIVIC then re-captures the scenario on the preview; in the Auto lane it resolves or reopens the request, otherwise a person reviews it. You never resolve requests.', inputSchema: { type: 'object', properties: { ...cwdProperty, ...id, preview: { type: 'string' }, note: { type: 'string' } }, required: ['id'] } },
   { name: 'register_pr', description: 'After opening a pull request, record it as its own line with the preview that serves its head, so annotations made on that preview land on the PR and fixes can be re-captured there. Run it again when the PR moves.', inputSchema: { type: 'object', properties: { ...cwdProperty, number: { type: 'number' }, preview: { type: 'string', description: 'The hosted preview URL for the PR, if it has one.' }, remote: { type: 'string', description: 'The git remote hosting the PR. Default origin.' } }, required: ['number'] } },
   { name: 'add_check', description: 'Add an acceptance check command. It counts toward the Auto lane only after a person accepts it.', inputSchema: { type: 'object', properties: { ...cwdProperty, ...id, command: { type: 'string' } }, required: ['id', 'command'] } },
-  { name: 'annotate', description: 'Record an annotation for your person, for example from a screenshot they pasted. Without target_ids or a locator it is unanchored.', inputSchema: { type: 'object', properties: { ...cwdProperty, comment: { type: 'string' }, url: { type: 'string' }, target_ids: { type: 'array', items: { type: 'string' } }, role: { type: 'string' }, name: { type: 'string' }, test_id: { type: 'string' }, image_base64: { type: 'string' }, media_type: { type: 'string', enum: ['image/png', 'image/jpeg', 'image/webp'] } }, required: ['comment'] } },
+  { name: 'annotate', description: 'Record an annotation for your person, for example from a screenshot they pasted. Without target_ids or a locator it is unanchored.', inputSchema: { type: 'object', properties: { ...cwdProperty, comment: { type: 'string' }, url: { type: 'string' }, target_ids: { type: 'array', items: { type: 'string' } }, line: { type: 'string', description: 'A line CIVIC knows, such as a design draft (civic lines), annotated at its latest revision.' }, figma_node: { type: 'string', description: "A design draft's frame or layer, by its Figma node ID." }, role: { type: 'string' }, name: { type: 'string' }, test_id: { type: 'string' }, image_base64: { type: 'string' }, media_type: { type: 'string', enum: ['image/png', 'image/jpeg', 'image/webp'] } }, required: ['comment'] } },
   { name: 'context', description: 'The civic context export (D31): one component variant\'s contract as a work order.', inputSchema: { type: 'object', properties: { graph: { type: 'string' }, semantic_id: { type: 'string' }, platform: { type: 'string', enum: [...PLATFORMS] }, variant: { type: 'string' } }, required: ['graph', 'semantic_id', 'platform'] } },
   { name: 'gaps', description: 'What a graph expects but is missing, with owners (D31).', inputSchema: { type: 'object', properties: { graph: { type: 'string' }, scope: { type: 'string' }, platform: { type: 'string', enum: [...PLATFORMS] } }, required: ['graph'] } },
 ] as const
@@ -118,10 +118,13 @@ export async function callTool(name: string, args: Args, env: NodeJS.ProcessEnv 
       const role = str('role')
       const testId = str('test_id')
       const url = str('url')
+      const line = str('line')
+      const figmaNode = str('figma_node')
       const annotation = annotate(context(), {
         comment: need('comment'),
         targetIds: Array.isArray(args.target_ids) ? (args.target_ids as string[]) : [],
-        ...(testId || role ? { locator: { ...(testId ? { testId } : {}), ...(role ? { role, name: need('name') } : {}) } } : {}),
+        ...(testId || role || figmaNode ? { locator: { ...(testId ? { testId } : {}), ...(role ? { role, name: need('name') } : {}), ...(figmaNode ? { figmaNode } : {}) } } : {}),
+        ...(line ? { line } : {}),
         ...(image ? { image: { bytes: Buffer.from(image, 'base64'), mediaType: (str('media_type') ?? 'image/png') as CaptureRef['mediaType'] } } : {}),
         ...(url ? { url } : {}),
       })
