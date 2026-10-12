@@ -140,7 +140,7 @@ export function AppCanvas() {
       const runtime = win.reviewPreview, doc = previewFrame.current?.contentDocument
       if (!runtime || !doc) return
       const id = crypto.randomUUID()
-      const provenance = detail.origin === 'synthetic' ? 'Synthetic navigation · state carried by Rehearsal' : 'App adapter transition'
+      const provenance = detail.origin === 'synthetic' ? 'Synthetic navigation · state carried by CIVIC' : 'App adapter transition'
       const input = { requestId: id, kind: 'other', message: `${provenance}: ${project.name} transition ${detail.from} → ${detail.to}: ${detail.action}`, snapshot: runtime.snapshot, html: captureScreen(doc), anchor: { label: 'Whole screen', x: 0, y: 0, width: 1, height: 1 }, context: { ...runtime.config, scenario: detail.from, screen: detail.from, viewport: { width: previewFrame.current!.clientWidth, height: previewFrame.current!.clientHeight }, state: { dialogs: [detail.state.title, provenance], tabs: [], fields: detail.state.fields } } }
       setAdapterVisits((rows) => [...rows, { id, from: detail.from, to: detail.to, fields: detail.state.fields }])
       void saveAdapterCapture(id, input)
@@ -221,7 +221,7 @@ export function AppCanvas() {
   }
   return <main className="rehearsal app-rehearsal" data-application-root={applicationRoot}>
       <header className="rh-brand">
-        <button className="rh-outline-toggle" aria-label="Toggle journey outline" aria-expanded={outline} onClick={() => setOutline(!outline)}><CanvasIcon name="outline" /></button><strong>Rehearsal</strong>
+        <button className="rh-outline-toggle" aria-label="Toggle journey outline" aria-expanded={outline} onClick={() => setOutline(!outline)}><CanvasIcon name="outline" /></button><strong>CIVIC</strong>
         <ProjectPicker applicationRoot={applicationRoot} blocked={towel.saving || towel.dirtyProposal || !!towel.state?.pending || !generic && towel.visits.some((row) => !row.capture) || adapterVisits.some((row) => !row.screenshot)} activeRun={towel.running || !!preview} />
         <div className="rh-tools">
           <button className="rh-play-button" aria-label="Play" aria-pressed={!towelSelected || towel.mode === 'play'} disabled={towel.saving || generic && !project.preview} onClick={() => { if (towelSelected) towel.play(); if (selectedScreen && (!towelSelected || !towel.running)) openScreen(selectedScreen) }}><CanvasIcon name="play" /><span className="rh-tool-label">Play</span></button>
@@ -236,7 +236,7 @@ export function AppCanvas() {
       </header>
       {!generic && towel.notices}{generic && bridge.data && !scenarios.length && <p className="rh-alert" role="status">Project connected. Add screen states and their paths to your scenario registry to start exploring.</p>}{adapterError && <p role="alert" className="rh-alert">{adapterError}</p>}
       <p className="rh-status" role="status">{bridge.notice}</p>
-      {discovered && <p className="rh-status">Synthetic navigation · state carried by Rehearsal · app behavior unverified</p>}
+      {discovered && <p className="rh-status">Synthetic navigation · state carried by CIVIC · app behavior unverified</p>}
       {bridge.error && <p role="alert" className="rh-alert">{bridge.error}</p>}
       {queued && <section className="rh-confirm"><h2>Replace the open synthetic preview?</h2><p>Its unsaved draft will be replaced. {generic ? "Captured reviews are retained." : "The towel run stays separate and is retained."}</p><button onClick={() => { setAdapterScreen(queued.id); setPreview(queued); setQueued(null) }}>Open selected screen</button><button onClick={() => setQueued(null)}>Keep current preview</button></section>}
       <div className={`rh-layout ${pane ? 'has-inspector' : ''} ${outline ? '' : 'outline-closed'}`}><aside ref={navigator} className="rh-journeys" aria-label="App flow navigator" hidden={!outline}><div className="rh-outline-heading"><h2>App journey</h2><button aria-label="Close journey outline" onClick={() => setOutline(false)}>×</button></div><label className="rh-search">Search the app<input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search flows or screens…" /></label><label className="rh-search">Coverage<select value={coverage} onChange={(event) => setCoverage(event.target.value)}><option value="all">All registered screens</option><option value="working">Working fixtures</option><option value="partial">Partial specimens</option></select></label>{project.navigation.map((section) => {

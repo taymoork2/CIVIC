@@ -149,7 +149,7 @@ function Workspace() {
   const filtered = index?.scenarios.filter((scenario) => `${scenario.label} ${scenario.journey} ${scenario.component} ${scenario.preview} ${scenario.reference}`.toLowerCase().includes(query.toLowerCase())) ?? []
   const groups = [...new Set(filtered.map((scenario) => scenario.journey))]
   return <main className="review-workspace">
-    <header><h1>Rehearsal · Review</h1><a href={`/review?scenario=${encodeURIComponent(config.scenario)}`}>Storyboard</a><p className="review-note">Laundry App · synthetic records · local authenticated evidence</p></header>
+    <header><h1>CIVIC · Review</h1><a href={`/review?scenario=${encodeURIComponent(config.scenario)}`}>Storyboard</a><p className="review-note">Laundry App · synthetic records · local authenticated evidence</p></header>
     <div className="review-controls">
       <label>Persona<NativeSelect aria-label="Persona" value={config.persona} onChange={(e) => change({ ...config, persona: e.target.value as ReviewConfig['persona'] })}><option value="single">Single adult</option><option value="student">Student / new household</option><option value="parent">Parent / family</option></NativeSelect></label>
       <label>Role<NativeSelect aria-label="Role" value={config.role} onChange={(e) => change({ ...config, role: e.target.value as ReviewConfig['role'] })}><option value="owner">Owner</option><option value="member">Member</option></NativeSelect></label>

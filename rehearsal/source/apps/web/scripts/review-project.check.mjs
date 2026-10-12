@@ -5,25 +5,25 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
 import { test } from 'node:test'
-import { loadProject, checkedProject, checkedScenarios, projectPath } from './review-project.mjs'
+import { loadProject, checkedProject, checkedScenarios, projectPath } from '@civic/vite-connector/project'
 import { reviewInventory } from './review-inventory.mjs'
 
 const repo = fileURLToPath(new URL('../../../', import.meta.url)).replace(/\/$/, '')
 const example = join(repo, 'apps/web/examples/rehearsal-demo')
 const clone = async () => { const root = await realpath(await mkdtemp(join(tmpdir(), 'rehearsal-project-check-'))); await cp(example, root, { recursive: true }); return root }
-const load = (root) => loadProject(repo, { manifest: join(root, 'rehearsal.project.json') })
+const load = (root) => loadProject(repo, { manifest: join(root, 'civic.project.json') })
 
 test('portable init is explicit, non-overwriting and works outside a Laundry checkout', async () => {
   const root = await realpath(await mkdtemp(join(tmpdir(), 'rehearsal-init-check-')))
   await mkdir(join(root, 'src'))
-  const command = (args) => spawnSync(process.execPath, [join(repo, 'apps/web/scripts/review-project.mjs'), ...args], { cwd: repo, encoding: 'utf8' })
+  const command = (args) => spawnSync(process.execPath, [join(repo, 'packages/vite-connector/src/review-project.mjs'), ...args], { cwd: repo, encoding: 'utf8' })
   const args = ['init', '--root', root, '--name', 'Second app', '--id', 'second-app', '--source', 'src']
   const dry = command(args); assert.equal(dry.status, 0, dry.stderr); assert.equal(JSON.parse(dry.stdout).written, false)
-  await assert.rejects(readFile(join(root, 'rehearsal.project.json')), { code: 'ENOENT' })
+  await assert.rejects(readFile(join(root, 'civic.project.json')), { code: 'ENOENT' })
   assert.equal(command([...args, '--write']).status, 0)
   assert.equal(load(root).entry, null, 'inventory-only onboarding does not pretend to mount a live app')
   assert.notEqual(command([...args, '--write']).status, 0)
-  const check = command(['check', '--project', join(root, 'rehearsal.project.json')]); assert.equal(check.status, 0, check.stderr)
+  const check = command(['check', '--project', join(root, 'civic.project.json')]); assert.equal(check.status, 0, check.stderr)
   assert.equal(JSON.parse(check.stdout).scenarios, 0)
 })
 
@@ -77,7 +77,7 @@ test('generic Vite connection refreshes source and presets while isolating store
   await symlink(join(repo, 'apps/web/node_modules'), join(web, 'node_modules'))
   for (const name of ['package.json', 'review.html', 'review-frame.html']) await cp(join(repo, 'apps/web', name), join(web, name))
   await mkdir(join(host, '.review-data'))
-  await writeFile(join(host, '.review-data/application.json'), JSON.stringify({ project: join(root, 'rehearsal.project.json') }))
+  await writeFile(join(host, '.review-data/application.json'), JSON.stringify({ project: join(root, 'civic.project.json') }))
   const { createServer } = await import('vite'), { reviewPlugin } = await import(join(web, 'scripts/review-plugin.mjs'))
   const server = await createServer({ configFile: false, root: web, cacheDir: join(host, '.vite'), optimizeDeps: { noDiscovery: true, entries: [] }, server: { host: '127.0.0.1', port: 0, hmr: false, preTransformRequests: false }, plugins: [reviewPlugin()] })
   try {
@@ -96,7 +96,7 @@ test('generic Vite connection refreshes source and presets while isolating store
     const url = `${origin}/@fs/${file}`
     assert.equal((await fetch(url, { headers })).status, 200)
     await writeFile(file, original + '\nexport const changedPresenter = true\n')
-    const manifestPath = join(root, 'rehearsal.project.json'), manifest = JSON.parse(await readFile(manifestPath, 'utf8'))
+    const manifestPath = join(root, 'civic.project.json'), manifest = JSON.parse(await readFile(manifestPath, 'utf8'))
     manifest.personas[0].seed.title = 'Updated synthetic situation'; await writeFile(manifestPath, JSON.stringify(manifest))
     let next = first
     for (let i = 0; i < 50 && next.project.personas[0].seed.title !== 'Updated synthetic situation'; i++) { await new Promise((resolve) => setTimeout(resolve, 100)); next = await index() }
@@ -107,7 +107,7 @@ test('generic Vite connection refreshes source and presets while isolating store
     const coverage = await (await fetch(origin + '/api/review/coverage', { headers })).json()
     const write = await fetch(origin + '/api/review/coverage', { method: 'POST', headers: { ...headers, 'content-type': 'application/json', origin }, body: JSON.stringify({ operation: 'intent', source: next.revision.source, expectedVersion: coverage.version, contractVersion: 1, target: { id: 'note.second', title: 'Second expectation', kind: 'screen', scenarios: [], acceptance: ['Register a preview.'] } }) })
     assert.equal(write.status, 200, await write.text())
-    assert.equal(JSON.parse(await readFile(join(root, 'rehearsal.coverage.json'), 'utf8')).version, 2)
+    assert.equal(JSON.parse(await readFile(join(root, 'civic.coverage.json'), 'utf8')).version, 2)
     assert.equal(await readFile(file, 'utf8'), original + '\nexport const changedPresenter = true\n', 'only the explicit coverage contract is written')
     const bad = await fetch(origin + '/api/review/proposals', { method: 'POST', headers: { ...headers, 'content-type': 'application/json', origin }, body: '{}' }); assert.equal(bad.status, 409)
     manifest.adapter.entry = 'src/screens.js'; await writeFile(manifestPath, JSON.stringify(manifest))

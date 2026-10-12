@@ -1,6 +1,6 @@
 # Project onboarding implementation
 
-Owner-approved scope: replace implicit Laundry coupling with a portable manifest and explicit browser adapter. Root controller: this Rehearsal chat. Rehearsal owns f0d3, its local connection/store and port 3010. Laundry's owner owns f7ce and port 3011; this implementation never writes that checkout. No new model provider or dependency is needed.
+Owner-approved scope: replace implicit Laundry coupling with a portable manifest and explicit browser adapter. Root controller: this CIVIC chat. CIVIC owns f0d3, its local connection/store and port 3010. Laundry's owner owns f7ce and port 3011; this implementation never writes that checkout. No new model provider or dependency is needed.
 
 Implementation sequence:
 
@@ -13,16 +13,16 @@ Stop conditions: refuse invalid or escaping paths and duplicate identities; repo
 
 ## Delivered connection
 
-`rehearsal.project.json` is the portable project contract. `apps/web/scripts/review-project.mjs` validates it and supplies `init` and `check`. The default manifest describes Laundry explicitly; another application selects its own manifest. The dependency-free Notebook example is in `apps/web/examples/rehearsal-demo` and has real DOM presenters, a separate synthetic adapter, four screen states, a conditional branch, return paths and project-specific context.
+`civic.project.json` is the portable project contract. `packages/vite-connector/src/review-project.mjs` validates it and supplies `init` and `check`. The default manifest describes Laundry explicitly; another application selects its own manifest. The dependency-free Notebook example is in `apps/web/examples/rehearsal-demo` and has real DOM presenters, a separate synthetic adapter, four screen states, a conditional branch, return paths and project-specific context.
 
-No model call is required for onboarding, source inventory, graph assembly, coverage comparison, input capture or refresh. Source discovery recognizes TanStack `createFileRoute` calls and named `*Sheet*` functions as unconfirmed candidates. Other frameworks can supply the same registry explicitly; discovery is deliberately incomplete. Rehearsal does not infer unwritten requirements, complete journeys, personas, permissions or safe fixtures from code.
+No model call is required for onboarding, source inventory, graph assembly, coverage comparison, input capture or refresh. Source discovery recognizes TanStack `createFileRoute` calls and named `*Sheet*` functions as unconfirmed candidates. Other frameworks can supply the same registry explicitly; discovery is deliberately incomplete. CIVIC does not infer unwritten requirements, complete journeys, personas, permissions or safe fixtures from code.
 
 ### Connect or create through the workspace
 
-Open `/review` and click the project name beside Rehearsal. The **Your projects** dialog lists saved connections and offers **Connect existing app** and **New project**.
+Open `/review` and click the project name beside CIVIC. The **Your projects** dialog lists saved connections and offers **Connect existing app** and **New project**.
 
-- Existing app: enter its absolute folder on the Rehearsal host. An existing playable manifest is validated and registered. Otherwise choose **Discover screens**, confirm isolated HTML/React candidates, order, props, capture fields and paths, then **Generate preview**. Rehearsal creates the registry and adapter under its own ignored `rehearsal-projects/` folder, leaving the app checkout untouched. **Keep inventory only** remains available. Provider-dependent states remain gaps. See [discovery and its limits](project-discovery.md).
-- New project: enter a name. Rehearsal creates a local note-writing starter with real DOM screens, a synthetic adapter, personas/roles/conditions, four states, a branch and return path. This is a working starting point, not an automatically designed complete application. The completion view shows the app and manifest paths.
+- Existing app: enter its absolute folder on the CIVIC review host. An existing playable manifest is validated and registered. Otherwise choose **Discover screens**, confirm isolated HTML/React candidates, order, props, capture fields and paths, then **Generate preview**. CIVIC creates the registry and adapter under its own ignored `rehearsal-projects/` folder, leaving the app checkout untouched. **Keep inventory only** remains available. Provider-dependent states remain gaps. See [discovery and its limits](project-discovery.md).
+- New project: enter a name. CIVIC creates a local note-writing starter with real DOM screens, a synthetic adapter, personas/roles/conditions, four states, a branch and return path. This is a working starting point, not an automatically designed complete application. The completion view shows the app and manifest paths.
 - Open a saved connection: its preview restarts on the same port with rebuilt module bindings and a renewed review session. The selected manifest/root are persisted in ignored `.review-data/application.json`; the catalogue is `.review-data/project-picker.json`. The private HTTPS origin and other host settings are preserved. A phone enters/selects folders on this host, not files on the phone.
 
 Switching is shared by everyone using this local preview. Other tabs must reload; their project-bound API requests are rejected rather than operating on another project's records. Finish pending captures and save proposal edits first. Ending an active preview requires explicit confirmation. Active agent deliveries prevent switching until their final receipt, to avoid interrupting the harness conversation. Saved reviews and captures remain on disk; in-memory app runs end. Native dialog focus, Escape and narrow layouts are supported.
@@ -31,24 +31,24 @@ The UI needs no CLI commands to add or switch projects or generate an isolated p
 
 ### Optional CLI setup
 
-Run these from the Rehearsal repository, substituting the target checkout:
+Run these from the CIVIC repository, substituting the target checkout:
 
 ```sh
-node apps/web/scripts/review-project.mjs init \
+node packages/vite-connector/src/review-project.mjs init \
   --root /path/to/application --id my-app --name 'My App' --source src
 ```
 
 This prints the proposed manifest, empty scenario registry and coverage contract without writing. Add `--write` to create those three files; existing files are never overwritten. The source directory must already exist. A greenfield app can begin inventory-only, then add screens and an adapter as its presenters are implemented. `--preview src/rehearsal.ts` connects an already existing preview module; init does not invent one.
 
 ```sh
-node apps/web/scripts/review-project.mjs check --project /path/to/application/rehearsal.project.json
-REHEARSAL_PROJECT=/path/to/application/rehearsal.project.json pnpm --dir apps/web run review
+node packages/vite-connector/src/review-project.mjs check --project /path/to/application/civic.project.json
+CIVIC_PROJECT=/path/to/application/civic.project.json pnpm --dir apps/web run review
 ```
 
-Explicit `REHEARSAL_PROJECT` selection ignores the old local Laundry source path. The application root defaults to the manifest directory; `REHEARSAL_APP_ROOT` explicitly selects another checkout. Only run one preview on 3010 at a time. To explore the included Notebook example without changing local settings:
+Explicit `CIVIC_PROJECT` selection ignores the old local Laundry source path. The application root defaults to the manifest directory; `CIVIC_APP_ROOT` explicitly selects another checkout. Only run one preview on 3010 at a time. To explore the included Notebook example without changing local settings:
 
 ```sh
-REHEARSAL_PROJECT=apps/web/examples/rehearsal-demo/rehearsal.project.json \
+CIVIC_PROJECT=apps/web/examples/rehearsal-demo/civic.project.json \
   pnpm --dir apps/web run review
 ```
 
@@ -66,7 +66,7 @@ The CLI remains available for scripted setup. The workspace picker supplies conn
 | `roles`, `conditions` | Separate authored choices. The adapter enforces their effects; a persona never grants permission. |
 | `navigation` | Ordered section names, used by canvas and sidebar. This order does not invent action arrows. |
 | `aliases`, `publicDir` | Optional paths relative to the application root for Vite module resolution and assets. |
-| `design` | Optional `{ id, files }` references; `REHEARSAL_DESIGN_ROOT` selects local exports. Hashes do not attest design approval or visual fidelity. |
+| `design` | Optional `{ id, files }` references; `CIVIC_DESIGN_ROOT` selects local exports. Hashes do not attest design approval or visual fidelity. |
 
 Paths are relative, bounded and validated. Generic projects reject traversal, secret paths and paths escaping their root through symlinks. Laundry retains its previously established adapter compatibility for existing checkout/test layout. Stable context and scenario IDs must be unique. Malformed connections fail visibly.
 
@@ -74,13 +74,13 @@ Machine-specific settings remain in ignored `.review-data/application.json`:
 
 ```json
 {
-  "project": "/path/to/owned-integration/rehearsal.project.json",
+  "project": "/path/to/owned-integration/civic.project.json",
   "root": "/path/to/read-only-product-checkout",
   "publicOrigin": "https://your-machine.your-tailnet.ts.net:10445"
 }
 ```
 
-Use this when the integration manifest/adapter should live separately from product code. For this installation, f0d3 owns the manifest, registry, coverage and adapter; ignored `root` continues to select f7ce. Product-owner port 3011 is not used or changed by Rehearsal.
+Use this when the integration manifest/adapter should live separately from product code. For this installation, f0d3 owns the manifest, registry, coverage and adapter; ignored `root` continues to select f7ce. Product-owner port 3011 is not used or changed by CIVIC.
 
 ### Screen and path registry
 
@@ -101,11 +101,11 @@ Each scenario declares `id`, `label`, `journey`, optional stable `flow`, `sectio
 }
 ```
 
-Declare the destination as another scenario. `branchOf` places a branch vertically beneath a main-path screen in the same flow; normal steps remain horizontal. This first contract supports main-path parents, not nested branch layout. An edge can cross flows. `when` and `returnTo` describe product conditions and return behavior; they are not executable predicates. The presenter/adapter remains responsible for enforcing them. Unknown destinations stay coverage gaps; Rehearsal never fills them with guessed screens.
+Declare the destination as another scenario. `branchOf` places a branch vertically beneath a main-path screen in the same flow; normal steps remain horizontal. This first contract supports main-path parents, not nested branch layout. An edge can cross flows. `when` and `returnTo` describe product conditions and return behavior; they are not executable predicates. The presenter/adapter remains responsible for enforcing them. Unknown destinations stay coverage gaps; CIVIC never fills them with guessed screens.
 
 ### Browser adapter contract
 
-The preview entry exports `mount(container, context)` and returns an optional disposer, synchronously or asynchronously. TypeScript projects can reference `apps/web/src/review/adapter.ts`; the runtime itself requires no project-side dependency on Rehearsal.
+The preview entry exports `mount(container, context)` and returns an optional disposer, synchronously or asynchronously. TypeScript projects can reference `apps/web/src/review/adapter.ts`; the runtime itself requires no project-side dependency on CIVIC.
 
 Context contains the selected `config`, registered `scenario`, selected `persona`, `role`, `condition`, frozen source/design `snapshot`, and two callbacks:
 
@@ -123,7 +123,7 @@ export function mount(container, context) {
 }
 ```
 
-`publish` must report a registered screen. `transition` must match a declared source/action/destination edge. Authored adapters report transitions only when the app confirms them; failed saves retain the current screen and inputs. Generated adapters pass `transition(destination, action, 'synthetic')`; receipts label synthetic navigation and state carried by Rehearsal, without attesting production behavior. Publish the first ready screen before mount resolves. Rehearsal captures departing DOM and allowlisted inputs, then follows the same iframe. Direct fixture entry never implies preceding paths were traversed.
+`publish` must report a registered screen. `transition` must match a declared source/action/destination edge. Authored adapters report transitions only when the app confirms them; failed saves retain the current screen and inputs. Generated adapters pass `transition(destination, action, 'synthetic')`; receipts label synthetic navigation and state carried by CIVIC, without attesting production behavior. Publish the first ready screen before mount resolves. CIVIC captures departing DOM and allowlisted inputs, then follows the same iframe. Direct fixture entry never implies preceding paths were traversed.
 
 Project adapters are trusted executable code: use actual presenters with synthetic data, stub queries/mutations locally, and do not mount production providers. The generic frame blocks external connections through CSP and the review server rejects application/backend routes and writes. This is defense in depth, not a sandbox for untrusted plugins. Screenshots and frozen HTML include visible synthetic content; `captureFields` restricts structured inputs, not every visible pixel. Never put real credentials or household/user records in fixtures. Password/file/hidden input values are scrubbed by the capture helper.
 
@@ -135,7 +135,7 @@ Source directories, preview-entry siblings, public assets, dependency files, man
 
 Changes to checkout identity, adapter entry/kind, aliases, public assets binding, coverage destination or private HTTPS origin require a server restart. The inventory becomes unavailable until the binding is repaired/restarted, rather than silently mixing stores or writing the old contract. Other presets and registry edits refresh automatically; reload the workspace to refresh its context menus. Incompatible old-run captures may need retry/reproduction against the changed registry.
 
-Generic stores live in `.review-data/projects/<project-id-and-checkout-key>` on the Rehearsal host. The key includes the resolved manifest and product checkout paths, so another checkout receives another store. Note drafts are project-scoped. Laundry App's existing `.review-data` store and drafts remain in place for compatibility. `REHEARSAL_DATA_DIR` changes the store base; generic projects still get separate key subdirectories. Agent destinations belong to the selected store; they are not inherited from another project.
+Generic stores live in `.review-data/projects/<project-id-and-checkout-key>` on the CIVIC review host. The key includes the resolved manifest and product checkout paths, so another checkout receives another store. Note drafts are project-scoped. Laundry App's existing `.review-data` store and drafts remain in place for compatibility. `CIVIC_DATA_DIR` changes the store base; generic projects still get separate key subdirectories. Agent destinations belong to the selected store; they are not inherited from another project.
 
 The only intentional repository write exposed by the coverage API is the selected, validated coverage contract, guarded by source and contract versions. Scanners and preview compilation never write linked product sources. Adding a manifest through `init --write` is a separate explicit setup operation.
 
@@ -143,7 +143,7 @@ The only intentional repository write exposed by the coverage API is the selecte
 
 Laundry-specific imports now live in `laundry-frame.tsx` and its presenters; discovery and temporary compile transforms live in `review-laundry-inventory.mjs` and `review-laundry.mjs`. The shared connection uses `loadProject`, and generic adapters perform no Laundry transformations. Compatibility exports keep existing tests/callers working.
 
-The product owner confirmed on October 11 that f7ce's release does not include native review exports/intake callbacks. Consequently Laundry compatibility overlays are retained, fail on source drift and remain local to compilation. Removing them entirely requires a separate product-owned presenter-seam handoff; Rehearsal did not modify f7ce to force it. The product release remains its own evidence, separate from these synthetic runs.
+The product owner confirmed on October 11 that f7ce's release does not include native review exports/intake callbacks. Consequently Laundry compatibility overlays are retained, fail on source drift and remain local to compilation. Removing them entirely requires a separate product-owned presenter-seam handoff; CIVIC did not modify f7ce to force it. The product release remains its own evidence, separate from these synthetic runs.
 
 ## Verification
 

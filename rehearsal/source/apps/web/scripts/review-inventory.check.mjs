@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { fileURLToPath } from 'node:url'
 import { test } from 'node:test'
 import { reviewInventory } from './review-inventory.mjs'
-import { fixtureHashes } from './review-fixture-hashes.mjs'
+import { fixtureHashes } from '@civic/vite-connector/fixture-hashes'
 
 test('fixture fingerprints track component dependencies and shared styles, excluding expectations and Git identity', () => {
   const metadata = { scenarios: [{ id: 'a', component: 'src/a.tsx' }, { id: 'b', component: 'src/b.tsx' }] }

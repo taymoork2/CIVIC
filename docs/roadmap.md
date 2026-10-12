@@ -90,6 +90,8 @@ Progress, 2026-10-12: the crawl has a native driver. It speaks WebDriver to an A
 
 Progress, 2026-10-12: the v7 handoff of the journey engine mounts the real Laundry app in review with real effects in an isolated backend per run, records runs with one shared recorder, and proposes splitting adapters into a build connector, a runtime and data adapter, and an interaction driver ([v7 notes](synthesis-v0-import.md#v7-handoff-update)). CIVIC's crawl drivers (Playwright and Appium) are its interaction drivers; a runtime and data adapter for native apps is still to come.
 
+Progress, 2026-10-12: the build connector is a package. [`@civic/vite-connector`](../rehearsal/source/packages/vite-connector) holds the Vite plugin, the project manifest and picker, discovery, the review index, fixture fingerprints and the coverage bridge, and imports only Node, Vite and `@civic/shell`. Laundry is one connector registered by the host (kind `laundry`); a plain `module` app connects through the package with no app connector, which its checks prove. Still to come: the canvas UI outside the Laundry monorepo host, and a runtime and data adapter beyond Laundry's Convex.
+
 ## 5. Identity, permissions, and multiplayer
 
 Real identities, scoped permissions, and versioned shared records, following the spec's [multiplayer boundary](product-spec.md#multiplayer-and-ownership). The single local access key and the portal's collaborator access are not this model.

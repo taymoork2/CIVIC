@@ -45,7 +45,7 @@ test('linked application inventory uses product sources and local Rehearsal owne
   await cp(join(repo, 'apps/web/src'), join(hostWeb, 'src'), { recursive: true })
   for (const name of ['e2e', 'node_modules']) await symlink(join(repo, 'apps/web', name), join(hostWeb, name))
   for (const name of ['package.json', 'playwright.config.ts', 'tsconfig.json', 'vite.config.ts', 'review.html', 'review-frame.html']) await cp(join(repo, 'apps/web', name), join(hostWeb, name))
-  for (const name of ['package.json', 'pnpm-lock.yaml', 'rehearsal.project.json']) await cp(join(repo, name), join(host, name))
+  for (const name of ['package.json', 'pnpm-lock.yaml', 'civic.project.json']) await cp(join(repo, name), join(host, name))
   await symlink(join(repo, '.git'), join(host, '.git'))
   await mkdir(join(host, 'docs/design/review-product'), { recursive: true })
   await cp(join(repo, 'docs/design/review-product/coverage.json'), join(host, 'docs/design/review-product/coverage.json'))

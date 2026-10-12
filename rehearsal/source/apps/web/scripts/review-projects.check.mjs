@@ -4,8 +4,8 @@ import { createServer } from 'node:http'
 import { tmpdir } from 'node:os'
 import { cp, mkdir, mkdtemp, readFile, readdir, realpath, symlink, writeFile } from 'node:fs/promises'
 import { join, resolve } from 'node:path'
-import { projectPicker } from './review-projects.mjs'
-import { loadProject } from './review-project.mjs'
+import { projectPicker } from '@civic/vite-connector/projects'
+import { loadProject } from '@civic/vite-connector/project'
 import { reviewMiddleware } from '@civic/shell/server'
 import { laundryReviewAdapter } from './review-adapter.mjs'
 
@@ -14,7 +14,7 @@ test('picker connects without app writes, creates a playable starter, validates 
   const repo = await realpath(await mkdtemp(join(await realpath(tmpdir()), 'rehearsal-picker-')))
   await mkdir(join(repo, 'apps/web/examples'), { recursive: true })
   await cp(template, join(repo, 'apps/web/examples/rehearsal-demo'), { recursive: true })
-  const current = loadProject(repo, { manifest: join(template, 'rehearsal.project.json'), applicationRoot: template })
+  const current = loadProject(repo, { manifest: join(template, 'civic.project.json'), applicationRoot: template })
   const picker = await projectPicker(repo, current)
   const app = join(repo, 'existing-app')
   await mkdir(join(app, 'src'), { recursive: true })
@@ -31,14 +31,14 @@ test('picker connects without app writes, creates a playable starter, validates 
   assert.equal(list.projects.length, 3)
   const starter = list.projects.find((row) => row.key === created.key)
   assert.ok(starter.root.startsWith(join(repo, 'rehearsal-projects/')))
-  assert.equal(JSON.parse(await readFile(join(starter.root, 'rehearsal.scenarios.json'))).length, 4)
+  assert.equal(JSON.parse(await readFile(join(starter.root, 'civic.scenarios.json'))).length, 4)
   for (const source of ['../src', '.env', 'node_modules', '/etc', '.git']) await assert.rejects(picker.add({ kind: 'existing', root: app, name: 'Bad path', source }))
   await symlink(await realpath(tmpdir()), join(app, 'escape'))
   await assert.rejects(picker.add({ kind: 'existing', root: app, name: 'Escape', source: 'escape' }), /escapes checkout/)
-  await assert.rejects(picker.add({ kind: 'existing', root: app, manifest: '../rehearsal.project.json' }))
+  await assert.rejects(picker.add({ kind: 'existing', root: app, manifest: '../civic.project.json' }))
   await assert.rejects(picker.select('missing-project'), /Unknown/)
   await writeFile(join(repo, '.review-data/application.json'), JSON.stringify({ publicOrigin: 'https://host.example.ts.net:10445', preserved: true }))
-  const before = { project: process.env.REHEARSAL_PROJECT, root: process.env.REHEARSAL_APP_ROOT }
+  const before = { project: process.env.CIVIC_PROJECT, root: process.env.CIVIC_APP_ROOT }
   try {
     const result = await picker.select(created.key)
     assert.equal(result.restarting, true)
@@ -47,11 +47,11 @@ test('picker connects without app writes, creates a playable starter, validates 
     assert.equal(loadProject(repo).key, created.key)
     const resumed = await projectPicker(repo, loadProject(repo))
     assert.equal((await resumed.list()).projects.length, 3)
-    await writeFile(join(starter.root, 'rehearsal.scenarios.json'), '{}')
+    await writeFile(join(starter.root, 'civic.scenarios.json'), '{}')
     assert.equal((await resumed.list()).projects.find((row) => row.key === created.key).available, false)
     await assert.rejects(resumed.select(created.key), /invalid scenario/)
   } finally {
-    for (const [key, value] of [['REHEARSAL_PROJECT', before.project], ['REHEARSAL_APP_ROOT', before.root]]) if (value === undefined) delete process.env[key]; else process.env[key] = value
+    for (const [key, value] of [['CIVIC_PROJECT', before.project], ['CIVIC_APP_ROOT', before.root]]) if (value === undefined) delete process.env[key]; else process.env[key] = value
   }
 })
 

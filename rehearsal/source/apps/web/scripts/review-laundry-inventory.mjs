@@ -4,7 +4,7 @@ import { readFile, readdir } from 'node:fs/promises'
 import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { referenceInputHashes } from './opendesign-reference-inputs.mjs'
-import { coveragePath, checkedContract, coverageReport } from './review-coverage.mjs'
+import { coveragePath, checkedContract, coverageReport } from '@civic/vite-connector/coverage'
 import { reviewOverlay } from './review-laundry.mjs'
 
 const sha = (bytes) => createHash('sha256').update(bytes).digest('hex')
@@ -93,12 +93,15 @@ export async function reviewInventory(repo, designRoot, appRepo = repo) {
   }
   // The CIVIC shell renders and stores every review, so its source is part of the attested revision.
   // Hash the shell this server actually loads, wherever its workspace link points.
-  const shell = resolve(dirname(fileURLToPath(import.meta.resolve('@civic/shell/server'))), '..')
-  for (const file of await files(shell)) {
-    if (file.includes('/node_modules/') || !/\.(tsx?|mjs|css|json)$/.test(file)) continue
-    const path = `packages/shell/${relative(shell, file)}`
-    const content = await readFile(file, 'utf8')
-    source.push([path, sha(content)]); evidence.set(path, content)
+  // The same holds for the Vite connector that builds this index and serves the frames.
+  for (const [name, entry] of [['shell', '@civic/shell/server'], ['vite-connector', '@civic/vite-connector']]) {
+    const root = resolve(dirname(fileURLToPath(import.meta.resolve(entry))), '..')
+    for (const file of await files(root)) {
+      if (file.includes('/node_modules/') || !/\.(tsx?|mjs|css|json)$/.test(file)) continue
+      const path = `packages/${name}/${relative(root, file)}`
+      const content = await readFile(file, 'utf8')
+      source.push([path, sha(content)]); evidence.set(path, content)
+    }
   }
   const head = gitHead(repo) ?? '0'.repeat(40)
   const appHead = gitHead(appRepo)
@@ -113,7 +116,7 @@ export async function reviewInventory(repo, designRoot, appRepo = repo) {
     source.push([relative(appRepo, path), sha(await readFile(path))])
   }
   const revision = { head, source: sha(JSON.stringify([...new Map(source)].sort())), capturedAt: new Date().toISOString() }
-  const fixtureSource = sha(JSON.stringify([...new Map(source)].filter(([path]) => !/\.(test|spec)\./.test(path) && (path === 'connection' || path.startsWith('application:') || /\/review-(application|laundry|adapter)\.mjs$/.test(path) || path.startsWith('apps/web/public/') || path.startsWith('packages/') && !path.startsWith('packages/shell/') || path.startsWith('convex/') || path.startsWith('apps/web/src/') && (!path.includes('/review/') || /\/review\/(frame\.tsx|laundry-frame\.tsx|adapters\/laundry\.ts|adapter\.ts|journey\.ts|store\.ts|route-preview\.tsx|family-preview\.tsx|scenarios\.json)$/.test(path)))).sort()))
+  const fixtureSource = sha(JSON.stringify([...new Map(source)].filter(([path]) => !/\.(test|spec)\./.test(path) && (path === 'connection' || path.startsWith('application:') || /\/review-(application|laundry|adapter)\.mjs$/.test(path) || path.startsWith('apps/web/public/') || path.startsWith('packages/') && !/^packages\/(?:shell|vite-connector)\//.test(path) || path.startsWith('convex/') || path.startsWith('apps/web/src/') && (!path.includes('/review/') || /\/review\/(frame\.tsx|laundry-frame\.tsx|adapters\/laundry\.ts|adapter\.ts|journey\.ts|store\.ts|route-preview\.tsx|family-preview\.tsx|scenarios\.json)$/.test(path)))).sort()))
   const validationPath = 'docs/design/review-validation.json'
   let validation = { path: validationPath, status: 'missing', receipt: null }
   try {
