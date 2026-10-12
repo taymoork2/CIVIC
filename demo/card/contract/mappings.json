@@ -16,6 +16,7 @@
       "extensionPoints": [
         { "name": "appearance", "mechanism": "prop", "expresses": ["variant"] },
         { "name": "selected", "mechanism": "prop", "expresses": ["state.selected"] },
+        { "name": "root", "mechanism": "slot", "expresses": ["body"] },
         { "name": "size", "mechanism": "prop", "expresses": ["density"] },
         { "name": "CardPreview", "mechanism": "slot", "expresses": ["media"] },
         { "name": "CardHeader.header", "mechanism": "slot", "expresses": ["header.title"] },

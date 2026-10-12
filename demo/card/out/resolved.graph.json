@@ -652,6 +652,24 @@
       }
     },
     {
+      "id": "extension:fluent-react-v9.card.root",
+      "kind": "extension-point",
+      "title": "Fluent React v9 Card root",
+      "platformComponentId": "platform:fluent-react-v9.card",
+      "mechanism": "slot",
+      "name": "root",
+      "expresses": [
+        "body"
+      ],
+      "source": {
+        "tool": "npm",
+        "importer": "react-types",
+        "revision": "@fluentui/react-card@9.7.3",
+        "path": "@fluentui/react-card/dist/index.d.ts",
+        "contentHash": "sha256:91d94abf72be0642e91160170c48fbe7b815d5091e5e67fcc06754e5c03e2818"
+      }
+    },
+    {
       "id": "extension:fluent-react-v9.card.selected",
       "kind": "extension-point",
       "title": "Fluent React v9 Card selected",
@@ -878,6 +896,114 @@
         "path": "@fluentui/react-card/dist/index.d.ts",
         "contentHash": "sha256:91d94abf72be0642e91160170c48fbe7b815d5091e5e67fcc06754e5c03e2818"
       }
+    },
+    {
+      "id": "conflict:card.ios.default.actions",
+      "kind": "contract-conflict",
+      "title": "Default actions in the Card on ios",
+      "targetId": "semantic:card",
+      "platform": "ios",
+      "summary": "The library's Card shows actions by default (Footer), and Fluent iOS CardView has no extension point that expresses it.",
+      "sides": [
+        {
+          "claim": "Card turns Footer on by default, so every product using it as drawn shows actions.",
+          "evidenceIds": [
+            "evidence:figma.library.card"
+          ]
+        },
+        {
+          "claim": "No Fluent iOS CardView extension point expresses actions.",
+          "recordId": "platform:fluent-apple.card-view",
+          "evidenceIds": [
+            "evidence:fluent-apple.card-view.variants"
+          ]
+        }
+      ],
+      "classification": "unclassified",
+      "owners": [
+        {
+          "role": "design",
+          "who": "design-system-maintainers"
+        },
+        {
+          "role": "design-engineering",
+          "who": "fluent-ios",
+          "platform": "ios"
+        }
+      ],
+      "alignment": "unreviewed-drift"
+    },
+    {
+      "id": "conflict:card.ios.default.body",
+      "kind": "contract-conflict",
+      "title": "Default body in the Card on ios",
+      "targetId": "semantic:card",
+      "platform": "ios",
+      "summary": "The library's Card shows body by default (Body), and Fluent iOS CardView has no extension point that expresses it.",
+      "sides": [
+        {
+          "claim": "Card turns Body on by default, so every product using it as drawn shows body.",
+          "evidenceIds": [
+            "evidence:figma.library.card"
+          ]
+        },
+        {
+          "claim": "No Fluent iOS CardView extension point expresses body.",
+          "recordId": "platform:fluent-apple.card-view",
+          "evidenceIds": [
+            "evidence:fluent-apple.card-view.variants"
+          ]
+        }
+      ],
+      "classification": "unclassified",
+      "owners": [
+        {
+          "role": "design",
+          "who": "design-system-maintainers"
+        },
+        {
+          "role": "design-engineering",
+          "who": "fluent-ios",
+          "platform": "ios"
+        }
+      ],
+      "alignment": "unreviewed-drift"
+    },
+    {
+      "id": "conflict:card.ios.default.header-action",
+      "kind": "contract-conflict",
+      "title": "Default header.action in the Card on ios",
+      "targetId": "semantic:card",
+      "platform": "ios",
+      "summary": "The library's Card shows header.action by default (.Card header / Header quick action), and Fluent iOS CardView has no extension point that expresses it.",
+      "sides": [
+        {
+          "claim": "Card turns .Card header / Header quick action on by default, so every product using it as drawn shows header.action.",
+          "evidenceIds": [
+            "evidence:figma.library.card"
+          ]
+        },
+        {
+          "claim": "No Fluent iOS CardView extension point expresses header.action.",
+          "recordId": "platform:fluent-apple.card-view",
+          "evidenceIds": [
+            "evidence:fluent-apple.card-view.variants"
+          ]
+        }
+      ],
+      "classification": "unclassified",
+      "owners": [
+        {
+          "role": "design",
+          "who": "design-system-maintainers"
+        },
+        {
+          "role": "design-engineering",
+          "who": "fluent-ios",
+          "platform": "ios"
+        }
+      ],
+      "alignment": "unreviewed-drift"
     },
     {
       "id": "conflict:shop.order-summary.card.corner-radius",

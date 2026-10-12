@@ -1,8 +1,11 @@
-10 gap(s)
+13 gap(s)
 
-## open-conflict (1)
+## open-conflict (4)
 
 - The product design changes the Card's state.selected (set-property, true) and no maintainer has reviewed it. Classification unclassified. Owners: design shop-design, design design-system-maintainers. (`conflict:shop.order-summary.card.state-selected`)
+- [ios] The library's Card shows actions by default (Footer), and Fluent iOS CardView has no extension point that expresses it. Classification unclassified. Owners: design design-system-maintainers, design-engineering fluent-ios. (`conflict:card.ios.default.actions`)
+- [ios] The library's Card shows body by default (Body), and Fluent iOS CardView has no extension point that expresses it. Classification unclassified. Owners: design design-system-maintainers, design-engineering fluent-ios. (`conflict:card.ios.default.body`)
+- [ios] The library's Card shows header.action by default (.Card header / Header quick action), and Fluent iOS CardView has no extension point that expresses it. Classification unclassified. Owners: design design-system-maintainers, design-engineering fluent-ios. (`conflict:card.ios.default.header-action`)
 
 ## missing-variant (1)
 
