@@ -1,5 +1,5 @@
 import { completenessOf, stateCoverageOn } from './completeness.ts'
-import { conflictStates } from './decisions.ts'
+import { conflictStates, describeFix, openProposals, type FixStage } from './decisions.ts'
 import { gapsIn, screenOf } from './gaps.ts'
 import { indexGraph, type Graph } from './graph.ts'
 import type { GraphDocument, Owner, Platform } from './schema.ts'
@@ -15,6 +15,8 @@ export const FINDING_KINDS = [
   'open-conflict',
   'unreviewed-override',
   'expired-exception',
+  'failed-fix',
+  'regressed-fix',
   'failing-evidence',
   'stale-evidence',
   'missing-state',
@@ -26,6 +28,9 @@ export const FINDING_KINDS = [
   'unconfirmed-link',
   'unconfirmed-target',
   'approved-exception',
+  'open-proposal',
+  'awaiting-adoption',
+  'unverified-adoption',
 ] as const
 export type FindingKind = (typeof FINDING_KINDS)[number]
 
@@ -39,6 +44,8 @@ export const DEFAULT_BLOCKING: readonly FindingKind[] = [
   'open-conflict',
   'unreviewed-override',
   'expired-exception',
+  'failed-fix',
+  'regressed-fix',
   'failing-evidence',
   'missing-state',
   'dead-end',
@@ -116,6 +123,26 @@ export function checkGraph(label: string, graph: Graph, options: CheckOptions): 
   }
   measure('Contract conflicts open', states.filter((state) => state.status === 'open').length, states.length)
   measure('Approved exceptions expired', findings.filter((item) => item.kind === 'expired-exception').length, exceptions.length)
+
+  // The decision loop: a decided fix is tracked until a revision carries it and evidence at
+  // that revision verifies it, then re-checked on every run (roadmap step 3).
+  const fixes = states.flatMap((state) => (state.fix && state.fix.stage !== 'accepted' ? [{ conflict: state.conflict, fix: state.fix }] : []))
+  const kindFor: Record<Exclude<FixStage, 'accepted' | 'verified'>, FindingKind> = { 'awaiting-adoption': 'awaiting-adoption', adopted: 'unverified-adoption', failed: 'failed-fix', regressed: 'regressed-fix' }
+  for (const { conflict, fix } of fixes) {
+    if (fix.stage === 'verified' || fix.stage === 'accepted') continue
+    const owners = fix.stage === 'awaiting-adoption' || fix.stage === 'adopted' ? conflict.owners : [fix.adoption!.adoptedBy, ...conflict.owners]
+    add(kindFor[fix.stage], conflict.id, `${conflict.title}: ${describeFix(fix)}`, owners, conflict.platform, fix.adoption?.id)
+  }
+  measure('Decided fixes not yet adopted', fixes.filter(({ fix }) => fix.stage === 'awaiting-adoption').length, fixes.length)
+  measure('Decided fixes verified', fixes.filter(({ fix }) => fix.stage === 'verified').length, fixes.length)
+  measure('Decided fixes failed or regressed', fixes.filter(({ fix }) => fix.stage === 'failed' || fix.stage === 'regressed').length, fixes.length)
+  const proposals = graph.ofKind('proposal')
+  const undecidedProposals = openProposals(graph)
+  for (const proposal of undecidedProposals) {
+    const conflict = proposal.conflictId ? graph.get(proposal.conflictId) : undefined
+    add('open-proposal', proposal.id, `${proposal.title} proposes ${proposal.outcome} at ${proposal.candidate.tool} ${proposal.candidate.revision} and waits for a decision.`, conflict?.owners ?? [proposal.proposedBy])
+  }
+  measure('Proposals waiting for a decision', undecidedProposals.length, proposals.length)
 
   const overrides = graph.ofKind('override')
   let undecided = 0

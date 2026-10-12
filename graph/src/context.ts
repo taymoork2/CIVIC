@@ -1,4 +1,4 @@
-import { conflictStates, type ConflictState } from './decisions.ts'
+import { conflictStates, describeFix, type ConflictState } from './decisions.ts'
 import { countsForReadiness, type Graph } from './graph.ts'
 import type {
   ContractConflict,
@@ -43,7 +43,7 @@ export interface WorkOrder {
   tokens: { id: string; path: string; type: string; from: string }[]
   extensionPoints: Pick<ExtensionPoint, 'id' | 'mechanism' | 'name' | 'expresses'>[]
   /** Conflicts on this target and platform, open ones first. */
-  records: (Pick<ContractConflict, 'id' | 'title' | 'summary' | 'owners'> & Pick<ConflictState, 'status' | 'classification' | 'alignment'> & { decision?: Decision })[]
+  records: (Pick<ContractConflict, 'id' | 'title' | 'summary' | 'owners'> & Pick<ConflictState, 'status' | 'classification' | 'alignment'> & { decision?: Decision; fix?: string })[]
   evidence: Pick<Evidence, 'id' | 'title' | 'tier' | 'method' | 'outcome' | 'finding'>[]
   /** What done means: the intents and contract rules, plus the evidence still missing. */
   acceptance: string[]
@@ -149,7 +149,7 @@ export function contextFor(graph: Graph, targetId: string, options: ContextOptio
       ),
     tokens,
     extensionPoints: points.map(({ id, mechanism, name, expresses }) => ({ id, mechanism, name, expresses })),
-    records: records.map(({ conflict: { id, title, summary, owners }, status, classification, alignment, decision }) => ({
+    records: records.map(({ conflict: { id, title, summary, owners }, status, classification, alignment, decision, fix }) => ({
       id,
       title,
       status,
@@ -158,6 +158,7 @@ export function contextFor(graph: Graph, targetId: string, options: ContextOptio
       summary,
       owners,
       ...(decision ? { decision } : {}),
+      ...(fix ? { fix: describeFix(fix) } : {}),
     })),
     evidence: evidence.map(({ id, title, tier, method, outcome, finding }) => ({ id, title, tier, method, outcome, ...(finding ? { finding } : {}) })),
     acceptance,
@@ -213,7 +214,7 @@ export function renderWorkOrder(order: WorkOrder): string {
       ? order.records.map((record) => {
           const owners = record.owners.map((owner) => `${owner.role} ${owner.who}`).join(', ')
           const decided = record.decision
-            ? ` Decided: ${record.decision.outcome} by ${record.decision.decidedBy.role} ${record.decision.decidedBy.who} (\`${record.decision.id}\`). ${record.decision.rationale}${record.decision.revisitTrigger ? ` Revisit when: ${record.decision.revisitTrigger}` : ''}`
+            ? ` Decided: ${record.decision.outcome} by ${record.decision.decidedBy.role} ${record.decision.decidedBy.who} (\`${record.decision.id}\`). ${record.decision.rationale}${record.decision.revisitTrigger ? ` Revisit when: ${record.decision.revisitTrigger}` : ''}${record.fix ? ` Fix: ${record.fix}` : ''}`
             : ''
           return `**${record.status}** ${record.title}: ${record.summary} Classification ${record.classification}, ${record.alignment}. Owners: ${owners}. (\`${record.id}\`)${decided}`
         })

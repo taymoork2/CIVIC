@@ -12,4 +12,29 @@ export { renderInstanceReview, reviewInstance, type OverrideReview, type Overrid
 export { renderScreen, screenFacts, type ScreenFacts } from './screen.ts'
 export { staleEvidence, type FreshnessRule } from './freshness.ts'
 export { baselineFrom, checkDocument, checkGraph, compareToBaseline, DEFAULT_BLOCKING, FINDING_KINDS, renderCheck, statusLine, type Baseline, type BaselineEntry, type CheckOptions, type CheckReport, type Finding, type FindingKind, type GraphCheck, type Measure } from './check.ts'
-export { ALIGNMENT_FOR, conflictState, conflictStates, DECISION_FILE_SCHEMA, decisionFor, decisionsOn, recordDecision, type ConflictState, type DecisionFile } from './decisions.ts'
+export {
+  adoptionsOf,
+  ALIGNMENT_FOR,
+  conflictOfRecord,
+  conflictState,
+  conflictStates,
+  decisionFileRecords,
+  DECISION_FILE_SCHEMA,
+  decisionFor,
+  decisionsOn,
+  describeFix,
+  FIX_STAGES,
+  fixesIn,
+  fixFor,
+  openProposals,
+  recordAdoption,
+  recordDecision,
+  recordProposal,
+  recordVerification,
+  renderFixes,
+  verificationsOf,
+  type ConflictState,
+  type DecisionFile,
+  type FixStage,
+  type FixState,
+} from './decisions.ts'

@@ -17,7 +17,7 @@ Importers read what each role's tools already produce and turn it into [CIVIC gr
 | `compareDesignKit` | A design kit and the same platform's component | Open, unclassified Contract Conflicts, one per variant they disagree on |
 | `compareLibraryDefaults` | A library component's facts and each platform component with its extension points | Open, unclassified Contract Conflicts, one per platform and per content the library shows by default that the platform has no extension point for |
 | `raiseOverrideDrift` | A product's overrides on a library component | Open, unclassified Contract Conflicts in Unreviewed drift, one per override, asking its maker and the contract's design owners |
-| `applyDecisions` | A decision file (`civic.decisions/0`) of people's Decision records | The raised graph with those Decision records added; a decision on a conflict the import didn't raise fails |
+| `applyDecisions` | A decision file (`civic.decisions/0`): proposals, decisions, adoptions and verifications | The raised graph with those records added. A conflict the import no longer raises is settled when its decision was adopted, and its records are left out (`settledConflicts` lists them); a decision on a conflict that vanished without an adoption fails |
 | `assemble` | Fragments from the importers above | One graph document in a stable order |
 
 ## Rules every importer follows

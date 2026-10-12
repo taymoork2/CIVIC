@@ -6,7 +6,7 @@ Every step follows [decision 0006](decisions/0006-deterministic-civic-for-agenti
 
 ## Order of work
 
-Reprioritized on 2026-10-11. Steps 1 and 2, the review to agent loop's Laundry slice, the gate (step 8) and step 3's Decision record are built. Step numbers are stable names that other documents cite, so the order of work is listed here rather than by renumbering:
+Reprioritized on 2026-10-11. Steps 1 and 2, the review to agent loop's Laundry slice, the gate (step 8) and step 3's decision loop (Proposal, Decision, Adoption, Verification) are built. Step numbers are stable names that other documents cite, so the order of work is listed here rather than by renumbering:
 
 1. **[Step 9: real inputs](#9-real-inputs-replace-the-stand-ins)** replace the stand-in Figma files and illustrative decisions.
 2. **[Step 4](#4-the-journey-engine-as-a-graph-viewer):** a second app onboards through the manifest and crawl-first discovery, gated by `civic check`.
@@ -69,6 +69,8 @@ Start with the Decision record alone, because the gate (step 8) needs a stored, 
 The journey engine already has working examples: `coverage.json` is a Coverage gap record with versioned write-back, and its coverage candidates are proposals that never count as adoption.
 
 The Decision record is built in [`graph/`](../graph#decisions). A conflict keeps what the import raised, and its status, classification and alignment state are read from the Decision in force on it. A changed call supersedes the earlier decision instead of overwriting it, and an agent can't write one (D35). Each demo keeps its decisions in a `civic.decisions/0` file next to its contract, and `civic decide` records a new one after checking it against the graph. The gate counts a conflict as decided only when a Decision is in force on it, so the Button's brand outline conflict fails on the raised graph and passes once its decision is recorded.
+
+Progress, 2026-10-12: the decision loop is built ([`graph/`](../graph#the-decision-loop)). Proposal, Adoption and Verification are separate records in the same decision file, written by `civic propose`, `civic adopt` and `civic verify` after a check against the graph. A decision names the proposal it approves, and an `update-contract` decision must approve one. Each decided fix has a stage read from its records: awaiting adoption, adopted, verified (the conflict then reads aligned), failed or regressed. The gate re-checks every fix on every run. It blocks when an import that read the adopted revision still raises the conflict, when a verification fails, and when evidence a verification cited fails later; unadopted and unverified fixes and undecided proposals are advisory. A re-import that no longer raises an adopted conflict settles it, and its records stay in the file as history. Agents may propose and record an adoption but never verify (D35). The collaboration record types (Ambiguity, Constraint, Coverage gap, Divergence, Risk, Exception) are still to come.
 
 ## 4. The journey engine as a graph viewer
 

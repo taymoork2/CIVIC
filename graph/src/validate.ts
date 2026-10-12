@@ -125,6 +125,7 @@ export function validateGraph(input: unknown): Issue[] {
     if (author?.type === 'agent') {
       if (record.kind === 'evidence') error('agent-evidence', at, `${author.id} is an agent; agents can't write evidence. CIVIC's own capture does.`)
       if (record.kind === 'decision') error('agent-decision', at, `${author.id} is an agent; agents can't decide a conflict. A person records the decision.`)
+      if (record.kind === 'verification') error('agent-verification', at, `${author.id} is an agent; agents can't verify a fix. A person or CIVIC's own capture does.`)
     }
     if (record.source?.line) ref(at, 'source.line', record.source.line, ['line'])
     switch (record.kind) {
@@ -259,6 +260,56 @@ export function validateGraph(input: unknown): Issue[] {
           const earlier = ref(at, 'supersedes', record.supersedes, ['decision'])
           if (earlier?.kind === 'decision' && earlier.conflictId !== record.conflictId) {
             error('supersedes-other-conflict', at, `${record.supersedes} decides ${earlier.conflictId}, not ${record.conflictId}.`)
+          }
+        }
+        // Spec: an intentional change to intent needs a proposal; a fix that restores the contract doesn't.
+        if (record.outcome === 'update-contract' && !record.proposalId) {
+          error('decision-proposal', at, 'An update-contract decision changes intent, so it approves a Proposal (`proposalId`).')
+        }
+        if (record.proposalId) {
+          const proposal = ref(at, 'proposalId', record.proposalId, ['proposal'])
+          if (proposal?.kind === 'proposal') {
+            if (proposal.conflictId !== record.conflictId) error('proposal-other-conflict', at, `${proposal.id} answers ${proposal.conflictId ?? 'no conflict'}, not ${record.conflictId}.`)
+            if (proposal.outcome !== record.outcome) error('proposal-outcome', at, `${proposal.id} proposes ${proposal.outcome}; a decision approving it is ${proposal.outcome} too.`)
+          }
+        }
+        break
+      }
+      case 'proposal': {
+        if (record.conflictId) ref(at, 'conflictId', record.conflictId, ['contract-conflict'])
+        if (record.targetIds.length === 0) error('proposal-targets', at, 'A proposal names what it changes.')
+        for (const id of record.targetIds) ref(at, 'targetIds', id, RECORD_KINDS)
+        for (const revision of [record.baseline, record.candidate]) if (revision.line) ref(at, 'line', revision.line, ['line'])
+        if (record.baseline.tool === record.candidate.tool && record.baseline.revision === record.candidate.revision) {
+          error('proposal-candidate', at, 'The candidate is a different revision from the baseline; otherwise there is nothing to play or compare.')
+        }
+        break
+      }
+      case 'adoption': {
+        const decision = ref(at, 'decisionId', record.decisionId, ['decision'])
+        if (decision?.kind === 'decision' && decision.outcome === 'approve-exception') {
+          error('adoption-exception', at, `${decision.id} approves an exception, so there is nothing to adopt.`)
+        }
+        if (record.carriedBy.line) ref(at, 'carriedBy.line', record.carriedBy.line, ['line'])
+        break
+      }
+      case 'verification': {
+        const adoption = ref(at, 'adoptionId', record.adoptionId, ['adoption'])
+        if (record.evidenceIds.length === 0) error('verification-evidence', at, 'A verification cites the evidence it read.')
+        const evidence = record.evidenceIds.map((id) => ref(at, 'evidenceIds', id, ['evidence'])).filter(isEvidence)
+        if (adoption?.kind === 'adoption' && record.revision !== adoption.carriedBy.revision) {
+          error('verification-revision', at, `Verified at ${record.revision}, but ${adoption.id} is carried by ${adoption.carriedBy.revision}; read the evidence at the adopted revision.`)
+        }
+        // Evidence still at the verified revision must agree with the verdict. Evidence a later
+        // import moved on is re-checked by the gate instead (a regression), not rejected here.
+        const atRevision = evidence.filter((item) => item.source.revision === record.revision)
+        if (record.outcome === 'pass' && atRevision.some((item) => item.outcome === 'fail')) {
+          error('verification-outcome', at, `${atRevision.filter((item) => item.outcome === 'fail').map((item) => item.id).join(', ')} fail at ${record.revision}, so this can't pass.`)
+        }
+        if (adoption?.kind === 'adoption') {
+          const decision = records.get(adoption.decisionId)
+          if (decision?.kind === 'decision' && decision.evidenceIds.some((id) => record.evidenceIds.includes(id) && atRevision.every((item) => item.id !== id))) {
+            add('warning', 'verification-not-independent', at, 'Cites evidence the decision was made on, read before the adoption; verify with evidence from the adopted revision.')
           }
         }
         break
@@ -527,6 +578,34 @@ function checkRecordShape(raw: unknown, at: string, error: Report) {
         if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}/.test(value)) error('shape', path, 'Must be an ISO date, YYYY-MM-DD.')
       })
       field.optional('supersedes', (value, path) => checkString(value, path, error))
+      field.optional('proposalId', (value, path) => checkString(value, path, error))
+      break
+    case 'proposal':
+      field.optional('conflictId', (value, path) => checkString(value, path, error))
+      field.list('targetIds', (value, path) => checkString(value, path, error))
+      field.oneOf('scope', ['journey', 'screen', 'component', 'primitive', 'token'])
+      field.oneOf('outcome', DECISION_OUTCOMES)
+      checkRevision(raw.baseline, `${at}.baseline`, error)
+      checkRevision(raw.candidate, `${at}.candidate`, error)
+      field.string('rationale')
+      field.string('expected')
+      checkOwner(raw.proposedBy, `${at}.proposedBy`, error)
+      field.string('at')
+      break
+    case 'adoption':
+      field.string('decisionId')
+      checkRevision(raw.carriedBy, `${at}.carriedBy`, error)
+      checkOwner(raw.adoptedBy, `${at}.adoptedBy`, error)
+      field.string('at')
+      field.optional('note', (value, path) => checkString(value, path, error))
+      break
+    case 'verification':
+      field.string('adoptionId')
+      field.list('evidenceIds', (value, path) => checkString(value, path, error))
+      field.string('revision')
+      field.oneOf('outcome', ['pass', 'fail'])
+      checkOwner(raw.verifiedBy, `${at}.verifiedBy`, error)
+      field.string('at')
       break
     case 'actor':
     case 'line':
@@ -709,6 +788,15 @@ function checkSource(source: unknown, at: string, error: Report) {
   field.string('importer')
   field.string('revision')
   field.optional('line', (value, path) => checkString(value, path, error))
+}
+
+function checkRevision(raw: unknown, at: string, error: Report) {
+  if (!isObject(raw)) return error('shape', at, 'A revision is an object: tool and revision.')
+  const field = fieldChecker(raw, at, error)
+  field.string('tool')
+  field.string('revision')
+  field.optional('line', (value, path) => checkString(value, path, error))
+  field.optional('preview', (value, path) => checkString(value, path, error))
 }
 
 function fieldChecker(object: Record<string, unknown>, at: string, error: Report) {

@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { conflictState, indexGraph, validateGraph, type ContractConflict, type Decision, type PlatformComponent, type SemanticComponent } from '../../graph/src/index.ts'
+import { conflictState, indexGraph, validateGraph, type Adoption, type ContractConflict, type Decision, type DecisionFile, type PlatformComponent, type SemanticComponent } from '../../graph/src/index.ts'
 import {
   applyDecisions,
+  settledConflicts,
   assemble,
   compareDesignKit,
   fragment,
@@ -324,4 +325,52 @@ test('decision records decide raised conflicts, and stale decisions fail', () =>
   assert.equal(conflictState(graph, conflict).alignment, 'accepted-limitation')
   assert.deepEqual(validateGraph(decided).filter((issue) => issue.severity === 'error'), [])
   assert.throws(() => applyDecisions(document, [{ ...decision, conflictId: 'conflict:button.ios.neutral' }]), /did not raise/)
+})
+
+test('a conflict an adopted fix removed is settled: its loop records stay in the file and out of the graph', () => {
+  const component_ = component()
+  const record = component_.records.find((candidate) => candidate.kind === 'platform-component') as PlatformComponent
+  const raise = (variants: string[]) => {
+    const mapping = { ...kit, variants: Object.fromEntries(Object.entries(kit.variants).filter(([name]) => variants.includes(name))) }
+    const design = readFigmaComponentSet(figma(variants), mapping, 'semantic:button', variants.join('-'))
+    return assemble(fragment([semantic, design.evidence, ...compareDesignKit(semantic, design, record, 'evidence:lib.button.variants')]), component())
+  }
+  const decision: Decision = {
+    id: 'decision:button.android.neutral',
+    kind: 'decision',
+    title: 'Drop Neutral from the kit',
+    conflictId: 'conflict:button.android.neutral',
+    outcome: 'update-design',
+    classification: 'outdated-design-source',
+    alignment: 'awaiting-adoption',
+    decidedBy: { role: 'design', who: 'ds' },
+    at: '2026-10-11T00:00:00Z',
+    rationale: 'The library has no neutral style.',
+    evidenceIds: ['evidence:lib.button.variants'],
+  }
+  const adoption: Adoption = {
+    id: 'adoption:button.android.neutral',
+    kind: 'adoption',
+    title: 'Kit drops Neutral',
+    decisionId: decision.id,
+    carriedBy: { tool: 'figma', revision: 'Primary' },
+    adoptedBy: { role: 'design', who: 'ds' },
+    at: '2026-10-12T00:00:00Z',
+  }
+  const file: DecisionFile = { schema: 'civic.decisions/0', decisions: [decision], adoptions: [adoption] }
+
+  // Still raised: the adoption is applied and waits for the import to read the adopted kit.
+  const before = applyDecisions(raise(['Primary', 'Neutral']), file)
+  assert.deepEqual(validateGraph(before).filter((issue) => issue.severity === 'error'), [])
+  assert.equal(conflictState(indexGraph(before), indexGraph(before).get('conflict:button.android.neutral') as ContractConflict).fix?.stage, 'adopted')
+
+  // The kit no longer draws Neutral: the conflict is gone, and the adopted decision settles it.
+  const after = raise(['Primary'])
+  const settled = applyDecisions(after, file)
+  assert.deepEqual(validateGraph(settled).filter((issue) => issue.severity === 'error'), [])
+  assert.ok(!settled.records.some((item) => item.kind === 'decision' || item.kind === 'adoption'))
+  assert.deepEqual(settledConflicts(after, file), [{ conflictId: 'conflict:button.android.neutral', decisionId: decision.id, adoptionIds: [adoption.id] }])
+
+  // Without the adoption, a vanished conflict's decision is stale.
+  assert.throws(() => applyDecisions(after, { ...file, adoptions: [] }), /record the revision that carries it with civic adopt/)
 })
