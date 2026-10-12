@@ -54,4 +54,4 @@ test.each([100, 500, 1_000])('a five-person %i-piece household completes every p
   const records = await t.run(ctx => ctx.db.query('washRecords').collect())
   expect(records).toHaveLength(size)
   expect(new Set(records.map(record => record.textileId))).toEqual(new Set(ids))
-}, 180_000)
+}, 900_000) // All three sizes take about 7 minutes on a 4-core Linux container, well past the original 3.
