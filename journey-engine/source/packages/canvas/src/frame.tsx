@@ -4,6 +4,7 @@ import type { AdapterContext, AdapterState, AdapterScenario, ReviewConfig, Revie
 import { readFixtureFields } from './journey'
 import { createRuntimeBridge } from './runtime-bridge'
 import { openRuntimeSession, routeFetch } from './runtime-session'
+import { routeServerFunctions } from './server-functions'
 import { observeRuntime, replayGesture, runtimeFields, runtimeView, trackCloseWatchers } from './runtime-dom'
 import type { RuntimeBridge, RuntimeRecording } from './runtime-bridge'
 
@@ -99,7 +100,9 @@ try {
     async startRuntime(options) {
       if (!project.runtime) throw Error('This project declares no runtime entry. Add adapter.runtime to its civic.project.json.')
       const run = await openRuntimeSession(context)
-      const restore = routeFetch(run.transport, options.routes ?? ['/api/'])
+      const restoreFetch = routeFetch(run.transport, options.routes ?? ['/api/'])
+      const restoreServerFunctions = routeServerFunctions(run.transport)
+      const restore = () => { restoreServerFunctions(); restoreFetch() }
       try {
         const bridge = context.connectRuntime({
           seed: run.seed, now: run.session.now, captureInputs: options.captureInputs ?? 'synthetic',

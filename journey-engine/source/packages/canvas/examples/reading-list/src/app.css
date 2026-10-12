@@ -1,0 +1,9 @@
+.reading-screen { font: 16px/1.5 system-ui, sans-serif; padding: 24px; display: grid; gap: 12px; max-width: 420px; }
+.reading-screen h1 { font-size: 24px; margin: 0; }
+.reading-screen ul { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+.reading-screen li span { color: #555; font-size: 14px; }
+.reading-screen label { display: grid; gap: 4px; }
+.reading-screen li label { display: inline; }
+.reading-screen input:not([type]) { font: inherit; padding: 8px; }
+.reading-screen button { font: inherit; padding: 8px 12px; justify-self: start; }
+.reading-screen [role='status'] { color: #a40000; min-height: 1.5em; margin: 0; }

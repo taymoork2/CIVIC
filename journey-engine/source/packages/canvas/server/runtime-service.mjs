@@ -10,6 +10,7 @@ const reject = (message, status = 400) => { throw Object.assign(Error(message), 
  * code, never supplied by a request. It exports one of:
  *   createRuntime(seed)       -> { seed, state(), recover?(), execute(kind, name, args) }   function backends (Laundry's Convex)
  *   createFetchRuntime(seed)  -> { seed?, state?(), fetch(request) }                       fetch-handler backends (HTTP APIs)
+ *   createServerFnRuntime(seed) -> { seed?, state?(), context?(), fetch?(request) }     TanStack Start server functions
  * A host adds what its backend needs to load: `root` (where modules resolve), extra `aliases`,
  * and `modules(project)`, generated virtual modules such as a backend's function index.
  */
@@ -47,7 +48,7 @@ export function runtimeService(project, source, { root = project.manifestRoot, a
         const timeZone = input.timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone
         try { if (typeof timeZone !== 'string' || timeZone.length > 100) throw Error(); new Intl.DateTimeFormat('en', { timeZone }) } catch { reject('Invalid run time zone') }
         const id = randomUUID(), revision = source()
-        const worker = new Worker(new URL('./runtime-worker.mjs', import.meta.url), { workerData: { entry: project.runtimeEntry, aliases: { ...project.aliases, ...aliases }, root, virtual: await virtual, namespace: id, now, timeZone, persona, scenario: input.scenario, role: input.role, condition: input.condition }, resourceLimits: { maxOldGenerationSizeMb: 256 } })
+        const worker = new Worker(new URL('./runtime-worker.mjs', import.meta.url), { workerData: { entry: project.runtimeEntry, appRoot: project.root, aliases: { ...project.aliases, ...aliases }, root, virtual: await virtual, namespace: id, now, timeZone, persona, scenario: input.scenario, role: input.role, condition: input.condition }, resourceLimits: { maxOldGenerationSizeMb: 256 } })
         const run = { id, worker, source: revision, used: Date.now(), queue: Promise.resolve() }
         runs.set(id, run)
         try { const seed = await call(run, { action: 'start' }); if (source() !== revision) reject('Source changed while creating the run.', 409); return { id, seed, now, source: revision, project: project.key } }
