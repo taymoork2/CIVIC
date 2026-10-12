@@ -23,6 +23,7 @@
     "test",
     "../demo/fluent-button/*.ts",
     "../demo/card/*.ts",
-    "../projects/laundry/*.ts"
+    "../projects/laundry/*.ts",
+    "../projects/discovery-app/*.ts"
   ]
 }

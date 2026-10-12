@@ -23,6 +23,7 @@ export const FINDING_KINDS = [
   'platform-only-variant',
   'no-run-evidence',
   'unconfirmed-link',
+  'unconfirmed-target',
   'approved-exception',
 ] as const
 export type FindingKind = (typeof FINDING_KINDS)[number]
@@ -154,6 +155,12 @@ export function checkGraph(label: string, graph: Graph, options: CheckOptions): 
   measure('Journey screens that are dead ends', deadEnds, screens)
   measure('Journey screens unreachable', unreachable, screens)
 
+  // Discovered screens (D34) wait for a person to confirm them; until then they don't count.
+  const targets = graph.ofKind('target').filter((target) => target.scale !== 'journey')
+  const discovered = targets.filter((target) => target.presence === 'discovered')
+  for (const target of discovered) add('unconfirmed-target', target.id, `${target.title} was discovered${target.source ? ` by ${target.source.importer}` : ''}; a person confirms it before it counts.`, target.owners ?? [])
+  measure('Screens awaiting confirmation', discovered.length, targets.length)
+
   // The contract export's gaps that the checks above don't already cover.
   const fromGaps = new Set<FindingKind>(['missing-variant', 'platform-only-variant', 'no-run-evidence', 'unconfirmed-link'])
   for (const gap of gapsIn(graph)) {
@@ -259,7 +266,7 @@ export function renderCheck(report: CheckReport): string {
   }
   if (report.advisory.length > 0) {
     const counts = FINDING_KINDS.map((kind) => [kind, report.advisory.filter((item) => item.kind === kind).length] as const).filter(([, count]) => count > 0)
-    lines.push('## Advisory', '', `Reported, not blocking: ${counts.map(([kind, count]) => `${count} ${kind}`).join(', ')}. \`civic gaps\` lists them with owners.`, '')
+    lines.push('## Advisory', '', `Reported, not blocking: ${counts.map(([kind, count]) => `${count} ${kind}`).join(', ')}. \`civic gaps\` lists the contract gaps among them with owners.`, '')
   }
   return lines.join('\n').trimEnd()
 }

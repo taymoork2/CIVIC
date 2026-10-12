@@ -1,0 +1,6 @@
+{
+  "name": "@civic/project-discovery-app",
+  "private": true,
+  "type": "module",
+  "description": "The journey engine's manifest-free discovery example, onboarded by CIVIC's crawl (D34). Captured by node capture.ts, built by node build.ts."
+}

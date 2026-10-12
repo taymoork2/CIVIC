@@ -1,0 +1,23 @@
+{
+  "name": "@civic/crawl",
+  "private": true,
+  "type": "module",
+  "description": "CIVIC's crawl loop (D34): breadth-first discovery of an existing app's states through a platform driver, Playwright for web. Destructive actions are blocked and inputs allowlisted. No model calls.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "bin": {
+    "civic-crawl": "./src/cli.ts"
+  },
+  "scripts": {
+    "check": "tsc --noEmit",
+    "test": "node --test \"test/**/*.test.ts\""
+  },
+  "dependencies": {
+    "playwright-core": "1.63.0"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.3",
+    "typescript": "7.0.2"
+  }
+}

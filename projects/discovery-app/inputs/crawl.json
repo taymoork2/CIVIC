@@ -1,0 +1,113 @@
+{
+  "schema": "civic.crawl/0",
+  "seed": "index.html",
+  "platform": "web",
+  "driver": "playwright-core",
+  "revision": "08350211daddb0a2df07eadf51585af76ff39123",
+  "states": [
+    {
+      "id": "index",
+      "location": "index.html",
+      "title": "Notes",
+      "hash": "55aa699093476ce3",
+      "depth": 0,
+      "path": []
+    },
+    {
+      "id": "draft",
+      "location": "draft.html",
+      "title": "Compose",
+      "hash": "d79b18b2d51a7493",
+      "depth": 1,
+      "path": [
+        {
+          "role": "link",
+          "name": "Write note"
+        }
+      ]
+    },
+    {
+      "id": "archive",
+      "location": "archive.html",
+      "title": "Archive",
+      "hash": "2e4f035794b11e85",
+      "depth": 1,
+      "path": [
+        {
+          "role": "link",
+          "name": "Browse archive"
+        }
+      ]
+    },
+    {
+      "id": "saved",
+      "location": "saved.html",
+      "title": "Saved",
+      "hash": "7a230ab4730e70bb",
+      "depth": 2,
+      "path": [
+        {
+          "role": "link",
+          "name": "Write note"
+        },
+        {
+          "role": "button",
+          "name": "Save note"
+        }
+      ]
+    }
+  ],
+  "transitions": [
+    {
+      "from": "index",
+      "to": "draft",
+      "action": {
+        "role": "link",
+        "name": "Write note"
+      }
+    },
+    {
+      "from": "index",
+      "to": "archive",
+      "action": {
+        "role": "link",
+        "name": "Browse archive"
+      }
+    },
+    {
+      "from": "draft",
+      "to": "saved",
+      "action": {
+        "role": "button",
+        "name": "Save note"
+      }
+    },
+    {
+      "from": "draft",
+      "to": "index",
+      "action": {
+        "role": "link",
+        "name": "Back home"
+      }
+    },
+    {
+      "from": "archive",
+      "to": "index",
+      "action": {
+        "role": "link",
+        "name": "Back home"
+      }
+    },
+    {
+      "from": "saved",
+      "to": "index",
+      "action": {
+        "role": "link",
+        "name": "Back home"
+      }
+    }
+  ],
+  "blocked": [],
+  "unreached": [],
+  "truncated": false
+}

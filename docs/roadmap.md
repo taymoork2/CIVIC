@@ -78,6 +78,8 @@ Acceptance: a second small web app connects without importing Laundry code, unsu
 
 Progress, 2026-10-12: the v6 handoff of the journey engine brings a project manifest (`rehearsal.project.json`), a project picker, static discovery for existing apps with a confirm step, and two example apps that don't import Laundry ([v6 notes](synthesis-v0-import.md#v6-handoff-update)). What step 4 still needs: the canvas reading the CIVIC graph back (the [Laundry graph](../projects/laundry) now carries the engine's journeys into it), crawl-first discovery (D34), and the frame walk (D33).
 
+Progress, 2026-10-12: crawl-first discovery is built for web. CIVIC's [crawl loop](../crawl) explores an app breadth first on Playwright, groups states by accessibility tree, blocks destructive actions and non-GET requests, and fills only allowlisted inputs. It onboarded the engine's manifest-free example as a [second app](../projects/discovery-app): 4 screens and 6 paths, all discovered until a person confirms them in a confirmation file, which can also declare journeys for the shape checks. The gate reports unconfirmed screens as advisory. Still to come: an Appium driver for native, the canvas reading the graph, and the frame walk (D33).
+
 ## 5. Identity, permissions, and multiplayer
 
 Real identities, scoped permissions, and versioned shared records, following the spec's [multiplayer boundary](product-spec.md#multiplayer-and-ownership). The single local access key and the portal's collaborator access are not this model.

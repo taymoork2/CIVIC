@@ -9,6 +9,8 @@ import {
   readDtcgTokens,
   readFigmaComponentSet,
   readPlatformComponent,
+  applyConfirmations,
+  readCrawl,
   readJourneyIndex,
   readPlaywrightReport,
   type DesignKitMapping,
@@ -247,6 +249,40 @@ test('reads the journey engine\'s review index into screens, journeys, paths and
   assert.deepEqual([fromSource?.route, fromSource?.source?.path, fromSource?.source?.anchor], ['/add', 'apps/web/src/home.tsx', 'renderLink'])
   assert.deepEqual(checks.get('apps/web/e2e/intake.spec.ts'), ['target:app.intake.type', 'target:app.intake.final'])
   assert.throws(() => readJourneyIndex({ scenarios: [] } as never, { prefix: 'app', platform: 'web', owners: [], path: 'x' }), /review index/)
+})
+
+test('a crawl comes in discovered and proposed, and counts only once a person confirms it', () => {
+  const crawl = {
+    schema: 'civic.crawl/0', seed: 'index.html', platform: 'web', driver: 'playwright-core', revision: 'abc123',
+    states: [{ id: 'index', location: 'index.html', title: 'Notes', hash: 'h1' }, { id: 'draft', location: 'draft.html', title: 'Compose', hash: 'h2' }],
+    transitions: [{ from: 'index', to: 'draft', action: { role: 'link', name: 'Write note' } }, { from: 'draft', to: 'index', action: { role: 'link', name: 'Back home' } }],
+  }
+  const raised = assemble(readCrawl(crawl, { prefix: 'notes', owners: [{ role: 'engineering', who: 'eng' }], path: 'crawl.json' }))
+  assert.deepEqual(validateGraph(raised).filter((issue) => issue.severity === 'error'), [])
+  assert.deepEqual(raised.records.map((record) => [record.id, record.kind === 'target' && record.presence]), [['target:notes.draft', 'discovered'], ['target:notes.index', 'discovered']])
+  assert.deepEqual(raised.links.map((link) => [link.action, link.status]), [['Back home', 'proposed'], ['Write note', 'proposed']])
+  assert.throws(() => readCrawl({ schema: 'other' }, { prefix: 'notes', owners: [], path: 'x' }), /civic.crawl/)
+
+  const file = {
+    schema: 'civic.confirmations/0' as const, by: { role: 'product-management' as const, who: 'pm' }, at: '2026-10-12',
+    screens: ['target:notes.index', 'target:notes.draft'],
+    paths: [{ from: 'target:notes.index', to: 'target:notes.draft', action: 'Write note' }],
+    journeys: [{ id: 'target:notes.journey.write', title: 'Write a note', entry: ['target:notes.index'], exits: ['target:notes.draft'], screens: ['target:notes.index', 'target:notes.draft'] }],
+  }
+  const applied = applyConfirmations(raised, file, 'confirmations.json', JSON.stringify(file))
+  const confirmed = assemble(fragment(applied.records, applied.links))
+  assert.deepEqual(validateGraph(confirmed).filter((issue) => issue.severity === 'error'), [])
+  const presence = Object.fromEntries(confirmed.records.map((record) => [record.id, record.kind === 'target' && record.presence]))
+  assert.deepEqual(presence, { 'target:notes.draft': 'expected', 'target:notes.index': 'expected', 'target:notes.journey.write': 'expected' })
+  const statuses = confirmed.links.map((link) => [link.relation, link.action ?? link.to, link.status])
+  assert.deepEqual(statuses, [
+    ['navigates', 'Back home', 'proposed'],
+    ['navigates', 'Write note', 'declared'],
+    ['contains', 'target:notes.draft', 'declared'],
+    ['contains', 'target:notes.index', 'declared'],
+  ])
+  assert.throws(() => applyConfirmations(raised, { ...file, screens: ['target:notes.gone'], journeys: [] }, 'c.json', ''), /did not find: target:notes.gone/)
+  assert.throws(() => applyConfirmations(raised, { ...file, screens: ['target:notes.index'] }, 'c.json', ''), /not a confirmed screen/)
 })
 
 test('reads DTCG tokens with inherited types and nested paths', () => {
