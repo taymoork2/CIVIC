@@ -17,6 +17,7 @@ import {
   type RequestStatus,
   type WorkRequest,
 } from '../../graph/src/index.ts'
+import { ForbiddenError, loadAccess, scopesOf, type AccessPolicy, type Scope } from './access.ts'
 import { idPath, revisionOf, type Checkout } from './git.ts'
 import { actorId, ensureActor, type Identity } from './identity.ts'
 import type { Store } from './store.ts'
@@ -27,11 +28,19 @@ export interface Context {
   checkout: Checkout
   identity: Identity
   now?: () => Date
+  /** The access policy (roadmap step 5). Left out, it is read from the default branch; null means none. */
+  access?: AccessPolicy | null
 }
 
 const DEFAULT_LEASE_MINUTES = 120
 
 const nowOf = (context: Context) => (context.now ?? (() => new Date()))()
+
+/** Refuses an operation the access policy doesn't give this identity's person. */
+export function allow(context: Context, scope: Scope, what: string) {
+  const policy = context.access === undefined ? loadAccess(context.checkout) : (context.access ?? undefined)
+  if (!scopesOf(policy, context.identity).has(scope)) throw new ForbiddenError(context.identity, scope, what)
+}
 
 // ---------------------------------------------------------------------------
 // Lines (D36)
@@ -91,6 +100,7 @@ function upsertLine(document: GraphDocument, line: Line) {
  * CIVIC's re-capture can sign in. The key itself is never copied into the store.
  */
 export function registerPreview(context: Context, url: string, bearerFile?: string): Line {
+  allow(context, 'write', 'register a preview')
   const origin = new URL(url).origin
   if (bearerFile) context.store.setPreviewAuth(origin, bearerFile)
   return context.store.transact((document) => {
@@ -138,6 +148,7 @@ export interface AnnotateInput {
  * product to another revision until someone anchors it.
  */
 export function annotate(context: Context, input: AnnotateInput): Annotation {
+  allow(context, 'write', 'annotate')
   const capture = input.image ? context.store.putCapture(input.image.bytes, input.image.mediaType) : undefined
   return context.store.transact((document) => {
     const writtenBy = ensureActor(document, context.identity)
@@ -185,6 +196,7 @@ export interface RequestInput {
 
 /** "Hand to agent": turns annotations into a work request any agent can claim. */
 export function createRequest(context: Context, input: RequestInput): WorkRequest {
+  allow(context, 'write', 'ask for work')
   return context.store.transact((document) => {
     const by = ensureActor(document, context.identity)
     ensureLines(document, context.checkout)
@@ -213,6 +225,8 @@ export function createRequest(context: Context, input: RequestInput): WorkReques
       fixes: [],
       comments: [],
       history: [{ status: 'open', by, at }],
+      version: 1,
+      changed: { by, at, what: 'request' },
     }
     document.records.push(request)
     return request
@@ -252,6 +266,7 @@ export interface ListFilter {
 
 /** Open work first, then by when it was asked for. */
 export function listRequests(context: Context, filter: ListFilter = {}): RequestSummary[] {
+  allow(context, 'read', 'read work requests')
   const document = context.store.read()
   const now = nowOf(context)
   const order: RequestStatus[] = ['reopened', 'open', 'claimed', 'fix-ready', 'resolved']
@@ -264,8 +279,9 @@ export function listRequests(context: Context, filter: ListFilter = {}): Request
 }
 
 export function getRequest(context: Context, id: string): RequestSummary {
+  allow(context, 'read', 'read work requests')
   const document = context.store.read()
-  return summarize(document, find<WorkRequest>(document, resolveId(document, id, 'request'), 'work-request'), nowOf(context))
+  return summarize(document, find<WorkRequest>(document, resolveId(document, splitVersion(id).id, 'request'), 'work-request'), nowOf(context))
 }
 
 /**
@@ -274,7 +290,7 @@ export function getRequest(context: Context, id: string): RequestSummary {
  * the holder. The same actor can renew its own claim.
  */
 export function claim(context: Context, id: string, leaseMinutes = DEFAULT_LEASE_MINUTES): WorkRequest {
-  return mutateRequest(context, id, (request, by, at, document) => {
+  return mutateRequest(context, id, 'claim', 'write', (request, by, at, document) => {
     const now = nowOf(context)
     if (request.status === 'fix-ready') throw new Error(`${request.id} already has a fix waiting for review; reopen it first.`)
     if (request.status === 'resolved') throw new Error(`${request.id} is resolved; a person can reopen it.`)
@@ -289,7 +305,7 @@ export function claim(context: Context, id: string, leaseMinutes = DEFAULT_LEASE
 
 /** Gives a claim back, so another agent can take the request. */
 export function release(context: Context, id: string): WorkRequest {
-  return mutateRequest(context, id, (request, by, at) => {
+  return mutateRequest(context, id, 'release', 'write', (request, by, at) => {
     if (request.status !== 'claimed' || request.claim?.by !== by) throw new Error(`${request.id} is not claimed by ${by}.`)
     const reopened = request.history.some((event) => event.status === 'reopened')
     request.status = reopened ? 'reopened' : 'open'
@@ -299,7 +315,7 @@ export function release(context: Context, id: string): WorkRequest {
 }
 
 export function comment(context: Context, id: string, text: string): WorkRequest {
-  return mutateRequest(context, id, (request, by, at) => {
+  return mutateRequest(context, id, 'comment', 'write', (request, by, at) => {
     request.comments.push({ by, at, text })
   })
 }
@@ -317,7 +333,7 @@ export interface FixInput {
  * The reporter must hold the claim, so two agents can't report over each other.
  */
 export function reportFix(context: Context, id: string, input: FixInput = {}): WorkRequest {
-  return mutateRequest(context, id, (request, by, at, document) => {
+  return mutateRequest(context, id, 'report-fix', 'write', (request, by, at, document) => {
     if (request.status !== 'claimed' || request.claim?.by !== by) {
       throw new Error(`Claim ${request.id} before reporting a fix${request.claim ? `; it is claimed by ${request.claim.by}` : ''}.`)
     }
@@ -336,14 +352,14 @@ export function reportFix(context: Context, id: string, input: FixInput = {}): W
 
 /** Adds an acceptance check. A check an agent adds counts toward Auto only once a person accepts it. */
 export function addCheck(context: Context, id: string, command: string): WorkRequest {
-  return mutateRequest(context, id, (request, by) => {
+  return mutateRequest(context, id, 'add-check', 'write', (request, by) => {
     request.acceptance.push({ command, writtenBy: by })
   })
 }
 
 /** A person accepts an agent's check, by its position in the request's acceptance list (from 1). */
 export function acceptCheck(context: Context, id: string, position: number): WorkRequest {
-  return mutateRequest(context, id, (request, by) => {
+  return mutateRequest(context, id, 'accept-check', 'approve', (request, by) => {
     const check = request.acceptance[position - 1]
     if (!check) throw new Error(`${request.id} has no acceptance check ${position}.`)
     check.acceptedBy = by
@@ -356,15 +372,17 @@ export function acceptCheck(context: Context, id: string, position: number): Wor
  * the person who delegated the fix. A request with no reported fix needs a note saying why.
  */
 export function resolve(context: Context, ids: string[], note?: string): WorkRequest[] {
+  allow(context, 'resolve', 'resolve work requests')
   return context.store.transact((document) => {
     const by = ensureActor(document, context.identity)
     const at = nowOf(context).toISOString()
     return ids.map((id) => {
-      const request = find<WorkRequest>(document, resolveId(document, id, 'request'), 'work-request')
+      const request = findVersioned(document, id)
       if (request.status === 'resolved') throw new Error(`${request.id} is already resolved.`)
       if (request.status !== 'fix-ready' && !note) throw new Error(`${request.id} has no fix waiting for review; say why it is resolved with --note.`)
       request.status = 'resolved'
       request.history.push({ status: 'resolved', by, at, ...(note ? { note } : {}) })
+      bump(request, by, at, 'resolve')
       return structuredClone(request)
     })
   })
@@ -372,7 +390,7 @@ export function resolve(context: Context, ids: string[], note?: string): WorkReq
 
 /** Sends a fix back, or reopens a resolved request; the note goes to whoever picks it up. */
 export function reopen(context: Context, id: string, note: string): WorkRequest {
-  return mutateRequest(context, id, (request, by, at) => {
+  return mutateRequest(context, id, 'reopen', 'resolve', (request, by, at) => {
     if (request.status !== 'resolved' && request.status !== 'fix-ready') throw new Error(`${request.id} is ${request.status}; only a fix waiting for review or a resolved request can be reopened.`)
     request.status = 'reopened'
     request.history.push({ status: 'reopened', by, at, note })
@@ -382,7 +400,7 @@ export function reopen(context: Context, id: string, note: string): WorkRequest 
 
 /** A person sends a request to a stricter lane than its rules give. */
 export function escalate(context: Context, id: string, lane: 'batch-review' | 'owner-sign-off'): WorkRequest {
-  return mutateRequest(context, id, (request) => {
+  return mutateRequest(context, id, 'escalate', 'approve', (request) => {
     request.escalatedTo = lane
   })
 }
@@ -394,13 +412,56 @@ export function reviewQueue(context: Context): RequestSummary[] {
 
 // ---------------------------------------------------------------------------
 
-function mutateRequest(context: Context, id: string, change: (request: WorkRequest, by: string, at: string, document: GraphDocument) => void): WorkRequest {
+function mutateRequest(context: Context, id: string, what: string, scope: Scope, change: (request: WorkRequest, by: string, at: string, document: GraphDocument) => void): WorkRequest {
+  allow(context, scope, what.replace('-', ' '))
   return context.store.transact((document) => {
     const by = ensureActor(document, context.identity)
-    const request = find<WorkRequest>(document, resolveId(document, id, 'request'), 'work-request')
-    change(request, by, nowOf(context).toISOString(), document)
+    const at = nowOf(context).toISOString()
+    const request = findVersioned(document, id)
+    change(request, by, at, document)
+    bump(request, by, at, what)
     return structuredClone(request)
   })
+}
+
+/**
+ * A request ID may carry the version it was read at, as `<id>@<version>` (roadmap step 5).
+ * The write is then refused if anyone changed the request since, naming the change, so a
+ * stale view never overwrites a newer fix, claim or comment. Without one, the write applies
+ * to the request as it is now.
+ */
+export function splitVersion(id: string): { id: string; expected?: number } {
+  const match = /^(.+)@(\d+)$/.exec(id)
+  return match ? { id: match[1]!, expected: Number(match[2]) } : { id }
+}
+
+export function versionOf(request: WorkRequest): number {
+  return request.version ?? 1
+}
+
+function findVersioned(document: GraphDocument, id: string): WorkRequest {
+  const { id: bare, expected } = splitVersion(id)
+  const request = find<WorkRequest>(document, resolveId(document, bare, 'request'), 'work-request')
+  if (expected !== undefined && expected !== versionOf(request)) throw new ConflictError(request, expected)
+  return request
+}
+
+/** Counts a change and says who made it. CIVIC's re-capture counts too. */
+export function bump(request: WorkRequest, by: string, at: string, what: string) {
+  request.version = versionOf(request) + 1
+  request.changed = { by, at, what }
+}
+
+/** A write based on an older version of a request. Nothing was written; read it again and retry. */
+export class ConflictError extends Error {
+  readonly status = 409
+  constructor(request: WorkRequest, expected: number) {
+    const current = versionOf(request)
+    const change = request.changed ? `: ${request.changed.what} by ${request.changed.by} at ${request.changed.at}` : ''
+    const short = request.id.slice('request:'.length, 'request:'.length + 8)
+    super(`${request.id} is at version ${current}, not ${expected}${change}. Nothing was written. Read it again with \`civic show ${short}\`, then retry with ${short}@${current}.`)
+    this.name = 'ConflictError'
+  }
 }
 
 export function find<T>(document: GraphDocument, id: string, kind: string): T {

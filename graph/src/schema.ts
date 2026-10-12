@@ -526,6 +526,14 @@ export interface WorkRequest extends RecordBase {
   comments: { by: string; at: string; text: string }[]
   /** Every status change, oldest first. The last entry's status is the current status. */
   history: RequestEvent[]
+  /**
+   * Counts the changes to this request, from 1 (roadmap step 5). A write that names the
+   * version it was based on is refused once someone else has changed the request, so a
+   * person never resolves a fix they didn't see. Absent on requests written before versions.
+   */
+  version?: number
+  /** The latest change: who made it, when, and which operation it was. */
+  changed?: { by: string; at: string; what: string }
 }
 
 export type GraphRecord =

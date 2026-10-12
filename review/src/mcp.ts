@@ -23,7 +23,7 @@ type Content = { type: 'text'; text: string } | { type: 'image'; data: string; m
 type Args = Record<string, unknown>
 
 const cwdProperty = { cwd: { type: 'string', description: 'The checkout (worktree) you are working in. Its branch is the line your claims and fixes are recorded on.' } }
-const id = { id: { type: 'string', description: 'Work request ID, or a unique prefix of it.' } }
+const id = { id: { type: 'string', description: 'Work request ID, or a unique prefix of it. End it with @<version>, as list_requests prints it, so a write is refused if someone changed the request since you read it.' } }
 
 export const TOOLS = [
   { name: 'list_requests', description: 'List CIVIC work requests with status, lane and claim holder. Open and reopened requests are claimable.', inputSchema: { type: 'object', properties: { ...cwdProperty, status: { type: 'array', items: { type: 'string', enum: ['open', 'claimed', 'fix-ready', 'resolved', 'reopened'] } } } } },

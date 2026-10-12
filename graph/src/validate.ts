@@ -336,6 +336,7 @@ function checkWorkRequest(
     }
   }
   for (const comment of request.comments) actorRef(at, 'comments.by', comment.by)
+  if (request.changed) actorRef(at, 'changed.by', request.changed.by)
   if (request.claim) {
     actorRef(at, 'claim.by', request.claim.by)
     ref(at, 'claim.line', request.claim.line, ['line'])
@@ -619,6 +620,14 @@ function checkReviewShape(kind: RecordKind, raw: Record<string, unknown>, at: st
       field.string('repro')
       field.string('requestedBy')
       field.oneOf('status', REQUEST_STATUSES)
+      field.optional('version', (value, path) => {
+        if (!Number.isInteger(value) || (value as number) < 1) error('shape', path, 'A version is a whole number from 1.')
+      })
+      field.optional('changed', (changed, path) => {
+        if (!isObject(changed)) return error('shape', path, 'Must be an object.')
+        const c = fieldChecker(changed, path, error)
+        for (const key of ['by', 'at', 'what']) c.string(key)
+      })
       field.optional('claim', (claim, path) => {
         if (!isObject(claim)) return error('shape', path, 'Must be an object.')
         const c = fieldChecker(claim, path, error)

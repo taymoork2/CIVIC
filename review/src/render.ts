@@ -1,5 +1,5 @@
 import { contextFor, renderWorkOrder, type Annotation, type GraphDocument, type Graph, type Platform, type WorkRequest } from '../../graph/src/index.ts'
-import { find, type RequestSummary } from './loop.ts'
+import { find, versionOf, type RequestSummary } from './loop.ts'
 import type { Store } from './store.ts'
 
 const STATUS: Record<WorkRequest['status'], string> = {
@@ -16,7 +16,7 @@ export function renderList(summaries: RequestSummary[]): string {
   if (summaries.length === 0) return 'No work requests.'
   return summaries
     .map(({ request, lane, claimedBy }) => {
-      const short = request.id.slice('request:'.length, 'request:'.length + 8)
+      const short = `${request.id.slice('request:'.length, 'request:'.length + 8)}@${versionOf(request)}`
       const holder = claimedBy ? ` · claimed by ${claimedBy} on ${request.claim!.line}` : ''
       return `${short}  ${STATUS[request.status].padEnd(20)} ${LANE[lane].padEnd(14)} ${request.title}${holder}`
     })
@@ -42,7 +42,7 @@ export function renderRequest(document: GraphDocument, summary: RequestSummary, 
     '',
     request.ask,
     '',
-    `- ID: \`${request.id}\``,
+    `- ID: \`${request.id}\`, version ${versionOf(request)}${request.changed ? ` (last change: ${request.changed.what} by ${request.changed.by} at ${request.changed.at})` : ''}`,
     `- Status: ${STATUS[request.status]}${claimedBy ? `, claimed by ${claimedBy} on ${request.claim!.line} until ${request.claim!.expires}` : ''}`,
     `- Lane: ${LANE[lane]}${request.intent === 'change' ? ' (a change to intent or behavior, so a Proposal)' : ''}${request.risk === 'high' ? ', high risk' : ''}`,
     `- Asked by ${request.requestedBy}${request.owners?.length ? `; owners ${request.owners.map((owner) => `${owner.who} (${owner.role})`).join(', ')}` : ''}`,

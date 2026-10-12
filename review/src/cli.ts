@@ -9,6 +9,7 @@ import { mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { extname, join, resolve as resolvePath } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { isAnchored, loadGraph, type Annotation, type CaptureRef, type EdgeRef, type GraphDocument, type Lane, type Owner, type Platform, type RequestStatus, type Role, PLATFORMS, ROLES, REQUEST_STATUSES } from '../../graph/src/index.ts'
+import { ACCESS_FILE, loadAccess, scopesOf } from './access.ts'
 import { readCheckout } from './git.ts'
 import { actorId, identityFromEnv } from './identity.ts'
 import {
@@ -52,7 +53,9 @@ const USAGE = `Usage (records are shared by every worktree of this repository):
   civic add-check <request> "<command>"           civic accept-check <request> <number>
   civic overlay [--port 4777]                     serves the capture overlay for dev and preview pages
   civic preview <url> [--bearer-file <file>]      civic lines [--json] | annotations [--line <id>] [--json] | whoami
-  annotate also takes --rect x,y,w,h [--rect-label <text>], --viewport <w>x<h> and --json; request takes --json.`
+  annotate also takes --rect x,y,w,h [--rect-label <text>], --viewport <w>x<h> and --json; request takes --json.
+  A <request> may end in @<version>, as civic requests and civic queue print it: the write is refused if the
+  request changed since. Who may read, write, approve and resolve comes from civic.access.json on the default branch.`
 
 const MEDIA: Record<string, CaptureRef['mediaType']> = { '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp' }
 
@@ -260,9 +263,12 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
       await new Promise<void>((resolve) => server.once('close', () => resolve()))
       return 0
     }
-    case 'whoami':
-      print(`${actorId(context.identity)} on ${lineIdFor(checkout)} at ${checkout.head}\nStore: ${store.dir}`)
+    case 'whoami': {
+      const policy = loadAccess(checkout)
+      const scopes = [...scopesOf(policy, context.identity)].join(', ') || 'none'
+      print(`${actorId(context.identity)} on ${lineIdFor(checkout)} at ${checkout.head}\nStore: ${store.dir}\nScopes: ${scopes}${policy ? ` (${ACCESS_FILE} on ${checkout.defaultBranch})` : ` (no ${ACCESS_FILE} on ${checkout.defaultBranch}, so every scope)`}`)
       return 0
+    }
     default:
       throw new UsageError(command ? `Unknown command: ${command}` : '')
   }
