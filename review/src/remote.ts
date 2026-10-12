@@ -3,6 +3,7 @@ import { mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { SCHEMA_VERSION, type GraphDocument } from '../../graph/src/index.ts'
+import { canonical } from './signing.ts'
 
 /**
  * Where a team's shared records live (roadmap step 5). Each person's local store syncs with
@@ -35,6 +36,10 @@ export interface RemoteSnapshot {
 
 export interface RemoteChange {
   revision: string
+  /** The revision it was made on top of. */
+  parent: string | undefined
+  /** The `ed25519:` signature over signedPayload(parent, after, actor), when the sync was signed. */
+  signature: string | undefined
   /** The actor the snapshot says made it. */
   actor: string | undefined
   before: GraphDocument
@@ -47,6 +52,8 @@ export interface OutgoingSnapshot {
   captures: Map<string, Uint8Array>
   actor: string
   summary: string
+  /** The sync's signature over signedPayload(base, document, actor). */
+  signature?: string
 }
 
 const EMPTY: GraphDocument = { schema: SCHEMA_VERSION, records: [], links: [] }
@@ -93,7 +100,14 @@ export class GitRefRemote implements RecordsRemote {
     return revisions.map((revision) => {
       const parent = this.tryGit('rev-parse', '--verify', '--quiet', `${revision}^`)
       const message = this.git([], 'log', '-1', '--format=%B', revision)
-      return { revision, actor: /^Civic-Actor: (.+)$/m.exec(message)?.[1]?.trim(), before: parent ? this.documentAt(parent) : EMPTY, after: this.documentAt(revision) }
+      return {
+        revision,
+        parent,
+        actor: /^Civic-Actor: (.+)$/m.exec(message)?.[1]?.trim(),
+        signature: /^Civic-Signature: (.+)$/m.exec(message)?.[1]?.trim(),
+        before: parent ? this.documentAt(parent) : EMPTY,
+        after: this.documentAt(revision),
+      }
     })
   }
 
@@ -106,14 +120,14 @@ export class GitRefRemote implements RecordsRemote {
     const env = { GIT_INDEX_FILE: join(scratch, 'index') }
     try {
       if (base) this.git([env], 'read-tree', base)
-      const records = this.git([], 'hash-object', '-w', '--stdin', { input: `${JSON.stringify(snapshot.document, null, 2)}\n` })
+      const records = this.git([], 'hash-object', '-w', '--stdin', { input: canonical(snapshot.document) })
       this.git([env], 'update-index', '--add', '--cacheinfo', `100644,${records},records.graph.json`)
       for (const [name, bytes] of snapshot.captures) {
         const blob = this.git([], 'hash-object', '-w', '--stdin', { input: bytes })
         this.git([env], 'update-index', '--add', '--cacheinfo', `100644,${blob},captures/${name}`)
       }
       const tree = this.git([env], 'write-tree')
-      const message = `${snapshot.summary}\n\nCivic-Actor: ${snapshot.actor}\n`
+      const message = `${snapshot.summary}\n\nCivic-Actor: ${snapshot.actor}\n${snapshot.signature ? `Civic-Signature: ${snapshot.signature}\n` : ''}`
       const commit = this.git([], 'commit-tree', tree, ...(base ? ['-p', base] : []), { input: message })
       try {
         this.git([], 'push', '--quiet', this.remote, `${commit}:${this.ref}`)

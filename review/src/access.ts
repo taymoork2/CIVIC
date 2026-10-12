@@ -18,6 +18,11 @@ export type Scope = (typeof SCOPES)[number]
 export interface AccessPolicy {
   people: Record<string, Scope[]>
   others: Scope[]
+  /**
+   * Each person's Ed25519 public keys, `ed25519:<base64>`. Once any are listed, every shared
+   * sync must be signed by a key of the person it names (`civic keygen` makes one).
+   */
+  keys: Record<string, string[]>
 }
 
 export const ACCESS_FILE = 'civic.access.json'
@@ -51,17 +56,29 @@ export function parseAccess(text: string): AccessPolicy {
     return value as Scope[]
   }
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) throw new Error(`${ACCESS_FILE} is an object with "people" and "others".`)
-  const { people = {}, others = ['read'] } = raw as { people?: unknown; others?: unknown }
+  const { people = {}, others = ['read'], keys = {} } = raw as { people?: unknown; others?: unknown; keys?: unknown }
   if (typeof people !== 'object' || people === null || Array.isArray(people)) throw new Error(`${ACCESS_FILE}: "people" maps each handle to its scopes.`)
+  if (typeof keys !== 'object' || keys === null || Array.isArray(keys)) throw new Error(`${ACCESS_FILE}: "keys" maps each handle to its public keys.`)
+  const keyList = (value: unknown, at: string): string[] => {
+    const valid = (key: unknown) => typeof key === 'string' && /^ed25519:[A-Za-z0-9+/]{43}=$/.test(key)
+    if (!Array.isArray(value) || !value.every(valid)) throw new Error(`${ACCESS_FILE}: ${at} is a list of ed25519:<base64> public keys, as civic keygen prints them.`)
+    return value as string[]
+  }
   return {
     people: Object.fromEntries(Object.entries(people).map(([handle, value]) => [handle, scopes(value, `people.${handle}`)])),
     others: scopes(others, 'others'),
+    keys: Object.fromEntries(Object.entries(keys).map(([handle, value]) => [handle, keyList(value, `keys.${handle}`)])),
   }
 }
 
 /** The person accountable for an identity: the person, or the person an agent acts for. */
 export function personOf(identity: Identity): string {
   return identity.type === 'person' ? identity.handle : identity.for
+}
+
+/** Whether shared syncs must be signed: once anyone has a key listed, everyone's must be. */
+export function signingRequired(policy: AccessPolicy | undefined): boolean {
+  return Object.values(policy?.keys ?? {}).some((keys) => keys.length > 0)
 }
 
 export function scopesOf(policy: AccessPolicy | undefined, identity: Identity): ReadonlySet<Scope> {

@@ -22,13 +22,21 @@ The merge goes record by record against the last snapshot this store shared:
 - Comments made on both sides at once are both kept.
 - Any other change made on both sides keeps the shared version and sets yours aside. `civic conflicts` lists them. `civic settle <record> --keep theirs` drops yours, and `--keep mine` puts yours back as a new change that the next sync shares. Keeping yours needs the resolve scope.
 
-Before merging, every shared change since the last sync is checked. Its person may change only what they, their agents, or CIVIC's re-capture wrote, with the scopes that `civic.access.json` gives them. Nobody deletes a record. If a sync breaks this, it is refused whole, the commit is named, and nothing is merged. The trailer is a claim rather than a proof; signed sync commits are the next step.
+Before merging, every shared change since the last sync is checked. Its person may change only what they, their agents, or CIVIC's re-capture wrote, with the scopes that `civic.access.json` gives them. Nobody deletes a record. If a sync breaks this, it is refused whole, the commit is named, and nothing is merged.
+
+The trailer alone is a claim. Signing makes it a proof. `civic keygen` writes an Ed25519 private key that stays on your machine (default `~/.config/civic/<handle>.ed25519.pem`), points `git config civic.signingKey` at it, and prints your public key. Add that key to `civic.access.json` on the default branch:
+
+```json
+{ "people": { "taymoor": ["read", "write", "approve", "resolve"] }, "keys": { "taymoor": ["ed25519:…"] } }
+```
+
+Once any key is listed, every sync must be signed. Each sync signs exactly what it shares: the revision it builds on, a SHA-256 of the records, and the person it names. A shared sync counts only when a key listed for that person verifies it. An unsigned sync, a sync signed by someone else's key, or a genuine signature copied onto other records is refused. `CIVIC_SIGNING_KEY` overrides the git config. The signature covers the snapshot rather than the git commit, so a hosted remote can carry the same proof. Signing uses Node's own crypto, so no gpg or ssh setup is needed.
 
 Sync talks to a `RecordsRemote` (`src/remote.ts`), so a hosted service can replace the git ref without changing anything else.
 
 ## Who is acting
 
-A person runs as themselves, using the handle from `git config civic.handle`, `CIVIC_PERSON`, or their git email. An agent runs with `CIVIC_AGENT=<harness>` and `CIVIC_FOR=<person>`, so every write it makes names the person it acts for (D35). This is local attribution, not authentication: anyone who can write the git directory can write the store. Authenticated identities come with signed sync commits (roadmap step 5).
+A person runs as themselves, using the handle from `git config civic.handle`, `CIVIC_PERSON`, or their git email. An agent runs with `CIVIC_AGENT=<harness>` and `CIVIC_FOR=<person>`, so every write it makes names the person it acts for (D35). This is local attribution, not authentication: anyone who can write the git directory can write the store. Shared records are authenticated by signed syncs ([below](#sharing-records-with-the-team)).
 
 What each person may do comes from `civic.access.json` on the default branch, so changing it is itself a reviewed, merged change, and an edit in a worktree grants nothing:
 

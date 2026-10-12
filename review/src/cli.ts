@@ -9,8 +9,10 @@ import { mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { extname, join, resolve as resolvePath } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { isAnchored, loadGraph, type Annotation, type CaptureRef, type EdgeRef, type GraphDocument, type Lane, type Owner, type Platform, type RequestStatus, type Role, PLATFORMS, ROLES, REQUEST_STATUSES } from '../../graph/src/index.ts'
-import { ACCESS_FILE, loadAccess, scopesOf } from './access.ts'
-import { readCheckout } from './git.ts'
+import { homedir } from 'node:os'
+import { ACCESS_FILE, loadAccess, personOf, scopesOf } from './access.ts'
+import { git, readCheckout } from './git.ts'
+import { generateKey, readKey } from './signing.ts'
 import { actorId, identityFromEnv } from './identity.ts'
 import {
   acceptCheck,
@@ -57,6 +59,7 @@ const USAGE = `Usage (records are shared by every worktree of this repository):
   civic preview <url> [--bearer-file <file>]      civic lines [--json] | annotations [--line <id>] [--json] | whoami
   civic sync [--remote origin] [--ref refs/civic/records]   share records with the team through a git ref
   civic conflicts [--json]                        civic settle <record> --keep mine|theirs
+  civic keygen [--out <file>]                     makes your signing key for civic sync
   annotate also takes --rect x,y,w,h [--rect-label <text>], --viewport <w>x<h> and --json; request takes --json.
   A <request> may end in @<version>, as civic requests and civic queue print it: the write is refused if the
   request changed since. Who may read, write, approve and resolve comes from civic.access.json on the default branch.`
@@ -268,13 +271,24 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
       return 0
     }
     case 'sync': {
-      const result = sync(context, new GitRefRemote(checkout.root, one('--remote') ?? 'origin', one('--ref') ?? DEFAULT_REF))
+      const keyFile = env.CIVIC_SIGNING_KEY ?? gitConfig(checkout.root, 'civic.signingKey')
+      const result = sync(context, new GitRefRemote(checkout.root, one('--remote') ?? 'origin', one('--ref') ?? DEFAULT_REF), keyFile ? { signingKey: readKey(resolvePath(checkout.root, keyFile)) } : {})
       if (has('--json')) {
         print(JSON.stringify(result, null, 2))
         return 0
       }
       print(result.revision ? `In sync with ${result.remote} at ${result.revision.slice(0, 12)}: ${result.pulled.length} record(s) from others, ${result.pushed.length} shared.` : `Nothing to share with ${result.remote} yet.`)
       for (const conflict of result.conflicts) print(`Conflict: ${conflict.id} changed here and on ${result.remote}. The shared version is kept; yours is set aside. civic settle ${conflict.id} --keep mine|theirs`)
+      return 0
+    }
+    case 'keygen': {
+      // The private key stays on this machine, outside the repository; only the public key is shared.
+      const handle = personOf(context.identity)
+      const file = resolvePath(cwd, one('--out') ?? join(homedir(), '.config', 'civic', `${handle}.ed25519.pem`))
+      const publicKey = generateKey(file)
+      git(checkout.root, 'config', 'civic.signingKey', file)
+      print(`Wrote your private key to ${file} and set git config civic.signingKey for this repository.`)
+      print(`Add your public key to civic.access.json on the default branch, under "keys": { "${handle}": ["${publicKey}"] }`)
       return 0
     }
     case 'conflicts': {
@@ -312,6 +326,14 @@ function renderLines(document: GraphDocument, current: string): string {
       return `${line.id === current ? '*' : ' '} ${line.id.padEnd(36)} ${line.type.padEnd(9)} ${line.status.padEnd(9)} ${line.head.slice(0, 7)}${claimed ? `  ${claimed} request(s) claimed` : ''}${previews ? `  ${previews}` : ''}`
     })
     .join('\n')
+}
+
+function gitConfig(root: string, key: string): string | undefined {
+  try {
+    return git(root, 'config', '--get', key) || undefined
+  } catch {
+    return undefined
+  }
 }
 
 function parse(args: string[]) {
