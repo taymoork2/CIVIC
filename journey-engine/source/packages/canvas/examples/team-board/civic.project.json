@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "id": "team-board-demo",
+  "name": "Team board",
+  "adapter": { "kind": "module", "entry": "src/preview.js", "runtime": "server/civic-runtime.js" },
+  "sources": ["src", "server"],
+  "scenarios": "civic.scenarios.json",
+  "coverage": "civic.coverage.json",
+  "identity": {
+    "signIn": { "path": "/api/session", "body": { "email": "{email}", "password": "{credential}" } },
+    "signedOut": ["signed-out"]
+  },
+  "personas": [
+    { "id": "lead", "label": "Team lead", "description": "Signs in as alex@team.example", "identity": { "id": "alex", "name": "Alex Rivera", "email": "alex@team.example" }, "seed": { "posts": ["Standup moves to 10:00", "Release notes are in the shared folder"] } },
+    { "id": "newcomer", "label": "New teammate", "description": "Signs in as sam@team.example", "identity": { "id": "sam", "name": "Sam Lee", "email": "sam@team.example" }, "seed": { "posts": [] } }
+  ],
+  "roles": [{ "id": "member", "label": "Member" }, { "id": "reader", "label": "Reader" }],
+  "conditions": [{ "id": "normal", "label": "Signed in" }, { "id": "signed-out", "label": "Signed out" }],
+  "navigation": ["Account", "Main"]
+}

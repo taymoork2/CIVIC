@@ -1,0 +1,4 @@
+{
+  "version": 1,
+  "targets": [{ "id": "board.sign-in", "kind": "journey", "title": "Sign in and post", "component": "src/app.js", "scenarios": ["board.sign-in", "board.home"], "acceptance": ["A signed-out visitor opening the board lands on sign in.", "Signing in with the persona's email shows their team's posts.", "A reader can read but not post.", "Signing out ends the session."] }]
+}
