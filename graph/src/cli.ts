@@ -10,6 +10,7 @@
 //   civic context <file> <semantic-id> --platform <p> [--variant <key>] [--json]
 //   civic gaps <file> [--scope <semantic-id>] [--platform <p>] [--json]
 //   civic completeness <file> <journey-id> [--json]
+//   civic walk <file> <journey-id> [--path <label,...>] [--html <file>] [--json]
 //   civic screen <target-id> [<file>...] [--config civic.check.json] [--today <date>] [--json]
 //   civic check [<file>...] [--config civic.check.json] [--baseline <file>] [--update-baseline] [--today <date>] [--since <ref>] [--json] [--post] [--comment <pr>]
 //   civic release [<file>...] --since <ref> [--config civic.check.json] [--json]
@@ -31,6 +32,7 @@ import { baselineFrom, checkDocument, compareToBaseline, DEFAULT_BLOCKING, FINDI
 import { changeBetween, renderChange, type ChangeReport, type GraphAtRevisions } from './change.ts'
 import { completenessOf, renderCompleteness } from './completeness.ts'
 import { releaseBreaks, releasesBetween, renderReleases } from './release.ts'
+import { frameWalk, renderWalk, renderWalkPage, walkPath } from './walk.ts'
 import {
   ALIGNMENT_FOR,
   decisionFileRecords,
@@ -126,6 +128,25 @@ async function main(): Promise<number> {
     const graph = await loadGraph(args[0]!)
     const result = completenessOf(graph, args[1]!)
     console.log(args.includes('--json') ? JSON.stringify(result, null, 2) : renderCompleteness(graph, result))
+    return 0
+  }
+  if (command === 'walk' && args.length >= 2) {
+    const graph = await loadGraph(args[0]!)
+    const walk = frameWalk(graph, args[1]!)
+    const path = option('--path')
+    if (path !== undefined) {
+      const result = walkPath(walk, path.split(',').map((label) => label.trim()).filter(Boolean))
+      for (const id of result.visited) console.log(walk.frames.find((item) => item.id === id)?.title ?? id)
+      if (result.stopped) console.error(result.stopped)
+      return result.stopped ? 1 : 0
+    }
+    const html = option('--html')
+    if (html) {
+      writeFileSync(html, renderWalkPage(walk))
+      console.log(`Wrote the frame walk for ${walk.title} to ${html}. ${walk.label}`)
+      return 0
+    }
+    console.log(args.includes('--json') ? JSON.stringify(walk, null, 2) : renderWalk(walk))
     return 0
   }
   if (command === 'check') return check()
@@ -659,6 +680,7 @@ function usage(problem?: string): number {
       '  civic context <file> <semantic-id> --platform <p> [--variant <key>] [--json]',
       '  civic gaps <file> [--scope <semantic-id>] [--platform <p>] [--json]',
       '  civic completeness <file> <journey-id> [--json]',
+      '  civic walk <file> <journey-id> [--path <label,...>] [--html <file>] [--json]',
       '  civic screen <target-id> [<file>...] [--config civic.check.json] [--today <date>] [--json]',
       '  civic check [<file>...] [--config civic.check.json] [--baseline <file>] [--update-baseline] [--today <date>] [--since <ref>] [--json] [--post] [--comment <pr>]',
       '  civic release [<file>...] --since <ref> [--config civic.check.json] [--json]',
