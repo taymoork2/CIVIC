@@ -117,6 +117,18 @@ civic close <decisions.json> collab:ambiguity.button --graph <file> --by design:
   [--records decision:...] [--changes git:4f2a9c1] [--withdraw]
 ```
 
+### Alignment: `civic alignment`
+
+`civic alignment <file> [--scope <semantic-id>] [--today <date>]` gives each semantic component exactly one [alignment state](../docs/product-spec.md#alignment-states) on each platform that implements it ([`src/alignment.ts`](src/alignment.ts)). The state is read from the records, never guessed, and the most severe state any record gives wins:
+
+- **Unreviewed drift:** an open conflict, a decided fix that failed or regressed, an exception past its end date, or failing evidence.
+- **Unknown / evidence stale:** no evidence about that platform at all, or stale evidence. A platform with no evidence is never aligned.
+- **Awaiting adoption:** a decided conflict whose fix isn't verified yet.
+- **Accepted limitation / approved adaptation:** an approved exception, either on a conflict's decision or as an exception [collaboration record](#collaboration-records).
+- **Aligned:** none of the above, with evidence.
+
+Each row lists the records behind its state. `--json` gives the same with every reason.
+
 ## Links
 
 A link is a traceable claim between two records: `implements`, `serves`, `uses-token`, `navigates` or `contains`. Every link has a status, as in the journey engine:
