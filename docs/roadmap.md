@@ -113,6 +113,8 @@ Progress, 2026-10-12: TanStack Start server functions run live too. In the previ
 
 Progress, 2026-10-12: apps with sign-in run live too. Personas carry synthetic review identities (reserved example domains only), each run gets a fresh credential and starts signed in through the app's own sign-in, and the session stays in the run. Password fields are filled with the credential and recordings hold only a placeholder. The [Team board example](../journey-engine/source/packages/canvas/examples/team-board) proves it in a browser check.
 
+Progress, 2026-10-12: live runs change context without leaving the run. The v11 port ([notes](synthesis-v0-import.md#v11-port-accounts-offline-and-viewport)) adds same-run account switching, actual offline with saved steps a person resends, durable run journals, and viewport, fold, orientation, theme and text-size steps, all on the run's one tape. The Team board example and Laundry's 1,000-piece family day prove it in browser checks.
+
 Progress, 2026-10-12: the frame walk (D33) is built in [`graph/`](../graph/README.md#frame-walk-civic-walk). `civic walk` steps through a journey's design frames along their Figma prototype links. For each frame it shows the components, their overrides with per-platform forecasts, the state frames, and links that leave the design. It marks dead ends and unreachable frames, and labels everything as design intent. `--path` scripts a walk, and `--html` writes a self-contained page that plays it. The Card demo builds one for Shop's checkout ([`demo/card/out/walk.html`](../demo/card/out/walk.html)). Still to come: the journey canvas showing the walk beside a screen's runs.
 
 ## 5. Identity, permissions, and multiplayer

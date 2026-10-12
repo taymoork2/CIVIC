@@ -12,7 +12,7 @@ export async function openLaundrySession(context: AdapterContext) {
   const size = Number(new URLSearchParams(location.search).get('familySize') ?? 1000)
   let subject = ''
   // The app keeps its own saved step until an accepted write names its receipt; CIVIC's saved steps clear the same way.
-  const run = await openRuntimeSession<RuntimeSession['seed']>(family && context.condition.id === 'offline' ? { ...context, condition: { ...context.condition, id: 'normal' } } : context, { ...(family ? { options: { pieces: size } } : {}), accepted: (args) => { if (typeof args.receiptId === 'string') clearPendingStep(subject, args.receiptId) } })
+  const run = await openRuntimeSession<RuntimeSession['seed']>(family && context.condition.id === 'offline' ? { ...context, condition: { ...context.condition, id: 'normal' } } : context, { ...(family ? { options: { pieces: size } } : {}), accepted: (args) => { if (typeof args.receiptId === 'string') clearPendingStep(subject, args.receiptId) }, key: (_name, args) => typeof args.receiptId === 'string' ? args.receiptId : undefined })
   const facade = convexRuntimeClient(run.transport)
   subject = run.status().subject ?? run.session.seed.subject
   setRuntimeIdentity(subject)

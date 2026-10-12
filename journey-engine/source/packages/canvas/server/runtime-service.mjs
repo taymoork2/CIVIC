@@ -146,12 +146,25 @@ export function runtimeService(project, source, { root = project.manifestRoot, a
       if (input.action === 'identity' && (typeof input.args?.account !== 'string' || !/^[\w.-]{1,80}$/.test(input.args.account))) reject('Unknown synthetic account')
       if (input.action === 'time' && (!Number.isInteger(input.args?.minutes) || input.args.minutes < 1 || input.args.minutes > 1440)) reject('Choose 1 to 1440 synthetic minutes')
       if (['query', 'mutation'].includes(input.action) && (typeof input.name !== 'string' || input.name.length > 200 || !/^[a-zA-Z_/][\w/.:_~%-]*$/.test(input.name) || input.name.includes('..'))) reject('Invalid function name')
+      if (input.intent !== undefined && (input.action !== 'mutation' || typeof input.intent !== 'string' || !/^[A-Za-z0-9-]{8,80}$/.test(input.intent))) reject('Invalid write identity')
       if (input.args !== undefined && (!input.args || Array.isArray(input.args) || typeof input.args !== 'object' || sensitivePayload(input.args))) reject('Invalid or sensitive operation arguments')
       const result = run.queue.then(async () => {
         if (run.source !== source()) reject('Source changed before executing the operation.', 409)
         if (input.action === 'reset') { run.saved.journal = []; await persist(run) }
+        // A write runs at most once per identity: a resend whose first answer was lost gets that answer back. The
+        // identity names one write by one account; reusing it for anything else is refused. It lives in the journal,
+        // so it holds across a reopen, and a reset forgets it with the data.
+        if (input.intent) {
+          const prior = run.saved.journal.find((row) => row.complete && row.command.intent === input.intent)
+          if (prior) {
+            // Answering from the journal still answers only the account acting now.
+            if (input.actor !== undefined && input.actor !== (await call(run, { action: 'inspect' })).subject) reject('The synthetic account changed in another pane. Reopen before acting.', 409)
+            if (prior.command.name !== input.name || prior.command.actor !== input.actor || JSON.stringify(prior.command.args) !== JSON.stringify(input.args)) reject('This write identity belongs to a different write or account.', 409)
+            return prior.result
+          }
+        }
         // Journal before executing, so an effect is never lost; an entry still incomplete on reopen is dropped.
-        const entry = EFFECTS.includes(input.action) ? { command: { action: input.action, ...(input.name ? { name: input.name } : {}), ...(input.args !== undefined ? { args: input.args } : {}), ...(input.actor ? { actor: input.actor } : {}) }, complete: false } : null
+        const entry = EFFECTS.includes(input.action) ? { command: { action: input.action, ...(input.name ? { name: input.name } : {}), ...(input.args !== undefined ? { args: input.args } : {}), ...(input.actor ? { actor: input.actor } : {}), ...(input.intent ? { intent: input.intent } : {}) }, complete: false } : null
         if (entry) { if (run.saved.journal.length >= 20_000) reject('Isolated run journal is full; save the recording and reset.'); run.saved.journal.push(entry); await persist(run) }
         let value
         try { value = await call(run, input) }

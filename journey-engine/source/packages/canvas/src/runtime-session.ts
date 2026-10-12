@@ -4,6 +4,8 @@ import type { AdapterContext } from './adapter'
 
 // Captured before any run routes the page's fetch, so CIVIC's own requests never loop back.
 const pageFetch = globalThis.fetch.bind(globalThis)
+// Captured before a run pins the page's random IDs: a write's identity must not shift the app's own ID sequence.
+const freshId = crypto.randomUUID.bind(crypto)
 
 export async function runtimeRequest<T>(input: Record<string, unknown>, signal?: AbortSignal): Promise<T> {
   const response = await projectFetch('/api/review/runtime', { method: 'POST', signal, keepalive: input.action === 'close', headers: { 'content-type': 'application/json' }, body: JSON.stringify(input) }, pageFetch)
@@ -22,9 +24,13 @@ export type RuntimeSession<Seed = unknown> = { id: string; source: string; proje
 // What the page sends in place of the run's credential; the run swaps it back, so recordings never hold it.
 export const credentialPlaceholder = '[review credential]'
 
-/** A write the page sent while the run's connection was down. It belongs to the account that made it, and is resent only by hand. */
-export type PendingIntent = { id: string; account: string | null; subject: string | null; name: string; args: Record<string, unknown> }
-type Recovery = { storage: Storage; actor: () => { account: string | null; subject: string | null }; start: () => string | null; accepted?: (args: Record<string, unknown>) => void }
+/**
+ * A write the page sent while the run's connection was down. It belongs to the account that made it, and is resent only
+ * by hand. `intent` is the write's identity: the run executes it at most once, so resending a write whose answer was
+ * lost returns its receipt instead of repeating it. `key` is the app's own identity for it, when its adapter names one.
+ */
+export type PendingIntent = { id: string; intent: string; key?: string; account: string | null; subject: string | null; name: string; args: Record<string, unknown> }
+type Recovery = { storage: Storage; actor: () => { account: string | null; subject: string | null }; start: () => string | null; accepted?: (args: Record<string, unknown>) => void; key?: (name: string, args: Record<string, unknown>) => string | undefined }
 
 /**
  * One request boundary records effects regardless of which screen initiated them. With `recovery`, it also owns
@@ -42,19 +48,22 @@ export function runtimeTransport(session: { id: string; project?: string }, reco
   const same = (row: PendingIntent, actor: { account: string | null; subject: string | null }) => row.account === actor.account && row.subject === actor.subject
   // Counts requests that can change the run's data, so a settle re-reads its state only after one.
   let revision = 0
-  const request = <T>(action: string, name?: string, args?: unknown): Promise<T> => {
+  const request = <T>(action: string, name?: string, args?: unknown, resend?: string): Promise<T> => {
     const application = ['query', 'mutation', 'action'].includes(action)
     if (!['query', 'state', 'inspect'].includes(action)) revision++
     const actor = recovery?.actor()
+    // Every write has its own identity, so two identical writes stay two, and a resent one is the same one.
+    const intent = action === 'mutation' ? resend ?? freshId() : undefined
+    const key = action === 'mutation' && args && typeof args === 'object' ? recovery?.key?.(name!, args as Record<string, unknown>) : undefined
     const execute = async () => {
       try {
         // Offline, nothing reaches the run: the request fails as a browser's would, and a write is kept as a saved step.
         if (application && !connected) throw new DOMException('The app is offline in this run.', 'AbortError')
-        const result = await runtimeRequest<T>({ action, run: session.id, ...(actor?.subject && (application || action === 'state') ? { actor: actor.subject } : {}), ...(name ? { name } : {}), ...(args !== undefined ? { args } : {}) }, application ? partition.signal : undefined)
+        const result = await runtimeRequest<T>({ action, run: session.id, ...(actor?.subject && (application || action === 'state') ? { actor: actor.subject } : {}), ...(name ? { name } : {}), ...(args !== undefined ? { args } : {}), ...(intent ? { intent } : {}) }, application ? partition.signal : undefined)
         if (action === 'mutation' && recovery && actor && args && typeof args === 'object') {
           recovery.accepted?.(args as Record<string, unknown>)
-          // The app's own recovery and CIVIC's saved steps can both resend the same write; once accepted, neither keeps it.
-          const kept = intents(), rest = kept.filter((row) => !(same(row, actor) && row.name === name && JSON.stringify(row.args) === JSON.stringify(args)))
+          // Once a write is accepted, its saved step is done: the same intent, or the app's own retry of it by its key.
+          const kept = intents(), rest = kept.filter((row) => !(same(row, actor) && row.name === name && (row.intent === intent || key !== undefined && row.key === key)))
           if (rest.length !== kept.length) save(rest)
         }
         return result
@@ -62,7 +71,7 @@ export function runtimeTransport(session: { id: string; project?: string }, reco
         if (application && (error instanceof TypeError || (error as Error).name === 'AbortError')) {
           if (action === 'mutation' && recovery && actor && args && typeof args === 'object') {
             const rows = intents()
-            if (!rows.some((row) => same(row, actor) && row.name === name && JSON.stringify(row.args) === JSON.stringify(args))) save([...rows, { id: crypto.randomUUID(), ...actor, name: name!, args: structuredClone(args) as Record<string, unknown> }])
+            if (!rows.some((row) => row.intent === intent)) save([...rows, { id: crypto.randomUUID(), intent: intent!, ...(key !== undefined ? { key } : {}), ...actor, name: name!, args: structuredClone(args) as Record<string, unknown> }])
           }
           if (connected) { connected = false; changed() }
           throw Error('The app\'s connection was interrupted. Review saved steps for this account before resending.')
@@ -89,7 +98,9 @@ export function runtimeTransport(session: { id: string; project?: string }, reco
       const entry = recovery && intents().find((row) => row.id === id && same(row, recovery.actor()))
       if (!entry) throw Error('Switch back to the account that made this step to review it.')
       if (!connected) throw Error('Reconnect the app before resending a saved step.')
-      const result = await request('mutation', entry.name, entry.args)
+      // A saved step from before writes had identities gets one now, and keeps it if this resend fails too.
+      if (!entry.intent) { entry.intent = freshId(); save(intents().map((row) => row.id === id ? entry : row)) }
+      const result = await request('mutation', entry.name, entry.args, entry.intent)
       save(intents().filter((row) => row.id !== id))
       return result
     },
@@ -123,9 +134,10 @@ type SessionContext = Pick<AdapterContext, 'scenario' | 'persona' | 'role' | 'co
  * Starts an isolated run, or reopens the one named by the frame's `runtimeRun` parameter, and pins what the page
  * would otherwise take from the reviewer's machine: the clock, random IDs, browser storage and the connection.
  * Replays reuse the recording's clock and entropy. Browser storage belongs to the run and the account acting in it.
- * `options` are the adapter's run options (sizes and the like), checked by its runtime entry.
+ * `options` are the adapter's run options (sizes and the like), checked by its runtime entry. `key` names a write's
+ * identity in the app's own terms (an idempotency receipt), so the app's own retry of a saved step settles it too.
  */
-export async function openRuntimeSession<Seed = unknown>(context: SessionContext, { options, accepted }: { options?: Record<string, string | number | boolean>; accepted?: (args: Record<string, unknown>) => void } = {}) {
+export async function openRuntimeSession<Seed = unknown>(context: SessionContext, { options, accepted, key }: { options?: Record<string, string | number | boolean>; accepted?: (args: Record<string, unknown>) => void; key?: (name: string, args: Record<string, unknown>) => string | undefined } = {}) {
   const previous = (context.recording?.seed as { application?: { timeZone?: string; entropySeed?: string } } | undefined)?.application
   const timeZone = previous?.timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone
   const reopen = new URLSearchParams(location.search).get('runtimeRun')
@@ -136,7 +148,7 @@ export async function openRuntimeSession<Seed = unknown>(context: SessionContext
   let account = session.account, subject = session.subject, clock = session.clock ?? session.now
   const listeners = new Set<(change: 'identity' | 'connection' | 'time' | 'pending') => void>()
   const notify = (change: 'identity' | 'connection' | 'time' | 'pending') => { for (const listener of listeners) listener(change) }
-  const transport = runtimeTransport(session, { storage: actual, actor: () => ({ account, subject }), start: () => session.account, accepted })
+  const transport = runtimeTransport(session, { storage: actual, actor: () => ({ account, subject }), start: () => session.account, accepted, key })
   // A request that fails because the connection dropped marks the run offline; adapters hear it as a connection change.
   let online = true
   transport.subscribe(() => { if (online !== transport.connected()) { online = transport.connected(); notify('connection') } else notify('pending') })

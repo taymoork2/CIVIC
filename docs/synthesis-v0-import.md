@@ -142,6 +142,22 @@ How v7 relates to CIVIC's own work:
 
 Verified on the merge branch with Node 22 and pnpm 12.5.1: `pnpm install --frozen-lockfile`, `pnpm run check`, `pnpm --dir apps/web run test:review` and the shell's server tests pass. The full `pnpm test` and `bin/signoff` results are in the pull request.
 
+## v11 port: accounts, offline and viewport
+
+On October 12, 2026 the founder sent the v11 handoff (`rehearsal-handoff-2026-10-12-v11.zip`, SHA-256 `7060b59e372fb73648dcaec963271ec641af1f7101e95204b458cda6f7f991c6`) and a verification supplement (`rehearsal-verification-2026-10-12-v11-supplement.zip`, `d52610decb03e3393b18459d8aa9ad6e8d452f56accf6e62e49001b00965a154`), and authorized porting three of its concerns into CIVIC's packages. v11 is not merged as a handoff: its `since-v10.patch` applies only to v10, and CIVIC's tree descends from v7. Each concern was ported by diffing v7 as sent against v11. The archives stay as sent; `journey-engine/` still carries v7's handoff documents.
+
+What the port adds, in `@civic/canvas` (with small changes in `@civic/shell` and `@civic/vite-connector`):
+
+- **Same-run account switching.** Every persona with a synthetic identity is an account of the run, each with its own fresh credential and session. Switching keeps the run's data, clock and captured inputs. A page acting as an account that is no longer active is refused. A write made after a switch names its account on the tape; a run that never switches records none, so older recordings still match. Credentials stay off tapes and journals.
+- **Actual offline with manual recovery.** Disconnecting aborts the page's in-flight requests and makes `navigator.onLine` false; the browser's own `offline` event disconnects the run too. A write made or cut off while offline is kept as a saved step for its account only, in the reviewer's storage under the run. Nothing is resent by itself: a person resends or discards each step, and an accepted write clears a matching saved step, so the app's own retry can't send it twice.
+- **Durable runs.** With a data directory, each run keeps a journal of its effects (mode 0600). Reopening re-runs the completed effects and checks each result. A run whose seed, source or effects differ is refused, never silently guessed. Leases keep a stale page's close from stopping a reopened run. Fixture and render snapshots stay a separate cache from this provenance.
+- **Viewport changes on the tape.** Device presets, rotation, fold and unfold, theme and text size change the live frame in place, and each is a recorded step that replay restores. Presets are CSS viewports, not physical-device evidence. Recordings from before viewports had a height still replay.
+- **Run controls.** The Inspect panel has the account select, Disconnect and Reconnect, Reopen, saved steps and the viewport controls. Each run command (`identity`, `connection`, `time`, `applyPending`, `discardPending`, `viewport`) is a step on the same tape.
+
+Laundry keeps its specifics in its adapter: the 1,000-piece family seed, the owner, member and other accounts, Convex, and its private scope. The family laundry day page (`/review?familyDay=1`) runs on the shared runtime. The Laundry app source was synced to v11 where the family day needs it. The [Team board example](../journey-engine/source/packages/canvas/examples/team-board) proves the shared behaviour without Laundry.
+
+Not covered by this port: native or physical-phone acceptance, Safari or installed PWA behaviour, and the app owner's own mobile and PWA acceptance, which is a separate stage. The supplement's Claude Design verification is static web reference evidence. Newer Laundry work reported afterwards (root refinements on its own branch, its owner's Mobile WebKit and PWA checks) is separate evidence, not part of v11.
+
 ## How to run
 
 The review service is declared in `.amp/services.yaml` (`amp orb services ensure`) and opens through the authenticated Amp portal at the `CIVIC journey engine` portal. Locally: `pnpm --dir journey-engine/source/apps/web run review` and open the page; a loopback browser needs no key. CIVIC's tools use the key in `journey-engine/source/.review-data/access-key` (generated at first run, never committed).

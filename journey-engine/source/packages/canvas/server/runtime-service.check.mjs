@@ -125,6 +125,49 @@ test('one run switches between its synthetic accounts, keeps its data and clock,
   await assert.rejects(tasksRun.handle({ action: 'resume', run: single.id }), /keeps no journals/)
 })
 
+test('a write runs once per identity: a resend whose answer was lost gets its receipt, across a reopen, and only for its own account', async (t) => {
+  const board = loadProject(canvasRoot, { manifest: `${canvasRoot}/examples/team-board/civic.project.json` })
+  const dataDir = await mkdtemp(join(tmpdir(), 'civic-run-'))
+  let service = runtimeService(board, () => 'source-one', { dataDir })
+  t.after(async () => { await service.close(); await rm(dataDir, { recursive: true, force: true }) })
+  const post = (run, text, actor, intent) => service.handle({ action: 'mutation', run, name: 'POST:/api/posts', actor, ...(intent ? { intent } : {}), args: { query: '', body: JSON.stringify({ text }), type: 'application/json' } })
+  const texts = async (run) => JSON.parse((await service.handle({ action: 'query', run, name: 'GET:/api/posts', args: { query: '' } })).body).map((row) => row.text)
+  const run = (await service.handle({ action: 'start', scenario: 'board.home', persona: 'lead', role: 'member', condition: 'normal', now })).id
+  const before = (await texts(run)).length
+  // The write runs and its answer is lost on the way back; the page kept it as a saved step under the same identity.
+  const intent = '8d0f3c1e-5b7a-4c2d-9e6f-1a2b3c4d5e6f'
+  const first = await post(run, 'Answer lost', 'alex', intent)
+  assert.equal(first.status, 201)
+  assert.deepEqual(await post(run, 'Answer lost', 'alex', intent), first, 'the resend returns the recorded receipt')
+  assert.deepEqual((await texts(run)).slice(before), ['Answer lost'], 'exactly one effect')
+  // The identity names one write by one account.
+  await assert.rejects(post(run, 'Something else', 'alex', intent), /different write or account/)
+  await service.handle({ action: 'identity', run, args: { account: 'newcomer' } })
+  await assert.rejects(post(run, 'Answer lost', 'sam', intent), /different write or account/)
+  await assert.rejects(post(run, 'Answer lost', 'alex', intent), /account changed/, 'a page still acting as the old account is refused')
+  await service.handle({ action: 'identity', run, args: { account: 'lead' } })
+  // Separate writes with the same content stay separate, with or without identities.
+  await post(run, 'Same words', 'alex', '0b1c2d3e-4f50-4a6b-8c7d-9e0f1a2b3c4d')
+  await post(run, 'Same words', 'alex', '1c2d3e4f-5061-4b7c-9d8e-0f1a2b3c4d5e')
+  await post(run, 'Same words', 'alex')
+  assert.deepEqual((await texts(run)).slice(before), ['Answer lost', 'Same words', 'Same words', 'Same words'])
+  await assert.rejects(service.handle({ action: 'query', run, name: 'GET:/api/posts', intent, args: { query: '' } }), /Invalid write identity/)
+  await assert.rejects(post(run, 'x', 'alex', 'not ok!'), /Invalid write identity/)
+  const journal = await readFile(join(dataDir, 'runtime', `${run}.json`), 'utf8')
+  assert.equal(journal.split(intent).length - 1, 1, 'the journal holds the write once, with its identity')
+
+  // After the server restarts and the run reopens, the identity still holds.
+  await service.close()
+  service = runtimeService(board, () => 'source-one', { dataDir })
+  await service.handle({ action: 'resume', run })
+  assert.deepEqual(await post(run, 'Answer lost', 'alex', intent), first)
+  assert.deepEqual((await texts(run)).slice(before), ['Answer lost', 'Same words', 'Same words', 'Same words'])
+  // A reset forgets the data and the identities with it.
+  await service.handle({ action: 'reset', run })
+  assert.equal((await post(run, 'Answer lost', 'alex', intent)).status, 201)
+  assert.deepEqual((await texts(run)).slice(before), ['Answer lost'])
+})
+
 test('a project without a runtime entry refuses live runs', async () => {
   const notebook = loadProject(canvasRoot, { manifest: `${canvasRoot}/examples/notebook/civic.project.json` })
   const service = runtimeService(notebook, () => 'source-one')
