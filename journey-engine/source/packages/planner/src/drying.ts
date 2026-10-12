@@ -136,7 +136,9 @@ function garmentDecision(garment: Garment): Candidate | DryingHoldOut {
   if (restricted !== null) return hold(restricted, 'care_label')
   const method = garment.care?.dryMethod
   if (!careConfirmed(garment.care)) return hold('unknown', 'drying_unknown')
-  const requirements = careProcessRequirements(garment.care?.instructions, 'drying').requirements
+  const process = careProcessRequirements(garment.care?.instructions, 'drying')
+  if (process.unresolved.length > 0) return hold('unknown', 'drying_unknown')
+  const requirements = process.requirements
   if (requirements.some((entry) => entry.kind === 'dry_flat')) return hold('dry_flat', 'care_label')
   if (requirements.some((entry) => ['line_dry', 'drip_dry', 'shade', 'no_direct_heat'].includes(entry.kind))) return hold(method === 'dry_flat' ? 'dry_flat' : 'line_dry', 'care_label')
   if (typeof method !== 'string' || method === 'unknown' || !(dryMethods as readonly string[]).includes(method)) return hold('unknown', 'drying_unknown')

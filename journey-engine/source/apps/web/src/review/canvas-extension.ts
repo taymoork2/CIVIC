@@ -3,11 +3,11 @@ import type { GraphFlow, MapScreen } from '@civic/canvas/app-map'
 import { journeyGraph, entryScreens } from './journey-graph.mjs'
 import { useTowelSession } from './towel-session'
 
-// Laundry App's canvas: its own flow grouping and order, the towel journey as a guided run, and its older workspace.
+// Laundry App's canvas: its own flow grouping and order, the towel journey as a guided run, its older workspace and the synthetic laundry day page (`?familyDay=1`).
 // Tab order comes from kit/app-shell.tsx; entry screens precede the signed-in navigation.
 const sections = ['Start', 'Home', 'Closet', 'Laundry', 'Household', 'Me']
 const sectionOf: Record<string, string> = { 'Sign-in & setup': 'Start', Home: 'Home', Outfits: 'Home', Closet: 'Closet', 'Add a towel': 'Closet', 'Multicolor pack': 'Closet', 'Saved records': 'Closet', 'Nested quick edits': 'Closet', 'Washing & recovery': 'Laundry', Drying: 'Laundry', Household: 'Household', Appliances: 'Household', Products: 'Household', 'Product details': 'Household', Profiles: 'Household', Me: 'Me', Settings: 'Me' }
-const flowOrder = ['Sign-in & setup', 'Home', 'Outfits', 'Closet', 'Add a towel', 'Multicolor pack', 'Saved records', 'Nested quick edits', 'Washing & recovery', 'Drying', 'Family simulation', 'Household', 'Appliances', 'Products', 'Product details', 'Profiles', 'Me', 'Settings']
+const flowOrder = ['Sign-in & setup', 'Home', 'Outfits', 'Closet', 'Add a towel', 'Multicolor pack', 'Saved records', 'Nested quick edits', 'Washing & recovery', 'Drying', 'Family laundry day', 'Household', 'Appliances', 'Products', 'Product details', 'Profiles', 'Me', 'Settings']
 
 function arrange(rows: GraphFlow[]) {
   rows.sort((a, b) => flowOrder.indexOf(a.label) - flowOrder.indexOf(b.label))
@@ -31,5 +31,6 @@ const laundryCanvas: CanvasExtension = {
   frameParams: (scenario) => scenario.startsWith('family.') ? ['familySize', 'familyStage'] : [],
   draftKey: 'rehearsal:review:draft:v1',
   legacy: () => import('./workspace'),
+  pages: { familyDay: () => import('./family-workspace') },
 }
 export default laundryCanvas

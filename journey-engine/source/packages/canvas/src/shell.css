@@ -7,3 +7,11 @@ body { margin: 0; }
 .rehearsal button:disabled { cursor: default; opacity: .5; }
 .rehearsal input, .rehearsal select, .rehearsal textarea { border: 1px solid #dde1e8; border-radius: 6px; background: white; padding: 8px; }
 .rehearsal :focus-visible { outline: 2px solid #2456d6; outline-offset: 2px; }
+/* Live preview controls: viewport, the isolated run and its saved steps. */
+.rh-viewport-controls, .rh-run-controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: end; margin: 8px 0; }
+.rh-viewport-controls label, .rh-run-controls label { display: grid; gap: 4px; font-size: 13px; }
+.rh-viewport-controls select, .rh-viewport-controls button, .rh-run-controls select, .rh-run-controls button { min-height: 36px; padding: 6px 8px; }
+.rh-viewport-controls small, .rh-run-controls > p, .rh-run-controls > h3 { flex-basis: 100%; margin: 0; }
+.rh-viewport-controls small { color: #526171; }
+.rh-run-controls [aria-label="Saved steps"] { flex-basis: 100%; }
+.rh-run-controls [aria-label="Saved steps"] > div { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 8px 0; }

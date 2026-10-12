@@ -3,6 +3,9 @@ import { test } from 'node:test'
 import { checkedProject, loadProject } from '@civic/vite-connector/project'
 import { canvasRoot } from './canvas-root.mjs'
 import { runtimeService } from './runtime-service.mjs'
+import { mkdtemp, readFile, rm } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 const tasks = loadProject(canvasRoot, { manifest: `${canvasRoot}/examples/tasks/civic.project.json` })
 const now = Date.UTC(2026, 9, 12, 9)
@@ -72,6 +75,54 @@ test('a manifest\'s review identities are synthetic and its sign-in request neve
   assert.throws(() => checkedProject({ ...persona({ id: 'pat', name: 'Pat', email: 'pat@example.com' }), identity: { signIn: { path: '/api/session', body: { user: { password: 'hunter2' } } } } }), /never a written secret/)
   assert.throws(() => checkedProject({ ...persona({ id: 'pat', name: 'Pat', email: 'pat@example.com' }), identity: { signedOut: ['nope'] } }), /declared conditions/)
   assert.throws(() => checkedProject({ ...base, personas: [{ id: 'p', label: 'P', identity: { id: 'pat', name: 'Pat', email: 'pat@corp.com' } }] }), /reserved example domain/, 'persona identities are checked even without an identity block')
+})
+
+test('one run switches between its synthetic accounts, keeps its data and clock, and journals no credential', async (t) => {
+  const board = loadProject(canvasRoot, { manifest: `${canvasRoot}/examples/team-board/civic.project.json` })
+  const dataDir = await mkdtemp(join(tmpdir(), 'civic-run-'))
+  let service = runtimeService(board, () => 'source-one', { dataDir })
+  t.after(async () => { await service.close(); await rm(dataDir, { recursive: true, force: true }) })
+  const call = (run, method, path, body, actor) => service.handle({ action: ['GET', 'HEAD'].includes(method) ? 'query' : 'mutation', run, name: `${method}:${path}`, ...(actor ? { actor } : {}), args: { query: '', ...(body ? { body: JSON.stringify(body), type: 'application/json' } : {}) } })
+  const run = await service.handle({ action: 'start', scenario: 'board.home', persona: 'lead', role: 'member', condition: 'normal', now })
+  assert.deepEqual({ account: run.account, subject: run.subject, accounts: run.accounts, clock: run.clock }, { account: 'lead', subject: 'alex', accounts: ['lead', 'newcomer'], clock: now })
+  assert.ok(!JSON.stringify(run.seed).includes(run.identity.credential), 'the seed never carries a credential')
+  assert.equal((await call(run.id, 'POST', '/api/posts', { text: 'From Alex' }, 'alex')).status, 201)
+  assert.deepEqual(await service.handle({ action: 'identity', run: run.id, args: { account: 'newcomer' } }), { account: 'newcomer', subject: 'sam' })
+  assert.equal(JSON.parse((await call(run.id, 'GET', '/api/me')).body).name, 'Sam Lee', 'the run now acts as the other account, through the app\'s own sign-in')
+  await assert.rejects(call(run.id, 'POST', '/api/posts', { text: 'Stale pane' }, 'alex'), /account changed/, 'a page still acting as the old account is refused')
+  await service.handle({ action: 'time', run: run.id, args: { minutes: 30 } })
+  const later = JSON.parse((await call(run.id, 'POST', '/api/posts', { text: 'From Sam' }, 'sam')).body)
+  assert.deepEqual({ author: later.author, postedAt: later.postedAt }, { author: 'Sam Lee', postedAt: new Date(now + 30 * 60_000).toISOString() })
+  assert.deepEqual(JSON.parse((await call(run.id, 'GET', '/api/posts')).body).slice(-2).map((post) => post.author), ['Alex Rivera', 'Sam Lee'], 'switching accounts keeps the run\'s data')
+  await assert.rejects(service.handle({ action: 'identity', run: run.id, args: { account: 'invented' } }), /Unknown synthetic account/)
+  await assert.rejects(service.handle({ action: 'time', run: run.id, args: { minutes: 0 } }), /1 to 1440/)
+  const journal = await readFile(join(dataDir, 'runtime', `${run.id}.json`), 'utf8')
+  for (const secret of [run.identity.credential, 'review-']) assert.ok(!journal.includes(secret), 'the journal carries no credential')
+
+  // Reopening after the server restarts replays the journal: the same account, clock and posts, with fresh credentials.
+  await service.close()
+  service = runtimeService(board, () => 'source-one', { dataDir })
+  const reopened = await service.handle({ action: 'resume', run: run.id })
+  assert.deepEqual({ account: reopened.account, clock: reopened.clock }, { account: 'newcomer', clock: now + 30 * 60_000 })
+  assert.notEqual(reopened.identity.credential, run.identity.credential)
+  assert.deepEqual(JSON.parse((await call(run.id, 'GET', '/api/posts')).body).slice(-2).map((post) => post.text), ['From Alex', 'From Sam'])
+  // A second page taking the run over keeps it open when the first page's close arrives late.
+  const second = await service.handle({ action: 'resume', run: run.id })
+  assert.deepEqual(await service.handle({ action: 'close', run: run.id, lease: reopened.lease }), { closed: false })
+  assert.equal((await call(run.id, 'GET', '/api/me')).status, 200)
+  assert.deepEqual(await service.handle({ action: 'close', run: run.id, lease: second.lease }), { closed: true })
+  await assert.rejects(service.handle({ action: 'resume', run: run.id.replace(/.$/, (c) => c === 'a' ? 'b' : 'a') }), /unavailable/)
+  const changed = runtimeService(board, () => 'source-two', { dataDir })
+  t.after(() => changed.close())
+  await assert.rejects(changed.handle({ action: 'resume', run: run.id }), /another source revision/, 'a reopened run never silently runs on changed source')
+
+  const tasksRun = runtimeService(tasks, () => 'source-one')
+  t.after(() => tasksRun.close())
+  const single = await tasksRun.handle({ action: 'start', scenario: 'tasks.list', persona: 'planner', role: 'member', condition: 'normal', now })
+  assert.deepEqual(single.accounts, [])
+  await assert.rejects(tasksRun.handle({ action: 'identity', run: single.id, args: { account: 'planner' } }), /one synthetic account|Unknown synthetic account/)
+  await tasksRun.handle({ action: 'close', run: single.id })
+  await assert.rejects(tasksRun.handle({ action: 'resume', run: single.id }), /keeps no journals/)
 })
 
 test('a project without a runtime entry refuses live runs', async () => {

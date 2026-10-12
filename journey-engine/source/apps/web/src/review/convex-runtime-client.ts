@@ -10,7 +10,7 @@ export function convexRuntimeClient(transport: ReturnType<typeof runtimeTranspor
   let generation = 0
   const refresh = (query: Query) => {
     const version = ++query.version, epoch = generation
-    void transport.request('query', query.name, query.args).then((value) => { if (epoch === generation && version === query.version) { query.value = value; query.error = undefined; for (const listener of query.listeners) listener() } }, (error) => { if (epoch === generation && version === query.version) { query.error = error; for (const listener of query.listeners) listener() } })
+    void transport.request('query', query.name, query.args).then((value) => { if (epoch === generation && version === query.version) { query.value = value; query.error = undefined; for (const listener of query.listeners) listener() } }, (error) => { if (epoch === generation && version === query.version && transport.connected()) { query.error = error; for (const listener of query.listeners) listener() } })
   }
   const invalidate = () => { for (const query of queries.values()) if (query.listeners.size) refresh(query) }
   const client = {
@@ -28,7 +28,7 @@ export function convexRuntimeClient(transport: ReturnType<typeof runtimeTranspor
     },
     action: (reference: FunctionReference<'action'>, args: Record<string, unknown>) => transport.request('action', getFunctionName(reference), args),
     setAuth: (_token: unknown, changed: (authenticated: boolean) => void) => queueMicrotask(() => changed(true)), clearAuth: () => {},
-    connectionState: () => ({ isWebSocketConnected: true, hasEverConnected: true, oldestInflightRequestStartedAt: null, hasInflightRequests: false }), subscribeToConnectionState: () => () => {},
+    connectionState: () => ({ isWebSocketConnected: transport.connected(), hasEverConnected: true, oldestInflightRequestStartedAt: null, hasInflightRequests: false, inflightMutations: transport.pending().length }), subscribeToConnectionState: transport.subscribe,
   } as unknown as ConvexReactClient
   return { client, invalidate, reset: () => { generation++; queries.clear() } }
 }

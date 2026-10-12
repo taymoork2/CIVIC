@@ -1,3 +1,4 @@
+import { existsSync } from 'node:fs'
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import towel from '../src/review/towel-journey.json' with { type: 'json' }
@@ -31,7 +32,7 @@ export const laundryConnector = {
   // Laundry's flow layout, the towel journey as a guided run, and the older workspace.
   canvasExtension: () => join(web, 'src/review/canvas-extension.ts'),
   resolveId(id, project, importer) {
-    if (id === 'virtual:rehearsal-laundry-routes') return '\0' + id
+    if (id === 'virtual:rehearsal-laundry-routes' || id === 'virtual:rehearsal-private-scope') return '\0' + id
     const appRepo = project.root
     if (!importer?.startsWith(appRepo + '/')) return
     const path = id.startsWith('@/') ? join(appRepo, 'apps/web/src', id.slice(2)) : id.startsWith('.') ? resolve(dirname(importer.split('?')[0]), id) : id
@@ -41,6 +42,11 @@ export const laundryConnector = {
     for (const name of ['care-photo', 'product-lookup']) if ([join(appRepo, 'apps/web/src/routes', name), join(appRepo, 'apps/web/src/routes', name + '.ts')].includes(path)) return '\0rehearsal-server-route:/' + name
   },
   load(id, project) {
+    // Laundry's own account-bound private scope and saved steps, when its checkout has them.
+    if (id === '\0virtual:rehearsal-private-scope') {
+      const file = join(project.root, 'apps/web/src/kit/device-state.tsx')
+      return existsSync(file) ? `import { createElement } from 'react'; import { PrivateAccount, DeviceScope } from ${JSON.stringify('/@fs/' + file)}; export { clearPendingStep } from ${JSON.stringify('/@fs/' + join(project.root, 'apps/web/src/pending-step.ts'))}; export const supported = true; export function PrivateScope({ subject, householdId, children }) { return createElement(PrivateAccount, { value: subject }, createElement(DeviceScope, { value: JSON.stringify([subject, householdId]) }, children)) }` : 'export const supported = false; export const clearPendingStep = () => {}; export function PrivateScope({ children }) { return children }'
+    }
     if (id === '\0virtual:rehearsal-laundry-routes') return `export { routeTree } from ${JSON.stringify('/@fs/' + join(project.root, 'apps/web/src/routeTree.gen.ts'))}`
     if (id.startsWith('\0rehearsal-server-route:')) return `import { createFileRoute } from '@tanstack/react-router'; export const Route = createFileRoute(${JSON.stringify(id.slice('\0rehearsal-server-route:'.length))})({ component: () => 'Server routes are outside isolated review.' })`
   },

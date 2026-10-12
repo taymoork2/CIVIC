@@ -21,3 +21,20 @@ test('recordings are bounded and bound to project, context and safe inputs', () 
   command.steps[0].gesture.value = JSON.stringify({ nested: { accessToken: 'private' } })
   assert.throws(() => checkedRecording(command, project), /sensitive/)
 })
+
+test('run steps on a recording are bounded: viewport, account, connection, clock and saved steps', () => {
+  const steps = recording()
+  steps.seed.context = { ...steps.seed.context, height: 852, preset: 'phone' }
+  const step = (name, value) => ({ gesture: { kind: 'command', target: { tag: 'adapter', name, index: 0, count: 1 }, value: JSON.stringify(value) }, route: '/', view: '', fields: [], operations: [] })
+  steps.steps.push(step('viewport', { width: 360, height: 764, theme: 'dark', textScale: 2, preset: 'folded' }), step('identity', 'member'), step('connection', false), step('time', 40), step('applyPending', 'a-saved-step'))
+  steps.steps.at(-1).operations.push({ kind: 'mutation', name: 'save', args: { title: 'A note' }, actor: 'member' })
+  assert.equal(checkedRecording(steps, project), steps, 'a recording before heights existed and one with run steps are both valid')
+  for (const [name, value] of [['viewport', { width: 100, height: 764, theme: 'dark', textScale: 1 }], ['viewport', { width: 360, height: 764, theme: 'dark', textScale: 1, device: 'physical' }], ['identity', { account: 'member' }], ['connection', 'off'], ['time', 0], ['time', 99999]]) {
+    const tape = recording(); tape.steps.push(step(name, value))
+    assert.throws(() => checkedRecording(tape, project), /command/)
+  }
+  const tall = recording(); tall.seed.context.height = 5000
+  assert.throws(() => checkedRecording(tall, project), /height/)
+  const actor = recording(); actor.steps[0].operations.push({ kind: 'mutation', name: 'save', args: {}, actor: '../owner' })
+  assert.throws(() => checkedRecording(actor, project), /operation/)
+})

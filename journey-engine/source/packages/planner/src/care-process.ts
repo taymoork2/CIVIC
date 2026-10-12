@@ -121,7 +121,7 @@ export function careProductAllowed(instructions: AdditionalCareInstructions | un
   const recordedBleach = chemistry.some((kind) => kind === 'oxygen_bleach' || kind === 'chlorine_bleach') || supply.bleachKind !== undefined && supply.bleachKind !== 'none'
   const bleach = recordedBleach || supply.bleachKind === undefined && ['bleach', 'chemical_consumable', 'single_use_consumable', 'scent_booster'].includes(supply.kind ?? '')
   const detergent = supply.kind === 'detergent' || supply.use === 'detergent' || supply.use === 'pods'
-  return !requirements.some((requirement) => requirement.kind === 'no_softener' && (supply.use === 'softener' || supply.kind === 'dryer_sheet')
+  return !requirements.some((requirement) => requirement.kind === 'no_softener' && (supply.use === 'softener' || supply.kind === 'softener' || supply.kind === 'dryer_sheet')
     || requirement.kind === 'no_dryer_sheets' && supply.kind === 'dryer_sheet'
     || requirement.kind === 'no_bleach' && bleach
     || detergent && (requirement.kind === 'detergent_fragrance_free' && supply.fragrance !== 'free'
