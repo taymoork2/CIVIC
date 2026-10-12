@@ -128,7 +128,7 @@ test('failed wash or drying actions preserve the current items and selected inpu
 test('returning to the family plan retains a completed wash and an unfinished drying selection', async ({ page }) => {
   await page.goto('/review-frame.html?scenario=family.washing&familySize=100')
   await page.getByRole('button', { name: /Washer.*done|Washer.*finished|Wash.*done/i }).click()
-  await page.getByRole('link', { name: 'Back to Laundry', exact: true }).click()
+  await page.getByRole('button', { name: 'Back to Laundry', exact: true }).click()
   await page.getByRole('button', { name: 'Wash next load', exact: true }).click()
   await expect(page.getByRole('button', { name: 'Move to drying queue', exact: true })).toBeVisible()
   await page.getByRole('button', { name: 'Move to drying queue', exact: true }).click()
