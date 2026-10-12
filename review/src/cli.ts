@@ -27,6 +27,7 @@ import {
   lineIdFor,
   listRequests,
   registerPreview,
+  registerPullRequest,
   release,
   reopen,
   reportFix,
@@ -57,6 +58,7 @@ const USAGE = `Usage (records are shared by every worktree of this repository):
   civic add-check <request> "<command>"           civic accept-check <request> <number>
   civic overlay [--port 4777]                     serves the capture overlay for dev and preview pages
   civic preview <url> [--bearer-file <file>]      civic lines [--json] | annotations [--line <id>] [--json] | whoami
+  civic pr <number> [--preview <url>] [--remote origin]   a pull request as its own line, with its hosted preview
   civic sync [--remote origin] [--ref refs/civic/records]   share records with the team through a git ref
   civic conflicts [--json]                        civic settle <record> --keep mine|theirs
   civic keygen [--out <file>]                     makes your signing key for civic sync
@@ -237,6 +239,13 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
       need(2)
       show(acceptCheck(context, positional[0]!, Number(positional[1])))
       return 0
+    case 'pr': {
+      need(1)
+      const preview = one('--preview')
+      const line = registerPullRequest(context, { number: Number(positional[0]), ...(preview ? { preview } : {}), ...(one('--remote') ? { remote: one('--remote')! } : {}) })
+      print(`${line.id} ${line.status} at ${line.head.slice(0, 12)}${line.previews?.length ? `, served at ${line.previews.map((p) => p.url).join(', ')}` : ''}`)
+      return 0
+    }
     case 'preview': {
       need(1)
       const bearer = one('--bearer-file')
