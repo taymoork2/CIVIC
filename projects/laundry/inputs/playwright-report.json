@@ -1,7 +1,7 @@
 {
   "config": {
     "metadata": {
-      "civic.revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
+      "civic.revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
       "civic.tool": "playwright"
     }
   },
@@ -21,8 +21,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T03:47:05.205Z",
-                  "duration": 3179,
+                  "startTime": "2026-10-12T07:39:53.576Z",
+                  "duration": 2921,
                   "retry": 0
                 }
               ]
@@ -40,8 +40,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T03:47:08.577Z",
-                  "duration": 14262,
+                  "startTime": "2026-10-12T07:39:56.680Z",
+                  "duration": 13966,
                   "retry": 0
                 }
               ]
@@ -59,8 +59,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T03:47:22.853Z",
-                  "duration": 1418,
+                  "startTime": "2026-10-12T07:40:10.656Z",
+                  "duration": 2008,
                   "retry": 0
                 }
               ]
@@ -78,8 +78,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T03:47:24.287Z",
-                  "duration": 4311,
+                  "startTime": "2026-10-12T07:40:12.679Z",
+                  "duration": 4771,
                   "retry": 0
                 }
               ]
@@ -97,8 +97,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T03:47:28.613Z",
-                  "duration": 4341,
+                  "startTime": "2026-10-12T07:40:17.465Z",
+                  "duration": 4611,
                   "retry": 0
                 }
               ]
@@ -116,8 +116,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T03:47:32.973Z",
-                  "duration": 2785,
+                  "startTime": "2026-10-12T07:40:22.088Z",
+                  "duration": 2282,
                   "retry": 0
                 }
               ]
@@ -131,29 +131,13 @@
           "tests": [
             {
               "annotations": [],
-              "status": "unexpected",
+              "status": "expected",
               "results": [
                 {
-                  "status": "failed",
-                  "startTime": "2026-10-12T03:47:35.771Z",
-                  "duration": 16209,
-                  "retry": 0,
-                  "errors": [
-                    {
-                      "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n  - waiting for getByRole('link', { name: 'Back to Laundry', exact: true })\n\n\n  129 |   await page.goto('/review-frame.html?scenario=family.washing&familySize=100')\n  130 |   await page.getByRole('button', { name: /Washer.*done|Washer.*finished|Wash.*done/i }).click()\n> 131 |   await page.getByRole('link', { name: 'Back to Laundry', exact: true }).click()\n      |                                                                          ^\n  132 |   await page.getByRole('button', { name: 'Wash next load', exact: true }).click()\n  133 |   await expect(page.getByRole('button', { name: 'Move to drying queue', exact: true })).toBeVisible()\n  134 |   await page.getByRole('button', { name: 'Move to drying queue', exact: true }).click()\n    at rehearsal/source/apps/web/e2e/review-family.spec.ts:131:74"
-                    }
-                  ]
-                },
-                {
-                  "status": "failed",
-                  "startTime": "2026-10-12T03:47:52.775Z",
-                  "duration": 16393,
-                  "retry": 1,
-                  "errors": [
-                    {
-                      "message": "TimeoutError: locator.click: Timeout 15000ms exceeded.\nCall log:\n  - waiting for getByRole('link', { name: 'Back to Laundry', exact: true })\n\n\n  129 |   await page.goto('/review-frame.html?scenario=family.washing&familySize=100')\n  130 |   await page.getByRole('button', { name: /Washer.*done|Washer.*finished|Wash.*done/i }).click()\n> 131 |   await page.getByRole('link', { name: 'Back to Laundry', exact: true }).click()\n      |                                                                          ^\n  132 |   await page.getByRole('button', { name: 'Wash next load', exact: true }).click()\n  133 |   await expect(page.getByRole('button', { name: 'Move to drying queue', exact: true })).toBeVisible()\n  134 |   await page.getByRole('button', { name: 'Move to drying queue', exact: true }).click()\n    at rehearsal/source/apps/web/e2e/review-family.spec.ts:131:74"
-                    }
-                  ]
+                  "status": "passed",
+                  "startTime": "2026-10-12T07:40:24.390Z",
+                  "duration": 1883,
+                  "retry": 0
                 }
               ]
             }
@@ -176,8 +160,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T03:48:10.169Z",
-                  "duration": 2212,
+                  "startTime": "2026-10-12T07:40:26.296Z",
+                  "duration": 1958,
                   "retry": 0
                 }
               ]
@@ -195,8 +179,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T03:48:12.553Z",
-                  "duration": 1832,
+                  "startTime": "2026-10-12T07:40:28.272Z",
+                  "duration": 1715,
                   "retry": 0
                 }
               ]
@@ -220,8 +204,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T03:48:14.411Z",
-                  "duration": 1894,
+                  "startTime": "2026-10-12T07:40:30.008Z",
+                  "duration": 1789,
                   "retry": 0
                 }
               ]
@@ -239,8 +223,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T03:48:16.319Z",
-                  "duration": 2075,
+                  "startTime": "2026-10-12T07:40:31.810Z",
+                  "duration": 2140,
                   "retry": 0
                 }
               ]
@@ -258,8 +242,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T03:48:18.409Z",
-                  "duration": 2149,
+                  "startTime": "2026-10-12T07:40:33.963Z",
+                  "duration": 2282,
                   "retry": 0
                 }
               ]
@@ -277,8 +261,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T03:48:20.573Z",
-                  "duration": 1241,
+                  "startTime": "2026-10-12T07:40:36.260Z",
+                  "duration": 1401,
                   "retry": 0
                 }
               ]
@@ -296,8 +280,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T03:48:21.827Z",
-                  "duration": 3217,
+                  "startTime": "2026-10-12T07:40:37.677Z",
+                  "duration": 3283,
                   "retry": 0
                 }
               ]
@@ -315,8 +299,267 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T03:48:25.055Z",
-                  "duration": 1774,
+                  "startTime": "2026-10-12T07:40:40.978Z",
+                  "duration": 2401,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "review-runtime.spec.ts",
+      "file": "review-runtime.spec.ts",
+      "specs": [
+        {
+          "title": "Home uses the shipped Wear action, captures its real arguments and replays with no second wear",
+          "file": "review-runtime.spec.ts",
+          "line": 11,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T07:42:16.877Z",
+                  "duration": 3821,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Drying empty has a real return path to Laundry and replay follows it",
+          "file": "review-runtime.spec.ts",
+          "line": 22,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T07:42:20.891Z",
+                  "duration": 3551,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "put-away selection records inputs and actual effects across the empty branch and return",
+          "file": "review-runtime.spec.ts",
+          "line": 31,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T07:42:24.454Z",
+                  "duration": 4669,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Home outfit editing records portalled inputs, quantities and Escape, then replays the return",
+          "file": "review-runtime.spec.ts",
+          "line": 41,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T07:42:29.135Z",
+                  "duration": 6017,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "partial put-away captures quantity, clear/all branches and keeps the remaining piece",
+          "file": "review-runtime.spec.ts",
+          "line": 58,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T07:42:35.163Z",
+                  "duration": 5095,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "no-ready outfit goes to Laundry; a failed Wear stays on Home with a replayable error receipt",
+          "file": "review-runtime.spec.ts",
+          "line": 71,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T07:42:40.272Z",
+                  "duration": 7202,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "saved recordings reopen on their original preset and clock in a fresh preview",
+          "file": "review-runtime.spec.ts",
+          "line": 86,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T07:42:47.491Z",
+                  "duration": 5579,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "sensitive fields stay out of recordings and an ambiguous control stops replay before a mutation",
+          "file": "review-runtime.spec.ts",
+          "line": 100,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T07:42:53.085Z",
+                  "duration": 3145,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "review-towel-runtime.spec.ts",
+      "file": "review-towel-runtime.spec.ts",
+      "specs": [
+        {
+          "title": "towel new branch captures real inputs, saves through the app and replays from a fresh seed",
+          "file": "review-towel-runtime.spec.ts",
+          "line": 12,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T07:42:56.259Z",
+                  "duration": 9202,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "towel pre-owned branch captures real inputs, saves through the app and replays from a fresh seed",
+          "file": "review-towel-runtime.spec.ts",
+          "line": 12,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T07:43:05.476Z",
+                  "duration": 9072,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "proposal commands are part of the shared tape and replay without discarding the towel draft",
+          "file": "review-towel-runtime.spec.ts",
+          "line": 37,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T07:43:14.563Z",
+                  "duration": 7799,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "a failed towel save keeps its draft, records recovery and replays the successful retry",
+          "file": "review-towel-runtime.spec.ts",
+          "line": 58,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T07:43:22.377Z",
+                  "duration": 3721,
+                  "retry": 0
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "portalled towel screens and the saved outcome produce real snapshots",
+          "file": "review-towel-runtime.spec.ts",
+          "line": 70,
+          "tests": [
+            {
+              "annotations": [],
+              "status": "expected",
+              "results": [
+                {
+                  "status": "passed",
+                  "startTime": "2026-10-12T07:43:26.120Z",
+                  "duration": 707,
                   "retry": 0
                 }
               ]
@@ -336,29 +579,13 @@
           "tests": [
             {
               "annotations": [],
-              "status": "unexpected",
+              "status": "expected",
               "results": [
                 {
-                  "status": "failed",
-                  "startTime": "2026-10-12T03:48:26.860Z",
-                  "duration": 15341,
-                  "retry": 0,
-                  "errors": [
-                    {
-                      "message": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('heading', { name: 'A Laundered Closet · review' })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" getByRole('heading', { name: 'A Laundered Closet · review' }) with timeout 15000ms\n  - waiting for getByRole('heading', { name: 'A Laundered Closet · review' })\n\n\n  19 |   await expect(page.getByLabel('Review key', { exact: true })).toHaveCount(0)\n  20 |   expect((await page.request.get('/api/review/index')).ok()).toBe(true)\n> 21 |   await expect(page.getByRole('heading', { name: 'A Laundered Closet · review' })).toBeVisible()\n     |                                                                                    ^\n  22 |   const frame = page.frameLocator('iframe')\n  23 |   await expect(frame.getByRole('button', { name: 'Save item', exact: true })).toBeEnabled()\n  24 |   await expect(frame.locator('.sheet[data-starting-style]')).toHaveCount(0)\n    at rehearsal/source/apps/web/e2e/review-workspace.spec.ts:21:84"
-                    }
-                  ]
-                },
-                {
-                  "status": "failed",
-                  "startTime": "2026-10-12T03:48:43.124Z",
-                  "duration": 15424,
-                  "retry": 1,
-                  "errors": [
-                    {
-                      "message": "Error: expect(locator).toBeVisible() failed\n\nLocator: getByRole('heading', { name: 'A Laundered Closet · review' })\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n  - Expect \"toBeVisible\" getByRole('heading', { name: 'A Laundered Closet · review' }) with timeout 15000ms\n  - waiting for getByRole('heading', { name: 'A Laundered Closet · review' })\n\n\n  19 |   await expect(page.getByLabel('Review key', { exact: true })).toHaveCount(0)\n  20 |   expect((await page.request.get('/api/review/index')).ok()).toBe(true)\n> 21 |   await expect(page.getByRole('heading', { name: 'A Laundered Closet · review' })).toBeVisible()\n     |                                                                                    ^\n  22 |   const frame = page.frameLocator('iframe')\n  23 |   await expect(frame.getByRole('button', { name: 'Save item', exact: true })).toBeEnabled()\n  24 |   await expect(frame.locator('.sheet[data-starting-style]')).toHaveCount(0)\n    at rehearsal/source/apps/web/e2e/review-workspace.spec.ts:21:84"
-                    }
-                  ]
+                  "status": "passed",
+                  "startTime": "2026-10-12T07:40:43.405Z",
+                  "duration": 3367,
+                  "retry": 0
                 }
               ]
             }
@@ -375,8 +602,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T03:48:59.510Z",
-                  "duration": 3464,
+                  "startTime": "2026-10-12T07:40:46.783Z",
+                  "duration": 3334,
                   "retry": 0
                 }
               ]
@@ -394,8 +621,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T03:49:03.139Z",
-                  "duration": 4059,
+                  "startTime": "2026-10-12T07:40:50.129Z",
+                  "duration": 4233,
                   "retry": 0
                 }
               ]
@@ -405,33 +632,17 @@
         {
           "title": "every initial named scenario renders a real task drawer",
           "file": "review-workspace.spec.ts",
-          "line": 88,
+          "line": 91,
           "tests": [
             {
               "annotations": [],
-              "status": "unexpected",
+              "status": "expected",
               "results": [
                 {
-                  "status": "failed",
-                  "startTime": "2026-10-12T03:49:07.214Z",
-                  "duration": 15288,
-                  "retry": 0,
-                  "errors": [
-                    {
-                      "message": "Error: route.home.reminder-visible\n\nexpect(locator).toBeVisible() failed\n\nLocator: locator('iframe').contentFrame().getByRole('dialog').first()\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n  - route.home.reminder-visible locator('iframe').contentFrame().getByRole('dialog').first() with timeout 15000ms\n  - waiting for locator('iframe').contentFrame().getByRole('dialog').first()\n\n\n  90 |     await page.goto(`/review?legacy=1&scenario=${scenario.id}`)\n  91 |     const frame = page.frameLocator('iframe')\n> 92 |     await expect(frame.getByRole('dialog').first(), scenario.id).toBeVisible()\n     |                                                                  ^\n  93 |     await expect(frame.getByRole('heading', { name: 'Preview unavailable' }), scenario.id).toHaveCount(0)\n  94 |     if (scenario.id === 'records.item.tags') await expect(frame.getByRole('button', { name: 'Save tags', exact: true })).toBeVisible()\n  95 |     if (scenario.id === 'records.item.care') await expect(frame.getByRole('heading', { name: 'How does it wash?', exact: true })).toBeVisible()\n    at rehearsal/source/apps/web/e2e/review-workspace.spec.ts:92:66"
-                    }
-                  ]
-                },
-                {
-                  "status": "failed",
-                  "startTime": "2026-10-12T03:49:23.286Z",
-                  "duration": 15326,
-                  "retry": 1,
-                  "errors": [
-                    {
-                      "message": "Error: route.home.reminder-visible\n\nexpect(locator).toBeVisible() failed\n\nLocator: locator('iframe').contentFrame().getByRole('dialog').first()\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n  - route.home.reminder-visible locator('iframe').contentFrame().getByRole('dialog').first() with timeout 15000ms\n  - waiting for locator('iframe').contentFrame().getByRole('dialog').first()\n\n\n  90 |     await page.goto(`/review?legacy=1&scenario=${scenario.id}`)\n  91 |     const frame = page.frameLocator('iframe')\n> 92 |     await expect(frame.getByRole('dialog').first(), scenario.id).toBeVisible()\n     |                                                                  ^\n  93 |     await expect(frame.getByRole('heading', { name: 'Preview unavailable' }), scenario.id).toHaveCount(0)\n  94 |     if (scenario.id === 'records.item.tags') await expect(frame.getByRole('button', { name: 'Save tags', exact: true })).toBeVisible()\n  95 |     if (scenario.id === 'records.item.care') await expect(frame.getByRole('heading', { name: 'How does it wash?', exact: true })).toBeVisible()\n    at rehearsal/source/apps/web/e2e/review-workspace.spec.ts:92:66"
-                    }
-                  ]
+                  "status": "passed",
+                  "startTime": "2026-10-12T07:40:54.374Z",
+                  "duration": 49615,
+                  "retry": 0
                 }
               ]
             }
@@ -440,7 +651,7 @@
         {
           "title": "new basic appliance and product connect to their saved records and editors",
           "file": "review-workspace.spec.ts",
-          "line": 99,
+          "line": 102,
           "tests": [
             {
               "annotations": [],
@@ -448,8 +659,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T03:49:39.588Z",
-                  "duration": 6035,
+                  "startTime": "2026-10-12T07:41:44.007Z",
+                  "duration": 6640,
                   "retry": 0
                 }
               ]
@@ -459,7 +670,7 @@
         {
           "title": "saved profile and water editors persist local changes",
           "file": "review-workspace.spec.ts",
-          "line": 137,
+          "line": 140,
           "tests": [
             {
               "annotations": [],
@@ -467,8 +678,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T03:49:45.819Z",
-                  "duration": 5021,
+                  "startTime": "2026-10-12T07:41:50.667Z",
+                  "duration": 5468,
                   "retry": 0
                 }
               ]
@@ -478,7 +689,7 @@
         {
           "title": "pack intake keeps answers through Back, saves, and connects to the item record",
           "file": "review-workspace.spec.ts",
-          "line": 160,
+          "line": 164,
           "tests": [
             {
               "annotations": [],
@@ -486,27 +697,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T03:49:50.853Z",
-                  "duration": 4686,
-                  "retry": 0
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "towel intake keeps answers through Back, saves, and connects to the item record",
-          "file": "review-workspace.spec.ts",
-          "line": 160,
-          "tests": [
-            {
-              "annotations": [],
-              "status": "expected",
-              "results": [
-                {
-                  "status": "passed",
-                  "startTime": "2026-10-12T03:49:55.552Z",
-                  "duration": 4281,
+                  "startTime": "2026-10-12T07:41:56.151Z",
+                  "duration": 4478,
                   "retry": 0
                 }
               ]
@@ -516,7 +708,7 @@
         {
           "title": "nested tags guard a draft, dismiss back to the record, and save through the local adapter",
           "file": "review-workspace.spec.ts",
-          "line": 189,
+          "line": 193,
           "tests": [
             {
               "annotations": [],
@@ -524,8 +716,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T03:49:59.847Z",
-                  "duration": 2863,
+                  "startTime": "2026-10-12T07:42:00.643Z",
+                  "duration": 2713,
                   "retry": 0
                 }
               ]
@@ -535,7 +727,7 @@
         {
           "title": "pointer pins capture an element and a region; unsent feedback survives reload",
           "file": "review-workspace.spec.ts",
-          "line": 210,
+          "line": 214,
           "tests": [
             {
               "annotations": [],
@@ -543,8 +735,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T03:50:02.721Z",
-                  "duration": 5201,
+                  "startTime": "2026-10-12T07:42:03.372Z",
+                  "duration": 5316,
                   "retry": 0
                 }
               ]
@@ -554,7 +746,7 @@
         {
           "title": "student, member and missing-care presets affect a desktop preview; offline retains its draft",
           "file": "review-workspace.spec.ts",
-          "line": 244,
+          "line": 248,
           "tests": [
             {
               "annotations": [],
@@ -562,8 +754,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T03:50:07.933Z",
-                  "duration": 3581,
+                  "startTime": "2026-10-12T07:42:08.705Z",
+                  "duration": 3525,
                   "retry": 0
                 }
               ]
@@ -573,7 +765,7 @@
         {
           "title": "the direct product Contents editor saves through the real form and local adapter",
           "file": "review-workspace.spec.ts",
-          "line": 265,
+          "line": 269,
           "tests": [
             {
               "annotations": [],
@@ -581,8 +773,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T03:50:11.525Z",
-                  "duration": 3045,
+                  "startTime": "2026-10-12T07:42:12.244Z",
+                  "duration": 3743,
                   "retry": 0
                 }
               ]
@@ -593,11 +785,11 @@
     }
   ],
   "stats": {
-    "startTime": "2026-10-12T03:47:04.424Z",
-    "duration": 190243.568,
-    "expected": 24,
+    "startTime": "2026-10-12T07:39:52.829Z",
+    "duration": 214193.687,
+    "expected": 39,
     "skipped": 0,
-    "unexpected": 3,
+    "unexpected": 0,
     "flaky": 0
   }
 }
