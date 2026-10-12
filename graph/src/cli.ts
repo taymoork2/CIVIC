@@ -9,6 +9,7 @@
 //   civic overrides <file> <instance-id> [--json]
 //   civic context <file> <semantic-id> --platform <p> [--variant <key>] [--json]
 //   civic gaps <file> [--scope <semantic-id>] [--platform <p>] [--json]
+//   civic alignment <file> [--scope <semantic-id>] [--today <date>] [--json]
 //   civic completeness <file> <journey-id> [--json]
 //   civic walk <file> <journey-id> [--path <label,...>] [--html <file>] [--json]
 //   civic screen <target-id> [<file>...] [--config civic.check.json] [--today <date>] [--json]
@@ -29,6 +30,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, relative, resolve } from 'node:path'
 import { baselineFrom, checkDocument, compareToBaseline, DEFAULT_BLOCKING, FINDING_KINDS, renderCheck, statusLine, type Baseline, type FindingKind } from './check.ts'
+import { alignmentsIn, renderAlignments } from './alignment.ts'
 import { changeBetween, renderChange, type ChangeReport, type GraphAtRevisions } from './change.ts'
 import { completenessOf, renderCompleteness } from './completeness.ts'
 import { releaseBreaks, releasesBetween, renderReleases } from './release.ts'
@@ -116,6 +118,12 @@ async function main(): Promise<number> {
     const scope = option('--scope')
     const gaps = gapsIn(await loadGraph(args[0]!), { ...(scope ? { scope } : {}), ...(platform !== undefined ? { platform } : {}) })
     console.log(args.includes('--json') ? JSON.stringify(gaps, null, 2) : renderGaps(gaps))
+    return 0
+  }
+  if (command === 'alignment' && args.length >= 1) {
+    const graph = await loadGraph(args[0]!)
+    const alignments = alignmentsIn(graph, { today: option('--today') ?? new Date().toISOString().slice(0, 10) }, option('--scope'))
+    console.log(args.includes('--json') ? JSON.stringify(alignments, null, 2) : renderAlignments(graph, alignments))
     return 0
   }
   if (command === 'overrides' && args.length >= 2) {
@@ -679,6 +687,7 @@ function usage(problem?: string): number {
       '  civic overrides <file> <instance-id> [--json]',
       '  civic context <file> <semantic-id> --platform <p> [--variant <key>] [--json]',
       '  civic gaps <file> [--scope <semantic-id>] [--platform <p>] [--json]',
+      '  civic alignment <file> [--scope <semantic-id>] [--today <date>] [--json]',
       '  civic completeness <file> <journey-id> [--json]',
       '  civic walk <file> <journey-id> [--path <label,...>] [--html <file>] [--json]',
       '  civic screen <target-id> [<file>...] [--config civic.check.json] [--today <date>] [--json]',
