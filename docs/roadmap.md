@@ -82,6 +82,8 @@ Progress, 2026-10-12: crawl-first discovery is built for web. CIVIC's [crawl loo
 
 Progress, 2026-10-12: the canvas reads the graph. `civic screen` answers what the graphs know about one screen, and the journey canvas's Contract panel shows it for the selected screen: run evidence with the failing tests, paths on, and the gate's findings marked new or baselined. The engine runs CIVIC's CLI for it, as it does for shared annotations, so neither imports the other.
 
+Progress, 2026-10-12: the crawl has a native driver. It speaks WebDriver to an Appium server (UiAutomator2 for Android, XCUITest for iOS), reads each state from the page source as roles and accessible names, starts every try in a fresh session, and records but doesn't explore another app it lands in. It is tested against a stand-in server on Android and iOS sources and against a real Appium 3 server with Appium's fake driver. No emulator or device runs in the cloud, so no native app has been crawled yet. Native crawls can't block network writes the way the web driver does, so they need a test build. Still to come: a first native crawl on a device or emulator, and the frame walk (D33).
+
 ## 5. Identity, permissions, and multiplayer
 
 Real identities, scoped permissions, and versioned shared records, following the spec's [multiplayer boundary](product-spec.md#multiplayer-and-ownership). The single local access key and the portal's collaborator access are not this model.
