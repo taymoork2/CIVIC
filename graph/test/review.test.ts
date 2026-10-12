@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { indexGraph, isAnchored, laneFor, resolveAnchor, validateGraph, type Actor, type Annotation, type GraphDocument, type ObservedElement, type WorkRequest } from '../src/index.ts'
+import { indexGraph, isAnchored, laneFor, resolveAnchor, validateGraph, type Actor, type Annotation, type DraftChoice, type GraphDocument, type Line, type ObservedElement, type WorkRequest } from '../src/index.ts'
 import { decide, edited, example, record } from './helpers.ts'
 
 const errorCodes = (document: unknown) => validateGraph(document).filter((issue) => issue.severity === 'error').map((issue) => issue.code)
@@ -13,7 +13,26 @@ test('the review loop example is a valid graph with no warnings', () => {
   assert.deepEqual(validateGraph(example('review-loop')), [])
 })
 
+/** Two drafts of a Figma file, the first chosen by a person and the second passed over (D36). */
+function withDrafts(d: GraphDocument): GraphDocument {
+  const draft = (name: string, status: Line['status']): Line => ({ id: `line:figma.shop.draft.${name}`, kind: 'line', title: `Draft: ${name}`, type: 'design-draft', tool: 'figma', ref: name, base: 'line:figma.shop', head: `${name}-1`, status })
+  d.records.push(
+    { id: 'line:figma.shop', kind: 'line', title: 'Shop checkout', type: 'main', tool: 'figma', ref: 'shop', head: '100', status: 'open' },
+    draft('a', 'open'),
+    draft('b', 'abandoned'),
+    { id: 'choice:shop.gift-wrap', kind: 'draft-choice', title: 'Chose draft a', base: 'line:figma.shop', chosen: { line: 'line:figma.shop.draft.a', revision: 'a-1' }, over: ['line:figma.shop.draft.b'], rationale: 'Keeps the note beside the wrap choice.', at: '2026-10-12T10:00:00Z', writtenBy: 'actor:person.taymoor' } as DraftChoice,
+  )
+  return d
+}
+
+test('a person choosing between design drafts is valid', () => {
+  assert.deepEqual(errorCodes(edited('review-loop', withDrafts)), [])
+})
+
 const cases: [string, (d: GraphDocument) => void, string][] = [
+  ['an agent choosing between drafts', (d) => { record(withDrafts(d), 'choice:shop.gift-wrap').writtenBy = 'actor:agent.claude-code.taymoor' }, 'agent-decision'],
+  ['a passed-over draft left open', (d) => { record<Line>(withDrafts(d), 'line:figma.shop.draft.b').status = 'open' }, 'draft-choice'],
+  ['choosing a line that is not a draft of the base', (d) => { record<DraftChoice>(withDrafts(d), 'choice:shop.gift-wrap').chosen.line = 'line:git.fix-intake-label' }, 'draft-choice'],
   ['an agent acting for nobody', (d) => { delete record(d, 'actor:agent.claude-code.taymoor').delegatedBy }, 'agent-delegation'],
   ['an agent acting for another agent', (d) => {
     d.records.push({ id: 'actor:agent.helper', kind: 'actor', title: 'Helper', type: 'agent', handle: 'helper', delegatedBy: 'actor:agent.claude-code.taymoor' } as Actor)
@@ -140,4 +159,13 @@ test('resolveAnchor finds by stable ID, then exact locator, and never the neares
   assert.deepEqual(resolveAnchor({ ...anchor, targetIds: [], locator: { role: 'heading', name: 'Pick a colour' } }, [moved, { ...moved, testId: 'x' }]), { outcome: 'not-found', matches: [] }, 'an ambiguous locator is not a match')
   assert.deepEqual(resolveAnchor(undefined, [label]), { outcome: 'unanchored', matches: [] })
   assert.deepEqual(resolveAnchor({ targetIds: [], rect: { x: 0, y: 0, width: 1, height: 1 } }, [label]), { outcome: 'unanchored', matches: [] }, 'a rectangle alone never finds anything')
+})
+
+test('resolveAnchor finds a design-draft frame by its Figma node ID only', () => {
+  const frame = { targetIds: [], locator: { figmaNode: '40:20' } }
+  const gift: ObservedElement = { civicIds: [], figmaNode: '40:20', name: 'Gift options' }
+  const renamed: ObservedElement = { civicIds: [], figmaNode: '40:21', name: 'Gift options' }
+  assert.ok(isAnchored(frame))
+  assert.deepEqual(resolveAnchor(frame, [renamed, gift]), { outcome: 'found-by-locator', matches: [1] })
+  assert.deepEqual(resolveAnchor(frame, [renamed]), { outcome: 'not-found', matches: [] }, 'a frame with the same name is not the same frame')
 })
