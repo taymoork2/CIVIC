@@ -67,15 +67,27 @@
     "semanticId": "semantic:card",
     "componentSet": "Card",
     "owners": [{ "role": "design", "who": "design-system-maintainers" }],
-    "variantProperty": "Appearance",
+    "variantProperty": "Style",
     "variants": { "Filled": "filled", "Outline": "outline" },
     "stateProperty": "State",
-    "states": { "Rest": "rest", "Hover": "hover", "Selected": "selected", "Disabled": "disabled", "Loading": "loading", "Empty": "empty", "Error": "error" },
+    "states": { "Rest": "rest", "Hover": "hover", "Selected": "selected", "Disabled": "disabled" },
     "properties": {
-      "Header action": { "property": "header.action", "change": "add-content" },
-      "Show footer": { "property": "actions", "change": "add-content" },
-      "Selectable": { "property": "state.selected", "change": "set-property" },
-      "Title": { "content": true }
+      "Layout": { "property": "body", "change": "set-property" },
+      "Body": { "property": "body", "change": "add-content" },
+      "Footer": { "property": "actions", "change": "add-content" }
+    },
+    "parts": {
+      ".Card header": {
+        "Custom header": { "property": "header", "change": "set-property" },
+        "32px Icon": { "property": "header.image", "change": "set-property" },
+        "Avatar": { "property": "header.image", "change": "add-content" },
+        "Product icon": { "property": "header.image", "change": "add-content" },
+        "Title string": { "content": true },
+        "Subtext": { "property": "header.description", "change": "add-content" },
+        "Subtext string": { "content": true },
+        "Checkbox": { "property": "state.selected", "change": "set-property" },
+        "Header quick action": { "property": "header.action", "change": "add-content" }
+      }
     },
     "styleFields": { "cornerRadius": "corner-radius", "fills": "background" }
   }

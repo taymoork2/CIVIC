@@ -1,0 +1,306 @@
+{
+  "name": "Microsoft Fluent 2 iOS (Community)",
+  "lastModified": "2026-10-12T05:12:23Z",
+  "version": "2409334717272340147",
+  "schemaVersion": 0,
+  "document": {
+    "id": "0:0",
+    "name": "Document",
+    "type": "DOCUMENT",
+    "children": [
+      {
+        "id": "18791:32034",
+        "name": "Button",
+        "type": "CANVAS",
+        "children": [
+          {
+            "id": "18812:16006",
+            "name": "Button",
+            "type": "COMPONENT_SET",
+            "componentPropertyDefinitions": {
+              "Icon#15064:53": {
+                "type": "BOOLEAN",
+                "defaultValue": true
+              },
+              "Label#15064:99": {
+                "type": "TEXT",
+                "defaultValue": "Text"
+              },
+              "Style": {
+                "type": "VARIANT",
+                "defaultValue": "Accent",
+                "variantOptions": [
+                  "Accent",
+                  "Outline accent",
+                  "Subtle",
+                  "Outline"
+                ]
+              },
+              "Size": {
+                "type": "VARIANT",
+                "defaultValue": "Large",
+                "variantOptions": [
+                  "Large",
+                  "Medium",
+                  "Small"
+                ]
+              },
+              "State": {
+                "type": "VARIANT",
+                "defaultValue": "Rest",
+                "variantOptions": [
+                  "Rest",
+                  "Pressed",
+                  "Focus",
+                  "Disabled"
+                ]
+              }
+            },
+            "children": [
+              {
+                "id": "18812:16007",
+                "name": "Style=Subtle, Size=Small, State=Disabled",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16011",
+                "name": "Style=Subtle, Size=Small, State=Focus",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16015",
+                "name": "Style=Subtle, Size=Small, State=Pressed",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16019",
+                "name": "Style=Subtle, Size=Small, State=Rest",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16023",
+                "name": "Style=Subtle, Size=Medium, State=Disabled",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16027",
+                "name": "Style=Subtle, Size=Medium, State=Focus",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16031",
+                "name": "Style=Subtle, Size=Medium, State=Pressed",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16035",
+                "name": "Style=Subtle, Size=Medium, State=Rest",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16039",
+                "name": "Style=Subtle, Size=Large, State=Disabled",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16043",
+                "name": "Style=Subtle, Size=Large, State=Focus",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16047",
+                "name": "Style=Subtle, Size=Large, State=Pressed",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16051",
+                "name": "Style=Subtle, Size=Large, State=Rest",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16055",
+                "name": "Style=Outline accent, Size=Small, State=Disabled",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16059",
+                "name": "Style=Outline, Size=Small, State=Disabled",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16063",
+                "name": "Style=Outline accent, Size=Small, State=Focus",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16067",
+                "name": "Style=Outline, Size=Small, State=Focus",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16071",
+                "name": "Style=Outline accent, Size=Small, State=Pressed",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16075",
+                "name": "Style=Outline, Size=Small, State=Pressed",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16079",
+                "name": "Style=Outline accent, Size=Small, State=Rest",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16083",
+                "name": "Style=Outline, Size=Small, State=Rest",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16087",
+                "name": "Style=Outline accent, Size=Medium, State=Disabled",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16091",
+                "name": "Style=Outline, Size=Medium, State=Disabled",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16095",
+                "name": "Style=Outline accent, Size=Medium, State=Focus",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16099",
+                "name": "Style=Outline, Size=Medium, State=Focus",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16103",
+                "name": "Style=Outline accent, Size=Medium, State=Pressed",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16107",
+                "name": "Style=Outline, Size=Medium, State=Pressed",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16111",
+                "name": "Style=Outline accent, Size=Medium, State=Rest",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16115",
+                "name": "Style=Outline, Size=Medium, State=Rest",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16119",
+                "name": "Style=Outline accent, Size=Large, State=Disabled",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16123",
+                "name": "Style=Outline, Size=Large, State=Disabled",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16127",
+                "name": "Style=Outline accent, Size=Large, State=Focus",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16131",
+                "name": "Style=Outline, Size=Large, State=Focus",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16135",
+                "name": "Style=Outline accent, Size=Large, State=Pressed",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16139",
+                "name": "Style=Outline, Size=Large, State=Pressed",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16143",
+                "name": "Style=Outline accent, Size=Large, State=Rest",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16147",
+                "name": "Style=Outline, Size=Large, State=Rest",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16151",
+                "name": "Style=Accent, Size=Small, State=Disabled",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16155",
+                "name": "Style=Accent, Size=Small, State=Focus",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16159",
+                "name": "Style=Accent, Size=Small, State=Pressed",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16163",
+                "name": "Style=Accent, Size=Small, State=Rest",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16167",
+                "name": "Style=Accent, Size=Medium, State=Disabled",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16171",
+                "name": "Style=Accent, Size=Medium, State=Focus",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16175",
+                "name": "Style=Accent, Size=Medium, State=Pressed",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16179",
+                "name": "Style=Accent, Size=Medium, State=Rest",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16183",
+                "name": "Style=Accent, Size=Large, State=Disabled",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16187",
+                "name": "Style=Accent, Size=Large, State=Focus",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16191",
+                "name": "Style=Accent, Size=Large, State=Pressed",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "18812:16195",
+                "name": "Style=Accent, Size=Large, State=Rest",
+                "type": "COMPONENT"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

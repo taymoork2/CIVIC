@@ -4,7 +4,7 @@ Static rules over the design export, the component contracts and the journey sha
 
 ## Component states
 
-- **Order Summary, Card**: 5 of 7 states accounted for. Shown: rest, loading. From the library: hover, selected, disabled. Inherited by choice: none. Missing: empty, error. (`semantic:card` on `target:shop.order-summary`)
+- **Order Summary, Card**: 4 of 7 states accounted for. Shown: rest. From the library: hover, selected, disabled. Inherited by choice: none. Missing: loading, empty, error. (`semantic:card` on `target:shop.order-summary`)
 
 ## Journey shape
 

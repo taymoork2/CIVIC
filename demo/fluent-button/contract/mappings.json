@@ -80,6 +80,20 @@
         "Primary": "primary-filled",
         "Text": "subtle"
       }
+    },
+    {
+      "id": "ios-kit",
+      "title": "Microsoft Fluent 2 iOS Figma kit",
+      "platform": "ios",
+      "componentSet": "Button",
+      "variantProperty": "Style",
+      "owners": [{ "role": "design", "who": "design-system-maintainers" }],
+      "variants": {
+        "Accent": "primary-filled",
+        "Outline accent": "brand-outline",
+        "Outline": "neutral-default",
+        "Subtle": "subtle"
+      }
     }
   ]
 }

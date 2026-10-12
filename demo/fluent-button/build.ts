@@ -177,10 +177,13 @@ const androidTokens = fragment([
   backgroundEvidence(androidMapping, kotlinStyleArms(buttonTokens.text, 'backgroundBrush', 'ButtonStyle'), { ...buttonTokens.source, importer: 'kotlin-control-tokens' }, 'ButtonTokens backgroundBrush by ButtonStyle'),
 ])
 
-// --- Design: the Android Figma kit, and the comparison --------------------------------
+// --- Design: the Android and iOS Figma kits, and the comparison -----------------------
 
-const kitFile = json<{ lastModified: string }>('design/android-kit.figma.json')
-const kits = mappings.designKits.map((kit) => readFigmaComponentSet(kitFile, kit, semantic.id, kitFile.lastModified))
+// Each kit is its own Figma file, trimmed to design/<kit id>.figma.json by design/trim.ts.
+const kits = mappings.designKits.map((kit) => {
+  const kitFile = json<{ lastModified: string }>(`design/${kit.id}.figma.json`)
+  return readFigmaComponentSet(kitFile, kit, semantic.id, kitFile.lastModified)
+})
 const components = { web, ios, android }
 const conflicts = kits.flatMap((design) => {
   const part = components[design.kit.platform as keyof typeof components]

@@ -1,8 +1,10 @@
-11 gap(s)
+13 gap(s)
 
-## open-conflict (1)
+## open-conflict (3)
 
 - [android] Fluent Android Compose Button offers Brand outline, which the Microsoft Fluent Android Figma kit does not draw. Classification unclassified. Owners: design design-system-maintainers, design-engineering fluent-android. (`conflict:button.android.brand-outline`)
+- [ios] Fluent iOS Button offers Danger, which the Microsoft Fluent 2 iOS Figma kit does not draw. Classification unclassified. Owners: design design-system-maintainers, design-engineering fluent-ios. (`conflict:button.ios.danger`)
+- [ios] Fluent iOS Button offers Transparent neutral, which the Microsoft Fluent 2 iOS Figma kit does not draw. Classification unclassified. Owners: design design-system-maintainers, design-engineering fluent-ios. (`conflict:button.ios.transparent-neutral`)
 
 ## missing-variant (4)
 

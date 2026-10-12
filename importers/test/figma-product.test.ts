@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import type { SemanticComponent } from '../../graph/src/index.ts'
+import { trimFigmaFile } from '../src/figma-trim.ts'
 import { raiseOverrideDrift, readFigmaLibraryComponent, readFigmaProductFile, tsExportedComponents, type LibraryComponentMapping, type ProductManifest } from '../src/index.ts'
 
 const mapping: LibraryComponentMapping = {
@@ -108,6 +109,35 @@ test('undeclared names, misnamed frames and flows that start nowhere fail the im
   assert.throws(() => read(productFile([{ id: '2:1', name: 'Order Summary', type: 'FRAME', children: [] }], '2:9')), /starts on 2:9/)
 })
 
+test('a nested part\'s properties are read from its own instance, and several can mean one contract property', () => {
+  const header = { id: '1:5', name: 'Header', type: 'COMPONENT_SET', children: [], componentPropertyDefinitions: {
+    'Checkbox#1:6': { type: 'BOOLEAN', defaultValue: false },
+    'Avatar#1:7': { type: 'BOOLEAN', defaultValue: false },
+    'Icon#1:8': { type: 'BOOLEAN', defaultValue: true },
+  } }
+  const withHeader = libraryFile()
+  withHeader.document.children[0]!.children.push(header as never)
+  const parts = { Header: { Checkbox: { property: 'state.selected', change: 'set-property' as const }, Avatar: { property: 'header.image', change: 'add-content' as const }, Icon: { property: 'header.image', change: 'add-content' as const } } }
+  const nested = readFigmaLibraryComponent(withHeader, { ...mapping, parts }, 'now')
+  assert.deepEqual(nested.defaults, { 'Show footer': false, Title: 'Title', 'Header / Checkbox': false, 'Header / Avatar': false, 'Header / Icon': true })
+  assert.throws(() => readFigmaLibraryComponent(withHeader, { ...mapping, parts: { Header: { Badge: { content: true } } } }, 'now'), /Header has no component property Badge/)
+  assert.throws(() => readFigmaLibraryComponent(libraryFile(), { ...mapping, parts }, 'now'), /no component set named Header/)
+
+  const headerInstance = (properties: Record<string, boolean>) => ({ id: '2:9', name: 'Header', type: 'INSTANCE', componentId: '9:2',
+    componentProperties: Object.fromEntries(Object.entries(properties).map(([name, value], index) => [`${name}#1:${6 + index}`, { type: 'BOOLEAN', value }])) })
+  const file = (properties: Record<string, boolean>) => {
+    const base = productFile([{ id: '2:1', name: 'Order Summary', type: 'FRAME', children: [instance('2:2', 'Rest', { children: [{ id: '2:8', name: 'Header container', type: 'FRAME', children: [headerInstance(properties)] }] })] }])
+    return { ...base, components: { ...base.components, '9:2': { key: 'h', name: 'Default', componentSetId: '9:3', remote: true } }, componentSets: { ...base.componentSets, '9:3': { key: 'header', name: 'Header', remote: true } } }
+  }
+  const overrides = readFigmaProductFile(file({ Checkbox: true, Avatar: true, Icon: false }), nested, product, 'now').records.filter((record) => record.kind === 'override')
+  assert.deepEqual(overrides.map((override) => [override.id, override.title]), [
+    ['override:shop.order-summary.card.state-selected', 'Header / Checkbox set to true'],
+    ['override:shop.order-summary.card.header-image', 'Header / Avatar set to true'],
+    ['override:shop.order-summary.card.header-image.header-icon', 'Header / Icon set to false'],
+  ])
+  assert.throws(() => readFigmaProductFile(file({ Checkbox: true, Avatar: false, Icon: true, Badge: true }), nested, product, 'now'), /Header in instance "Card" sets Badge/)
+})
+
 test('each override is raised as open, unreviewed drift that asks its maker and the contract owners', () => {
   const semantic: SemanticComponent = { id: 'semantic:card', kind: 'semantic-component', title: 'Card', purpose: 'Group.', variants: [{ key: 'filled', title: 'Filled' }], states: ['rest'], owners: [{ role: 'design', who: 'ds' }, { role: 'qa', who: 'q' }] }
   const [conflict] = raiseOverrideDrift(semantic, [{ id: 'override:shop.x.card.actions', kind: 'override', title: 'Footer', instanceId: 'instance:shop.x.card', property: 'actions', change: 'add-content', madeBy: { role: 'design', who: 'shop-design' } }], { design: 'evidence:a', contract: 'evidence:b' })
@@ -119,4 +149,18 @@ test('each override is raised as open, unreviewed drift that asks its maker and 
 test('reads the components a declaration file exports', () => {
   const dts = 'export declare const Card: ForwardRefComponent<CardProps>;\nexport declare const cardClassNames: SlotClassNames<CardSlots>;\nexport declare const CardFooter: ForwardRefComponent<CardFooterProps>;\n'
   assert.deepEqual(tsExportedComponents(dts), ['Card', 'CardFooter'])
+})
+
+test('a trimmed export keeps only the path to its targets, and the components their swaps default to', () => {
+  const full = { ...libraryFile(), schemaVersion: 0, components: { '5:1': { key: 'icon', name: 'Icon' }, '5:2': { key: 'other', name: 'Other' } } }
+  const set = full.document.children[0]!.children[0]! as { children: unknown[]; componentPropertyDefinitions: Record<string, unknown> }
+  set.children.push({ id: '1:9', name: 'Appearance=Filled, State=Rest', type: 'COMPONENT', cornerRadius: 4, children: [{ id: '1:10', name: 'Art', type: 'VECTOR' }] })
+  set.componentPropertyDefinitions['Icon#1:4'] = { type: 'INSTANCE_SWAP', defaultValue: '5:1' }
+  full.document.children.push({ id: '3:0', name: 'Artwork', type: 'CANVAS', children: [] } as never)
+  const trimmed = trimFigmaFile(full, [{ type: 'COMPONENT_SET', name: 'Card' }]) as { document: { children: { name: string; children: { children: unknown[] }[] }[] }; components: unknown }
+  assert.deepEqual(trimmed.document.children.map((page) => page.name), ['Components'])
+  assert.deepEqual(trimmed.document.children[0]!.children[0]!.children, [{ id: '1:9', name: 'Appearance=Filled, State=Rest', type: 'COMPONENT' }])
+  assert.deepEqual(trimmed.components, { '5:1': { key: 'icon', name: 'Icon' } })
+  assert.equal(readFigmaLibraryComponent(trimmed, mapping, 'now').defaults.Title, 'Title')
+  assert.throws(() => trimFigmaFile(full, [{ type: 'COMPONENT_SET', name: 'Card' }, { type: 'FRAME', name: 'Buttons' }]), /Library has no Buttons/)
 })

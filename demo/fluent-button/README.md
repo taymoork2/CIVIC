@@ -8,12 +8,12 @@ Everything in [`out/`](out) is built by `node build.ts` from the inputs below. T
 
 | Question | Where to look |
 |---|---|
-| What disagrees? | [`out/raised.gaps.md`](out/raised.gaps.md): Compose's `ButtonStyle` has `Button`, `OutlinedButton` and `TextButton`, and the Android kit draws only Primary and Text buttons. Brand outline exists in code with no design. |
+| What disagrees? | [`out/raised.gaps.md`](out/raised.gaps.md): Compose's `ButtonStyle` has `Button`, `OutlinedButton` and `TextButton`, and the Android kit draws only Primary and Text buttons. Brand outline exists in code with no design. The iOS kit draws Accent, Outline accent, Outline and Subtle, so iOS's Danger and Transparent neutral buttons have no design either. |
 | Why does it matter? | [`out/raised.context.android.brand-outline.md`](out/raised.context.android.brand-outline.md): the work order an Android engineer gets. It shows the open conflict, both sides' evidence, and that nothing on Android has run evidence yet. |
 | Who must act? | Both files name owners: Design for the kit and Design Engineering for the Compose library. |
 | How is the decision kept? | [`out/resolved.context.android.brand-outline.md`](out/resolved.context.android.brand-outline.md) and [`out/resolved.graph.json`](out/resolved.graph.json): a Decision record classifies the kit as an outdated design source and decides the conflict as a design update, with its evidence and the trigger for revisiting it. |
 
-The two graphs are the same import before and after the Decision record in [`contract/decisions.json`](contract/decisions.json). The conflict is real; that decision is an illustration with the demo's placeholder owners. It is not a real Fluent team's call. `civic check` fails on the raised graph and passes on the resolved one. Record your own call with `civic decide` ([graph README](../../graph/README.md#decisions)) and rebuild.
+The two graphs are the same import before and after the Decision record in [`contract/decisions.json`](contract/decisions.json). The conflict is real; that decision is an illustration with the demo's placeholder owners. It is not a real Fluent team's call. `civic check` fails on the raised graph. On the resolved graph the Android conflict is decided, and the two undecided iOS conflicts are held by the project's baseline. Record your own call with `civic decide` ([graph README](../../graph/README.md#decisions)) and rebuild.
 
 Query the graphs yourself:
 
@@ -32,24 +32,29 @@ node graph/src/cli.ts context demo/fluent-button/out/resolved.graph.json semanti
 | [`sources/`](sources) | Fluent's own files, vendored at pinned revisions with their MIT licences ([`sources.json`](sources/sources.json)): React v9 Button types, defaults and styles; iOS `Button.swift` and `ButtonTokenSet.swift`; Android `Button.kt` and `ButtonTokens.kt` | static source readers ([`importers/src/source.ts`](../../importers/src/source.ts)) |
 | [`tokens/fluent-web-light.tokens.json`](tokens/fluent-web-light.tokens.json) | Fluent's web light theme as DTCG, exported from `@fluentui/tokens` by [`web/export-tokens.mjs`](web/export-tokens.mjs) | DTCG importer |
 | [`design/android-kit.figma.json`](design/android-kit.figma.json) | The real [Microsoft Fluent Android](https://www.figma.com/community/file/836835062056249539/microsoft-fluent-android) kit's Buttons frame, from a Figma REST file export (`GET /v1/files/:key`) trimmed by [`design/trim.ts`](design/trim.ts) | Figma file importer |
+| [`design/ios-kit.figma.json`](design/ios-kit.figma.json) | The real Microsoft Fluent 2 iOS Community kit's Button component set, exported and trimmed the same way | Figma file importer |
 | [`sources/react-button-stories/`](sources/react-button-stories) | Fluent's own Button stories at the tag `@fluentui/react-button_v9.11.1`, the release of the vendored types | built into Storybook by [`web/`](web) |
 | [`evidence/playwright-report.json`](evidence/playwright-report.json) | A Playwright JSON report from rendering Fluent React v9 Buttons, in CIVIC's harness and in Fluent's stories, in Chromium ([`web/`](web)) | Playwright report importer |
 
-### The Figma export
+### The Figma exports
+
+Each design kit in `designKits` is its own Figma file, read from `design/<kit id>.figma.json`.
 
 `design/android-kit.figma.json` comes from the Microsoft Fluent Android Community file, duplicated to a draft and exported on 2026-10-11 with a read-only personal access token. Its `version` is the draft's Figma version. The full export is about 6.7 MB of artwork, so [`design/trim.ts`](design/trim.ts) keeps only the file's identity and the path to the Buttons frame, in Figma's own shape. The importer reads the trimmed file and the full export the same way.
 
 The kit was drawn before Figma had variants. It has no Button component set: each option is a component named like `01. Primary / ⚪️ B. Pressed - Light`, grouped in a Buttons frame. `componentFrame` in [`contract/mappings.json`](contract/mappings.json) tells the importer to read it that way. The kit draws only Primary and Text buttons, each as Default, Pressed and Disabled, in Light and Dark.
 
-To refresh it, export your own duplicate and trim it:
+`design/ios-kit.figma.json` comes from the Microsoft Fluent 2 iOS Community file, exported on 2026-10-12 (Figma version 2409334717272340147). The full export is about 147 MB, and the trim keeps only the path to the Button component set. That set uses variants: Style is Accent, Outline accent, Subtle or Outline, with Size (Large, Medium, Small) and State (Rest, Pressed, Focus, Disabled), 48 components in all. Fluent iOS code also has Danger and Transparent neutral buttons, which the kit doesn't draw, so CIVIC raises both as conflicts. Nobody has decided them yet, so they stay open in both graphs.
+
+To refresh a kit, export your own duplicate and trim it by kit id:
 
 ```sh
 curl -H "X-Figma-Token: $FIGMA_TOKEN" "https://api.figma.com/v1/files/<your-file-key>" -o full-export.json
-node demo/fluent-button/design/trim.ts full-export.json > demo/fluent-button/design/android-kit.figma.json
+node demo/fluent-button/design/trim.ts ios-kit full-export.json > demo/fluent-button/design/ios-kit.figma.json
 node demo/fluent-button/build.ts
 ```
 
-If the kit renames its frame or options, update `designKits` in `contract/mappings.json`. The import fails loudly until the names match.
+If a kit renames its frame, set or options, update `designKits` in `contract/mappings.json`. The import fails loudly until the names match.
 
 ## Evidence tiers
 
@@ -72,4 +77,4 @@ pnpm run evidence:record   # same, and rewrite evidence/playwright-report.json
 
 Playwright needs Chromium (`pnpm exec playwright install chromium`, or set `PLAYWRIGHT_CHROMIUM_PATH` to an existing build). To move to a newer Fluent release, update `sources/` and `sources.json` together. Then rebuild. A renamed or removed variant makes the import fail and name the mapping to fix.
 
-Fluent code is © Microsoft Corporation under the MIT licence. Figma Community kits are CC BY 4.0; the Android kit excerpt in `design/` is from Microsoft's [Microsoft Fluent Android](https://www.figma.com/community/file/836835062056249539/microsoft-fluent-android) file.
+Fluent code is © Microsoft Corporation under the MIT licence. Figma Community kits are CC BY 4.0; the kit excerpts in `design/` are from Microsoft's [Microsoft Fluent Android](https://www.figma.com/community/file/836835062056249539/microsoft-fluent-android) and Microsoft Fluent 2 iOS Community files.

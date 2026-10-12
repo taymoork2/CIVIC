@@ -58,7 +58,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-1",
+        "revision": "civic-stand-in-2",
         "path": "Shop checkout (CIVIC stand-in) / Checkout",
         "anchor": "40:0"
       }
@@ -83,7 +83,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-1",
+        "revision": "civic-stand-in-2",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Gift options",
         "anchor": "40:20"
       }
@@ -108,7 +108,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-1",
+        "revision": "civic-stand-in-2",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary",
         "anchor": "40:1"
       }
@@ -133,7 +133,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-1",
+        "revision": "civic-stand-in-2",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Loading",
         "anchor": "40:5"
       }
@@ -158,7 +158,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-1",
+        "revision": "civic-stand-in-2",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Promo applied",
         "anchor": "40:10"
       }
@@ -706,7 +706,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-1",
+        "revision": "civic-stand-in-2",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Card",
         "anchor": "40:2"
       }
@@ -717,7 +717,7 @@
       "title": "Card on Order Summary / Loading",
       "semanticId": "semantic:card",
       "variant": "filled",
-      "state": "loading",
+      "state": "rest",
       "placedOn": "target:shop.order-summary.loading",
       "product": "shop",
       "origin": "design",
@@ -730,29 +730,9 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-1",
+        "revision": "civic-stand-in-2",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Loading / Card",
         "anchor": "40:6"
-      }
-    },
-    {
-      "id": "override:shop.order-summary.card.actions",
-      "kind": "override",
-      "title": "Show footer set to true",
-      "instanceId": "instance:shop.order-summary.card",
-      "property": "actions",
-      "change": "add-content",
-      "value": true,
-      "madeBy": {
-        "role": "design",
-        "who": "shop-design"
-      },
-      "source": {
-        "tool": "figma",
-        "importer": "figma-file",
-        "revision": "civic-stand-in-1",
-        "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Card",
-        "anchor": "40:2"
       }
     },
     {
@@ -770,27 +750,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-1",
-        "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Card",
-        "anchor": "40:2"
-      }
-    },
-    {
-      "id": "override:shop.order-summary.card.header-action",
-      "kind": "override",
-      "title": "Header action set to Badge / Price",
-      "instanceId": "instance:shop.order-summary.card",
-      "property": "header.action",
-      "change": "add-content",
-      "value": "Badge / Price",
-      "madeBy": {
-        "role": "design",
-        "who": "shop-design"
-      },
-      "source": {
-        "tool": "figma",
-        "importer": "figma-file",
-        "revision": "civic-stand-in-1",
+        "revision": "civic-stand-in-2",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Card",
         "anchor": "40:2"
       }
@@ -798,7 +758,7 @@
     {
       "id": "override:shop.order-summary.card.state-selected",
       "kind": "override",
-      "title": "Selectable set to true",
+      "title": ".Card header / Checkbox set to true",
       "instanceId": "instance:shop.order-summary.card",
       "property": "state.selected",
       "change": "set-property",
@@ -810,7 +770,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-1",
+        "revision": "civic-stand-in-2",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Card",
         "anchor": "40:2"
       }
@@ -825,14 +785,14 @@
       "tier": "static-analysis",
       "method": "design-export",
       "outcome": "finding",
-      "finding": "Card draws Appearance: Filled, Outline; State: Rest, Hover, Selected, Disabled, Loading, Empty, Error; product-settable properties: Header action (default Placeholder), Show footer (default false), Selectable (default false).",
-      "capturedAt": "2026-10-11T00:00:00Z",
+      "finding": "Card draws Style: Filled, Filled alt, Outline, Subtle; State: Rest, Hover, Pressed, Draggable, Selected, Disabled; product-settable properties: Layout (default Default), Body (default true), Footer (default true), .Card header / Custom header (default False), .Card header / 32px Icon (default Size=32, Theme=Regular), .Card header / Avatar (default false), .Card header / Product icon (default true), .Card header / Subtext (default true), .Card header / Checkbox (default false), .Card header / Header quick action (default true).",
+      "capturedAt": "2026-10-12T05:04:08Z",
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-1",
-        "path": "Fluent 2 Card library (CIVIC stand-in) / Card",
-        "anchor": "20:1"
+        "revision": "2409330757852496286",
+        "path": "Microsoft Fluent 2 Web (Community) / Card",
+        "anchor": "9230:4927"
       }
     },
     {
@@ -847,12 +807,12 @@
       "tier": "static-analysis",
       "method": "design-export",
       "outcome": "finding",
-      "finding": "4 frame(s): Order Summary, Order Summary / Loading, Promo applied, Gift options. 2 Card instance(s) showing rest, loading; 4 override(s): header.action, actions, state.selected, corner-radius.",
-      "capturedAt": "2026-10-11T00:00:00Z",
+      "finding": "4 frame(s): Order Summary, Order Summary / Loading, Promo applied, Gift options. 2 Card instance(s) showing rest, rest; 2 override(s): state.selected, corner-radius.",
+      "capturedAt": "2026-10-12T00:00:00Z",
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-1",
+        "revision": "civic-stand-in-2",
         "path": "Shop checkout (CIVIC stand-in)"
       }
     },
@@ -920,41 +880,6 @@
       }
     },
     {
-      "id": "conflict:shop.order-summary.card.actions",
-      "kind": "contract-conflict",
-      "title": "Show footer set to true (Card override)",
-      "targetId": "semantic:card",
-      "summary": "The product design changes the Card's actions (add-content, true) and no maintainer has reviewed it.",
-      "sides": [
-        {
-          "claim": "Show footer set to true on instance:shop.order-summary.card.",
-          "recordId": "override:shop.order-summary.card.actions",
-          "evidenceIds": [
-            "evidence:figma.shop.shop-checkout-civic-stand-in"
-          ]
-        },
-        {
-          "claim": "The Card contract and library do not include this change.",
-          "recordId": "semantic:card",
-          "evidenceIds": [
-            "evidence:figma.library.card"
-          ]
-        }
-      ],
-      "classification": "unclassified",
-      "owners": [
-        {
-          "role": "design",
-          "who": "shop-design"
-        },
-        {
-          "role": "design",
-          "who": "design-system-maintainers"
-        }
-      ],
-      "alignment": "unreviewed-drift"
-    },
-    {
       "id": "conflict:shop.order-summary.card.corner-radius",
       "kind": "contract-conflict",
       "title": "Local cornerRadius 20 (Card override)",
@@ -990,49 +915,14 @@
       "alignment": "unreviewed-drift"
     },
     {
-      "id": "conflict:shop.order-summary.card.header-action",
-      "kind": "contract-conflict",
-      "title": "Header action set to Badge / Price (Card override)",
-      "targetId": "semantic:card",
-      "summary": "The product design changes the Card's header.action (add-content, Badge / Price) and no maintainer has reviewed it.",
-      "sides": [
-        {
-          "claim": "Header action set to Badge / Price on instance:shop.order-summary.card.",
-          "recordId": "override:shop.order-summary.card.header-action",
-          "evidenceIds": [
-            "evidence:figma.shop.shop-checkout-civic-stand-in"
-          ]
-        },
-        {
-          "claim": "The Card contract and library do not include this change.",
-          "recordId": "semantic:card",
-          "evidenceIds": [
-            "evidence:figma.library.card"
-          ]
-        }
-      ],
-      "classification": "unclassified",
-      "owners": [
-        {
-          "role": "design",
-          "who": "shop-design"
-        },
-        {
-          "role": "design",
-          "who": "design-system-maintainers"
-        }
-      ],
-      "alignment": "unreviewed-drift"
-    },
-    {
       "id": "conflict:shop.order-summary.card.state-selected",
       "kind": "contract-conflict",
-      "title": "Selectable set to true (Card override)",
+      "title": ".Card header / Checkbox set to true (Card override)",
       "targetId": "semantic:card",
       "summary": "The product design changes the Card's state.selected (set-property, true) and no maintainer has reviewed it.",
       "sides": [
         {
-          "claim": "Selectable set to true on instance:shop.order-summary.card.",
+          "claim": ".Card header / Checkbox set to true on instance:shop.order-summary.card.",
           "recordId": "override:shop.order-summary.card.state-selected",
           "evidenceIds": [
             "evidence:figma.shop.shop-checkout-civic-stand-in"
@@ -1126,7 +1016,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-1",
+        "revision": "civic-stand-in-2",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Gift options / Back to order",
         "anchor": "40:21"
       },
@@ -1158,7 +1048,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-1",
+        "revision": "civic-stand-in-2",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Continue to payment",
         "anchor": "40:4"
       },
@@ -1173,7 +1063,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-1",
+        "revision": "civic-stand-in-2",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Apply promotion",
         "anchor": "40:3"
       },

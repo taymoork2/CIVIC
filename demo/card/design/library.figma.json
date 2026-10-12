@@ -1,7 +1,7 @@
 {
-  "name": "Fluent 2 Card library (CIVIC stand-in)",
-  "lastModified": "2026-10-11T00:00:00Z",
-  "version": "civic-stand-in-1",
+  "name": "Microsoft Fluent 2 Web (Community)",
+  "lastModified": "2026-10-12T05:04:08Z",
+  "version": "2409330757852496286",
   "schemaVersion": 0,
   "document": {
     "id": "0:0",
@@ -9,21 +9,89 @@
     "type": "DOCUMENT",
     "children": [
       {
-        "id": "20:0",
-        "name": "Components",
+        "id": "8911:3189",
+        "name": "Card",
         "type": "CANVAS",
         "children": [
           {
-            "id": "20:1",
+            "id": "9230:4878",
+            "name": ".Card header",
+            "type": "COMPONENT_SET",
+            "componentPropertyDefinitions": {
+              "32px Icon#9240:0": {
+                "type": "INSTANCE_SWAP",
+                "defaultValue": "9240:8991",
+                "preferredValues": []
+              },
+              "Avatar#322754:8": {
+                "type": "BOOLEAN",
+                "defaultValue": false
+              },
+              "Product icon#322754:9": {
+                "type": "BOOLEAN",
+                "defaultValue": true
+              },
+              "Title string#322754:11": {
+                "type": "TEXT",
+                "defaultValue": "Card title"
+              },
+              "Subtext string#322754:12": {
+                "type": "TEXT",
+                "defaultValue": "Additional metadata"
+              },
+              "Checkbox#322754:13": {
+                "type": "BOOLEAN",
+                "defaultValue": false
+              },
+              "Header quick action#322754:14": {
+                "type": "BOOLEAN",
+                "defaultValue": true
+              },
+              "Subtext#322754:15": {
+                "type": "BOOLEAN",
+                "defaultValue": true
+              },
+              "Custom header": {
+                "type": "VARIANT",
+                "defaultValue": "False",
+                "variantOptions": [
+                  "False",
+                  "True"
+                ]
+              }
+            },
+            "children": [
+              {
+                "id": "9230:4879",
+                "name": "Custom header=False",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "9230:4887",
+                "name": "Custom header=True",
+                "type": "COMPONENT"
+              }
+            ]
+          },
+          {
+            "id": "9230:4927",
             "name": "Card",
             "type": "COMPONENT_SET",
             "componentPropertyDefinitions": {
-              "Appearance": {
+              "Body#322781:15": {
+                "type": "BOOLEAN",
+                "defaultValue": true
+              },
+              "Footer#322781:16": {
+                "type": "BOOLEAN",
+                "defaultValue": true
+              },
+              "Layout": {
                 "type": "VARIANT",
-                "defaultValue": "Filled",
+                "defaultValue": "Default",
                 "variantOptions": [
-                  "Filled",
-                  "Outline"
+                  "Default",
+                  "Custom"
                 ]
               },
               "State": {
@@ -32,440 +100,163 @@
                 "variantOptions": [
                   "Rest",
                   "Hover",
+                  "Pressed",
+                  "Draggable",
                   "Selected",
-                  "Disabled",
-                  "Loading",
-                  "Empty",
-                  "Error"
+                  "Disabled"
                 ]
               },
-              "Header action#20:40": {
-                "type": "INSTANCE_SWAP",
-                "defaultValue": "21:2",
-                "preferredValues": [
-                  {
-                    "type": "COMPONENT",
-                    "key": "badge-price"
-                  }
+              "Style": {
+                "type": "VARIANT",
+                "defaultValue": "Filled",
+                "variantOptions": [
+                  "Filled",
+                  "Filled alt",
+                  "Outline",
+                  "Subtle"
                 ]
-              },
-              "Show footer#20:41": {
-                "type": "BOOLEAN",
-                "defaultValue": false
-              },
-              "Selectable#20:42": {
-                "type": "BOOLEAN",
-                "defaultValue": false
-              },
-              "Title#20:43": {
-                "type": "TEXT",
-                "defaultValue": "Card title"
               }
             },
             "children": [
               {
-                "id": "20:2",
-                "name": "Appearance=Filled, State=Rest",
-                "type": "COMPONENT",
-                "cornerRadius": 8,
-                "children": [
-                  {
-                    "id": "I20:2;1",
-                    "name": "Header",
-                    "type": "FRAME",
-                    "children": [
-                      {
-                        "id": "I20:2;2",
-                        "name": "Title",
-                        "type": "TEXT",
-                        "characters": "Card title"
-                      }
-                    ]
-                  },
-                  {
-                    "id": "I20:2;3",
-                    "name": "Body",
-                    "type": "FRAME",
-                    "children": []
-                  }
-                ]
+                "id": "9230:4928",
+                "name": "Layout=Default, State=Rest, Style=Filled",
+                "type": "COMPONENT"
               },
               {
-                "id": "20:3",
-                "name": "Appearance=Filled, State=Hover",
-                "type": "COMPONENT",
-                "cornerRadius": 8,
-                "children": [
-                  {
-                    "id": "I20:3;1",
-                    "name": "Header",
-                    "type": "FRAME",
-                    "children": [
-                      {
-                        "id": "I20:3;2",
-                        "name": "Title",
-                        "type": "TEXT",
-                        "characters": "Card title"
-                      }
-                    ]
-                  },
-                  {
-                    "id": "I20:3;3",
-                    "name": "Body",
-                    "type": "FRAME",
-                    "children": []
-                  }
-                ]
+                "id": "9230:4940",
+                "name": "Layout=Default, State=Hover, Style=Filled",
+                "type": "COMPONENT"
               },
               {
-                "id": "20:4",
-                "name": "Appearance=Filled, State=Selected",
-                "type": "COMPONENT",
-                "cornerRadius": 8,
-                "children": [
-                  {
-                    "id": "I20:4;1",
-                    "name": "Header",
-                    "type": "FRAME",
-                    "children": [
-                      {
-                        "id": "I20:4;2",
-                        "name": "Title",
-                        "type": "TEXT",
-                        "characters": "Card title"
-                      }
-                    ]
-                  },
-                  {
-                    "id": "I20:4;3",
-                    "name": "Body",
-                    "type": "FRAME",
-                    "children": []
-                  }
-                ]
+                "id": "9230:4952",
+                "name": "Layout=Default, State=Pressed, Style=Filled",
+                "type": "COMPONENT"
               },
               {
-                "id": "20:5",
-                "name": "Appearance=Filled, State=Disabled",
-                "type": "COMPONENT",
-                "cornerRadius": 8,
-                "children": [
-                  {
-                    "id": "I20:5;1",
-                    "name": "Header",
-                    "type": "FRAME",
-                    "children": [
-                      {
-                        "id": "I20:5;2",
-                        "name": "Title",
-                        "type": "TEXT",
-                        "characters": "Card title"
-                      }
-                    ]
-                  },
-                  {
-                    "id": "I20:5;3",
-                    "name": "Body",
-                    "type": "FRAME",
-                    "children": []
-                  }
-                ]
+                "id": "9230:4964",
+                "name": "Layout=Default, State=Selected, Style=Filled",
+                "type": "COMPONENT"
               },
               {
-                "id": "20:6",
-                "name": "Appearance=Filled, State=Loading",
-                "type": "COMPONENT",
-                "cornerRadius": 8,
-                "children": [
-                  {
-                    "id": "I20:6;1",
-                    "name": "Header",
-                    "type": "FRAME",
-                    "children": [
-                      {
-                        "id": "I20:6;2",
-                        "name": "Title",
-                        "type": "TEXT",
-                        "characters": "Card title"
-                      }
-                    ]
-                  },
-                  {
-                    "id": "I20:6;3",
-                    "name": "Body",
-                    "type": "FRAME",
-                    "children": []
-                  }
-                ]
+                "id": "9230:4976",
+                "name": "Layout=Default, State=Draggable, Style=Filled",
+                "type": "COMPONENT"
               },
               {
-                "id": "20:7",
-                "name": "Appearance=Filled, State=Empty",
-                "type": "COMPONENT",
-                "cornerRadius": 8,
-                "children": [
-                  {
-                    "id": "I20:7;1",
-                    "name": "Header",
-                    "type": "FRAME",
-                    "children": [
-                      {
-                        "id": "I20:7;2",
-                        "name": "Title",
-                        "type": "TEXT",
-                        "characters": "Card title"
-                      }
-                    ]
-                  },
-                  {
-                    "id": "I20:7;3",
-                    "name": "Body",
-                    "type": "FRAME",
-                    "children": []
-                  }
-                ]
+                "id": "9230:4988",
+                "name": "Layout=Default, State=Disabled, Style=Filled",
+                "type": "COMPONENT"
               },
               {
-                "id": "20:8",
-                "name": "Appearance=Filled, State=Error",
-                "type": "COMPONENT",
-                "cornerRadius": 8,
-                "children": [
-                  {
-                    "id": "I20:8;1",
-                    "name": "Header",
-                    "type": "FRAME",
-                    "children": [
-                      {
-                        "id": "I20:8;2",
-                        "name": "Title",
-                        "type": "TEXT",
-                        "characters": "Card title"
-                      }
-                    ]
-                  },
-                  {
-                    "id": "I20:8;3",
-                    "name": "Body",
-                    "type": "FRAME",
-                    "children": []
-                  }
-                ]
+                "id": "9230:5000",
+                "name": "Layout=Custom, State=Rest, Style=Filled",
+                "type": "COMPONENT"
               },
               {
-                "id": "20:9",
-                "name": "Appearance=Outline, State=Rest",
-                "type": "COMPONENT",
-                "cornerRadius": 8,
-                "children": [
-                  {
-                    "id": "I20:9;1",
-                    "name": "Header",
-                    "type": "FRAME",
-                    "children": [
-                      {
-                        "id": "I20:9;2",
-                        "name": "Title",
-                        "type": "TEXT",
-                        "characters": "Card title"
-                      }
-                    ]
-                  },
-                  {
-                    "id": "I20:9;3",
-                    "name": "Body",
-                    "type": "FRAME",
-                    "children": []
-                  }
-                ]
+                "id": "9230:5002",
+                "name": "Layout=Default, State=Rest, Style=Filled alt",
+                "type": "COMPONENT"
               },
               {
-                "id": "20:10",
-                "name": "Appearance=Outline, State=Hover",
-                "type": "COMPONENT",
-                "cornerRadius": 8,
-                "children": [
-                  {
-                    "id": "I20:10;1",
-                    "name": "Header",
-                    "type": "FRAME",
-                    "children": [
-                      {
-                        "id": "I20:10;2",
-                        "name": "Title",
-                        "type": "TEXT",
-                        "characters": "Card title"
-                      }
-                    ]
-                  },
-                  {
-                    "id": "I20:10;3",
-                    "name": "Body",
-                    "type": "FRAME",
-                    "children": []
-                  }
-                ]
+                "id": "9230:5014",
+                "name": "Layout=Default, State=Hover, Style=Filled alt",
+                "type": "COMPONENT"
               },
               {
-                "id": "20:11",
-                "name": "Appearance=Outline, State=Selected",
-                "type": "COMPONENT",
-                "cornerRadius": 8,
-                "children": [
-                  {
-                    "id": "I20:11;1",
-                    "name": "Header",
-                    "type": "FRAME",
-                    "children": [
-                      {
-                        "id": "I20:11;2",
-                        "name": "Title",
-                        "type": "TEXT",
-                        "characters": "Card title"
-                      }
-                    ]
-                  },
-                  {
-                    "id": "I20:11;3",
-                    "name": "Body",
-                    "type": "FRAME",
-                    "children": []
-                  }
-                ]
+                "id": "9230:5026",
+                "name": "Layout=Default, State=Pressed, Style=Filled alt",
+                "type": "COMPONENT"
               },
               {
-                "id": "20:12",
-                "name": "Appearance=Outline, State=Disabled",
-                "type": "COMPONENT",
-                "cornerRadius": 8,
-                "children": [
-                  {
-                    "id": "I20:12;1",
-                    "name": "Header",
-                    "type": "FRAME",
-                    "children": [
-                      {
-                        "id": "I20:12;2",
-                        "name": "Title",
-                        "type": "TEXT",
-                        "characters": "Card title"
-                      }
-                    ]
-                  },
-                  {
-                    "id": "I20:12;3",
-                    "name": "Body",
-                    "type": "FRAME",
-                    "children": []
-                  }
-                ]
+                "id": "9230:5038",
+                "name": "Layout=Default, State=Selected, Style=Filled alt",
+                "type": "COMPONENT"
               },
               {
-                "id": "20:13",
-                "name": "Appearance=Outline, State=Loading",
-                "type": "COMPONENT",
-                "cornerRadius": 8,
-                "children": [
-                  {
-                    "id": "I20:13;1",
-                    "name": "Header",
-                    "type": "FRAME",
-                    "children": [
-                      {
-                        "id": "I20:13;2",
-                        "name": "Title",
-                        "type": "TEXT",
-                        "characters": "Card title"
-                      }
-                    ]
-                  },
-                  {
-                    "id": "I20:13;3",
-                    "name": "Body",
-                    "type": "FRAME",
-                    "children": []
-                  }
-                ]
+                "id": "9230:5050",
+                "name": "Layout=Default, State=Draggable, Style=Filled alt",
+                "type": "COMPONENT"
               },
               {
-                "id": "20:14",
-                "name": "Appearance=Outline, State=Empty",
-                "type": "COMPONENT",
-                "cornerRadius": 8,
-                "children": [
-                  {
-                    "id": "I20:14;1",
-                    "name": "Header",
-                    "type": "FRAME",
-                    "children": [
-                      {
-                        "id": "I20:14;2",
-                        "name": "Title",
-                        "type": "TEXT",
-                        "characters": "Card title"
-                      }
-                    ]
-                  },
-                  {
-                    "id": "I20:14;3",
-                    "name": "Body",
-                    "type": "FRAME",
-                    "children": []
-                  }
-                ]
+                "id": "9230:5062",
+                "name": "Layout=Default, State=Disabled, Style=Filled alt",
+                "type": "COMPONENT"
               },
               {
-                "id": "20:15",
-                "name": "Appearance=Outline, State=Error",
-                "type": "COMPONENT",
-                "cornerRadius": 8,
-                "children": [
-                  {
-                    "id": "I20:15;1",
-                    "name": "Header",
-                    "type": "FRAME",
-                    "children": [
-                      {
-                        "id": "I20:15;2",
-                        "name": "Title",
-                        "type": "TEXT",
-                        "characters": "Card title"
-                      }
-                    ]
-                  },
-                  {
-                    "id": "I20:15;3",
-                    "name": "Body",
-                    "type": "FRAME",
-                    "children": []
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "id": "21:1",
-            "name": "Parts",
-            "type": "FRAME",
-            "children": [
-              {
-                "id": "21:2",
-                "name": "Placeholder",
-                "type": "COMPONENT",
-                "children": []
+                "id": "9230:5074",
+                "name": "Layout=Custom, State=Rest, Style=Filled alt",
+                "type": "COMPONENT"
               },
               {
-                "id": "21:3",
-                "name": "Badge / Price",
-                "type": "COMPONENT",
-                "children": [
-                  {
-                    "id": "21:4",
-                    "name": "Label",
-                    "type": "TEXT",
-                    "characters": "-20%"
-                  }
-                ]
+                "id": "9230:5076",
+                "name": "Layout=Default, State=Rest, Style=Outline",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "9230:5088",
+                "name": "Layout=Default, State=Hover, Style=Outline",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "9230:5100",
+                "name": "Layout=Default, State=Pressed, Style=Outline",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "9230:5112",
+                "name": "Layout=Default, State=Selected, Style=Outline",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "9230:5124",
+                "name": "Layout=Default, State=Draggable, Style=Outline",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "9230:5136",
+                "name": "Layout=Default, State=Disabled, Style=Outline",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "9230:5148",
+                "name": "Layout=Custom, State=Rest, Style=Outline",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "9230:5150",
+                "name": "Layout=Default, State=Rest, Style=Subtle",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "9230:5162",
+                "name": "Layout=Default, State=Hover, Style=Subtle",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "9230:5174",
+                "name": "Layout=Default, State=Pressed, Style=Subtle",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "9230:5186",
+                "name": "Layout=Default, State=Selected, Style=Subtle",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "9230:5198",
+                "name": "Layout=Default, State=Draggable, Style=Subtle",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "9230:5210",
+                "name": "Layout=Default, State=Disabled, Style=Subtle",
+                "type": "COMPONENT"
+              },
+              {
+                "id": "9230:5222",
+                "name": "Layout=Custom, State=Rest, Style=Subtle",
+                "type": "COMPONENT"
               }
             ]
           }
@@ -474,140 +265,13 @@
     ]
   },
   "components": {
-    "20:2": {
-      "key": "card-filled-rest",
-      "name": "Appearance=Filled, State=Rest",
+    "9240:8991": {
+      "key": "b798d8587995f7e3ab1bad36c26bcb567ddeebc6",
+      "name": "Size=32, Theme=Regular",
       "description": "",
-      "componentSetId": "20:1",
-      "remote": false,
-      "documentationLinks": []
-    },
-    "20:3": {
-      "key": "card-filled-hover",
-      "name": "Appearance=Filled, State=Hover",
-      "description": "",
-      "componentSetId": "20:1",
-      "remote": false,
-      "documentationLinks": []
-    },
-    "20:4": {
-      "key": "card-filled-selected",
-      "name": "Appearance=Filled, State=Selected",
-      "description": "",
-      "componentSetId": "20:1",
-      "remote": false,
-      "documentationLinks": []
-    },
-    "20:5": {
-      "key": "card-filled-disabled",
-      "name": "Appearance=Filled, State=Disabled",
-      "description": "",
-      "componentSetId": "20:1",
-      "remote": false,
-      "documentationLinks": []
-    },
-    "20:6": {
-      "key": "card-filled-loading",
-      "name": "Appearance=Filled, State=Loading",
-      "description": "",
-      "componentSetId": "20:1",
-      "remote": false,
-      "documentationLinks": []
-    },
-    "20:7": {
-      "key": "card-filled-empty",
-      "name": "Appearance=Filled, State=Empty",
-      "description": "",
-      "componentSetId": "20:1",
-      "remote": false,
-      "documentationLinks": []
-    },
-    "20:8": {
-      "key": "card-filled-error",
-      "name": "Appearance=Filled, State=Error",
-      "description": "",
-      "componentSetId": "20:1",
-      "remote": false,
-      "documentationLinks": []
-    },
-    "20:9": {
-      "key": "card-outline-rest",
-      "name": "Appearance=Outline, State=Rest",
-      "description": "",
-      "componentSetId": "20:1",
-      "remote": false,
-      "documentationLinks": []
-    },
-    "20:10": {
-      "key": "card-outline-hover",
-      "name": "Appearance=Outline, State=Hover",
-      "description": "",
-      "componentSetId": "20:1",
-      "remote": false,
-      "documentationLinks": []
-    },
-    "20:11": {
-      "key": "card-outline-selected",
-      "name": "Appearance=Outline, State=Selected",
-      "description": "",
-      "componentSetId": "20:1",
-      "remote": false,
-      "documentationLinks": []
-    },
-    "20:12": {
-      "key": "card-outline-disabled",
-      "name": "Appearance=Outline, State=Disabled",
-      "description": "",
-      "componentSetId": "20:1",
-      "remote": false,
-      "documentationLinks": []
-    },
-    "20:13": {
-      "key": "card-outline-loading",
-      "name": "Appearance=Outline, State=Loading",
-      "description": "",
-      "componentSetId": "20:1",
-      "remote": false,
-      "documentationLinks": []
-    },
-    "20:14": {
-      "key": "card-outline-empty",
-      "name": "Appearance=Outline, State=Empty",
-      "description": "",
-      "componentSetId": "20:1",
-      "remote": false,
-      "documentationLinks": []
-    },
-    "20:15": {
-      "key": "card-outline-error",
-      "name": "Appearance=Outline, State=Error",
-      "description": "",
-      "componentSetId": "20:1",
-      "remote": false,
-      "documentationLinks": []
-    },
-    "21:2": {
-      "key": "header-action-placeholder",
-      "name": "Placeholder",
-      "description": "Empty header action.",
-      "remote": false,
-      "documentationLinks": []
-    },
-    "21:3": {
-      "key": "badge-price",
-      "name": "Badge / Price",
-      "description": "",
-      "remote": false,
+      "remote": true,
+      "componentSetId": "9240:8980",
       "documentationLinks": []
     }
-  },
-  "componentSets": {
-    "20:1": {
-      "key": "card",
-      "name": "Card",
-      "description": "The design system Card.",
-      "remote": false
-    }
-  },
-  "styles": {}
+  }
 }

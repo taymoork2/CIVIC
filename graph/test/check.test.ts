@@ -16,56 +16,71 @@ function demo(name: string): GraphDocument {
 
 const run = (graph: string, document: unknown, date = today) => checkDocument(graph, document, { today: date })
 
-test('the Button gate fails on the undecided conflict and passes once a decision covers it', () => {
+test('the Button gate fails on each undecided conflict and passes once decisions cover them', () => {
   const raised = compareToBaseline([run('button', demo('fluent-button/out/raised'))], undefined)
   assert.equal(raised.passed, false)
-  assert.deepEqual(raised.fresh.map((item) => item.key), ['open-conflict conflict:button.android.brand-outline android'])
+  const ios = ['open-conflict conflict:button.ios.danger ios', 'open-conflict conflict:button.ios.transparent-neutral ios']
+  assert.deepEqual(raised.fresh.map((item) => item.key).sort(), ['open-conflict conflict:button.android.brand-outline android', ...ios])
 
+  // The demo decides the Android conflict; the iOS kit's two are left for a person to decide.
   const resolved = compareToBaseline([run('button', demo('fluent-button/out/resolved'))], undefined)
-  assert.equal(resolved.passed, true)
-  assert.deepEqual(resolved.fresh, [])
+  assert.deepEqual(resolved.fresh.map((item) => item.key).sort(), ios)
+  const decided = demo('fluent-button/out/resolved')
+  for (const id of ['conflict:button.ios.danger', 'conflict:button.ios.transparent-neutral']) decide(decided, id, { evidenceIds: ['evidence:figma.ios-kit.button'] })
+  const passed = compareToBaseline([run('button', decided)], undefined)
+  assert.equal(passed.passed, true)
+  assert.deepEqual(passed.fresh, [])
   // Known, recorded facts are reported without blocking.
-  assert.ok(resolved.advisory.some((item) => item.kind === 'missing-variant'))
+  assert.ok(passed.advisory.some((item) => item.kind === 'missing-variant'))
 })
 
 test('counts come with their denominators', () => {
   const { measures } = run('card', demo('card/out/resolved'))
   const count = (check: string) => measures.find((item) => item.check === check)
-  assert.deepEqual(count('Contract conflicts open'), { graph: 'card', check: 'Contract conflicts open', found: 1, of: 4 })
-  assert.deepEqual(count('Overrides without a decision'), { graph: 'card', check: 'Overrides without a decision', found: 1, of: 4 })
-  assert.deepEqual(count('Product states missing from designs'), { graph: 'card', check: 'Product states missing from designs', found: 2, of: 3 })
+  assert.deepEqual(count('Contract conflicts open'), { graph: 'card', check: 'Contract conflicts open', found: 1, of: 2 })
+  assert.deepEqual(count('Overrides without a decision'), { graph: 'card', check: 'Overrides without a decision', found: 1, of: 2 })
+  assert.deepEqual(count('Product states missing from designs'), { graph: 'card', check: 'Product states missing from designs', found: 3, of: 3 })
   assert.deepEqual(count('Journey screens that are dead ends'), { graph: 'card', check: 'Journey screens that are dead ends', found: 1, of: 3 })
 })
 
 test('the Card gate raises each undecided override, missing state and journey gap, one finding each', () => {
   const report = compareToBaseline([run('card', demo('card/out/raised'))], undefined)
   assert.equal(report.passed, false)
-  assert.deepEqual(report.fresh.map((item) => item.kind), ['open-conflict', 'open-conflict', 'open-conflict', 'open-conflict', 'missing-state', 'missing-state', 'dead-end', 'unreachable-screen'])
+  assert.deepEqual(report.fresh.map((item) => item.kind), ['open-conflict', 'open-conflict', 'missing-state', 'missing-state', 'missing-state', 'dead-end', 'unreachable-screen'])
 })
 
 test('baselined findings are ignored, a new one still fails, and a fixed one is reported', () => {
   const baseline = baselineFrom(compareToBaseline([run('card', demo('card/out/raised'))], undefined))
   assert.equal(compareToBaseline([run('card', demo('card/out/raised'))], baseline).passed, true)
 
-  // Three of the four overrides are decided in the resolved graph, so they leave the baseline's findings.
+  // One of the two overrides is decided in the resolved graph, so it leaves the baseline's findings.
   const resolved = compareToBaseline([run('card', demo('card/out/resolved'))], baseline)
   assert.equal(resolved.passed, true)
-  assert.equal(resolved.baselined.length, 5)
-  assert.equal(resolved.fixed.length, 3)
+  assert.equal(resolved.baselined.length, 6)
+  assert.equal(resolved.fixed.length, 1)
 
   // A new undecided override on the same graph is raised at the change that caused it.
   const changed = demo('card/out/resolved')
-  changed.records = changed.records.filter((item) => item.id !== 'decision:shop.order-summary.card.actions')
+  changed.records = changed.records.filter((item) => item.id !== 'decision:shop.order-summary.card.corner-radius')
   const report = compareToBaseline([run('card', changed)], baselineFrom(resolved))
   assert.equal(report.passed, false)
-  assert.deepEqual(report.fresh.map((item) => item.subjectId), ['conflict:shop.order-summary.card.actions'])
+  assert.deepEqual(report.fresh.map((item) => item.subjectId), ['conflict:shop.order-summary.card.corner-radius'])
 })
 
 test('an approved exception past its expiry blocks again', () => {
-  const before = compareToBaseline([run('card', demo('card/out/resolved'))], undefined)
+  const excepted = demo('card/out/resolved')
+  decide(excepted, 'conflict:shop.order-summary.card.state-selected', {
+    outcome: 'approve-exception',
+    classification: 'temporary-gap',
+    alignment: 'accepted-limitation',
+    evidenceIds: ['evidence:fluent-apple.card-view.variants'],
+    revisitTrigger: 'Fluent iOS CardView gains a selected state.',
+    expires: '2027-04-01',
+  })
+  const before = compareToBaseline([run('card', excepted)], undefined)
   assert.ok(before.advisory.some((item) => item.kind === 'approved-exception'))
-  const after = compareToBaseline([run('card', demo('card/out/resolved'), '2027-04-02')], undefined)
-  assert.ok(after.fresh.some((item) => item.kind === 'expired-exception' && item.subjectId === 'conflict:shop.order-summary.card.header-action'))
+  const after = compareToBaseline([run('card', excepted, '2027-04-02')], undefined)
+  assert.ok(after.fresh.some((item) => item.kind === 'expired-exception' && item.subjectId === 'conflict:shop.order-summary.card.state-selected'))
 })
 
 test('an override no conflict tracks is unreviewed and blocks', () => {
@@ -81,10 +96,10 @@ test('a decision recorded on an open conflict clears its finding, and only its f
   decide(decided, 'conflict:button.android.brand-outline', { evidenceIds: ['evidence:figma.android-kit.button'], decidedBy: { role: 'design', who: 'design-system-maintainers' } })
   assert.equal(compareToBaseline([run('button', raised)], undefined).passed, false)
   const report = compareToBaseline([run('button', decided)], undefined)
-  assert.deepEqual(report.fresh, [])
+  assert.deepEqual(report.fresh.map((item) => item.subjectId).sort(), ['conflict:button.ios.danger', 'conflict:button.ios.transparent-neutral'])
   assert.deepEqual(
     report.measures.find((item) => item.check === 'Contract conflicts open'),
-    { graph: 'button', check: 'Contract conflicts open', found: 0, of: 1 },
+    { graph: 'button', check: 'Contract conflicts open', found: 2, of: 3 },
   )
 })
 
@@ -101,7 +116,7 @@ test('an agent-written decision does not clear a finding: the graph is invalid',
 })
 
 test('a project can choose which kinds block', () => {
-  const report = compareToBaseline([run('button', demo('fluent-button/out/resolved'))], undefined, ['open-conflict', 'no-run-evidence'])
+  const report = compareToBaseline([run('button', demo('fluent-button/out/resolved'))], undefined, ['no-run-evidence'])
   assert.equal(report.passed, false)
   assert.deepEqual(new Set(report.fresh.map((item) => item.kind)), new Set(['no-run-evidence']))
 })
