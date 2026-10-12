@@ -13,11 +13,14 @@ import { readFileSync, writeFileSync } from 'node:fs'
 import {
   assertValid,
   completenessOf,
+  frameWalk,
   gapsIn,
   indexGraph,
   renderCompleteness,
   renderGaps,
   renderInstanceReview,
+  renderWalk,
+  renderWalkPage,
   reviewInstance,
   type DecisionFile,
   type ExtensionPoint,
@@ -209,6 +212,9 @@ const outputs: Record<string, string> = {
   'out/raised.gaps.md': raisedExport.gaps,
   'out/resolved.gaps.md': resolvedExport.gaps,
   'out/completeness.md': `${renderCompleteness(raisedGraph, completenessOf(raisedGraph, JOURNEY))}\n`,
+  // The frame walk (D33): Shop's checkout frames along their prototype links, as design intent.
+  'out/walk.md': `${renderWalk(frameWalk(indexGraph(resolved), JOURNEY))}\n`,
+  'out/walk.html': renderWalkPage(frameWalk(indexGraph(resolved), JOURNEY)),
 }
 
 const summary = `${raised.records.length} records, ${raised.links.length} links, ${overrides.length} override(s) raised as drift, ${libraryDefaults.records.length} library default(s) a platform can't build`

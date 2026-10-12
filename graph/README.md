@@ -137,6 +137,16 @@ Actor, Line, Annotation, Work request and Draft choice are the records for [deci
 
 Which gaps block a release is the project's risk policy. Accessibility intent in designs isn't checked yet.
 
+## Frame walk: `civic walk`
+
+The frame walk (D33, [`src/walk.ts`](src/walk.ts)) steps through a journey's design frames along their prototype links, the way a person clicks through the prototype. It starts on the flow's start frame and goes breadth first. Only `navigates` links read from a design file count, so an app's own paths never join it. Each frame lists its components with their overrides and per-platform forecasts, the state frames it draws, and its prototype links. A link to a route no frame draws is shown as leaving the design. Dead ends and frames the start can't reach are marked where a person walking would hit them. Everything is labelled as design intent, never as behavior.
+
+```sh
+bin/civic walk demo/card/out/resolved.graph.json target:shop.checkout                            # the walk as text
+bin/civic walk demo/card/out/resolved.graph.json target:shop.checkout --path "Apply promotion"   # a scripted walk; exits 1 where it stops
+bin/civic walk demo/card/out/resolved.graph.json target:shop.checkout --html walk.html          # a page that plays it, opened from disk
+```
+
 ## Contract export
 
 Two read-only queries over a graph (D31). Both are deterministic and print Markdown, or JSON with `--json`.

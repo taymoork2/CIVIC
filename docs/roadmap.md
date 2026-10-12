@@ -11,7 +11,7 @@ Reprioritized on 2026-10-12. The 2026-10-11 order is done: the gate (step 8), st
 1. **[Step 10](#10-checks-where-each-role-works): checks where each role works.** Decision 0005 says most people meet CIVIC through checks in their own tools, and today that is one `civic` commit status. Route each finding to the side that moved, and put it on the pull request, the test run and the library release, together with the decided fix it turns into.
 2. **[Design drafts](#next-the-review-to-agent-loop)** as review lines (item 3) are built.
 3. **[Step 3](#3-typed-contract-and-change-records)'s collaboration records:** Ambiguity, Constraint, Coverage gap, Divergence, Risk and Exception, on the record shape the decision loop set.
-4. **The frame walk (D33)** in [step 4](#4-the-journey-engine-as-a-graph-viewer), now that real design files exist to walk.
+4. **The frame walk (D33)** in [step 4](#4-the-journey-engine-as-a-graph-viewer), now that real design files exist to walk. *Built:* `civic walk` and the Card demo's walk page; the canvas showing it is still to come.
 5. **[Step 7](#7-repository-hygiene)** happens opportunistically.
 
 Waiting on something other than a build:
@@ -108,6 +108,8 @@ Progress, 2026-10-12: live runs work beyond Laundry's Convex. The run service is
 Progress, 2026-10-12: TanStack Start server functions run live too. In the preview, each `createServerFn` call goes to the run (GET as a query, POST as a recorded mutation); in the run's worker the app's own handlers, middleware and validators execute against that run's module state. The page never loads a handler or a module only handlers use. The [Reading list example](../journey-engine/source/packages/canvas/examples/reading-list) proves it in a browser check.
 
 Progress, 2026-10-12: apps with sign-in run live too. Personas carry synthetic review identities (reserved example domains only), each run gets a fresh credential and starts signed in through the app's own sign-in, and the session stays in the run. Password fields are filled with the credential and recordings hold only a placeholder. The [Team board example](../journey-engine/source/packages/canvas/examples/team-board) proves it in a browser check.
+
+Progress, 2026-10-12: the frame walk (D33) is built in [`graph/`](../graph/README.md#frame-walk-civic-walk). `civic walk` steps through a journey's design frames along their Figma prototype links. For each frame it shows the components, their overrides with per-platform forecasts, the state frames, and links that leave the design. It marks dead ends and unreachable frames, and labels everything as design intent. `--path` scripts a walk, and `--html` writes a self-contained page that plays it. The Card demo builds one for Shop's checkout ([`demo/card/out/walk.html`](../demo/card/out/walk.html)). Still to come: the journey canvas showing the walk beside a screen's runs.
 
 ## 5. Identity, permissions, and multiplayer
 
