@@ -94,7 +94,9 @@ Progress, 2026-10-12: the build connector is a package. [`@civic/vite-connector`
 
 Progress, 2026-10-12: the canvas runs on its own. [`@civic/canvas`](../journey-engine/source/packages/canvas) holds the journey canvas UI, its frame entry, the Notebook example and a standalone host (`civic-canvas --project <app>/civic.project.json`) that keeps its store outside the app. Laundry-only layout and the towel journey's guided run reach the canvas through a canvas extension that Laundry's connector supplies; a module app gets CIVIC's own layout. Still to come: a runtime and data adapter beyond Laundry's Convex.
 
-Progress, 2026-10-12: live runs work beyond Laundry's Convex. The run service is in `@civic/canvas`, and an app whose screens call their own HTTP API runs against an isolated copy of that API per run: its `fetch` calls are routed to the app's real handler over seeded in-memory data, with a fixed clock, and writes are recorded and checked on replay. The [Tasks example](../journey-engine/source/packages/canvas/examples/tasks) proves it in a browser check. Still to come: an auth adapter, and TanStack Start server functions.
+Progress, 2026-10-12: live runs work beyond Laundry's Convex. The run service is in `@civic/canvas`, and an app whose screens call their own HTTP API runs against an isolated copy of that API per run: its `fetch` calls are routed to the app's real handler over seeded in-memory data, with a fixed clock, and writes are recorded and checked on replay. The [Tasks example](../journey-engine/source/packages/canvas/examples/tasks) proves it in a browser check. Still to come: an auth adapter.
+
+Progress, 2026-10-12: TanStack Start server functions run live too. In the preview, each `createServerFn` call goes to the run (GET as a query, POST as a recorded mutation); in the run's worker the app's own handlers, middleware and validators execute against that run's module state. The page never loads a handler or a module only handlers use. The [Reading list example](../journey-engine/source/packages/canvas/examples/reading-list) proves it in a browser check.
 
 ## 5. Identity, permissions, and multiplayer
 

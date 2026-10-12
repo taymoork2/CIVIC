@@ -1,0 +1,4 @@
+[
+  { "id": "books.list", "label": "Reading list", "journey": "Keep a reading list", "section": "Main", "component": "src/app.tsx", "edges": [{ "action": "Add book", "destination": "books.add" }] },
+  { "id": "books.add", "label": "Add a book", "journey": "Keep a reading list", "section": "Main", "component": "src/app.tsx", "captureFields": ["Title", "Author"], "edges": [{ "action": "Save", "destination": "books.list", "when": "An editor, the service up, and a title and author" }, { "action": "Cancel", "destination": "books.list", "returnTo": "Reading list" }] }
+]

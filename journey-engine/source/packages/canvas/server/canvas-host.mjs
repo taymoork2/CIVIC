@@ -4,10 +4,12 @@ import { join, resolve } from 'node:path'
 import react from '@vitejs/plugin-react'
 import { createServer } from 'vite'
 import { civicReview } from '@civic/vite-connector'
+import { loadProject } from '@civic/vite-connector/project'
 import { coverageBridge } from '@civic/vite-connector/coverage'
 import { canvasRoot } from './canvas-root.mjs'
 import { moduleReviewAdapter } from './module-adapter.mjs'
 import { runtimeService } from './runtime-service.mjs'
+import { serverFunctionsPlugin } from './server-functions.mjs'
 
 /** Where a standalone canvas keeps its review store, outside every app checkout. */
 export const defaultStore = () => resolve(process.env.CIVIC_STORE ?? join(homedir(), '.civic', 'canvas'))
@@ -16,10 +18,12 @@ export const defaultStore = () => resolve(process.env.CIVIC_STORE ?? join(homedi
  * The Vite plugins for a canvas host: React, and CIVIC's Vite connector serving this package's canvas.
  * `store` is the folder that owns `.review-data`; connecting an app never writes into the app.
  * `connectors`, `runtime` and `review` are passed to `civicReview`; without them only module apps connect,
- * and live runs use CIVIC's run service for apps that declare a runtime entry.
+ * and live runs use CIVIC's run service for apps that declare a runtime entry. An app's TanStack Start
+ * server functions are sent to its live run.
  */
 export function canvasPlugins({ store = defaultStore(), connectors = {}, runtime = runtimeService, review = () => ({}) } = {}) {
-  return [react(), civicReview({
+  let appRoot
+  return [react(), serverFunctionsPlugin({ appRoot: () => { try { return appRoot ??= loadProject(store).root } catch { return null } }, side: 'client' }), civicReview({
     host: canvasRoot,
     canvas: canvasRoot,
     repo: store,
