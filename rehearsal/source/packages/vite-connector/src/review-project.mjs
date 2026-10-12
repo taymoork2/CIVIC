@@ -5,7 +5,12 @@ import { dirname, isAbsolute, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 
-const fail = (message) => { throw Error(`Rehearsal project: ${message}`) }
+const fail = (message) => { throw Error(`CIVIC project: ${message}`) }
+/** An app's manifest file. Apps connected before the rename keep their `rehearsal.project.json`. */
+export function manifestIn(root) {
+  const current = join(root, 'civic.project.json'), legacy = join(root, 'rehearsal.project.json')
+  return !existsSync(current) && existsSync(legacy) ? legacy : current
+}
 const id = (value) => typeof value === 'string' && /^[a-z][a-z0-9.-]{0,119}$/.test(value)
 const words = (value, max = 200) => typeof value === 'string' && value.trim() && value.length <= max
 export function projectPath(root, path, required = true, strict = true) {
@@ -38,11 +43,11 @@ export function checkedProject(input) {
 export function loadProject(repo, options = {}) {
   let local = {}
   try { local = JSON.parse(readFileSync(join(repo, '.review-data/application.json'), 'utf8')) } catch (error) { if (error.code !== 'ENOENT') throw error }
-  const selected = options.manifest ?? process.env.REHEARSAL_PROJECT ?? local.project
-  const manifestPath = realpathSync(resolve(repo, selected ?? 'rehearsal.project.json'))
+  const selected = options.manifest ?? process.env.CIVIC_PROJECT ?? process.env.REHEARSAL_PROJECT ?? local.project
+  const manifestPath = realpathSync(selected ? resolve(repo, selected) : manifestIn(repo))
   const manifestRoot = dirname(manifestPath)
   const manifest = checkedProject(JSON.parse(readFileSync(manifestPath, 'utf8')))
-  const root = realpathSync(resolve(repo, options.applicationRoot ?? process.env.REHEARSAL_APP_ROOT ?? (!options.manifest && !process.env.REHEARSAL_PROJECT ? local.root : undefined) ?? manifestRoot))
+  const root = realpathSync(resolve(repo, options.applicationRoot ?? process.env.CIVIC_APP_ROOT ?? process.env.REHEARSAL_APP_ROOT ?? (!options.manifest && !process.env.CIVIC_PROJECT && !process.env.REHEARSAL_PROJECT ? local.root : undefined) ?? manifestRoot))
   // Connector-owned projects may resolve through workspace links; portable modules stay inside their checkout.
   const strict = manifest.adapter.kind === 'module'
   const sources = manifest.sources.map((path) => projectPath(root, path, true, strict))
@@ -88,9 +93,9 @@ async function cli() {
   if (positionals[0] === 'init') {
     if (!values.root || !values.name || !id(values.id) || !values.source?.length) fail('init requires --root, --name, --id and --source; add --write to create files')
     const root = realpathSync(values.root)
-    const manifest = checkedProject({ version: 1, id: values.id, name: values.name, adapter: { kind: 'module', ...(values.preview ? { entry: values.preview } : {}) }, sources: values.source, scenarios: 'rehearsal.scenarios.json', coverage: 'rehearsal.coverage.json', personas: [{ id: 'default', label: 'Default synthetic situation' }], roles: [{ id: 'reviewer', label: 'Reviewer' }], conditions: [{ id: 'normal', label: 'Normal' }], navigation: ['Start', 'Main'] })
+    const manifest = checkedProject({ version: 1, id: values.id, name: values.name, adapter: { kind: 'module', ...(values.preview ? { entry: values.preview } : {}) }, sources: values.source, scenarios: 'civic.scenarios.json', coverage: 'civic.coverage.json', personas: [{ id: 'default', label: 'Default synthetic situation' }], roles: [{ id: 'reviewer', label: 'Reviewer' }], conditions: [{ id: 'normal', label: 'Normal' }], navigation: ['Start', 'Main'] })
     for (const path of [...manifest.sources, ...(values.preview ? [values.preview] : [])]) projectPath(root, path)
-    const outputs = { 'rehearsal.project.json': manifest, 'rehearsal.scenarios.json': [], 'rehearsal.coverage.json': { version: 1, targets: [] } }
+    const outputs = { 'civic.project.json': manifest, 'civic.scenarios.json': [], 'civic.coverage.json': { version: 1, targets: [] } }
     for (const name of Object.keys(outputs)) if (existsSync(join(root, name))) fail(`refusing to overwrite ${name}`)
     if (values.write) for (const [name, data] of Object.entries(outputs)) await writeFile(join(root, name), JSON.stringify(data, null, 2) + '\n', { flag: 'wx' })
     console.log(JSON.stringify({ written: values.write, root, files: outputs }, null, 2))

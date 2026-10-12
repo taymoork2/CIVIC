@@ -8,7 +8,7 @@ import { projectPicker } from './review-projects.mjs'
 
 /**
  * CIVIC's Vite connector: a dev-only Vite plugin that turns a review host into the journey
- * canvas for one connected project. The project is any checkout with a `rehearsal.project.json`
+ * canvas for one connected project. The project is any checkout with a `civic.project.json`
  * manifest; the connector reads it read-only, indexes and fingerprints its screens, serves the
  * review entries and the app's sources to them, refreshes on change, and mounts the
  * `@civic/shell` review server.
@@ -29,6 +29,9 @@ import { projectPicker } from './review-projects.mjs'
  * publicHost). `runtime(project, source)` starts the isolated backend for live runs, when the app has one.
  * Routine indexing, refresh and serving make no model calls.
  */
+// CIVIC_* settings, with the engine's older REHEARSAL_* names still read.
+const env = (name) => process.env[`CIVIC_${name}`] ?? process.env[`REHEARSAL_${name}`]
+
 export function civicReview({ host, repo = resolve(host, '../..'), connectors = {}, review = () => ({}), runtime = null, engineRoots, picker = {} }) {
   const viteClientEnv = join(dirname(fileURLToPath(import.meta.resolve('vite/package.json'))), 'dist/client/env.mjs')
   let project = loadProject(repo)
@@ -36,13 +39,13 @@ export function civicReview({ host, repo = resolve(host, '../..'), connectors = 
   const connector = kind === 'module' ? null : connectors[kind]
   if (kind !== 'module' && !connector) throw Error(`No connector is registered for adapter kind ${kind}. Register one with civicReview({ connectors }).`)
   const appRepo = project.root
-  const publicOrigin = process.env.REHEARSAL_PUBLIC_ORIGIN ?? project.local.publicOrigin
-  const storeRoot = process.env.REHEARSAL_DATA_DIR ? resolve(process.env.REHEARSAL_DATA_DIR) : join(repo, '.review-data')
+  const publicOrigin = env('PUBLIC_ORIGIN') ?? project.local.publicOrigin
+  const storeRoot = env('DATA_DIR') ? resolve(env('DATA_DIR')) : join(repo, '.review-data')
   const dataDir = connector?.sharedStore?.(project) ? storeRoot : join(storeRoot, 'projects', project.key)
-  const designRoot = process.env.REHEARSAL_DESIGN_ROOT ?? connector?.designRoot?.(repo)
+  const designRoot = env('DESIGN_ROOT') ?? connector?.designRoot?.(repo)
   const inventoryOptions = { connector, ...(engineRoots ? { engineRoots } : {}) }
   const watchPaths = () => [...project.sources, project.manifestPath, project.scenariosPath, project.coverageFile, ...(project.entry ? [dirname(project.entry)] : []), ...(project.publicDir ? [project.publicDir] : []), ...(engineRoots ?? [join(host, 'src/review'), join(host, 'scripts')]), dirname(fileURLToPath(import.meta.url)), join(repo, '.review-data/application.json'), join(repo, 'docs/design/review-validation.json'), ...[repo, appRepo].flatMap((root) => ['package.json', 'pnpm-lock.yaml', 'package-lock.json', 'yarn.lock', 'tsconfig.json'].map((file) => join(root, file)))]
-  const compilation = (value) => JSON.stringify([value.root, value.entry, value.runtimeEntry, value.aliases, value.publicDir, value.coverageFile, value.manifest.adapter.kind, value.key, process.env.REHEARSAL_PUBLIC_ORIGIN ?? value.local.publicOrigin])
+  const compilation = (value) => JSON.stringify([value.root, value.entry, value.runtimeEntry, value.aliases, value.publicDir, value.coverageFile, value.manifest.adapter.kind, value.key, env('PUBLIC_ORIGIN') ?? value.local.publicOrigin])
   const binding = compilation(project)
   const modules = { 'virtual:rehearsal-project': () => `export default ${JSON.stringify(publicProject(project))}`, 'virtual:rehearsal-preview': () => project.entry ? `export { mount } from ${JSON.stringify('/@fs/' + project.entry)}` : 'export function mount() { throw Error("This project has no preview adapter. Connect a synthetic mount entry first.") }', 'virtual:rehearsal-shell-style': () => connector?.shellStyle?.(project) ?? '' }
   return {
@@ -87,7 +90,7 @@ export function civicReview({ host, repo = resolve(host, '../..'), connectors = 
         scheduled = { wake }
         refreshing = refreshing.then(() => delay).then(async () => {
           const nextProject = loadProject(repo)
-          if (compilation(nextProject) !== binding) throw Error('Project adapter or checkout binding changed. Restart Rehearsal to apply it without mixing projects.')
+          if (compilation(nextProject) !== binding) throw Error('Project adapter or checkout binding changed. Restart the review to apply it without mixing projects.')
           project = nextProject
           server.watcher.add(watchPaths())
           const updated = await reviewInventory(repo, designRoot, appRepo, project, inventoryOptions)

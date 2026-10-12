@@ -17,9 +17,9 @@ async function host(manifest) {
   const web = join(repo, 'review'); await mkdir(web)
   for (const name of ['review.html', 'review-frame.html']) await writeFile(join(web, name), page)
   const app = join(repo, 'app'); await cp(notebook, app, { recursive: true })
-  if (manifest) await writeFile(join(app, 'rehearsal.project.json'), JSON.stringify({ ...JSON.parse(await readFile(join(app, 'rehearsal.project.json'), 'utf8')), ...manifest }))
+  if (manifest) await writeFile(join(app, 'civic.project.json'), JSON.stringify({ ...JSON.parse(await readFile(join(app, 'civic.project.json'), 'utf8')), ...manifest }))
   await mkdir(join(repo, '.review-data'))
-  await writeFile(join(repo, '.review-data/application.json'), JSON.stringify({ project: join(app, 'rehearsal.project.json') }))
+  await writeFile(join(repo, '.review-data/application.json'), JSON.stringify({ project: join(app, 'civic.project.json') }))
   return { repo, web, app }
 }
 

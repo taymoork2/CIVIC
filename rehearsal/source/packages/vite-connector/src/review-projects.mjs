@@ -3,7 +3,7 @@ import { existsSync, realpathSync, statSync } from 'node:fs'
 import { cp, mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { dirname, isAbsolute, join, parse, resolve } from 'node:path'
 import { homedir } from 'node:os'
-import { checkedProject, checkedScenarios, loadProject, projectPath, publicProject } from './review-project.mjs'
+import { checkedProject, checkedScenarios, loadProject, manifestIn, projectPath, publicProject } from './review-project.mjs'
 import { discoverScreens, generatedScenarios } from './review-discovery.mjs'
 
 const bad = (message) => { throw Object.assign(Error(message), { status: 400 }) }
@@ -14,7 +14,7 @@ async function atomic(file, value) {
   await rename(temporary, file)
 }
 
-// Connections and starters belong to Rehearsal. Connecting never writes into an app checkout.
+// Connections and starters belong to the review host. Connecting never writes into an app checkout.
 // The host supplies the runtime that mounts discovered screens and the starter project it copies.
 export async function projectPicker(repo, current, { discoveredAdapter = join(repo, 'apps/web/src/review/discovered-adapter.tsx'), starterTemplate = join(repo, 'apps/web/examples/rehearsal-demo'), kinds = null } = {}) {
   const store = join(repo, '.review-data/project-picker.json')
@@ -35,13 +35,13 @@ export async function projectPicker(repo, current, { discoveredAdapter = join(re
   }
   return {
     async discover(input) {
-      if (typeof input.root !== 'string' || !isAbsolute(input.root)) bad('Enter an absolute app folder path on the Rehearsal host')
+      if (typeof input.root !== 'string' || !isAbsolute(input.root)) bad('Enter an absolute app folder path on the CIVIC review host')
       let root
       try { root = realpathSync(input.root.trim()) } catch { bad('App folder was not found on this host') }
       if (!statSync(root).isDirectory() || root === parse(root).root || root === homedir()) bad('Choose an app folder')
       const existing = rows.toReversed().find((row) => row.root === root)
-      if (input.manifest?.trim() || existsSync(join(root, 'rehearsal.project.json')) || existing) {
-        const manifest = input.manifest?.trim() ? projectPath(root, input.manifest.trim()) : existsSync(join(root, 'rehearsal.project.json')) ? join(root, 'rehearsal.project.json') : existing.manifest
+      if (input.manifest?.trim() || existsSync(manifestIn(root)) || existing) {
+        const manifest = input.manifest?.trim() ? projectPath(root, input.manifest.trim()) : existsSync(manifestIn(root)) ? manifestIn(root) : existing.manifest
         const project = await validate(manifest, root)
         if (project.entry) {
           if (!rows.some((row) => row.key === project.key)) { rows.push(record(project)); await atomic(store, rows) }
@@ -74,10 +74,10 @@ export async function projectPicker(repo, current, { discoveredAdapter = join(re
         return { ...scenario, source: '/@fs/' + projectPath(discovery.root, candidate.file), assetRoot: '/@fs/' + projectPath(discovery.root, discovery.source) + '/', kind: candidate.kind, export: candidate.export, route: candidate.route }
       })
       const runtime = discoveredAdapter
-      await atomic(join(folder, 'rehearsal.scenarios.json'), scenarios)
+      await atomic(join(folder, 'civic.scenarios.json'), scenarios)
       await atomic(join(folder, 'discovered.screens.json'), screens)
       await atomic(join(folder, 'discovery.evidence.json'), { ...fresh, generatedAt: new Date().toISOString(), selected: input.selected })
-      await atomic(join(folder, 'rehearsal.coverage.json'), { version: 1, targets: discovery.candidates.filter((candidate) => !input.selected.includes(candidate.id)).map((candidate) => ({ id: `discovered.${candidate.id}`, title: candidate.label, kind: 'screen', scenarios: [], acceptance: [candidate.reason, 'Connect app-specific synthetic context and verify its entry, exit, failure and return paths.'] })) })
+      await atomic(join(folder, 'civic.coverage.json'), { version: 1, targets: discovery.candidates.filter((candidate) => !input.selected.includes(candidate.id)).map((candidate) => ({ id: `discovered.${candidate.id}`, title: candidate.label, kind: 'screen', scenarios: [], acceptance: [candidate.reason, 'Connect app-specific synthetic context and verify its entry, exit, failure and return paths.'] })) })
       await writeFile(join(folder, 'rehearsal.ts'), `import { mountDiscovered } from ${JSON.stringify('/@fs/' + runtime)}\nimport screens from './discovered.screens.json'\nexport const mount = (container, context) => mountDiscovered(container, context, screens)\n`, { flag: 'wx', mode: 0o600 })
       await atomic(row.manifest, { ...manifest, adapter: { kind: 'module', entry: 'rehearsal.ts' }, aliases: { '@': discovery.source } })
       await validate(row.manifest, row.root)
@@ -93,11 +93,11 @@ export async function projectPicker(repo, current, { discoveredAdapter = join(re
       if (!input || !['existing', 'new'].includes(input.kind)) bad('Choose an existing app or a new project')
       let root, manifest
       if (input.kind === 'existing') {
-        if (typeof input.root !== 'string' || !isAbsolute(input.root) || input.root.length > 2000) bad('Enter an absolute app folder path on the Rehearsal host')
+        if (typeof input.root !== 'string' || !isAbsolute(input.root) || input.root.length > 2000) bad('Enter an absolute app folder path on the CIVIC review host')
         try { root = realpathSync(input.root.trim()) } catch { bad('App folder was not found on this host') }
         if (!statSync(root).isDirectory() || root === parse(root).root || root === homedir()) bad('Choose an app folder, rather than a home or filesystem root')
         if (input.manifest && typeof input.manifest !== 'string') bad('Invalid manifest path')
-        manifest = input.manifest?.trim() ? projectPath(root, input.manifest.trim()) : join(root, 'rehearsal.project.json')
+        manifest = input.manifest?.trim() ? projectPath(root, input.manifest.trim()) : manifestIn(root)
         if (!ownedOnly && (input.manifest?.trim() || existsSync(manifest))) {
           const project = await validate(manifest, root)
           if (!rows.some((row) => row.key === project.key)) { rows.push(record(project)); await atomic(store, rows) }
@@ -111,20 +111,20 @@ export async function projectPicker(repo, current, { discoveredAdapter = join(re
       const id = `project-${randomUUID()}`
       const owned = join(repo, 'rehearsal-projects')
       await mkdir(owned, { recursive: true, mode: 0o700 })
-      if (realpathSync(owned) !== resolve(owned)) bad('Rehearsal project storage must not be a symlink')
+      if (realpathSync(owned) !== resolve(owned)) bad('CIVIC project storage must not be a symlink')
       const folder = join(owned, id)
       await mkdir(folder, { mode: 0o700 })
       if (input.kind === 'new') {
         const template = starterTemplate
-        for (const file of ['src', 'rehearsal.project.json', 'rehearsal.scenarios.json', 'rehearsal.coverage.json']) await cp(join(template, file), join(folder, file), { recursive: true, errorOnExist: true, force: false })
+        for (const file of ['src', 'civic.project.json', 'civic.scenarios.json', 'civic.coverage.json']) await cp(join(template, file), join(folder, file), { recursive: true, errorOnExist: true, force: false })
         root = folder
-        const starter = await json(join(folder, 'rehearsal.project.json'))
-        await atomic(join(folder, 'rehearsal.project.json'), { ...starter, id, name: input.name.trim() })
+        const starter = await json(join(folder, 'civic.project.json'))
+        await atomic(join(folder, 'civic.project.json'), { ...starter, id, name: input.name.trim() })
       } else {
-        const descriptor = checkedProject({ version: 1, id, name: input.name.trim(), adapter: { kind: 'module' }, sources: [input.source.trim()], scenarios: 'rehearsal.scenarios.json', coverage: 'rehearsal.coverage.json', personas: [{ id: 'default', label: 'Default synthetic situation' }], roles: [{ id: 'reviewer', label: 'Reviewer' }], conditions: [{ id: 'normal', label: 'Normal' }], navigation: ['Start', 'Main'] })
-        for (const [file, data] of Object.entries({ 'rehearsal.project.json': descriptor, 'rehearsal.scenarios.json': [], 'rehearsal.coverage.json': { version: 1, targets: [] } })) await atomic(join(folder, file), data)
+        const descriptor = checkedProject({ version: 1, id, name: input.name.trim(), adapter: { kind: 'module' }, sources: [input.source.trim()], scenarios: 'civic.scenarios.json', coverage: 'civic.coverage.json', personas: [{ id: 'default', label: 'Default synthetic situation' }], roles: [{ id: 'reviewer', label: 'Reviewer' }], conditions: [{ id: 'normal', label: 'Normal' }], navigation: ['Start', 'Main'] })
+        for (const [file, data] of Object.entries({ 'civic.project.json': descriptor, 'civic.scenarios.json': [], 'civic.coverage.json': { version: 1, targets: [] } })) await atomic(join(folder, file), data)
       }
-      const project = await validate(join(folder, 'rehearsal.project.json'), root)
+      const project = await validate(join(folder, 'civic.project.json'), root)
       rows.push(record(project)); await atomic(store, rows)
       return { key: project.key, name: project.manifest.name, preview: Boolean(project.entry) }
     },
@@ -137,8 +137,8 @@ export async function projectPicker(repo, current, { discoveredAdapter = join(re
       try { local = await json(settings) } catch (error) { if (error.code !== 'ENOENT') throw error }
       await atomic(settings, { ...local, project: project.manifestPath, root: project.root })
       // Vite rebuilds its aliases, filesystem allowlist and adapter on the same port.
-      process.env.REHEARSAL_PROJECT = project.manifestPath
-      process.env.REHEARSAL_APP_ROOT = project.root
+      process.env.CIVIC_PROJECT = project.manifestPath
+      process.env.CIVIC_APP_ROOT = project.root
       return { key: project.key, name: project.manifest.name, restarting: project.key !== current.key }
     },
   }

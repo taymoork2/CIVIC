@@ -10,9 +10,9 @@ Discovery reads source without importing modules or using a model. It recognizes
 
 The user confirms the selected graph before writing. Generation rechecks the source hash and rejects stale scans. It validates identities, paths, props and unique action destinations, and creates these files under an owned `rehearsal-projects/<connection>/` folder:
 
-- `rehearsal.project.json`: existing portable connection contract.
-- `rehearsal.scenarios.json`: confirmed screen order, declared branch/return paths, props and capture labels.
-- `rehearsal.coverage.json`: remaining source candidates, including states requiring context.
+- `civic.project.json`: existing portable connection contract.
+- `civic.scenarios.json`: confirmed screen order, declared branch/return paths, props and capture labels.
+- `civic.coverage.json`: remaining source candidates, including states requiring context.
 - `discovered.screens.json`: real source bindings for the generated preview.
 - `discovery.evidence.json`: original scan findings and revision.
 - `rehearsal.ts`: entry using the shared discovered-screen adapter.

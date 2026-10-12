@@ -4,8 +4,8 @@
   "name": "Notebook",
   "adapter": { "kind": "module", "entry": "src/rehearsal.js" },
   "sources": ["src"],
-  "scenarios": "rehearsal.scenarios.json",
-  "coverage": "rehearsal.coverage.json",
+  "scenarios": "civic.scenarios.json",
+  "coverage": "civic.coverage.json",
   "personas": [
     { "id": "writer", "label": "Writer", "seed": { "title": "First note" } },
     { "id": "editor", "label": "Editor", "seed": { "title": "Review draft" } }

@@ -43,7 +43,7 @@ test('existing HTML and React screens become playable through onboarding, with b
   await expect(frame.getByRole('heading', { name: 'Saved', exact: true })).toBeVisible()
   await expect.poll(() => captures.length).toBe(5)
   expect(captures.every((row) => row.message.startsWith('Synthetic navigation'))).toBe(true)
-  await expect(page.getByText('Synthetic navigation · state carried by Rehearsal · app behavior unverified')).toBeVisible()
+  await expect(page.getByText('Synthetic navigation · state carried by CIVIC · app behavior unverified')).toBeVisible()
   expect(captures.filter((row) => row.context.screen === compose.id).every((row) => row.context.state.fields.some((field) => field.label === 'Title' && field.value === 'My retained note'))).toBe(true)
   await page.goto('/review?scenario=' + counter.id)
   await page.getByRole('button', { name: 'Play', exact: true }).click()

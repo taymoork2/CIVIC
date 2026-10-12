@@ -1,6 +1,6 @@
 # @civic/vite-connector
 
-CIVIC's build connector for Vite apps. It is the dev-only Vite plugin that turns a review host into the journey canvas for one connected app, plus the modules it needs: the project manifest (`rehearsal.project.json`) and its `init`/`check` CLI, the project picker, static discovery, the review index, per-screen fixture fingerprints and the coverage bridge.
+CIVIC's build connector for Vite apps. It is the dev-only Vite plugin that turns a review host into the journey canvas for one connected app, plus the modules it needs: the project manifest (`civic.project.json`) and its `init`/`check` CLI, the project picker, static discovery, the review index, per-screen fixture fingerprints and the coverage bridge.
 
 An app connects read-only through its manifest. The connector indexes the screens the manifest's scenario registry names, fingerprints each one by its own import closure, serves the review entries and the app's sources to them, refreshes on change, and mounts the [`@civic/shell`](../shell) review server. Nothing is written into the app's checkout, and routine indexing, refresh and serving make no model calls.
 
@@ -10,10 +10,10 @@ A `module` app needs only its manifest and a preview entry that exports `mount(c
 
 ```sh
 node packages/vite-connector/src/review-project.mjs init --root /path/to/app --id my-app --name "My app" --source src --preview src/rehearsal.ts --write
-node packages/vite-connector/src/review-project.mjs check --project /path/to/app/rehearsal.project.json
+node packages/vite-connector/src/review-project.mjs check --project /path/to/app/civic.project.json
 ```
 
-Then select it in the canvas's project picker, or start the host with `REHEARSAL_PROJECT=/path/to/app/rehearsal.project.json`.
+Then select it in the canvas's project picker, or start the host with `CIVIC_PROJECT=/path/to/app/civic.project.json`.
 
 ## Hosting the canvas
 
