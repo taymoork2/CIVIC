@@ -23,7 +23,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "journey Existing specimens"
       }
@@ -50,7 +50,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "family.drying"
       }
@@ -77,7 +77,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "family.planning"
       }
@@ -104,7 +104,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "family.putaway"
       }
@@ -131,7 +131,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "family.washing"
       }
@@ -158,7 +158,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.appliance"
       }
@@ -185,7 +185,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.care"
       }
@@ -212,7 +212,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.color"
       }
@@ -239,7 +239,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.details"
       }
@@ -266,7 +266,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.dye"
       }
@@ -293,7 +293,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.fabric"
       }
@@ -320,7 +320,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.final"
       }
@@ -347,7 +347,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.origin"
       }
@@ -374,7 +374,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.stain"
       }
@@ -401,7 +401,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.type"
       }
@@ -428,7 +428,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.whose"
       }
@@ -455,7 +455,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.product"
       }
@@ -482,7 +482,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.care"
       }
@@ -509,7 +509,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.color"
       }
@@ -536,7 +536,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.details"
       }
@@ -563,7 +563,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.dye"
       }
@@ -590,7 +590,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.fabric"
       }
@@ -617,7 +617,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.final"
       }
@@ -644,7 +644,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.origin"
       }
@@ -671,7 +671,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.stain"
       }
@@ -698,7 +698,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.type"
       }
@@ -725,7 +725,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.whose"
       }
@@ -752,7 +752,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "journey Appliances"
       }
@@ -779,7 +779,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "journey Closet"
       }
@@ -806,7 +806,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "journey Cotton/polyester towel"
       }
@@ -833,7 +833,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "journey Drying"
       }
@@ -860,7 +860,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "journey Family simulation"
       }
@@ -887,7 +887,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "journey Home"
       }
@@ -914,7 +914,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "journey Multicolor pack"
       }
@@ -941,7 +941,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "journey Nested quick edits"
       }
@@ -968,7 +968,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "journey Products"
       }
@@ -995,7 +995,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "journey Saved records"
       }
@@ -1022,7 +1022,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "journey Washing & recovery"
       }
@@ -1049,7 +1049,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.care-family"
       }
@@ -1076,7 +1076,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.chemistry"
       }
@@ -1103,7 +1103,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-add-care"
       }
@@ -1130,7 +1130,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-add-color"
       }
@@ -1157,7 +1157,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-add-details"
       }
@@ -1184,7 +1184,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-add-label"
       }
@@ -1211,7 +1211,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-add-search"
       }
@@ -1238,7 +1238,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-add-stain-set-in"
       }
@@ -1265,7 +1265,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-add-stains"
       }
@@ -1292,7 +1292,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-add-type"
       }
@@ -1319,7 +1319,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-care-dry"
       }
@@ -1346,7 +1346,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-care-question"
       }
@@ -1373,7 +1373,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-care-question-pending"
       }
@@ -1400,7 +1400,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-care-wash"
       }
@@ -1427,7 +1427,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-empty"
       }
@@ -1454,7 +1454,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-first-wash"
       }
@@ -1481,7 +1481,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-index"
       }
@@ -1508,7 +1508,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-one"
       }
@@ -1535,7 +1535,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-record"
       }
@@ -1562,7 +1562,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-stain-check"
       }
@@ -1589,7 +1589,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-stain-next"
       }
@@ -1616,7 +1616,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-tags"
       }
@@ -1643,7 +1643,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-tags-long"
       }
@@ -1670,7 +1670,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-tags-pending"
       }
@@ -1697,7 +1697,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.create-account"
       }
@@ -1724,7 +1724,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.dose-checks"
       }
@@ -1751,7 +1751,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.dryer-entry"
       }
@@ -1778,7 +1778,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying"
       }
@@ -1805,7 +1805,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-check"
       }
@@ -1832,7 +1832,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-check-empty"
       }
@@ -1859,7 +1859,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-check-marks"
       }
@@ -1886,7 +1886,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-check-missed"
       }
@@ -1913,7 +1913,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-dryer"
       }
@@ -1940,7 +1940,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-early-check"
       }
@@ -1967,7 +1967,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-home"
       }
@@ -1994,7 +1994,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-index"
       }
@@ -2021,7 +2021,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-method-conflict"
       }
@@ -2048,7 +2048,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-none-free"
       }
@@ -2075,7 +2075,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-preference"
       }
@@ -2102,7 +2102,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-putaway"
       }
@@ -2129,7 +2129,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-scale-check"
       }
@@ -2156,7 +2156,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-scale-mixed"
       }
@@ -2183,7 +2183,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-scale-plan"
       }
@@ -2210,7 +2210,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-scale-putaway"
       }
@@ -2237,7 +2237,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-second-wash"
       }
@@ -2264,7 +2264,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-stain"
       }
@@ -2291,7 +2291,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-take-out-early"
       }
@@ -2318,7 +2318,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-unknown"
       }
@@ -2345,7 +2345,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-wait"
       }
@@ -2372,7 +2372,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-wait-smell"
       }
@@ -2399,7 +2399,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.dryness"
       }
@@ -2426,7 +2426,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.home-check-now"
       }
@@ -2453,7 +2453,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.home-dryer-busy"
       }
@@ -2480,7 +2480,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.home-drying"
       }
@@ -2507,7 +2507,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.home-empty"
       }
@@ -2534,7 +2534,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.home-one"
       }
@@ -2561,7 +2561,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.home-planned"
       }
@@ -2588,7 +2588,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.home-running"
       }
@@ -2615,7 +2615,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.home-sequential"
       }
@@ -2642,7 +2642,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-bottles"
       }
@@ -2669,7 +2669,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-choice"
       }
@@ -2696,7 +2696,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-created"
       }
@@ -2723,7 +2723,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-index"
       }
@@ -2750,7 +2750,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-invite"
       }
@@ -2777,7 +2777,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-joined"
       }
@@ -2804,7 +2804,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-laundry-day"
       }
@@ -2831,7 +2831,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-machines"
       }
@@ -2858,7 +2858,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-name"
       }
@@ -2885,7 +2885,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-people"
       }
@@ -2912,7 +2912,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-people-long"
       }
@@ -2939,7 +2939,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-people-member"
       }
@@ -2966,7 +2966,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-profile"
       }
@@ -2993,7 +2993,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-setup"
       }
@@ -3020,7 +3020,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-water"
       }
@@ -3047,7 +3047,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-water-sheet"
       }
@@ -3074,7 +3074,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.invite-sheet"
       }
@@ -3101,7 +3101,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.invite-sheet-long"
       }
@@ -3128,7 +3128,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.join-code"
       }
@@ -3155,7 +3155,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.join-link"
       }
@@ -3182,7 +3182,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.join-link-expired"
       }
@@ -3209,7 +3209,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.join-link-invalid"
       }
@@ -3236,7 +3236,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.join-link-long"
       }
@@ -3263,7 +3263,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.join-link-member"
       }
@@ -3290,7 +3290,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.join-link-signed-out"
       }
@@ -3317,7 +3317,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.join-link-used"
       }
@@ -3344,7 +3344,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.join-long"
       }
@@ -3371,7 +3371,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.join-preview"
       }
@@ -3398,7 +3398,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-chemistry"
       }
@@ -3425,7 +3425,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-completed"
       }
@@ -3452,7 +3452,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-completed-early"
       }
@@ -3479,7 +3479,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-day-hang-now"
       }
@@ -3506,7 +3506,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-day-home-until"
       }
@@ -3533,7 +3533,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-day-plan"
       }
@@ -3560,7 +3560,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-day-scale"
       }
@@ -3587,7 +3587,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-day-spread"
       }
@@ -3614,7 +3614,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-day-strip"
       }
@@ -3641,7 +3641,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-day-strip-open"
       }
@@ -3668,7 +3668,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-early-check"
       }
@@ -3695,7 +3695,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-early-check-due"
       }
@@ -3722,7 +3722,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-empty"
       }
@@ -3749,7 +3749,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-hamper"
       }
@@ -3776,7 +3776,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-hamper-scale"
       }
@@ -3803,7 +3803,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-hamper-scale-hand"
       }
@@ -3830,7 +3830,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-index"
       }
@@ -3857,7 +3857,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-laundromat"
       }
@@ -3884,7 +3884,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-next-held"
       }
@@ -3911,7 +3911,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-next-joined"
       }
@@ -3938,7 +3938,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-plan"
       }
@@ -3965,7 +3965,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-plan-scale"
       }
@@ -3992,7 +3992,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-preparation"
       }
@@ -4019,7 +4019,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-preparation-ball"
       }
@@ -4046,7 +4046,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-preparation-cap"
       }
@@ -4073,7 +4073,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-preparation-long"
       }
@@ -4100,7 +4100,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-preparation-paused"
       }
@@ -4127,7 +4127,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-ready"
       }
@@ -4154,7 +4154,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-review"
       }
@@ -4181,7 +4181,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-review-stain"
       }
@@ -4208,7 +4208,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-room"
       }
@@ -4235,7 +4235,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-room-blocked"
       }
@@ -4262,7 +4262,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-room-picked"
       }
@@ -4289,7 +4289,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-session"
       }
@@ -4316,7 +4316,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-shared-answered"
       }
@@ -4343,7 +4343,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-shared-ask"
       }
@@ -4370,7 +4370,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-times"
       }
@@ -4397,7 +4397,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.load-review"
       }
@@ -4424,7 +4424,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.me-account"
       }
@@ -4451,7 +4451,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.me-costs"
       }
@@ -4478,7 +4478,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.me-history"
       }
@@ -4505,7 +4505,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.me-index"
       }
@@ -4532,7 +4532,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.outfit-empty"
       }
@@ -4559,7 +4559,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.outfit-picker"
       }
@@ -4586,7 +4586,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.outfit-picker-empty"
       }
@@ -4613,7 +4613,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.outfit-picker-stale"
       }
@@ -4640,7 +4640,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.outfit-populated"
       }
@@ -4667,7 +4667,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.outfit-suggested"
       }
@@ -4694,7 +4694,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.preparation"
       }
@@ -4721,7 +4721,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.product-barcode"
       }
@@ -4748,7 +4748,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.product-new"
       }
@@ -4775,7 +4775,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.product-sheets"
       }
@@ -4802,7 +4802,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.profile-form"
       }
@@ -4829,7 +4829,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.profile-form-long"
       }
@@ -4856,7 +4856,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.put-away"
       }
@@ -4883,7 +4883,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.reset-code"
       }
@@ -4910,7 +4910,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.reset-email"
       }
@@ -4937,7 +4937,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.reset-password"
       }
@@ -4964,7 +4964,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.running"
       }
@@ -4991,7 +4991,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.settings-index"
       }
@@ -5018,7 +5018,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.settings-password"
       }
@@ -5045,7 +5045,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.settings-password-saved"
       }
@@ -5072,7 +5072,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.setup-closet"
       }
@@ -5099,7 +5099,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.setup-first-use"
       }
@@ -5126,7 +5126,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.sign-in"
       }
@@ -5153,7 +5153,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.timer-notice"
       }
@@ -5180,7 +5180,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.washer"
       }
@@ -5207,7 +5207,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.washer-confirmed"
       }
@@ -5234,7 +5234,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "records.appliance"
       }
@@ -5261,7 +5261,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "records.appliance.edit"
       }
@@ -5288,7 +5288,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "records.item.care"
       }
@@ -5315,7 +5315,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "records.item.tags"
       }
@@ -5342,7 +5342,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "records.pack"
       }
@@ -5369,7 +5369,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "records.pack.edit"
       }
@@ -5396,7 +5396,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "records.product"
       }
@@ -5423,7 +5423,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "records.product.contents"
       }
@@ -5450,7 +5450,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "records.profile"
       }
@@ -5477,7 +5477,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "records.towel"
       }
@@ -5504,7 +5504,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "records.towel.edit"
       }
@@ -5531,7 +5531,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "records.water"
       }
@@ -5558,7 +5558,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.closet.add-choose"
       }
@@ -5585,7 +5585,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.closet.history"
       }
@@ -5612,7 +5612,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.closet.running"
       }
@@ -5639,7 +5639,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.drying.reminder-check"
       }
@@ -5666,7 +5666,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.drying.washer-queued"
       }
@@ -5693,7 +5693,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.home.reminder-changed"
       }
@@ -5720,7 +5720,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.home.reminder-dismissed"
       }
@@ -5747,7 +5747,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.home.reminder-visible"
       }
@@ -5774,7 +5774,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.laundry.hamper-item"
       }
@@ -5801,7 +5801,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.laundry.session-closet"
       }
@@ -5828,7 +5828,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.laundry.washed"
       }
@@ -5844,11 +5844,11 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-12T03:35:54.339Z",
+      "capturedAt": "2026-10-12T03:48:12.553Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/e2e/review-reminder.spec.ts",
         "anchor": "line 44"
       }
@@ -5864,11 +5864,11 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-12T03:35:05.669Z",
+      "capturedAt": "2026-10-12T03:47:22.853Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/e2e/review-family.spec.ts",
         "anchor": "line 52"
       }
@@ -5884,11 +5884,11 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-12T03:35:11.270Z",
+      "capturedAt": "2026-10-12T03:47:28.613Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/e2e/review-family.spec.ts",
         "anchor": "line 87"
       }
@@ -5904,11 +5904,11 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-12T03:35:57.739Z",
+      "capturedAt": "2026-10-12T03:48:16.319Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/e2e/review-route-states.spec.ts",
         "anchor": "line 28"
       }
@@ -5924,11 +5924,11 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-12T03:35:07.030Z",
+      "capturedAt": "2026-10-12T03:47:24.287Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/e2e/review-family.spec.ts",
         "anchor": "line 67"
       }
@@ -5950,11 +5950,11 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-12T03:36:06.276Z",
+      "capturedAt": "2026-10-12T03:48:25.055Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/e2e/review-route-states.spec.ts",
         "anchor": "line 83"
       }
@@ -5973,11 +5973,11 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-12T03:34:52.237Z",
+      "capturedAt": "2026-10-12T03:47:08.577Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/e2e/review-family.spec.ts",
         "anchor": "line 37"
       }
@@ -6027,11 +6027,11 @@
       "platform": "web",
       "outcome": "fail",
       "finding": "Error: route.home.reminder-visible",
-      "capturedAt": "2026-10-12T03:37:03.572Z",
+      "capturedAt": "2026-10-12T03:49:23.286Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/e2e/review-workspace.spec.ts",
         "anchor": "line 88"
       }
@@ -6047,11 +6047,11 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-12T03:36:02.912Z",
+      "capturedAt": "2026-10-12T03:48:21.827Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/e2e/review-route-states.spec.ts",
         "anchor": "line 69"
       }
@@ -6068,11 +6068,11 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-12T03:35:15.490Z",
+      "capturedAt": "2026-10-12T03:47:32.973Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/e2e/review-family.spec.ts",
         "anchor": "line 115"
       }
@@ -6088,11 +6088,11 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-12T03:36:40.562Z",
+      "capturedAt": "2026-10-12T03:48:59.510Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/e2e/review-workspace.spec.ts",
         "anchor": "line 38"
       }
@@ -6108,11 +6108,11 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-12T03:34:49.125Z",
+      "capturedAt": "2026-10-12T03:47:05.205Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/e2e/review-family.spec.ts",
         "anchor": "line 9"
       }
@@ -6128,11 +6128,11 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-12T03:36:43.723Z",
+      "capturedAt": "2026-10-12T03:49:03.139Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/e2e/review-workspace.spec.ts",
         "anchor": "line 58"
       }
@@ -6154,11 +6154,11 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-12T03:35:56.011Z",
+      "capturedAt": "2026-10-12T03:48:14.411Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/e2e/review-route-states.spec.ts",
         "anchor": "line 19"
       }
@@ -6174,11 +6174,11 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-12T03:37:39.957Z",
+      "capturedAt": "2026-10-12T03:49:59.847Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/e2e/review-workspace.spec.ts",
         "anchor": "line 189"
       }
@@ -6195,11 +6195,11 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-12T03:37:19.808Z",
+      "capturedAt": "2026-10-12T03:49:39.588Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/e2e/review-workspace.spec.ts",
         "anchor": "line 99"
       }
@@ -6248,11 +6248,11 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-12T03:37:31.003Z",
+      "capturedAt": "2026-10-12T03:49:50.853Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/e2e/review-workspace.spec.ts",
         "anchor": "line 160"
       }
@@ -6268,11 +6268,11 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-12T03:37:42.791Z",
+      "capturedAt": "2026-10-12T03:50:02.721Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/e2e/review-workspace.spec.ts",
         "anchor": "line 210"
       }
@@ -6289,11 +6289,11 @@
       "platform": "web",
       "outcome": "fail",
       "finding": "TimeoutError: locator.click: Timeout 15000ms exceeded.",
-      "capturedAt": "2026-10-12T03:35:34.702Z",
+      "capturedAt": "2026-10-12T03:47:52.775Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/e2e/review-family.spec.ts",
         "anchor": "line 128"
       }
@@ -6310,11 +6310,11 @@
       "platform": "web",
       "outcome": "fail",
       "finding": "Error: expect(locator).toBeVisible() failed",
-      "capturedAt": "2026-10-12T03:36:24.155Z",
+      "capturedAt": "2026-10-12T03:48:43.124Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/e2e/review-workspace.spec.ts",
         "anchor": "line 13"
       }
@@ -6331,11 +6331,11 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-12T03:37:26.052Z",
+      "capturedAt": "2026-10-12T03:49:45.819Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/e2e/review-workspace.spec.ts",
         "anchor": "line 137"
       }
@@ -6352,11 +6352,11 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-12T03:37:47.430Z",
+      "capturedAt": "2026-10-12T03:50:07.933Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/e2e/review-workspace.spec.ts",
         "anchor": "line 244"
       }
@@ -6372,11 +6372,11 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-12T03:37:50.873Z",
+      "capturedAt": "2026-10-12T03:50:11.525Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/e2e/review-workspace.spec.ts",
         "anchor": "line 265"
       }
@@ -6398,11 +6398,11 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-12T03:35:59.657Z",
+      "capturedAt": "2026-10-12T03:48:18.409Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/e2e/review-route-states.spec.ts",
         "anchor": "line 43"
       }
@@ -6418,11 +6418,11 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-12T03:35:51.842Z",
+      "capturedAt": "2026-10-12T03:48:10.169Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/e2e/review-reminder.spec.ts",
         "anchor": "line 19"
       }
@@ -6471,11 +6471,11 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-12T03:37:35.622Z",
+      "capturedAt": "2026-10-12T03:49:55.552Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/e2e/review-workspace.spec.ts",
         "anchor": "line 160"
       }
@@ -6491,11 +6491,11 @@
       "method": "playwright",
       "platform": "web",
       "outcome": "pass",
-      "capturedAt": "2026-10-12T03:36:01.685Z",
+      "capturedAt": "2026-10-12T03:48:20.573Z",
       "source": {
         "tool": "playwright",
         "importer": "playwright-report",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/e2e/review-route-states.spec.ts",
         "anchor": "line 57"
       }
@@ -6510,7 +6510,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.care-family"
       }
@@ -6523,7 +6523,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.chemistry"
       }
@@ -6536,7 +6536,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-add-care"
       }
@@ -6549,7 +6549,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-add-color"
       }
@@ -6562,7 +6562,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-add-details"
       }
@@ -6575,7 +6575,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-add-label"
       }
@@ -6588,7 +6588,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-add-search"
       }
@@ -6601,7 +6601,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-add-stain-set-in"
       }
@@ -6614,7 +6614,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-add-stains"
       }
@@ -6627,7 +6627,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-add-type"
       }
@@ -6640,7 +6640,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-care-dry"
       }
@@ -6653,7 +6653,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-care-question"
       }
@@ -6666,7 +6666,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-care-question-pending"
       }
@@ -6679,7 +6679,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-care-wash"
       }
@@ -6692,7 +6692,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-empty"
       }
@@ -6705,7 +6705,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-first-wash"
       }
@@ -6718,7 +6718,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-index"
       }
@@ -6731,7 +6731,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-one"
       }
@@ -6744,7 +6744,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-record"
       }
@@ -6757,7 +6757,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-stain-check"
       }
@@ -6770,7 +6770,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-stain-next"
       }
@@ -6783,7 +6783,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-tags"
       }
@@ -6796,7 +6796,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-tags-long"
       }
@@ -6809,7 +6809,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.closet-tags-pending"
       }
@@ -6822,7 +6822,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.create-account"
       }
@@ -6835,7 +6835,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.dose-checks"
       }
@@ -6848,7 +6848,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.dryer-entry"
       }
@@ -6861,7 +6861,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying"
       }
@@ -6874,7 +6874,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-check"
       }
@@ -6887,7 +6887,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-check-empty"
       }
@@ -6900,7 +6900,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-check-marks"
       }
@@ -6913,7 +6913,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-check-missed"
       }
@@ -6926,7 +6926,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-dryer"
       }
@@ -6939,7 +6939,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-early-check"
       }
@@ -6952,7 +6952,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-home"
       }
@@ -6965,7 +6965,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-index"
       }
@@ -6978,7 +6978,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-method-conflict"
       }
@@ -6991,7 +6991,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-none-free"
       }
@@ -7004,7 +7004,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-preference"
       }
@@ -7017,7 +7017,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-putaway"
       }
@@ -7030,7 +7030,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-scale-check"
       }
@@ -7043,7 +7043,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-scale-mixed"
       }
@@ -7056,7 +7056,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-scale-plan"
       }
@@ -7069,7 +7069,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-scale-putaway"
       }
@@ -7082,7 +7082,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-second-wash"
       }
@@ -7095,7 +7095,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-stain"
       }
@@ -7108,7 +7108,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-take-out-early"
       }
@@ -7121,7 +7121,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-unknown"
       }
@@ -7134,7 +7134,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-wait"
       }
@@ -7147,7 +7147,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.drying-wait-smell"
       }
@@ -7160,7 +7160,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.dryness"
       }
@@ -7173,7 +7173,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.home-check-now"
       }
@@ -7186,7 +7186,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.home-dryer-busy"
       }
@@ -7199,7 +7199,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.home-drying"
       }
@@ -7212,7 +7212,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.home-empty"
       }
@@ -7225,7 +7225,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.home-one"
       }
@@ -7238,7 +7238,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.home-planned"
       }
@@ -7251,7 +7251,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.home-running"
       }
@@ -7264,7 +7264,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.home-sequential"
       }
@@ -7277,7 +7277,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-bottles"
       }
@@ -7290,7 +7290,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-choice"
       }
@@ -7303,7 +7303,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-created"
       }
@@ -7316,7 +7316,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-index"
       }
@@ -7329,7 +7329,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-invite"
       }
@@ -7342,7 +7342,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-joined"
       }
@@ -7355,7 +7355,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-laundry-day"
       }
@@ -7368,7 +7368,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-machines"
       }
@@ -7381,7 +7381,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-name"
       }
@@ -7394,7 +7394,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-people"
       }
@@ -7407,7 +7407,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-people-long"
       }
@@ -7420,7 +7420,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-people-member"
       }
@@ -7433,7 +7433,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-profile"
       }
@@ -7446,7 +7446,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-setup"
       }
@@ -7459,7 +7459,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-water"
       }
@@ -7472,7 +7472,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.household-water-sheet"
       }
@@ -7485,7 +7485,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.invite-sheet"
       }
@@ -7498,7 +7498,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.invite-sheet-long"
       }
@@ -7511,7 +7511,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.join-code"
       }
@@ -7524,7 +7524,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.join-link"
       }
@@ -7537,7 +7537,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.join-link-expired"
       }
@@ -7550,7 +7550,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.join-link-invalid"
       }
@@ -7563,7 +7563,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.join-link-long"
       }
@@ -7576,7 +7576,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.join-link-member"
       }
@@ -7589,7 +7589,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.join-link-signed-out"
       }
@@ -7602,7 +7602,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.join-link-used"
       }
@@ -7615,7 +7615,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.join-long"
       }
@@ -7628,7 +7628,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.join-preview"
       }
@@ -7641,7 +7641,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-chemistry"
       }
@@ -7654,7 +7654,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-completed"
       }
@@ -7667,7 +7667,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-completed-early"
       }
@@ -7680,7 +7680,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-day-hang-now"
       }
@@ -7693,7 +7693,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-day-home-until"
       }
@@ -7706,7 +7706,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-day-plan"
       }
@@ -7719,7 +7719,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-day-scale"
       }
@@ -7732,7 +7732,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-day-spread"
       }
@@ -7745,7 +7745,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-day-strip"
       }
@@ -7758,7 +7758,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-day-strip-open"
       }
@@ -7771,7 +7771,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-early-check"
       }
@@ -7784,7 +7784,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-early-check-due"
       }
@@ -7797,7 +7797,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-empty"
       }
@@ -7810,7 +7810,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-hamper"
       }
@@ -7823,7 +7823,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-hamper-scale"
       }
@@ -7836,7 +7836,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-hamper-scale-hand"
       }
@@ -7849,7 +7849,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-index"
       }
@@ -7862,7 +7862,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-laundromat"
       }
@@ -7875,7 +7875,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-next-held"
       }
@@ -7888,7 +7888,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-next-joined"
       }
@@ -7901,7 +7901,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-plan"
       }
@@ -7914,7 +7914,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-plan-scale"
       }
@@ -7927,7 +7927,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-preparation"
       }
@@ -7940,7 +7940,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-preparation-ball"
       }
@@ -7953,7 +7953,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-preparation-cap"
       }
@@ -7966,7 +7966,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-preparation-long"
       }
@@ -7979,7 +7979,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-preparation-paused"
       }
@@ -7992,7 +7992,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-ready"
       }
@@ -8005,7 +8005,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-review"
       }
@@ -8018,7 +8018,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-review-stain"
       }
@@ -8031,7 +8031,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-room"
       }
@@ -8044,7 +8044,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-room-blocked"
       }
@@ -8057,7 +8057,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-room-picked"
       }
@@ -8070,7 +8070,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-session"
       }
@@ -8083,7 +8083,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-shared-answered"
       }
@@ -8096,7 +8096,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-shared-ask"
       }
@@ -8109,7 +8109,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.laundry-times"
       }
@@ -8122,7 +8122,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.load-review"
       }
@@ -8135,7 +8135,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.me-account"
       }
@@ -8148,7 +8148,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.me-costs"
       }
@@ -8161,7 +8161,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.me-history"
       }
@@ -8174,7 +8174,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.me-index"
       }
@@ -8187,7 +8187,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.outfit-empty"
       }
@@ -8200,7 +8200,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.outfit-picker"
       }
@@ -8213,7 +8213,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.outfit-picker-empty"
       }
@@ -8226,7 +8226,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.outfit-picker-stale"
       }
@@ -8239,7 +8239,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.outfit-populated"
       }
@@ -8252,7 +8252,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.outfit-suggested"
       }
@@ -8265,7 +8265,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.preparation"
       }
@@ -8278,7 +8278,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.product-barcode"
       }
@@ -8291,7 +8291,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.product-new"
       }
@@ -8304,7 +8304,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.product-sheets"
       }
@@ -8317,7 +8317,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.profile-form"
       }
@@ -8330,7 +8330,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.profile-form-long"
       }
@@ -8343,7 +8343,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.put-away"
       }
@@ -8356,7 +8356,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.reset-code"
       }
@@ -8369,7 +8369,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.reset-email"
       }
@@ -8382,7 +8382,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.reset-password"
       }
@@ -8395,7 +8395,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.running"
       }
@@ -8408,7 +8408,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.settings-index"
       }
@@ -8421,7 +8421,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.settings-password"
       }
@@ -8434,7 +8434,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.settings-password-saved"
       }
@@ -8447,7 +8447,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.setup-closet"
       }
@@ -8460,7 +8460,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.setup-first-use"
       }
@@ -8473,7 +8473,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.sign-in"
       }
@@ -8486,7 +8486,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.timer-notice"
       }
@@ -8499,7 +8499,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.washer"
       }
@@ -8512,7 +8512,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "legacy.washer-confirmed"
       }
@@ -8527,7 +8527,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "family.drying"
       }
@@ -8542,7 +8542,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "family.drying"
       }
@@ -8557,7 +8557,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "family.drying"
       }
@@ -8572,7 +8572,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "family.planning"
       }
@@ -8587,7 +8587,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "family.putaway"
       }
@@ -8602,7 +8602,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "family.putaway"
       }
@@ -8617,7 +8617,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "family.washing"
       }
@@ -8632,7 +8632,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "family.washing"
       }
@@ -8646,7 +8646,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.care"
       }
@@ -8660,7 +8660,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.color"
       }
@@ -8674,7 +8674,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.details"
       }
@@ -8688,7 +8688,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.dye"
       }
@@ -8702,7 +8702,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.fabric"
       }
@@ -8716,7 +8716,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.final"
       }
@@ -8730,7 +8730,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.origin"
       }
@@ -8744,7 +8744,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.origin"
       }
@@ -8758,7 +8758,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.stain"
       }
@@ -8772,7 +8772,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.type"
       }
@@ -8786,7 +8786,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.whose"
       }
@@ -8800,7 +8800,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.care"
       }
@@ -8814,7 +8814,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.color"
       }
@@ -8828,7 +8828,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.details"
       }
@@ -8842,7 +8842,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.dye"
       }
@@ -8856,7 +8856,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.fabric"
       }
@@ -8870,7 +8870,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.final"
       }
@@ -8884,7 +8884,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.origin"
       }
@@ -8898,7 +8898,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.origin"
       }
@@ -8912,7 +8912,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.stain"
       }
@@ -8926,7 +8926,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.type"
       }
@@ -8940,7 +8940,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.whose"
       }
@@ -8953,7 +8953,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.appliance"
       }
@@ -8966,7 +8966,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "records.appliance"
       }
@@ -8979,7 +8979,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "records.appliance.edit"
       }
@@ -8992,7 +8992,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.closet.add-choose"
       }
@@ -9005,7 +9005,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.closet.history"
       }
@@ -9018,7 +9018,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.closet.running"
       }
@@ -9031,7 +9031,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.care"
       }
@@ -9044,7 +9044,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.color"
       }
@@ -9057,7 +9057,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.details"
       }
@@ -9070,7 +9070,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.dye"
       }
@@ -9083,7 +9083,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.fabric"
       }
@@ -9096,7 +9096,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.final"
       }
@@ -9109,7 +9109,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.origin"
       }
@@ -9122,7 +9122,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.stain"
       }
@@ -9135,7 +9135,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.type"
       }
@@ -9148,7 +9148,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.whose"
       }
@@ -9161,7 +9161,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.drying.reminder-check"
       }
@@ -9174,7 +9174,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.drying.washer-queued"
       }
@@ -9187,7 +9187,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "family.drying"
       }
@@ -9200,7 +9200,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "family.planning"
       }
@@ -9213,7 +9213,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "family.putaway"
       }
@@ -9226,7 +9226,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "family.washing"
       }
@@ -9239,7 +9239,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.home.reminder-changed"
       }
@@ -9252,7 +9252,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.home.reminder-dismissed"
       }
@@ -9265,7 +9265,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.home.reminder-visible"
       }
@@ -9278,7 +9278,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.care"
       }
@@ -9291,7 +9291,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.color"
       }
@@ -9304,7 +9304,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.details"
       }
@@ -9317,7 +9317,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.dye"
       }
@@ -9330,7 +9330,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.fabric"
       }
@@ -9343,7 +9343,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.final"
       }
@@ -9356,7 +9356,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.origin"
       }
@@ -9369,7 +9369,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.stain"
       }
@@ -9382,7 +9382,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.type"
       }
@@ -9395,7 +9395,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.whose"
       }
@@ -9408,7 +9408,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "records.item.care"
       }
@@ -9421,7 +9421,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "records.item.tags"
       }
@@ -9434,7 +9434,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "intake.product"
       }
@@ -9447,7 +9447,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "records.product"
       }
@@ -9460,7 +9460,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "records.product.contents"
       }
@@ -9473,7 +9473,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "records.pack"
       }
@@ -9486,7 +9486,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "records.pack.edit"
       }
@@ -9499,7 +9499,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "records.profile"
       }
@@ -9512,7 +9512,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "records.towel"
       }
@@ -9525,7 +9525,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "records.towel.edit"
       }
@@ -9538,7 +9538,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "records.water"
       }
@@ -9551,7 +9551,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.laundry.hamper-item"
       }
@@ -9564,7 +9564,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.laundry.session-closet"
       }
@@ -9577,7 +9577,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.laundry.washed"
       }
@@ -9593,7 +9593,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "apps/web/src/closet/closet-view.tsx",
         "anchor": "button: closetText.planLaundry"
       }
@@ -9610,7 +9610,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "apps/web/src/routes/closet.tsx",
         "anchor": "onItemOpen={(item, group) => void navigate"
       }
@@ -9627,7 +9627,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "apps/web/src/closet/garment-sheet.tsx",
         "anchor": "renderLink({ to: 'laundry', item: hamperMembers[0]!.textileId }"
       }
@@ -9643,7 +9643,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "apps/web/src/routes/drying.tsx",
         "anchor": "onBack={() => void navigate({ to: '/laundry' })}"
       }
@@ -9659,7 +9659,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "apps/web/src/home/hub-state.ts",
         "anchor": "target: { to: 'drying', run: state.runId }"
       }
@@ -9676,7 +9676,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "apps/web/src/home/home-page.tsx",
         "anchor": "search={{ add: 'choose' }}"
       }
@@ -9692,7 +9692,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "apps/web/src/home/home-sections.tsx",
         "anchor": "renderLink({ to: 'closet' }"
       }
@@ -9709,7 +9709,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "apps/web/src/home/home-page.tsx",
         "anchor": "search={{ item: target.textileId, returnTo: 'home' }}"
       }
@@ -9725,7 +9725,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "apps/web/src/home/home-page.tsx",
         "anchor": "search={{ plan: target.planId }}"
       }
@@ -9741,7 +9741,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "apps/web/src/home/home-sections.tsx",
         "anchor": "renderLink({ to: 'session', sessionId: load.sessionId }"
       }
@@ -9757,7 +9757,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "apps/web/src/home/home-hero.ts",
         "anchor": "target: { to: 'session', sessionId: row.sessionId }"
       }
@@ -9774,7 +9774,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "apps/web/src/laundry/session-view.tsx",
         "anchor": "const leave = () => dismissItem(router"
       }
@@ -9791,7 +9791,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "apps/web/src/laundry/session-view.tsx",
         "anchor": "search={{ item: textileId, tab: 'history' }}"
       }
@@ -9808,7 +9808,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "apps/web/src/laundry/session-view.tsx",
         "anchor": "void washFinished.run({ sessionId: detail.sessionId, at: Date.now() })"
       }
@@ -9825,7 +9825,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "apps/web/src/routes/me.tsx",
         "anchor": "search: { from: 'me' }, state: { itemReturnTo: router.state.location.href }"
       }
@@ -9841,7 +9841,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "apps/web/src/routes/me.tsx",
         "anchor": "onAccount={() => void navigate({ to: '/account' })}"
       }
@@ -9857,7 +9857,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "apps/web/src/routes/me.tsx",
         "anchor": "onSettings={() => void navigate({ to: '/settings' })}"
       }
@@ -9871,7 +9871,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "records.pack"
       }
@@ -9885,7 +9885,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "records.towel"
       }
@@ -9902,7 +9902,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "apps/web/src/routes/closet.tsx",
         "anchor": "initialAdd={initialAdd}"
       }
@@ -9919,7 +9919,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "apps/web/src/closet/add-clothes.tsx",
         "anchor": "onClose={onClose}"
       }
@@ -9936,7 +9936,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "apps/web/src/routes/closet.tsx",
         "anchor": "dismissItem(router"
       }
@@ -9953,7 +9953,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "apps/web/src/routes/closet.tsx",
         "anchor": "search={{ from: 'closet' }}"
       }
@@ -9968,7 +9968,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.drying.reminder-check"
       }
@@ -9983,7 +9983,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.drying.reminder-check"
       }
@@ -10000,7 +10000,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "apps/web/src/routes/drying.tsx",
         "anchor": "onBack={() => void navigate({ to: '/laundry' })}"
       }
@@ -10015,7 +10015,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.home.reminder-changed"
       }
@@ -10030,7 +10030,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.home.reminder-dismissed"
       }
@@ -10045,7 +10045,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.home.reminder-visible"
       }
@@ -10060,7 +10060,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "rehearsal/source/apps/web/src/review/scenarios.json",
         "anchor": "route.home.reminder-visible"
       }
@@ -10077,7 +10077,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "apps/web/src/routes/laundry.tsx",
         "anchor": "dismissItem(router"
       }
@@ -10094,7 +10094,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "apps/web/src/laundry/session-view.tsx",
         "anchor": "const leave = () => dismissItem(router"
       }
@@ -10111,7 +10111,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "apps/web/src/laundry/session-view.tsx",
         "anchor": "void washFinished.run({ sessionId: detail.sessionId, at: Date.now() })"
       }
@@ -10128,7 +10128,7 @@
       "source": {
         "tool": "journey-engine",
         "importer": "journey-index",
-        "revision": "c694591b9b25954502041585f2119f3271d6b956",
+        "revision": "58a6c1a09fa88447418a521521ebff718d1bed6a",
         "path": "apps/web/src/laundry/session-view.tsx",
         "anchor": "if (result !== undefined) void navigate({ to: '/drying' })"
       }

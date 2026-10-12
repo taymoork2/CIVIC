@@ -100,6 +100,8 @@ Acceptance: ordinary refresh and replay make zero model calls with providers dis
 
 Progress, 2026-10-12: evidence becomes visibly stale. A freshness rule in `civic.check.json` says which evidence proves code in this repository and where that code is. The gate reports evidence whose code changed since its revision as advisory, with a count, and `civic screen` and the journey canvas's Contract panel mark it. `bin/signoff --capture` recaptures Laundry's evidence when it's stale and stops so the new evidence is reviewed and committed. Still to come: replay from start in the scenario player, and native captures.
 
+Progress, 2026-10-12: replay from start is built for project adapters. In the Inspect panel, "Replay from start" opens a fresh run at the journey's first screen and walks the shortest chain of declared paths to the selected screen, clicking each path's action by its accessible name and waiting for the adapter to land where the path says. A missing control or a wrong landing stops the replay with an alert naming the step, and nothing past it is claimed. Only the app's own transitions are captured, so a failed save never becomes an edge. Laundry's towel journey keeps its own player. Still to come: native captures.
+
 ## 7. Repository hygiene
 
 - Done: the repository is on GitHub at [taymoork2/CIVIC](https://github.com/taymoork2/CIVIC), with local signoffs (`bin/signoff`) instead of GitHub Actions.

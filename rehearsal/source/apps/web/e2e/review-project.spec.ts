@@ -53,6 +53,23 @@ test('project-specific permission and failure presets keep the draft and never r
   }
 })
 
+test('replay from start walks declared paths in a fresh run and stops visibly on a miss', async ({ page }) => {
+  await page.goto('/review?scenario=demo.saved&persona=editor&role=author')
+  await expect(page.getByRole('navigation', { name: 'Canvas location' })).toContainText('Saved note')
+  await page.getByRole('button', { name: 'Inspect', exact: true }).click()
+  await page.getByRole('button', { name: 'Replay from start', exact: true }).click()
+  await expect(page.getByRole('status').filter({ hasText: 'Replayed 2 declared steps from Notebook home to Saved note.' })).toBeVisible()
+  const frame = page.frameLocator('iframe[title="Live Notebook home"]')
+  await expect(frame.getByRole('heading', { name: 'Note saved', exact: true })).toBeVisible()
+  await expect(page.getByText('2 captured visits', { exact: false })).toBeVisible()
+  // A failure condition makes Save stay on the draft: the replay stops there and claims nothing past it.
+  await page.goto('/review?scenario=demo.saved&persona=editor&role=author&condition=save-error')
+  await page.getByRole('button', { name: 'Inspect', exact: true }).click()
+  await page.getByRole('button', { name: 'Replay from start', exact: true }).click()
+  await expect(page.getByRole('alert').filter({ hasText: 'Replay stopped at Compose note: “Save” stayed here, not Saved note.' })).toBeVisible()
+  await expect(page.getByText('1 captured visit', { exact: false })).toBeVisible()
+})
+
 test('unregistered states and adapter errors fail visibly without claiming a ready preview', async ({ page }) => {
   await page.goto('/review-frame.html?scenario=demo.unknown')
   await expect(page.getByRole('alert')).toContainText('not registered')
