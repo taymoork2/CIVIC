@@ -40,8 +40,11 @@ export function runtimeTransport(session: { id: string; project?: string }, reco
   const intents = (): PendingIntent[] => { try { return recovery ? JSON.parse(recovery.storage.getItem(key) ?? '[]') : [] } catch { return [] } }
   const save = (rows: PendingIntent[]) => { recovery?.storage.setItem(key, JSON.stringify(rows)); changed() }
   const same = (row: PendingIntent, actor: { account: string | null; subject: string | null }) => row.account === actor.account && row.subject === actor.subject
+  // Counts requests that can change the run's data, so a settle re-reads its state only after one.
+  let revision = 0
   const request = <T>(action: string, name?: string, args?: unknown): Promise<T> => {
     const application = ['query', 'mutation', 'action'].includes(action)
+    if (!['query', 'state', 'inspect'].includes(action)) revision++
     const actor = recovery?.actor()
     const execute = async () => {
       try {
@@ -76,6 +79,7 @@ export function runtimeTransport(session: { id: string; project?: string }, reco
   return {
     request, bind: (value: RuntimeBridge) => { bridge = value }, settle: async () => { while (pending.size) await Promise.allSettled([...pending]) },
     connected: () => connected,
+    revision: () => revision,
     subscribe: (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener) } },
     /** Disconnecting aborts this page's in-flight app requests; review controls stay connected. */
     connect(value: boolean) { connected = value; partition.abort(); partition = new AbortController(); changed() },
@@ -138,7 +142,7 @@ export async function openRuntimeSession<Seed = unknown>(context: SessionContext
   transport.subscribe(() => { if (online !== transport.connected()) { online = transport.connected(); notify('connection') } else notify('pending') })
   const OriginalDate = Date, uuidDescriptor = Object.getOwnPropertyDescriptor(crypto, 'randomUUID')
   const entropySeed = previous?.entropySeed ?? crypto.randomUUID()
-  let sequence = 0, data: unknown = null, closed = false
+  let sequence = 0, data: unknown = null, read = -1, closed = false
   const runPrefix = `civic:run:${session.project}:${session.id}:`
   // A replay must start from nothing, so recorded runs keep their storage in memory.
   const stores = ['localStorage', 'sessionStorage'].map((key) => ({ key, descriptor: Object.getOwnPropertyDescriptor(window, key)!, storage: context.recording ? memoryStorage() : scopedStorage(actual, () => `${runPrefix}${subject ?? ''}:${key}:`) }))
@@ -180,7 +184,8 @@ export async function openRuntimeSession<Seed = unknown>(context: SessionContext
     async advance(minutes: number) { clock = (await transport.request<{ now: number }>('time', undefined, { minutes })).now; notify('time') },
     async settle() {
       for (let index = 0; index < 3; index++) { await transport.settle(); await new Promise<void>((resolve) => requestAnimationFrame(() => resolve())) }
-      if (transport.connected()) data = await transport.request('state')
+      // Reading a large run's whole state is costly; it changes only through this page's writes, account, clock or reset.
+      if (transport.connected() && (data === null || read !== transport.revision())) { const at = transport.revision(); data = await transport.request('state'); read = at }
     },
     async reset() {
       connection(true)
@@ -190,7 +195,8 @@ export async function openRuntimeSession<Seed = unknown>(context: SessionContext
       account = session.account; subject = session.subject; clock = session.now; sequence = 0
       transport.resetRecovery(); notify('identity')
     },
-    async assertSource() { await transport.request('state') },
+    // Every run request is refused once the source changed; asking who is acting is the cheapest one.
+    async assertSource() { await transport.request('inspect') },
     close() {
       if (closed) return
       closed = true; globalThis.Date = OriginalDate

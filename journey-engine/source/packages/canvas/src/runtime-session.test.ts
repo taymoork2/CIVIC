@@ -63,8 +63,9 @@ test('a saved step is resent only by an explicit apply, and discarding drops it 
   online = false
   await expect(transport.request('mutation', 'closet:markWorn', { textileIds: ['a'] })).rejects.toThrow('interrupted')
   await expect(transport.request('mutation', 'closet:markWorn', { textileIds: ['b'] })).rejects.toThrow('interrupted')
+  // The same write tapped twice is kept once.
   await expect(transport.request('mutation', 'closet:markWorn', { textileIds: ['b'] })).rejects.toThrow('interrupted')
-  expect(transport.pending().map((row) => row.args)).toEqual([{ textileIds: ['a'] }, { textileIds: ['b'] }], 'the same write tapped twice is kept once')
+  expect(transport.pending().map((row) => row.args)).toEqual([{ textileIds: ['a'] }, { textileIds: ['b'] }])
   expect(fetch).toHaveBeenCalledTimes(1)
   await expect(transport.apply(transport.pending()[0]!.id)).rejects.toThrow('Reconnect')
   online = true; transport.connect(true)

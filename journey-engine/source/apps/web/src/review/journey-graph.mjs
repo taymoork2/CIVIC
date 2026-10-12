@@ -16,7 +16,8 @@ export function journeyGraph(scenarios, project) {
     if (scenario.id.startsWith('intake.towel.')) continue
     const partial = scenario.renderer === 'legacy' || scenario.preview === 'requires-start-state'
     const runtime = scenario.renderer === 'runtime'
-    const area = runtime ? (scenario.route?.split('/')[1] || 'home') : (scenario.screen ?? '').split('-')[0]
+    // A runtime screen with no route of its own (the family laundry day) keeps its journey as its flow.
+    const area = runtime ? scenario.route === undefined ? undefined : (scenario.route.split('/')[1] || 'home') : (scenario.screen ?? '').split('-')[0]
     const isEntry = entryScreens.includes(scenario.screen ?? '') || area === 'join'
     const label = partial || runtime ? isEntry ? 'Sign-in & setup' : area === 'invite' ? 'Household' : areas[area] ?? (runtime ? scenario.journey : 'Washing & recovery') : scenario.journey
     const id = partial || runtime || scenario.renderer === 'route-state' || scenario.renderer === 'reminder' ? `area:${label}` : `flow:${label}`

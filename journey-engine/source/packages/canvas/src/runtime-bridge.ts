@@ -22,14 +22,21 @@ export function createRuntimeBridge(ports: RuntimePorts) {
   const snapshot = (step: RuntimeStep) => Object.assign(step, { route: ports.route(), fields: structuredClone(ports.fields()), view: ports.view() })
   const seal = () => { if (current && !sealed.has(current)) { snapshot(current); sealed.add(current) } }
   let finalizing = Promise.resolve()
+  // A settle that has not started yet serves every flush asked for the same step meanwhile, so frequent callers
+  // (a panel counting steps on each run event) never queue a settle each; each flush still settles after its call.
+  let waiting: { step: RuntimeStep | null; done: Promise<void> } | null = null
   const flush = () => {
     const step = current
-    finalizing = finalizing.then(async () => {
+    if (waiting && waiting.step === step) return waiting.done
+    const entry: { step: RuntimeStep | null; done: Promise<void> } = { step, done: Promise.resolve() }
+    entry.done = finalizing = finalizing.then(async () => {
+      if (waiting === entry) waiting = null
       while (pending.size) await Promise.allSettled([...pending])
       await ports.settle()
       if (step && !sealed.has(step)) snapshot(step)
     })
-    return finalizing
+    waiting = entry
+    return entry.done
   }
   const bridge = {
     prepare(target?: RuntimeGesture['target']) {
