@@ -175,7 +175,7 @@ The founder's default today is a screenshot and a comment pasted into a harness.
 **2. The agent side: one MCP server, thin packages per harness.** The calls in section 3 are offered by a CLI and by an MCP server over the same code, so any harness that speaks MCP can use them (Claude Code, Codex, Cursor and others). Each harness then gets a thin package, with all logic kept in the CLI:
 
 - **Claude Code plugin:** the MCP server; a skill explaining how to work a request (claim, read the context, repro, fix, report); slash commands such as `/civic:next` and `/civic:request <id>`; and a session-start hook that lists open requests for the current line.
-- **Codex:** the same MCP server, plus an AGENTS.md section or skill with the same instructions.
+- **Codex:** the same plugin folder, with a Codex manifest beside the Claude Code one: the same MCP server, skill and session-start hook.
 
 Request captures are returned as images, so the agent sees exactly what the person saw.
 

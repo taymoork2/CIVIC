@@ -1,0 +1,11 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+  "mcpServers": {
+    "civic": {
+      "command": "./bin/civic-mcp",
+      "cwd": "./",
+      "env": { "CIVIC_AGENT": "codex" },
+      "env_vars": ["CIVIC_HOME", "CIVIC_FOR"]
+    }
+  }
+}
