@@ -1,0 +1,9 @@
+{
+  "name": "civic",
+  "version": "0.1.0",
+  "description": "Work CIVIC review requests from Codex (decision 0007): the civic MCP server, a skill for working a request, and a session-start list of open requests.",
+  "author": { "name": "taymoork2" },
+  "repository": "https://github.com/taymoork2/CIVIC",
+  "keywords": ["civic", "review", "design-systems", "qa"],
+  "mcpServers": "./codex.mcp.json"
+}

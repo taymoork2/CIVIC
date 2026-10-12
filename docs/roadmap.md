@@ -10,7 +10,7 @@ Reprioritized on 2026-10-11. Steps 1 and 2, the review to agent loop's Laundry s
 
 1. **[Step 9: real inputs](#9-real-inputs-replace-the-stand-ins)** replace the stand-in Figma files and illustrative decisions.
 2. **[Step 4](#4-the-journey-engine-as-a-graph-viewer):** a second app onboards through the manifest and crawl-first discovery, gated by `civic check`.
-3. **The review loop's next items** ([below](#next-the-review-to-agent-loop), item 3): Codex packaging, then PR previews and design drafts once real Figma inputs exist.
+3. **The review loop's next items** ([below](#next-the-review-to-agent-loop), item 3): Codex packaging (built), then PR previews and design drafts once real Figma inputs exist.
 4. **[Step 6](#6-journey-completeness-and-replay), then [step 5](#5-identity-permissions-and-multiplayer).** Multiplayer stays last while there is one user.
 5. **[Step 7](#7-repository-hygiene)** happens opportunistically.
 
@@ -55,6 +55,8 @@ Built ahead of the Card demo ([decision 0007](decisions/0007-review-to-agent-loo
 1. **Records.** Line, Annotation, WorkRequest, and Actor go into the graph as the start of step 3. Built in [`graph/`](../graph#the-review-to-agent-loop), with validation for D35 to D38, `laneFor` and `resolveAnchor`.
 2. **A first slice on the journey engine with Laundry.** Records move from each worktree's `.review-data/` to the git common directory. Annotations get ID and locator anchors, and screenshot import arrives. The canvas gets a lens to switch between worktrees. The CLI gets `civic annotate`, `requests`, `claim`, `report-fix`, and `repro`, with the resolution policy's Auto, batch review, and owner sign-off lanes. Then come the capture overlay for dev and preview builds, the MCP server, and the Claude Code plugin. The store, the CLI and CIVIC's re-capture are built in [`review/`](../review), with the acceptance below as an end-to-end test on a repository with a linked worktree. Laundry's review now records each canvas note as a shared annotation, anchored to the scenario's target or to the element's role and name, and can hand annotations to agents. Its "Across lines of work" section is the first lens. Re-capture signs in to the review server with its local key. The capture overlay (`civic overlay`, injected into Laundry's dev build by `VITE_CIVIC_OVERLAY`), the MCP server and the [Claude Code plugin](../integrations/claude-code) complete the slice.
 3. **PR previews and design drafts** follow, once real Figma exports ([step 9](#9-real-inputs-replace-the-stand-ins)) bring drafts in. Codex packaging can come earlier, since it only repackages the MCP server. These come after the gate, the Decision record and real inputs (see [order of work](#order-of-work)).
+
+   Progress, 2026-10-12: Codex packaging is built. The [plugin](../integrations/claude-code#codex) carries a Codex manifest next to the Claude Code one, so Codex installs it from the same marketplace with the same skill and hook, and runs the MCP server as `codex`. PR previews and design drafts wait on real Figma inputs.
 
 Acceptance: an annotation made in one worktree is claimed by an agent in another, the reported fix is re-captured on that worktree's preview with no model call, and the request resolves through its lane.
 
