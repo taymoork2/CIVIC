@@ -173,6 +173,7 @@ Two read-only queries over a graph (D31). Both are deterministic and print Markd
   bin/civic check --since origin/main        # what this branch introduced, and who is asked and told
   ```
 
+- **Library releases** (roadmap step 10, [`src/release.ts`](src/release.ts)). `civic release --since <ref>` treats every platform component whose record or extension points changed since the merge base as a release. For each one it lists the semantic variants left without a mapping (marking those that had one before), the new native variants no semantic variant covers, and the product overrides the release breaks: overrides whose forecast was `supported` before and isn't now. It also lists the overrides it makes expressible. The component's owners are asked, and each override's maker and instance owners are told. It exits 1 when a release breaks an override or unmaps a variant. `bin/signoff` prints it without gating, since the conflicts the gate raises are where someone decides a breaking release.
 - **Dates.** Expiry is compared with today's date, or `--today <date>` for a repeatable run. The same graphs, date and checkout always give the same report.
 
 A conflict counts as decided only when a Decision record is in force on it ([Decisions](#decisions)). An agent-written decision makes the graph invalid, so it never clears a finding.

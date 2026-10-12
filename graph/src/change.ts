@@ -238,6 +238,11 @@ function short(revision: string): string {
   return /^[0-9a-f]{40}$/.test(revision) ? revision.slice(0, 12) : revision
 }
 
+/** JSON with keys in a stable order, so two equal records always compare equal. */
+export function stableStringify(value: unknown): string {
+  return stable(value)
+}
+
 function stable(value: unknown): string {
   if (Array.isArray(value)) return `[${value.map(stable).join(',')}]`
   if (value && typeof value === 'object') {
