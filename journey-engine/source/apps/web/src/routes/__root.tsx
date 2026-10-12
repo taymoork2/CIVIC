@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils'
-import { ClientOnly, HeadContent, Link, Outlet, Scripts, createRootRoute, useRouterState } from '@tanstack/react-router'
+import { ClientOnly, HeadContent, Link, Outlet, Scripts, createRootRoute, useRouter, useRouterState } from '@tanstack/react-router'
 import { useConvexAuth, useQuery } from 'convex/react'
 import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
 import { Toaster } from 'sonner'
@@ -17,14 +17,15 @@ import { useOnboardingActive } from '@/account/onboarding-state'
 import { appText } from '../copy'
 import { LaundryDock, type DockLink } from '@/laundry/laundry-day'
 import { PwaUpdates } from '../pwa'
-import { NotFound } from '@/kit/route-error'
+import { NotFound, RouteErrorView } from '@/kit/route-error'
 import { useNow } from '@/kit/use-now'
 import { getStartup } from '../startup'
 import { useStartup } from '../startup-context'
 import { TimerNotices } from '@/laundry/timer-notices'
 import { FeedbackContext, feedbackScreen } from '@/kit/feedback-context'
 import { Button } from '@/components/ui/button'
-import { Loading } from '@/kit/ui'
+import { errorCode, Loading } from '@/kit/ui'
+import { purgePrivateState } from '@/private-state'
 
 const FeedbackSheet = lazy(() => import('@/dev/feedback-sheet').then(module => ({ default: module.FeedbackSheet })))
 
@@ -77,9 +78,26 @@ export const Route = createRootRoute({
     ],
   }),
   component: RootDocument,
+  errorComponent: RootErrorDocument,
   // Unknown addresses render for everyone (not behind RequireHousehold).
   notFoundComponent: NotFound,
 })
+
+/** A revoked query may arrive before Better Auth's session refresh; never leave private UI mounted. */
+function RootErrorDocument({ error }: { error: unknown }) {
+  const router = useRouter()
+  const revoked = errorCode(error) === 'unauthenticated'
+  useEffect(() => {
+    if (!revoked) return
+    purgePrivateState()
+    // Reload auth from the current cookie; signing out here could revoke a newly switched account.
+    window.location.replace('/sign-in')
+  }, [revoked])
+  return <html lang="en" suppressHydrationWarning><head><HeadContent /></head><body>
+    <AppShell focus>{revoked ? <Loading what="sign-in" startup /> : <RouteErrorView error={error} onRetry={() => void router.invalidate()} />}</AppShell>
+    <Scripts />
+  </body></html>
+}
 
 // The design's own dock icons (home, closet, washer, people, person).
 const navigationIcons = { '/': 'home', '/laundry': 'laundry', '/closet': 'closet', '/household': 'people', '/me': 'me' } as const satisfies Record<string, DesignIconName>

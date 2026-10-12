@@ -7,7 +7,7 @@ import { principalFromAuth } from './principal'
 test('subscriptions are principal/device scoped and revocable', async () => {
   const t = newBackend()
   const as = signedIn(t, 'notification-test-user')
-  const key = await as.run((ctx) => principalFromAuth(ctx.auth).then((principal) => principal.key as string))
+  const key = await as.run((ctx) => principalFromAuth(ctx).then((principal) => principal.key as string))
 
   const first = await as.mutation(api.notifications.subscribe, { deviceId: 'phone', endpointHash: 'hash-a' })
   const same = await as.mutation(api.notifications.subscribe, { deviceId: 'phone', endpointHash: 'hash-a' })

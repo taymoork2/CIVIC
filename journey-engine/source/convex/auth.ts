@@ -1,5 +1,6 @@
 import { createClient, type AuthFunctions, type GenericCtx } from '@convex-dev/better-auth'
 import { convex } from '@convex-dev/better-auth/plugins'
+import { requireRunMutationCtx } from '@convex-dev/better-auth/utils'
 import { betterAuth, type BetterAuthOptions } from 'better-auth'
 import { testUtils } from 'better-auth/plugins'
 
@@ -41,6 +42,8 @@ export function authOptions(ctx: GenericCtx<DataModel>, request?: Request): Bett
     baseURL: request ? authRequestOrigin(request, process.env.SITE_URL ?? '', trustedOrigins) : process.env.SITE_URL,
     trustedOrigins,
     database: authComponent.adapter(ctx),
+    // No trusted client-IP boundary is configured; forwarding headers must not reset the bucket.
+    advanced: { ipAddress: { ipAddressHeaders: [] } },
     emailAndPassword: { enabled: true, requireEmailVerification: false },
     // No email is sent in this trial: an unverified address (every one here) changes straight away.
     user: { deleteUser: { enabled: true }, changeEmail: { enabled: true, updateEmailWithoutVerification: true } },
@@ -48,7 +51,13 @@ export function authOptions(ctx: GenericCtx<DataModel>, request?: Request): Bett
     // Convex fetches public signing keys while validating requests; throttling that GET rejects valid sessions.
     // On by default. Only the worktree's loopback dev script turns it off: every local caller shares one
     // 127.0.0.1 bucket there, so seeding and testing lock each other out.
-    rateLimit: { enabled: process.env.WASHCLOSET_AUTH_RATE_LIMIT !== 'disabled', storage: 'database', customRules: { '/convex/jwks': false } },
+    rateLimit: { enabled: process.env.WASHCLOSET_AUTH_RATE_LIMIT !== 'disabled', storage: 'database', customRules: { '/convex/jwks': false },
+      customStorage: {
+        get: key => ctx.runQuery(internal.authLimits.get, { key }),
+        set: (key, value) => requireRunMutationCtx(ctx).runMutation(internal.authLimits.set, { key, count: value.count, lastRequest: Number(value.lastRequest) }).then(() => undefined),
+        consume: (key, rule) => requireRunMutationCtx(ctx).runMutation(internal.authLimits.consume, { key, ...rule }),
+      },
+    },
     plugins: [convex({ authConfig }), ...(testUtilsEnabled() ? [testUtils()] : [])],
   }
 }

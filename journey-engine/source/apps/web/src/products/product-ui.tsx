@@ -123,14 +123,14 @@ export function CareHero({ title, detail, art, action, photo = false, variant = 
   photo?: boolean
   variant?: 'page' | 'home' | 'feature'
 }) {
-  if (variant === 'feature') return <header className="care-feature grid min-w-0 gap-4 rounded-card bg-surface p-4 text-ink shadow-[var(--e1)] [container-type:inline-size] sm:p-5">
+  if (variant === 'feature') return <header className="care-feature grid min-w-0 gap-4 rounded-card bg-surface p-4 text-ink shadow-[var(--e1)] [background-image:linear-gradient(145deg,color-mix(in_srgb,var(--surface-2)_45%,var(--surface)),var(--surface)_70%)] [container-type:inline-size] sm:p-5">
     <div className={cn('relative isolate flex min-w-0 flex-wrap items-center justify-between gap-3', photo && 'min-h-[128px] items-end [@container_(width_<_12rem)]:min-h-0')}>
       {photo && art !== undefined ? <div aria-hidden="true" className="pointer-events-none absolute -inset-x-4 -top-4 bottom-0 -z-10 overflow-hidden [&_img]:size-full [&_img]:object-cover [&_img]:[object-position:center_50%] [&_img]:[mask-image:linear-gradient(to_bottom,_#000_25%,_transparent_94%)] sm:-inset-x-5 sm:-top-5 [@container_(width_<_12rem)]:hidden">{art}</div> : null}
       <h1 className={cn(pageHeadingClassName, 'flex-1 basis-[8rem]')}>{title}</h1>
-      {photo ? action : art === undefined ? null : <div aria-hidden="true" className="w-[8rem] max-w-[40%] flex-none [&_img]:h-24 [&_img]:w-full [&_img]:object-contain [&_img]:[mask-image:linear-gradient(to_bottom,_#000_65%,_transparent_100%)]">{art}</div>}
+      {photo || art === undefined ? null : <div aria-hidden="true" className="w-[8rem] max-w-[40%] flex-none [&_img]:h-24 [&_img]:w-full [&_img]:object-contain [&_img]:[mask-image:linear-gradient(to_bottom,_#000_65%,_transparent_100%)]">{art}</div>}
     </div>
     {detail === undefined ? null : <div className="grid min-w-0 gap-3 text-[length:var(--step--1)] text-ink-2 [overflow-wrap:anywhere]">{detail}</div>}
-    {action === undefined || photo ? null : <div className="flex min-w-0 flex-wrap items-center gap-2 [&_>_*]:max-w-full">{action}</div>}
+    {action === undefined ? null : <div className="-mx-4 -mb-4 overflow-hidden rounded-b-card bg-[var(--accent-soft)] sm:-mx-5 sm:-mb-5 [&_>_*]:flex [&_>_*]:h-auto [&_>_*]:min-h-12 [&_>_*]:w-full [&_>_*]:justify-between [&_>_*]:rounded-none [&_>_*]:border-0 [&_>_*]:bg-transparent [&_>_*]:px-4 [&_>_*]:py-3 [&_>_*]:text-start [&_>_*]:whitespace-normal sm:[&_>_*]:px-5">{action}</div>}
   </header>
   if (variant === 'page') return <header className={cn('page-header relative grid min-w-0 gap-2 [.page.wash_>_&]:col-span-full', art !== undefined && 'grid-cols-[minmax(0,1fr)_5rem] items-center')}>
     {art === undefined ? null : <div aria-hidden="true" className="col-start-2 row-span-2 row-start-1 [&_img]:[mask-image:linear-gradient(to_bottom,_#000_65%,_transparent_100%)]">{art}</div>}

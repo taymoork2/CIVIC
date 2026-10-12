@@ -4,7 +4,7 @@ import { fail } from './errors'
 import { principalFromAuth, type AuthenticatedPrincipal } from './principal'
 
 /** What authorization needs from a function context. A mutation context satisfies it as well. */
-export type ReadCtx = Pick<QueryCtx, 'db' | 'auth'>
+export type ReadCtx = QueryCtx
 
 /**
  * Who may do what. `member`: any member of the resource's household. `owner`: owners only.
@@ -147,7 +147,7 @@ async function check(ctx: Pick<ReadCtx, 'db'>, principalKey: string, action: Act
 }
 
 async function allow(ctx: ReadCtx, action: Action, target: HouseholdTarget): Promise<Access & { used: Used }> {
-  const actor = await principalFromAuth(ctx.auth)
+  const actor = await principalFromAuth(ctx)
   const membership = await check(ctx, actor.key, action, target)
   if (typeof membership === 'string') fail('forbidden', membership)
   const used = await related(ctx, target.householdId, target.uses ?? {})
@@ -191,7 +191,7 @@ export async function authorize(
     return { ...(await allow(ctx, action, { householdId: session.householdId, ...(target.uses === undefined ? {} : { uses: target.uses }) })), session }
   }
   if ('membershipId' in target) {
-    await principalFromAuth(ctx.auth)
+    await principalFromAuth(ctx)
     const removed = await ctx.db.get(target.membershipId)
     if (removed === null) fail('not_found', 'Not found')
     const access = await allow(ctx, action, { householdId: removed.householdId, subjects: [removed.principalKey] })

@@ -12,7 +12,9 @@ A product owner, designers, developers and collaborators exploring and proposing
 
 ## Product Purpose
 
-Explore a real application in synthetic scenarios, attach feedback to its exact state, and inspect a fix with its evidence. Laundry App is the first integration. The workspace is an independent product that may later move to its own repository; its identity and shell do not inherit Laundry App's design system.
+Explore a real application in synthetic scenarios, attach feedback to its exact state, and inspect a fix with its evidence. Rehearsal is becoming a feature of [CIVIC](https://github.com/taymoork2/CIVIC), where migration is already underway. Laundry App remains the first integration and the current local validation environment. Rehearsal's identity and shell do not inherit Laundry App's design system.
+
+The user confirmed on October 12, 2026 that the ZIPs and handoffs have been delivered to CIVIC. Future product-level handoffs target that feature in CIVIC; the Laundry App copy remains available for now. Keep reusable Rehearsal changes separate from Laundry-specific adapters and evidence. Local verification does not establish whether CIVIC has imported or verified a particular change.
 
 ## Operating Context
 

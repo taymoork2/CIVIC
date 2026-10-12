@@ -24,7 +24,7 @@ export function sniffImageType(bytes: Uint8Array): PhotoType | null {
   return null
 }
 
-/** True when the image still carries an EXIF block (camera, time, and possibly GPS location). */
+/** Metadata or malformed chunks fail closed: their location data cannot be ruled out. */
 export function hasEmbeddedMetadata(bytes: Uint8Array, type: PhotoType): boolean {
   const text = (start: number, length: number) => String.fromCharCode(...bytes.slice(start, start + length))
   if (type === 'image/jpeg') {
@@ -33,6 +33,7 @@ export function hasEmbeddedMetadata(bytes: Uint8Array, type: PhotoType): boolean
       const marker = bytes[offset + 1]!
       if (marker === 0xda || marker === 0xd9) break
       const length = (bytes[offset + 2]! << 8) | bytes[offset + 3]!
+      if (length < 2 || offset + 2 + length > bytes.length) return true
       if (marker === 0xe1 && (text(offset + 4, 4) === 'Exif' || text(offset + 4, 28).startsWith('http://ns.adobe.com/xap'))) return true
       offset += 2 + length
     }
@@ -42,6 +43,7 @@ export function hasEmbeddedMetadata(bytes: Uint8Array, type: PhotoType): boolean
     let offset = 8
     while (offset + 8 <= bytes.length) {
       const length = ((bytes[offset]! << 24) >>> 0) + (bytes[offset + 1]! << 16) + (bytes[offset + 2]! << 8) + bytes[offset + 3]!
+      if (offset + 12 + length > bytes.length) return true
       const chunk = text(offset + 4, 4)
       if (chunk === 'eXIf' || chunk === 'iTXt' || chunk === 'zTXt' || chunk === 'tEXt') return true
       if (chunk === 'IEND') break
@@ -52,7 +54,8 @@ export function hasEmbeddedMetadata(bytes: Uint8Array, type: PhotoType): boolean
   let offset = 12
   while (offset + 8 <= bytes.length) {
     const chunk = text(offset, 4)
-    const length = bytes[offset + 4]! | (bytes[offset + 5]! << 8) | (bytes[offset + 6]! << 16) | (bytes[offset + 7]! << 24)
+    const length = (bytes[offset + 4]! | (bytes[offset + 5]! << 8) | (bytes[offset + 6]! << 16) | (bytes[offset + 7]! << 24)) >>> 0
+    if (offset + 8 + length + (length % 2) > bytes.length) return true
     if (chunk === 'EXIF' || chunk === 'XMP ') return true
     offset += 8 + length + (length % 2)
   }
@@ -75,7 +78,7 @@ export const uploadContext = internalQuery({
   returns: v.object({ householdId: v.id('households'), principalKey: v.string(), count: v.number(), attached: v.boolean() }),
   handler: async (ctx, args) => {
     const textile = (await authorize(ctx, 'photo.edit', { textileId: args.textileId })).textile
-    const actor = await principalFromAuth(ctx.auth)
+    const actor = await principalFromAuth(ctx)
     const existing = await ctx.db.query('carePhotos').withIndex('by_textile', (q) => q.eq('textileId', textile._id)).collect()
     const attached = await ctx.db.query('carePhotos').withIndex('by_storage', (q) => q.eq('storageId', args.storageId)).first()
     return { householdId: textile.householdId, principalKey: actor.key as string, count: existing.length, attached: attached !== null }
@@ -83,9 +86,32 @@ export const uploadContext = internalQuery({
 })
 
 export const insertPhoto = internalMutation({
-  args: { householdId: v.id('households'), textileId: v.id('textiles'), storageId: v.id('_storage'), contentType: v.string(), size: v.number(), uploadedBy: v.string() },
+  args: { textileId: v.id('textiles'), storageId: v.id('_storage'), contentType: v.string(), size: v.number() },
   returns: v.id('carePhotos'),
-  handler: async (ctx, args) => ctx.db.insert('carePhotos', { ...args, createdAt: Date.now() }),
+  handler: async (ctx, args) => {
+    const { textile, actor } = await authorize(ctx, 'photo.edit', { textileId: args.textileId })
+    const attached = await ctx.db.query('carePhotos').withIndex('by_storage', q => q.eq('storageId', args.storageId)).first()
+    if (attached !== null) {
+      if (attached.textileId === textile._id && attached.householdId === textile.householdId && attached.uploadedBy === actor.key) return attached._id
+      fail('conflict', 'This photo is already attached')
+    }
+    const existing = await ctx.db.query('carePhotos').withIndex('by_textile', q => q.eq('textileId', textile._id)).take(maxPhotosPerTextile)
+    if (existing.length >= maxPhotosPerTextile) fail('invalid', `A garment can have at most ${maxPhotosPerTextile} photos`)
+    const blob = await ctx.db.system.get(args.storageId)
+    if (blob === null) fail('not_found', 'Upload not found')
+    if (blob.size !== args.size || args.size > maxBytes) fail('invalid', 'Upload size changed')
+    return ctx.db.insert('carePhotos', { ...args, householdId: textile.householdId, uploadedBy: actor.key, createdAt: Date.now() })
+  },
+})
+
+export const discardRejected = internalMutation({
+  args: { textileId: v.id('textiles'), storageId: v.id('_storage') }, returns: v.null(),
+  handler: async (ctx, args) => {
+    await authorize(ctx, 'photo.edit', { textileId: args.textileId })
+    const attached = await ctx.db.query('carePhotos').withIndex('by_storage', q => q.eq('storageId', args.storageId)).first()
+    if (attached === null) await ctx.storage.delete(args.storageId)
+    return null
+  },
 })
 
 /**
@@ -98,27 +124,24 @@ export const attach = action({
   returns: v.id('carePhotos'),
   handler: async (ctx, args): Promise<Id<'carePhotos'>> => {
     const reject = async (message: string): Promise<never> => {
-      await ctx.storage.delete(args.storageId)
+      await ctx.runMutation(internal.photos.discardRejected, args)
       fail('invalid', message)
     }
     const context = await ctx.runQuery(internal.photos.uploadContext, { textileId: args.textileId, storageId: args.storageId }).catch(() => null)
     if (context === null) fail('forbidden', 'Forbidden')
-    if (context.attached) fail('conflict', 'This photo is already attached')
-    if (context.count >= maxPhotosPerTextile) return reject(`A garment can have at most ${maxPhotosPerTextile} photos`)
+    if (!context.attached && context.count >= maxPhotosPerTextile) return reject(`A garment can have at most ${maxPhotosPerTextile} photos`)
     const blob = await ctx.storage.get(args.storageId)
     if (blob === null) fail('not_found', 'Upload not found')
     if (blob.size > maxBytes) return reject('Photos must be 5 MB or smaller')
     const bytes = new Uint8Array(await blob.arrayBuffer())
     const type = sniffImageType(bytes)
     if (type === null) return reject('Only JPEG, PNG, or WebP photos are accepted')
-    if (hasEmbeddedMetadata(bytes, type)) return reject('Photo still contains camera metadata; upload it through the app so location data is removed')
+    if (hasEmbeddedMetadata(bytes, type)) return reject('Photo is malformed or still contains camera metadata; upload it through the app so location data is removed')
     return ctx.runMutation(internal.photos.insertPhoto, {
-      householdId: context.householdId,
       textileId: args.textileId,
       storageId: args.storageId,
       contentType: type,
       size: blob.size,
-      uploadedBy: context.principalKey,
     })
   },
 })

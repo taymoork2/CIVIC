@@ -75,7 +75,7 @@ const water: HouseholdWater = { ...waterAnswers, source: 'lookup', ...lookupWate
 const refusingClient = { mutation: previewUnavailable('save the water setting') } as unknown as ConvexReactClient
 const refusingLaundryDayClient = { mutation: previewUnavailable('save the laundry day setting') } as unknown as ConvexReactClient
 
-export type HouseholdPreviewState = 'index' | 'people' | 'machines' | 'bottles' | 'people-member' | 'people-long' | 'invite' | 'profile' | 'water' | 'water-sheet' | 'laundry-day'
+export type HouseholdPreviewState = 'index' | 'people' | 'machines' | 'bottles' | 'people-member' | 'people-long' | 'people-removed' | 'invite' | 'profile' | 'water' | 'water-sheet' | 'laundry-day'
 
 /** Same page/list/sheet presenters; callbacks never persist preferences, share or mutate records. */
 export function HouseholdPreview({ variant, state }: { variant: HouseholdPreviewState; state?: 'invalid' | 'error' | 'busy' }) {
@@ -83,7 +83,7 @@ export function HouseholdPreview({ variant, state }: { variant: HouseholdPreview
   const [sheet, setSheet] = useState<'invite' | null>(variant === 'invite' ? 'invite' : null)
   const [waterOpen, setWaterOpen] = useState(variant === 'water-sheet')
   const [wearer, setWearer] = useState<Inventory['wearers'][number] | 'new' | null>(variant === 'profile' ? wearers[2]! : null)
-  return <HouseholdView name="Our apartment" section={section} onSection={setSection} detail={`${wearers.length} clothing profiles · ${machines.length} appliances · ${supplies.length} products`}>
+  return <HouseholdView name="Our apartment" section={section} onSection={setSection} counts={{ profiles: wearers.length, appliances: machines.length, products: supplies.length }}>
     {section === 'machines' ? <MachinesView machines={machines} currency="USD" place="shared" onOpen={previewCall('open the machine')} onHomePair={previewCall('pair a home machine')}>
       {variant === 'water' || variant === 'water-sheet' ? <>
         <WaterSection water={water} onOpen={() => setWaterOpen(true)} />
@@ -96,7 +96,7 @@ export function HouseholdPreview({ variant, state }: { variant: HouseholdPreview
       </> : null}
     </MachinesView>
       : section === 'bottles' ? <BottlesView supplies={supplies} onOpen={previewCall('open the product')} />
-        : <MembersView role={variant === 'people-member' ? 'member' : 'owner'} members={variant === 'people-member' ? members.map((member) => ({ ...member, isYou: member.role === 'member' })) : variant === 'people-long' ? members.map((member) => ({ ...member, displayName: `${member.displayName} Alexandria-Montgomery-WithAnUnusuallyLongFamilyName` })) : members} wearers={variant === 'people-long' ? wearers.map((person) => ({ ...person, name: `${person.name} Alexandria-Montgomery-WithAnUnusuallyLongFamilyName` })) : wearers} onInvite={() => setSheet('invite')} onEdit={setWearer} onEditMember={(member) => setWearer(wearers.find((person) => person.wearerId === member.wearerId) ?? null)}>
+        : <MembersView role={variant === 'people-member' ? 'member' : 'owner'} members={variant === 'people-removed' ? members.filter(member => member.isYou) : variant === 'people-member' ? members.map((member) => ({ ...member, isYou: member.role === 'member' })) : variant === 'people-long' ? members.map((member) => ({ ...member, displayName: `${member.displayName} Alexandria-Montgomery-WithAnUnusuallyLongFamilyName` })) : members} wearers={variant === 'people-long' ? wearers.map((person) => ({ ...person, name: `${person.name} Alexandria-Montgomery-WithAnUnusuallyLongFamilyName` })) : wearers} onInvite={() => setSheet('invite')} onEdit={setWearer} onEditMember={(member) => setWearer(wearers.find((person) => person.wearerId === member.wearerId) ?? null)}>
           {sheet === null ? null : <InviteSheet householdName="Our apartment" invite={invite} pending={state === 'busy'} error={state === 'error' ? 'We couldn’t make a new invite link. Try again.' : null} onNew={previewCall('make a new invite link')} onClose={() => setSheet(null)} visualPreview />}
           {wearer === null ? null : <WearerSheetView key={wearer === 'new' ? 'new' : wearer.wearerId} wearer={wearer === 'new' ? null : wearer} supplies={supplies} onClose={() => setWearer(null)} onLinkAccount={variant !== 'people-member' && wearer !== 'new' && wearer.principalKey === null && wearer.kind !== 'baby' ? () => { setWearer(null); setSheet('invite') } : undefined} onAccessAction={wearer !== 'new' && wearer.wearerId === wearers[1]!.wearerId ? previewCall(variant === 'people-member' ? 'leave the household' : 'remove household access') : undefined} accessLabel={variant === 'people-member' ? 'Leave household' : 'Remove access'} onSave={rejectSave} />}
         </MembersView>}

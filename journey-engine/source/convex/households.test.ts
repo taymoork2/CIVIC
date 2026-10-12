@@ -9,7 +9,7 @@ test('onboarding creates one stable principal membership and joins only with an 
   const owner = signedIn(t, 'onboarding-test-user')
   const other = signedIn(t, 'other-user')
   const third = signedIn(t, 'third-user')
-  const ownerKey = await owner.run((ctx) => principalFromAuth(ctx.auth).then((principal) => principal.key as string))
+  const ownerKey = await owner.run((ctx) => principalFromAuth(ctx).then((principal) => principal.key as string))
 
   const created = await owner.mutation(api.households.createHousehold, { displayName: 'Pat', name: 'Home' })
   expect(created).toMatchObject({ name: 'Home', role: 'owner' })
@@ -79,7 +79,7 @@ test('leaving revokes household access but preserves clothing profiles and cloth
 test('first run creates the people it washes for with the household, and links the one who is you', async () => {
   const t = newBackend()
   const owner = signedIn(t, 'first-run-user')
-  const ownerKey = await owner.run((ctx) => principalFromAuth(ctx.auth).then((principal) => principal.key as string))
+  const ownerKey = await owner.run((ctx) => principalFromAuth(ctx).then((principal) => principal.key as string))
   const { householdId } = await owner.mutation(api.households.createHousehold, {
     displayName: 'Pat',
     name: 'Pat’s home',
@@ -137,7 +137,7 @@ test('an invite for a person links the joiner to that closet and starts their fi
   expect(Object.keys(preview).sort()).toEqual(['expiresAt', 'householdName', 'inviterName', 'role', 'status', 'wearerName'])
 
   await expect(teen.mutation(api.households.joinWithInvite, { code: invite.code })).resolves.toMatchObject({ role: 'member', linked: true })
-  const teenKey = await teen.run((ctx) => principalFromAuth(ctx.auth).then((principal) => principal.key as string))
+  const teenKey = await teen.run((ctx) => principalFromAuth(ctx).then((principal) => principal.key as string))
   expect((await t.run((ctx) => ctx.db.get(sam!._id)))?.principalKey).toBe(teenKey)
   expect(await t.run(async (ctx) => ({ textile: await ctx.db.get(shirt!), history: await ctx.db.query('history').withIndex('by_textile', (q) => q.eq('textileId', shirt!)).collect() }))).toEqual(before)
   expect((await teen.query(api.households.onboardingStatus, {})).households[0]?.guidance).toMatchObject({ status: 'started', stage: 'intent' })

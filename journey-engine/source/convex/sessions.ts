@@ -71,7 +71,7 @@ export const washRecordsForTextile = query({
   args: { textileId: v.id('textiles') },
   handler: async (ctx, args) => {
     await authorize(ctx, 'textile.read', { textileId: args.textileId })
-    const actor = await principalFromAuth(ctx.auth)
+    const actor = await principalFromAuth(ctx)
     const records = await ctx.db.query('washRecords').withIndex('by_textile', (q) => q.eq('textileId', args.textileId)).order('desc').take(20)
     return Promise.all(records.map(async ({ outcome: _unusedFixtureOutcome, ...record }) => ({ ...record, assessments: await ownAssessments(ctx, record._id, actor.key) })))
   },
@@ -97,7 +97,7 @@ export const garmentRecord = query({
   args: { textileId: v.id('textiles') },
   handler: async (ctx, args) => {
     const textile = (await authorize(ctx, 'textile.read', { textileId: args.textileId })).textile
-    const actor = await principalFromAuth(ctx.auth)
+    const actor = await principalFromAuth(ctx)
     const care = await ctx.db.query('care').withIndex('by_textile', (q) => q.eq('textileId', textile._id)).unique()
     const label = labelFromCeiling(tumbleCeiling({ id: textile._id, bulkUnits: 1, care: plannerCare(care) as never, material: care?.material ?? null }))
     const machines = await ctx.db.query('machines').withIndex('by_household', (q) => q.eq('householdId', textile.householdId)).collect()
@@ -128,7 +128,7 @@ export const loadRecord = query({
   handler: async (ctx, args) => {
     const session = (await authorize(ctx, 'session.read', { sessionId: args.sessionId })).session
     if (session.status !== 'completed') return null
-    const actor = await principalFromAuth(ctx.auth)
+    const actor = await principalFromAuth(ctx)
     const records = await ctx.db.query('washRecords').withIndex('by_session', (q) => q.eq('sessionId', session._id)).collect()
     const pieces = await Promise.all(records.filter((record) => record.householdId === session.householdId).map(async (record) => {
       const identity = await loadIdentity(ctx, actor.key, record.textileId)
@@ -162,7 +162,7 @@ export const complete = mutation({
     nonEmpty(args.idempotencyKey, 'idempotencyKey')
 
     const session = (await authorize(ctx, 'session.run', { sessionId: args.sessionId })).session
-    const actor = await principalFromAuth(ctx.auth)
+    const actor = await principalFromAuth(ctx)
     // Checked before the key: cancelling releases the session's start key.
     if (session.status === 'cancelled') fail('conflict', 'Session is cancelled')
     if (session.idempotencyKey !== args.idempotencyKey) fail('conflict', 'Idempotency key mismatch')

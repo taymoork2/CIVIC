@@ -1,19 +1,13 @@
-import type { FunctionArgs, FunctionReturnType } from 'convex/server'
+import type { FunctionArgs, FunctionReturnType, UserIdentity } from 'convex/server'
 import { convexTest } from 'convex-test'
+import { register } from '@convex-dev/better-auth/test'
 
 import { isDryerPhase, type LoadSize } from '@washcloset/planner'
 
-import { api } from './_generated/api'
+import { api, components } from './_generated/api'
 import type { Id } from './_generated/dataModel'
 import { principalFromAuth } from './principal'
 import schema from './schema'
-
-declare global {
-  interface ImportMeta {
-    /** Vite's module glob, provided by Vitest. */
-    glob(pattern: string): Record<string, () => Promise<unknown>>
-  }
-}
 
 /** Every function module, for convex-test. Test-only files (with a second dot) are skipped by Convex itself. */
 export const modules = import.meta.glob('./**/*.ts')
@@ -22,21 +16,50 @@ export const issuer = 'http://localhost:3211'
 
 /** A fresh backend, with the real schema, per test. */
 export function newBackend() {
-  return convexTest(schema, modules)
+  const t = convexTest(schema, modules)
+  register(t)
+  return t
 }
 
 export type Backend = ReturnType<typeof newBackend>
 
-/** A signed-in person: every call made through the result carries this identity. */
-export function signedIn(t: Backend, subject: string) {
-  return t.withIdentity({ issuer, subject, tokenIdentifier: `${issuer}|${subject}` })
+const identities = new WeakMap<Backend, Map<string, Promise<UserIdentity>>>()
+
+/** Real component user/session rows keep every test on the production session-validation path. */
+export function authIdentity(t: Backend, name: string): Promise<UserIdentity> {
+  let users = identities.get(t)
+  if (users === undefined) { users = new Map(); identities.set(t, users) }
+  let identity = users.get(name)
+  if (identity === undefined) {
+    identity = (async () => {
+      const now = Date.now()
+      const user = await t.mutation(components.betterAuth.adapter.create, { input: { model: 'user', data: { name, email: `${name}@example.invalid`, emailVerified: false, createdAt: now, updatedAt: now } } })
+      const session = await t.mutation(components.betterAuth.adapter.create, { input: { model: 'session', data: { userId: user._id, token: `test-session-${user._id}`, expiresAt: now + 365 * 86_400_000, createdAt: now, updatedAt: now } } })
+      return { issuer, subject: user._id, sessionId: session._id, tokenIdentifier: `${issuer}|${user._id}` }
+    })()
+    users.set(name, identity)
+  }
+  return identity
+}
+
+/** Preserve the synchronous fixture API while waiting for its component rows before each call. */
+export function signedIn(t: Backend, subject: string, overrides: Partial<UserIdentity> = {}) {
+  const caller = authIdentity(t, subject).then(identity => t.withIdentity({ ...identity, ...overrides }))
+  return new Proxy(t.withIdentity({ issuer, subject }), {
+    get(target, name, receiver) {
+      if (name === 'query' || name === 'mutation' || name === 'action' || name === 'run') {
+        return async (...args: unknown[]) => { const ready = await caller; return Reflect.apply(ready[name], ready, args) }
+      }
+      return Reflect.get(target, name, receiver)
+    },
+  })
 }
 
 export type Caller = ReturnType<typeof signedIn>
 
 /** The principal key a signed-in caller is stored under. */
 export async function keyOf(as: Caller): Promise<string> {
-  return as.run(async (ctx) => (await principalFromAuth(ctx.auth)).key as string)
+  return as.run(async (ctx) => (await principalFromAuth(ctx)).key as string)
 }
 
 /** Another person joins the household with the owner's invite, under their own display name. */

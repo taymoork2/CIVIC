@@ -781,7 +781,7 @@ export function MachineSheet({ householdId, group = null, place = null, kind = n
         </>} />}
         <ErrorNotice error={create.error ?? update.error} />
         <ErrorNotice error={archive.error} />
-        {stepProblem === null ? null : <div className="grid w-full gap-1" role="status"><p className="m-0 text-[length:var(--step--1)] text-ink-2">{stepProblem}</p><Button variant="ghost" className="justify-self-start" disabled={pending} onClick={fixProblem}>Fix</Button></div>}
+        {stepProblem === null ? null : <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 rounded-field bg-surface-2 px-3 py-2" role="status"><p className="m-0 min-w-0 flex-1 text-[length:var(--step--1)] text-ink-2">{stepProblem}</p>{group !== null || step === 'review' ? <Button variant="ghost" disabled={pending} onClick={fixProblem}>Review details<DesignIcon name="chevronRight" size="1em" aria-hidden="true" /></Button> : null}</div>}
       </fieldset> : group === null ? null : <MachineOverview group={group} currency={currency} onEdit={startEdit} />}
     </Sheet>
   )

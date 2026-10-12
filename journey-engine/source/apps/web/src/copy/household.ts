@@ -127,7 +127,7 @@ export const householdListCopy = {
   applianceGroups: { shared: 'Shared laundry room', home: 'At home', unset: 'Place not recorded' },
   addApplianceHome: 'Add another appliance',
   addApplianceHomeHint: 'Only if you have a second washer or dryer',
-  addApplianceShared: 'Add an appliance by its label',
+  addApplianceShared: 'Add appliance',
   addApplianceSharedHint: 'Label as printed and its type',
   productGroups: {
     detergent: 'Detergents',

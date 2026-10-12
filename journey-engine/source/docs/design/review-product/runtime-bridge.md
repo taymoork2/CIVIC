@@ -54,4 +54,6 @@ Snapshot capture supports the shared towel runtime. Its Saved fixture alone perm
 
 See [platform-adapters.md](platform-adapters.md) for the recommended Vite/TanStack/Convex extraction and later native driver boundaries.
 
-Current limits: JSON-safe transport values; no full Convex optimistic/OCC or deployed-auth simulation; click/input/Escape and declared adapter commands rather than every pointer/keyboard action; semantic checkpoints rather than pixel equivalence. Dynamic routes require valid starting IDs, and recorded navigation does not automatically certify every inferred canvas arrow. Towel is the first curated migration; pack, records, setup, family/reminder and route specimens still retain their earlier adapters. Physical device and production-backend acceptance remain separate.
+Family now uses native routes, durable isolated journals, account-bound recovery and live responsive viewports. See [the family handoff](2026-10-12-family-runtime-handoff.md) for proof and limits. Pack, records, setup, reminder and other route specimens retain their earlier adapters.
+
+Current limits: JSON-safe transport values; no full Convex optimistic/OCC or deployed-auth simulation; click/input/Escape and declared adapter commands rather than every pointer/keyboard action; semantic checkpoints rather than pixel equivalence. Dynamic routes require valid starting IDs, and recorded navigation does not certify every inferred canvas arrow. Physical device and production-backend acceptance remain separate.

@@ -4,8 +4,9 @@ import { Link } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import { offlineText } from './copy'
 
-import { offlineSessionCopies, type SessionProjection } from './private-state'
+import { hasUnboundRecovery, offlineSessionCopies, type SessionProjection } from './private-state'
 import { OfflineSessionView, washerName } from '@/laundry/session-view'
+import { usePrivateAccount } from '@/kit/device-state'
 
 /** With no signal and no sign-in check: this load's saved copy (or the newest, off a load's page), and the others to open. */
 const pageClassName = cn(
@@ -52,7 +53,8 @@ const sectionTitleClassName = cn(
 )
 
 export function OfflineNotice({ sessionId }: { sessionId?: string }) {
-  const { projection, others } = offlineSessionCopies(sessionId)
+  const accountId = usePrivateAccount()
+  const { projection, others } = offlineSessionCopies(accountId, sessionId)
   if (projection !== null) {
     return (
       <>
@@ -64,12 +66,13 @@ export function OfflineNotice({ sessionId }: { sessionId?: string }) {
   return <OfflineUnavailable others={others} />
 }
 
-export function OfflineUnavailable({ others = [] }: { others?: SessionProjection[] }) {
+export function OfflineUnavailable({ others = [], unbound = hasUnboundRecovery() }: { others?: SessionProjection[]; unbound?: boolean }) {
   return (
     <div className={pageClassName}>
       <section className={cn(labelCardClassName, paddedClassName, offlineNoticeClassName)} role="status">
         <h1>{offlineText.title}</h1>
         <p className={mutedClassName}>{offlineText.explanation}</p>
+        {unbound ? <p className={mutedClassName}>An older saved copy cannot be matched to this sign-in. It is kept on this device. Reconnect and review the current load before recording any unfinished steps.</p> : null}
         <Button type="button" onClick={() => window.location.reload()}>{offlineText.retry}</Button>
       </section>
       <OtherLoads loads={others} />
