@@ -1,0 +1,4 @@
+[
+  { "id": "tasks.list", "label": "Task list", "journey": "Plan tasks", "section": "Main", "component": "src/app.js", "edges": [{ "action": "Add task", "destination": "tasks.add" }] },
+  { "id": "tasks.add", "label": "Add a task", "journey": "Plan tasks", "section": "Main", "component": "src/app.js", "captureFields": ["Title"], "edges": [{ "action": "Save", "destination": "tasks.list", "when": "A member, the API up and a nonempty title" }, { "action": "Cancel", "destination": "tasks.list", "returnTo": "Task list" }] }
+]

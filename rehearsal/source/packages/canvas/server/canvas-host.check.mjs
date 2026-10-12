@@ -58,3 +58,41 @@ test('the standalone canvas opens a module app with no host workspace and draws 
   await frame.locator('[data-rehearsal-ready="true"]').waitFor({ state: 'attached', timeout: 20000 })
   assert.deepEqual(errors, [])
 })
+
+test('an app calling its own HTTP API runs live against an isolated copy of that API, then records and replays', async (t) => {
+  const store = await realpath(await mkdtemp(join(tmpdir(), 'civic-canvas-')))
+  const tasks = join(canvasRoot, 'examples/tasks')
+  const server = await startCanvas({ project: join(tasks, 'civic.project.json'), store, port: 0, logLevel: 'silent' })
+  t.after(() => server.close())
+  const origin = `http://127.0.0.1:${server.httpServer.address().port}`
+  let browser
+  try { browser = await moduleReviewAdapter.launchFixtureBrowser() } catch { return t.skip('No browser for Playwright') }
+  t.after(() => browser.close())
+  const tab = await browser.newPage({ viewport: { width: 1280, height: 900 } })
+  const errors = [], api = []
+  tab.on('pageerror', (error) => errors.push(error.message))
+  tab.on('request', (request) => { if (/\/api\/tasks/.test(request.url())) api.push(request.url()) })
+  await tab.goto(origin + '/review')
+  await tab.locator('.app-nav-section button', { hasText: 'Plan tasks' }).click()
+  await tab.locator('.app-screen > button', { hasText: 'Task list' }).click()
+  await tab.getByRole('button', { name: 'Play this screen' }).click()
+  const frame = tab.frameLocator('iframe[title="Live Task list"]')
+  await frame.getByText('Water the plants').waitFor({ timeout: 20000 })
+  await frame.getByRole('button', { name: 'Add task' }).click()
+  await frame.getByLabel('Title').fill('Call the plumber')
+  await frame.getByRole('button', { name: 'Save' }).click()
+  await frame.getByText('Call the plumber').waitFor()
+  assert.deepEqual(api, [], 'the app\'s API calls never leave the page')
+  const tape = await tab.locator('iframe[title="Live Task list"]').evaluate((element) => element.contentWindow.reviewPreview.recording())
+  const writes = tape.steps.flatMap((step) => step.operations)
+  assert.deepEqual(writes.map((operation) => [operation.name, operation.result.status]), [['POST:/api/tasks', 201]])
+  const replayed = await tab.locator('iframe[title="Live Task list"]').evaluate((element, recording) => element.contentWindow.reviewPreview.replay(recording), tape)
+  assert.equal(replayed.verified, tape.steps.length)
+  assert.deepEqual(await frame.locator('li').allTextContents(), [' Water the plants', ' Book the dentist', ' Call the plumber'])
+  // Snapshots render each screen from its own isolated run.
+  const cookie = (await tab.context().cookies()).map((row) => `${row.name}=${row.value}`).join('; ')
+  const snapshots = await (await fetch(origin + '/api/review/snapshots', { method: 'POST', headers: { cookie, origin, 'content-type': 'application/json', 'x-rehearsal-project': (await (await fetch(origin + '/api/review/index', { headers: { cookie } })).json()).project.key }, body: '{}' })).json()
+  assert.deepEqual(snapshots.errors, [])
+  assert.equal(snapshots.count, 2)
+  assert.deepEqual(errors, [])
+})

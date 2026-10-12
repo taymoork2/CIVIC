@@ -94,6 +94,8 @@ Progress, 2026-10-12: the build connector is a package. [`@civic/vite-connector`
 
 Progress, 2026-10-12: the canvas runs on its own. [`@civic/canvas`](../rehearsal/source/packages/canvas) holds the journey canvas UI, its frame entry, the Notebook example and a standalone host (`civic-canvas --project <app>/civic.project.json`) that keeps its store outside the app. Laundry-only layout and the towel journey's guided run reach the canvas through a canvas extension that Laundry's connector supplies; a module app gets CIVIC's own layout. Still to come: a runtime and data adapter beyond Laundry's Convex.
 
+Progress, 2026-10-12: live runs work beyond Laundry's Convex. The run service is in `@civic/canvas`, and an app whose screens call their own HTTP API runs against an isolated copy of that API per run: its `fetch` calls are routed to the app's real handler over seeded in-memory data, with a fixed clock, and writes are recorded and checked on replay. The [Tasks example](../rehearsal/source/packages/canvas/examples/tasks) proves it in a browser check. Still to come: an auth adapter, and TanStack Start server functions.
+
 ## 5. Identity, permissions, and multiplayer
 
 Real identities, scoped permissions, and versioned shared records, following the spec's [multiplayer boundary](product-spec.md#multiplayer-and-ownership). The single local access key and the portal's collaborator access are not this model.

@@ -7,6 +7,7 @@ import { civicReview } from '@civic/vite-connector'
 import { coverageBridge } from '@civic/vite-connector/coverage'
 import { canvasRoot } from './canvas-root.mjs'
 import { moduleReviewAdapter } from './module-adapter.mjs'
+import { runtimeService } from './runtime-service.mjs'
 
 /** Where a standalone canvas keeps its review store, outside every app checkout. */
 export const defaultStore = () => resolve(process.env.CIVIC_STORE ?? join(homedir(), '.civic', 'canvas'))
@@ -14,9 +15,10 @@ export const defaultStore = () => resolve(process.env.CIVIC_STORE ?? join(homedi
 /**
  * The Vite plugins for a canvas host: React, and CIVIC's Vite connector serving this package's canvas.
  * `store` is the folder that owns `.review-data`; connecting an app never writes into the app.
- * `connectors`, `runtime` and `review` are passed to `civicReview`; without them only module apps connect.
+ * `connectors`, `runtime` and `review` are passed to `civicReview`; without them only module apps connect,
+ * and live runs use CIVIC's run service for apps that declare a runtime entry.
  */
-export function canvasPlugins({ store = defaultStore(), connectors = {}, runtime = null, review = () => ({}) } = {}) {
+export function canvasPlugins({ store = defaultStore(), connectors = {}, runtime = runtimeService, review = () => ({}) } = {}) {
   return [react(), civicReview({
     host: canvasRoot,
     canvas: canvasRoot,

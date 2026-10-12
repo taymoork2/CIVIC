@@ -34,7 +34,7 @@ civicReview({
 
 ## Not covered yet
 
-- Runtime and data adapters (seed, identity, clock, isolated effects) exist only for Laundry's Convex backend (`apps/web/scripts/review-runtime.mjs`). TanStack Start server functions are not covered.
+- Live runs: `@civic/canvas` supplies the run service for HTTP APIs and function backends (see its README). TanStack Start server functions are not covered.
 - Other bundlers (Webpack, esbuild, Bun, Turbopack, Metro) and Vite+ are not verified. See `docs/design/review-product/platform-adapters.md`.
 
 ## Checks

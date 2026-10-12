@@ -1,0 +1,9 @@
+.tasks-screen { min-height: 100vh; padding: 32px 24px; font: 16px/1.5 system-ui, sans-serif; background: #f6f8fb; color: #1f2a37; box-sizing: border-box; }
+.tasks-screen h1 { margin: 0 0 24px; font-size: 28px; }
+.tasks-screen ul { list-style: none; margin: 0 0 24px; padding: 0; display: grid; gap: 12px; }
+.tasks-screen li label { display: flex; gap: 12px; align-items: center; }
+.tasks-screen > label { display: grid; gap: 8px; margin-bottom: 24px; }
+.tasks-screen input:not([type=checkbox]) { box-sizing: border-box; width: 100%; padding: 12px; border: 1px solid #8a97a8; border-radius: 8px; font: inherit; }
+.tasks-screen button { display: block; width: 100%; margin: 12px 0; padding: 12px; border: 1px solid #4b5d75; border-radius: 8px; background: #fff; color: inherit; font: inherit; cursor: pointer; }
+.tasks-screen button:first-of-type { background: #1f4b8f; color: white; }
+.tasks-screen [role=status] { min-height: 24px; color: #a12a2a; }

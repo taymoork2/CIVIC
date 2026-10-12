@@ -20,7 +20,7 @@ export const laundryConnector = {
   fingerprint: {
     common: /^(?:apps\/web\/public\/|packages\/(?!shell\/|vite-connector\/)|convex\/)|\/review-(?:application|laundry|adapter)\.mjs$/,
     frame: /\/review\/(?:frame\.tsx|laundry-frame\.tsx|adapter\.ts|journey\.ts|store\.ts|adapters\/laundry\.ts)$/,
-    runtime: /(?:\/review\/|^packages\/canvas\/src\/)(?:runtime-[^/]+|convex-runtime-client|adapters\/laundry-[^/]+)\.[cm]?[jt]sx?$|\/review-(?:runtime|recording|plugin|laundry)(?:-worker)?\.mjs$/,
+    runtime: /(?:\/review\/|^packages\/canvas\/src\/)(?:runtime-[^/]+|convex-runtime-client|adapters\/laundry-[^/]+)\.[cm]?[jt]sx?$|\/review-(?:runtime|recording|plugin|laundry)(?:-worker)?\.mjs$|^packages\/canvas\/server\/runtime-[a-z]+\.mjs$/,
   },
   // The handoff ships bounded Laundry design references beside the source tree.
   designRoot: (repo) => process.env.WASHCLOSET_REVIEW_DESIGN ?? resolve(repo, '../design/laundry-reference'),

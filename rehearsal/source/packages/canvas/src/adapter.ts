@@ -13,6 +13,21 @@ export type AdapterContext = {
   publish: (state: { screen: string; dirty?: boolean; pending?: boolean }) => void
   transition: (destination: string, action: string, origin?: 'app' | 'synthetic') => void
   connectRuntime: (ports: Omit<RuntimePorts, 'project' | 'source' | 'fields' | 'view' | 'interact'> & { screen: () => string; data: () => unknown; captureInputs: 'synthetic' | string[]; interact?: RuntimePorts['interact']; status?: () => { dirty: boolean; pending: boolean } }) => RuntimeBridge
+  /**
+   * Starts an isolated run of the project's runtime entry and connects it: the clock, IDs and storage
+   * are pinned, and the page's `fetch` calls under `routes` (default `/api/`) go to the run's backend.
+   * Call `reset` to put the app back on its first screen with fresh data when a replay starts.
+   */
+  startRuntime: (options: RuntimeOptions) => Promise<{ bridge: RuntimeBridge; close: () => void }>
+}
+export type RuntimeOptions = {
+  routes?: string[]
+  screen: () => string
+  route?: () => string
+  subscribe?: RuntimePorts['subscribe']
+  captureInputs?: 'synthetic' | string[]
+  status?: () => { dirty: boolean; pending: boolean }
+  reset: () => Promise<void> | void
 }
 export type MountAdapter = (container: HTMLElement, context: AdapterContext) => void | (() => void) | Promise<void | (() => void)>
 declare global {

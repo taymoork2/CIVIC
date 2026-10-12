@@ -1,0 +1,4 @@
+{
+  "version": 1,
+  "targets": [{ "id": "task.add", "kind": "journey", "title": "Add a task", "component": "src/app.js", "scenarios": ["tasks.list", "tasks.add"], "acceptance": ["A saved task appears in the list.", "A viewer or an API failure keeps the draft and says why.", "Each run starts from its persona's tasks."] }]
+}
