@@ -53,7 +53,7 @@ test('a draft needs its main design file first, then branches from it', async ()
   const out = await civic(person, 'draft', exportVersion('a1', 'a-1'), '--file', fileKey, '--name', 'Gift wrap A', '--branch', 'BRANCHa')
   assert.match(out, new RegExp(`^${draftA} open at version a-1, from ${main}`))
   assert.match(out, /40:20 +Checkout \/ Gift options/)
-  assert.deepEqual({ ...line(draftA), source: undefined }, { id: draftA, kind: 'line', title: 'Draft: Gift wrap A', type: 'design-draft', tool: 'figma', ref: 'BRANCHa', base: main, head: 'a-1', status: 'open', source: undefined })
+  assert.deepEqual({ ...line(draftA), source: undefined, frames: undefined }, { id: draftA, kind: 'line', title: 'Draft: Gift wrap A', type: 'design-draft', tool: 'figma', ref: 'BRANCHa', base: main, head: 'a-1', status: 'open', source: undefined, frames: undefined })
   assert.equal(line(draftA).source?.path, 'https://www.figma.com/design/BRANCHa')
 })
 

@@ -5,7 +5,7 @@
 //
 // Agents run with CIVIC_AGENT=<harness> and CIVIC_FOR=<person>; everyone else is a person.
 
-import { mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from 'node:fs'
 import { extname, join, resolve as resolvePath } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { isAnchored, loadGraph, type Annotation, type CaptureRef, type EdgeRef, type GraphDocument, type Lane, type Owner, type Platform, type RequestStatus, type Role, PLATFORMS, ROLES, REQUEST_STATUSES } from '../../graph/src/index.ts'
@@ -35,7 +35,7 @@ import {
   reviewQueue,
   type Context,
 } from './loop.ts'
-import { chooseDraft, registerDesignDraft, registerDesignFile, type DesignLineResult, type FigmaFileExport } from './drafts.ts'
+import { chooseDraft, designLens, registerDesignDraft, registerDesignFile, renderDesignLens, type DesignLineResult, type FigmaFileExport } from './drafts.ts'
 import { bearerFor, captureScenario, launchBrowser, recapture, reproductionUrl } from './recapture.ts'
 import { createOverlayServer } from './overlay/server.ts'
 import { renderList, renderRequest } from './render.ts'
@@ -63,6 +63,8 @@ const USAGE = `Usage (records are shared by every worktree of this repository):
   civic design <figma export.json> --file <key>  a design file's main line, at the export's version
   civic draft <figma export.json> --file <key> --name "<draft>" [--branch <key>]   a designer's draft as its own line
   civic choose-draft <draft line> --why "<rationale>" [--merged-as <version>]   a person picks a draft; the others are abandoned
+  civic lens <draft line> [--graph <file>]... [--json]   the design lens: what a draft changes from its base, read on this
+                 checkout's code line (graphs default to those in civic.check.json)
   civic sync [--remote origin] [--ref refs/civic/records]   share records with the team through a git ref
   civic conflicts [--json]                        civic settle <record> --keep mine|theirs
   civic keygen [--out <file>]                     makes your signing key for civic sync
@@ -282,6 +284,14 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
       print(has('--json') ? JSON.stringify(choice, null, 2) : `${choice.id}: chose ${choice.chosen.line} at version ${choice.chosen.revision}${choice.over.length ? `; abandoned ${choice.over.join(', ')}` : ''}`)
       return 0
     }
+    case 'lens': {
+      need(1)
+      const files = flags.get('--graph') ?? graphsIn(checkout.root)
+      const graphs = await Promise.all(files.map(async (file) => ({ label: file, graph: await loadGraph(resolvePath(checkout.root, file)) })))
+      const lens = designLens(store.read(), positional[0]!, lineIdFor(checkout), graphs)
+      print(has('--json') ? JSON.stringify(lens, null, 2) : renderDesignLens(lens))
+      return 0
+    }
     case 'preview': {
       need(1)
       const bearer = one('--bearer-file')
@@ -448,4 +458,12 @@ if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.me
       process.exitCode = 1
     }
   }
+}
+
+/** The graphs this checkout's gate reads, from civic.check.json at its root: the code line's view of the product. */
+function graphsIn(root: string): string[] {
+  const config = join(root, 'civic.check.json')
+  if (!existsSync(config)) return []
+  const graphs = (JSON.parse(readFileSync(config, 'utf8')) as { graphs?: unknown }).graphs
+  return Array.isArray(graphs) ? graphs.filter((item): item is string => typeof item === 'string') : []
 }

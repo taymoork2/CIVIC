@@ -38,6 +38,24 @@ test('a canvas note becomes a shared annotation and can be handed to an agent', 
   assert.deepEqual((await shared.list()).requests.map((summary) => summary.request.id), [handed.request.id])
 })
 
+test('an open design draft comes with its design lens', async () => {
+  const repo = mkdtempSync(join(tmpdir(), 'laundry-civic-lens-'))
+  const git = (...args) => execFileSync('git', args, { cwd: repo })
+  git('init', '-q', '-b', 'main'); git('config', 'user.email', 'designer@example.com'); git('config', 'civic.handle', 'designer')
+  writeFileSync(join(repo, 'README'), 'x'); git('add', '.'); git('commit', '-q', '-m', 'init')
+  const file = (version, name) => {
+    const path = join(repo, `${version}.json`)
+    writeFileSync(path, JSON.stringify({ name: 'Shop', version, document: { id: '0:0', name: 'Document', type: 'DOCUMENT', children: [{ id: '1:0', name: 'Checkout', type: 'CANVAS', children: [{ id: '1:1', name, type: 'FRAME' }] }] } }))
+    return path
+  }
+  const cli = (...args) => execFileSync(process.execPath, [join(civicRoot, 'review', 'src', 'cli.ts'), ...args], { cwd: repo, env: { ...process.env, CIVIC_AGENT: '', CIVIC_FOR: '' } })
+  cli('design', file('1', 'Order summary'), '--file', 'SHOP')
+  cli('draft', file('d1', 'Order summary, compact'), '--file', 'SHOP', '--name', 'Compact')
+  const { lenses } = await civicShared({ repo, civicRoot }).list()
+  const lens = lenses['line:figma.SHOP.draft.compact']
+  assert.deepEqual({ base: lens.base.head, changes: lens.changes.map((item) => [item.change, item.node, item.was]) }, { base: '1', changes: [['changed', '1:1', 'Order summary']] })
+})
+
 test('without the civic CLI the review works as before', () => {
   assert.equal(civicShared({ repo: tmpdir(), civicRoot: tmpdir() }), null)
 })
