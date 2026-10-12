@@ -1,7 +1,7 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { fileURLToPath } from 'node:url'
-import { loadProject } from './review-project.mjs'
+import { loadProject } from '@civic/vite-connector/project'
 import { runtimeService } from './review-runtime.mjs'
 
 test('real application mutations remain isolated between runs and replay starts from the same seed', async () => {

@@ -28,7 +28,7 @@ It also takes an optional `coverage({ dataDir, metadata })` factory that opens t
 This is the first extraction step, not a finished plugin contract. These remain in `apps/web/src/review` because they still import Laundry components, fixtures or vocabulary:
 
 - The canvas composition (`app-canvas.tsx`), journey graph (`app-map.ts`, `journey.ts`), towel runtime (`canvas.tsx`), review and contract panels.
-- The Vite plugin, inventory and coverage bridge (`apps/web/scripts/review-plugin.mjs`, `review-inventory.mjs`, `review-coverage.mjs`), which scan Laundry design references, previews and source paths.
+- Laundry's connector for [`@civic/vite-connector`](../vite-connector) (`apps/web/scripts/review-laundry-connector.mjs`), which scans Laundry design references, previews and source paths. The Vite plugin, project manifest, picker, discovery, inventory and coverage bridge themselves are in that package.
 - The cross-route bindings (`route-actions.json`), app overview and arrow routing (`app-overview.tsx`, `arrow-routing.ts`) and the coverage pane.
 - The feedback context vocabulary in `server/review-server.mjs` (personas, roles and conditions) is still Laundry's.
 

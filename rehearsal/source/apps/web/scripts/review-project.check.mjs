@@ -5,7 +5,7 @@ import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { spawnSync } from 'node:child_process'
 import { test } from 'node:test'
-import { loadProject, checkedProject, checkedScenarios, projectPath } from './review-project.mjs'
+import { loadProject, checkedProject, checkedScenarios, projectPath } from '@civic/vite-connector/project'
 import { reviewInventory } from './review-inventory.mjs'
 
 const repo = fileURLToPath(new URL('../../../', import.meta.url)).replace(/\/$/, '')
@@ -16,7 +16,7 @@ const load = (root) => loadProject(repo, { manifest: join(root, 'rehearsal.proje
 test('portable init is explicit, non-overwriting and works outside a Laundry checkout', async () => {
   const root = await realpath(await mkdtemp(join(tmpdir(), 'rehearsal-init-check-')))
   await mkdir(join(root, 'src'))
-  const command = (args) => spawnSync(process.execPath, [join(repo, 'apps/web/scripts/review-project.mjs'), ...args], { cwd: repo, encoding: 'utf8' })
+  const command = (args) => spawnSync(process.execPath, [join(repo, 'packages/vite-connector/src/review-project.mjs'), ...args], { cwd: repo, encoding: 'utf8' })
   const args = ['init', '--root', root, '--name', 'Second app', '--id', 'second-app', '--source', 'src']
   const dry = command(args); assert.equal(dry.status, 0, dry.stderr); assert.equal(JSON.parse(dry.stdout).written, false)
   await assert.rejects(readFile(join(root, 'rehearsal.project.json')), { code: 'ENOENT' })

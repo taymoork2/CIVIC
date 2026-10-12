@@ -1,0 +1,44 @@
+# @civic/vite-connector
+
+CIVIC's build connector for Vite apps. It is the dev-only Vite plugin that turns a review host into the journey canvas for one connected app, plus the modules it needs: the project manifest (`rehearsal.project.json`) and its `init`/`check` CLI, the project picker, static discovery, the review index, per-screen fixture fingerprints and the coverage bridge.
+
+An app connects read-only through its manifest. The connector indexes the screens the manifest's scenario registry names, fingerprints each one by its own import closure, serves the review entries and the app's sources to them, refreshes on change, and mounts the [`@civic/shell`](../shell) review server. Nothing is written into the app's checkout, and routine indexing, refresh and serving make no model calls.
+
+## Connecting an app
+
+A `module` app needs only its manifest and a preview entry that exports `mount(container, context)`. Start one with:
+
+```sh
+node packages/vite-connector/src/review-project.mjs init --root /path/to/app --id my-app --name "My app" --source src --preview src/rehearsal.ts --write
+node packages/vite-connector/src/review-project.mjs check --project /path/to/app/rehearsal.project.json
+```
+
+Then select it in the canvas's project picker, or start the host with `REHEARSAL_PROJECT=/path/to/app/rehearsal.project.json`.
+
+## Hosting the canvas
+
+```js
+import { civicReview } from '@civic/vite-connector'
+
+civicReview({
+  host,                 // folder with review.html and review-frame.html
+  repo,                 // workspace that owns the review store (.review-data)
+  connectors: {},       // adapter kind -> app connector, for apps that aren't plain modules
+  review: ({ project, repo, dataDir }) => ({ adapter, coverage, agents, shared, publicHost }),
+  runtime,              // optional: (project, source) -> isolated backend for live runs
+})
+```
+
+`review` returns the shell's options; `runtime` starts the isolated backend when the app declares one. An adapter kind other than `module` needs a connector. Laundry's (`apps/web/scripts/review-laundry-connector.mjs`) shows the whole interface: its own index and fixture fingerprint inputs, module substitutes for app boot, auth and server routes, a checked in-memory source overlay, the packages the app and review must share, and the app's CSS for review frames. The connector itself names nothing from Laundry, and its checks enforce that it imports only Node, Vite and the shell.
+
+## Not covered yet
+
+- The canvas UI (`review.html` and `apps/web/src/review`) still lives in the Laundry monorepo host, so a host today is that workspace.
+- Runtime and data adapters (seed, identity, clock, isolated effects) exist only for Laundry's Convex backend (`apps/web/scripts/review-runtime.mjs`). TanStack Start server functions are not covered.
+- Other bundlers (Webpack, esbuild, Bun, Turbopack, Metro) and Vite+ are not verified. See `docs/design/review-product/platform-adapters.md`.
+
+## Checks
+
+```sh
+pnpm --filter @civic/vite-connector test
+```

@@ -15,7 +15,8 @@ async function atomic(file, value) {
 }
 
 // Connections and starters belong to Rehearsal. Connecting never writes into an app checkout.
-export async function projectPicker(repo, current) {
+// The host supplies the runtime that mounts discovered screens and the starter project it copies.
+export async function projectPicker(repo, current, { discoveredAdapter = join(repo, 'apps/web/src/review/discovered-adapter.tsx'), starterTemplate = join(repo, 'apps/web/examples/rehearsal-demo'), kinds = null } = {}) {
   const store = join(repo, '.review-data/project-picker.json')
   await mkdir(dirname(store), { recursive: true, mode: 0o700 })
   let rows
@@ -26,6 +27,7 @@ export async function projectPicker(repo, current) {
   if (!rows.some((row) => row.key === current.key)) { rows.push(record(current)); await atomic(store, rows) }
   const validate = async (manifest, root) => {
     const project = loadProject(repo, { manifest, applicationRoot: root })
+    if (kinds && !kinds.includes(project.manifest.adapter.kind)) bad(`No connector is registered for adapter kind ${project.manifest.adapter.kind}`)
     checkedScenarios(await json(project.scenariosPath), project)
     const coverage = await json(project.coverageFile)
     if (!Number.isInteger(coverage.version) || coverage.version < 1 || !Array.isArray(coverage.targets)) bad('Use a coverage file with a positive version and targets')
@@ -71,7 +73,7 @@ export async function projectPicker(repo, current) {
         const candidate = discovery.candidates.find((candidate) => candidate.id === scenario.id)
         return { ...scenario, source: '/@fs/' + projectPath(discovery.root, candidate.file), assetRoot: '/@fs/' + projectPath(discovery.root, discovery.source) + '/', kind: candidate.kind, export: candidate.export, route: candidate.route }
       })
-      const runtime = join(repo, 'apps/web/src/review/discovered-adapter.tsx')
+      const runtime = discoveredAdapter
       await atomic(join(folder, 'rehearsal.scenarios.json'), scenarios)
       await atomic(join(folder, 'discovered.screens.json'), screens)
       await atomic(join(folder, 'discovery.evidence.json'), { ...fresh, generatedAt: new Date().toISOString(), selected: input.selected })
@@ -113,7 +115,7 @@ export async function projectPicker(repo, current) {
       const folder = join(owned, id)
       await mkdir(folder, { mode: 0o700 })
       if (input.kind === 'new') {
-        const template = join(repo, 'apps/web/examples/rehearsal-demo')
+        const template = starterTemplate
         for (const file of ['src', 'rehearsal.project.json', 'rehearsal.scenarios.json', 'rehearsal.coverage.json']) await cp(join(template, file), join(folder, file), { recursive: true, errorOnExist: true, force: false })
         root = folder
         const starter = await json(join(folder, 'rehearsal.project.json'))

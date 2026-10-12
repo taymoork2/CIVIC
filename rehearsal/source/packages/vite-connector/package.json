@@ -1,0 +1,30 @@
+{
+  "name": "@civic/vite-connector",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/review-plugin.mjs",
+    "./project": "./src/review-project.mjs",
+    "./projects": "./src/review-projects.mjs",
+    "./discovery": "./src/review-discovery.mjs",
+    "./coverage": "./src/review-coverage.mjs",
+    "./inventory": "./src/review-inventory.mjs",
+    "./fixture-hashes": "./src/review-fixture-hashes.mjs"
+  },
+  "scripts": {
+    "test": "node --test src/review-plugin.check.mjs src/review-coverage.check.mjs src/review-discovery.check.mjs"
+  },
+  "peerDependencies": {
+    "vite": "8.3.1"
+  },
+  "dependencies": {
+    "@civic/shell": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "26.6.3",
+    "@types/react": "19.3.0",
+    "react": "19.3.0",
+    "typescript": "7.0.2",
+    "vite": "8.3.1"
+  }
+}

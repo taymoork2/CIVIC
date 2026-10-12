@@ -22,7 +22,8 @@ export function projectPath(root, path, required = true, strict = true) {
 }
 export function checkedProject(input) {
   if (!input || input.version !== 1 || !id(input.id) || !words(input.name)) fail('use version 1, a stable id and a name')
-  if (!['module', 'laundry'].includes(input.adapter?.kind) || input.adapter.entry !== undefined && !words(input.adapter.entry)) fail('unsupported adapter or entry')
+  // `module` is the portable preview contract. Any other kind names a connector the host registers (Laundry's is `laundry`).
+  if (!id(input.adapter?.kind) || input.adapter.entry !== undefined && !words(input.adapter.entry)) fail('unsupported adapter or entry')
   if (input.adapter.runtime !== undefined && !words(input.adapter.runtime, 500)) fail('invalid isolated runtime entry')
   for (const field of ['sources', 'navigation']) if (!Array.isArray(input[field]) || !input[field].length || input[field].length > 50 || new Set(input[field]).size !== input[field].length || input[field].some((s) => !words(s))) fail(`invalid ${field}`)
   for (const field of ['personas', 'roles', 'conditions']) {
@@ -42,7 +43,8 @@ export function loadProject(repo, options = {}) {
   const manifestRoot = dirname(manifestPath)
   const manifest = checkedProject(JSON.parse(readFileSync(manifestPath, 'utf8')))
   const root = realpathSync(resolve(repo, options.applicationRoot ?? process.env.REHEARSAL_APP_ROOT ?? (!options.manifest && !process.env.REHEARSAL_PROJECT ? local.root : undefined) ?? manifestRoot))
-  const strict = manifest.adapter.kind !== 'laundry'
+  // Connector-owned projects may resolve through workspace links; portable modules stay inside their checkout.
+  const strict = manifest.adapter.kind === 'module'
   const sources = manifest.sources.map((path) => projectPath(root, path, true, strict))
   if (sources.some((path) => !statSync(path).isDirectory())) fail('source roots must be directories')
   const scenariosPath = projectPath(manifestRoot, manifest.scenarios, true, strict)
@@ -67,7 +69,7 @@ export function checkedScenarios(rows, project) {
     if (!row || !id(row.id) || ids.has(row.id) || !words(row.label) || !words(row.journey)) fail('invalid or duplicate scenario identity')
     ids.add(row.id)
     if (row.flow !== undefined && !id(row.flow) || row.branchOf !== undefined && !id(row.branchOf)) fail(`invalid flow or branch identity: ${row.id}`)
-    if (row.component !== undefined) projectPath(project.root, row.component, false, project.manifest.adapter.kind !== 'laundry')
+    if (row.component !== undefined) projectPath(project.root, row.component, false, project.manifest.adapter.kind === 'module')
     if (row.section !== undefined && !project.manifest.navigation.includes(row.section)) fail(`unknown navigation section: ${row.section}`)
     if (row.edges !== undefined && (!Array.isArray(row.edges) || row.edges.length > 100 || row.edges.some((edge) => !edge || !id(edge.destination) || !words(edge.action) || edge.when !== undefined && !words(edge.when, 1000) || edge.returnTo !== undefined && !words(edge.returnTo, 1000)))) fail(`invalid edges: ${row.id}`)
     if (row.captureFields !== undefined && (!Array.isArray(row.captureFields) || row.captureFields.length > 100 || row.captureFields.some((s) => !words(s, 300)))) fail(`invalid capture fields: ${row.id}`)

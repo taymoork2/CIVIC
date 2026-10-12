@@ -13,7 +13,7 @@ Stop conditions: refuse invalid or escaping paths and duplicate identities; repo
 
 ## Delivered connection
 
-`rehearsal.project.json` is the portable project contract. `apps/web/scripts/review-project.mjs` validates it and supplies `init` and `check`. The default manifest describes Laundry explicitly; another application selects its own manifest. The dependency-free Notebook example is in `apps/web/examples/rehearsal-demo` and has real DOM presenters, a separate synthetic adapter, four screen states, a conditional branch, return paths and project-specific context.
+`rehearsal.project.json` is the portable project contract. `packages/vite-connector/src/review-project.mjs` validates it and supplies `init` and `check`. The default manifest describes Laundry explicitly; another application selects its own manifest. The dependency-free Notebook example is in `apps/web/examples/rehearsal-demo` and has real DOM presenters, a separate synthetic adapter, four screen states, a conditional branch, return paths and project-specific context.
 
 No model call is required for onboarding, source inventory, graph assembly, coverage comparison, input capture or refresh. Source discovery recognizes TanStack `createFileRoute` calls and named `*Sheet*` functions as unconfirmed candidates. Other frameworks can supply the same registry explicitly; discovery is deliberately incomplete. Rehearsal does not infer unwritten requirements, complete journeys, personas, permissions or safe fixtures from code.
 
@@ -34,14 +34,14 @@ The UI needs no CLI commands to add or switch projects or generate an isolated p
 Run these from the Rehearsal repository, substituting the target checkout:
 
 ```sh
-node apps/web/scripts/review-project.mjs init \
+node packages/vite-connector/src/review-project.mjs init \
   --root /path/to/application --id my-app --name 'My App' --source src
 ```
 
 This prints the proposed manifest, empty scenario registry and coverage contract without writing. Add `--write` to create those three files; existing files are never overwritten. The source directory must already exist. A greenfield app can begin inventory-only, then add screens and an adapter as its presenters are implemented. `--preview src/rehearsal.ts` connects an already existing preview module; init does not invent one.
 
 ```sh
-node apps/web/scripts/review-project.mjs check --project /path/to/application/rehearsal.project.json
+node packages/vite-connector/src/review-project.mjs check --project /path/to/application/rehearsal.project.json
 REHEARSAL_PROJECT=/path/to/application/rehearsal.project.json pnpm --dir apps/web run review
 ```
 
