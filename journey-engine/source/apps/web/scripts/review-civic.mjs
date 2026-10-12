@@ -51,14 +51,12 @@ export function civicShared({ repo, civicRoot = resolve(repo, '../..') }) {
 
     /**
      * The lens: every line, every annotation with its requests, and every request. Each open
-     * design draft also gets its design lens (D36): the frames it changes from its base, read
-     * on this checkout's code line. A draft registered before CIVIC recorded frames has none.
+     * design draft also comes with its design lens (D36), the frames it changes from its base
+     * read on this checkout's code line, and each target with the open lines changing it.
      */
     async list() {
-      const [{ current, lines }, annotations, requests] = await Promise.all([json('lines'), json('annotations'), json('requests')])
-      const drafts = lines.filter((line) => line.type === 'design-draft' && line.status === 'open')
-      const lenses = Object.fromEntries((await Promise.all(drafts.map((line) => json('lens', line.id).then((lens) => [line.id, lens], () => null)))).filter(Boolean))
-      return { current, lines, annotations, requests, lenses }
+      const [{ current, lines, lenses, changing }, annotations, requests] = await Promise.all([json('lines'), json('annotations'), json('requests')])
+      return { current, lines, annotations, requests, lenses, changing }
     },
 
     /**

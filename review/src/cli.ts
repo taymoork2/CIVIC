@@ -35,7 +35,7 @@ import {
   reviewQueue,
   type Context,
 } from './loop.ts'
-import { chooseDraft, designLens, registerDesignDraft, registerDesignFile, renderDesignLens, type DesignLineResult, type FigmaFileExport } from './drafts.ts'
+import { chooseDraft, designLens, linesChanging, registerDesignDraft, registerDesignFile, renderDesignLens, type DesignLens, type DesignLineResult, type FigmaFileExport } from './drafts.ts'
 import { bearerFor, captureScenario, launchBrowser, recapture, reproductionUrl } from './recapture.ts'
 import { createOverlayServer } from './overlay/server.ts'
 import { renderList, renderRequest } from './render.ts'
@@ -301,7 +301,19 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
     }
     case 'lines': {
       const document = store.read()
-      print(has('--json') ? JSON.stringify({ current: lineIdFor(checkout), lines: document.records.filter((record) => record.kind === 'line') }, null, 2) : renderLines(document, lineIdFor(checkout)))
+      const current = lineIdFor(checkout)
+      if (!has('--json')) {
+        print(renderLines(document, current))
+        return 0
+      }
+      // Each open design draft's lens, read on this code line, and the open lines changing each target.
+      const drafts = document.records.filter((record) => record.kind === 'line' && record.type === 'design-draft' && record.status === 'open' && record.frames)
+      const graphs = drafts.length === 0 ? [] : await Promise.all(graphsIn(checkout.root).map(async (file) => ({ label: file, graph: await loadGraph(resolvePath(checkout.root, file)) })))
+      const lenses: Record<string, DesignLens> = {}
+      for (const draft of drafts) {
+        try { lenses[draft.id] = designLens(document, draft.id, current, graphs) } catch { /* a draft whose base has no frames yet has no lens */ }
+      }
+      print(JSON.stringify({ current, lines: document.records.filter((record) => record.kind === 'line'), lenses, changing: linesChanging(document, lenses) }, null, 2))
       return 0
     }
     case 'annotations': {
