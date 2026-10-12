@@ -109,7 +109,7 @@ Two read-only queries over a graph (D31). Both are deterministic and print Markd
 
 ## One screen: `civic screen`
 
-`civic screen <target-id> [<file>...] [--json]` answers what the graphs know about one screen ([`src/screen.ts`](src/screen.ts)): the journeys that contain it, its paths on and whether they count, the evidence about it, and the gate's findings on it or its evidence, each marked as new or held by the baseline. With no files it reads the graphs and baseline in `civic.check.json` and uses the first graph that has the screen. It is how a viewer reads the graph: the journey canvas's Contract panel shows it for the selected screen (decision 0004).
+`civic screen <target-id> [<file>...] [--json]` answers what the graphs know about one screen ([`src/screen.ts`](src/screen.ts)): the journeys that contain it, its paths on and whether they count, the evidence about it, and the gate's findings on it or its evidence, each marked as blocking, advisory or held by the baseline, and which evidence is stale. With no files it reads the graphs and baseline in `civic.check.json` and uses the first graph that has the screen. It is how a viewer reads the graph: the journey canvas's Contract panel shows it for the selected screen (decision 0004).
 
 ## The gate: `civic check`
 
@@ -119,11 +119,17 @@ Two read-only queries over a graph (D31). Both are deterministic and print Markd
 { "graphs": ["demo/card/out/resolved.graph.json"], "baseline": "civic.baseline.json", "blocking": ["open-conflict"] }
 ```
 
-- **What blocks by default.** Findings that wait on a decision: an invalid graph, an open conflict, an override no conflict tracks, an approved exception past its `expires` date, failing evidence, a product state a design neither shows nor inherits, and a journey screen that is a dead end or unreachable. Recorded facts and evidence debt are reported as advisory: variants mapped to `none`, platform-only variants, no run evidence, unconfirmed links, screens a crawl discovered that nobody has confirmed (D34), and approved exceptions.
+- **What blocks by default.** Findings that wait on a decision: an invalid graph, an open conflict, an override no conflict tracks, an approved exception past its `expires` date, failing evidence, a product state a design neither shows nor inherits, and a journey screen that is a dead end or unreachable. Recorded facts and evidence debt are reported as advisory: variants mapped to `none`, platform-only variants, no run evidence, unconfirmed links, screens a crawl discovered that nobody has confirmed (D34), stale evidence, and approved exceptions.
 - **Baseline.** Each finding has a stable key (kind, subject, platform and what tells it apart, such as the state). A baselined finding doesn't block, so old debt doesn't stop a change, and a new one is raised at the change that caused it. `--update-baseline` writes every current blocking finding to the baseline, which shows up in review as a diff. Findings that are gone are listed as fixed until the baseline is updated. An invalid graph can't be baselined.
 - **Counts.** The report gives each check's count with its denominator, such as 1 of 4 conflicts open, never a score.
 - **Status.** `--post` records the result as a `civic` commit status through the GitHub CLI, from a clean working tree, the way `bin/signoff` records `signoff`. There are no GitHub Actions.
-- **Dates.** Expiry is compared with today's date, or `--today <date>` for a repeatable run. The same graphs and date always give the same report.
+- **Stale evidence.** Evidence proves the code at the revision it was captured at (roadmap step 6). A `freshness` rule in `civic.check.json` names a graph, the tools whose evidence proves code in this repository, and where that code lives. Evidence is stale when git shows a change there since its revision, uncommitted edits included, or when git doesn't know the revision. It's reported as advisory with a count, such as 0 of 27, and `civic screen` and the Contract panel mark it. Evidence pinned to an upstream release, such as Fluent's source, has no rule.
+
+  ```json
+  { "freshness": [{ "graph": "projects/laundry/out/graph.json", "tools": ["playwright"], "watch": ["rehearsal/source"] }] }
+  ```
+
+- **Dates.** Expiry is compared with today's date, or `--today <date>` for a repeatable run. The same graphs, date and checkout always give the same report.
 
 A conflict counts as decided only when a Decision record is in force on it ([Decisions](#decisions)). An agent-written decision makes the graph invalid, so it never clears a finding.
 
