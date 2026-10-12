@@ -1,10 +1,12 @@
 import { readFileSync, renameSync, writeFileSync, mkdirSync } from 'node:fs'
 import { join } from 'node:path'
 import { SCHEMA_VERSION, type Actor, type GraphDocument, type GraphRecord, type WorkRequest } from '../../graph/src/index.ts'
-import { loadAccess, scopesOf, type AccessPolicy, type Scope } from './access.ts'
+import type { KeyObject } from 'node:crypto'
+import { ACCESS_FILE, loadAccess, personOf, scopesOf, signingRequired, type AccessPolicy, type Scope } from './access.ts'
 import { actorId, ensureActor, CIVIC_ACTOR_ID } from './identity.ts'
 import { allow, versionOf, type Context } from './loop.ts'
-import type { RecordsRemote } from './remote.ts'
+import type { RecordsRemote, RemoteChange } from './remote.ts'
+import { signedBy, signedPayload, signPayload } from './signing.ts'
 
 // Roadmap step 5: each person's local store syncs with the team's shared records. A sync
 // pulls what others shared, merges it record by record with what was written here since the
@@ -44,9 +46,17 @@ export class UntrustedChangeError extends Error {
   }
 }
 
-export function sync(context: Context, remote: RecordsRemote): SyncResult {
+export interface SyncOptions {
+  /** The person's Ed25519 private key (`civic keygen`). Required once civic.access.json lists keys. */
+  signingKey?: KeyObject
+}
+
+export function sync(context: Context, remote: RecordsRemote, options: SyncOptions = {}): SyncResult {
   allow(context, 'write', 'share records')
   const policy = context.access === undefined ? loadAccess(context.checkout) : (context.access ?? undefined)
+  if (signingRequired(policy) && !options.signingKey) {
+    throw new Error(`This repository signs shared records: ${ACCESS_FILE} on the default branch lists keys. Run civic keygen, add the key it prints under keys.${personOf(context.identity)} on the default branch, then sync again.`)
+  }
   const store = context.store
   for (let attempt = 0; attempt < ATTEMPTS; attempt++) {
     const state = readState(store.dir, remote.label)
@@ -85,7 +95,8 @@ export function sync(context: Context, remote: RecordsRemote): SyncResult {
       return { remote: remote.label, revision: shared.revision, pulled, pushed, conflicts }
     }
     if (!shared && merged.records.length === 0) return { remote: remote.label, revision: undefined, pulled, pushed, conflicts }
-    const published = remote.publish({ document: merged, captures: outgoing, actor: me, summary: `CIVIC records: ${pushed.length} changed` }, shared?.revision)
+    const signature = options.signingKey ? signPayload(options.signingKey, signedPayload(shared?.revision, merged, me)) : undefined
+    const published = remote.publish({ document: merged, captures: outgoing, actor: me, summary: `CIVIC records: ${pushed.length} changed`, ...(signature ? { signature } : {}) }, shared?.revision)
     if (published === 'moved') continue
     writeState(store.dir, remote.label, { revision: published.revision, document: merged })
     return { remote: remote.label, revision: published.revision, pulled, pushed, conflicts }
@@ -198,9 +209,25 @@ function changedIds(from: GraphDocument, to: GraphDocument): string[] {
  */
 function verify(remote: RecordsRemote, since: string | undefined, policy: AccessPolicy | undefined) {
   for (const change of remote.changesSince(since)) {
-    const problems = checkChange(change.actor, change.before, change.after, policy)
+    const problems = [...checkSignature(change, policy), ...checkChange(change.actor, change.before, change.after, policy)]
     if (problems.length) throw new UntrustedChangeError(remote.label, change.revision, problems)
   }
+}
+
+/**
+ * Once civic.access.json lists keys, a shared sync counts only when it is signed by a key
+ * listed for the person it names. Without listed keys, the name is a claim (decision 0008).
+ */
+export function checkSignature(change: Pick<RemoteChange, 'actor' | 'parent' | 'signature' | 'after'>, policy: AccessPolicy | undefined): string[] {
+  if (!signingRequired(policy) || !change.actor) return []
+  const actor = change.after.records.find((record): record is Actor => record.id === change.actor && record.kind === 'actor')
+  if (!actor) return []
+  if (!change.signature) return [`The sync naming ${change.actor} isn't signed, and ${ACCESS_FILE} requires signed syncs.`]
+  const keys = policy!.keys[actor.handle] ?? []
+  if (!signedBy(change.signature, signedPayload(change.parent, change.after, change.actor), keys)) {
+    return [`The sync's signature isn't from a key ${ACCESS_FILE} lists for ${actor.handle}, so it can't be shown to come from ${change.actor}.`]
+  }
+  return []
 }
 
 const SCOPE_OF: Record<string, Scope> = { resolve: 'resolve', reopen: 'resolve', 'keep-mine': 'resolve', 'accept-check': 'approve', escalate: 'approve' }

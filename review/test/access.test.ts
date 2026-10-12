@@ -109,5 +109,5 @@ test('scopes come from civic.access.json on the default branch, and agents have 
 test('a malformed policy is refused with what to fix', () => {
   assert.throws(() => parseAccess('{"people":{"sam":["admin"]}}'), /people\.sam is a list of scopes from read, write, approve, resolve/)
   assert.throws(() => parseAccess('not json'), /isn't valid JSON/)
-  assert.deepEqual(parseAccess('{"people":{"sam":["read"]}}'), { people: { sam: ['read'] }, others: ['read'] })
+  assert.deepEqual(parseAccess('{"people":{"sam":["read"]}}'), { people: { sam: ['read'] }, others: ['read'], keys: {} })
 })

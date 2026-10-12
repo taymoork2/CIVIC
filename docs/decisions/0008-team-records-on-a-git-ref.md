@@ -19,5 +19,5 @@ Roadmap step 5 asks for real identities, scoped permissions, and versioned share
 ## Consequences
 
 - People and agents now share requests, claims, fixes, and captures across machines. One person per clone is the model: a sync speaks for the person who runs it and their agents.
-- The `Civic-Actor:` trailer is a claim, not a proof. Anyone who can push could name someone else. Requiring signed sync commits, checked against keys listed on the default branch, is the next step for authenticated identities. A hosted service would instead authenticate at sign-in.
+- The `Civic-Actor:` trailer alone is a claim, not a proof, because anyone who can push could name someone else. Signed syncs close that gap. Each person's Ed25519 public keys are listed in `civic.access.json` on the default branch. Once any key is listed, a shared sync counts only when a key listed for the person it names signs it. The signature covers the snapshot, so a hosted service can carry the same proof or authenticate at sign-in instead.
 - Presence, following, and shared driving stay out of scope until there's a live remote.
