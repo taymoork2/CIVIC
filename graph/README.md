@@ -165,6 +165,13 @@ Two read-only queries over a graph (D31). Both are deterministic and print Markd
   { "freshness": [{ "graph": "projects/laundry/out/graph.json", "tools": ["playwright"], "watch": ["journey-engine/source"] }] }
   ```
 
+- **The change and the side that moved** (roadmap step 10, [`src/change.ts`](src/change.ts)). `--since <ref>` also runs the checks on the graphs as they were at the merge base of `<ref>` and HEAD, the last revision both shared, and lists only the findings this change introduced or resolved. Each introduced finding is traced to the side that moved: the records each side of a conflict rests on (its record and its evidence) are compared between the two revisions. The owners of the side that moved are **asked**, since the change is theirs to fix or decide; the other sides' owners are **told**. A side with no owners of its own, such as a design kit side backed only by a Figma export, takes the conflict's owners no other side claims. Recapturing evidence with the same result moves nothing. When neither side moved, as when a decision is withdrawn, everyone the finding names is asked. Stale evidence is left out of the comparison, since it is measured against the working tree. `--json` adds the result as `change`.
+- **On the pull request.** `--comment <pr>` (with `--since`) puts that summary on the pull request as one comment, edited in place on every run and stamped with the commit it describes. `bin/signoff` does this for the branch's open pull request, against `CIVIC_BASE` (default `origin/main`).
+
+  ```sh
+  bin/civic check --since origin/main        # what this branch introduced, and who is asked and told
+  ```
+
 - **Dates.** Expiry is compared with today's date, or `--today <date>` for a repeatable run. The same graphs, date and checkout always give the same report.
 
 A conflict counts as decided only when a Decision record is in force on it ([Decisions](#decisions)). An agent-written decision makes the graph invalid, so it never clears a finding.

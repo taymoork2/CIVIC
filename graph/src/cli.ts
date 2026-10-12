@@ -11,7 +11,7 @@
 //   civic gaps <file> [--scope <semantic-id>] [--platform <p>] [--json]
 //   civic completeness <file> <journey-id> [--json]
 //   civic screen <target-id> [<file>...] [--config civic.check.json] [--today <date>] [--json]
-//   civic check [<file>...] [--config civic.check.json] [--baseline <file>] [--update-baseline] [--today <date>] [--json] [--post]
+//   civic check [<file>...] [--config civic.check.json] [--baseline <file>] [--update-baseline] [--today <date>] [--since <ref>] [--json] [--post] [--comment <pr>]
 //   civic decide <decisions.json> <conflict-id> --graph <file> --outcome <o> --classification <c> --by <role>:<who>
 //                --rationale <text> --evidence <id,...> [--proposal <id>] [--alignment <a>] [--title <t>] [--revisit <text>] [--expires <date>] [--at <time>]
 //   civic propose <decisions.json> --graph <file> --targets <id,...> --scope <s> --outcome <o> --by <role>:<who> --rationale <text>
@@ -24,6 +24,7 @@ import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, relative, resolve } from 'node:path'
 import { baselineFrom, checkDocument, compareToBaseline, DEFAULT_BLOCKING, FINDING_KINDS, renderCheck, statusLine, type Baseline, type FindingKind } from './check.ts'
+import { changeBetween, renderChange, type ChangeReport, type GraphAtRevisions } from './change.ts'
 import { completenessOf, renderCompleteness } from './completeness.ts'
 import {
   ALIGNMENT_FOR,
@@ -386,7 +387,7 @@ async function screen(): Promise<number> {
 }
 
 async function check(): Promise<number> {
-  const valued = new Set(['--config', '--baseline', '--today'])
+  const valued = new Set(['--config', '--baseline', '--today', '--since', '--comment'])
   const files = args.filter((arg, index) => !arg.startsWith('--') && !valued.has(args[index - 1] ?? ''))
   const configPath = resolve(option('--config') ?? 'civic.check.json')
   let config: CheckConfig = { graphs: files }
@@ -403,11 +404,28 @@ async function check(): Promise<number> {
 
   const unwatched = (config.freshness ?? []).filter((rule) => !config.graphs.includes(rule.graph))
   if (unwatched.length > 0) return usage(`A freshness rule names a graph the gate doesn't check: ${unwatched.map((rule) => rule.graph).join(', ')}`)
-  const checks = config.graphs.map((file) => {
-    const document = JSON.parse(readFileSync(resolve(root, file), 'utf8')) as GraphDocument
-    const stale = staleIn(config, root, file, document)
-    return checkDocument(file, document, { today, ...(stale ? { stale } : {}) })
+  const documents = config.graphs.map((file) => JSON.parse(readFileSync(resolve(root, file), 'utf8')) as GraphDocument)
+  const checks = config.graphs.map((file, index) => {
+    const stale = staleIn(config, root, file, documents[index]!)
+    return checkDocument(file, documents[index], { today, ...(stale ? { stale } : {}) })
   })
+  const since = option('--since')
+  const comment = option('--comment')
+  if (comment && !since) return usage('--comment needs --since, the base the pull request is compared with.')
+  if (comment && !/^\d+$/.test(comment)) return usage('--comment takes a pull request number.')
+  let change: ChangeReport | undefined
+  if (since) {
+    const base = baseDocuments(root, since, config.graphs)
+    if (base instanceof Error) return usage(base.message)
+    change = changeBetween(
+      base.label,
+      config.graphs.map((file, index): GraphAtRevisions => {
+        const head = { document: documents[index]!, check: checks[index]! }
+        const before = base.documents[index]
+        return before ? { graph: file, base: { document: before, check: checkDocument(file, before, { today }) }, head } : { graph: file, head }
+      }),
+    )
+  }
   const baselineFlag = option('--baseline')
   const baselinePath = baselineFlag ? resolve(baselineFlag) : config.baseline ? resolve(root, config.baseline) : undefined
   const baseline = baselinePath && existsSync(baselinePath) ? (JSON.parse(readFileSync(baselinePath, 'utf8')) as Baseline) : undefined
@@ -420,8 +438,11 @@ async function check(): Promise<number> {
     console.log(`Wrote ${next.findings.length} finding(s) to ${relative(process.cwd(), baselinePath)}.`)
     return report.fresh.some((item) => item.kind === 'invalid-graph') ? 1 : 0
   }
-  console.log(args.includes('--json') ? JSON.stringify(report, null, 2) : renderCheck(report))
-  if (args.includes('--post')) postStatus(root, report.passed ? 'success' : 'failure', statusLine(report))
+  const changeText = change ? renderChange(change, { ...report, graphs: checks.length }) : undefined
+  if (args.includes('--json')) console.log(JSON.stringify(change ? { ...report, change } : report, null, 2))
+  else console.log(changeText ? `${renderCheck(report)}\n\n${changeText}` : renderCheck(report))
+  if (args.includes('--post')) postStatus(root, report.passed ? 'success' : 'failure', statusLine(report, change))
+  if (comment && changeText) postComment(root, comment, changeText)
   return report.passed ? 0 : 1
 }
 
@@ -435,6 +456,54 @@ function postStatus(root: string, state: 'success' | 'failure', description: str
   const sha = git('rev-parse', 'HEAD')
   execFileSync('gh', ['api', '--silent', `repos/{owner}/{repo}/statuses/${sha}`, '-f', `state=${state}`, '-f', 'context=civic', '-f', `description=${description}`], { cwd: root, stdio: 'inherit' })
   console.log(`\nPosted civic: ${state} on ${sha}.`)
+}
+
+/**
+ * Each configured graph as it was where the change started: the merge base of `since` and
+ * HEAD, the last revision both sides shared, so work that landed on the base branch since
+ * isn't counted as this change's. Undefined where the file didn't exist yet. Paths are
+ * relative to the config's directory, as in civic.check.json.
+ */
+function baseDocuments(root: string, since: string, files: string[]): { label: string; documents: (GraphDocument | undefined)[] } | Error {
+  const git = (...rest: string[]) => execFileSync('git', ['-C', root, ...rest], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'], maxBuffer: 256 * 1024 * 1024 }).trim()
+  let revision: string
+  try {
+    revision = git('rev-parse', '--verify', '--quiet', `${since}^{commit}`)
+  } catch {
+    return new Error(`--since ${since} isn't a revision in this repository. Fetch it first, for example git fetch origin main.`)
+  }
+  try {
+    revision = git('merge-base', revision, 'HEAD')
+  } catch {
+    // No shared history: compare with the revision itself.
+  }
+  const documents = files.map((file) => {
+    try {
+      return JSON.parse(git('show', `${revision}:./${file}`)) as GraphDocument
+    } catch {
+      return undefined
+    }
+  })
+  return { label: `${since} (${revision.slice(0, 12)})`, documents }
+}
+
+const COMMENT_MARKER = '<!-- civic-check -->'
+
+/**
+ * Puts the change summary on the pull request as one comment, edited in place on each
+ * signoff so the thread holds the latest result, not one per run. Like the status, it is
+ * posted only from a clean working tree, and says which commit it describes.
+ */
+function postComment(root: string, pr: string, text: string): void {
+  const git = (...rest: string[]) => execFileSync('git', ['-C', root, ...rest], { encoding: 'utf8' }).trim()
+  if (git('status', '--porcelain') !== '') throw new Error('Commit or stash your changes first: a civic comment covers exactly the committed HEAD.')
+  const sha = git('rev-parse', 'HEAD')
+  const body = `${COMMENT_MARKER}\n${text}\n\n<sub>At ${sha}.</sub>`
+  const gh = (...rest: string[]) => execFileSync('gh', rest, { cwd: root, encoding: 'utf8' }).trim()
+  const existing = gh('api', '--paginate', `repos/{owner}/{repo}/issues/${pr}/comments`, '--jq', `.[] | select(.body | startswith("${COMMENT_MARKER}")) | .id`).split('\n').filter(Boolean)[0]
+  if (existing) gh('api', '--silent', '-X', 'PATCH', `repos/{owner}/{repo}/issues/comments/${existing}`, '-f', `body=${body}`)
+  else gh('api', '--silent', `repos/{owner}/{repo}/issues/${pr}/comments`, '-f', `body=${body}`)
+  console.log(`\n${existing ? 'Updated' : 'Posted'} the civic comment on pull request #${pr} for ${sha}.`)
 }
 
 function option(name: string): string | undefined {
@@ -458,7 +527,7 @@ function usage(problem?: string): number {
       '  civic gaps <file> [--scope <semantic-id>] [--platform <p>] [--json]',
       '  civic completeness <file> <journey-id> [--json]',
       '  civic screen <target-id> [<file>...] [--config civic.check.json] [--today <date>] [--json]',
-      '  civic check [<file>...] [--config civic.check.json] [--baseline <file>] [--update-baseline] [--today <date>] [--json] [--post]',
+      '  civic check [<file>...] [--config civic.check.json] [--baseline <file>] [--update-baseline] [--today <date>] [--since <ref>] [--json] [--post] [--comment <pr>]',
       '  civic decide <decisions.json> <conflict-id> --graph <file> --outcome <o> --classification <c> --by <role>:<who>',
       '               --rationale <text> --evidence <id,...> [--proposal <id>] [--alignment <a>] [--title <t>] [--revisit <text>] [--expires <date>] [--at <time>]',
       '  civic propose <decisions.json> --graph <file> --targets <id,...> --scope <s> --outcome <o> --by <role>:<who> --rationale <text>',

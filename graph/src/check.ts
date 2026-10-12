@@ -1,3 +1,4 @@
+import type { ChangeReport } from './change.ts'
 import { completenessOf, stateCoverageOn } from './completeness.ts'
 import { conflictStates, describeFix, openProposals, type FixStage } from './decisions.ts'
 import { gapsIn, screenOf } from './gaps.ts'
@@ -271,11 +272,12 @@ export function baselineFrom(report: CheckReport): Baseline {
 }
 
 /** One line for a commit status, at most 140 characters as GitHub allows. */
-export function statusLine(report: CheckReport): string {
+export function statusLine(report: CheckReport, change?: ChangeReport): string {
   const line = report.passed
     ? `No new undecided findings; ${report.baselined.length} baselined, ${report.advisory.length} advisory`
     : `${report.fresh.length} new undecided finding(s); ${report.baselined.length} baselined`
-  return line.slice(0, 140)
+  const since = change ? `; this change: ${change.introduced.length} introduced, ${change.resolved.length} resolved` : ''
+  return `${line}${since}`.slice(0, 140)
 }
 
 /** The report as Markdown: the verdict, what is new, then counts with denominators. */
