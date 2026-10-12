@@ -90,6 +90,8 @@ Progress, 2026-10-12: the crawl has a native driver. It speaks WebDriver to an A
 
 Real identities, scoped permissions, and versioned shared records, following the spec's [multiplayer boundary](product-spec.md#multiplayer-and-ownership). The single local access key and the portal's collaborator access are not this model.
 
+Progress, 2026-10-12: shared records are versioned and permissions are scoped. Each work request counts its changes. A write that names the version it read (`<id>@<version>`, as `civic requests` and `civic queue` print it) is refused if the request changed since then, naming the change, and nothing is written. `civic.access.json` on the default branch gives each person the read, write, approve and resolve scopes. An agent has its person's scopes, and the graph's rules still stop it from resolving. Still to come: the team-wide store, which brings authenticated identities.
+
 ## 6. Journey completeness and replay
 
 Add fixture capture to `bin/signoff` so evidence can be regenerated and becomes visibly stale. Then add replay from start to the scenario player, and native captures as runners allow.

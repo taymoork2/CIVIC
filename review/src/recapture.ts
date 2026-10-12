@@ -14,7 +14,7 @@ import {
 } from '../../graph/src/index.ts'
 import { worktreeFor } from './git.ts'
 import { ensureCivicActor } from './identity.ts'
-import { checkCountsIn, find, resolveId, summarize, type Context } from './loop.ts'
+import { allow, bump, checkCountsIn, ConflictError, find, resolveId, splitVersion, summarize, versionOf, type Context } from './loop.ts'
 
 // Structural types for the part of Playwright CIVIC uses, so the rest of the package
 // never depends on it. It is loaded only when a capture actually runs.
@@ -124,8 +124,11 @@ export interface RecaptureResult {
  * passed, or reopens it for the agent if not. In the other lanes it waits for a person.
  */
 export async function recapture(context: Context, id: string, options: RecaptureOptions = {}): Promise<RecaptureResult> {
+  allow(context, 'write', 're-capture a fix')
   const document = context.store.read()
-  const request = find<WorkRequest>(document, resolveId(document, id, 'request'), 'work-request')
+  const { id: bare, expected } = splitVersion(id)
+  const request = find<WorkRequest>(document, resolveId(document, bare, 'request'), 'work-request')
+  if (expected !== undefined && expected !== versionOf(request)) throw new ConflictError(request, expected)
   if (request.status !== 'fix-ready') throw new Error(`${request.id} is ${request.status}; CIVIC re-captures a request once a fix is reported.`)
   const fix = request.fixes.at(-1)!
   const line = find<Line>(document, fix.line, 'line')
@@ -199,6 +202,7 @@ export async function recapture(context: Context, id: string, options: Recapture
       })
       if (!passed) delete current.claim
     }
+    bump(current, by, at, 'recapture')
     return { request: structuredClone(current), recapture: recaptured }
   })
   return { ...result, skippedChecks, checkNotes }

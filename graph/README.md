@@ -36,7 +36,7 @@ Every record has a stable ID, `<prefix>:<dot.separated.path>`, a title, and opti
 | Actor | `actor:` | Who wrote something: a person, an agent acting for a named person, or CIVIC's own deterministic process |
 | Line | `line:` | A stream of work with revisions: main, a branch, a worktree, a PR with its preview, or a design draft |
 | Annotation | `annotation:` | A comment on a journey, screen, part of a screen, path or branch, with layered anchors, a frozen capture, and the line and revision it was made on |
-| Work request | `request:` | Annotations handed to an agent: base revision, acceptance checks, repro command, claim lease, reported fixes, CIVIC's re-capture, and a status history |
+| Work request | `request:` | Annotations handed to an agent: base revision, acceptance checks, repro command, claim lease, reported fixes, CIVIC's re-capture, a status history, and a version that counts its changes (roadmap step 5) |
 
 ### Decisions
 

@@ -10,9 +10,19 @@ In the git common directory, under `civic/` (D39): `records.graph.json` holds th
 
 Each write takes a lock, re-reads the store, applies the change, validates the whole document against the graph's rules, and replaces the file atomically. A write the rules refuse, such as an agent resolving a request, is never stored. The team-wide store is roadmap step 5. It holds the same record shapes.
 
+Every work request has a version, which counts its changes from 1, and names its latest change (who, when, which operation). `civic requests` and `civic queue` print each request as `<id>@<version>`, and any command that takes a request accepts that form. The write is then refused if anyone changed the request since that version, naming the change, and nothing is written. So a person who reviewed one fix never resolves a newer one they didn't see, and an agent never claims over a comment it didn't read. Read the request again with `civic show` and retry at its current version. Without `@<version>`, a write applies to the request as it is now.
+
 ## Who is acting
 
-A person runs as themselves, using the handle from `git config civic.handle`, `CIVIC_PERSON`, or their git email. An agent runs with `CIVIC_AGENT=<harness>` and `CIVIC_FOR=<person>`, so every write it makes names the person it acts for (D35). This is local attribution, not authentication. Identities and permissions are roadmap step 5.
+A person runs as themselves, using the handle from `git config civic.handle`, `CIVIC_PERSON`, or their git email. An agent runs with `CIVIC_AGENT=<harness>` and `CIVIC_FOR=<person>`, so every write it makes names the person it acts for (D35). This is local attribution, not authentication: anyone who can write the git directory can write the store. Authenticated identities come with the team-wide store (roadmap step 5).
+
+What each person may do comes from `civic.access.json` on the default branch, so changing it is itself a reviewed, merged change, and an edit in a worktree grants nothing:
+
+```json
+{ "people": { "taymoor": ["read", "write", "approve", "resolve"], "sam": ["read", "write"] }, "others": ["read"] }
+```
+
+`read` lists and shows requests. `write` annotates, asks for work, claims, comments, reports fixes, adds checks and re-captures. `approve` accepts a check and escalates a lane. `resolve` resolves and reopens. An agent has the scopes of the person it acts for, and the graph's rules still apply on top of them: an agent never resolves or accepts a check. Without the file, everyone has every scope. `civic whoami` prints your scopes.
 
 ## Lines
 
