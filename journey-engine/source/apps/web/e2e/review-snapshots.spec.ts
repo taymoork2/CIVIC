@@ -5,7 +5,8 @@ test.skip(process.env.WASHCLOSET_REVIEW_E2E !== '1', 'Run against an isolated re
 
 test('an unmounted preview retries a transient module import failure without replacing a live draft', async ({ page }) => {
   let failed = false
-  await page.route('**/src/review/laundry-frame.tsx', async (route) => {
+  // Towel scenarios mount through the towel runtime adapter.
+  await page.route('**/src/review/adapters/laundry-towel.tsx', async (route) => {
     if (!failed) { failed = true; await route.abort(); return }
     await route.continue()
   })
