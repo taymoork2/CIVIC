@@ -1,5 +1,5 @@
 import type { Graph } from './graph.ts'
-import type { Adoption, AlignmentState, Classification, ContractConflict, Decision, DecisionOutcome, GraphRecord, Proposal, Verification } from './schema.ts'
+import type { Adoption, AlignmentState, Classification, CollaborationRecord, CollaborationResolution, ContractConflict, Decision, DecisionOutcome, GraphRecord, Proposal, Verification } from './schema.ts'
 
 // Decisions (roadmap step 3). A conflict keeps what the import raised; whether it is
 // decided, how it was classified and which alignment state it is in are read from the
@@ -190,7 +190,9 @@ export const DECISION_FILE_SCHEMA = 'civic.decisions/0'
 
 /**
  * The decision loop's records live in the same file: proposals, decisions, adoptions and
- * verifications, each its own record. Older files have only `decisions`.
+ * verifications, each its own record, and the collaboration records (ambiguities,
+ * constraints, coverage gaps, divergences, risks and exceptions). Older files have only
+ * `decisions`.
  */
 export interface DecisionFile {
   schema: typeof DECISION_FILE_SCHEMA
@@ -199,11 +201,12 @@ export interface DecisionFile {
   decisions: Decision[]
   adoptions?: Adoption[]
   verifications?: Verification[]
+  collaboration?: CollaborationRecord[]
 }
 
 /** Every record a decision file holds, in loop order. */
 export function decisionFileRecords(file: DecisionFile): GraphRecord[] {
-  return [...(file.proposals ?? []), ...file.decisions, ...(file.adoptions ?? []), ...(file.verifications ?? [])]
+  return [...(file.proposals ?? []), ...file.decisions, ...(file.adoptions ?? []), ...(file.verifications ?? []), ...(file.collaboration ?? [])]
 }
 
 /** Which conflict a decision file record is about, if any. */
@@ -249,6 +252,24 @@ export function recordAdoption(file: DecisionFile, adoption: Omit<Adoption, 'id'
 export function recordVerification(file: DecisionFile, verification: Omit<Verification, 'id' | 'kind'>): { file: DecisionFile; verification: Verification } {
   const recorded: Verification = { id: freeId(file, `verification:${pathOf(verification.adoptionId)}`), kind: 'verification', ...verification }
   return { file: { ...file, verifications: [...(file.verifications ?? []), recorded] }, verification: recorded }
+}
+
+/** Adds a collaboration record, `collab:<type>.<first subject path>`, open. Pure. */
+export function recordCollaboration(file: DecisionFile, record: Omit<CollaborationRecord, 'id' | 'kind' | 'status' | 'resolution'>): { file: DecisionFile; record: CollaborationRecord } {
+  const recorded: CollaborationRecord = { id: freeId(file, `collab:${record.type}.${pathOf(record.subjectIds[0] ?? 'collab:unscoped')}`), kind: 'collaboration', ...record, status: 'open' }
+  return { file: { ...file, collaboration: [...(file.collaboration ?? []), recorded] }, record: recorded }
+}
+
+/**
+ * Closes an open collaboration record as resolved or withdrawn, with how it closed and the
+ * changes that resulted. The record stays in the file as history. Pure.
+ */
+export function closeCollaboration(file: DecisionFile, id: string, status: 'resolved' | 'withdrawn', resolution: CollaborationResolution): { file: DecisionFile; record: CollaborationRecord } {
+  const existing = (file.collaboration ?? []).find((record) => record.id === id)
+  if (!existing) throw new Error(`The decision file has no ${id}.`)
+  if (existing.status !== 'open') throw new Error(`${id} is already ${existing.status}.`)
+  const closed: CollaborationRecord = { ...existing, status, resolution }
+  return { file: { ...file, collaboration: (file.collaboration ?? []).map((record) => (record.id === id ? closed : record)) }, record: closed }
 }
 
 /** `base`, or `base.2`, `base.3` and so on: the first ID the file doesn't use yet. */
