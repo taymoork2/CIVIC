@@ -1,7 +1,7 @@
 services:
-  rehearsal:
+  journey-engine:
     command: pnpm --dir apps/web run review
-    cwd: rehearsal/source
+    cwd: journey-engine/source
     health: /review
     portal:
       url: /review

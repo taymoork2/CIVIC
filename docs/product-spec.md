@@ -12,7 +12,7 @@ This document preserves the founding product discussion. It is a product directi
 
 In all text, including docs, code, package names, and search, the name is plain **CIVIC**. The reversed final C (D1) belongs to the wordmark only. The wordmark is drawn by mirroring a real "C" in the same font, for example `CIVI<span class="rev" aria-hidden="true">C</span>` inside an element labelled "CIVIC", with `.rev { display: inline-block; transform: scaleX(-1) }`. A logo is exported as an SVG of that same wordmark.
 
-**Rehearsal** is only an internal codename for the journey engine, meaning the canvas, scenario player, and review that came from the v0 build, and for the `rehearsal/` source folder. Another project chose that name for another purpose, so it never appears as a product or feature name.
+**Rehearsal** is only an internal codename for the journey engine, meaning the canvas, scenario player, and review that came from the v0 build, and for the `journey-engine/` source folder. Another project chose that name for another purpose, so it never appears as a product or feature name.
 
 Don't use the Unicode lookalikes. `Ɔ` (U+0186) is "Latin capital open O", not a reversed C. Many fonts lack it, screen readers read it as "open O", and it breaks search and copy-paste. The true reversed C, `Ↄ` (U+2183), has even less font support.
 

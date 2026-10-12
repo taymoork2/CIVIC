@@ -8,11 +8,11 @@
 
 [Decision 0002](0002-v0-journey-engine-is-civic-base.md) made the v0 journey engine the CIVIC base with Laundry App as its first adapter, and roadmap step 1 is to extract the shell. The v0 handoff asks for that extraction to be honest: move what is truly independent, leave a narrow Laundry adapter, and prove a second integration before building a broad plugin framework.
 
-The review code in `rehearsal/source/apps/web/src/review` mixed both kinds of code. Some modules never touched Laundry, while others import Laundry components, fixtures and copy.
+The review code in `journey-engine/source/apps/web/src/review` mixed both kinds of code. Some modules never touched Laundry, while others import Laundry components, fixtures and copy.
 
 ## Decision
 
-Create `@civic/shell` at `rehearsal/source/packages/shell` and move into it only the modules with no Laundry imports:
+Create `@civic/shell` at `journey-engine/source/packages/shell` and move into it only the modules with no Laundry imports:
 
 - Canvas camera, camera hook and canvas controls
 - Outline navigation reveal

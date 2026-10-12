@@ -13,7 +13,7 @@ After the v0 import, the roadmap put three steps of Laundry-shaped work ahead of
 
 ## Decision
 
-- CIVIC's core is a small graph schema that CIVIC owns, kept outside `rehearsal/`. Its first entities are Intent, Semantic component, Platform component, Evidence, and Contract Conflict.
+- CIVIC's core is a small graph schema that CIVIC owns, kept outside `journey-engine/`. Its first entities are Intent, Semantic component, Platform component, Evidence, and Contract Conflict.
 - The next milestone is the Fluent 2 Button conflict demo on that schema. iOS and Android evidence starts with source and token analysis, as decision 0001 already plans.
 - The journey engine (codename Rehearsal) is one viewer over that graph and the first web adapter. "Rehearsal" was named by another project and is kept only as the engine's internal codename, never as a product name. Its canvas, review, and evidence rules are kept. Its product concepts are written into the spec under "Adopted from the v0 journey engine".
 - Further extraction of the Laundry shell (decision 0003) is paused. The adapter boundary will be generalized once the Fluent adapter exists, so it is shaped by two consumers.
@@ -35,6 +35,6 @@ The `@civic/shell` code, which covers the camera, controls, capture, and contrac
 
 ## Consequences
 
-- New core work goes outside `rehearsal/`. Engine code may read the graph, but the graph never depends on the engine or Laundry.
+- New core work goes outside `journey-engine/`. Engine code may read the graph, but the graph never depends on the engine or Laundry.
 - Laundry remains a useful demanding web integration. It no longer sets the order of the roadmap.
 - The roadmap is reordered to put the graph and the Fluent demo first.

@@ -1,6 +1,6 @@
 # How a project gets into CIVIC, and how CIVIC connects it
 
-Proposal, 2026-10-10, with the decisions in section 5 approved the same day. It is put together from the product spec, decision 0001 (the Fluent 2 demo), and the v4 journey engine report ([`rehearsal/REPORT.md`](../rehearsal/REPORT.md)). Today only the Laundry web adapter exists. Everything else here is a plan, not a built feature.
+Proposal, 2026-10-10, with the decisions in section 5 approved the same day. It is put together from the product spec, decision 0001 (the Fluent 2 demo), and the v4 journey engine report ([`journey-engine/REPORT.md`](../journey-engine/REPORT.md)). Today only the Laundry web adapter exists. Everything else here is a plan, not a built feature.
 
 ## Short answer
 

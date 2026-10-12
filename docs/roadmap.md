@@ -18,9 +18,9 @@ Reprioritized on 2026-10-11. Steps 1 and 2, the review to agent loop's Laundry s
 
 ## 1. CIVIC graph schema
 
-Define a small, CIVIC-owned schema outside `rehearsal/` for Intent, Semantic component, Platform component, Component instance, Override, Extension point, Evidence, and Contract Conflict (D29). Instances, overrides, and extension points let CIVIC forecast at design time whether a product team's change to a library component is supported on each platform ([component change flow](component-change-flow.md)). Use stable identities and the alignment states from the [spec](product-spec.md#alignment-states). Keep it plain and file-based until the demo shows what storage it needs.
+Define a small, CIVIC-owned schema outside `journey-engine/` for Intent, Semantic component, Platform component, Component instance, Override, Extension point, Evidence, and Contract Conflict (D29). Instances, overrides, and extension points let CIVIC forecast at design time whether a product team's change to a library component is supported on each platform ([component change flow](component-change-flow.md)). Use stable identities and the alignment states from the [spec](product-spec.md#alignment-states). Keep it plain and file-based until the demo shows what storage it needs.
 
-Reuse the journey engine's distinctions rather than inventing new ones: a connection is declared, observed, inferred, or proposed, and a target is either expected or only discovered in source. Its cross-route actions (`rehearsal/source/apps/web/src/review/route-actions.json`) show the edge shape: route, condition, return context, and whether the destination is mapped. The schema copies these ideas; it never imports the engine.
+Reuse the journey engine's distinctions rather than inventing new ones: a connection is declared, observed, inferred, or proposed, and a target is either expected or only discovered in source. Its cross-route actions (`journey-engine/source/apps/web/src/review/route-actions.json`) show the edge shape: route, condition, return context, and whether the destination is mapped. The schema copies these ideas; it never imports the engine.
 
 Built in [`graph/`](../graph): schema v0 types, a validator for the spec's identity, evidence and conflict rules, per-platform override forecasts, and two example graphs (the decision 0001 Button and an illustrative Card). `bin/signoff` runs its checks.
 
@@ -90,11 +90,11 @@ Progress, 2026-10-12: the crawl has a native driver. It speaks WebDriver to an A
 
 Progress, 2026-10-12: the v7 handoff of the journey engine mounts the real Laundry app in review with real effects in an isolated backend per run, records runs with one shared recorder, and proposes splitting adapters into a build connector, a runtime and data adapter, and an interaction driver ([v7 notes](synthesis-v0-import.md#v7-handoff-update)). CIVIC's crawl drivers (Playwright and Appium) are its interaction drivers; a runtime and data adapter for native apps is still to come.
 
-Progress, 2026-10-12: the build connector is a package. [`@civic/vite-connector`](../rehearsal/source/packages/vite-connector) holds the Vite plugin, the project manifest and picker, discovery, the review index, fixture fingerprints and the coverage bridge, and imports only Node, Vite and `@civic/shell`. Laundry is one connector registered by the host (kind `laundry`); a plain `module` app connects through the package with no app connector, which its checks prove. Still to come: the canvas UI outside the Laundry monorepo host, and a runtime and data adapter beyond Laundry's Convex.
+Progress, 2026-10-12: the build connector is a package. [`@civic/vite-connector`](../journey-engine/source/packages/vite-connector) holds the Vite plugin, the project manifest and picker, discovery, the review index, fixture fingerprints and the coverage bridge, and imports only Node, Vite and `@civic/shell`. Laundry is one connector registered by the host (kind `laundry`); a plain `module` app connects through the package with no app connector, which its checks prove. Still to come: the canvas UI outside the Laundry monorepo host, and a runtime and data adapter beyond Laundry's Convex.
 
-Progress, 2026-10-12: the canvas runs on its own. [`@civic/canvas`](../rehearsal/source/packages/canvas) holds the journey canvas UI, its frame entry, the Notebook example and a standalone host (`civic-canvas --project <app>/civic.project.json`) that keeps its store outside the app. Laundry-only layout and the towel journey's guided run reach the canvas through a canvas extension that Laundry's connector supplies; a module app gets CIVIC's own layout. Still to come: a runtime and data adapter beyond Laundry's Convex.
+Progress, 2026-10-12: the canvas runs on its own. [`@civic/canvas`](../journey-engine/source/packages/canvas) holds the journey canvas UI, its frame entry, the Notebook example and a standalone host (`civic-canvas --project <app>/civic.project.json`) that keeps its store outside the app. Laundry-only layout and the towel journey's guided run reach the canvas through a canvas extension that Laundry's connector supplies; a module app gets CIVIC's own layout. Still to come: a runtime and data adapter beyond Laundry's Convex.
 
-Progress, 2026-10-12: live runs work beyond Laundry's Convex. The run service is in `@civic/canvas`, and an app whose screens call their own HTTP API runs against an isolated copy of that API per run: its `fetch` calls are routed to the app's real handler over seeded in-memory data, with a fixed clock, and writes are recorded and checked on replay. The [Tasks example](../rehearsal/source/packages/canvas/examples/tasks) proves it in a browser check. Still to come: an auth adapter, and TanStack Start server functions.
+Progress, 2026-10-12: live runs work beyond Laundry's Convex. The run service is in `@civic/canvas`, and an app whose screens call their own HTTP API runs against an isolated copy of that API per run: its `fetch` calls are routed to the app's real handler over seeded in-memory data, with a fixed clock, and writes are recorded and checked on replay. The [Tasks example](../journey-engine/source/packages/canvas/examples/tasks) proves it in a browser check. Still to come: an auth adapter, and TanStack Start server functions.
 
 ## 5. Identity, permissions, and multiplayer
 
@@ -121,7 +121,7 @@ Progress, 2026-10-12: the v7 handoff adds a deterministic recorder with saved, d
 ## 7. Repository hygiene
 
 - Done: the repository is on GitHub at [taymoork2/CIVIC](https://github.com/taymoork2/CIVIC), with local signoffs (`bin/signoff`) instead of GitHub Actions.
-- Decide what stays vendored. `rehearsal/design/skills`, the fixture PNGs, and the handoff manifest are handoff material and could move to a release artifact.
+- Decide what stays vendored. `journey-engine/design/skills`, the fixture PNGs, and the handoff manifest are handoff material and could move to a release artifact.
 
 ## 8. The gate: `civic check`
 
