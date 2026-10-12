@@ -1,6 +1,6 @@
 {
   "schema": "civic.decisions/0",
-  "note": "Decision records (roadmap step 3) by the Card's maintainers, so the graph shows the component change flow's outcomes: reject, temporary exception and promote. The selectable Card is left undecided on purpose, so the design stays not yet adoptable. The deciders are the demo's placeholder owners, not real Fluent teams. Add or change a call with `civic decide`.",
+  "note": "Decision records (roadmap step 3) by the Card's maintainers. The local corner radius is rejected. The selectable Card is left undecided on purpose, so the design stays not yet adoptable. The real Fluent 2 web kit draws the header quick action and the footer by default, so Shop's use of them is not an override and needs no decision. The deciders are the demo's placeholder owners, not real Fluent teams. Add or change a call with `civic decide`.",
   "decisions": [
     {
       "id": "decision:shop.order-summary.card.corner-radius",
@@ -19,46 +19,6 @@
       "evidenceIds": [
         "evidence:figma.shop.shop-checkout-civic-stand-in",
         "evidence:figma.library.card"
-      ]
-    },
-    {
-      "id": "decision:shop.order-summary.card.header-action",
-      "kind": "decision",
-      "title": "Allow the header price badge as a temporary exception",
-      "conflictId": "conflict:shop.order-summary.card.header-action",
-      "outcome": "approve-exception",
-      "classification": "temporary-gap",
-      "alignment": "accepted-limitation",
-      "decidedBy": {
-        "role": "design",
-        "who": "design-system-maintainers"
-      },
-      "at": "2026-10-11T00:00:00Z",
-      "rationale": "Temporary exception. Web builds the price badge in CardHeader's action slot and Android inside BasicCard's content. iOS CardView has no header accessory, so Shop shows the price in the subtitle on iOS until the library adds one.",
-      "evidenceIds": [
-        "evidence:fluent-apple.card-view.variants",
-        "evidence:figma.shop.shop-checkout-civic-stand-in"
-      ],
-      "revisitTrigger": "Fluent iOS CardView gains a header accessory, or a second product asks for a badge in the Card header.",
-      "expires": "2027-04-01"
-    },
-    {
-      "id": "decision:shop.order-summary.card.actions",
-      "kind": "decision",
-      "title": "Promote footer actions into the Card",
-      "conflictId": "conflict:shop.order-summary.card.actions",
-      "outcome": "update-contract",
-      "classification": "intentional-differentiation",
-      "alignment": "awaiting-adoption",
-      "decidedBy": {
-        "role": "design",
-        "who": "design-system-maintainers"
-      },
-      "at": "2026-10-11T00:00:00Z",
-      "rationale": "Promote. Footer actions are useful beyond Shop, and the contract already has an actions slot. Design engineering adds actions to iOS CardView with a migration note; Shop's footer waits on that release.",
-      "evidenceIds": [
-        "evidence:fluent-apple.card-view.variants",
-        "evidence:fluent-react-v9.card.variants"
       ]
     }
   ]

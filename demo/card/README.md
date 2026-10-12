@@ -10,7 +10,7 @@ Everything in [`out/`](out) is built by `node build.ts` from the inputs below. T
 |---|---|
 | Can each change be built, and on which platforms? | [`out/raised.overrides.md`](out/raised.overrides.md): one row per change, one column per platform. |
 | Who is asked, and who is told? | The same file. The product designer and the Card's maintainers are asked to decide. Design engineering for each platform that needs a library change is told, and so are Shop's engineers and QA. |
-| What did the design forget? | [`out/completeness.md`](out/completeness.md): the Card's empty and error states, a dead-end screen, and a screen nothing links to. |
+| What did the design forget? | [`out/completeness.md`](out/completeness.md): the Card's loading, empty and error states, a dead-end screen, and a screen nothing links to. |
 | How are the decisions kept? | [`out/resolved.overrides.md`](out/resolved.overrides.md) and [`out/resolved.graph.json`](out/resolved.graph.json). |
 | What is still missing, with owners? | [`out/raised.gaps.md`](out/raised.gaps.md) and [`out/resolved.gaps.md`](out/resolved.gaps.md). |
 
@@ -20,29 +20,27 @@ The three Fluent Card libraries show the two cases from the change flow. React's
 
 | Change in the Shop file | Web | iOS | Android |
 |---|---|---|---|
-| A price badge swapped into the header action | Supported (`CardHeader` `action` slot) | Needs a library change | Supported (`content` slot) |
-| The footer turned on for two actions | Supported (`CardFooter`) | Needs a library change | Supported (`content` slot) |
-| The Card made selectable | Supported (`selected` prop) | Needs a library change | Needs a library change |
+| The header's checkbox turned on, making the Card selectable | Supported (`selected` prop) | Needs a library change | Needs a library change |
 | A local corner radius of 20 | Forbidden by contract | Forbidden by contract | Forbidden by contract |
+
+Shop's Card also shows the header's quick action and the footer. The real Fluent 2 web kit draws both by default, so they aren't changes and aren't forecast. iOS `CardView` can't build either one. That's a gap between the library's default Card and iOS, not something Shop did, and the override forecast doesn't report it.
 
 The corner radius is forbidden on every platform, even though Android's `basicCardTokens` could technically set one. The contract's `shape-from-token` rule decides, not what the code allows.
 
 ### The decisions
 
-[`contract/decisions.json`](contract/decisions.json) holds illustrative Decision records with the demo's placeholder owners. They aren't a real Fluent team's calls. The gate reads them: the three decided overrides don't block, and the undecided one is held by the baseline.
+[`contract/decisions.json`](contract/decisions.json) holds an illustrative Decision record with the demo's placeholder owners. It isn't a real Fluent team's call. The gate reads it: the decided override doesn't block, and the undecided one is held by the baseline.
 
 - **Reject** the corner radius. Shop's design reverts it, and the Card reads Awaiting adoption until the file matches.
-- **Temporary exception** for the header badge, with a revisit trigger and an expiry date. Web and Android build it, and iOS shows the price in the subtitle.
-- **Promote** the footer actions into the system. Shop's footer waits on an iOS library release.
 - The **selectable Card** is left undecided on purpose. Its drift stays open, so the design still reads "not yet adoptable".
 
-"Approve as a product adaptation" would need every platform to forecast Supported. None of these changes do, so the demo doesn't use that outcome.
+Before the real kit, the stand-in library made the header action and the footer opt-in, so the demo also showed a temporary exception and a promotion. With the real kit they aren't overrides, so those two decisions were removed. "Approve as a product adaptation" would need every platform to forecast Supported, and neither remaining change does.
 
 ### The completeness check (D32)
 
 Static rules read the design export, the Card contract and the journey's prototype links. They report counts with denominators.
 
-- **Component states.** The contract's `productStates` are loading, empty and error, because their content depends on Shop's data. Shop draws a rest Card and an `Order Summary / Loading` frame, so empty and error are missing: 5 of 7 states are accounted for. Hover, selected and disabled come from the library. An instance can also say it inherits the default for a product state (`inheritsStates`), which counts as an answer.
+- **Component states.** The contract's `productStates` are loading, empty and error, because their content depends on Shop's data. The real web kit's Card has no loading, empty or error state, so Shop's `Order Summary / Loading` frame can only show the Card at rest. Loading, empty and error are all missing: 4 of 7 states are accounted for. Hover, selected and disabled come from the library. An instance can also say it inherits the default for a product state (`inheritsStates`), which counts as an answer.
 - **Journey shape.** The page's prototype flow is the Checkout journey, and its starting frame is the entry. Promo applied has no way on, so it's a dead end. Gift options links back to Order Summary, but nothing links to it, so it's unreachable. "Continue to payment" opens a URL, so it stays an unmapped path rather than a dead end.
 
 Accessibility intent isn't checked yet. Which gaps block a release is the project's risk policy, not this check.
@@ -51,7 +49,7 @@ Query the graphs yourself:
 
 ```sh
 bin/civic overrides demo/card/out/raised.graph.json instance:shop.order-summary.card
-bin/civic forecast demo/card/out/raised.graph.json override:shop.order-summary.card.header-action
+bin/civic forecast demo/card/out/raised.graph.json override:shop.order-summary.card.state-selected
 bin/civic completeness demo/card/out/raised.graph.json target:shop.checkout
 bin/civic gaps demo/card/out/resolved.graph.json --scope semantic:card
 ```
@@ -64,17 +62,31 @@ bin/civic gaps demo/card/out/resolved.graph.json --scope semantic:card
 | [`contract/mappings.json`](contract/mappings.json) | How each platform's Fluent Card expresses the semantic variants, and which public APIs are extension points. Also how the library's Figma Card names its variants, states and properties. Declared by Design Engineering and the maintainers. | every importer checks its names against what it reads |
 | [`contract/product.json`](contract/product.json) | Shop: its platforms and owners | product file importer |
 | [`sources/`](sources) | Fluent's own files, vendored at pinned revisions with their MIT licences ([`sources.json`](sources/sources.json)): `@fluentui/react-card@9.7.3` types and `useCard`, iOS `CardView.swift`, Android `BasicCard.kt` and `BasicCardTokens.kt` | static source readers ([`importers/src/source.ts`](../../importers/src/source.ts)) |
-| [`design/library.figma.json`](design/library.figma.json) | The design system's Card component set, in the shape of a Figma REST file export | `readFigmaLibraryComponent` |
-| [`design/shop-checkout.figma.json`](design/shop-checkout.figma.json) | Shop's Checkout page: four frames, a prototype flow, and two Card instances | `readFigmaProductFile` ([`importers/src/figma-product.ts`](../../importers/src/figma-product.ts)) |
+| [`design/library.figma.json`](design/library.figma.json) | The real Microsoft Fluent 2 Web Community kit's Card and `.Card header` component sets, from a Figma REST file export (`GET /v1/files/:key`) trimmed by [`design/trim.ts`](design/trim.ts) | `readFigmaLibraryComponent` |
+| [`design/shop-checkout.figma.json`](design/shop-checkout.figma.json) | A stand-in for Shop's Checkout page: four frames, a prototype flow, and two instances of the real kit's Card | `readFigmaProductFile` ([`importers/src/figma-product.ts`](../../importers/src/figma-product.ts)) |
 
-### The Figma exports are stand-ins
+### The Figma exports
 
-This environment can't reach Figma, so both design files are small stand-ins written in the shape Figma's REST API returns for `GET /v1/files/:key`. Their names and `version` (`civic-stand-in-1`) say so. That shape includes component property names with their `#id` suffixes, `componentProperties` and `overrides` on instances, `components` and `componentSets` for remote library components, `reactions` for prototype links, and `flowStartingPoints`. There's no Fluent Card in Figma's Community files that matches these names, so the library is an illustration as well. To use real files, export them with a personal access token, then update `library` in `contract/mappings.json` to your library's names. The import fails loudly until every name matches.
+`design/library.figma.json` comes from the Microsoft Fluent 2 Web Community file, exported on 2026-10-12 (Figma version 2409330757852496286). The full export is about 147 MB, so [`design/trim.ts`](design/trim.ts) keeps only the file's identity, the Card and `.Card header` component sets with their property definitions, and the icon component the header's swap defaults to. The importer reads the trimmed file and the full export the same way.
+
+The real Card differs from the stand-in it replaced:
+
+- **Style** is Filled, Filled alt, Outline or Subtle. The contract maps Filled and Outline. Filled alt and Subtle match React's `filled-alternative` and `subtle`, which the gaps already list as platform-only.
+- **State** is Rest, Hover, Pressed, Draggable, Selected or Disabled. There's no loading, empty or error state.
+- **Body** and **Footer** are on by default, and **Layout** is Default or Custom.
+- The header is its own nested component set, `.Card header`, with a quick action (on by default), a checkbox, an avatar, a product icon and subtext. `parts` in [`contract/mappings.json`](contract/mappings.json) declares its properties, and the importer reads them from the nested header instance.
+
+`design/shop-checkout.figma.json` is still a stand-in, because Shop is an illustrative product. Its name and `version` (`civic-stand-in-2`) say so. It's written in the shape Figma's REST API returns and uses the real kit's component and property names, so a real product file built on the kit reads the same way.
+
+To refresh the library, export your own duplicate and trim it:
 
 ```sh
-curl -H "X-Figma-Token: $FIGMA_TOKEN" "https://api.figma.com/v1/files/<library-file-key>" > design/library.figma.json
-curl -H "X-Figma-Token: $FIGMA_TOKEN" "https://api.figma.com/v1/files/<product-file-key>" > design/shop-checkout.figma.json
+curl -H "X-Figma-Token: $FIGMA_TOKEN" "https://api.figma.com/v1/files/<library-file-key>" -o full-export.json
+node demo/card/design/trim.ts full-export.json > demo/card/design/library.figma.json
+node demo/card/build.ts
 ```
+
+If the kit renames its sets, properties or options, update `library` in `contract/mappings.json`. The import fails loudly until every name matches.
 
 ## How the design file is read
 
@@ -82,7 +94,7 @@ curl -H "X-Figma-Token: $FIGMA_TOKEN" "https://api.figma.com/v1/files/<product-f
 - Each page with a prototype flow is one journey. The journey contains the page's screens and enters at the flow's starting frame.
 - A prototype click to another frame is a declared path, named after the layer that was clicked. A click that opens a URL is an unmapped path to that URL.
 - Each instance of the library's Card is a component instance. Its variant and state come from the declared options.
-- A component property set to anything other than the library default is an override. Properties marked `content`, such as the title text, are how every product fills in a Card, so they never count. A local style on the instance is an override too. A local style with no declared meaning becomes `unmapped.<field>`, so nothing is hidden.
+- A component property set to anything other than the library default is an override. So is a property of a declared nested part, such as the header, set on that part's instance. Properties marked `content`, such as the title text, are how every product fills in a Card, so they never count. A local style on the instance is an override too. A local style with no declared meaning becomes `unmapped.<field>`, so nothing is hidden.
 - Any undeclared property, option or frame name fails the import.
 
 ## Evidence tiers
@@ -98,4 +110,4 @@ node demo/card/build.ts --check    # what bin/signoff runs
 
 To move to a newer Fluent release, update `sources/` and `sources.json` together, then rebuild. A renamed variant or a removed extension point makes the import fail and name the mapping to fix.
 
-Fluent code is © Microsoft Corporation under the MIT licence.
+Fluent code is © Microsoft Corporation under the MIT licence. Figma Community kits are CC BY 4.0; the kit excerpt in `design/library.figma.json` is from Microsoft's Fluent 2 Web Community file.

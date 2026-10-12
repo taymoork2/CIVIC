@@ -1,7 +1,7 @@
 {
   "name": "Shop checkout (CIVIC stand-in)",
-  "lastModified": "2026-10-11T00:00:00Z",
-  "version": "civic-stand-in-1",
+  "lastModified": "2026-10-12T00:00:00Z",
+  "version": "civic-stand-in-2",
   "schemaVersion": 0,
   "document": {
     "id": "0:0",
@@ -31,29 +31,25 @@
                 "componentId": "30:1",
                 "cornerRadius": 20,
                 "componentProperties": {
-                  "Appearance": {
+                  "Layout": {
                     "type": "VARIANT",
-                    "value": "Filled"
+                    "value": "Default"
                   },
                   "State": {
                     "type": "VARIANT",
                     "value": "Rest"
                   },
-                  "Header action#20:40": {
-                    "type": "INSTANCE_SWAP",
-                    "value": "30:5"
+                  "Style": {
+                    "type": "VARIANT",
+                    "value": "Filled"
                   },
-                  "Show footer#20:41": {
+                  "Body#322781:15": {
                     "type": "BOOLEAN",
                     "value": true
                   },
-                  "Selectable#20:42": {
+                  "Footer#322781:16": {
                     "type": "BOOLEAN",
                     "value": true
-                  },
-                  "Title#20:43": {
-                    "type": "TEXT",
-                    "value": "Your order"
                   }
                 },
                 "overrides": [
@@ -64,7 +60,60 @@
                     ]
                   }
                 ],
-                "children": []
+                "children": [
+                  {
+                    "id": "40:7",
+                    "name": "Header container",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "I40:2;1",
+                        "name": ".Card header",
+                        "type": "INSTANCE",
+                        "componentId": "30:3",
+                        "componentProperties": {
+                          "32px Icon#9240:0": {
+                            "type": "INSTANCE_SWAP",
+                            "value": "30:7"
+                          },
+                          "Avatar#322754:8": {
+                            "type": "BOOLEAN",
+                            "value": false
+                          },
+                          "Product icon#322754:9": {
+                            "type": "BOOLEAN",
+                            "value": true
+                          },
+                          "Title string#322754:11": {
+                            "type": "TEXT",
+                            "value": "Your order"
+                          },
+                          "Subtext string#322754:12": {
+                            "type": "TEXT",
+                            "value": "3 items"
+                          },
+                          "Checkbox#322754:13": {
+                            "type": "BOOLEAN",
+                            "value": true
+                          },
+                          "Header quick action#322754:14": {
+                            "type": "BOOLEAN",
+                            "value": true
+                          },
+                          "Subtext#322754:15": {
+                            "type": "BOOLEAN",
+                            "value": true
+                          },
+                          "Custom header": {
+                            "type": "VARIANT",
+                            "value": "False"
+                          }
+                        },
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
               },
               {
                 "id": "40:3",
@@ -120,34 +169,83 @@
                 "id": "40:6",
                 "name": "Card",
                 "type": "INSTANCE",
-                "componentId": "30:2",
+                "componentId": "30:1",
                 "componentProperties": {
-                  "Appearance": {
+                  "Layout": {
                     "type": "VARIANT",
-                    "value": "Filled"
+                    "value": "Default"
                   },
                   "State": {
                     "type": "VARIANT",
-                    "value": "Loading"
+                    "value": "Rest"
                   },
-                  "Header action#20:40": {
-                    "type": "INSTANCE_SWAP",
-                    "value": "30:4"
+                  "Style": {
+                    "type": "VARIANT",
+                    "value": "Filled"
                   },
-                  "Show footer#20:41": {
+                  "Body#322781:15": {
                     "type": "BOOLEAN",
-                    "value": false
+                    "value": true
                   },
-                  "Selectable#20:42": {
+                  "Footer#322781:16": {
                     "type": "BOOLEAN",
-                    "value": false
-                  },
-                  "Title#20:43": {
-                    "type": "TEXT",
-                    "value": "Your order"
+                    "value": true
                   }
                 },
-                "children": []
+                "children": [
+                  {
+                    "id": "40:8",
+                    "name": "Header container",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "I40:6;1",
+                        "name": ".Card header",
+                        "type": "INSTANCE",
+                        "componentId": "30:3",
+                        "componentProperties": {
+                          "32px Icon#9240:0": {
+                            "type": "INSTANCE_SWAP",
+                            "value": "30:7"
+                          },
+                          "Avatar#322754:8": {
+                            "type": "BOOLEAN",
+                            "value": false
+                          },
+                          "Product icon#322754:9": {
+                            "type": "BOOLEAN",
+                            "value": true
+                          },
+                          "Title string#322754:11": {
+                            "type": "TEXT",
+                            "value": "Your order"
+                          },
+                          "Subtext string#322754:12": {
+                            "type": "TEXT",
+                            "value": "Loading…"
+                          },
+                          "Checkbox#322754:13": {
+                            "type": "BOOLEAN",
+                            "value": false
+                          },
+                          "Header quick action#322754:14": {
+                            "type": "BOOLEAN",
+                            "value": true
+                          },
+                          "Subtext#322754:15": {
+                            "type": "BOOLEAN",
+                            "value": true
+                          },
+                          "Custom header": {
+                            "type": "VARIANT",
+                            "value": "False"
+                          }
+                        },
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
               }
             ]
           },
@@ -201,31 +299,17 @@
   "components": {
     "30:1": {
       "key": "card-filled-rest",
-      "name": "Appearance=Filled, State=Rest",
+      "name": "Layout=Default, State=Rest, Style=Filled",
       "description": "",
       "componentSetId": "30:0",
       "remote": true,
       "documentationLinks": []
     },
-    "30:2": {
-      "key": "card-filled-loading",
-      "name": "Appearance=Filled, State=Loading",
+    "30:3": {
+      "key": "card-header-default",
+      "name": "Custom header=False",
       "description": "",
-      "componentSetId": "30:0",
-      "remote": true,
-      "documentationLinks": []
-    },
-    "30:4": {
-      "key": "header-action-placeholder",
-      "name": "Placeholder",
-      "description": "",
-      "remote": true,
-      "documentationLinks": []
-    },
-    "30:5": {
-      "key": "badge-price",
-      "name": "Badge / Price",
-      "description": "",
+      "componentSetId": "30:2",
       "remote": true,
       "documentationLinks": []
     },
@@ -235,12 +319,25 @@
       "description": "",
       "remote": true,
       "documentationLinks": []
+    },
+    "30:7": {
+      "key": "b798d8587995f7e3ab1bad36c26bcb567ddeebc6",
+      "name": "Size=32, Theme=Regular",
+      "description": "",
+      "remote": true,
+      "documentationLinks": []
     }
   },
   "componentSets": {
     "30:0": {
       "key": "card",
       "name": "Card",
+      "description": "",
+      "remote": true
+    },
+    "30:2": {
+      "key": "card-header",
+      "name": ".Card header",
       "description": "",
       "remote": true
     }

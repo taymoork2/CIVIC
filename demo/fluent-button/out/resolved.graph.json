@@ -1276,6 +1276,27 @@
       }
     },
     {
+      "id": "evidence:figma.ios-kit.button",
+      "kind": "evidence",
+      "title": "Microsoft Fluent 2 iOS Figma kit Button variants",
+      "subjectIds": [
+        "semantic:button"
+      ],
+      "tier": "static-analysis",
+      "method": "design-export",
+      "platform": "ios",
+      "outcome": "finding",
+      "finding": "Button draws Style: Accent, Outline accent, Subtle, Outline; Size: Large, Medium, Small; State: Rest, Pressed, Focus, Disabled.",
+      "capturedAt": "2026-10-12T05:12:23Z",
+      "source": {
+        "tool": "figma",
+        "importer": "figma-file",
+        "revision": "2409334717272340147",
+        "path": "Microsoft Fluent 2 iOS (Community) / Button / Button",
+        "anchor": "18812:16006"
+      }
+    },
+    {
       "id": "evidence:fluent-android.compose-button.background-tokens",
       "kind": "evidence",
       "title": "Fluent Android Compose Button background tokens by style",
@@ -1966,6 +1987,80 @@
           "role": "design-engineering",
           "who": "fluent-android",
           "platform": "android"
+        }
+      ],
+      "alignment": "unreviewed-drift"
+    },
+    {
+      "id": "conflict:button.ios.danger",
+      "kind": "contract-conflict",
+      "title": "Danger Button on ios",
+      "targetId": "semantic:button",
+      "variant": "danger",
+      "platform": "ios",
+      "summary": "Fluent iOS Button offers Danger, which the Microsoft Fluent 2 iOS Figma kit does not draw.",
+      "sides": [
+        {
+          "claim": "The Microsoft Fluent 2 iOS Figma kit does not draw Danger.",
+          "evidenceIds": [
+            "evidence:figma.ios-kit.button"
+          ]
+        },
+        {
+          "claim": "Fluent iOS Button expresses Danger as danger.",
+          "recordId": "platform:fluent-apple.button",
+          "evidenceIds": [
+            "evidence:fluent-apple.button.variants"
+          ]
+        }
+      ],
+      "classification": "unclassified",
+      "owners": [
+        {
+          "role": "design",
+          "who": "design-system-maintainers"
+        },
+        {
+          "role": "design-engineering",
+          "who": "fluent-ios",
+          "platform": "ios"
+        }
+      ],
+      "alignment": "unreviewed-drift"
+    },
+    {
+      "id": "conflict:button.ios.transparent-neutral",
+      "kind": "contract-conflict",
+      "title": "Transparent neutral Button on ios",
+      "targetId": "semantic:button",
+      "variant": "transparent-neutral",
+      "platform": "ios",
+      "summary": "Fluent iOS Button offers Transparent neutral, which the Microsoft Fluent 2 iOS Figma kit does not draw.",
+      "sides": [
+        {
+          "claim": "The Microsoft Fluent 2 iOS Figma kit does not draw Transparent neutral.",
+          "evidenceIds": [
+            "evidence:figma.ios-kit.button"
+          ]
+        },
+        {
+          "claim": "Fluent iOS Button expresses Transparent neutral as transparentNeutral.",
+          "recordId": "platform:fluent-apple.button",
+          "evidenceIds": [
+            "evidence:fluent-apple.button.variants"
+          ]
+        }
+      ],
+      "classification": "unclassified",
+      "owners": [
+        {
+          "role": "design",
+          "who": "design-system-maintainers"
+        },
+        {
+          "role": "design-engineering",
+          "who": "fluent-ios",
+          "platform": "ios"
         }
       ],
       "alignment": "unreviewed-drift"

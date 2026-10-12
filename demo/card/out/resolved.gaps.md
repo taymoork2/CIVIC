@@ -1,4 +1,4 @@
-11 gap(s)
+10 gap(s)
 
 ## open-conflict (1)
 
@@ -10,7 +10,7 @@
 
 ## missing-state (1)
 
-- Order Summary has no design for the Card's empty, error state(s); show them or say the instance inherits the default. Owners: design shop-design. (`target:shop.order-summary`)
+- Order Summary has no design for the Card's loading, empty, error state(s); show them or say the instance inherits the default. Owners: design shop-design. (`target:shop.order-summary`)
 
 ## platform-only-variant (4)
 
@@ -24,7 +24,3 @@
 - [android] No automated or device evidence for Fluent Android Compose BasicCard; only static analysis. Owners: qa card-qa. (`platform:fluent-android.basic-card`)
 - [ios] No automated or device evidence for Fluent iOS CardView; only static analysis. Owners: qa card-qa. (`platform:fluent-apple.card-view`)
 - [web] No automated or device evidence for Fluent React v9 Card; only static analysis. Owners: qa card-qa. (`platform:fluent-react-v9.card`)
-
-## approved-exception (1)
-
-- Header action set to Badge / Price (Card override): accepted as accepted-limitation. Revisit when: Fluent iOS CardView gains a header accessory, or a second product asks for a badge in the Card header. Expires 2027-04-01. Owners: design shop-design, design design-system-maintainers. (`conflict:shop.order-summary.card.header-action`)

@@ -8,6 +8,13 @@ import { fragment, slug, type Fragment } from './fragment.ts'
 // is matched by guesswork: the component set, its variant and state options, and which
 // component property or local style means what are declared, and an undeclared name fails.
 
+/**
+ * What one component property means. For a property that changes the component, a value
+ * other than the library default is an override of `property`. A `content` property, such as
+ * a title's text, is how every product fills the component in, so setting it is never an override.
+ */
+export type PropertyMapping = { property: string; change: OverrideChange } | { content: true }
+
 /** How a design system library draws one semantic component, declared by its maintainers. */
 export interface LibraryComponentMapping {
   semanticId: string
@@ -19,13 +26,13 @@ export interface LibraryComponentMapping {
   stateProperty: string
   /** Figma state option to contract state. */
   states: Record<string, string>
+  /** Every other component property, by name without Figma's `#id` suffix. */
+  properties: Record<string, PropertyMapping>
   /**
-   * Every non-variant component property, by name without Figma's `#id` suffix. For a
-   * property that changes the component, a value other than the library default is an
-   * override of `property`. A `content` property, such as a title's text, is how every
-   * product fills the component in, so setting it is never an override.
+   * Component sets nested inside this one, such as a header, by name: every property of each,
+   * declared the same way. A product sets these on the nested instance, not on the component.
    */
-  properties: Record<string, { property: string; change: OverrideChange } | { content: true }>
+  parts?: Record<string, Record<string, PropertyMapping>>
   /** Fields of the instance itself (`overriddenFields` in the export) that are local styles. */
   styleFields: Record<string, string>
   owners?: Owner[]
@@ -41,7 +48,7 @@ export interface ProductManifest {
 
 export interface LibraryFacts {
   mapping: LibraryComponentMapping
-  /** Default of each declared non-variant property, as the library file defines it. */
+  /** Default of each declared property, as the library file defines it; a part's are keyed `<part> / <property>`. */
   defaults: Record<string, unknown>
   /** Component names by key, so an instance swap can be compared across files. */
   componentNames: Record<string, string>
@@ -88,12 +95,17 @@ function walk(node: FigmaNode, visit: (node: FigmaNode) => void) {
 /** Reads the library's component set: its declared options must all exist, and its property defaults. */
 export function readFigmaLibraryComponent(file: unknown, mapping: LibraryComponentMapping, capturedAt: string): LibraryFacts {
   const root = asFile(file)
-  let set: FigmaNode | undefined
-  walk(root.document, (node) => {
-    if (node.type === 'COMPONENT_SET' && node.name === mapping.componentSet) set ??= node
-  })
-  if (!set) throw new Error(`${root.name}: no component set named ${mapping.componentSet}.`)
-  const definitions = Object.fromEntries(Object.entries(set.componentPropertyDefinitions ?? {}).map(([name, value]) => [bareName(name), value]))
+  const setNamed = (name: string) => {
+    let found: FigmaNode | undefined
+    walk(root.document, (node) => {
+      if (node.type === 'COMPONENT_SET' && node.name === name) found ??= node
+    })
+    if (!found) throw new Error(`${root.name}: no component set named ${name}.`)
+    return found
+  }
+  const definitionsOf = (node: FigmaNode) => Object.fromEntries(Object.entries(node.componentPropertyDefinitions ?? {}).map(([name, value]) => [bareName(name), value]))
+  const set = setNamed(mapping.componentSet)
+  const definitions = definitionsOf(set)
   const problems: string[] = []
   for (const [property, options] of [[mapping.variantProperty, mapping.variants], [mapping.stateProperty, mapping.states]] as const) {
     const definition = definitions[property]
@@ -101,18 +113,28 @@ export function readFigmaLibraryComponent(file: unknown, mapping: LibraryCompone
     else for (const option of Object.keys(options)) if (!definition.variantOptions?.includes(option)) problems.push(`${property} has no option ${option}`)
   }
   for (const name of Object.keys(mapping.properties)) if (!definitions[name]) problems.push(`no component property ${name}`)
+  const partDefinitions = Object.fromEntries(Object.keys(mapping.parts ?? {}).map((part) => [part, definitionsOf(setNamed(part))]))
+  for (const [part, properties] of Object.entries(mapping.parts ?? {})) {
+    for (const name of Object.keys(properties)) if (!partDefinitions[part]![name]) problems.push(`${part} has no component property ${name}`)
+  }
   if (problems.length > 0) throw new Error(`${root.name} ${mapping.componentSet}: ${problems.join('; ')}.`)
 
   const componentNames: Record<string, string> = {}
   for (const component of Object.values(root.components ?? {})) componentNames[component.key] = component.name
   const defaults: Record<string, unknown> = {}
-  for (const name of Object.keys(mapping.properties)) {
-    const definition = definitions[name]!
-    const value = definition.defaultValue
+  const defaultOf = (definition: { type: string; defaultValue?: unknown }) =>
     // An instance swap's default is a node in the library file; compare it by component name.
-    defaults[name] = definition.type === 'INSTANCE_SWAP' && typeof value === 'string' ? (root.components?.[value]?.name ?? value) : value
+    definition.type === 'INSTANCE_SWAP' && typeof definition.defaultValue === 'string' ? (root.components?.[definition.defaultValue]?.name ?? definition.defaultValue) : definition.defaultValue
+  for (const name of Object.keys(mapping.properties)) defaults[name] = defaultOf(definitions[name]!)
+  for (const [part, properties] of Object.entries(mapping.parts ?? {})) {
+    for (const name of Object.keys(properties)) defaults[`${part} / ${name}`] = defaultOf(partDefinitions[part]![name]!)
   }
-  const declared = Object.entries(mapping.properties).filter(([, value]) => !('content' in value)).map(([name]) => `${name} (default ${String(defaults[name])})`)
+  const declared = [
+    ...Object.entries(mapping.properties).map(([name, value]) => [name, value] as const),
+    ...Object.entries(mapping.parts ?? {}).flatMap(([part, properties]) => Object.entries(properties).map(([name, value]) => [`${part} / ${name}`, value] as const)),
+  ]
+    .filter(([, value]) => !('content' in value))
+    .map(([name]) => `${name} (default ${String(defaults[name])})`)
   return {
     mapping,
     defaults,
@@ -268,9 +290,11 @@ function readInstance(
   }
   const madeBy = owners[0]
   const overrides: Override[] = []
-  const add = (key: string, title: string, property: string, change: OverrideChange, value: string | number | boolean | undefined) => {
+  const add = (key: string, title: string, property: string, change: OverrideChange, value: string | number | boolean | undefined, name = title) => {
+    // Several Figma properties can mean one contract property; a second override keeps its own name.
+    const base = `override:${instanceId.slice('instance:'.length)}.${key}`
     overrides.push({
-      id: `override:${instanceId.slice('instance:'.length)}.${key}`,
+      id: overrides.some((override) => override.id === base) ? `${base}.${slug(name)}` : base,
       kind: 'override',
       title,
       instanceId,
@@ -282,12 +306,25 @@ function readInstance(
     })
   }
 
-  for (const [name, declared] of Object.entries(mapping.properties)) {
-    const set = properties[name]
-    if (!set || 'content' in declared) continue
-    const value = set.type === 'INSTANCE_SWAP' && typeof set.value === 'string' ? (root.components?.[set.value]?.name ?? set.value) : set.value
-    if (value === library.defaults[name]) continue
-    add(slug(declared.property), `${name} set to ${String(value)}`, declared.property, declared.change, value as string | number | boolean)
+  const propertyOverrides = (set: Record<string, { type: string; value: unknown }>, declarations: Record<string, PropertyMapping>, part?: string) => {
+    for (const [name, declared] of Object.entries(declarations)) {
+      const given = set[name]
+      if (!given || 'content' in declared) continue
+      const value = given.type === 'INSTANCE_SWAP' && typeof given.value === 'string' ? (root.components?.[given.value]?.name ?? given.value) : given.value
+      const label = part ? `${part} / ${name}` : name
+      if (value === library.defaults[label]) continue
+      add(slug(declared.property), `${label} set to ${String(value)}`, declared.property, declared.change, value as string | number | boolean, label)
+    }
+  }
+  propertyOverrides(properties, mapping.properties)
+  for (const [part, declarations] of Object.entries(mapping.parts ?? {})) {
+    walk(node, (child) => {
+      if (child === node || child.type !== 'INSTANCE' || !child.componentId || setNameOf(root, child.componentId) !== part) return
+      const set = Object.fromEntries(Object.entries(child.componentProperties ?? {}).map(([name, value]) => [bareName(name), value]))
+      const unknown = Object.keys(set).filter((name) => !declarations[name])
+      if (unknown.length > 0) throw new Error(`${root.name}: ${part} in instance "${node.name}" sets ${unknown.join(', ')}, which the ${mapping.componentSet} mapping does not declare.`)
+      propertyOverrides(set, declarations, part)
+    })
   }
   for (const field of node.overrides?.find((entry) => entry.id === node.id)?.overriddenFields ?? []) {
     const property = mapping.styleFields[field]

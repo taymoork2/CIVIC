@@ -1,4 +1,9 @@
-10 gap(s)
+12 gap(s)
+
+## open-conflict (2)
+
+- [ios] Fluent iOS Button offers Danger, which the Microsoft Fluent 2 iOS Figma kit does not draw. Classification unclassified. Owners: design design-system-maintainers, design-engineering fluent-ios. (`conflict:button.ios.danger`)
+- [ios] Fluent iOS Button offers Transparent neutral, which the Microsoft Fluent 2 iOS Figma kit does not draw. Classification unclassified. Owners: design design-system-maintainers, design-engineering fluent-ios. (`conflict:button.ios.transparent-neutral`)
 
 ## missing-variant (4)
 

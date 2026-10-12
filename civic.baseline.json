@@ -18,6 +18,11 @@
     },
     {
       "graph": "demo/card/out/resolved.graph.json",
+      "key": "missing-state target:shop.order-summary semantic:card loading",
+      "summary": "Order Summary has no design for the Card's loading state; show it or say the instance inherits the default."
+    },
+    {
+      "graph": "demo/card/out/resolved.graph.json",
       "key": "open-conflict conflict:shop.order-summary.card.state-selected",
       "summary": "The product design changes the Card's state.selected (set-property, true) and no maintainer has reviewed it. Nobody has decided it yet."
     },
@@ -25,6 +30,16 @@
       "graph": "demo/card/out/resolved.graph.json",
       "key": "unreachable-screen target:shop.gift-options target:shop.checkout",
       "summary": "Gift options can't be reached from Checkout's entry."
+    },
+    {
+      "graph": "demo/fluent-button/out/resolved.graph.json",
+      "key": "open-conflict conflict:button.ios.danger ios",
+      "summary": "Fluent iOS Button offers Danger, which the Microsoft Fluent 2 iOS Figma kit does not draw. Nobody has decided it yet."
+    },
+    {
+      "graph": "demo/fluent-button/out/resolved.graph.json",
+      "key": "open-conflict conflict:button.ios.transparent-neutral ios",
+      "summary": "Fluent iOS Button offers Transparent neutral, which the Microsoft Fluent 2 iOS Figma kit does not draw. Nobody has decided it yet."
     },
     {
       "graph": "projects/laundry/out/graph.json",

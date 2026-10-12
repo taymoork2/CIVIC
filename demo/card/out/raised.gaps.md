@@ -1,10 +1,8 @@
-13 gap(s)
+11 gap(s)
 
-## open-conflict (4)
+## open-conflict (2)
 
-- The product design changes the Card's actions (add-content, true) and no maintainer has reviewed it. Classification unclassified. Owners: design shop-design, design design-system-maintainers. (`conflict:shop.order-summary.card.actions`)
 - The product design changes the Card's corner-radius (local-style, 20) and no maintainer has reviewed it. Classification unclassified. Owners: design shop-design, design design-system-maintainers. (`conflict:shop.order-summary.card.corner-radius`)
-- The product design changes the Card's header.action (add-content, Badge / Price) and no maintainer has reviewed it. Classification unclassified. Owners: design shop-design, design design-system-maintainers. (`conflict:shop.order-summary.card.header-action`)
 - The product design changes the Card's state.selected (set-property, true) and no maintainer has reviewed it. Classification unclassified. Owners: design shop-design, design design-system-maintainers. (`conflict:shop.order-summary.card.state-selected`)
 
 ## missing-variant (1)
@@ -13,7 +11,7 @@
 
 ## missing-state (1)
 
-- Order Summary has no design for the Card's empty, error state(s); show them or say the instance inherits the default. Owners: design shop-design. (`target:shop.order-summary`)
+- Order Summary has no design for the Card's loading, empty, error state(s); show them or say the instance inherits the default. Owners: design shop-design. (`target:shop.order-summary`)
 
 ## platform-only-variant (4)
 

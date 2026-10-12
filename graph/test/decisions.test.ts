@@ -36,7 +36,7 @@ test('a second call on the same conflict supersedes the first instead of overwri
   assert.equal(empty.decisions.length, 0, 'recordDecision does not change its input')
 })
 
-test('civic decide records a decision that clears the gate, and refuses one the graph rejects', () => {
+test('civic decide records a decision that clears its conflict from the gate, and refuses one the graph rejects', () => {
   const file = join(mkdtempSync(join(tmpdir(), 'civic-decide-')), 'decisions.json')
   const decide = (...extra: string[]) =>
     spawnSync(process.execPath, [fileURLToPath(new URL('../src/cli.ts', import.meta.url)), 'decide', file, CONFLICT, '--graph', raisedPath, ...extra], { encoding: 'utf8' })
@@ -54,5 +54,7 @@ test('civic decide records a decision that clears the gate, and refuses one the 
   const today = { today: '2026-10-11' }
   assert.equal(compareToBaseline([checkDocument('button', raised, today)], undefined).passed, false)
   const decided = { ...raised, records: [...raised.records, ...decisions.decisions] }
-  assert.equal(compareToBaseline([checkDocument('button', decided, today)], undefined).passed, true)
+  // The decision clears the Android conflict; the iOS kit's two stay until someone decides them.
+  const after = compareToBaseline([checkDocument('button', decided, today)], undefined)
+  assert.deepEqual(after.fresh.map((item) => item.subjectId).sort(), ['conflict:button.ios.danger', 'conflict:button.ios.transparent-neutral'])
 })

@@ -14,7 +14,7 @@ test('both demo graphs are valid with no warnings', () => {
 
 test('the real Android kit raises exactly the Brand outline conflict, from read evidence', () => {
   const graph = indexGraph(load('raised'))
-  const conflicts = graph.ofKind('contract-conflict')
+  const conflicts = graph.ofKind('contract-conflict').filter((conflict) => conflict.platform === 'android')
   assert.deepEqual(conflicts.map((conflict) => conflict.id), ['conflict:button.android.brand-outline'])
   const [conflict] = conflicts as [ContractConflict]
   assert.equal(conflictState(graph, conflict).status, 'open')
@@ -22,6 +22,16 @@ test('the real Android kit raises exactly the Brand outline conflict, from read 
   assert.deepEqual(sides.map((item) => item?.kind === 'evidence' && item.source.importer), ['figma-file', 'kotlin-source'])
   const kit = graph.get('evidence:figma.android-kit.button')
   assert.ok(kit?.kind === 'evidence' && kit.source.revision !== 'civic-stand-in-1')
+})
+
+test('the real iOS kit draws four styles, so iOS Danger and Transparent neutral have no design, undecided', () => {
+  const raised = indexGraph(load('raised'))
+  const ios = raised.ofKind('contract-conflict').filter((conflict) => conflict.platform === 'ios')
+  assert.deepEqual(ios.map((conflict) => conflict.id).sort(), ['conflict:button.ios.danger', 'conflict:button.ios.transparent-neutral'])
+  const resolved = indexGraph(load('resolved'))
+  assert.ok(ios.every((conflict) => conflictState(resolved, resolved.get(conflict.id) as ContractConflict).status === 'open'))
+  const kit = raised.get('evidence:figma.ios-kit.button')
+  assert.ok(kit?.kind === 'evidence' && kit.source.revision === '2409334717272340147' && kit.source.path === 'Microsoft Fluent 2 iOS (Community) / Button / Button')
 })
 
 test('the resolved graph keeps the decision with its evidence and revisit trigger', () => {
