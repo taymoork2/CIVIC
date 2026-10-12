@@ -51,3 +51,10 @@ test('platform evidence is static analysis read from Fluent source; design evide
   assert.ok(evidence.every((item) => item.tier === 'static-analysis'))
   assert.deepEqual(evidence.map((item) => item.source.importer).sort(), ['figma-file', 'figma-file', 'kotlin-source', 'react-types', 'swift-source'])
 })
+
+test('the library Card\'s default footer, body and header action are raised where iOS CardView can\'t build them', () => {
+  const graph = indexGraph(load('raised'))
+  const defaults = graph.ofKind('contract-conflict').filter((conflict) => conflict.id.includes('.default.'))
+  assert.deepEqual(defaults.map((conflict) => conflict.id).sort(), ['conflict:card.ios.default.actions', 'conflict:card.ios.default.body', 'conflict:card.ios.default.header-action'])
+  assert.ok(defaults.every((conflict) => conflict.platform === 'ios' && conflict.alignment === 'unreviewed-drift'))
+})

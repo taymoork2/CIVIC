@@ -20,16 +20,19 @@ import {
   renderInstanceReview,
   reviewInstance,
   type DecisionFile,
+  type ExtensionPoint,
   type GraphDocument,
   type GraphRecord,
   type Link,
   type Override,
+  type PlatformComponent,
   type SemanticComponent,
   type SourceRef,
 } from '../../graph/src/index.ts'
 import {
   applyDecisions,
   assemble,
+  compareLibraryDefaults,
   contentHash,
   fragment,
   jsDestructuredDefault,
@@ -163,10 +166,25 @@ const shop = readFigmaProductFile(productFile, library, product, productFile.las
 const designEvidence = shop.records.find((record) => record.kind === 'evidence')!.id
 const overrides = shop.records.filter((record): record is Override => record.kind === 'override')
 const drift = fragment(raiseOverrideDrift(semantic, overrides, { design: designEvidence, contract: library.evidence.id }))
+// What the library's Card shows by default, against what each platform's component can express.
+const libraryDefaults = fragment(
+  compareLibraryDefaults(
+    semantic,
+    library,
+    [web, ios, android].map((part) => {
+      const component = part.records.find((record): record is PlatformComponent => record.kind === 'platform-component')!
+      return {
+        component,
+        extensionPoints: part.records.filter((record): record is ExtensionPoint => record.kind === 'extension-point'),
+        evidenceId: `evidence:${component.id.slice('platform:'.length)}.variants`,
+      }
+    }),
+  ),
+)
 
 // --- Assemble, decide, export ---------------------------------------------------------
 
-const raised = assemble(contract, web, ios, android, fragment([library.evidence]), shop, drift)
+const raised = assemble(contract, web, ios, android, fragment([library.evidence]), shop, drift, libraryDefaults)
 const resolved = applyDecisions(raised, json<DecisionFile>('contract/decisions.json'))
 assertValid(raised)
 assertValid(resolved)
@@ -193,7 +211,7 @@ const outputs: Record<string, string> = {
   'out/completeness.md': `${renderCompleteness(raisedGraph, completenessOf(raisedGraph, JOURNEY))}\n`,
 }
 
-const summary = `${raised.records.length} records, ${raised.links.length} links, ${overrides.length} override(s) raised as drift`
+const summary = `${raised.records.length} records, ${raised.links.length} links, ${overrides.length} override(s) raised as drift, ${libraryDefaults.records.length} library default(s) a platform can't build`
 if (process.argv.includes('--check')) {
   const stale = Object.entries(outputs).filter(([path, body]) => {
     try {

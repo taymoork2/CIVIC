@@ -23,6 +23,21 @@
     },
     {
       "graph": "demo/card/out/resolved.graph.json",
+      "key": "open-conflict conflict:card.ios.default.actions ios",
+      "summary": "The library's Card shows actions by default (Footer), and Fluent iOS CardView has no extension point that expresses it. Nobody has decided it yet."
+    },
+    {
+      "graph": "demo/card/out/resolved.graph.json",
+      "key": "open-conflict conflict:card.ios.default.body ios",
+      "summary": "The library's Card shows body by default (Body), and Fluent iOS CardView has no extension point that expresses it. Nobody has decided it yet."
+    },
+    {
+      "graph": "demo/card/out/resolved.graph.json",
+      "key": "open-conflict conflict:card.ios.default.header-action ios",
+      "summary": "The library's Card shows header.action by default (.Card header / Header quick action), and Fluent iOS CardView has no extension point that expresses it. Nobody has decided it yet."
+    },
+    {
+      "graph": "demo/card/out/resolved.graph.json",
       "key": "open-conflict conflict:shop.order-summary.card.state-selected",
       "summary": "The product design changes the Card's state.selected (set-property, true) and no maintainer has reviewed it. Nobody has decided it yet."
     },

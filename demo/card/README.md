@@ -12,6 +12,7 @@ Everything in [`out/`](out) is built by `node build.ts` from the inputs below. T
 | Who is asked, and who is told? | The same file. The product designer and the Card's maintainers are asked to decide. Design engineering for each platform that needs a library change is told, and so are Shop's engineers and QA. |
 | What did the design forget? | [`out/completeness.md`](out/completeness.md): the Card's loading, empty and error states, a dead-end screen, and a screen nothing links to. |
 | How are the decisions kept? | [`out/resolved.overrides.md`](out/resolved.overrides.md) and [`out/resolved.graph.json`](out/resolved.graph.json). |
+| What does every product inherit that a platform can't build? | The `[ios]` open conflicts in [`out/raised.gaps.md`](out/raised.gaps.md): the library Card's default body, footer and header action. |
 | What is still missing, with owners? | [`out/raised.gaps.md`](out/raised.gaps.md) and [`out/resolved.gaps.md`](out/resolved.gaps.md). |
 
 ### The forecasts
@@ -23,7 +24,11 @@ The three Fluent Card libraries show the two cases from the change flow. React's
 | The header's checkbox turned on, making the Card selectable | Supported (`selected` prop) | Needs a library change | Needs a library change |
 | A local corner radius of 20 | Forbidden by contract | Forbidden by contract | Forbidden by contract |
 
-Shop's Card also shows the header's quick action and the footer. The real Fluent 2 web kit draws both by default, so they aren't changes and aren't forecast. iOS `CardView` can't build either one. That's a gap between the library's default Card and iOS, not something Shop did, and the override forecast doesn't report it.
+Shop's Card also shows the header's quick action and the footer. The real Fluent 2 web kit draws both by default, so they aren't changes and aren't forecast. iOS `CardView` can't build either one. That's a gap between the library's default Card and iOS, not something Shop did, so the override forecast can't see it.
+
+### Library defaults a platform can't build
+
+`compareLibraryDefaults` compares what the library's Card shows by default with each platform's extension points. Every product using the Card as drawn inherits that content, so a platform with no way to express it is a gap for all of them. Each one is raised as an open conflict for that platform and listed in [`out/raised.gaps.md`](out/raised.gaps.md). The real web kit turns on the body, the footer and the header's quick action. Web and Android can express all three. iOS `CardView` can express none of them, so CIVIC raises three iOS conflicts: `conflict:card.ios.default.body`, `.actions` and `.header-action`. Nobody has decided them, so the project's baseline holds them.
 
 The corner radius is forbidden on every platform, even though Android's `basicCardTokens` could technically set one. The contract's `shape-from-token` rule decides, not what the code allows.
 

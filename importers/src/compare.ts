@@ -1,5 +1,7 @@
-import type { ContractConflict, Override, Owner, PlatformComponent, SemanticComponent } from '../../graph/src/index.ts'
+import { propertyCovers, type ContractConflict, type ExtensionPoint, type Override, type Owner, type PlatformComponent, type SemanticComponent } from '../../graph/src/index.ts'
+import type { LibraryFacts } from './figma-product.ts'
 import type { DesignKitFacts } from './figma.ts'
+import { slug } from './fragment.ts'
 
 /**
  * Compares a platform's design kit with that platform's component, variant by variant
@@ -39,6 +41,56 @@ export function compareDesignKit(semantic: SemanticComponent, design: DesignKitF
       owners,
       alignment: 'unreviewed-drift',
     })
+  }
+  return conflicts
+}
+
+/**
+ * Compares what the design system library's component shows by default with what each
+ * platform's component can express. A product that uses the library as drawn gets that
+ * content without changing anything, so no override flags it; when a platform has no
+ * extension point that expresses it, every product shipping there inherits a gap. Each
+ * part the library shows by default and a platform can't build becomes one open,
+ * unclassified Contract Conflict for that platform. Only content properties that are on by
+ * default (`add-content` with a default of true) count.
+ */
+export function compareLibraryDefaults(
+  semantic: SemanticComponent,
+  library: LibraryFacts,
+  platforms: { component: PlatformComponent; extensionPoints: ExtensionPoint[]; evidenceId: string }[],
+): ContractConflict[] {
+  const { mapping } = library
+  const shown = new Map<string, string>()
+  const declarations = [
+    ...Object.entries(mapping.properties).map(([name, declared]) => [name, declared] as const),
+    ...Object.entries(mapping.parts ?? {}).flatMap(([part, properties]) => Object.entries(properties).map(([name, declared]) => [`${part} / ${name}`, declared] as const)),
+  ]
+  for (const [label, declared] of declarations) {
+    if ('content' in declared || declared.change !== 'add-content' || library.defaults[label] !== true) continue
+    if (!shown.has(declared.property)) shown.set(declared.property, label)
+  }
+
+  const conflicts: ContractConflict[] = []
+  for (const { component, extensionPoints, evidenceId } of platforms) {
+    const points = extensionPoints.filter((point) => point.platformComponentId === component.id)
+    for (const [property, label] of shown) {
+      if (points.some((point) => point.expresses.some((pattern) => propertyCovers(pattern, property)))) continue
+      conflicts.push({
+        id: `conflict:${semantic.id.slice('semantic:'.length)}.${component.platform}.default.${slug(property)}`,
+        kind: 'contract-conflict',
+        title: `Default ${property} in the ${semantic.title} on ${component.platform}`,
+        targetId: semantic.id,
+        platform: component.platform,
+        summary: `The library's ${mapping.componentSet} shows ${property} by default (${label}), and ${component.title} has no extension point that expresses it.`,
+        sides: [
+          { claim: `${mapping.componentSet} turns ${label} on by default, so every product using it as drawn shows ${property}.`, evidenceIds: [library.evidence.id] },
+          { claim: `No ${component.title} extension point expresses ${property}.`, recordId: component.id, evidenceIds: [evidenceId] },
+        ],
+        classification: 'unclassified',
+        owners: dedupe([...(mapping.owners ?? []), ...(component.owners ?? [])]),
+        alignment: 'unreviewed-drift',
+      })
+    }
   }
   return conflicts
 }

@@ -37,16 +37,16 @@ test('the Button gate fails on each undecided conflict and passes once decisions
 test('counts come with their denominators', () => {
   const { measures } = run('card', demo('card/out/resolved'))
   const count = (check: string) => measures.find((item) => item.check === check)
-  assert.deepEqual(count('Contract conflicts open'), { graph: 'card', check: 'Contract conflicts open', found: 1, of: 2 })
+  assert.deepEqual(count('Contract conflicts open'), { graph: 'card', check: 'Contract conflicts open', found: 4, of: 5 })
   assert.deepEqual(count('Overrides without a decision'), { graph: 'card', check: 'Overrides without a decision', found: 1, of: 2 })
   assert.deepEqual(count('Product states missing from designs'), { graph: 'card', check: 'Product states missing from designs', found: 3, of: 3 })
   assert.deepEqual(count('Journey screens that are dead ends'), { graph: 'card', check: 'Journey screens that are dead ends', found: 1, of: 3 })
 })
 
-test('the Card gate raises each undecided override, missing state and journey gap, one finding each', () => {
+test('the Card gate raises each undecided override, library default iOS can\'t build, missing state and journey gap, one finding each', () => {
   const report = compareToBaseline([run('card', demo('card/out/raised'))], undefined)
   assert.equal(report.passed, false)
-  assert.deepEqual(report.fresh.map((item) => item.kind), ['open-conflict', 'open-conflict', 'missing-state', 'missing-state', 'missing-state', 'dead-end', 'unreachable-screen'])
+  assert.deepEqual(report.fresh.map((item) => item.kind), ['open-conflict', 'open-conflict', 'open-conflict', 'open-conflict', 'open-conflict', 'missing-state', 'missing-state', 'missing-state', 'dead-end', 'unreachable-screen'])
 })
 
 test('baselined findings are ignored, a new one still fails, and a fixed one is reported', () => {
@@ -56,7 +56,7 @@ test('baselined findings are ignored, a new one still fails, and a fixed one is 
   // One of the two overrides is decided in the resolved graph, so it leaves the baseline's findings.
   const resolved = compareToBaseline([run('card', demo('card/out/resolved'))], baseline)
   assert.equal(resolved.passed, true)
-  assert.equal(resolved.baselined.length, 6)
+  assert.equal(resolved.baselined.length, 9)
   assert.equal(resolved.fixed.length, 1)
 
   // A new undecided override on the same graph is raised at the change that caused it.

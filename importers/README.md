@@ -15,6 +15,7 @@ Importers read what each role's tools already produce and turn it into [CIVIC gr
 | `readCrawl` | A crawl from CIVIC's crawl loop (`civic.crawl/0`, D34) | A discovered screen per state and a proposed `navigates` link per transition; neither counts until confirmed |
 | `applyConfirmations` | A person's confirmation file (`civic.confirmations/0`) | Confirmed screens made expected, confirmed paths declared, and declared journeys over confirmed screens; confirming what the crawl didn't find fails |
 | `compareDesignKit` | A design kit and the same platform's component | Open, unclassified Contract Conflicts, one per variant they disagree on |
+| `compareLibraryDefaults` | A library component's facts and each platform component with its extension points | Open, unclassified Contract Conflicts, one per platform and per content the library shows by default that the platform has no extension point for |
 | `raiseOverrideDrift` | A product's overrides on a library component | Open, unclassified Contract Conflicts in Unreviewed drift, one per override, asking its maker and the contract's design owners |
 | `applyDecisions` | A decision file (`civic.decisions/0`) of people's Decision records | The raised graph with those Decision records added; a decision on a conflict the import didn't raise fails |
 | `assemble` | Fragments from the importers above | One graph document in a stable order |

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import type { SemanticComponent } from '../../graph/src/index.ts'
 import { trimFigmaFile } from '../src/figma-trim.ts'
-import { raiseOverrideDrift, readFigmaLibraryComponent, readFigmaProductFile, tsExportedComponents, type LibraryComponentMapping, type ProductManifest } from '../src/index.ts'
+import { compareLibraryDefaults, raiseOverrideDrift, readFigmaLibraryComponent, readFigmaProductFile, tsExportedComponents, type LibraryComponentMapping, type ProductManifest } from '../src/index.ts'
 
 const mapping: LibraryComponentMapping = {
   semanticId: 'semantic:card',
@@ -163,4 +163,20 @@ test('a trimmed export keeps only the path to its targets, and the components th
   assert.deepEqual(trimmed.components, { '5:1': { key: 'icon', name: 'Icon' } })
   assert.equal(readFigmaLibraryComponent(trimmed, mapping, 'now').defaults.Title, 'Title')
   assert.throws(() => trimFigmaFile(full, [{ type: 'COMPONENT_SET', name: 'Card' }, { type: 'FRAME', name: 'Buttons' }]), /Library has no Buttons/)
+})
+
+test('content the library shows by default is raised for each platform with no extension point for it', () => {
+  const semantic: SemanticComponent = { id: 'semantic:card', kind: 'semantic-component', title: 'Card', purpose: 'Group.', variants: [{ key: 'filled', title: 'Filled' }], states: ['rest'], owners: [{ role: 'design', who: 'ds' }, { role: 'qa', who: 'q' }] }
+  const file = libraryFile()
+  const set = file.document.children[0]!.children[0]! as { componentPropertyDefinitions: Record<string, unknown> }
+  set.componentPropertyDefinitions['Show footer#1:2'] = { type: 'BOOLEAN', defaultValue: true }
+  set.componentPropertyDefinitions['Badge#1:4'] = { type: 'BOOLEAN', defaultValue: false }
+  const facts = readFigmaLibraryComponent(file, { ...mapping, properties: { ...mapping.properties, Badge: { property: 'header.action', change: 'add-content' } } }, 'now')
+  const component = (platform: 'web' | 'ios') => ({ id: `platform:${platform}.card`, kind: 'platform-component' as const, title: `${platform} Card`, platform, library: { package: 'x' }, symbol: 'Card', variants: [], source: { tool: 't', importer: 'i', revision: 'r', path: 'p' } })
+  const web = { component: component('web'), extensionPoints: [{ id: 'extension:web.card.footer', kind: 'extension-point' as const, title: 'Footer', platformComponentId: 'platform:web.card', mechanism: 'slot' as const, name: 'CardFooter', expresses: ['actions'], source: component('web').source }], evidenceId: 'evidence:web' }
+  const ios = { component: component('ios'), extensionPoints: [], evidenceId: 'evidence:ios' }
+  const conflicts = compareLibraryDefaults(semantic, facts, [web, ios])
+  // The footer is on by default and iOS can't express it; the badge is off by default, so nothing inherits it.
+  assert.deepEqual(conflicts.map((conflict) => conflict.id), ['conflict:card.ios.default.actions'])
+  assert.deepEqual(conflicts[0]!.sides.map((side) => side.evidenceIds), [['evidence:figma.library.card'], ['evidence:ios']])
 })
