@@ -5,5 +5,16 @@
     "projects/laundry/out/graph.json",
     "projects/discovery-app/out/graph.json"
   ],
-  "baseline": "civic.baseline.json"
+  "baseline": "civic.baseline.json",
+  "freshness": [
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "tools": [
+        "playwright"
+      ],
+      "watch": [
+        "rehearsal/source"
+      ]
+    }
+  ]
 }
