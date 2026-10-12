@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { reviewApi } from './canvas'
+import { reviewApi } from './review-api'
 import type { RuntimeRecording } from './runtime-bridge'
 
 export function RunControls({ frame }: { frame: HTMLIFrameElement | null }) {

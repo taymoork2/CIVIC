@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import project from 'virtual:rehearsal-project'
+import project from 'virtual:civic-project'
 import { projectFetch } from './project-request'
 import { DiscoverySetup, type Discovery } from './discovery-setup'
 import { CanvasIcon } from '@civic/shell/canvas-controls'

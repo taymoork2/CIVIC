@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { reviewApi } from './canvas'
+import { reviewApi } from './review-api'
 import type { Feedback } from './review-panel'
 
 type Destination = { id: string; label: string; provider: 'codex' | 'claude'; sessionId: string; cwd: string; host: string }

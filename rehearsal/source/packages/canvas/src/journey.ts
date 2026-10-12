@@ -1,8 +1,5 @@
 import type { Presentation } from './adapter'
-import type { ReviewSnapshot } from './store'
-import nodes from './towel-journey.json'
-
-export { towelEdges } from './journey-graph.mjs'
+import type { ReviewSnapshot } from './adapter'
 
 export type Proposal = { id: string; version: number; title: string; edits: Presentation; updatedAt: string; source: string }
 export type JourneyState = { screen: string; draft: unknown; dirty: boolean; pending: boolean; error: string | null; fields: { label: string; value: string }[]; title: string; action: string; proposalVersion: number | null }
@@ -12,9 +9,9 @@ export type JourneyBridge = {
   setPresentation: (edits: Presentation, version: number | null) => void
   snapshot: ReviewSnapshot
 }
-declare global { interface Window { towelJourney?: JourneyBridge } }
+// A host's guided run (such as Laundry's towel journey) publishes this bridge from its frame.
+declare global { interface Window { guidedJourney?: JourneyBridge } }
 
-export const screenId = (value: string) => value === 'care' ? 'care:wash' : value
 export function readFixtureFields(doc: Document, scope: Document | HTMLElement = doc, allowed: (element: HTMLElement) => boolean = () => true): JourneyState['fields'] {
   // Only the isolated intake's editable form fields; never credentials, files or hidden values.
   const fields = [...scope.querySelectorAll<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>('input, textarea, select')]

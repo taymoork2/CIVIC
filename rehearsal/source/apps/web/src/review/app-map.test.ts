@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { appFlows, crossFlowEdges, flowAtCenter, screenAtCenter, overviewFlows, flowEdges } from './app-map'
+import { appFlows, crossFlowEdges, flowAtCenter, screenAtCenter, overviewFlows, flowEdges } from '@civic/canvas/app-map'
 import scenarios from './scenarios.json'
 import routeActions from './route-actions.json'
 

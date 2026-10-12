@@ -2,7 +2,7 @@
   "version": 1,
   "id": "notebook-demo",
   "name": "Notebook",
-  "adapter": { "kind": "module", "entry": "src/rehearsal.js" },
+  "adapter": { "kind": "module", "entry": "src/preview.js" },
   "sources": ["src"],
   "scenarios": "civic.scenarios.json",
   "coverage": "civic.coverage.json",

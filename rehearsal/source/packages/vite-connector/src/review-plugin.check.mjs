@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 import { civicReview } from './review-plugin.mjs'
 
 const workspace = fileURLToPath(new URL('../../../', import.meta.url))
-const notebook = join(workspace, 'apps/web/examples/rehearsal-demo')
+const notebook = join(workspace, 'packages/canvas/examples/notebook')
 const page = '<!doctype html><html><head><meta charset="utf-8"></head><body><div id="root"></div></body></html>\n'
 // The least a host gives the shell: no journey screens and no proposals.
 const adapter = { screens: [], journeyGraph: () => [], pathId: (from, to, action) => JSON.stringify([from, to, action]), proposalProperties: [], captureFixture: async () => { throw Error('No fixture expected') } }
@@ -49,7 +49,7 @@ test('a plain module app connects through the connector alone, with no app conne
     assert.ok(index.scenarios.length > 0)
     assert.deepEqual(Object.keys(index.fixtureHashes).sort(), index.scenarios.map((row) => row.id).sort())
     // The app's own sources are served to review frames; live app routes are not.
-    assert.equal((await fetch(origin + '/@fs' + join(app, 'src/rehearsal.js'), { headers })).status, 200)
+    assert.equal((await fetch(origin + '/@fs' + join(app, 'src/preview.js'), { headers })).status, 200)
     assert.equal((await fetch(origin + '/api/auth/session', { headers })).status, 404)
     assert.equal((await fetch(origin + '/@fs' + join(repo, '.review-data/application.json'), { headers })).status, 404)
   } finally { await server.close() }

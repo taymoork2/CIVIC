@@ -9,7 +9,7 @@ import { loadProject, checkedProject, checkedScenarios, projectPath } from '@civ
 import { reviewInventory } from './review-inventory.mjs'
 
 const repo = fileURLToPath(new URL('../../../', import.meta.url)).replace(/\/$/, '')
-const example = join(repo, 'apps/web/examples/rehearsal-demo')
+const example = join(repo, 'packages/canvas/examples/notebook')
 const clone = async () => { const root = await realpath(await mkdtemp(join(tmpdir(), 'rehearsal-project-check-'))); await cp(example, root, { recursive: true }); return root }
 const load = (root) => loadProject(repo, { manifest: join(root, 'civic.project.json') })
 
@@ -75,7 +75,7 @@ test('generic Vite connection refreshes source and presets while isolating store
   await cp(join(repo, 'apps/web/scripts'), join(web, 'scripts'), { recursive: true })
   await symlink(join(repo, 'apps/web/src'), join(web, 'src'))
   await symlink(join(repo, 'apps/web/node_modules'), join(web, 'node_modules'))
-  for (const name of ['package.json', 'review.html', 'review-frame.html']) await cp(join(repo, 'apps/web', name), join(web, name))
+  await cp(join(repo, 'apps/web/package.json'), join(web, 'package.json'))
   await mkdir(join(host, '.review-data'))
   await writeFile(join(host, '.review-data/application.json'), JSON.stringify({ project: join(root, 'civic.project.json') }))
   const { createServer } = await import('vite'), { reviewPlugin } = await import(join(web, 'scripts/review-plugin.mjs'))

@@ -1,4 +1,4 @@
-import type { MountAdapter } from '../adapter'
+import type { MountAdapter } from '@civic/canvas/adapter'
 
 // Laundry owns these presenters and simulated operations; the generic host never imports them.
 export const mount: MountAdapter = async (container, context) => {

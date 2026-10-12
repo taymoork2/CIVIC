@@ -13,7 +13,7 @@ Stop conditions: refuse invalid or escaping paths and duplicate identities; repo
 
 ## Delivered connection
 
-`civic.project.json` is the portable project contract. `packages/vite-connector/src/review-project.mjs` validates it and supplies `init` and `check`. The default manifest describes Laundry explicitly; another application selects its own manifest. The dependency-free Notebook example is in `apps/web/examples/rehearsal-demo` and has real DOM presenters, a separate synthetic adapter, four screen states, a conditional branch, return paths and project-specific context.
+`civic.project.json` is the portable project contract. `packages/vite-connector/src/review-project.mjs` validates it and supplies `init` and `check`. The default manifest describes Laundry explicitly; another application selects its own manifest. The dependency-free Notebook example is in `packages/canvas/examples/notebook` and has real DOM presenters, a separate synthetic adapter, four screen states, a conditional branch, return paths and project-specific context.
 
 No model call is required for onboarding, source inventory, graph assembly, coverage comparison, input capture or refresh. Source discovery recognizes TanStack `createFileRoute` calls and named `*Sheet*` functions as unconfirmed candidates. Other frameworks can supply the same registry explicitly; discovery is deliberately incomplete. CIVIC does not infer unwritten requirements, complete journeys, personas, permissions or safe fixtures from code.
 
@@ -48,8 +48,14 @@ CIVIC_PROJECT=/path/to/application/civic.project.json pnpm --dir apps/web run re
 Explicit `CIVIC_PROJECT` selection ignores the old local Laundry source path. The application root defaults to the manifest directory; `CIVIC_APP_ROOT` explicitly selects another checkout. Only run one preview on 3010 at a time. To explore the included Notebook example without changing local settings:
 
 ```sh
-CIVIC_PROJECT=apps/web/examples/rehearsal-demo/civic.project.json \
+CIVIC_PROJECT=packages/canvas/examples/notebook/civic.project.json \
   pnpm --dir apps/web run review
+```
+
+Any `module` app can also open in the standalone canvas, with no Laundry workspace. It binds to 127.0.0.1:3020 and keeps reviews and connections in `~/.civic/canvas` (or `--store`), never in the app:
+
+```sh
+node packages/canvas/bin/civic-canvas.mjs --project packages/canvas/examples/notebook/civic.project.json
 ```
 
 The CLI remains available for scripted setup. The workspace picker supplies connection and starter creation without it. No package installation into the target app is required.
@@ -105,7 +111,7 @@ Declare the destination as another scenario. `branchOf` places a branch vertical
 
 ### Browser adapter contract
 
-The preview entry exports `mount(container, context)` and returns an optional disposer, synchronously or asynchronously. TypeScript projects can reference `apps/web/src/review/adapter.ts`; the runtime itself requires no project-side dependency on CIVIC.
+The preview entry exports `mount(container, context)` and returns an optional disposer, synchronously or asynchronously. TypeScript projects can reference `packages/canvas/src/adapter.ts` (`@civic/canvas/adapter`); the runtime itself requires no project-side dependency on CIVIC.
 
 Context contains the selected `config`, registered `scenario`, selected `persona`, `role`, `condition`, frozen source/design `snapshot`, and two callbacks:
 

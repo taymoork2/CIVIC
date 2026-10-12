@@ -129,8 +129,8 @@
 .rh-review-paths { display: grid; gap: 6px; }
 .rh-review-paths button { text-align: left; }
 .rh-review-paths small { display: block; font-weight: 400; margin-top: 4px; }
-.app-towel-live { z-index: 2; }
-.app-towel-live > button { background: #f9fafb; }
+.app-live-session { z-index: 2; }
+.app-live-session > button { background: #f9fafb; }
 .app-rehearsal .app-screen-outline button .rh-live-label { color: #236748; margin-left: auto; }
 .rehearsal :is(input,textarea) { caret-color: var(--rh-accent); }
 .rehearsal ::selection { background: #dce7ff; color: #25272c; }

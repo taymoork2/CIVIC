@@ -3,6 +3,8 @@ import { relative, posix } from 'node:path'
 
 const sha = (value) => createHash('sha256').update(value).digest('hex')
 // Inputs every screen depends on in any project: manifests, lockfiles, images, fonts and the review entries.
+// The canvas modules that draw fixture frames; the rest of the canvas draws the workspace around them.
+export const canvasFrame = /^packages\/canvas\/src\/(?:frame\.tsx|adapter\.ts|journey\.ts|project-request\.ts|runtime-bridge\.ts|runtime-dom\.ts)$/
 const commonInputs = /^application:|\.(?:png|svg|webp|jpe?g|woff2?)$|package(?:-lock)?\.json$|pnpm-lock\.yaml$|\/vite\.config\.ts$|\/review(?:-frame)?\.html$/
 
 /**
@@ -20,8 +22,8 @@ export function fixtureHashes(metadata, evidence, project, inputs = [], { screen
     return null
   }
   const common = inputs.filter(([path]) => commonInputs.test(path) || fingerprint.common?.test(path))
-  // The CIVIC shell and this connector draw the review workspace around fixtures, never the fixture frames themselves.
-  for (const [path, content] of code) if (!/^packages\/(?:shell|vite-connector)\//.test(path) && (path.endsWith('.css') || fingerprint.frame?.test(path))) common.push([path, sha(content)])
+  // The CIVIC shell, this connector and the canvas draw the review workspace around fixtures; only the canvas frame draws fixtures.
+  for (const [path, content] of code) if (canvasFrame.test(path) || !/^packages\/(?:shell|vite-connector|canvas)\//.test(path) && (path.endsWith('.css') || fingerprint.frame?.test(path))) common.push([path, sha(content)])
   const shared = JSON.stringify([project.manifest, common.sort()])
   const declared = new Set(screens.map((screen) => screen.scenario))
   const nodes = metadata.project?.adapter === 'module' ? metadata.scenarios : [...screens, ...metadata.scenarios.filter((row) => !declared.has(row.id))]

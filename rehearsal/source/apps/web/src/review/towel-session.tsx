@@ -1,22 +1,18 @@
 import { useEffect, useRef, useState } from 'react'
 import nodes from './towel-journey.json'
-import type { Presentation } from './adapter'
-import type { Proposal, JourneyState, JourneyVisit } from './journey'
+import type { Presentation } from '@civic/canvas/adapter'
+import type { Proposal, JourneyState, JourneyVisit } from '@civic/canvas/journey'
 import { captureScreen } from '@civic/shell/capture'
-import { projectFetch } from './project-request'
+import { reviewApi } from '@civic/canvas/review-api'
+import type { GuidedSession } from '@civic/canvas/extension'
 
-export async function reviewApi<T>(path: string, data?: unknown): Promise<T> {
-  const response = await projectFetch(`/api/review/${path}`, data === undefined ? {} : { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) })
-  const result = await response.json()
-  if (!response.ok) throw new Error(result.error ?? 'Review request failed. Your draft is kept.')
-  return result
-}
 const emptyProposal = (): Proposal => ({ id: crypto.randomUUID(), version: 0, title: 'Towel exploration', edits: {}, updatedAt: '', source: '' })
 const boot = new URLSearchParams(typeof location === 'undefined' ? '' : location.search)
 const runKey = 'rehearsal:towel:visits:v1'
+const labels = { play: 'Play towel journey', summary: 'Both ownership branches · continuous run & captured inputs', live: 'Live towel journey', retained: 'The towel run stays separate and is retained.' }
 
 // The app canvas owns navigation; this session keeps the same iframe across screen transitions.
-export function useTowelSession(selectionId: string | null, enabled = true) {
+export function useTowelSession(selectionId: string | null, enabled = true): GuidedSession {
   const [state, setState] = useState<JourneyState | null>(null)
   const [mode, setMode] = useState<'play' | 'edit'>('play')
   const [proposal, setProposal] = useState<Proposal>(emptyProposal)
@@ -59,7 +55,7 @@ export function useTowelSession(selectionId: string | null, enabled = true) {
     try { sessionStorage.setItem(runKey, JSON.stringify(visits.slice(-60))) } catch { setError('Run history could not be retained in this tab. Keep it open until captures finish.') }
   }, [visits])
   useEffect(() => {
-    frame.current?.contentWindow?.towelJourney?.setPresentation(candidate || mode === 'edit' ? edits : {}, candidate ? proposal.version : null)
+    frame.current?.contentWindow?.guidedJourney?.setPresentation(candidate || mode === 'edit' ? edits : {}, candidate ? proposal.version : null)
   }, [edits, mode, candidate, proposal.version])
   const captureVisit = async (visit: JourneyVisit, input: unknown) => {
     try {
@@ -81,10 +77,10 @@ export function useTowelSession(selectionId: string | null, enabled = true) {
     const transition = (event: Event) => {
       const detail = (event as CustomEvent<{ from: string; to: string; state: JourneyState; fields: JourneyState['fields']; action: string }>).detail
       if (!detail.state || detail.from === detail.to) return
-      const visit: JourneyVisit = { id: crypto.randomUUID(), runId: run.current, source: win.towelJourney?.snapshot.revision.source ?? sourceRef.current, from: detail.from, to: detail.to, draft: structuredClone(detail.state.draft), fields: detail.fields, action: detail.action.slice(0, 160), at: new Date().toISOString(), proposalVersion: detail.state.proposalVersion }
+      const visit: JourneyVisit = { id: crypto.randomUUID(), runId: run.current, source: win.guidedJourney?.snapshot.revision.source ?? sourceRef.current, from: detail.from, to: detail.to, draft: structuredClone(detail.state.draft), fields: detail.fields, action: detail.action.slice(0, 160), at: new Date().toISOString(), proposalVersion: detail.state.proposalVersion }
       setVisits((rows) => [...rows.slice(-59), visit])
       const doc = frame.current?.contentDocument
-      const snapshot = win.towelJourney?.snapshot
+      const snapshot = win.guidedJourney?.snapshot
       if (doc && snapshot) {
         const node = nodes.find((node) => node.id === detail.from)
         const input = { requestId: visit.id, kind: 'other', message: `Towel transition ${detail.from} → ${detail.to}`, anchor: { label: 'Whole screen', x: 0, y: 0, width: 1, height: 1 }, snapshot, html: captureScreen(doc), context: { scenario: node?.scenario ?? 'intake.towel.care', persona: 'single', role: 'owner', condition: boot.get('condition') ?? 'normal', theme: 'light', textScale: 1, viewport: { width: 393, height: 852 }, state: { dialogs: [detail.state.title || detail.from], tabs: [], fields: detail.fields } } }
@@ -93,8 +89,8 @@ export function useTowelSession(selectionId: string | null, enabled = true) {
     }
     win.addEventListener('journey-state', receive)
     win.addEventListener('journey-transition', transition)
-    const existing = win.towelJourney?.state(); if (existing) { setState(existing) }
-    win.towelJourney?.setPresentation(candidate || mode === 'edit' ? edits : {}, candidate ? proposal.version : null)
+    const existing = win.guidedJourney?.state(); if (existing) { setState(existing) }
+    win.guidedJourney?.setPresentation(candidate || mode === 'edit' ? edits : {}, candidate ? proposal.version : null)
     win.addEventListener('pagehide', () => { win.removeEventListener('journey-state', receive); win.removeEventListener('journey-transition', transition) }, { once: true })
   }
   const update = (key: 'title' | 'action' | 'color', value: string) => {
@@ -138,5 +134,5 @@ export function useTowelSession(selectionId: string | null, enabled = true) {
         <details open><summary>Current run inputs</summary>{state?.fields.length ? <dl className="rh-fields">{state.fields.map((field, i) => <div key={i}><dt>{field.label}</dt><dd>{field.value === '' ? '(empty)' : field.value}</dd></div>)}</dl> : <p>No visible input fields.</p>}</details>
         <details><summary>Run history ({visits.length})</summary><ol className="rh-history">{visits.map((visit) => <li key={visit.id}><strong>{visit.from} → {visit.to}</strong><span>{visit.action}</span><small>{visit.proposalVersion === null ? 'Baseline' : `Proposal v${visit.proposalVersion}`} · {new Date(visit.at).toLocaleTimeString()}</small>{visit.capture ? <a href={visit.capture} target="_blank" rel="noreferrer">Frozen screen</a> : <span>{visit.captureError ?? 'Capturing image…'}</span>}{visit.captureError && failedCaptures.current.has(visit.id) && <button onClick={() => void captureVisit(visit, failedCaptures.current.get(visit.id))}>Retry capture</button>}<details><summary>Captured inputs</summary><dl className="rh-fields">{visit.fields.map((field, i) => <div key={i}><dt>{field.label}</dt><dd>{field.value || '(empty)'}</dd></div>)}</dl></details></li>)}</ol></details>
 </>
-  return { state, mode, setMode, candidate, dirtyProposal, proposal, saving, visits, snapshots, current, active, currentNode, frame, follow, runId: run.current, running: start !== null, generation, src, attach, play, requestStart, setProperty, notices, inspector }
+  return { flowId: 'towel', labels, canStartAt: (id) => id !== 'saved', state, mode, setMode, candidate, dirtyProposal, proposal, saving, visits, snapshots, current, active, currentNode, frame, follow, runId: run.current, running: start !== null, generation, src, attach, play, requestStart, setProperty, notices, inspector }
 }

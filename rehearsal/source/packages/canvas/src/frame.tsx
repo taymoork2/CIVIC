@@ -1,4 +1,4 @@
-import project from 'virtual:rehearsal-project'
+import project from 'virtual:civic-project'
 import { bindProjectRequests, projectFetch } from './project-request'
 import type { AdapterState, AdapterScenario, ReviewConfig, ReviewSnapshot, ProjectChoice } from './adapter'
 import { readFixtureFields } from './journey'
@@ -35,7 +35,7 @@ try {
   const persona = pick('persona', project.personas), role = pick('role', project.roles), condition = pick('condition', project.conditions)
   const config: ReviewConfig = savedConfig ?? { scenario: scenario.id, persona: persona.id, role: role.id, condition: condition.id, theme: params.get('theme') === 'dark' ? 'dark' : 'light', textScale: params.get('scale') === '2' ? 2 : 1, width: Number(params.get('width')) || 393 }
   const snapshot = { revision: index.revision, design: index.design }
-  const { mount } = await import('virtual:rehearsal-preview')
+  const { mount } = await import('virtual:civic-preview')
   if (typeof mount !== 'function') throw Error('The project preview entry must export mount(container, context).')
   let state: AdapterState | null = null
   let runtimeBridge: RuntimeBridge | undefined
@@ -96,7 +96,7 @@ try {
       return bridge
     },
   })
-  if (!state && project.adapter !== 'laundry') throw Error('The preview adapter did not publish a ready screen.')
+  if (!state && project.adapter === 'module') throw Error('The preview adapter did not publish a ready screen.')
   if (recording) {
     if (!window.reviewPreview?.replay) throw Error('This adapter does not support replay.')
     try { await window.reviewPreview.replay(recording) }

@@ -1,11 +1,11 @@
 import { ConvexProvider } from 'convex/react'
-import { projectFetch } from './project-request'
+import { projectFetch } from '@civic/canvas/project-request'
 import { createMemoryHistory, createRootRoute, createRouter, RouterProvider } from '@tanstack/react-router'
 import { createRoot } from 'react-dom/client'
 import { useEffect, useState, useCallback, useRef, Component, type ReactNode } from 'react'
 import { Toaster } from 'sonner'
 import { AddClothesSheet, EditClothesSheet, GarmentSettings, emptyAddDraft, type AddCalls, type AddDraft, type IntakePresentation, type IntakeReviewState } from '@/closet/add-clothes'
-import { readFixtureFields, type JourneyState } from './journey'
+import { readFixtureFields, type JourneyState } from '@civic/canvas/journey'
 import { GarmentSheet, type GarmentCalls } from '@/closet/garment-sheet'
 import { GarmentRecordView } from '@/closet/garment-record'
 import { reviewGarmentRecord } from '@/dev/closet-preview'
@@ -25,7 +25,7 @@ import { FamilyPreview } from './family-preview'
 import { ReminderPreview } from './reminder-preview'
 import '@/app.css'
 import '@/generated/tokens.css'
-import './review.css'
+import '@civic/canvas/styles/review.css'
 
 const params = new URLSearchParams(location.search)
 export const config: ReviewConfig = { scenario: params.get('scenario') ?? 'intake.pack.type', persona: params.get('persona') === 'parent' ? 'parent' : params.get('persona') === 'student' ? 'student' : 'single', role: params.get('role') === 'member' ? 'member' : 'owner', condition: ['save-error', 'offline', 'missing-care'].includes(params.get('condition') ?? '') ? params.get('condition') as ReviewConfig['condition'] : 'normal', theme: params.get('theme') === 'dark' ? 'dark' : 'light', textScale: params.get('scale') === '2' ? 2 : 1, width: Number(params.get('width')) || 393 }
@@ -67,7 +67,7 @@ function WorkingPreview() {
   }, [])
   useEffect(() => {
     if (!journey) return
-    window.towelJourney = { state: () => reviewState.current, snapshot: { revision, design }, setPresentation: (edits, nextVersion) => { version.current = nextVersion; setPresentation(edits) } }
+    window.guidedJourney = { state: () => reviewState.current, snapshot: { revision, design }, setPresentation: (edits, nextVersion) => { version.current = nextVersion; setPresentation(edits) } }
     const refreshFields = () => {
       if (!reviewState.current) return
       reviewState.current = { ...reviewState.current, fields: readFixtureFields(document), title: document.querySelector('[role="dialog"] h2')?.textContent ?? '', action: document.querySelector('button[type="submit"]')?.textContent ?? '', proposalVersion: version.current }
@@ -79,7 +79,7 @@ function WorkingPreview() {
     document.addEventListener('input', refreshFields)
     document.addEventListener('click', rememberAction, true)
     refreshFields()
-    return () => { observer.disconnect(); document.removeEventListener('input', refreshFields); document.removeEventListener('click', rememberAction, true); delete window.towelJourney }
+    return () => { observer.disconnect(); document.removeEventListener('input', refreshFields); document.removeEventListener('click', rememberAction, true); delete window.guidedJourney }
   }, [journey])
   useEffect(() => local.subscribe(() => setData(local.getData())), [])
   const scenario = scenarios.find((entry) => entry.id === config.scenario)

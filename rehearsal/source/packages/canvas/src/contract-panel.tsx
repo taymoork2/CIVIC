@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { MapScreen } from './app-map'
-import { reviewApi } from './canvas'
+import { reviewApi } from './review-api'
 import { alignment, contractDimensions, coverage, type ScenarioEvidence } from '@civic/shell/contract'
 import { feedbackOnScreen, type Feedback } from './review-panel'
 

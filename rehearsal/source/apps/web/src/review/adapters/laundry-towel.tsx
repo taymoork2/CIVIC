@@ -6,10 +6,10 @@ import { AddClothesFlow, emptyAddDraft, type IntakeReviewState, type IntakePrese
 import { emptyTag } from '@/laundry/tag-step'
 import { PreviewUnits } from '@/kit/units'
 import { openLaundrySession } from './laundry-session'
-import type { AdapterContext } from '../adapter'
-import type { RuntimeBridge, RuntimeGesture } from '../runtime-bridge'
-import { runtimeFields, replayGesture } from '../runtime-dom'
-import type { JourneyState } from '../journey'
+import type { AdapterContext } from '@civic/canvas/adapter'
+import type { RuntimeBridge, RuntimeGesture } from '@civic/canvas/runtime-bridge'
+import { runtimeFields, replayGesture } from '@civic/canvas/runtime-dom'
+import type { JourneyState } from '@civic/canvas/journey'
 import nodes from '../towel-journey.json'
 import { useSyncExternalStore, type ComponentProps, type ComponentType } from 'react'
 import '@/app.css'
@@ -70,7 +70,7 @@ export async function mountTowelRuntime(container: HTMLElement, context: Adapter
   }
   const rememberAction = (event: MouseEvent) => { lastAction = (event.target as Element).closest('button')?.getAttribute('aria-label') || (event.target as Element).closest('button')?.textContent?.trim() || '' }
   const observer = new MutationObserver(refresh)
-  const dispose = () => { observer.disconnect(); document.removeEventListener('click', rememberAction, true); root.unmount(); delete window.towelJourney; runtime.close() }
+  const dispose = () => { observer.disconnect(); document.removeEventListener('click', rememberAction, true); root.unmount(); delete window.guidedJourney; runtime.close() }
   try {
     render(); await router.load(); await firstState; await runtime.settle()
     bridge = context.connectRuntime({ seed: { ...runtime.seed, start }, now: runtime.session.now, route, screen: () => currentNode().scenario, captureInputs: 'synthetic', status: () => ({ dirty: state?.dirty ?? false, pending: state?.pending ?? false }), data: () => ({ ...runtime.data(), path: route(), draft: state?.draft }), assertSource: runtime.assertSource,
@@ -79,7 +79,7 @@ export async function mountTowelRuntime(container: HTMLElement, context: Adapter
       reset: async () => { await runtime.reset(); incarnation++; state = null; closed = false; presentation = {}; version = null; pendingCommand = Promise.resolve(); render(); await runtime.settle() },
     })
     runtime.transport.bind(bridge)
-    window.towelJourney = { state: journeyState, snapshot: context.snapshot, setPresentation: (edits, nextVersion) => { const next = validate({ edits, version: nextVersion }); if (JSON.stringify(next) !== JSON.stringify({ edits: presentation, version })) perform('presentation', next) } }
+    window.guidedJourney = { state: journeyState, snapshot: context.snapshot, setPresentation: (edits, nextVersion) => { const next = validate({ edits, version: nextVersion }); if (JSON.stringify(next) !== JSON.stringify({ edits: presentation, version })) perform('presentation', next) } }
     window.reviewPreview!.retryWrites = () => perform('retryWrites', null)
     observer.observe(document.body, { childList: true, subtree: true, attributes: true, characterData: true }); document.addEventListener('click', rememberAction, true)
     refresh()

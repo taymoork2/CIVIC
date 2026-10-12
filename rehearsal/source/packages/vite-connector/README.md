@@ -9,11 +9,11 @@ An app connects read-only through its manifest. The connector indexes the screen
 A `module` app needs only its manifest and a preview entry that exports `mount(container, context)`. Start one with:
 
 ```sh
-node packages/vite-connector/src/review-project.mjs init --root /path/to/app --id my-app --name "My app" --source src --preview src/rehearsal.ts --write
+node packages/vite-connector/src/review-project.mjs init --root /path/to/app --id my-app --name "My app" --source src --preview src/preview.ts --write
 node packages/vite-connector/src/review-project.mjs check --project /path/to/app/civic.project.json
 ```
 
-Then select it in the canvas's project picker, or start the host with `CIVIC_PROJECT=/path/to/app/civic.project.json`.
+Then open it with the standalone canvas (`node packages/canvas/bin/civic-canvas.mjs --project /path/to/app/civic.project.json`, see [`@civic/canvas`](../canvas)), select it in a host's project picker, or start a host with `CIVIC_PROJECT=/path/to/app/civic.project.json`.
 
 ## Hosting the canvas
 
@@ -21,7 +21,8 @@ Then select it in the canvas's project picker, or start the host with `CIVIC_PRO
 import { civicReview } from '@civic/vite-connector'
 
 civicReview({
-  host,                 // folder with review.html and review-frame.html
+  host,                 // the Vite root
+  canvas,               // folder with review.html, review-frame.html and their src/ (normally @civic/canvas); defaults to host
   repo,                 // workspace that owns the review store (.review-data)
   connectors: {},       // adapter kind -> app connector, for apps that aren't plain modules
   review: ({ project, repo, dataDir }) => ({ adapter, coverage, agents, shared, publicHost }),
@@ -29,11 +30,10 @@ civicReview({
 })
 ```
 
-`review` returns the shell's options; `runtime` starts the isolated backend when the app declares one. An adapter kind other than `module` needs a connector. Laundry's (`apps/web/scripts/review-laundry-connector.mjs`) shows the whole interface: its own index and fixture fingerprint inputs, module substitutes for app boot, auth and server routes, a checked in-memory source overlay, the packages the app and review must share, and the app's CSS for review frames. The connector itself names nothing from Laundry, and its checks enforce that it imports only Node, Vite and the shell.
+`review` returns the shell's options; `runtime` starts the isolated backend when the app declares one. An adapter kind other than `module` needs a connector. Laundry's (`apps/web/scripts/review-laundry-connector.mjs`) shows the whole interface: its own index and fixture fingerprint inputs, module substitutes for app boot, auth and server routes, a checked in-memory source overlay, the packages the app and review must share, the app's CSS for review frames, and a canvas extension (`canvasExtension`) with its flow layout and guided towel run. The connector itself names nothing from Laundry, and its checks enforce that it imports only Node, Vite and the shell.
 
 ## Not covered yet
 
-- The canvas UI (`review.html` and `apps/web/src/review`) still lives in the Laundry monorepo host, so a host today is that workspace.
 - Runtime and data adapters (seed, identity, clock, isolated effects) exist only for Laundry's Convex backend (`apps/web/scripts/review-runtime.mjs`). TanStack Start server functions are not covered.
 - Other bundlers (Webpack, esbuild, Bun, Turbopack, Metro) and Vite+ are not verified. See `docs/design/review-product/platform-adapters.md`.
 
