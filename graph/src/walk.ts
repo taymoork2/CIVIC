@@ -102,9 +102,11 @@ export function frameWalk(graph: Graph, journeyId: string): FrameWalk {
         },
       ]
     })
+    // A link to a frame outside this journey, such as another flow's, leaves the walk.
+    const inJourney = (to: string) => screens.has(to) || graph.linksTo(to).some((link) => link.relation === 'contains' && screens.has(link.from))
     const actions = designLinks(id).map((link): WalkAction => ({
       label: link.action ?? link.route ?? 'Prototype link',
-      ...(link.to ? { to: link.to } : { leaves: link.route ?? link.unmapped ?? 'outside the design' }),
+      ...(link.to && inJourney(link.to) ? { to: link.to } : link.to ? { leaves: `${graph.get(link.to)?.title ?? link.to}, outside this journey` } : { leaves: link.route ?? link.unmapped ?? 'outside the design' }),
       ...(link.source ? { source: link.source } : {}),
     }))
     return {
@@ -137,7 +139,8 @@ export function walkPath(walk: FrameWalk, labels: string[]): { visited: string[]
   if (!first) return { visited: [], stopped: `${walk.title} has no start frame.` }
   const visited = [first]
   for (const label of labels) {
-    const here = byId.get(visited.at(-1)!)!
+    const here = byId.get(visited.at(-1)!)
+    if (!here) return { visited, stopped: `${visited.at(-1)} isn't a frame in ${walk.title}.` }
     const action = here.actions.find((candidate) => candidate.label === label)
     if (!action) return { visited, stopped: `${here.title} has no prototype link "${label}". It has: ${here.actions.map((candidate) => candidate.label).join(', ') || 'none'}.` }
     if (!action.to) return { visited, stopped: `"${label}" on ${here.title} leaves the design for ${action.leaves}; no frame draws it.` }

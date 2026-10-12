@@ -52,3 +52,18 @@ test('the text and the page both carry the design intent label', () => {
   assert.ok(!/<script[^>]+src=|<link[^>]+href=/.test(page), 'the page loads nothing from elsewhere')
   assert.throws(() => frameWalk(card(), 'target:shop.order-summary'), /is not a journey/)
 })
+
+test('a prototype link into another journey leaves the walk instead of breaking a scripted path', () => {
+  const graph = card()
+  graph.document.records.push(
+    { id: 'target:shop.payment', kind: 'target', title: 'Payment', scale: 'journey', presence: 'expected', entry: ['target:shop.card-entry'] },
+    { id: 'target:shop.card-entry', kind: 'target', title: 'Card entry', scale: 'screen', presence: 'expected' },
+  )
+  graph.document.links.push(
+    { from: 'target:shop.payment', relation: 'contains', to: 'target:shop.card-entry', status: 'declared' },
+    { from: 'target:shop.promo-applied', relation: 'navigates', to: 'target:shop.card-entry', status: 'declared', action: 'Pay', source: { tool: 'figma', importer: 'figma-file', revision: 'r' } },
+  )
+  const walk = frameWalk(indexGraph(graph.document), 'target:shop.checkout')
+  assert.deepEqual(walk.frames.find((frame) => frame.id === 'target:shop.promo-applied')!.actions.map((action) => [action.label, action.to, action.leaves]), [['Pay', undefined, 'Card entry, outside this journey']])
+  assert.match(walkPath(walk, ['Apply promotion', 'Pay']).stopped!, /leaves the design for Card entry, outside this journey/)
+})
