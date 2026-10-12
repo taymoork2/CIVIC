@@ -40,18 +40,20 @@ export function isAnchored(anchor: Anchor | undefined): boolean {
 }
 
 function hasLocator(locator: ElementLocator | undefined): locator is ElementLocator {
-  return locator !== undefined && (locator.testId !== undefined || (locator.role !== undefined && locator.name !== undefined))
+  return locator !== undefined && (locator.testId !== undefined || locator.figmaNode !== undefined || (locator.role !== undefined && locator.name !== undefined))
 }
 
 /**
  * What a page shows about one element, as read by a deterministic capture: the graph IDs it
  * carries (`data-civic-id`, comma separated), its test ID, and its role and accessible name.
+ * A node read from a Figma export carries its node ID instead.
  */
 export interface ObservedElement {
   civicIds: string[]
   testId?: string
   role?: string
   name?: string
+  figmaNode?: string
 }
 
 export interface AnchorResolution {
@@ -62,7 +64,7 @@ export interface AnchorResolution {
 
 /**
  * Finds an annotation again on another revision (D37). First by stable target ID, then by
- * exact locator: the test ID, or role and accessible name together. If neither matches,
+ * exact locator: the test ID, a Figma node ID, or role and accessible name together. If neither matches,
  * the anchor is not found on this revision. Nothing is ever placed on the nearest element,
  * and the rectangle is never consulted.
  */
@@ -73,7 +75,9 @@ export function resolveAnchor(anchor: Anchor | undefined, elements: ObservedElem
   const locator = anchor!.locator
   if (hasLocator(locator)) {
     const byLocator = indexes(elements, (element) =>
-      locator.testId !== undefined ? element.testId === locator.testId : element.role === locator.role && element.name === locator.name,
+      locator.testId !== undefined ? element.testId === locator.testId
+        : locator.figmaNode !== undefined ? element.figmaNode === locator.figmaNode
+          : element.role === locator.role && element.name === locator.name,
     )
     // An exact locator that matches several elements is ambiguous, so it is not a match either.
     if (byLocator.length === 1) return { outcome: 'found-by-locator', matches: byLocator }

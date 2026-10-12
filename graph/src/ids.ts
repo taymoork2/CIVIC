@@ -24,6 +24,7 @@ export const ID_PREFIX: Record<RecordKind, string> = {
   line: 'line',
   annotation: 'annotation',
   'work-request': 'request',
+  'draft-choice': 'choice',
 }
 
 const ID_PATTERN = /^([a-z]+):([A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)*)$/

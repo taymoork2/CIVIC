@@ -491,6 +491,8 @@ export interface ElementLocator {
   name?: string
   /** DOM or accessibility path at capture time. Kept for people to read; never matched. */
   path?: string
+  /** A design-draft frame or layer: its node ID in the Figma file, such as `12:34`. Matched exactly. */
+  figmaNode?: string
 }
 
 /** A frozen capture: content-addressed, so it can never change after it is written. */
@@ -615,6 +617,23 @@ export interface WorkRequest extends RecordBase {
   changed?: { by: string; at: string; what: string }
 }
 
+/**
+ * A person's choice between design drafts (D36): the Decision for drafts. It names the
+ * chosen line and the revision that was chosen. The other drafts from the same base are
+ * marked abandoned, not deleted, so "why didn't we do B" keeps its answer. `writtenBy` is
+ * the person who chose; an agent never chooses (D35).
+ */
+export interface DraftChoice extends RecordBase {
+  kind: 'draft-choice'
+  /** The design line the drafts branched from. */
+  base: string
+  chosen: { line: string; revision: string }
+  /** The other drafts from the same base that were open when the choice was made. */
+  over: string[]
+  rationale: string
+  at: string
+}
+
 export type GraphRecord =
   | Intent
   | Target
@@ -634,6 +653,7 @@ export type GraphRecord =
   | Line
   | Annotation
   | WorkRequest
+  | DraftChoice
 
 export type RecordKind = GraphRecord['kind']
 

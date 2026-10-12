@@ -36,6 +36,7 @@ Every record has a stable ID, `<prefix>:<dot.separated.path>`, a title, and opti
 | Actor | `actor:` | Who wrote something: a person, an agent acting for a named person, or CIVIC's own deterministic process |
 | Line | `line:` | A stream of work with revisions: main, a branch, a worktree, a PR with its preview, or a design draft |
 | Annotation | `annotation:` | A comment on a journey, screen, part of a screen, path or branch, with layered anchors, a frozen capture, and the line and revision it was made on |
+| Draft choice | `choice:` | A person's choice between design drafts from one base: the chosen line and revision, and the drafts passed over, which are marked abandoned |
 | Work request | `request:` | Annotations handed to an agent: base revision, acceptance checks, repro command, claim lease, reported fixes, CIVIC's re-capture, a status history, and a version that counts its changes (roadmap step 5) |
 
 ### Decisions
@@ -113,11 +114,11 @@ Only declared and observed links count for readiness. A `navigates` link follows
 
 ## The review to agent loop
 
-Actor, Line, Annotation and Work request are the records for [decision 0007](../docs/decisions/0007-review-to-agent-loop.md), and the start of roadmap step 3's collaboration records. Validation enforces its rules:
+Actor, Line, Annotation, Work request and Draft choice are the records for [decision 0007](../docs/decisions/0007-review-to-agent-loop.md), and the start of roadmap step 3's collaboration records. Validation enforces its rules:
 
 - **Agents act for a person (D35).** An agent names the person it acts for in `delegatedBy`. An agent can write annotations and comments, claim, and report fixes, but it can't write evidence, resolve a conflict, accept an acceptance check, or resolve a work request.
-- **Lines branch from a base (D36).** Only main has no base, and a merged line names the revision it merged as.
-- **Anchors follow identity (D37).** An anchor lists graph target IDs, path edges (whose starting screen is also a target) and an element locator, plus the capture's rectangle. `resolveAnchor` finds an anchor on another revision by target ID, then by exact locator (a test ID, or role and accessible name, matching exactly one element), and otherwise reports it not found. The rectangle is never used to find anything. Anchor target IDs are checked for format only, because "not found on this revision" is a real answer, not a broken graph.
+- **Lines branch from a base (D36).** Only main has no base, and a merged line names the revision it merged as. A draft choice is written by a person, never an agent; its chosen line and every draft it passed over are design drafts of its base, and the passed-over drafts are abandoned.
+- **Anchors follow identity (D37).** An anchor lists graph target IDs, path edges (whose starting screen is also a target) and an element locator, plus the capture's rectangle. `resolveAnchor` finds an anchor on another revision by target ID, then by exact locator (a test ID, a Figma node ID, or role and accessible name, matching exactly one element), and otherwise reports it not found. The rectangle is never used to find anything. Anchor target IDs are checked for format only, because "not found on this revision" is a real answer, not a broken graph.
 - **Requests close through their lane (D38).** `laneFor` computes the lane: owner sign-off for a change to intent or behavior or a high-risk target, Auto for a contract-restoring request whose annotations are anchored and whose acceptance checks were all written or accepted by a person, and batch review for the rest. A person can escalate a request to a stricter lane. CIVIC resolves only in the Auto lane, after its own re-capture found every anchor and every check passed. The owner lane needs a named owner, and on a high-risk target the person who delegated the fix can't approve it.
 - **History is the truth.** A request starts Open, its status is its last history entry, a claimed request has a claim, and a Fix ready request has a reported fix.
 

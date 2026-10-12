@@ -35,6 +35,7 @@ import {
   reviewQueue,
   type Context,
 } from './loop.ts'
+import { chooseDraft, registerDesignDraft, registerDesignFile, type DesignLineResult, type FigmaFileExport } from './drafts.ts'
 import { bearerFor, captureScenario, launchBrowser, recapture, reproductionUrl } from './recapture.ts'
 import { createOverlayServer } from './overlay/server.ts'
 import { renderList, renderRequest } from './render.ts'
@@ -59,10 +60,14 @@ const USAGE = `Usage (records are shared by every worktree of this repository):
   civic overlay [--port 4777]                     serves the capture overlay for dev and preview pages
   civic preview <url> [--bearer-file <file>]      civic lines [--json] | annotations [--line <id>] [--json] | whoami
   civic pr <number> [--preview <url>] [--remote origin]   a pull request as its own line, with its hosted preview
+  civic design <figma export.json> --file <key>  a design file's main line, at the export's version
+  civic draft <figma export.json> --file <key> --name "<draft>" [--branch <key>]   a designer's draft as its own line
+  civic choose-draft <draft line> --why "<rationale>" [--merged-as <version>]   a person picks a draft; the others are abandoned
   civic sync [--remote origin] [--ref refs/civic/records]   share records with the team through a git ref
   civic conflicts [--json]                        civic settle <record> --keep mine|theirs
   civic keygen [--out <file>]                     makes your signing key for civic sync
-  annotate also takes --rect x,y,w,h [--rect-label <text>], --viewport <w>x<h> and --json; request takes --json.
+  annotate also takes --rect x,y,w,h [--rect-label <text>], --viewport <w>x<h>, --line <id> (a known line, such as a
+  design draft, at its latest revision), --figma-node <node id> (a draft's frame or layer) and --json; request takes --json.
   A <request> may end in @<version>, as civic requests and civic queue print it: the write is refused if the
   request changed since. Who may read, write, approve and resolve comes from civic.access.json on the default branch.`
 
@@ -87,6 +92,7 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
       const role = one('--role')
       const name = one('--name')
       const testId = one('--test-id')
+      const figmaNode = one('--figma-node')
       if ((role === undefined) !== (name === undefined)) throw new UsageError('A role locator needs both --role and --name.')
       const url = one('--url')
       const rect = one('--rect')
@@ -96,9 +102,10 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
         ...(one('--title') ? { title: one('--title')! } : {}),
         targetIds: flags.get('--target') ?? [],
         edges: (flags.get('--edge') ?? []).map(parseEdge),
-        ...(testId || role ? { locator: { ...(testId ? { testId } : {}), ...(role ? { role, name: name! } : {}) } } : {}),
+        ...(testId || role || figmaNode ? { locator: { ...(testId ? { testId } : {}), ...(role ? { role, name: name! } : {}), ...(figmaNode ? { figmaNode } : {}) } } : {}),
         ...(image ? { image: { bytes: readFileSync(resolvePath(cwd, image)), mediaType: mediaOf(image) } } : {}),
         ...(url ? { url } : {}),
+        ...(one('--line') ? { line: one('--line')! } : {}),
         ...(rect ? { rect: parseRect(rect, one('--rect-label')) } : {}),
         ...(viewport ? { viewport: parseViewport(viewport) } : {}),
       })
@@ -246,6 +253,35 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
       print(`${line.id} ${line.status} at ${line.head.slice(0, 12)}${line.previews?.length ? `, served at ${line.previews.map((p) => p.url).join(', ')}` : ''}`)
       return 0
     }
+    case 'design':
+    case 'draft': {
+      need(1)
+      const fileKey = one('--file')
+      if (!fileKey) throw new UsageError(`${command} needs --file <key>, the Figma file's key from its URL.`)
+      const file = JSON.parse(readFileSync(resolvePath(cwd, positional[0]!), 'utf8')) as FigmaFileExport
+      let result: DesignLineResult
+      if (command === 'design') result = registerDesignFile(context, { file, fileKey })
+      else {
+        const name = one('--name')
+        if (!name) throw new UsageError('draft needs --name "<draft>", as the designer calls it.')
+        result = registerDesignDraft(context, { file, fileKey, name, ...(one('--branch') ? { branchKey: one('--branch')! } : {}) })
+      }
+      if (has('--json')) print(JSON.stringify(result, null, 2))
+      else {
+        print(`${result.line.id} ${result.line.status} at version ${result.line.head}${result.line.base ? `, from ${result.line.base}` : ''}`)
+        if (result.frames.length) print(`Frames to annotate (civic annotate "..." --line ${result.line.id} --figma-node <node>):\n${result.frames.map((frame) => `  ${frame.node.padEnd(10)} ${frame.page} / ${frame.name}`).join('\n')}`)
+        for (const followed of result.annotations) print(`${followed.annotationId} ${followed.outcome === 'found-by-locator' ? 'found' : 'not found'} on this version: ${followed.title}`)
+      }
+      return 0
+    }
+    case 'choose-draft': {
+      need(1)
+      const why = one('--why')
+      if (!why) throw new UsageError('Say why with --why "<rationale>".')
+      const choice = chooseDraft(context, { line: positional[0]!, rationale: why, ...(one('--merged-as') ? { mergedAs: one('--merged-as')! } : {}) })
+      print(has('--json') ? JSON.stringify(choice, null, 2) : `${choice.id}: chose ${choice.chosen.line} at version ${choice.chosen.revision}${choice.over.length ? `; abandoned ${choice.over.join(', ')}` : ''}`)
+      return 0
+    }
     case 'preview': {
       need(1)
       const bearer = one('--bearer-file')
@@ -332,7 +368,7 @@ function renderLines(document: GraphDocument, current: string): string {
     .map((line) => {
       const claimed = document.records.filter((record) => record.kind === 'work-request' && record.claim?.line === line.id && record.status !== 'resolved').length
       const previews = (line.previews ?? []).map((preview) => `${preview.url} @ ${preview.revision.slice(0, 7)}`).join(', ')
-      return `${line.id === current ? '*' : ' '} ${line.id.padEnd(36)} ${line.type.padEnd(9)} ${line.status.padEnd(9)} ${line.head.slice(0, 7)}${claimed ? `  ${claimed} request(s) claimed` : ''}${previews ? `  ${previews}` : ''}`
+      return `${line.id === current ? '*' : ' '} ${line.id.padEnd(36)} ${line.type.padEnd(12)} ${line.status.padEnd(9)} ${line.head.slice(0, 7)}${claimed ? `  ${claimed} request(s) claimed` : ''}${previews ? `  ${previews}` : ''}`
     })
     .join('\n')
 }
