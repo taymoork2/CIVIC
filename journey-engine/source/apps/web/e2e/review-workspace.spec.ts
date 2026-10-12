@@ -36,7 +36,8 @@ test('review opens real synthetic sheets without a household connection', async 
 })
 
 test('failure retains the intake draft and retries it; a scenario change has a restart boundary', async ({ page }) => {
-  await page.goto('/review?legacy=1&scenario=intake.towel.final&condition=save-error&persona=parent')
+  // The pack still saves through the review fixture; the towel's failed save is in review-towel-runtime.spec.ts.
+  await page.goto('/review?legacy=1&scenario=intake.pack.final&condition=save-error&persona=parent')
   const frame = page.frameLocator('iframe')
   await frame.getByRole('button', { name: 'Save item', exact: true }).click()
   await expect(frame.getByRole('alert')).toContainText('Something went wrong')
@@ -44,8 +45,7 @@ test('failure retains the intake draft and retries it; a scenario change has a r
   await frame.getByRole('button', { name: 'Save item', exact: true }).click()
   await expect(frame.getByRole('heading', { name: 'Saved', exact: true })).toBeVisible()
   const data = await page.locator('iframe').evaluate((iframe: HTMLIFrameElement) => iframe.contentWindow!.reviewPreview!.data())
-  const towel = data.textiles.find((piece) => piece.name === 'Cotton/polyester bath towel')!
-  expect(towel.care!.material).toBe('cotton 80%, polyester 20%')
+  expect(data.textiles.filter((piece) => piece.name === 'Everyday multicolor tee pack')).toHaveLength(6)
   await page.getByLabel('Persona', { exact: true }).selectOption('student')
   await expect(page.getByRole('heading', { name: 'Restart this preview?' })).toBeVisible()
   await page.getByRole('button', { name: 'Keep reviewing' }).click()
@@ -160,7 +160,8 @@ test('saved profile and water editors persist local changes', async ({ page }) =
   expect(data.water.source).toBe('strip')
 })
 
-for (const fixture of ['pack', 'towel']) test(`${fixture} intake keeps answers through Back, saves, and connects to the item record`, async ({ page }) => {
+// The towel intake saves through the app's own runtime since v7; review-towel-runtime.spec.ts covers it.
+for (const fixture of ['pack']) test(`${fixture} intake keeps answers through Back, saves, and connects to the item record`, async ({ page }) => {
   await page.goto(`/review?legacy=1&scenario=intake.${fixture}.type`)
   const frame = page.frameLocator('iframe')
   await frame.getByRole('button', { name: /^Next:/ }).click()
