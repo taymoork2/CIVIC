@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // civic: validate graph files, forecast overrides, export contracts and gaps (D31), run the
-// gate, and record a person's decision on a conflict. Every command but `decide` is read-only;
-// all are deterministic, and none makes a model call (D30).
+// gate, and keep the decision loop: propose a fix, decide a conflict, record the revision that
+// adopts it and the evidence that verifies it. Only `propose`, `decide`, `adopt` and `verify`
+// write, and only to a decision file; all are deterministic, and none makes a model call (D30).
 //
 //   civic validate <file>...
 //   civic forecast <file> <override-id> [--platforms web,ios,android]
@@ -12,14 +13,31 @@
 //   civic screen <target-id> [<file>...] [--config civic.check.json] [--today <date>] [--json]
 //   civic check [<file>...] [--config civic.check.json] [--baseline <file>] [--update-baseline] [--today <date>] [--json] [--post]
 //   civic decide <decisions.json> <conflict-id> --graph <file> --outcome <o> --classification <c> --by <role>:<who>
-//                --rationale <text> --evidence <id,...> [--alignment <a>] [--title <t>] [--revisit <text>] [--expires <date>] [--at <time>]
+//                --rationale <text> --evidence <id,...> [--proposal <id>] [--alignment <a>] [--title <t>] [--revisit <text>] [--expires <date>] [--at <time>]
+//   civic propose <decisions.json> --graph <file> --targets <id,...> --scope <s> --outcome <o> --by <role>:<who> --rationale <text>
+//                --expected <text> --baseline <tool>:<rev> --candidate <tool>:<rev> [--conflict <id>] [--preview <url>] [--title <t>] [--at <time>]
+//   civic adopt <decisions.json> <decision-id> --graph <file> --revision <tool>:<rev> --by <role>:<who> [--preview <url>] [--note <text>] [--at <time>]
+//   civic verify <decisions.json> <adoption-id> --graph <file> --evidence <id,...> --by <role>:<who> [--at <time>]
+//   civic fixes <file> [--json]
 
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, relative, resolve } from 'node:path'
 import { baselineFrom, checkDocument, compareToBaseline, DEFAULT_BLOCKING, FINDING_KINDS, renderCheck, statusLine, type Baseline, type FindingKind } from './check.ts'
 import { completenessOf, renderCompleteness } from './completeness.ts'
-import { ALIGNMENT_FOR, DECISION_FILE_SCHEMA, recordDecision, type DecisionFile } from './decisions.ts'
+import {
+  ALIGNMENT_FOR,
+  decisionFileRecords,
+  DECISION_FILE_SCHEMA,
+  fixesIn,
+  openProposals,
+  recordAdoption,
+  recordDecision,
+  recordProposal,
+  recordVerification,
+  renderFixes,
+  type DecisionFile,
+} from './decisions.ts'
 import { contextFor, renderWorkOrder } from './context.ts'
 import { forecastOverride } from './forecast.ts'
 import { staleEvidence, type FreshnessRule } from './freshness.ts'
@@ -28,7 +46,20 @@ import { renderInstanceReview, reviewInstance } from './overrides.ts'
 import { renderScreen, screenFacts } from './screen.ts'
 import { indexGraph } from './graph.ts'
 import { loadGraph, readGraphFile } from './load.ts'
-import { CLASSIFICATIONS, DECISION_OUTCOMES, PLATFORMS, ROLES, type AlignmentState, type Classification, type DecisionOutcome, type GraphDocument, type Platform, type Role } from './schema.ts'
+import {
+  CLASSIFICATIONS,
+  DECISION_OUTCOMES,
+  PLATFORMS,
+  ROLES,
+  type AlignmentState,
+  type Classification,
+  type DecisionOutcome,
+  type GraphDocument,
+  type Owner,
+  type Platform,
+  type Proposal,
+  type RevisionRef,
+} from './schema.ts'
 import { validateGraph } from './validate.ts'
 
 const [command, ...args] = process.argv.slice(2)
@@ -89,6 +120,14 @@ async function main(): Promise<number> {
   if (command === 'check') return check()
   if (command === 'screen') return screen()
   if (command === 'decide' && args.length >= 2) return decide(args[0]!, args[1]!)
+  if (command === 'propose' && args.length >= 1) return propose(args[0]!)
+  if (command === 'adopt' && args.length >= 2) return adopt(args[0]!, args[1]!)
+  if (command === 'verify' && args.length >= 2) return verify(args[0]!, args[1]!)
+  if (command === 'fixes' && args.length >= 1) {
+    const graph = await loadGraph(args[0]!)
+    console.log(args.includes('--json') ? JSON.stringify({ fixes: fixesIn(graph), proposals: openProposals(graph) }, null, 2) : renderFixes(graph))
+    return 0
+  }
   return usage()
 }
 
@@ -110,44 +149,192 @@ async function decide(file: string, conflictId: string): Promise<number> {
   const allowed = ALIGNMENT_FOR[outcome as DecisionOutcome]
   const alignment = option('--alignment') ?? allowed[0]!
   if (!allowed.includes(alignment as AlignmentState)) return usage(`A ${outcome} decision leaves the conflict ${allowed.join(' or ')}.`)
-  const [role, who] = (option('--by') ?? '').split(':') as [string, string | undefined]
-  if (!(ROLES as readonly string[]).includes(role) || !who) return usage(`--by is <role>:<who>, where role is one of ${ROLES.join(', ')}.`)
+  const decidedBy = owner()
+  if (!decidedBy) return usage(BY_USAGE)
   const rationale = option('--rationale')
   if (!rationale) return usage('--rationale says why, in a sentence or two.')
   const evidenceIds = (option('--evidence') ?? '').split(',').filter(Boolean)
   const revisitTrigger = option('--revisit')
   const expires = option('--expires')
+  const proposalId = option('--proposal')
 
   const document = (await readGraphFile(graphPath)) as GraphDocument
   const conflict = Array.isArray(document.records) ? document.records.find((record) => record.id === conflictId) : undefined
-  const existing: DecisionFile = existsSync(file) ? (JSON.parse(readFileSync(file, 'utf8')) as DecisionFile) : { schema: DECISION_FILE_SCHEMA, decisions: [] }
-  if (existing.schema !== DECISION_FILE_SCHEMA) return usage(`${file} is not a decision file (schema ${DECISION_FILE_SCHEMA}).`)
+  const existing = readDecisionFile(file)
+  if (!existing) return usage(`${file} is not a decision file (schema ${DECISION_FILE_SCHEMA}).`)
   const { file: next, decision } = recordDecision(existing, {
     title: option('--title') ?? `Decision on ${conflict?.title ?? conflictId}`,
     conflictId,
     outcome: outcome as DecisionOutcome,
     classification: classification as Classification,
     alignment: alignment as AlignmentState,
-    decidedBy: { role: role as Role, who },
+    decidedBy,
     at: option('--at') ?? new Date().toISOString(),
     rationale,
     evidenceIds,
     ...(revisitTrigger ? { revisitTrigger } : {}),
     ...(expires ? { expires } : {}),
+    ...(proposalId ? { proposalId } : {}),
   })
+  if (!writeChecked(file, next, document, graphPath, decision.id)) return 1
+  console.log(`Recorded ${decision.id} in ${file}${decision.supersedes ? `, superseding ${decision.supersedes}` : ''}. Rebuild the graph, then run civic check.`)
+  return 0
+}
 
-  // The graph with this file's decisions in place of any it already holds.
-  const candidate = { ...document, records: [...document.records.filter((record) => record.kind !== 'decision'), ...next.decisions] }
-  const issues = validateGraph(candidate).filter((issue) => issue.severity === 'error' || issue.at === decision.id)
+/**
+ * Records a candidate fix as a Proposal: what it changes, the baseline and candidate
+ * revisions, and what a person should see once it is adopted. Anyone may propose, an agent
+ * included; a person decides by naming it in `civic decide --proposal`.
+ */
+async function propose(file: string): Promise<number> {
+  const graphPath = option('--graph')
+  if (!graphPath) return usage('propose needs --graph, to check the proposal against.')
+  const targetIds = (option('--targets') ?? '').split(',').filter(Boolean)
+  if (targetIds.length === 0) return usage('--targets lists what the candidate changes, as graph IDs.')
+  const scope = option('--scope')
+  const scopes: Proposal['scope'][] = ['journey', 'screen', 'component', 'primitive', 'token']
+  if (!scope || !(scopes as string[]).includes(scope)) return usage(`--scope is one of ${scopes.join(', ')}.`)
+  const outcome = option('--outcome')
+  if (!outcome || !(DECISION_OUTCOMES as readonly string[]).includes(outcome)) return usage(`--outcome is one of ${DECISION_OUTCOMES.join(', ')}.`)
+  const proposedBy = owner()
+  if (!proposedBy) return usage(BY_USAGE)
+  const rationale = option('--rationale')
+  const expected = option('--expected')
+  if (!rationale || !expected) return usage('--rationale says why, and --expected what a person should see once it is adopted.')
+  const baseline = revisionRef(option('--baseline'))
+  const preview = option('--preview')
+  const candidate = revisionRef(option('--candidate'), preview)
+  if (!baseline || !candidate) return usage('--baseline and --candidate are <tool>:<revision>, such as git:4f2a9c1 or figma:2215441.')
+  const conflictId = option('--conflict')
+
+  const document = (await readGraphFile(graphPath)) as GraphDocument
+  const existing = readDecisionFile(file)
+  if (!existing) return usage(`${file} is not a decision file (schema ${DECISION_FILE_SCHEMA}).`)
+  const conflict = conflictId && Array.isArray(document.records) ? document.records.find((record) => record.id === conflictId) : undefined
+  const { file: next, proposal } = recordProposal(existing, {
+    title: option('--title') ?? `Proposal for ${conflict?.title ?? targetIds.join(', ')}`,
+    ...(conflictId ? { conflictId } : {}),
+    targetIds,
+    scope: scope as Proposal['scope'],
+    outcome: outcome as DecisionOutcome,
+    baseline,
+    candidate,
+    rationale,
+    expected,
+    proposedBy,
+    at: option('--at') ?? new Date().toISOString(),
+  })
+  if (!writeChecked(file, next, document, graphPath, proposal.id)) return 1
+  console.log(`Recorded ${proposal.id} in ${file}. An owner approves it with civic decide --proposal ${proposal.id}.`)
+  return 0
+}
+
+/**
+ * Records the revision that carries a decision. It is a claim until verified: the gate
+ * reads it as adopted, and fails it if an import that read that revision still raises the
+ * conflict.
+ */
+async function adopt(file: string, decisionId: string): Promise<number> {
+  const graphPath = option('--graph')
+  if (!graphPath) return usage('adopt needs --graph, to check the adoption against.')
+  const carriedBy = revisionRef(option('--revision'), option('--preview'))
+  if (!carriedBy) return usage('--revision is <tool>:<revision>, the revision that carries the decision, such as git:4f2a9c1.')
+  const adoptedBy = owner()
+  if (!adoptedBy) return usage(BY_USAGE)
+  const note = option('--note')
+  const document = (await readGraphFile(graphPath)) as GraphDocument
+  const existing = readDecisionFile(file)
+  if (!existing) return usage(`${file} is not a decision file (schema ${DECISION_FILE_SCHEMA}).`)
+  const decision = existing.decisions.find((candidate) => candidate.id === decisionId)
+  const { file: next, adoption } = recordAdoption(existing, {
+    title: option('--title') ?? `Adoption of ${decision?.title ?? decisionId}`,
+    decisionId,
+    carriedBy,
+    adoptedBy,
+    at: option('--at') ?? new Date().toISOString(),
+    ...(note ? { note } : {}),
+  })
+  if (!writeChecked(file, next, document, graphPath, adoption.id)) return 1
+  console.log(`Recorded ${adoption.id} in ${file}. Import ${carriedBy.revision} and rebuild: the conflict should no longer be raised. Then verify with civic verify.`)
+  return 0
+}
+
+/**
+ * Records a Verification from evidence the graph holds at the adopted revision. The outcome
+ * is read from that evidence, never typed in: any failing evidence fails it. Evidence read
+ * at any other revision is refused, so a verification always proves the adopted revision.
+ */
+async function verify(file: string, adoptionId: string): Promise<number> {
+  const graphPath = option('--graph')
+  if (!graphPath) return usage('verify needs --graph, the graph imported at the adopted revision.')
+  const evidenceIds = (option('--evidence') ?? '').split(',').filter(Boolean)
+  if (evidenceIds.length === 0) return usage('--evidence lists the evidence read at the adopted revision.')
+  const verifiedBy = owner()
+  if (!verifiedBy) return usage(BY_USAGE)
+  const document = (await readGraphFile(graphPath)) as GraphDocument
+  const existing = readDecisionFile(file)
+  if (!existing) return usage(`${file} is not a decision file (schema ${DECISION_FILE_SCHEMA}).`)
+  const adoption = (existing.adoptions ?? []).find((candidate) => candidate.id === adoptionId)
+  if (!adoption) return usage(`${file} has no ${adoptionId}. Record it first with civic adopt.`)
+  const revision = adoption.carriedBy.revision
+  const evidence = evidenceIds.map((id) => (Array.isArray(document.records) ? document.records.find((record) => record.id === id) : undefined))
+  const elsewhere = evidence.flatMap((item, index) => (item?.kind === 'evidence' && item.source.revision !== revision ? [`${evidenceIds[index]} (read at ${item.source.revision})`] : []))
+  if (elsewhere.length > 0) {
+    console.error(`Not recorded: ${elsewhere.join(', ')} not read at the adopted revision ${revision}. Import that revision and rebuild ${graphPath} first.`)
+    return 1
+  }
+  const outcome = evidence.some((item) => item?.kind === 'evidence' && item.outcome === 'fail') ? 'fail' : 'pass'
+  const { file: next, verification } = recordVerification(existing, {
+    title: option('--title') ?? `Verification of ${adoption.title}`,
+    adoptionId,
+    evidenceIds,
+    revision,
+    outcome,
+    verifiedBy,
+    at: option('--at') ?? new Date().toISOString(),
+  })
+  if (!writeChecked(file, next, document, graphPath, verification.id)) return 1
+  console.log(`Recorded ${verification.id} in ${file}: ${outcome} at ${revision}. Rebuild the graph, then run civic check.`)
+  return outcome === 'pass' ? 0 : 1
+}
+
+const BY_USAGE = `--by is <role>:<who>, where role is one of ${ROLES.join(', ')}.`
+
+function owner(): Owner | undefined {
+  const value = option('--by') ?? ''
+  const split = value.indexOf(':')
+  const role = value.slice(0, split)
+  const who = value.slice(split + 1)
+  return split > 0 && who && (ROLES as readonly string[]).includes(role) ? { role: role as Owner['role'], who } : undefined
+}
+
+function revisionRef(value: string | undefined, preview?: string): RevisionRef | undefined {
+  const split = value?.indexOf(':') ?? -1
+  if (!value || split <= 0 || split === value.length - 1) return undefined
+  return { tool: value.slice(0, split), revision: value.slice(split + 1), ...(preview ? { preview } : {}) }
+}
+
+function readDecisionFile(file: string): DecisionFile | undefined {
+  const existing: DecisionFile = existsSync(file) ? (JSON.parse(readFileSync(file, 'utf8')) as DecisionFile) : { schema: DECISION_FILE_SCHEMA, decisions: [] }
+  return existing.schema === DECISION_FILE_SCHEMA ? existing : undefined
+}
+
+/**
+ * Writes the decision file only if the graph, with this file's loop records in place of any
+ * it already holds, stays valid. Prints the errors and the new record's warnings either way.
+ */
+function writeChecked(file: string, next: DecisionFile, document: GraphDocument, graphPath: string, recordId: string): boolean {
+  const loop = new Set(['proposal', 'decision', 'adoption', 'verification'])
+  const candidate = { ...document, records: [...document.records.filter((record) => !loop.has(record.kind)), ...decisionFileRecords(next)] }
+  const issues = validateGraph(candidate).filter((issue) => issue.severity === 'error' || issue.at === recordId)
   const errors = issues.filter((issue) => issue.severity === 'error')
   for (const issue of issues) console.error(`  ${issue.severity} ${issue.code} at ${issue.at}: ${issue.message}`)
   if (errors.length > 0) {
-    console.error(`Not recorded: ${errors.length} error(s) with this decision on ${graphPath}.`)
-    return 1
+    console.error(`Not recorded: ${errors.length} error(s) with ${recordId} on ${graphPath}.`)
+    return false
   }
   writeFileSync(file, `${JSON.stringify(next, null, 2)}\n`)
-  console.log(`Recorded ${decision.id} in ${file}${decision.supersedes ? `, superseding ${decision.supersedes}` : ''}. Rebuild the graph, then run civic check.`)
-  return 0
+  return true
 }
 
 /** The project's gate settings: which graphs to check, the baseline, and optionally which kinds block. */
@@ -273,7 +460,12 @@ function usage(problem?: string): number {
       '  civic screen <target-id> [<file>...] [--config civic.check.json] [--today <date>] [--json]',
       '  civic check [<file>...] [--config civic.check.json] [--baseline <file>] [--update-baseline] [--today <date>] [--json] [--post]',
       '  civic decide <decisions.json> <conflict-id> --graph <file> --outcome <o> --classification <c> --by <role>:<who>',
-      '               --rationale <text> --evidence <id,...> [--alignment <a>] [--title <t>] [--revisit <text>] [--expires <date>] [--at <time>]',
+      '               --rationale <text> --evidence <id,...> [--proposal <id>] [--alignment <a>] [--title <t>] [--revisit <text>] [--expires <date>] [--at <time>]',
+      '  civic propose <decisions.json> --graph <file> --targets <id,...> --scope <s> --outcome <o> --by <role>:<who> --rationale <text>',
+      '               --expected <text> --baseline <tool>:<rev> --candidate <tool>:<rev> [--conflict <id>] [--preview <url>] [--title <t>] [--at <time>]',
+      '  civic adopt <decisions.json> <decision-id> --graph <file> --revision <tool>:<rev> --by <role>:<who> [--preview <url>] [--note <text>] [--at <time>]',
+      '  civic verify <decisions.json> <adoption-id> --graph <file> --evidence <id,...> --by <role>:<who> [--at <time>]',
+      '  civic fixes <file> [--json]',
     ].join('\n'),
   )
   return 2

@@ -51,7 +51,43 @@ civic decide demo/fluent-button/contract/decisions.json conflict:button.android.
   --rationale "The kit predates Compose's OutlinedButton." --evidence evidence:figma.android-kit.button
 ```
 
-It checks the decision against the graph before writing, defaults the alignment state from the outcome, and supersedes the decision already in force. Rebuild the graph, and the gate stops counting the conflict as undecided. Proposal, Adoption and Verification records come later in step 3.
+It checks the decision against the graph before writing, defaults the alignment state from the outcome, and supersedes the decision already in force. Rebuild the graph, and the gate stops counting the conflict as undecided.
+
+### The decision loop
+
+A decision is not a "done" flag. The spec's four records are separate, owned records ([`src/decisions.ts`](src/decisions.ts)), and all four live in the same decision file:
+
+1. **Proposal** (`proposal:`): a candidate change. It names what it changes, its scope, the resolution path (the same outcomes a decision takes), the baseline and candidate revisions with a preview to play it on, the rationale, and what a person should see once it lands. Anyone may propose, an agent included: CIVIC and the agents working from it draft remediation, and the owner decides. Testing a candidate is not adopting it.
+2. **Decision**: names the proposal it approves in `proposalId`. An `update-contract` decision changes intent, so it must approve a proposal; a fix that restores the contract (update the design, change the implementation) needs none.
+3. **Adoption** (`adoption:`): the revision that carries the decision, such as a commit or a Figma file version. It is a claim, so an agent may record it. An approved exception has nothing to adopt.
+4. **Verification** (`verification:`): evidence read at the adopted revision, with a pass or fail. Agents never write one (D35), as with evidence.
+
+Each decided fix has a stage, read from its records and re-checked every time the graph is read (`fixFor`):
+
+| Stage | When |
+|---|---|
+| `accepted` | The decision approves an exception. |
+| `awaiting-adoption` | No revision carries the decision yet. |
+| `adopted` | A revision carries it, and nothing has verified it. |
+| `verified` | A verification passed at the adopted revision and the evidence it cites still passes. The conflict reads `aligned`. |
+| `failed` | The latest verification failed, or the import read the adopted revision and still raises the conflict. |
+| `regressed` | It was verified, and evidence the verification cites fails now. |
+
+The import is CIVIC's own re-check. When a re-import no longer raises a decided conflict and its decision was adopted, the conflict is settled: `applyDecisions` leaves its records out of the graph and they stay in the file as history. A decision on a conflict that vanished without an adoption still fails the build, so a fix nobody recorded is noticed. Commands:
+
+```sh
+civic propose demo/card/contract/decisions.json --graph demo/card/out/raised.graph.json \
+  --conflict conflict:shop.order-summary.card.state-selected --targets semantic:card --scope component \
+  --outcome update-contract --by design:shop-design --rationale "Selection is part of Shop's order flow." \
+  --expected "The Card contract has a selected state on every platform." \
+  --baseline figma:1 --candidate figma:2 --preview https://figma.example/branch
+civic decide ... --proposal proposal:shop.order-summary.card.state-selected
+civic adopt <decisions.json> <decision-id> --graph <file> --revision git:4f2a9c1 --by engineering:fluent-android
+civic verify <decisions.json> <adoption-id> --graph <file> --evidence <id,...> --by qa:shop-qa
+civic fixes <file>                       # every decided fix with its stage, and proposals waiting for a decision
+```
+
+Each writes only after checking the decision file against the graph. `civic verify` reads the outcome from the evidence, never from a flag, and refuses evidence the graph holds at any revision other than the adopted one; it exits 1 when the verification it records fails.
 
 Any record can name the actor that wrote it in `writtenBy`, and a `SourceRef` can name the `line` its revision was seen on.
 
@@ -119,7 +155,7 @@ Two read-only queries over a graph (D31). Both are deterministic and print Markd
 { "graphs": ["demo/card/out/resolved.graph.json"], "baseline": "civic.baseline.json", "blocking": ["open-conflict"] }
 ```
 
-- **What blocks by default.** Findings that wait on a decision: an invalid graph, an open conflict, an override no conflict tracks, an approved exception past its `expires` date, failing evidence, a product state a design neither shows nor inherits, and a journey screen that is a dead end or unreachable. Recorded facts and evidence debt are reported as advisory: variants mapped to `none`, platform-only variants, no run evidence, unconfirmed links, screens a crawl discovered that nobody has confirmed (D34), stale evidence, and approved exceptions.
+- **What blocks by default.** Findings that wait on a decision or undo one: an invalid graph, an open conflict, an override no conflict tracks, an approved exception past its `expires` date, a decided fix that failed or regressed ([the decision loop](#the-decision-loop)), failing evidence, a product state a design neither shows nor inherits, and a journey screen that is a dead end or unreachable. Recorded facts and evidence debt are reported as advisory: variants mapped to `none`, platform-only variants, no run evidence, unconfirmed links, screens a crawl discovered that nobody has confirmed (D34), stale evidence, approved exceptions, decided fixes not yet adopted or adopted but not verified, and proposals waiting for a decision.
 - **Baseline.** Each finding has a stable key (kind, subject, platform and what tells it apart, such as the state). A baselined finding doesn't block, so old debt doesn't stop a change, and a new one is raised at the change that caused it. `--update-baseline` writes every current blocking finding to the baseline, which shows up in review as a diff. Findings that are gone are listed as fixed until the baseline is updated. An invalid graph can't be baselined.
 - **Counts.** The report gives each check's count with its denominator, such as 1 of 4 conflicts open, never a score.
 - **Status.** `--post` records the result as a `civic` commit status through the GitHub CLI, from a clean working tree, the way `bin/signoff` records `signoff`. There are no GitHub Actions.
@@ -147,6 +183,7 @@ node src/cli.ts completeness examples/card-override.graph.json target:shop.check
 node src/cli.ts gaps examples/fluent-button.graph.json
 node src/cli.ts context examples/fluent-button.graph.json semantic:button --platform android --variant neutral-default
 node src/cli.ts check ../demo/fluent-button/out/raised.graph.json     # fails: the brand outline conflict is undecided
+node src/cli.ts fixes ../demo/fluent-button/out/resolved.graph.json   # the brand outline fix awaits adoption
 cd .. && bin/civic screen target:laundry.intake.appliance                # one screen's journeys, paths, evidence and findings
 cd graph
 cd .. && bin/civic check                                             # the repository's gate

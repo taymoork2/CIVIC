@@ -328,6 +328,85 @@ export interface Decision extends RecordBase {
   expires?: string
   /** The earlier `decision:` on the same conflict that this one replaces. */
   supersedes?: string
+  /**
+   * The `proposal:` this decision approves: the exact candidate. Required for
+   * `update-contract`, which changes intent; a fix that restores the contract needs none.
+   */
+  proposalId?: string
+}
+
+// ---------------------------------------------------------------------------
+// The decision loop (roadmap step 3, spec: Proposal, decision, adoption, verification).
+// Four separate records, never one "done" flag: a candidate change, a person's call on it,
+// the revision that carries the call, and independent evidence that it behaves as decided.
+
+/** What a revision is, wherever it lives: a commit, a Figma file version, a package release. */
+export interface RevisionRef {
+  /** The tool the revision lives in, such as `git`, `figma` or `npm`. */
+  tool: string
+  revision: string
+  /** The `line:` it was made on, when the graph tracks lines (D36). */
+  line?: string
+  /** Where a candidate can be played or viewed: a PR preview, a Figma branch link. */
+  preview?: string
+}
+
+/**
+ * A candidate change (spec: Proposal). It names what it changes, the baseline it starts
+ * from and the candidate revision, so it can be played and compared before anyone decides.
+ * Testing a candidate is not adopting it. Agents may draft one for their person: CIVIC and
+ * the agents working from it draft remediation, and the owner decides (D35).
+ */
+export interface Proposal extends RecordBase {
+  kind: 'proposal'
+  /** The `conflict:` this remediates, when it answers one. */
+  conflictId?: string
+  /** What the candidate changes: targets, components, tokens. */
+  targetIds: string[]
+  scope: 'journey' | 'screen' | 'component' | 'primitive' | 'token'
+  /** The resolution path: which side changes, or an exception. A Decision approving it takes the same outcome. */
+  outcome: DecisionOutcome
+  baseline: RevisionRef
+  candidate: RevisionRef
+  rationale: string
+  /** What a person should see once it is adopted, in words a check can be written from. */
+  expected: string
+  proposedBy: Owner
+  at: string
+}
+
+/**
+ * The link from a Decision to the implementation revision that carries it (spec: Adoption).
+ * Recording one is a claim, so an agent may report it; it counts only once verified, by
+ * CIVIC's own re-import or by a Verification record.
+ */
+export interface Adoption extends RecordBase {
+  kind: 'adoption'
+  /** The `decision:` this carries out. Never an approved exception: there is nothing to adopt. */
+  decisionId: string
+  /** The revision that carries the decision. */
+  carriedBy: RevisionRef
+  adoptedBy: Owner
+  at: string
+  note?: string
+}
+
+/**
+ * Independent evidence that an adopted change behaves as decided (spec: Verification).
+ * The evidence is read at the adopted revision, and the gate re-checks it on every run, so
+ * a fix that later regresses fails again. Agents never write one (D35), as with evidence.
+ */
+export interface Verification extends RecordBase {
+  kind: 'verification'
+  /** The `adoption:` this verifies. */
+  adoptionId: string
+  /** Evidence read at the adopted revision. */
+  evidenceIds: string[]
+  /** The adopted revision the evidence was read at; it must be the adoption's. */
+  revision: string
+  outcome: 'pass' | 'fail'
+  verifiedBy: Owner
+  at: string
 }
 
 // ---------------------------------------------------------------------------
@@ -548,6 +627,9 @@ export type GraphRecord =
   | Evidence
   | ContractConflict
   | Decision
+  | Proposal
+  | Adoption
+  | Verification
   | Actor
   | Line
   | Annotation
