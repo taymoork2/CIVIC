@@ -36,8 +36,8 @@ interface ScreenFacts {
   graph: string
   journeys: { id: string; title: string }[]
   paths: { action?: string; toTitle?: string; unmapped?: string; status: string; counts: boolean }[]
-  evidence: { id: string; title: string; outcome: 'pass' | 'fail' | 'finding'; finding?: string; source: { revision: string } }[]
-  findings: { key: string; kind: string; summary: string; baselined: boolean }[]
+  evidence: { id: string; title: string; outcome: 'pass' | 'fail' | 'finding'; finding?: string; source: { revision: string }; stale?: string }[]
+  findings: { key: string; kind: string; summary: string; baselined: boolean; blocks: boolean }[]
 }
 
 /** What CIVIC's graph says about this screen: run evidence and the gate's findings (decision 0004). */
@@ -57,13 +57,14 @@ function CivicGraph({ scenario }: { scenario: string }) {
   const failing = facts.evidence.filter((item) => item.outcome === 'fail')
   const passing = facts.evidence.filter((item) => item.outcome === 'pass')
   const revisions = [...new Set(facts.evidence.map((item) => item.source.revision.slice(0, 12)))]
+  const stale = [...new Set(facts.evidence.flatMap((item) => item.stale ? [item.stale] : []))]
   return <section aria-label="CIVIC graph"><h3>CIVIC graph</h3>
     <dl className="rh-fields">
-      <div><dt>Run evidence</dt><dd>{facts.evidence.length === 0 ? <span className="rh-tone is-missing">Missing</span> : <><span className={`rh-tone ${failing.length ? 'is-failing' : 'is-proven'}`}>{failing.length ? 'Failing' : 'Passing'}</span>{passing.length} passed, {failing.length} failed{revisions.length ? ` at ${revisions.join(', ')}` : ''}</>}</dd></div>
+      <div><dt>Run evidence</dt><dd>{facts.evidence.length === 0 ? <span className="rh-tone is-missing">Missing</span> : <><span className={`rh-tone ${failing.length ? 'is-failing' : 'is-proven'}`}>{failing.length ? 'Failing' : 'Passing'}</span>{passing.length} passed, {failing.length} failed{revisions.length ? ` at ${revisions.join(', ')}` : ''}{stale.length > 0 && <small>Stale: {stale.join('; ')}. Recapture before relying on it.</small>}</>}</dd></div>
       <div><dt>Paths on</dt><dd>{facts.paths.length === 0 ? 'None declared' : facts.paths.map((path) => `${path.action ?? 'Path'} → ${path.toTitle ?? path.unmapped}${path.counts ? '' : ` (${path.status})`}`).join('; ')}</dd></div>
     </dl>
     {failing.length > 0 && <ul className="rh-civic-list" aria-label="Failing tests">{failing.map((item) => <li key={item.id}>{item.title}{item.finding ? <small>{item.finding}</small> : null}</li>)}</ul>}
-    {facts.findings.length > 0 && <ul className="rh-civic-list" aria-label="Gate findings">{facts.findings.map((item) => <li key={item.key}><strong>{item.kind}</strong> {item.summary}<small>{item.baselined ? 'Held by the baseline: known, not blocking.' : 'New: blocks civic check.'}</small></li>)}</ul>}
+    {facts.findings.length > 0 && <ul className="rh-civic-list" aria-label="Gate findings">{facts.findings.map((item) => <li key={item.key}><strong>{item.kind}</strong> {item.summary}<small>{item.baselined ? 'Held by the baseline: known, not blocking.' : item.blocks ? 'New: blocks civic check.' : 'Advisory: reported, not blocking.'}</small></li>)}</ul>}
     <p className="rh-muted">From {facts.graph}.</p>
   </section>
 }

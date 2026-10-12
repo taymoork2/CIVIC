@@ -22,6 +22,7 @@ import { completenessOf, renderCompleteness } from './completeness.ts'
 import { ALIGNMENT_FOR, DECISION_FILE_SCHEMA, recordDecision, type DecisionFile } from './decisions.ts'
 import { contextFor, renderWorkOrder } from './context.ts'
 import { forecastOverride } from './forecast.ts'
+import { staleEvidence, type FreshnessRule } from './freshness.ts'
 import { gapsIn, renderGaps } from './gaps.ts'
 import { renderInstanceReview, reviewInstance } from './overrides.ts'
 import { renderScreen, screenFacts } from './screen.ts'
@@ -154,6 +155,14 @@ interface CheckConfig {
   graphs: string[]
   baseline?: string
   blocking?: FindingKind[]
+  /** Which graphs' evidence proves code in this repository, and where that code is (step 6). */
+  freshness?: FreshnessRule[]
+}
+
+/** The stale evidence in one configured graph, or nothing when no freshness rule names it. */
+function staleIn(config: CheckConfig, root: string, file: string, document: GraphDocument): ReadonlyMap<string, string> | undefined {
+  const rule = config.freshness?.find((candidate) => candidate.graph === file)
+  return rule ? staleEvidence(document, rule, root) : undefined
 }
 
 /** What the graphs know about one screen: the first graph, given or configured, that has it. */
@@ -180,7 +189,8 @@ async function screen(): Promise<number> {
       console.error(`${file} is invalid: ${errors.map((issue) => issue.code).join(', ')}.`)
       return 1
     }
-    const facts = screenFacts(indexGraph(document), file, targetId, { today, ...(baseline ? { baseline } : {}) })
+    const stale = staleIn(config, root, file, document)
+    const facts = screenFacts(indexGraph(document), file, targetId, { today, ...(baseline ? { baseline } : {}), ...(stale ? { stale } : {}), ...(config.blocking ? { blocking: config.blocking } : {}) })
     console.log(args.includes('--json') ? JSON.stringify(facts, null, 2) : renderScreen(facts))
     return 0
   }
@@ -204,7 +214,13 @@ async function check(): Promise<number> {
   const today = option('--today') ?? new Date().toISOString().slice(0, 10)
   if (!/^\d{4}-\d{2}-\d{2}$/.test(today)) return usage('--today takes a date like 2026-10-11.')
 
-  const checks = config.graphs.map((file) => checkDocument(file, JSON.parse(readFileSync(resolve(root, file), 'utf8')), { today }))
+  const unwatched = (config.freshness ?? []).filter((rule) => !config.graphs.includes(rule.graph))
+  if (unwatched.length > 0) return usage(`A freshness rule names a graph the gate doesn't check: ${unwatched.map((rule) => rule.graph).join(', ')}`)
+  const checks = config.graphs.map((file) => {
+    const document = JSON.parse(readFileSync(resolve(root, file), 'utf8')) as GraphDocument
+    const stale = staleIn(config, root, file, document)
+    return checkDocument(file, document, { today, ...(stale ? { stale } : {}) })
+  })
   const baselineFlag = option('--baseline')
   const baselinePath = baselineFlag ? resolve(baselineFlag) : config.baseline ? resolve(root, config.baseline) : undefined
   const baseline = baselinePath && existsSync(baselinePath) ? (JSON.parse(readFileSync(baselinePath, 'utf8')) as Baseline) : undefined

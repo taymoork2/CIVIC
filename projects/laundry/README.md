@@ -10,7 +10,7 @@ Roadmap [step 9](../../docs/roadmap.md#9-real-inputs-replace-the-stand-ins): rea
 | What does one screen look like in the graph? | `bin/civic screen target:laundry.<scenario>`, or the Contract panel on the journey canvas, which shows the same facts for the selected screen. |
 | What does the gate say? | `bin/civic check`, which reads [`out/graph.json`](out/graph.json) with the demo graphs ([`civic.check.json`](../../civic.check.json)). |
 
-On the first capture, at commit `ea0d4e83a6b0`, 24 of Laundry's 27 review tests pass and 3 fail, and 12 of the 49 journey screens are dead ends. All 15 findings are real and are held in [`civic.baseline.json`](../../civic.baseline.json), so the gate passes today and blocks the next new one.
+On the first capture, at commit `ea0d4e83a6b0`, 24 of Laundry's 27 review tests passed and 3 failed, and 12 of the 49 journey screens are dead ends. All 15 findings are real and are held in [`civic.baseline.json`](../../civic.baseline.json), so the gate passes today and blocks the next new one.
 
 - **Failing tests.** "Review opens real synthetic sheets" waits for a review heading the v6 workspace no longer shows. "Every initial named scenario renders a real task drawer" now also loops over the Home reminder scenarios, which aren't drawers. "Returning to the family plan" can't find its Back to Laundry link. They look like tests the v6 handoff didn't update, but nobody has confirmed that yet.
 - **Dead ends.** The appliance, product, saved record and nested edit scenarios declare no path on, for example from Basic appliance intake to Saved appliance. Either the paths are missing from the journey data or the screens are legitimate ends. The engine declares no exits, so CIVIC can't tell which.
@@ -39,5 +39,7 @@ node projects/laundry/capture.ts                           # from the repository
 node projects/laundry/build.ts                             # rebuild out/
 bin/civic check                                            # new findings block; fixed ones are listed
 ```
+
+Or let the signoff decide: `bin/signoff --capture` recaptures only when the gate finds the evidence stale, meaning `rehearsal/source` changed since the commit it was captured at ([`civic.check.json`](../../civic.check.json)'s freshness rule). A recapture stops the signoff so the new evidence is reviewed and committed first. The recapture at `c694591b9b25`, after the Contract panel change, gave the same 24 passes and 3 failures.
 
 The capture refuses a dirty `rehearsal/source`, and it refuses a review server that read a different commit, because the evidence would describe code no commit holds. Laundry's Playwright config uses installed Chrome. `bin/signoff` fails when `out/` doesn't match the inputs. Because the build reads the spec files to see which scenarios each test opens, an edited spec can also change `out/`, which is a sign to recapture.

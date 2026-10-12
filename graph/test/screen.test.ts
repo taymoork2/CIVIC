@@ -31,7 +31,7 @@ test('a screen\'s facts: its journeys, paths, evidence and the gate\'s findings 
   assert.deepEqual(facts.evidence.map((item) => [item.title, item.outcome]), [['saves', 'pass'], ['shows errors', 'fail']])
   assert.deepEqual(facts.findings.map((item) => [item.kind, item.subjectId, item.baselined]), [['failing-evidence', 'evidence:playwright.errors', true]])
   // Done has no way on and isn't an exit: the gate's dead end is about Done, not Form.
-  assert.deepEqual(screenFacts(graph, 'app.graph.json', 'target:app.done', { today: '2026-10-12' }).findings.map((item) => [item.kind, item.baselined]), [['dead-end', false]])
+  assert.deepEqual(screenFacts(graph, 'app.graph.json', 'target:app.done', { today: '2026-10-12' }).findings.map((item) => [item.kind, item.baselined, item.blocks]), [['dead-end', false, true]])
   assert.match(renderScreen(facts), /fail: shows errors \(playwright, abc123def456\): expected alert/)
   assert.throws(() => screenFacts(graph, 'app.graph.json', 'target:app.nope', { today: '2026-10-12' }), /not a target/)
 })

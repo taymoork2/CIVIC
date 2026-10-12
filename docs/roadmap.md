@@ -98,6 +98,8 @@ Discovery and replay are deterministic by default. Record journeys with existing
 
 Acceptance: ordinary refresh and replay make zero model calls with providers disabled, and failed or cancelled operations never become successful edges.
 
+Progress, 2026-10-12: evidence becomes visibly stale. A freshness rule in `civic.check.json` says which evidence proves code in this repository and where that code is. The gate reports evidence whose code changed since its revision as advisory, with a count, and `civic screen` and the journey canvas's Contract panel mark it. `bin/signoff --capture` recaptures Laundry's evidence when it's stale and stops so the new evidence is reviewed and committed. Still to come: replay from start in the scenario player, and native captures.
+
 ## 7. Repository hygiene
 
 - Done: the repository is on GitHub at [taymoork2/CIVIC](https://github.com/taymoork2/CIVIC), with local signoffs (`bin/signoff`) instead of GitHub Actions.

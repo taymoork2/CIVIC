@@ -16,6 +16,7 @@ export const FINDING_KINDS = [
   'unreviewed-override',
   'expired-exception',
   'failing-evidence',
+  'stale-evidence',
   'missing-state',
   'dead-end',
   'unreachable-screen',
@@ -72,6 +73,12 @@ export interface GraphCheck {
 export interface CheckOptions {
   /** ISO date that approved exceptions' `expires` is compared with. */
   today: string
+  /**
+   * Evidence whose code changed since it was captured, with the reason, by evidence ID
+   * (`staleEvidence`). Given only for graphs with a freshness rule; without it, staleness
+   * isn't checked or measured.
+   */
+  stale?: ReadonlyMap<string, string>
 }
 
 /** Validates one graph document and, if it is valid, runs every check on it. */
@@ -122,6 +129,11 @@ export function checkGraph(label: string, graph: Graph, options: CheckOptions): 
   const evidence = graph.ofKind('evidence')
   for (const item of evidence.filter((candidate) => candidate.outcome === 'fail')) add('failing-evidence', item.id, `${item.title} fails.`, item.owners ?? [], item.platform)
   measure('Evidence failing', evidence.filter((item) => item.outcome === 'fail').length, evidence.length)
+  if (options.stale) {
+    const stale = evidence.filter((item) => options.stale!.has(item.id))
+    for (const item of stale) add('stale-evidence', item.id, `${item.title} is stale: ${options.stale.get(item.id)}. Recapture it.`, item.owners ?? [], item.platform)
+    measure('Evidence stale', stale.length, evidence.length)
+  }
 
   // Product states each screen's design accounts for (D32), one finding per missing state.
   const designScreens = new Set(graph.ofKind('component-instance').filter((instance) => instance.origin === 'design').map((instance) => screenOf(graph, instance.placedOn)))

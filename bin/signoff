@@ -8,14 +8,18 @@
 #   bin/signoff --browser  also the Fluent Button web evidence and the Playwright
 #                          review-canvas journey (needs Chrome and a review server:
 #                          pnpm --dir apps/web run review)
+#   bin/signoff --capture  first recapture Laundry's evidence if the gate finds it stale (needs
+#                          Chrome and a review server started at HEAD); a recapture stops
+#                          the signoff so the new evidence can be reviewed and committed
 #   bin/signoff --no-post  run everything but do not post a status
 set -euo pipefail
 
-browser=0 post=1
+browser=0 post=1 capture=0
 for arg in "$@"; do
   case "$arg" in
     --browser) browser=1 ;;
     --no-post) post=0 ;;
+    --capture) capture=1 ;;
     *) echo "Unknown option: $arg" >&2; exit 2 ;;
   esac
 done
@@ -38,6 +42,29 @@ if [ -n "$(git -C "$repo_root" status --porcelain)" ]; then
   exit 1
 fi
 sha="$(git -C "$repo_root" rev-parse HEAD)"
+
+# Fixture capture (roadmap step 6): evidence whose code changed since it was captured is
+# stale. Recapturing changes the committed inputs, so it ends the signoff for review.
+if [ "$capture" = 1 ]; then
+  step "Stale evidence: Laundry"
+  pnpm --dir "$graph_dir" install --frozen-lockfile
+  stale="$({ "$repo_root/bin/civic" check --config "$repo_root/civic.check.json" --json || true; } | node -e '
+    let text = ""; process.stdin.on("data", (chunk) => (text += chunk)).on("end", () => {
+      const report = JSON.parse(text)
+      const all = [...report.fresh, ...report.baselined, ...report.advisory]
+      console.log(all.filter((item) => item.kind === "stale-evidence" && item.graph === "projects/laundry/out/graph.json").length)
+    })')"
+  if [ "$stale" = 0 ]; then
+    echo "Laundry's evidence is fresh; nothing to recapture."
+  else
+    echo "$stale piece(s) of Laundry's evidence are stale; recapturing."
+    node "$laundry_dir/capture.ts" "${WASHCLOSET_E2E_BASE_URL:-http://127.0.0.1:3010}"
+    node "$laundry_dir/build.ts"
+    git -C "$repo_root" status --short -- projects/laundry
+    echo "Recaptured Laundry's evidence at $sha. Review the diff, commit projects/laundry, and sign off again." >&2
+    exit 1
+  fi
+fi
 
 step "CIVIC graph: types, tests and example graphs"
 pnpm --dir "$graph_dir" install --frozen-lockfile
