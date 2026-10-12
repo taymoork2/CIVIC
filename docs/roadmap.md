@@ -159,8 +159,8 @@ Progress, 2026-10-12: the demos read real Fluent 2 kits, trimmed to what they us
 
 Part 2 of [decision 0005](decisions/0005-what-civic-is.md): raise each finding at the change that caused it, in the tool where that change lives ([onboarding and ingestion, 4d](onboarding-and-ingestion.md#4d-raising-violations-and-drift-to-the-right-roles)). Today the gate posts one `civic` commit status, and its summary is read only by whoever runs `bin/signoff`.
 
-- **Find the side that moved.** Compare each side with the last revision where they agreed, ask the owner of the change that introduced the difference, and tell the other side's owners.
-- **Engineering:** a pull request check whose summary lists the new findings with their owners, through the same local signoff and no GitHub Actions.
+- **Find the side that moved.** Compare each side with the last revision where they agreed, ask the owner of the change that introduced the difference, and tell the other side's owners. *Built:* `civic check --since <ref>` compares with the merge base ([graph README](../graph/README.md#the-gate-civic-check)).
+- **Engineering:** a pull request check whose summary lists the new findings with their owners, through the same local signoff and no GitHub Actions. *Built:* `bin/signoff` puts that summary on the open pull request as one comment, edited in place, beside the `civic` status.
 - **QA:** a Playwright reporter that writes run evidence into the graph and prints the scenarios a run left uncovered.
 - **Design Engineering:** a check on a library release that names the variants left without a mapping and the product overrides the release breaks.
 - **Design:** findings on a Figma frame wait for the Figma plugin ([later](#later-not-scheduled)); until then they reach designers through the review loop.

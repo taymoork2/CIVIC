@@ -4,7 +4,9 @@
 #
 #   bin/signoff            graph, review loop, crawl, importer, Fluent Button, Card, Laundry and discovery example checks, the
 #                          civic check gate, then the journey engine's checks, tests and
-#                          review-server tests. Posts the "signoff" and "civic" statuses.
+#                          review-server tests. Posts the "signoff" and "civic" statuses, and on
+#                          an open pull request a comment listing the findings this change
+#                          introduced, with who is asked and who is told (step 10).
 #   bin/signoff --browser  also the Fluent Button web evidence and the Playwright
 #                          review-canvas journey (needs Chrome and a review server:
 #                          pnpm --dir apps/web run review)
@@ -91,8 +93,14 @@ node "$card_dir/build.ts" --check
 node "$laundry_dir/build.ts" --check
 node "$discovery_dir/build.ts" --check
 
-step "The gate: civic check on the graphs in civic.check.json against civic.baseline.json"
-"$repo_root/bin/civic" check --config "$repo_root/civic.check.json"
+# Roadmap step 10: findings are raised at the change that caused it. The gate also compares
+# the graphs with where this branch left its base (CIVIC_BASE, origin/main by default) and
+# names who each new finding asks and tells; the same summary goes on the pull request below.
+base_ref="${CIVIC_BASE:-origin/main}"
+since=()
+git -C "$repo_root" rev-parse --verify --quiet "$base_ref^{commit}" >/dev/null && since=(--since "$base_ref")
+step "The gate: civic check on the graphs in civic.check.json against civic.baseline.json${since:+ and $base_ref}"
+"$repo_root/bin/civic" check --config "$repo_root/civic.check.json" ${since[@]+"${since[@]}"}
 if [ "$browser" = 1 ]; then
   step "Fluent Button web evidence (Playwright)"
   pnpm --dir "$demo_dir/web" install --frozen-lockfile
@@ -132,3 +140,8 @@ gh api --silent "repos/{owner}/{repo}/statuses/$sha" \
 step "Signed off $sha as $user ($scope)"
 "$repo_root/bin/civic" check --config "$repo_root/civic.check.json" --post >/dev/null
 step "Posted the civic gate status for $sha"
+pr="$(gh pr view --json number,state --jq 'select(.state == "OPEN") | .number' 2>/dev/null || true)"
+if [ -n "$pr" ] && [ "${#since[@]}" -gt 0 ]; then
+  "$repo_root/bin/civic" check --config "$repo_root/civic.check.json" ${since[@]+"${since[@]}"} --comment "$pr" >/dev/null
+  step "Put the change's findings, with who is asked and told, on pull request #$pr"
+fi
