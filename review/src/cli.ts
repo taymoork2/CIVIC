@@ -36,6 +36,8 @@ import { bearerFor, captureScenario, launchBrowser, recapture, reproductionUrl }
 import { createOverlayServer } from './overlay/server.ts'
 import { renderList, renderRequest } from './render.ts'
 import { Store } from './store.ts'
+import { DEFAULT_REF, GitRefRemote } from './remote.ts'
+import { listConflicts, settleConflict, sync } from './sync.ts'
 
 const USAGE = `Usage (records are shared by every worktree of this repository):
   civic annotate "<comment>" [--image <file>] [--url <page>] [--target <id>]... [--edge <from>><to>[:<action>]]...
@@ -53,6 +55,8 @@ const USAGE = `Usage (records are shared by every worktree of this repository):
   civic add-check <request> "<command>"           civic accept-check <request> <number>
   civic overlay [--port 4777]                     serves the capture overlay for dev and preview pages
   civic preview <url> [--bearer-file <file>]      civic lines [--json] | annotations [--line <id>] [--json] | whoami
+  civic sync [--remote origin] [--ref refs/civic/records]   share records with the team through a git ref
+  civic conflicts [--json]                        civic settle <record> --keep mine|theirs
   annotate also takes --rect x,y,w,h [--rect-label <text>], --viewport <w>x<h> and --json; request takes --json.
   A <request> may end in @<version>, as civic requests and civic queue print it: the write is refused if the
   request changed since. Who may read, write, approve and resolve comes from civic.access.json on the default branch.`
@@ -261,6 +265,29 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
       print(`CIVIC overlay server on http://127.0.0.1:${port} for ${actorId(person)}. Add this to a dev or preview page, never to production:`)
       print(`<script src="http://127.0.0.1:${port}/overlay.js" data-civic-line="${lineIdFor(checkout)}" data-civic-revision="${checkout.head}" defer></script>`)
       await new Promise<void>((resolve) => server.once('close', () => resolve()))
+      return 0
+    }
+    case 'sync': {
+      const result = sync(context, new GitRefRemote(checkout.root, one('--remote') ?? 'origin', one('--ref') ?? DEFAULT_REF))
+      if (has('--json')) {
+        print(JSON.stringify(result, null, 2))
+        return 0
+      }
+      print(result.revision ? `In sync with ${result.remote} at ${result.revision.slice(0, 12)}: ${result.pulled.length} record(s) from others, ${result.pushed.length} shared.` : `Nothing to share with ${result.remote} yet.`)
+      for (const conflict of result.conflicts) print(`Conflict: ${conflict.id} changed here and on ${result.remote}. The shared version is kept; yours is set aside. civic settle ${conflict.id} --keep mine|theirs`)
+      return 0
+    }
+    case 'conflicts': {
+      const conflicts = listConflicts(context)
+      print(has('--json') ? JSON.stringify(conflicts, null, 2) : conflicts.map((conflict) => `${conflict.id}  ${conflict.kind}  set aside ${conflict.at}${conflict.kind === 'work-request' ? `  yours: ${(conflict.mine as { status: string }).status}, shared: ${(conflict.theirs as { status: string }).status}` : ''}`).join('\n') || 'No conflicts.')
+      return 0
+    }
+    case 'settle': {
+      need(1)
+      const keep = one('--keep')
+      if (keep !== 'mine' && keep !== 'theirs') throw new UsageError('settle needs --keep mine or --keep theirs.')
+      const conflict = settleConflict(context, positional[0]!, keep)
+      print(`${conflict.id}: kept ${keep === 'mine' ? 'your version; civic sync shares it' : 'the shared version'}.`)
       return 0
     }
     case 'whoami': {
