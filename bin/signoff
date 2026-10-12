@@ -100,7 +100,7 @@ base_ref="${CIVIC_BASE:-origin/main}"
 since=()
 git -C "$repo_root" rev-parse --verify --quiet "$base_ref^{commit}" >/dev/null && since=(--since "$base_ref")
 step "The gate: civic check on the graphs in civic.check.json against civic.baseline.json${since:+ and $base_ref}"
-"$repo_root/bin/civic" check --config "$repo_root/civic.check.json" "${since[@]}"
+"$repo_root/bin/civic" check --config "$repo_root/civic.check.json" ${since[@]+"${since[@]}"}
 if [ "$browser" = 1 ]; then
   step "Fluent Button web evidence (Playwright)"
   pnpm --dir "$demo_dir/web" install --frozen-lockfile
@@ -142,6 +142,6 @@ step "Signed off $sha as $user ($scope)"
 step "Posted the civic gate status for $sha"
 pr="$(gh pr view --json number,state --jq 'select(.state == "OPEN") | .number' 2>/dev/null || true)"
 if [ -n "$pr" ] && [ "${#since[@]}" -gt 0 ]; then
-  "$repo_root/bin/civic" check --config "$repo_root/civic.check.json" "${since[@]}" --comment "$pr" >/dev/null
+  "$repo_root/bin/civic" check --config "$repo_root/civic.check.json" ${since[@]+"${since[@]}"} --comment "$pr" >/dev/null
   step "Put the change's findings, with who is asked and told, on pull request #$pr"
 fi
