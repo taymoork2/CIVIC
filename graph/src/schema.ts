@@ -509,6 +509,21 @@ export interface Line extends RecordBase {
   status: 'open' | 'merged' | 'abandoned'
   /** A merged line names the revision it merged as, so its records can be adopted on the base. */
   mergedAs?: string
+  /**
+   * A design line only: its top-level frames at `head`, each with a fingerprint of the
+   * frame's content, so the design lens can say what a draft changes from its base (D36).
+   */
+  frames?: DesignFrame[]
+}
+
+/** A top-level frame of a design file at one version, as a design line records it. */
+export interface DesignFrame {
+  /** The Figma node ID, which also anchors annotations on the frame. */
+  node: string
+  name: string
+  page: string
+  /** `sha256:<hex>` of the frame's content in the export, so an edit anywhere inside it shows. */
+  hash: string
 }
 
 export interface Preview {

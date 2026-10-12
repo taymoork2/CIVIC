@@ -1,5 +1,5 @@
-import { randomUUID } from 'node:crypto'
-import { resolveAnchor, type AnchorOutcome, type Annotation, type DraftChoice, type GraphDocument, type Line, type ObservedElement } from '../../graph/src/index.ts'
+import { createHash, randomUUID } from 'node:crypto'
+import { resolveAnchor, type AnchorOutcome, type Annotation, type DesignFrame, type DraftChoice, type Graph, type GraphDocument, type Line, type ObservedElement } from '../../graph/src/index.ts'
 import { idPath } from './git.ts'
 import { ensureActor } from './identity.ts'
 import { allow, find, type Context } from './loop.ts'
@@ -76,6 +76,7 @@ export function registerDesignFile(context: Context, input: { file: FigmaFileExp
       document.records.push(line)
     }
     line.head = file.version
+    line.frames = fingerprints(file)
     line.source = { tool: 'figma', importer: 'civic-review', revision: file.version, path: figmaLink(fileKey) }
     return { line: structuredClone(line), frames: framesOf(file), annotations: follow(document, id, file) }
   })
@@ -107,6 +108,7 @@ export function registerDesignDraft(context: Context, input: { file: FigmaFileEx
       document.records.push(line)
     }
     line.head = file.version
+    line.frames = fingerprints(file)
     line.source = { tool: 'figma', importer: 'civic-review', revision: file.version, path: figmaLink(input.branchKey ?? fileKey) }
     return { line: structuredClone(line), frames: framesOf(file), annotations: follow(document, id, file) }
   })
@@ -148,10 +150,19 @@ export function chooseDraft(context: Context, input: { line: string; rationale: 
   })
 }
 
+const FRAME_TYPES = ['FRAME', 'SECTION', 'COMPONENT', 'COMPONENT_SET']
+
+function topFrames(file: FigmaFileExport): { page: string; node: FigmaNode }[] {
+  return (file.document.children ?? []).flatMap((page) => (page.children ?? []).filter((node) => FRAME_TYPES.includes(node.type)).map((node) => ({ page: page.name, node })))
+}
+
 function framesOf(file: FigmaFileExport): DraftFrame[] {
-  return (file.document.children ?? []).flatMap((page) =>
-    (page.children ?? []).filter((node) => ['FRAME', 'SECTION', 'COMPONENT', 'COMPONENT_SET'].includes(node.type)).map((node) => ({ node: node.id, name: node.name, page: page.name })),
-  )
+  return topFrames(file).map(({ page, node }) => ({ node: node.id, name: node.name, page }))
+}
+
+/** Each top-level frame with a fingerprint of everything in it, as the export has it. */
+function fingerprints(file: FigmaFileExport): DesignFrame[] {
+  return topFrames(file).map(({ page, node }) => ({ node: node.id, name: node.name, page, hash: `sha256:${createHash('sha256').update(JSON.stringify(node)).digest('hex')}` }))
 }
 
 function nodesOf(node: FigmaNode, into: ObservedElement[] = []): ObservedElement[] {
@@ -171,4 +182,107 @@ function follow(document: GraphDocument, lineId: string, file: FigmaFileExport):
     // Only the node locator applies here: graph target IDs are found on product captures, not in a design file.
     outcome: resolveAnchor({ targetIds: [], locator: { figmaNode: annotation.anchor!.locator!.figmaNode! } }, elements).outcome,
   }))
+}
+
+// --- The design lens (D36) ----------------------------------------------------------------
+
+/** One frame a draft changes from its base. */
+export interface FrameChange {
+  change: 'added' | 'changed' | 'removed'
+  node: string
+  name: string
+  page: string
+  /** The frame's name on the base, when the draft renamed it. */
+  was?: string
+  /** Annotations made on this frame of the draft. */
+  annotations: { id: string; title: string }[]
+  /** Targets on the code line's graphs that this frame designs, matched by Figma node ID. */
+  targets: LensTarget[]
+}
+
+/** A code-line target a changed frame designs, with what the code line knows about it. */
+export interface LensTarget {
+  graph: string
+  id: string
+  title: string
+  /** Run evidence about it on the code line: how many passed and failed. */
+  passing: number
+  failing: number
+  /** Annotations made on the code line about it. */
+  annotations: number
+}
+
+export interface DesignLens {
+  draft: Pick<Line, 'id' | 'title' | 'head' | 'status'>
+  /** The base line and the version the draft is compared with: the base as last registered. */
+  base: Pick<Line, 'id' | 'title' | 'head'>
+  /** The code line the comparison is read on: the checkout's line. */
+  codeLine: string
+  changes: FrameChange[]
+  unchanged: number
+}
+
+/**
+ * Compares a design draft's frames with its base, frame by frame, by node ID and content
+ * fingerprint, and reads each changed frame against the code line: the targets it designs
+ * in the code line's graphs and their run evidence. Deterministic and read-only; nothing is
+ * matched by name or position (D37), so a frame the graphs don't anchor maps to no target.
+ */
+export function designLens(document: GraphDocument, draftId: string, codeLine: string, graphs: { label: string; graph: Graph }[] = []): DesignLens {
+  const draft = document.records.find((record): record is Line => record.id === draftId && record.kind === 'line')
+  if (!draft) throw new Error(`No line ${draftId}. \`civic lines\` lists them.`)
+  if (draft.type !== 'design-draft' || !draft.base) throw new Error(`${draftId} is not a design draft. The design lens compares a draft with its base.`)
+  const base = document.records.find((record): record is Line => record.id === draft.base && record.kind === 'line')
+  if (!base) throw new Error(`${draftId} names a base, ${draft.base}, that isn't in the store.`)
+  if (!draft.frames || !base.frames) throw new Error(`Register ${!base.frames ? base.id : draft.id} again so CIVIC records its frames: civic ${!base.frames ? 'design' : 'draft'} <export> ...`)
+
+  const before = new Map(base.frames.map((frame) => [frame.node, frame]))
+  const after = new Map(draft.frames.map((frame) => [frame.node, frame]))
+  const notes = document.records.filter((record): record is Annotation => record.kind === 'annotation')
+  const onDraft = (node: string) => notes.filter((note) => note.seenOn.line === draft.id && note.anchor?.locator?.figmaNode === node).map((note) => ({ id: note.id, title: note.title }))
+  const targetsOf = (node: string): LensTarget[] => graphs.flatMap(({ label, graph }) =>
+    graph.ofKind('target').filter((target) => target.source?.tool === 'figma' && target.source.anchor === node).map((target) => {
+      const evidence = graph.ofKind('evidence').filter((item) => item.subjectIds.includes(target.id))
+      return {
+        graph: label,
+        id: target.id,
+        title: target.title,
+        passing: evidence.filter((item) => item.outcome === 'pass').length,
+        failing: evidence.filter((item) => item.outcome === 'fail').length,
+        annotations: notes.filter((note) => note.seenOn.line === codeLine && note.anchor?.targetIds.includes(target.id)).length,
+      }
+    }))
+  const change = (kind: FrameChange['change'], frame: DesignFrame, was?: string): FrameChange => ({ change: kind, node: frame.node, name: frame.name, page: frame.page, ...(was ? { was } : {}), annotations: onDraft(frame.node), targets: targetsOf(frame.node) })
+
+  const changes: FrameChange[] = []
+  let unchanged = 0
+  for (const frame of draft.frames) {
+    const old = before.get(frame.node)
+    if (!old) changes.push(change('added', frame))
+    else if (old.hash !== frame.hash || old.name !== frame.name) changes.push(change('changed', frame, old.name !== frame.name ? old.name : undefined))
+    else unchanged++
+  }
+  for (const frame of base.frames) if (!after.has(frame.node)) changes.push(change('removed', frame))
+
+  return {
+    draft: { id: draft.id, title: draft.title, head: draft.head, status: draft.status },
+    base: { id: base.id, title: base.title, head: base.head },
+    codeLine,
+    changes,
+    unchanged,
+  }
+}
+
+export function renderDesignLens(lens: DesignLens): string {
+  const lines = [`${lens.draft.title} (${lens.draft.id}) at version ${lens.draft.head}, against ${lens.base.title} at version ${lens.base.head}, read on ${lens.codeLine}.`]
+  if (lens.draft.status !== 'open') lines.push(`The draft is ${lens.draft.status}.`)
+  if (lens.changes.length === 0) return [...lines, `No frame changed; ${lens.unchanged} frame(s) match the base.`].join('\n')
+  lines.push(`${lens.changes.length} frame(s) changed, ${lens.unchanged} unchanged.`, '')
+  for (const item of lens.changes) {
+    lines.push(`${item.change.padEnd(8)} ${item.node.padEnd(10)} ${item.page} / ${item.name}${item.was ? ` (was ${item.was})` : ''}`)
+    for (const note of item.annotations) lines.push(`         note: ${note.title} (${note.id})`)
+    if (item.targets.length === 0) lines.push(`         code: no target on ${lens.codeLine} is designed by this frame`)
+    for (const target of item.targets) lines.push(`         code: ${target.id} in ${target.graph}: ${target.passing} passing, ${target.failing} failing run(s)${target.annotations ? `, ${target.annotations} note(s)` : ''}`)
+  }
+  return lines.join('\n')
 }
