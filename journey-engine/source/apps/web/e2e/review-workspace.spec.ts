@@ -85,8 +85,8 @@ test('feedback pins a keyboard target, retains a failed send, captures state and
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
 })
 
-// Route states, reminders and family runs render whole screens, not drawers; their own specs cover them.
-const screenRenderers = new Set(['route-state', 'reminder', 'family'])
+// Route states, reminders and live runs (the family laundry day) render whole screens, not drawers; their own specs cover them.
+const screenRenderers = new Set(['route-state', 'reminder', 'family', 'runtime'])
 
 test('every initial named scenario renders a real task drawer', async ({ page }) => {
   for (const scenario of scenarios.filter((candidate) => !screenRenderers.has(candidate.renderer))) {
@@ -194,13 +194,15 @@ test('nested tags guard a draft, dismiss back to the record, and save through th
   await page.goto('/review?legacy=1&scenario=records.item.tags')
   const frame = page.frameLocator('iframe')
   const tags = frame.getByRole('dialog', { name: 'Tags', exact: true })
+  // The sheet asks before discarding in its own alert dialog, beside the sheet.
+  const confirm = frame.getByRole('alertdialog').filter({ hasText: 'Discard your changes?' })
   await tags.getByRole('textbox', { name: 'Tags', exact: true }).fill('Unsent nested tag')
   await tags.getByRole('button', { name: 'Add tag', exact: true }).click()
   await tags.getByRole('button', { name: 'Close', exact: true }).click()
-  await tags.getByRole('button', { name: 'Keep editing', exact: true }).click()
+  await confirm.getByRole('button', { name: 'Keep editing', exact: true }).click()
   await expect(tags.getByRole('button', { name: 'Unsent nested tag', exact: true })).toHaveAttribute('aria-pressed', 'true')
   await tags.getByRole('button', { name: 'Close', exact: true }).click()
-  await tags.getByRole('button', { name: 'Discard', exact: true }).click()
+  await confirm.getByRole('button', { name: 'Discard', exact: true }).click()
   await expect(tags).toHaveCount(0)
   await expect(frame.getByRole('button', { name: 'Edit item details', exact: true })).toBeEnabled()
   await frame.getByRole('button', { name: /^Tags: .*\. Edit\.$/ }).click()
