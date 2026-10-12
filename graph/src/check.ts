@@ -152,13 +152,13 @@ export function checkGraph(label: string, graph: Graph, options: CheckOptions): 
   const collaboration = graph.ofKind('collaboration')
   const open = collaboration.filter((record) => record.status === 'open')
   for (const record of open) {
-    const label = record.type === 'exception' ? (record.limitation ? 'accepted limitation' : 'exception') : record.type.replace('-', ' ')
+    const typeLabel = record.type === 'exception' ? (record.limitation ? 'accepted limitation' : 'exception') : record.type.replace('-', ' ')
     if (record.type === 'exception') {
-      if (record.expires! < options.today) add('expired-exception', record.id, `${record.title}: the ${label} expired on ${record.expires}. Revisit when: ${record.revisitTrigger}`, record.owners, record.platform)
-      else add('approved-exception', record.id, `${record.title}: ${label} until ${record.expires}. Revisit when: ${record.revisitTrigger}`, record.owners, record.platform)
+      if (record.expires! < options.today) add('expired-exception', record.id, `${record.title}: the ${typeLabel} expired on ${record.expires}. Revisit when: ${record.revisitTrigger}`, record.owners, record.platform)
+      else add('approved-exception', record.id, `${record.title}: ${typeLabel} until ${record.expires}. Revisit when: ${record.revisitTrigger}`, record.owners, record.platform)
     } else {
       const overdue = record.due && record.due < options.today ? ` It was due ${record.due}.` : ''
-      add('open-collaboration', record.id, `Open ${label}: ${record.summary}${overdue} Needs ${record.perspectives.join(', ') || 'its owners'}.`, record.owners, record.platform, record.type)
+      add('open-collaboration', record.id, `Open ${typeLabel}: ${record.summary}${overdue} Needs ${record.perspectives.join(', ') || 'its owners'}.`, record.owners, record.platform, record.type)
     }
   }
   measure('Collaboration records open', open.filter((record) => record.type !== 'exception').length, collaboration.filter((record) => record.type !== 'exception').length)
