@@ -81,7 +81,7 @@ Progress, 2026-10-12: the decision loop is built ([`graph/`](../graph#the-decisi
 
 Progress, 2026-10-12: collaboration records are built ([`graph/`](../graph#collaboration-records)). The six types are one owned record kind kept in the decision file. Each record names what it affects, the perspectives it needs, its owners, a deadline, and once closed, how it closed and the artifact changes that resulted. `civic raise` and `civic close` write them after a check against the graph. Agents may raise them but not record an exception or close a record (D35). The gate reports open records as advisory and fails an exception past its end date. `civic gaps` lists them with owners. Not built yet: importing the journey engine's `coverage.json` as coverage gap records.
 
-Progress, 2026-10-12: alignment states are read from records. `civic alignment` gives each semantic component one state on each platform that implements it, from its conflicts and the decisions in force, the fix stages, exceptions and accepted limitations, and its evidence. A platform with no evidence is unknown, never aligned. See [`graph/`](../graph#alignment-civic-alignment).
+Progress, 2026-10-12: alignment states are read from records. `civic alignment` gives each semantic component one state on each platform that implements it, from its conflicts and the decisions in force, the fix stages, exceptions and accepted limitations, and its evidence. A platform without a passing run is unknown, never aligned. See [`graph/`](../graph#alignment-civic-alignment).
 
 ## 4. The journey engine as a graph viewer
 

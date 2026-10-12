@@ -56,6 +56,7 @@ test('passing evidence aligns a platform; failing or stale evidence does not', (
   assert.equal(states(edited('fluent-button', (d) => d.records.push(run('web', 'platform:fluent-react-v9.button')))).web, 'aligned')
   assert.equal(states(edited('fluent-button', (d) => d.records.push(run('web', 'semantic:button')))).web, 'aligned', 'evidence about the contract on that platform counts')
   assert.equal(states(edited('fluent-button', (d) => d.records.push(run('web', 'platform:fluent-react-v9.button', 'fail')))).web, 'unreviewed-drift')
+  assert.equal(states(edited('fluent-button', (d) => d.records.push(run('web', 'platform:fluent-react-v9.button', 'finding')))).web, 'unknown-stale', 'a static finding alone is not a passing run')
   const stale = new Map([['evidence:web.button.run', 'the Button source changed']])
   assert.equal(states(edited('fluent-button', (d) => d.records.push(run('web', 'platform:fluent-react-v9.button'))), stale).web, 'unknown-stale')
 })

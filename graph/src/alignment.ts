@@ -60,13 +60,17 @@ function alignmentOf(graph: Graph, semantic: SemanticComponent, componentId: str
     else add(record.limitation ? 'accepted-limitation' : 'approved-adaptation', record.id, `${record.summary} Until ${record.expires}.`)
   }
 
-  // Evidence: failing evidence is drift, stale or missing evidence proves nothing.
+  // Evidence: failing evidence is drift, and stale evidence proves nothing.
   const evidence = graph.ofKind('evidence').filter((item) => item.subjectIds.includes(componentId) || (item.subjectIds.includes(semantic.id) && item.platform === platform))
   for (const item of evidence) {
     if (item.outcome === 'fail') add('unreviewed-drift', item.id, `${item.title} fails.`)
     else if (options.stale?.has(item.id)) add('unknown-stale', item.id, `${item.title} is stale: ${options.stale.get(item.id)}.`)
   }
-  if (evidence.length === 0) add('unknown-stale', componentId, `No evidence about ${platform} yet.`)
+  // Nothing above held the platform back, so only a passing run can show it aligned: a static
+  // finding is not a verdict. A decision in force already rests on the evidence it cites.
+  if (reasons.length === 0 && !evidence.some((item) => item.outcome === 'pass')) {
+    add('unknown-stale', componentId, evidence.length === 0 ? `No evidence about ${platform} yet.` : `No passing run on ${platform} yet, only static findings.`)
+  }
 
   reasons.sort((a, b) => SEVERITY.indexOf(a.state) - SEVERITY.indexOf(b.state) || a.recordId.localeCompare(b.recordId))
   return { semanticId: semantic.id, platform, platformComponentId: componentId, state: reasons[0]?.state ?? 'aligned', reasons }
