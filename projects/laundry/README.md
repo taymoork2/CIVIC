@@ -8,6 +8,7 @@ Roadmap [step 9](../../docs/roadmap.md#9-real-inputs-replace-the-stand-ins): rea
 |---|---|
 | Which journeys and screens have run evidence, and which fail? | [`out/runs.md`](out/runs.md): one row per journey, then every failing test with the screens it covers. |
 | What does one screen look like in the graph? | `bin/civic screen target:laundry.<scenario>`, or the Contract panel on the journey canvas, which shows the same facts for the selected screen. |
+| What has Laundry declared but can't yet show and prove? | [`out/coverage.md`](out/coverage.md): one open Coverage gap record per expectation in the journey engine's coverage contract that no passing run covers yet. |
 | What does the gate say? | `bin/civic check`, which reads [`out/graph.json`](out/graph.json) with the demo graphs ([`civic.check.json`](../../civic.check.json)). |
 
 On the first capture, at commit `ea0d4e83a6b0`, 24 of Laundry's 27 review tests passed and 3 failed, and 12 of the 49 journey screens are dead ends. All 15 findings are real and are held in [`civic.baseline.json`](../../civic.baseline.json), so the gate passes today and blocks the next new one.
@@ -20,15 +21,17 @@ On the first capture, at commit `ea0d4e83a6b0`, 24 of Laundry's 27 review tests 
 | File | What it is | How it's read |
 |---|---|---|
 | [`inputs/review-index.json`](inputs/review-index.json) | The journey engine's review index for Laundry (`GET /api/review/index`): 204 scenarios in 12 groups, their declared paths, the cross-route actions found in source, and each scenario's checks | `readJourneyIndex` |
+| [`inputs/coverage.json`](inputs/coverage.json) | The journey engine's coverage contract at the same commit: the screens, interactions and journeys Laundry declares, with their expected scenarios and acceptance requirements | `readCoverageContract` |
 | [`inputs/playwright-report.json`](inputs/playwright-report.json) | Playwright's JSON report from the four browser specs the scenarios name as their checks, run against a review server, with attachments and machine paths removed | `readPlaywrightReport` |
 
-Both name the commit they were captured at, and every record carries it.
+All three are read at the commit they were captured at, and every record carries it.
 
 ## How the graph is built
 
 - **Screens and journeys.** Each scenario becomes an expected screen with the ID the canvas already uses for annotations, `target:laundry.<scenario>`. Each journey contains its screens. The 155 older design-preview specimens are a catalog rather than a journey anyone walks, so they become a surface and the journey shape checks skip them.
 - **Paths.** Each declared path becomes a declared `navigates` link. A path the engine also found in application source keeps its route and source anchor.
 - **Run evidence.** Laundry's tests carry no CIVIC annotations, and nothing is added to them. A test covers the scenarios its spec file is declared to check. When the test opens some of them by name (`scenario=<id>` in a URL), it covers only those. A test that loops over scenarios in code covers the whole declared set, so one failure there marks every screen in it as failing, and its message names the screen that broke.
+- **Coverage gaps.** Each expectation in the coverage contract becomes an expected target, `target:laundry.expectation.<id>`. One the app can't yet show and prove becomes an open Coverage gap [collaboration record](../../graph#collaboration-records), owned like any other. That covers an expectation no scenario shows, one whose expected scenario isn't in the index, and one with a scenario no passing run covers. A gap names the expectation and its unproven scenarios. The next build stops raising it once a passing run covers every scenario. Scaffolds and file presence never count as coverage. At commit `e8cb256b31d3`, 11 of the 13 expectations are gaps: six planned features with no code yet, three with code but no scenario, and two journeys with scenarios that no passing run covers. The gate reports open records as advisory.
 - **Not covered.** The 155 specimens are checked by a unit test (`design-preview.test.ts`), not a browser run, so they have no run evidence here. Laundry's full browser suite needs its local Convex backend, which this capture doesn't start; the review specs run on synthetic fixtures without one.
 
 ## Recapturing

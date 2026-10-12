@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Captures Laundry's real inputs for its CIVIC graph (roadmap step 9): the journey engine's
-// review index, and a Playwright JSON report from the browser specs the index declares as
+// review index and coverage contract, and a Playwright JSON report from the browser specs the index declares as
 // its scenarios' checks. Laundry's suite runs unchanged; nothing is added to it.
 //
 // Start a review server first, from journey-engine/source:  pnpm --dir apps/web run review
@@ -19,6 +19,7 @@ const base = process.argv[2] ?? 'http://127.0.0.1:3010'
 const root = new URL('../../', import.meta.url).pathname
 const web = join(root, 'journey-engine/source/apps/web')
 const inputs = new URL('inputs/', import.meta.url).pathname
+const COVERAGE = 'journey-engine/source/docs/design/review-product/coverage.json'
 const git = (...args: string[]) => execFileSync('git', ['-C', root, ...args], { encoding: 'utf8' }).trim()
 
 if (git('status', '--porcelain', '--', 'journey-engine/source')) throw new Error('journey-engine/source has uncommitted changes; commit them so the evidence names a real revision.')
@@ -44,6 +45,9 @@ writeFileSync(join(inputs, 'review-index.json'), JSON.stringify({
   scenarios: index.scenarios.map((scenario) => pick(scenario, ['id', 'label', 'journey', 'renderer', 'component', 'checks', 'edges'])),
   routeActions: (index.routeActions ?? []).map((action) => pick(action, ['from', 'action', 'destination', 'route', 'when', 'returnTo', 'source', 'anchor'])),
 }, null, 2) + '\n')
+
+// The coverage contract at the same commit: what Laundry declares must be shown and proven.
+writeFileSync(join(inputs, 'coverage.json'), readFileSync(join(root, COVERAGE), 'utf8'))
 
 // The browser specs the scenarios name as their checks. Unit tests (vitest) are not Playwright runs.
 const specs = [...new Set(index.scenarios.flatMap((scenario) => scenario.checks ?? []))].filter((check) => /^apps\/web\/e2e\/.+\.spec\.ts$/.test(check)).sort()

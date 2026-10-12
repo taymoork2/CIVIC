@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Builds Laundry's CIVIC graph (roadmap step 9) from its real inputs, captured by
-// capture.ts: the journey engine's review index, and a Playwright report from the browser
+// capture.ts: the journey engine's review index and coverage contract, and a Playwright report from the browser
 // specs the index names as its scenarios' checks. Deterministic: the same inputs always give
 // byte-identical outputs, and nothing here makes a model call (D30).
 //
@@ -8,8 +8,8 @@
 //   node build.ts --check   fail if out/ is not what the inputs produce
 
 import { readFileSync, writeFileSync } from 'node:fs'
-import { assertValid, indexGraph, type Evidence, type Owner } from '../../graph/src/index.ts'
-import { assemble, fragment, readJourneyIndex, readPlaywrightReport, type JourneyIndex } from '../../importers/src/index.ts'
+import { assertValid, indexGraph, type CollaborationRecord, type Evidence, type Owner } from '../../graph/src/index.ts'
+import { assemble, fragment, readCoverageContract, readJourneyIndex, readPlaywrightReport, type CoverageContract, type JourneyIndex } from '../../importers/src/index.ts'
 
 const here = (path: string) => new URL(path, import.meta.url)
 const text = (path: string) => readFileSync(here(path), 'utf8')
@@ -52,14 +52,30 @@ function subjectsFor(spec: { file: string; line: number }): string[] {
 }
 const evidence = readPlaywrightReport(report, 'web', { subjectsFor, pathFor: (file) => `${SOURCE_ROOT}/${TEST_DIR}/${file}` })
 
-const graph = assemble(journeys.fragment, fragment(evidence))
+// The coverage contract (roadmap step 3): each expectation the app can't yet show and prove
+// with a passing run is an open Coverage gap, owned like any other collaboration record.
+const coverageText = text('inputs/coverage.json')
+const coverage = readCoverageContract(JSON.parse(coverageText) as CoverageContract, coverageText, {
+  prefix: PREFIX,
+  platform: 'web',
+  owners: OWNERS,
+  raisedBy: { role: 'qa', who: 'taymoork2' },
+  at: evidence.map((item) => item.capturedAt).sort().at(-1) ?? index.revision.head,
+  path: `${SOURCE_ROOT}/docs/design/review-product/coverage.json`,
+  revision: index.revision.head,
+  targetIds: new Set(journeys.fragment.records.map((record) => record.id)),
+  evidence,
+})
+
+const graph = assemble(journeys.fragment, fragment(evidence), coverage)
 assertValid(graph)
 
 // --- What a reader sees: run evidence per journey, then every failing test ---------------
 
 const indexed = indexGraph(graph)
 const runsOn = (id: string) => evidence.filter((item) => item.subjectIds.includes(id))
-const groups = indexed.ofKind('target').filter((target) => target.scale === 'journey' || target.scale === 'surface')
+const expectation = (id: string) => id.startsWith(`target:${PREFIX}.expectation.`)
+const groups = indexed.ofKind('target').filter((target) => (target.scale === 'journey' || target.scale === 'surface') && !expectation(target.id))
 const rows = groups.map((group) => {
   const screens = indexed.linksFrom(group.id).filter((link) => link.relation === 'contains').map((link) => link.to!)
   const failing = screens.filter((id) => runsOn(id).some((item) => item.outcome === 'fail')).length
@@ -68,7 +84,7 @@ const rows = groups.map((group) => {
 })
 const failed = evidence.filter((item) => item.outcome === 'fail')
 const line = (item: Evidence) => `- **${item.title}** (\`${item.source.path}\`, ${item.source.anchor}): ${item.finding} Covers ${item.subjectIds.length} screen(s): ${item.subjectIds.map((id) => `\`${scenarioOf(id)}\``).join(', ')}.`
-const screens = indexed.ofKind('target').filter((target) => target.scale === 'screen').length
+const screens = indexed.ofKind('target').filter((target) => target.scale === 'screen' && !expectation(target.id)).length
 const runs = `# Laundry: run evidence by journey
 
 Built by \`node projects/laundry/build.ts\` from the journey engine's review index and a Playwright report of Laundry's own review specs, both captured at commit \`${index.revision.head.slice(0, 12)}\`. ${screens} screens, ${evidence.length} tests: ${evidence.length - failed.length} passed, ${failed.length} failed.
@@ -84,9 +100,21 @@ ${rows.join('\n')}
 ${failed.length > 0 ? failed.map(line).join('\n') : 'None.'}
 `
 
+const gaps = coverage.records.filter((record): record is CollaborationRecord => record.kind === 'collaboration')
+const expectations = coverage.records.filter((record) => record.kind === 'target').length
+const coverageReport = `# Laundry: coverage gaps
+
+Built by \`node projects/laundry/build.ts\` from the journey engine's coverage contract and the same run evidence, at commit \`${index.revision.head.slice(0, 12)}\`. ${gaps.length} of ${expectations} declared expectations can't yet be shown and proven with a passing run. Each is an open Coverage gap record in [\`graph.json\`](graph.json), and the gate reports it as advisory.
+
+| Expectation | Gap | Record |
+|---|---|---|
+${gaps.map((gap) => `| ${gap.title.replace(/^Coverage gap: /, '')} | ${gap.summary} | \`${gap.id}\` |`).join('\n')}
+`
+
 const outputs: Record<string, string> = {
   'out/graph.json': `${JSON.stringify(graph, null, 2)}\n`,
   'out/runs.md': runs,
+  'out/coverage.md': coverageReport,
 }
 const summary = `${graph.records.length} records, ${graph.links.length} links, ${evidence.length} test(s) with ${failed.length} failing`
 if (process.argv.includes('--check')) {

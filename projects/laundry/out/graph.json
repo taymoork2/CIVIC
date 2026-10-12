@@ -407,6 +407,370 @@
       }
     },
     {
+      "id": "target:laundry.expectation.interaction.garment-routine",
+      "kind": "target",
+      "title": "Change garment wash and dry preferences",
+      "scale": "surface",
+      "presence": "expected",
+      "platforms": [
+        "web"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        },
+        {
+          "role": "qa",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "journey-engine",
+        "importer": "coverage-contract",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/docs/design/review-product/coverage.json",
+        "anchor": "interaction.garment-routine",
+        "contentHash": "sha256:9da21081283d6ae160f8745a1fb79c2e6542cd96cda4b31414f0de49df593d33"
+      }
+    },
+    {
+      "id": "target:laundry.expectation.journey.family-scale-care-loop",
+      "kind": "target",
+      "title": "Family of five · complete care loop at 100, 500 and 1000 items",
+      "scale": "journey",
+      "presence": "expected",
+      "platforms": [
+        "web"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        },
+        {
+          "role": "qa",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "journey-engine",
+        "importer": "coverage-contract",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/docs/design/review-product/coverage.json",
+        "anchor": "journey.family-scale-care-loop",
+        "contentHash": "sha256:9da21081283d6ae160f8745a1fb79c2e6542cd96cda4b31414f0de49df593d33"
+      }
+    },
+    {
+      "id": "target:laundry.expectation.journey.first-care-cycle",
+      "kind": "target",
+      "title": "First complete care cycle",
+      "scale": "journey",
+      "presence": "expected",
+      "platforms": [
+        "web"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        },
+        {
+          "role": "qa",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "journey-engine",
+        "importer": "coverage-contract",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/docs/design/review-product/coverage.json",
+        "anchor": "journey.first-care-cycle",
+        "contentHash": "sha256:9da21081283d6ae160f8745a1fb79c2e6542cd96cda4b31414f0de49df593d33"
+      }
+    },
+    {
+      "id": "target:laundry.expectation.journey.hanging-reminder",
+      "kind": "target",
+      "title": "Hanging reminder · visible, dismissed, changed task and exact run check",
+      "scale": "journey",
+      "presence": "expected",
+      "platforms": [
+        "web"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        },
+        {
+          "role": "qa",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "journey-engine",
+        "importer": "coverage-contract",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/docs/design/review-product/coverage.json",
+        "anchor": "journey.hanging-reminder",
+        "contentHash": "sha256:9da21081283d6ae160f8745a1fb79c2e6542cd96cda4b31414f0de49df593d33"
+      }
+    },
+    {
+      "id": "target:laundry.expectation.journey.multicolor-pack",
+      "kind": "target",
+      "title": "Multicolor pack with shared care",
+      "scale": "journey",
+      "presence": "expected",
+      "platforms": [
+        "web"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        },
+        {
+          "role": "qa",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "journey-engine",
+        "importer": "coverage-contract",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/docs/design/review-product/coverage.json",
+        "anchor": "journey.multicolor-pack",
+        "contentHash": "sha256:9da21081283d6ae160f8745a1fb79c2e6542cd96cda4b31414f0de49df593d33"
+      }
+    },
+    {
+      "id": "target:laundry.expectation.planned.active-use-cadence",
+      "kind": "target",
+      "title": "Active-use wash cadence and reminders",
+      "scale": "journey",
+      "presence": "expected",
+      "platforms": [
+        "web"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        },
+        {
+          "role": "qa",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "journey-engine",
+        "importer": "coverage-contract",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/docs/design/review-product/coverage.json",
+        "anchor": "planned.active-use-cadence",
+        "contentHash": "sha256:9da21081283d6ae160f8745a1fb79c2e6542cd96cda4b31414f0de49df593d33"
+      }
+    },
+    {
+      "id": "target:laundry.expectation.planned.condition-replacement",
+      "kind": "target",
+      "title": "Condition checks and replacement tracking",
+      "scale": "journey",
+      "presence": "expected",
+      "platforms": [
+        "web"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        },
+        {
+          "role": "qa",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "journey-engine",
+        "importer": "coverage-contract",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/docs/design/review-product/coverage.json",
+        "anchor": "planned.condition-replacement",
+        "contentHash": "sha256:9da21081283d6ae160f8745a1fb79c2e6542cd96cda4b31414f0de49df593d33"
+      }
+    },
+    {
+      "id": "target:laundry.expectation.planned.helper-delegation",
+      "kind": "target",
+      "title": "Delegated care with helper permissions",
+      "scale": "journey",
+      "presence": "expected",
+      "platforms": [
+        "web"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        },
+        {
+          "role": "qa",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "journey-engine",
+        "importer": "coverage-contract",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/docs/design/review-product/coverage.json",
+        "anchor": "planned.helper-delegation",
+        "contentHash": "sha256:9da21081283d6ae160f8745a1fb79c2e6542cd96cda4b31414f0de49df593d33"
+      }
+    },
+    {
+      "id": "target:laundry.expectation.planned.item-warnings",
+      "kind": "target",
+      "title": "Additional item-specific care warnings",
+      "scale": "surface",
+      "presence": "expected",
+      "platforms": [
+        "web"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        },
+        {
+          "role": "qa",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "journey-engine",
+        "importer": "coverage-contract",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/docs/design/review-product/coverage.json",
+        "anchor": "planned.item-warnings",
+        "contentHash": "sha256:9da21081283d6ae160f8745a1fb79c2e6542cd96cda4b31414f0de49df593d33"
+      }
+    },
+    {
+      "id": "target:laundry.expectation.planned.native",
+      "kind": "target",
+      "title": "Native platform journey variants",
+      "scale": "journey",
+      "presence": "expected",
+      "platforms": [
+        "web"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        },
+        {
+          "role": "qa",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "journey-engine",
+        "importer": "coverage-contract",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/docs/design/review-product/coverage.json",
+        "anchor": "planned.native",
+        "contentHash": "sha256:9da21081283d6ae160f8745a1fb79c2e6542cd96cda4b31414f0de49df593d33"
+      }
+    },
+    {
+      "id": "target:laundry.expectation.planned.storage-guidance",
+      "kind": "target",
+      "title": "Storage, folding and put-away guidance",
+      "scale": "journey",
+      "presence": "expected",
+      "platforms": [
+        "web"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        },
+        {
+          "role": "qa",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "journey-engine",
+        "importer": "coverage-contract",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/docs/design/review-product/coverage.json",
+        "anchor": "planned.storage-guidance",
+        "contentHash": "sha256:9da21081283d6ae160f8745a1fb79c2e6542cd96cda4b31414f0de49df593d33"
+      }
+    },
+    {
+      "id": "target:laundry.expectation.screen.account-delete",
+      "kind": "target",
+      "title": "Delete account confirmation",
+      "scale": "screen",
+      "presence": "expected",
+      "platforms": [
+        "web"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        },
+        {
+          "role": "qa",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "journey-engine",
+        "importer": "coverage-contract",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/docs/design/review-product/coverage.json",
+        "anchor": "screen.account-delete",
+        "contentHash": "sha256:9da21081283d6ae160f8745a1fb79c2e6542cd96cda4b31414f0de49df593d33"
+      }
+    },
+    {
+      "id": "target:laundry.expectation.screen.machine-problem",
+      "kind": "target",
+      "title": "Recover from a washer problem",
+      "scale": "screen",
+      "presence": "expected",
+      "platforms": [
+        "web"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        },
+        {
+          "role": "qa",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "journey-engine",
+        "importer": "coverage-contract",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/docs/design/review-product/coverage.json",
+        "anchor": "screen.machine-problem",
+        "contentHash": "sha256:9da21081283d6ae160f8745a1fb79c2e6542cd96cda4b31414f0de49df593d33"
+      }
+    },
+    {
       "id": "target:laundry.family.drying",
       "kind": "target",
       "title": "Family · drying check",
@@ -7274,6 +7638,443 @@
         "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
         "path": "journey-engine/source/apps/web/e2e/review-route-states.spec.ts",
         "anchor": "line 57"
+      }
+    },
+    {
+      "id": "collab:coverage-gap.laundry.interaction-garment-routine",
+      "kind": "collaboration",
+      "title": "Coverage gap: Change garment wash and dry preferences",
+      "type": "coverage-gap",
+      "subjectIds": [
+        "target:laundry.expectation.interaction.garment-routine"
+      ],
+      "platform": "web",
+      "summary": "`apps/web/src/closet/personal-routine.tsx` exists, but no scenario shows it, so no run can prove it.",
+      "perspectives": [
+        "engineering",
+        "qa"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        },
+        {
+          "role": "qa",
+          "who": "taymoork2"
+        }
+      ],
+      "raisedBy": {
+        "role": "qa",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-12T07:43:26.120Z",
+      "status": "open",
+      "source": {
+        "tool": "journey-engine",
+        "importer": "coverage-contract",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/docs/design/review-product/coverage.json",
+        "anchor": "interaction.garment-routine",
+        "contentHash": "sha256:9da21081283d6ae160f8745a1fb79c2e6542cd96cda4b31414f0de49df593d33"
+      }
+    },
+    {
+      "id": "collab:coverage-gap.laundry.journey-first-care-cycle",
+      "kind": "collaboration",
+      "title": "Coverage gap: First complete care cycle",
+      "type": "coverage-gap",
+      "subjectIds": [
+        "target:laundry.expectation.journey.first-care-cycle",
+        "target:laundry.legacy.sign-in",
+        "target:laundry.legacy.setup-first-use",
+        "target:laundry.legacy.home-one",
+        "target:laundry.legacy.laundry-hamper",
+        "target:laundry.legacy.laundry-review",
+        "target:laundry.legacy.laundry-session",
+        "target:laundry.legacy.drying-index",
+        "target:laundry.legacy.put-away"
+      ],
+      "platform": "web",
+      "summary": "No passing run covers `legacy.sign-in`, `legacy.setup-first-use`, `legacy.home-one`, `legacy.laundry-hamper`, `legacy.laundry-review`, `legacy.laundry-session`, `legacy.drying-index`, `legacy.put-away`.",
+      "perspectives": [
+        "qa"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        },
+        {
+          "role": "qa",
+          "who": "taymoork2"
+        }
+      ],
+      "raisedBy": {
+        "role": "qa",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-12T07:43:26.120Z",
+      "status": "open",
+      "source": {
+        "tool": "journey-engine",
+        "importer": "coverage-contract",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/docs/design/review-product/coverage.json",
+        "anchor": "journey.first-care-cycle",
+        "contentHash": "sha256:9da21081283d6ae160f8745a1fb79c2e6542cd96cda4b31414f0de49df593d33"
+      }
+    },
+    {
+      "id": "collab:coverage-gap.laundry.journey-hanging-reminder",
+      "kind": "collaboration",
+      "title": "Coverage gap: Hanging reminder · visible, dismissed, changed task and exact run check",
+      "type": "coverage-gap",
+      "subjectIds": [
+        "target:laundry.expectation.journey.hanging-reminder",
+        "target:laundry.route.home.reminder-changed",
+        "target:laundry.route.drying.reminder-check"
+      ],
+      "platform": "web",
+      "summary": "No passing run covers `route.home.reminder-changed`, `route.drying.reminder-check`.",
+      "perspectives": [
+        "qa"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        },
+        {
+          "role": "qa",
+          "who": "taymoork2"
+        }
+      ],
+      "raisedBy": {
+        "role": "qa",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-12T07:43:26.120Z",
+      "status": "open",
+      "source": {
+        "tool": "journey-engine",
+        "importer": "coverage-contract",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/docs/design/review-product/coverage.json",
+        "anchor": "journey.hanging-reminder",
+        "contentHash": "sha256:9da21081283d6ae160f8745a1fb79c2e6542cd96cda4b31414f0de49df593d33"
+      }
+    },
+    {
+      "id": "collab:coverage-gap.laundry.planned-active-use-cadence",
+      "kind": "collaboration",
+      "title": "Coverage gap: Active-use wash cadence and reminders",
+      "type": "coverage-gap",
+      "subjectIds": [
+        "target:laundry.expectation.planned.active-use-cadence"
+      ],
+      "platform": "web",
+      "summary": "Declared, but nothing shows it yet: no scenario and no code.",
+      "perspectives": [
+        "engineering",
+        "qa"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        },
+        {
+          "role": "qa",
+          "who": "taymoork2"
+        }
+      ],
+      "raisedBy": {
+        "role": "qa",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-12T07:43:26.120Z",
+      "status": "open",
+      "source": {
+        "tool": "journey-engine",
+        "importer": "coverage-contract",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/docs/design/review-product/coverage.json",
+        "anchor": "planned.active-use-cadence",
+        "contentHash": "sha256:9da21081283d6ae160f8745a1fb79c2e6542cd96cda4b31414f0de49df593d33"
+      }
+    },
+    {
+      "id": "collab:coverage-gap.laundry.planned-condition-replacement",
+      "kind": "collaboration",
+      "title": "Coverage gap: Condition checks and replacement tracking",
+      "type": "coverage-gap",
+      "subjectIds": [
+        "target:laundry.expectation.planned.condition-replacement"
+      ],
+      "platform": "web",
+      "summary": "Declared, but nothing shows it yet: no scenario and no code.",
+      "perspectives": [
+        "engineering",
+        "qa"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        },
+        {
+          "role": "qa",
+          "who": "taymoork2"
+        }
+      ],
+      "raisedBy": {
+        "role": "qa",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-12T07:43:26.120Z",
+      "status": "open",
+      "source": {
+        "tool": "journey-engine",
+        "importer": "coverage-contract",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/docs/design/review-product/coverage.json",
+        "anchor": "planned.condition-replacement",
+        "contentHash": "sha256:9da21081283d6ae160f8745a1fb79c2e6542cd96cda4b31414f0de49df593d33"
+      }
+    },
+    {
+      "id": "collab:coverage-gap.laundry.planned-helper-delegation",
+      "kind": "collaboration",
+      "title": "Coverage gap: Delegated care with helper permissions",
+      "type": "coverage-gap",
+      "subjectIds": [
+        "target:laundry.expectation.planned.helper-delegation"
+      ],
+      "platform": "web",
+      "summary": "Declared, but nothing shows it yet: no scenario and no code.",
+      "perspectives": [
+        "engineering",
+        "qa"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        },
+        {
+          "role": "qa",
+          "who": "taymoork2"
+        }
+      ],
+      "raisedBy": {
+        "role": "qa",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-12T07:43:26.120Z",
+      "status": "open",
+      "source": {
+        "tool": "journey-engine",
+        "importer": "coverage-contract",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/docs/design/review-product/coverage.json",
+        "anchor": "planned.helper-delegation",
+        "contentHash": "sha256:9da21081283d6ae160f8745a1fb79c2e6542cd96cda4b31414f0de49df593d33"
+      }
+    },
+    {
+      "id": "collab:coverage-gap.laundry.planned-item-warnings",
+      "kind": "collaboration",
+      "title": "Coverage gap: Additional item-specific care warnings",
+      "type": "coverage-gap",
+      "subjectIds": [
+        "target:laundry.expectation.planned.item-warnings"
+      ],
+      "platform": "web",
+      "summary": "Declared, but nothing shows it yet: no scenario and no code.",
+      "perspectives": [
+        "engineering",
+        "qa"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        },
+        {
+          "role": "qa",
+          "who": "taymoork2"
+        }
+      ],
+      "raisedBy": {
+        "role": "qa",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-12T07:43:26.120Z",
+      "status": "open",
+      "source": {
+        "tool": "journey-engine",
+        "importer": "coverage-contract",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/docs/design/review-product/coverage.json",
+        "anchor": "planned.item-warnings",
+        "contentHash": "sha256:9da21081283d6ae160f8745a1fb79c2e6542cd96cda4b31414f0de49df593d33"
+      }
+    },
+    {
+      "id": "collab:coverage-gap.laundry.planned-native",
+      "kind": "collaboration",
+      "title": "Coverage gap: Native platform journey variants",
+      "type": "coverage-gap",
+      "subjectIds": [
+        "target:laundry.expectation.planned.native"
+      ],
+      "platform": "web",
+      "summary": "Declared, but nothing shows it yet: no scenario and no code.",
+      "perspectives": [
+        "engineering",
+        "qa"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        },
+        {
+          "role": "qa",
+          "who": "taymoork2"
+        }
+      ],
+      "raisedBy": {
+        "role": "qa",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-12T07:43:26.120Z",
+      "status": "open",
+      "source": {
+        "tool": "journey-engine",
+        "importer": "coverage-contract",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/docs/design/review-product/coverage.json",
+        "anchor": "planned.native",
+        "contentHash": "sha256:9da21081283d6ae160f8745a1fb79c2e6542cd96cda4b31414f0de49df593d33"
+      }
+    },
+    {
+      "id": "collab:coverage-gap.laundry.planned-storage-guidance",
+      "kind": "collaboration",
+      "title": "Coverage gap: Storage, folding and put-away guidance",
+      "type": "coverage-gap",
+      "subjectIds": [
+        "target:laundry.expectation.planned.storage-guidance"
+      ],
+      "platform": "web",
+      "summary": "Declared, but nothing shows it yet: no scenario and no code.",
+      "perspectives": [
+        "engineering",
+        "qa"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        },
+        {
+          "role": "qa",
+          "who": "taymoork2"
+        }
+      ],
+      "raisedBy": {
+        "role": "qa",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-12T07:43:26.120Z",
+      "status": "open",
+      "source": {
+        "tool": "journey-engine",
+        "importer": "coverage-contract",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/docs/design/review-product/coverage.json",
+        "anchor": "planned.storage-guidance",
+        "contentHash": "sha256:9da21081283d6ae160f8745a1fb79c2e6542cd96cda4b31414f0de49df593d33"
+      }
+    },
+    {
+      "id": "collab:coverage-gap.laundry.screen-account-delete",
+      "kind": "collaboration",
+      "title": "Coverage gap: Delete account confirmation",
+      "type": "coverage-gap",
+      "subjectIds": [
+        "target:laundry.expectation.screen.account-delete"
+      ],
+      "platform": "web",
+      "summary": "`apps/web/src/account/account-settings.tsx#DeleteSheet` exists, but no scenario shows it, so no run can prove it.",
+      "perspectives": [
+        "engineering",
+        "qa"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        },
+        {
+          "role": "qa",
+          "who": "taymoork2"
+        }
+      ],
+      "raisedBy": {
+        "role": "qa",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-12T07:43:26.120Z",
+      "status": "open",
+      "source": {
+        "tool": "journey-engine",
+        "importer": "coverage-contract",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/docs/design/review-product/coverage.json",
+        "anchor": "screen.account-delete",
+        "contentHash": "sha256:9da21081283d6ae160f8745a1fb79c2e6542cd96cda4b31414f0de49df593d33"
+      }
+    },
+    {
+      "id": "collab:coverage-gap.laundry.screen-machine-problem",
+      "kind": "collaboration",
+      "title": "Coverage gap: Recover from a washer problem",
+      "type": "coverage-gap",
+      "subjectIds": [
+        "target:laundry.expectation.screen.machine-problem"
+      ],
+      "platform": "web",
+      "summary": "`apps/web/src/laundry/machine-problem.tsx#MachineProblemSheet` exists, but no scenario shows it, so no run can prove it.",
+      "perspectives": [
+        "engineering",
+        "qa"
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        },
+        {
+          "role": "qa",
+          "who": "taymoork2"
+        }
+      ],
+      "raisedBy": {
+        "role": "qa",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-12T07:43:26.120Z",
+      "status": "open",
+      "source": {
+        "tool": "journey-engine",
+        "importer": "coverage-contract",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/docs/design/review-product/coverage.json",
+        "anchor": "screen.machine-problem",
+        "contentHash": "sha256:9da21081283d6ae160f8745a1fb79c2e6542cd96cda4b31414f0de49df593d33"
       }
     }
   ],
