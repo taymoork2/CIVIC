@@ -11,7 +11,11 @@ export async function runtimeRequest<T>(input: Record<string, unknown>): Promise
   if (!response.ok) throw Object.assign(Error(result.error ?? 'Isolated runtime unavailable'), { data: result.data })
   return result
 }
-export type RuntimeSession<Seed = unknown> = { id: string; source: string; project: string; now: number; seed: Seed }
+/** A persona's synthetic review identity for one run. `credential` is fresh per run and is only ever typed into this page's sign-in form. */
+export type ReviewIdentity = { id: string; name: string; email: string; credential: string; signedIn: boolean }
+export type RuntimeSession<Seed = unknown> = { id: string; source: string; project: string; now: number; seed: Seed; identity: ReviewIdentity | null }
+// What the page sends in place of the run's credential; the run swaps it back, so recordings never hold it.
+export const credentialPlaceholder = '[review credential]'
 
 /** One request boundary records effects regardless of which screen initiated them. */
 export function runtimeTransport(session: { id: string }) {
@@ -81,14 +85,15 @@ export type OpenRuntimeSession = Awaited<ReturnType<typeof openRuntimeSession>>
  * instead of a server. Reads run as queries; writes are recorded as operations and replayed.
  * Everything else, including CIVIC's own `/api/review/` requests, is refused or passed through unchanged.
  */
-export function routeFetch(transport: RuntimeTransport, prefixes: string[]) {
+export function routeFetch(transport: RuntimeTransport, prefixes: string[], credential?: string) {
+  const conceal = (text: string) => credential ? text.replaceAll(credential, credentialPlaceholder).replaceAll(encodeURIComponent(credential), credentialPlaceholder) : text
   const routed = (url: URL) => url.origin === location.origin && !url.pathname.startsWith('/api/review/') && prefixes.some((prefix) => url.pathname.startsWith(prefix))
   const isolated: typeof fetch = async (input, init) => {
     const request = new Request(input, init), url = new URL(request.url)
     if (!routed(url)) return pageFetch(input, init)
     const method = request.method.toUpperCase(), write = !['GET', 'HEAD'].includes(method)
-    const body = write ? await request.text() : undefined
-    const args = { query: url.search, ...(body ? { body, type: request.headers.get('content-type') ?? 'application/json' } : {}) }
+    const body = write ? conceal(await request.text()) : undefined
+    const args = { query: conceal(url.search), ...(body ? { body, type: request.headers.get('content-type') ?? 'application/json' } : {}) }
     try {
       const result = await transport.request<{ status: number; type: string; body: string }>(write ? 'mutation' : 'query', `${method}:${url.pathname}`, args)
       return new Response(method === 'HEAD' || [204, 304].includes(result.status) ? null : result.body, { status: result.status, headers: result.type ? { 'content-type': result.type } : {} })
@@ -98,4 +103,23 @@ export function routeFetch(transport: RuntimeTransport, prefixes: string[]) {
   }
   globalThis.fetch = isolated
   return () => { if (globalThis.fetch === isolated) globalThis.fetch = pageFetch }
+}
+
+/**
+ * Fills sign-in password fields with the run's review credential, as a password manager would, so a reviewer
+ * signing in as the persona never types or sees a secret, and a replay signs in again. Password fields are never recorded.
+ */
+export function fillCredentials(root: HTMLElement, credential: string) {
+  const fill = () => {
+    for (const input of root.querySelectorAll<HTMLInputElement>('input[type="password"]')) {
+      if (input.value || input.dataset.civicCredential === credential) continue
+      input.dataset.civicCredential = credential
+      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value')!.set!.call(input, credential)
+      input.dispatchEvent(new Event('input', { bubbles: true }))
+    }
+  }
+  const observer = new MutationObserver(fill)
+  observer.observe(root, { childList: true, subtree: true })
+  fill()
+  return () => observer.disconnect()
 }

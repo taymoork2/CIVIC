@@ -17,8 +17,10 @@ export type AdapterContext = {
    * Starts an isolated run of the project's runtime entry and connects it: the clock, IDs and storage
    * are pinned, and the page's `fetch` calls under `routes` (default `/api/`) go to the run's backend.
    * Call `reset` to put the app back on its first screen with fresh data when a replay starts.
+   * A persona with a review identity starts signed in (or out, for the manifest's `identity.signedOut` conditions);
+   * the run holds the session, and password fields are filled with the run's credential.
    */
-  startRuntime: (options: RuntimeOptions) => Promise<{ bridge: RuntimeBridge; close: () => void }>
+  startRuntime: (options: RuntimeOptions) => Promise<{ bridge: RuntimeBridge; close: () => void; identity: RuntimeIdentity | null }>
 }
 export type RuntimeOptions = {
   routes?: string[]
@@ -28,7 +30,11 @@ export type RuntimeOptions = {
   captureInputs?: 'synthetic' | string[]
   status?: () => { dirty: boolean; pending: boolean }
   reset: () => Promise<void> | void
+  /** Reads the app needs before its first screen is known, such as whether anyone is signed in. Runs after routing, before recording starts. */
+  load?: () => Promise<void> | void
 }
+/** The persona's synthetic review identity for this run. The credential stays out of the app's preview code. */
+export type RuntimeIdentity = { id: string; name: string; email: string; signedIn: boolean }
 export type MountAdapter = (container: HTMLElement, context: AdapterContext) => void | (() => void) | Promise<void | (() => void)>
 declare global {
   interface Window { reviewPreview?: { retryWrites: () => void; restart: () => void; data: () => unknown; config: ReviewConfig; snapshot: ReviewSnapshot; state?: () => AdapterState | null; recording?: RuntimeBridge['recording']; replay?: RuntimeBridge['replay']; replayMismatch?: RuntimeBridge['mismatch'] } }
