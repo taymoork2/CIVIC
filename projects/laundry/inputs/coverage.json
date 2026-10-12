@@ -1,0 +1,167 @@
+{
+  "version": 8,
+  "targets": [
+    {
+      "id": "journey.hanging-reminder",
+      "title": "Hanging reminder · visible, dismissed, changed task and exact run check",
+      "kind": "journey",
+      "scenarios": [
+        "route.home.reminder-visible",
+        "route.home.reminder-dismissed",
+        "route.home.reminder-changed",
+        "route.drying.reminder-check"
+      ],
+      "acceptance": [
+        "Mount the released Home/Closet and real reminder presenters against synthetic records; refuse household writes.",
+        "Opening follows /drying?run=<runId> and records no dryness; Home and Laundry remain accessible after dismissal.",
+        "Dismissal is device/household/task-scoped, restores main focus and permits a changed run/count to reappear.",
+        "Keep runtime preview proof separate from the twelve canonical static frames, which omit the floating reminder, and from owner backend/device acceptance."
+      ]
+    },
+    {
+      "id": "journey.family-scale-care-loop",
+      "title": "Family of five · complete care loop at 100, 500 and 1000 items",
+      "kind": "journey",
+      "scenarios": [
+        "family.planning",
+        "family.washing",
+        "family.drying",
+        "family.putaway"
+      ],
+      "acceptance": [
+        "Keep the same synthetic account and items across planning, every wash load, drying and partial put-away.",
+        "Changing family size or starting stage requires explicit reset; cancellation retains the current run.",
+        "Distinguish declared load fixtures and memory-only wash actions from actual planner/backend execution.",
+        "Transfer only a completed load's original item IDs into drying; retain unwashed loads, partial dryness, put-away counts and selections through return paths and failures."
+      ]
+    },
+    {
+      "id": "journey.first-care-cycle",
+      "title": "First complete care cycle",
+      "kind": "journey",
+      "scenarios": [
+        "legacy.sign-in",
+        "legacy.setup-first-use",
+        "legacy.home-one",
+        "intake.towel.type",
+        "records.towel",
+        "legacy.laundry-hamper",
+        "legacy.laundry-review",
+        "legacy.laundry-session",
+        "legacy.drying-index",
+        "legacy.put-away"
+      ],
+      "acceptance": [
+        "Keep the same synthetic household and garment across the entire care cycle.",
+        "Record confirmed actions and inputs; a failed operation must not advance the journey."
+      ]
+    },
+    {
+      "id": "journey.multicolor-pack",
+      "title": "Multicolor pack with shared care",
+      "kind": "journey",
+      "scenarios": [
+        "intake.pack.type",
+        "intake.pack.whose",
+        "intake.pack.details",
+        "intake.pack.fabric",
+        "intake.pack.color",
+        "intake.pack.origin",
+        "intake.pack.care",
+        "intake.pack.stain",
+        "intake.pack.final",
+        "records.pack"
+      ],
+      "acceptance": [
+        "Record both ownership branches, color quantities and shared-care confirmation in one continuous run."
+      ]
+    },
+    {
+      "id": "interaction.garment-routine",
+      "title": "Change garment wash and dry preferences",
+      "kind": "interaction",
+      "component": "apps/web/src/closet/personal-routine.tsx",
+      "scenarios": [],
+      "acceptance": [
+        "Retain the selected garment and quantity through save, cancel and retry.",
+        "Preferences must never override care-label limits."
+      ]
+    },
+    {
+      "id": "screen.account-delete",
+      "title": "Delete account confirmation",
+      "kind": "screen",
+      "component": "apps/web/src/account/account-settings.tsx#DeleteSheet",
+      "scenarios": [],
+      "acceptance": [
+        "Use a synthetic account and explicit confirmation; do not send a real deletion request."
+      ]
+    },
+    {
+      "id": "planned.active-use-cadence",
+      "title": "Active-use wash cadence and reminders",
+      "kind": "journey",
+      "scenarios": [],
+      "acceptance": [
+        "Use explicitly reported use; clean stored inventory does not accumulate assumed wear.",
+        "Provide pause, snooze and recipient-aware reminders."
+      ]
+    },
+    {
+      "id": "planned.condition-replacement",
+      "title": "Condition checks and replacement tracking",
+      "kind": "journey",
+      "scenarios": [],
+      "acceptance": [
+        "Record reported condition and quantity; do not infer failure or remaining life from age."
+      ]
+    },
+    {
+      "id": "planned.item-warnings",
+      "title": "Additional item-specific care warnings",
+      "kind": "interaction",
+      "scenarios": [],
+      "acceptance": [
+        "Use confirmed item restrictions; do not invent chemical permissions or safe treatments."
+      ]
+    },
+    {
+      "id": "planned.storage-guidance",
+      "title": "Storage, folding and put-away guidance",
+      "kind": "journey",
+      "scenarios": [],
+      "acceptance": [
+        "Distinguish an actual recorded placement from a suggested storage method."
+      ]
+    },
+    {
+      "id": "planned.helper-delegation",
+      "title": "Delegated care with helper permissions",
+      "kind": "journey",
+      "scenarios": [],
+      "acceptance": [
+        "Explicitly scope access and assigned work; membership alone does not authorize a helper."
+      ]
+    },
+    {
+      "id": "planned.native",
+      "title": "Native platform journey variants",
+      "kind": "journey",
+      "scenarios": [],
+      "acceptance": [
+        "Retain shared intent while recording approved platform adaptations separately from unreviewed drift."
+      ]
+    },
+    {
+      "id": "screen.machine-problem",
+      "title": "Recover from a washer problem",
+      "kind": "screen",
+      "component": "apps/web/src/laundry/machine-problem.tsx#MachineProblemSheet",
+      "scenarios": [],
+      "acceptance": [
+        "Show door and dispenser problems, retained preparation and failed recalculation.",
+        "A failed retry retains the washer selection and preparation state."
+      ]
+    }
+  ]
+}

@@ -5,6 +5,7 @@ export { readFigmaComponentSet, type DesignKitFacts, type DesignKitMapping } fro
 export { readFigmaLibraryComponent, readFigmaProductFile, type LibraryComponentMapping, type LibraryFacts, type ProductManifest } from './figma-product.ts'
 export { readPlaywrightReport, type PlaywrightReportOptions } from './playwright.ts'
 export { default as CivicReporter, readCivicRun, type CivicReporterOptions, type CivicRun } from './playwright-reporter.ts'
+export { expectationTarget, readCoverageContract, type CoverageContract, type CoverageContractOptions } from './coverage.ts'
 export { readJourneyIndex, scenarioTarget, type JourneyIndex, type JourneyIndexOptions } from './journey.ts'
 export { compareDesignKit, compareLibraryDefaults, raiseOverrideDrift } from './compare.ts'
 export { applyDecisions, settledConflicts, type SettledConflict } from './decisions.ts'
