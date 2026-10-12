@@ -8,13 +8,27 @@ CIVIC makes no model calls (D30). Agents run in their own harness and talk to CI
 
 In the git common directory, under `civic/` (D39): `records.graph.json` holds the graph document, and `captures/` holds images named by their SHA-256. Every worktree of a repository shares the common directory, so an annotation made in one worktree is visible to an agent in another. Nothing is committed to a product branch.
 
-Each write takes a lock, re-reads the store, applies the change, validates the whole document against the graph's rules, and replaces the file atomically. A write the rules refuse, such as an agent resolving a request, is never stored. The team-wide store is roadmap step 5. It holds the same record shapes.
+Each write takes a lock, re-reads the store, applies the change, validates the whole document against the graph's rules, and replaces the file atomically. A write the rules refuse, such as an agent resolving a request, is never stored. `civic sync` shares the store with the team ([below](#sharing-records-with-the-team)).
 
 Every work request has a version, which counts its changes from 1, and names its latest change (who, when, which operation). `civic requests` and `civic queue` print each request as `<id>@<version>`, and any command that takes a request accepts that form. The write is then refused if anyone changed the request since that version, naming the change, and nothing is written. So a person who reviewed one fix never resolves a newer one they didn't see, and an agent never claims over a comment it didn't read. Read the request again with `civic show` and retry at its current version. Without `@<version>`, a write applies to the request as it is now.
 
+## Sharing records with the team
+
+`civic sync` shares this store with everyone else's through `refs/civic/records` on the repository's remote (`--remote`, default `origin`; `--ref` to change it), as [decision 0008](../docs/decisions/0008-team-records-on-a-git-ref.md) says. Each sync is one commit holding the records and their captures, with the person who synced in a `Civic-Actor:` trailer. Only people who can push to the repository can share records. A push that isn't a fast-forward is refused, so the sync fetches, merges again, and retries.
+
+The merge goes record by record against the last snapshot this store shared:
+
+- A record changed on one side takes that side.
+- Comments made on both sides at once are both kept.
+- Any other change made on both sides keeps the shared version and sets yours aside. `civic conflicts` lists them. `civic settle <record> --keep theirs` drops yours, and `--keep mine` puts yours back as a new change that the next sync shares. Keeping yours needs the resolve scope.
+
+Before merging, every shared change since the last sync is checked. Its person may change only what they, their agents, or CIVIC's re-capture wrote, with the scopes that `civic.access.json` gives them. Nobody deletes a record. If a sync breaks this, it is refused whole, the commit is named, and nothing is merged. The trailer is a claim rather than a proof; signed sync commits are the next step.
+
+Sync talks to a `RecordsRemote` (`src/remote.ts`), so a hosted service can replace the git ref without changing anything else.
+
 ## Who is acting
 
-A person runs as themselves, using the handle from `git config civic.handle`, `CIVIC_PERSON`, or their git email. An agent runs with `CIVIC_AGENT=<harness>` and `CIVIC_FOR=<person>`, so every write it makes names the person it acts for (D35). This is local attribution, not authentication: anyone who can write the git directory can write the store. Authenticated identities come with the team-wide store (roadmap step 5).
+A person runs as themselves, using the handle from `git config civic.handle`, `CIVIC_PERSON`, or their git email. An agent runs with `CIVIC_AGENT=<harness>` and `CIVIC_FOR=<person>`, so every write it makes names the person it acts for (D35). This is local attribution, not authentication: anyone who can write the git directory can write the store. Authenticated identities come with signed sync commits (roadmap step 5).
 
 What each person may do comes from `civic.access.json` on the default branch, so changing it is itself a reviewed, merged change, and an edit in a worktree grants nothing:
 

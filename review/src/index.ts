@@ -6,3 +6,5 @@ export { captureScenario, launchBrowser, recapture, reproductionUrl, type Browse
 export { renderList, renderRequest } from './render.ts'
 export { ACCESS_FILE, ForbiddenError, loadAccess, parseAccess, scopesOf, SCOPES, type AccessPolicy, type Scope } from './access.ts'
 export { run } from './cli.ts'
+export { DEFAULT_REF, GitRefRemote, type OutgoingSnapshot, type RecordsRemote, type RemoteChange, type RemoteSnapshot } from './remote.ts'
+export { checkChange, listConflicts, merge3, settleConflict, sync, UntrustedChangeError, type SyncConflict, type SyncResult } from './sync.ts'

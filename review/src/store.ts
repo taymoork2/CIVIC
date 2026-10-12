@@ -1,10 +1,11 @@
 import { createHash } from 'node:crypto'
-import { mkdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { SCHEMA_VERSION, validateGraph, type CaptureRef, type GraphDocument } from '../../graph/src/index.ts'
 
 const STALE_LOCK_MS = 30_000
 const LOCK_WAIT_MS = 10_000
+const NAME = /^([0-9a-f]{64})\.(png|jpg|webp)$/
 const EXTENSIONS: Record<CaptureRef['mediaType'], string> = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' }
 
 /**
@@ -93,6 +94,29 @@ export class Store {
     } finally {
       release()
     }
+  }
+
+  /** Every capture's file name, `<sha256>.<ext>`, for sharing them (roadmap step 5). */
+  captureNames(): string[] {
+    try {
+      return readdirSync(join(this.dir, 'captures')).filter((name) => NAME.test(name)).sort()
+    } catch {
+      return []
+    }
+  }
+
+  readCapture(name: string): Uint8Array {
+    if (!NAME.test(name)) throw new Error(`Not a capture: ${name}`)
+    return readFileSync(join(this.dir, 'captures', name))
+  }
+
+  /** Stores a capture shared by someone else, refusing bytes that don't match their name. */
+  putCaptureNamed(name: string, bytes: Uint8Array) {
+    const match = NAME.exec(name)
+    const mediaType = match && (Object.keys(EXTENSIONS) as CaptureRef['mediaType'][]).find((type) => EXTENSIONS[type] === match[2])
+    if (!match || !mediaType) throw new Error(`Not a capture: ${name}`)
+    const stored = this.putCapture(bytes, mediaType)
+    if (stored.sha256 !== match[1]) throw new Error(`The shared capture ${name} doesn't match its SHA-256; it was not kept.`)
   }
 
   capturePath(capture: Pick<CaptureRef, 'sha256' | 'mediaType'>): string {
