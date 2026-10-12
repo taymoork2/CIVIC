@@ -25,6 +25,81 @@
       "graph": "demo/card/out/resolved.graph.json",
       "key": "unreachable-screen target:shop.gift-options target:shop.checkout",
       "summary": "Gift options can't be reached from Checkout's entry."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "dead-end target:laundry.intake.appliance target:laundry.journey.appliances",
+      "summary": "Basic appliance intake is a dead end in Appliances: no path leads on and it isn't a declared exit."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "dead-end target:laundry.intake.product target:laundry.journey.products",
+      "summary": "Basic product intake is a dead end in Products: no path leads on and it isn't a declared exit."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "dead-end target:laundry.records.appliance target:laundry.journey.appliances",
+      "summary": "Saved appliance is a dead end in Appliances: no path leads on and it isn't a declared exit."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "dead-end target:laundry.records.appliance.edit target:laundry.journey.appliances",
+      "summary": "Appliance editor is a dead end in Appliances: no path leads on and it isn't a declared exit."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "dead-end target:laundry.records.item.care target:laundry.journey.nested-quick-edits",
+      "summary": "Item · nested care is a dead end in Nested quick edits: no path leads on and it isn't a declared exit."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "dead-end target:laundry.records.item.tags target:laundry.journey.nested-quick-edits",
+      "summary": "Item · nested tags is a dead end in Nested quick edits: no path leads on and it isn't a declared exit."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "dead-end target:laundry.records.pack.edit target:laundry.journey.saved-records",
+      "summary": "Multicolor pack · item editor is a dead end in Saved records: no path leads on and it isn't a declared exit."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "dead-end target:laundry.records.product target:laundry.journey.products",
+      "summary": "Saved product is a dead end in Products: no path leads on and it isn't a declared exit."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "dead-end target:laundry.records.product.contents target:laundry.journey.products",
+      "summary": "Product Contents editor is a dead end in Products: no path leads on and it isn't a declared exit."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "dead-end target:laundry.records.profile target:laundry.journey.saved-records",
+      "summary": "Saved clothing profile is a dead end in Saved records: no path leads on and it isn't a declared exit."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "dead-end target:laundry.records.towel.edit target:laundry.journey.saved-records",
+      "summary": "Cotton/polyester towel · item editor is a dead end in Saved records: no path leads on and it isn't a declared exit."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "dead-end target:laundry.records.water target:laundry.journey.saved-records",
+      "summary": "Saved water result is a dead end in Saved records: no path leads on and it isn't a declared exit."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "failing-evidence evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer web",
+      "summary": "every initial named scenario renders a real task drawer fails."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "failing-evidence evidence:playwright.returning-to-the-family-plan-retains-a-completed-wash-and-an-unfinished-drying-selection web",
+      "summary": "returning to the family plan retains a completed wash and an unfinished drying selection fails."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "failing-evidence evidence:playwright.review-opens-real-synthetic-sheets-without-a-household-connection web",
+      "summary": "review opens real synthetic sheets without a household connection fails."
     }
   ]
 }

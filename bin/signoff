@@ -2,7 +2,7 @@
 # Local signoff: run CIVIC's checks on this machine instead of paid CI minutes, then
 # record a green "signoff" commit status on GitHub for the exact commit that passed.
 #
-#   bin/signoff            graph, review loop, importer, Fluent Button and Card demo checks, the
+#   bin/signoff            graph, review loop, importer, Fluent Button, Card and Laundry graph checks, the
 #                          civic check gate, then the journey engine's checks, tests and
 #                          review-server tests. Posts the "signoff" and "civic" statuses.
 #   bin/signoff --browser  also the Fluent Button web evidence and the Playwright
@@ -26,6 +26,7 @@ graph_dir="$repo_root/graph"
 importers_dir="$repo_root/importers"
 demo_dir="$repo_root/demo/fluent-button"
 card_dir="$repo_root/demo/card"
+laundry_dir="$repo_root/projects/laundry"
 review_dir="$repo_root/review"
 step() { printf '\n[signoff %s] %s\n' "$(date +%H:%M:%S)" "$1"; }
 
@@ -47,14 +48,15 @@ pnpm --dir "$review_dir" install --frozen-lockfile
 pnpm --dir "$review_dir" run check
 pnpm --dir "$review_dir" test
 
-step "CIVIC importers and the Fluent Button and Card demo graphs"
+step "CIVIC importers, the Fluent Button and Card demo graphs, and Laundry's graph"
 pnpm --dir "$importers_dir" install --frozen-lockfile
 pnpm --dir "$importers_dir" run check
 pnpm --dir "$importers_dir" test
 node "$demo_dir/build.ts" --check
 node "$card_dir/build.ts" --check
+node "$laundry_dir/build.ts" --check
 
-step "The gate: civic check on the demo graphs against civic.baseline.json"
+step "The gate: civic check on the graphs in civic.check.json against civic.baseline.json"
 "$repo_root/bin/civic" check --config "$repo_root/civic.check.json"
 if [ "$browser" = 1 ]; then
   step "Fluent Button web evidence (Playwright)"

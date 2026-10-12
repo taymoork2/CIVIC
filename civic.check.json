@@ -1,7 +1,8 @@
 {
   "graphs": [
     "demo/fluent-button/out/resolved.graph.json",
-    "demo/card/out/resolved.graph.json"
+    "demo/card/out/resolved.graph.json",
+    "projects/laundry/out/graph.json"
   ],
   "baseline": "civic.baseline.json"
 }
