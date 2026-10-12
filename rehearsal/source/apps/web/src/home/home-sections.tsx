@@ -1,36 +1,21 @@
 import { buttonVariants } from '@/components/ui/button'
 import { ItemContent, ItemDescription, ItemGroup, ItemTitle, itemVariants } from '@/components/ui/item'
 import { cn } from '@/lib/utils'
-import { useState, type ReactNode } from 'react'
+import { useState, type CSSProperties, type ReactNode } from 'react'
 
 import { homeHeroText } from '@/copy-closet'
-import { DesignIcon, type DesignIconName } from '@/kit/design-icons'
-import type { HeroLoad, HeroScene, HeroTarget, HomeHeroView, SetupPart } from '@/home/home-hero'
+import { DesignIcon } from '@/kit/design-icons'
+import type { HeroLoad, HeroTarget, HomeHeroView, SetupPart } from '@/home/home-hero'
 import { recordText } from '@/copy'
 import { chipClassName } from '@/closet/closet-parts'
 import { MediaTile, StatusMark } from '@/kit/record-row'
 import type { GuidanceAction } from '@/account/onboarding-state'
 import { TrialNote } from '@/laundry/laundry-ui'
 import { TapRow } from '@/laundry/laundry-kit'
+import { Sheet } from '@/kit/sheet'
+import { photoBlendClassName } from '@/products/product-ui'
 
 export type HeroLink = (target: HeroTarget, props: { className: string; children: ReactNode; ariaLabel?: string }) => ReactNode
-
-/** The hero's media band takes the tone of what the card is about: sage ready, yellow waiting, blue washing, lilac drying. */
-const mediaToneClassName: Record<HomeHeroView['mark']['tone'], string> = {
-  ready: 'bg-ready-bg',
-  waiting: 'bg-hamper-bg',
-  confirm: 'bg-hamper-bg',
-  washing: 'bg-washing-bg',
-  drying: 'bg-hanging-bg',
-  conflict: 'bg-conflict-bg',
-  done: 'bg-ready-bg',
-}
-
-// The design's hero tile shows the laundry icon by default and the washer once loads exist.
-const sceneIcon: Record<HeroScene, DesignIconName> = {
-  first: 'laundry', one: 'laundry', blocked: 'washer', planned: 'washer', running: 'washer',
-  finished: 'washer', hamper: 'laundry', drying: 'wind', calm: 'laundry',
-}
 
 const barToneClassName: Record<HeroLoad['tone'], string> = { washing: 'bg-washing-ink', drying: 'bg-hanging-ink', ready: 'bg-ready-ink' }
 
@@ -47,27 +32,24 @@ const loadRowClassName = 'flex min-h-[60px] w-full flex-col gap-1.5 border-0 [bo
 
 /**
  * The one floating hero: the most useful thing to do now. First use shows the illustration contained
- * (never cropped); every other state gets a tinted media band with its icon and status mark. The
+ * (never cropped); later states use the same tactile art family alongside their status. The
  * words carry the same state as the tone.
  */
 export function HomeHero({ view, renderLink }: { view: HomeHeroView; renderLink: HeroLink }) {
   const first = view.scene === 'first'
   const mark = view.mark.text ?? recordText.marks[view.mark.tone]
-  return <section aria-labelledby="home-hero-title" className="home-hero overflow-hidden rounded-card bg-surface text-ink shadow-[var(--e2)]">
+  const timedLoad = view.scene === 'running' && view.progress !== null && view.progress < 1 && view.loads.length === 0
+  return <section aria-labelledby="home-hero-title" className="home-hero overflow-hidden rounded-card bg-surface text-ink shadow-[var(--e2)] [container-type:inline-size]">
     {first
       ? <div className="px-5 pb-1 pt-6 [background:linear-gradient(180deg,var(--surface-2)_0%,var(--surface)_78%)]">
-        <img src="/laundry-invitation.png" alt={homeHeroText.first.art} width={1877} height={838} loading="eager" decoding="async" className="mx-auto block h-auto w-full max-w-[22rem] object-contain [aspect-ratio:1877/838]" />
+        <img src="/laundry-invitation.png" alt={homeHeroText.first.art} width={1877} height={838} loading="eager" decoding="async" className={cn('mx-auto block h-auto w-full max-w-[22rem] object-contain [aspect-ratio:1877/838]', photoBlendClassName)} />
       </div>
-      : <div className="flex items-center gap-3 px-4 pt-4">
-        <span className={cn('grid size-12 flex-none place-items-center rounded-field text-ink', mediaToneClassName[view.mark.tone])} aria-hidden="true"><DesignIcon name={sceneIcon[view.scene]} size={26} strokeWidth={1.5} /></span>
-        <span className="flex min-w-0 flex-col items-start gap-1">
-          <StatusMark tone={view.mark.tone}>{mark}</StatusMark>
-          <span className="text-[length:var(--step--1)] text-ink-2">{view.kicker}</span>
-        </span>
+      : <div aria-hidden="true" className="px-4 pt-4 [background:linear-gradient(180deg,var(--surface-2)_0%,var(--surface)_100%)]">
+        <img src="/design/home-care-scene.webp" alt="" width={960} height={429} loading="eager" decoding="async" className={cn('mx-auto block h-[136px] w-full max-w-[28rem] object-contain', photoBlendClassName)} />
       </div>}
     <div className={cn('grid gap-3', first ? 'p-4' : 'px-4 pt-3')}>
       <div className="grid gap-1">
-        {first ? <span className="text-[length:var(--step--1)] text-ink-2">{view.kicker}</span> : null}
+        {timedLoad ? <StatusMark tone={view.mark.tone}>{mark}</StatusMark> : null}
         <h2 id="home-hero-title" className="m-0 font-text text-[length:var(--step-3)] font-semibold leading-[1.2] tracking-[-.015em] [overflow-wrap:break-word] text-balance">{view.title}</h2>
         {view.detail === null ? null : <p className="m-0 text-[length:var(--step-0)] leading-normal text-ink-2">{view.detail}</p>}
       </div>
@@ -143,11 +125,11 @@ export function HomeGuidance({ action, pending, onResume, renderLink, notice }: 
   </div>
 }
 
-const quickLinkClassName = 'flex min-h-16 flex-col items-center justify-center gap-1 rounded-card border-0 bg-surface p-2 text-[length:var(--step--1)] font-semibold text-ink no-underline shadow-[var(--e1)] active:bg-surface-2 motion-safe:[transition:transform_var(--dur-press)_var(--ease-out)] [&:active]:[transform:scale(.96)] motion-reduce:[&:active]:transform-none focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring [&_svg]:size-5 [&_svg]:text-link'
+const quickLinkClassName = 'flex min-h-18 min-w-0 flex-col items-center justify-center gap-1 border-0 bg-transparent px-2 py-3 text-center text-[length:var(--step--1)] font-semibold text-ink no-underline [overflow-wrap:anywhere] [&+&]:[border-inline-start:1px_solid_var(--line)] active:bg-surface-2 motion-safe:[transition:background-color_var(--dur-press)_var(--ease-out)] focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-ring [&_svg]:size-5 [&_svg]:text-link'
 
 /** Closet, Add clothes and Plan a wash, in that order. */
 export function HomeQuickLinks({ renderLink }: { renderLink: HeroLink }) {
-  return <nav aria-label={homeHeroText.links.label} className="grid grid-cols-3 gap-2">
+  return <nav aria-label={homeHeroText.links.label} className="grid grid-cols-3 overflow-hidden rounded-control bg-surface shadow-[var(--e1)]">
     {renderLink({ to: 'closet' }, { className: quickLinkClassName, children: <><DesignIcon name="closet" />{homeHeroText.links.closet}</> })}
     {renderLink({ to: 'add' }, { className: quickLinkClassName, children: <><DesignIcon name="plus" />{homeHeroText.links.add}</> })}
     {renderLink({ to: 'laundry' }, { className: quickLinkClassName, children: <><DesignIcon name="laundry" />{homeHeroText.links.plan}</> })}
@@ -156,7 +138,20 @@ export function HomeQuickLinks({ renderLink }: { renderLink: HeroLink }) {
 
 export type OverviewCount = { readonly key: string; readonly label: string; readonly count: number; readonly dot: string }
 
-/** The proportion bar and counts share one Closet destination and one continuous target. */
+export function HomeOutfitAction({ children, summary }: { children: ReactNode; summary?: ReactNode }) {
+  const [open, setOpen] = useState(false)
+  return <section aria-labelledby="home-outfit-title" className="home-outfit grid overflow-hidden rounded-card bg-surface shadow-[var(--e1)]">
+    <div className="grid gap-3 p-4">
+      <div className="flex items-center gap-3"><span aria-hidden="true" className="grid size-11 shrink-0 place-items-center rounded-field bg-accent text-link"><DesignIcon name="tee" size={24} /></span>
+      <h2 id="home-outfit-title" className="m-0 text-[length:var(--step-2)] font-semibold">Today’s outfit</h2></div>
+      {summary ?? <p className="m-0 text-[length:var(--step--1)] text-ink-2">Choose from what’s ready. One less decision when you get dressed.</p>}
+    </div>
+    <button type="button" className={cn(heroRowClassName, 'bg-accent text-link font-semibold')} onClick={() => setOpen(true)}><span className="min-w-0 flex-1">Choose today’s outfit</span>{rowCaret}</button>
+    {open ? <Sheet title="Today’s outfit" onClose={() => setOpen(false)}>{children}</Sheet> : null}
+  </section>
+}
+
+/** The three everyday states stay glanceable, including zero; rarer states follow when present. */
 export function HomeCareOverview({ title, caption, counts, labelFlag, renderLink }: {
   title: string
   caption: string
@@ -164,23 +159,24 @@ export function HomeCareOverview({ title, caption, counts, labelFlag, renderLink
   labelFlag: { readonly text: string; readonly target: HeroTarget } | null
   renderLink: HeroLink
 }) {
+  const total = counts.reduce((sum, { count }) => sum + count, 0)
   return <section aria-labelledby="care-overview-title" className="grid gap-3">
-    <div className="flex items-baseline justify-between gap-2">
+    <div className="flex flex-wrap items-baseline justify-between gap-2">
       <h2 id="care-overview-title" className="m-0 text-[length:var(--step-2)] font-semibold">{title}</h2>
       <span className="text-[length:var(--step--1)] text-ink-2">{caption}</span>
     </div>
-    <div className="overflow-hidden rounded-card bg-surface shadow-[var(--e1)]">
+    <div className="overflow-hidden rounded-card bg-surface shadow-[var(--e1)] [container-type:inline-size]">
       {renderLink({ to: 'closet' }, {
-        className: 'grid w-full gap-3 bg-transparent pt-4 pb-3 text-ink no-underline active:bg-surface-2 [@media_(hover:_hover)_and_(pointer:_fine)]:hover:bg-surface-2 focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-ring',
+        className: 'grid w-full gap-3 bg-transparent p-4 text-ink no-underline active:bg-surface-2 [@media_(hover:_hover)_and_(pointer:_fine)]:hover:bg-surface-2 focus-visible:outline-3 focus-visible:outline-offset-[-3px] focus-visible:outline-ring',
         ariaLabel: counts.map(({ count, label }) => `${count} ${label}`).join(', '),
         children: <>
-          <span aria-hidden="true" className="mx-4 flex h-2 gap-[3px]">
-            {counts.map(({ key, count, dot }) => <span key={key} className={cn('rounded-[4px] opacity-85', dot)} style={{ flex: count, minWidth: count > 0 ? 6 : 0 }} />)}
+          <span aria-hidden="true" className="flex h-2 overflow-hidden rounded-full bg-surface-2">
+            {counts.map(({ key, count, dot }) => <span key={key} className={cn('h-full motion-safe:[transition:width_var(--dur-step)_var(--ease-out)]', dot)} style={{ width: `${total === 0 ? 0 : count / total * 100}%` }} />)}
           </span>
-          <span className="grid min-w-0 auto-cols-[minmax(max-content,1fr)] grid-flow-col overflow-x-auto">
-            {counts.map(({ key, label, count, dot }) => <span key={key} className="flex min-h-[60px] flex-col items-start justify-center gap-1 px-4 py-3 max-[360px]:px-2">
-            <span className={cn('text-[length:var(--step-3)] font-semibold leading-none tabular-nums', count > 0 ? 'text-ink' : 'text-ink-2')}>{count}</span>
-            <span className="flex items-center gap-1.5 whitespace-nowrap text-[length:var(--step--1)] leading-[1.2] text-ink-2"><span className={cn('size-1.5 flex-none rounded-full', dot)} aria-hidden="true" />{label}</span>
+          <span className="grid min-w-0 grid-cols-[repeat(var(--overview-columns),minmax(0,1fr))] gap-2 [@container_(width_<_10rem)]:grid-cols-2" style={{ '--overview-columns': counts.length } as CSSProperties}>
+            {counts.map(({ key, label, count }) => <span key={key} className="flex min-w-0 flex-col gap-1 [overflow-wrap:anywhere]">
+            <span className="text-[length:var(--step-1)] font-semibold tabular-nums">{count}</span>
+            <span className="text-[length:var(--step--1)] text-ink-2">{label}</span>
             </span>)}
           </span>
         </>,
@@ -234,7 +230,7 @@ export function HomeReadyTiles({ title, closetLabel, closetLink, tiles }: {
         className: 'flex h-full flex-col gap-1.5 overflow-hidden rounded-card border-0 bg-surface pb-3 text-start text-ink no-underline shadow-[var(--e1)] active:bg-surface-2 motion-safe:[transition:transform_var(--dur-press)_var(--ease-out)] [&:active]:[transform:scale(.98)] motion-reduce:[&:active]:transform-none focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring',
         ariaLabel: tile.label,
         children: <>
-          <span className="relative block h-[132px] shrink-0 bg-surface-2 [&_.garment-icon]:absolute [&_.garment-icon]:inset-0 [&_.garment-icon]:m-auto [&_.garment-icon]:size-16" aria-hidden="true">
+          <span className="relative block h-[132px] shrink-0 [&_.garment-icon]:absolute [&_.garment-icon]:inset-0 [&_.garment-icon]:m-auto [&_.garment-icon]:size-16" aria-hidden="true">
             {tile.art}
             {tile.count > 1 ? <span className="absolute right-2 top-2 rounded-field bg-surface px-2 py-1 text-[length:var(--step--1)] font-semibold tabular-nums text-ink shadow-[var(--e1)]">×{tile.count}</span> : null}
           </span>

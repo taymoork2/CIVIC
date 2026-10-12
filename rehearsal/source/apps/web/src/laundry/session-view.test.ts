@@ -6,7 +6,29 @@ import { createElement } from 'react'
 import { api } from '@/api'
 import { sessionStage } from '@/laundry/session-stage'
 import { renderToStaticMarkup } from '@/test/markup'
-import { acceptedStepFeedback, chooseDryerLocally, LoadSummaryView, sessionOrigin, type LoadRecord, type PieceLink, currentStep, recordLocally, runningPhase, stageFacts, stepActions, TimerCard, stepToDoNow, washFinishedLocally, wrongWasher, wrongWasherVisible, type Action, type Detail } from '@/laundry/session-view'
+import { MachineStepPresenter, ReviewStep, preparationBackStep, acceptedStepFeedback, chooseDryerLocally, LoadSummaryView, sessionOrigin, type LoadRecord, type PieceLink, currentStep, recordLocally, runningPhase, stageFacts, stepActions, TimerCard, stepToDoNow, washFinishedLocally, wrongWasher, wrongWasherVisible, type Action, type Detail } from '@/laundry/session-view'
+
+test('preparation Back visits earlier recorded instructions before returning to the recipe', () => {
+  expect(preparationBackStep(0, null)).toBeNull()
+  expect(preparationBackStep(3, null)).toBe(2)
+  expect(preparationBackStep(3, 2)).toBe(1)
+  expect(preparationBackStep(3, 0)).toBeNull()
+})
+
+test('preparation shows one planned dose; completed review substitutes the actual dose without a guessed cap', () => {
+  const action: Action = { id: 'dose', kind: 'treatment', phase: 'drum', order: 1, supplyId: 'liquid', supplyName: 'Fragrance-free liquid', dose: { amount: 25, unit: 'ml' }, placement: 'direct_to_drum', stage: 'wash', timing: null, confidence: 'verified', status: 'pending' }
+  const facts = { doorLocks: false, cycle: 'normal', cycleMinutes: null, washerName: 'Washer', drying: null }
+  const planned = renderToStaticMarkup(createElement(MachineStepPresenter, { action, facts, titleId: 'dose', progress: '2 of 5', primary: { label: 'Done', onClick: () => {} }, canRecord: true, error: null, textileName: () => '', rememberExplanation: false }))
+  expect(planned).toContain('Pour into the empty drum')
+  expect(planned).not.toContain('Pour 25')
+  expect(planned.match(/class="dose-figure row"/g)).toHaveLength(1)
+  expect(planned).toContain('empty-drum.webp')
+  expect(planned).not.toContain('cup-fill')
+  const review = renderToStaticMarkup(createElement(ReviewStep, { action: { ...action, status: 'confirmed' }, actualUsage: { amount: 30, unit: 'ml', mark: null }, facts, progress: '2 of 5', drumFullness: null, onNext: () => {}, rememberExplanation: false }))
+  expect(review).toContain('30 ml')
+  expect(review).not.toContain('25 ml')
+  expect(review).not.toContain('cup-fill')
+})
 
 const step = (id: string, phase: string, order: number, status = 'pending') => ({ id, phase, order, status })
 

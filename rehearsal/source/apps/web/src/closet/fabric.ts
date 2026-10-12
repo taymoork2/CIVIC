@@ -1,23 +1,22 @@
-import { fabricFibers, namedFiber, normalizeFabricDetails, type FabricDetails } from '@washcloset/planner'
+import { fabricFibers, fiberDetailSuggestions, normalizeFabricDetails, parseFabric, fabricLabel, type FabricDetails, type FiberShare } from '@washcloset/planner'
+export { parseFabric, fabricLabel, type FiberShare } from '@washcloset/planner'
 
 export const fabrics = ['cotton', 'polyester', 'wool', 'silk', 'linen', 'nylon', 'rayon', 'elastane', 'modal'] as const
 export const moreFabrics = [...fabricFibers.filter((fiber) => !(fabrics as readonly string[]).includes(fiber)), 'other'] as const
 export type Fabric = typeof fabricFibers[number] | 'other'
-export interface FiberShare { fiber: Fabric; name: string; percentage: number | null; details?: string[] }
-export const fabricLabel = (fiber: string) => new Map([['rayon', 'Rayon / viscose'], ['nylon', 'Nylon / polyamide'], ['elastane', 'Elastane / spandex'], ['linen', 'Linen / flax']]).get(fiber) ?? `${fiber.charAt(0).toUpperCase()}${fiber.slice(1)}`
 
-/** Keep the existing human-readable care record, including older comma/slash blends. */
-export function parseFabric(material: string | null): FiberShare[] {
-  if (!material?.trim()) return []
-  return material.split(/[,/;]\s*/u).map((part) => {
-    const match = part.trim().match(/^(-?\d+(?:\.\d+)?)%\s*(.+)$/u)
-    const name = (match?.[2] ?? part).trim()
-    const found = namedFiber(name)
-    const fiber = found?.fiber as Fabric | undefined ?? 'other'
-    return { fiber, name: fiber === 'other' && name.toLowerCase() !== 'other' ? name : '', percentage: match ? Number(match[1]) : null, ...(found?.details.length ? { details: found.details } : {}) }
-  })
+/** Search the same reported details offered in Advanced; a name never grants care permission. */
+export function searchFabrics(query: string): { fiber: Fabric; detail?: string; label: string }[] {
+  const normal = (word: string) => word.toLowerCase().replace(/[®™]/gu, '').replace(/[^a-z0-9]+/gu, ' ').trim()
+  const words = normal(query).split(' ').filter(Boolean)
+  if (words.length === 0) return []
+  return fabricFibers.flatMap((fiber) => [
+    { fiber, label: fabricLabel(fiber) },
+    ...(fiberDetailSuggestions[fiber] ?? []).map((detail) => ({ fiber, detail, label: `${detail} · ${fabricLabel(fiber)}` })),
+  ]).filter((choice) => words.every((word) => normal(choice.label).includes(word)))
 }
 
+/** Recover explicit fiber details from older material descriptions. */
 export function detailsFromMaterial(material: string | null): FabricDetails | undefined {
   const fibers = new Map<string, string[]>()
   for (const part of parseFabric(material)) {

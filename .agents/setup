@@ -14,7 +14,8 @@ if [ ! -x /opt/google/chrome/chrome ]; then
   time pnpm --dir "$source_dir/apps/web" exec playwright install --with-deps chrome
 fi
 
-# Bundled synthetic thumbnails are keyed by fixture source hash; copying avoids a ~7 minute first render.
+# Bundled synthetic thumbnails predate the v6 per-screen fingerprints, so the canvas shows them
+# as stale placeholders while current snapshots render; they are never counted as current evidence.
 step "CIVIC: seeding cached screen thumbnails"
 mkdir -p "$source_dir/.review-data/fixtures"
 for fixture in "$repo_root"/rehearsal/fixtures/*.png; do

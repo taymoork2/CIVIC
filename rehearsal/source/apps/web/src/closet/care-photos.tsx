@@ -8,6 +8,7 @@ import type { Id } from '@convex/_generated/dataModel'
 import { api } from '@/api'
 import { carePhotoText } from '@/copy'
 import { ErrorNotice, errorMessage } from '@/kit/ui'
+import { resolveConvexUrl } from '@/convex-url'
 
 const photosClassName = cn(
   "photos",
@@ -96,20 +97,21 @@ export type PhotoCalls = {
 /** Uploads one care-label photo for a garment, with its camera details removed first. */
 export async function uploadCarePhoto(calls: PhotoCalls, textileId: Id<'textiles'>, file: File): Promise<void> {
   const clean = await stripPhotoMetadata(file)
-  const uploadUrl = await calls.generateUploadUrl({ textileId })
+  const uploadUrl = resolveConvexUrl(await calls.generateUploadUrl({ textileId }), window.location, (import.meta.env.VITE_CONVEX_REMOTE_PORT as string | undefined) ?? '8443')
   const response = await fetch(uploadUrl, { method: 'POST', headers: { 'content-type': clean.type }, body: clean })
   if (!response.ok) throw new Error(carePhotoText.uploadFailure)
   const { storageId } = (await response.json()) as { storageId: Id<'_storage'> }
   await calls.attach({ textileId, storageId })
 }
 
-export function CarePhotos({ textileId }: { textileId: Id<'textiles'> }) {
+export function CarePhotos({ textileId, onUploaded }: { textileId: Id<'textiles'>; onUploaded?: () => void }) {
   const photos = useQuery(api.photos.list, { textileId })
   const generateUploadUrl = useMutation(api.photos.generateUploadUrl)
   const attach = useConvexAction(api.photos.attach)
   const issueViewUrl = useMutation(api.photos.issueViewUrl)
   const remove = useMutation(api.photos.remove)
-  const [viewing, setViewing] = useState<{ photoId: string; url: string } | null>(null)
+  const [viewing, setViewing] = useState<{ photoId: Id<'carePhotos'>; url: string } | null>(null)
+  const [viewFailed, setViewFailed] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -125,7 +127,15 @@ export function CarePhotos({ textileId }: { textileId: Id<'textiles'> }) {
     }
   }
 
-  const upload = (file: File) => run(() => uploadCarePhoto({ generateUploadUrl, attach }, textileId, file))
+  const upload = (file: File) => run(async () => {
+    await uploadCarePhoto({ generateUploadUrl, attach }, textileId, file)
+    onUploaded?.()
+  })
+  const view = (photoId: Id<'carePhotos'>) => run(async () => {
+    const issued = await issueViewUrl({ photoId })
+    setViewing({ photoId, url: issued.url })
+    setViewFailed(false)
+  })
 
   return (
     <section className={photosClassName} aria-label={carePhotoText.title}>
@@ -136,10 +146,7 @@ export function CarePhotos({ textileId }: { textileId: Id<'textiles'> }) {
           {photos.map((photo, index) => (
             <li key={photo.photoId}>
               <span>{carePhotoText.photoNumber(index + 1)}</span>
-              <Button variant="unstyled" size="unstyled" className={secondaryButtonClassName} type="button" disabled={busy} onClick={() => void run(async () => {
-                const issued = await issueViewUrl({ photoId: photo.photoId })
-                setViewing({ photoId: photo.photoId, url: issued.url })
-              })}>{carePhotoText.view}</Button>
+              <Button variant="unstyled" size="unstyled" className={secondaryButtonClassName} type="button" disabled={busy} onClick={() => void view(photo.photoId)}>{carePhotoText.view}</Button>
               <Button variant="unstyled" size="unstyled" className={cn(secondaryButtonClassName, "danger")} type="button" disabled={busy} onClick={() => void run(async () => {
                 if (!window.confirm(carePhotoText.confirmDelete)) return
                 await remove({ photoId: photo.photoId })
@@ -149,7 +156,8 @@ export function CarePhotos({ textileId }: { textileId: Id<'textiles'> }) {
           ))}
         </ul>
       )}
-      {viewing ? <img className={photoViewClassName} src={viewing.url} alt={carePhotoText.imageAlt} referrerPolicy="no-referrer" onError={() => setViewing(null)} /> : null}
+      {viewing && !viewFailed ? <img className={photoViewClassName} src={viewing.url} alt={carePhotoText.imageAlt} referrerPolicy="no-referrer" onError={() => setViewFailed(true)} /> : null}
+      {viewing && viewFailed ? <div className="grid gap-2" role="alert"><p className="m-0">{carePhotoText.viewFailure}</p><Button type="button" variant="outline" disabled={busy} onClick={() => void view(viewing.photoId)}>{carePhotoText.retry}</Button></div> : null}
       {(photos?.length ?? 0) < 3 ? (
         <label className={cn(secondaryButtonClassName, fileButtonClassName)}>
           {busy ? carePhotoText.working : carePhotoText.add}

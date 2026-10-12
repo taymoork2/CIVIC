@@ -1,3 +1,4 @@
+import { readPlanDocuments } from './planStorage'
 import { v, type Infer } from 'convex/values'
 import { routineWashMethod } from './personalRoutineValues'
 import { completeGuidance } from './households'
@@ -83,7 +84,7 @@ async function hamperLoads(ctx: ReadCtx, householdId: Id<'households'>, hamper: 
     .flat()
     .filter((stored) => currentPlanner(stored) && (stored.mode ?? 'normal') === 'normal' && stored.textileIds !== undefined && [...stored.textileIds].sort().join(',') === key)
     .sort((left, right) => right.createdAt - left.createdAt || right._creationTime - left._creationTime)
-  return plans.length === 0 ? null : planResult(plans[0]!).loads.length
+  return plans.length === 0 ? null : planResult(await readPlanDocuments(ctx, plans[0]!)).loads.length
 }
 
 /**
@@ -113,7 +114,7 @@ async function stageFacts(ctx: ReadCtx, session: Doc<'sessions'>) {
  * clothes never appear. Garments in a running load count as in the wash.
  */
 export const today = query({
-  args: { householdId: v.id('households'), wearerId: v.optional(v.id('wearers')), occasion: v.optional(occasion) },
+  args: { householdId: v.id('households'), wearerId: v.optional(v.id('wearers')), occasion: v.optional(occasion), summaryOnly: v.optional(v.boolean()) },
   handler: async (ctx, args) => {
     const { actor } = await authorize(ctx, 'textile.read', { householdId: args.householdId })
     if (args.wearerId !== undefined) {
@@ -136,7 +137,7 @@ export const today = query({
     const counts = { dirty: 0, in_wash: 0, hanging: 0, needs_dry_clean: 0, at_cleaner: 0, needs_refresh: 0 }
     for (const textile of notReady) counts[state(textile) as keyof typeof counts] += 1
     return {
-      ready: ready.map((textile) => ({
+      ready: (args.summaryOnly ? [] : ready).map((textile) => ({
         _id: textile._id,
         name: textile.name,
         kind: textile.kind,

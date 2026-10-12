@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils'
 import { ClientOnly, HeadContent, Link, Outlet, Scripts, createRootRoute, useRouterState } from '@tanstack/react-router'
 import { useConvexAuth, useQuery } from 'convex/react'
-import { useEffect, useState, type ReactNode } from 'react'
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
 import { Toaster } from 'sonner'
 import dayColors from '../../../../packages/tokens/src/color/day.tokens.json'
 import nightColors from '../../../../packages/tokens/src/color/night.tokens.json'
@@ -18,10 +18,15 @@ import { appText } from '../copy'
 import { LaundryDock, type DockLink } from '@/laundry/laundry-day'
 import { PwaUpdates } from '../pwa'
 import { NotFound } from '@/kit/route-error'
-import { useNow } from '@/laundry/session-view'
+import { useNow } from '@/kit/use-now'
 import { getStartup } from '../startup'
 import { useStartup } from '../startup-context'
 import { TimerNotices } from '@/laundry/timer-notices'
+import { FeedbackContext, feedbackScreen } from '@/kit/feedback-context'
+import { Button } from '@/components/ui/button'
+import { Loading } from '@/kit/ui'
+
+const FeedbackSheet = lazy(() => import('@/dev/feedback-sheet').then(module => ({ default: module.FeedbackSheet })))
 
 import '../app.css'
 import '../generated/tokens.css'
@@ -163,11 +168,18 @@ function SignedInShell({ focus, children }: { focus: boolean; children: ReactNod
   const startup = useStartup()
   const { isAuthenticated } = useConvexAuth()
   const status = useQuery(api.households.onboardingStatus, isAuthenticated ? {} : 'skip')
+  const path = useRouterState({ select: (state) => state.location.pathname })
+  const [reporting, setReporting] = useState(false)
+  const householdId = status?.households[0]?.householdId
+  const feedback = householdId === undefined ? null : (onClose: () => void, step?: string) => <FeedbackContext.Provider value={null}><Suspense fallback={<Loading what="feedback" />}><FeedbackSheet householdId={householdId} screen={feedbackScreen(path, step)} onClose={onClose} /></Suspense></FeedbackContext.Provider>
   return (
-    <AppShell brand={startup?.data.brand} navigation={navigation ? <Navigation /> : undefined} status={<ClientOnly><HeaderStatus /></ClientOnly>} dock={<Dock />} focus={focus}>
+    <FeedbackContext.Provider value={feedback}>
+    <AppShell brand={startup?.data.brand} navigation={navigation ? <Navigation /> : undefined} status={<ClientOnly><HeaderStatus />{feedback === null ? null : <Button type="button" variant="ghost" size="icon" aria-label="Report a problem" title="Report a problem" onClick={() => setReporting(true)}><DesignIcon name="chat" size="1em" aria-hidden="true" /></Button>}</ClientOnly>} dock={<Dock />} focus={focus}>
       {children}
       {navigation ? <ClientOnly><TimerNotices householdId={status?.households[0]?.householdId ?? null} /></ClientOnly> : null}
     </AppShell>
+    {reporting && feedback !== null ? feedback(() => setReporting(false)) : null}
+    </FeedbackContext.Provider>
   )
 }
 

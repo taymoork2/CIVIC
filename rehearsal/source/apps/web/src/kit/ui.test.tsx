@@ -86,11 +86,14 @@ test('a machine dose draws the cap only from its recorded marks, and names the m
   }
   const markup = renderToStaticMarkup(<DoseBody action={action} slot={null} />)
   expect(markup).toContain('≈ 30 ml')
-  expect(markup).toContain('Line 2')
+  expect(markup).toContain('Fill the cap to line 2, about 30 ml')
   expect(markup).toContain('machine-step-cap')
   expect(markup).toContain('cup-tick')
   // Without the cap's printed marks there is no level to draw, so no graphic is guessed.
   expect(renderToStaticMarkup(<DoseBody action={{ ...action, dose: { amount: 1, unit: 'cap', mark: 'Line 2' } }} slot={null} />)).not.toContain('machine-step-cap')
+  expect(renderToStaticMarkup(<DoseBody action={{ ...action, dose: { ...action.dose!, fractionOfMark: 0.5 } }} slot={null} />)).not.toContain('cup-tick')
+  expect(renderToStaticMarkup(<DoseBody action={{ ...action, dose: { ...action.dose!, target: 'below' } }} slot={null} />)).not.toContain('cup-tick')
+  expect(renderToStaticMarkup(<DoseBody action={{ ...action, dose: { ...action.dose!, mark: 'Line 4' } }} slot={null} />)).not.toContain('cup-tick')
 })
 
 test('the stepper names what it counts and holds its bounds', () => {

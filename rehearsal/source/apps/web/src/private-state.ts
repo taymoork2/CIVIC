@@ -1,6 +1,6 @@
 /**
  * The only private data this device keeps: one planning draft, a projection of each running load,
- * the Closet's remembered chips, where the app opens and where the household washes. None holds
+ * the Closet's remembered chips, unfinished intake, where the app opens and where the household washes. None holds
  * credentials, tokens, or photos, and all are purged on sign-out or loss of household access.
  * Server state always wins on reconnect.
  */
@@ -20,7 +20,6 @@ const landingKey = `${prefix}landing`
 const washPlaceKey = `${prefix}wash-place`
 const maxActions = 30
 const maxTextiles = 60
-const maxSelection = 200
 const maxMarks = 12
 /** Running loads kept offline; the most recently saved win. */
 const maxSessions = 8
@@ -140,12 +139,8 @@ function write(key: string, value: unknown): void {
 }
 
 export function saveDraft(draft: Omit<PlanningDraft, 'savedAt'>): void {
-  write(draftKey, {
-    ...draft,
-    selectedTextileIds: draft.selectedTextileIds.slice(0, maxSelection),
-    seenTextileIds: draft.seenTextileIds.slice(0, maxSelection),
-    savedAt: Date.now(),
-  })
+  // Truncating either ID list reselects excluded pieces after a large hamper reloads.
+  write(draftKey, { ...draft, savedAt: Date.now() })
 }
 
 export function loadDraft(householdId: string): PlanningDraft | null {

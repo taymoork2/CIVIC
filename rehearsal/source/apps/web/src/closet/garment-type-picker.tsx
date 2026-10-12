@@ -7,7 +7,8 @@ import { garmentSearchText } from '@/copy-closet'
 import { Button } from '@/components/ui/button'
 import { Field, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import { searchArticles } from '@/closet/garment-articles'
+import { garmentArticles, garmentArticleGroups, searchArticles } from '@/closet/garment-articles'
+import { searchFabrics } from '@/closet/fabric'
 import { IconChoiceGrid } from '@/kit/icon-choice-grid'
 import { GarmentIcon } from '@/kit/garment-icon'
 
@@ -55,14 +56,14 @@ const typeCountClassName = cn(
 
 /**
  * The clothing type step, shared by intake and Edit: a search over specific articles above the type
- * tiles. Nothing typed shows the tiles; typing replaces them with matching articles, each with its
- * type's picture and word, or one "Add … as Other" when nothing matches.
+ * tiles. Fabric-name searches keep the item choices visible and point to the fabric step.
  */
-export function GarmentTypePicker({ labelledBy, kinds, value, onPick, initialQuery = '' }: {
+export function GarmentTypePicker({ labelledBy, kinds, value, article, onPick, initialQuery = '' }: {
   /** The heading that names the tiles. */
   labelledBy: string
   kinds: readonly GarmentKind[]
   value: GarmentKind | null
+  article?: string | null
   onPick: (pick: TypePick) => void
   initialQuery?: string
 }) {
@@ -70,6 +71,9 @@ export function GarmentTypePicker({ labelledBy, kinds, value, onPick, initialQue
   const [query, setQuery] = useState(initialQuery)
   const typed = query.trim()
   const results = searchArticles(typed, { baby: kinds.includes('baby_bodysuit') }).filter((article) => kinds.includes(article.kind))
+  const fabric = results.length === 0 ? searchFabrics(typed).find((choice) => typed.toLowerCase().replace(/[®™]/gu, '').trim() === (choice.detail ?? choice.fiber).toLowerCase() || typed.toLowerCase().trim() === `${choice.detail} ${choice.fiber}`.toLowerCase()) : undefined
+  const baseArticle = (kind: GarmentKind) => kind === 'shirt' ? 'Button-up shirt' : kind === 'workout' ? 'Workout clothes' : kindTileWords[kind]
+  const chosen = article ?? (value === null ? null : baseArticle(value))
   const other = kinds.includes('other')
   const pickFirst = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.key !== 'Enter' || typed === '') return
@@ -77,7 +81,7 @@ export function GarmentTypePicker({ labelledBy, kinds, value, onPick, initialQue
     event.preventDefault()
     const first = results[0]
     if (first !== undefined) onPick({ kind: first.kind, article: first.name })
-    else if (other) onPick({ kind: 'other', article: null, typed })
+    else if (other && fabric === undefined) onPick({ kind: 'other', article: null, typed })
   }
   return (
     <div className={typePickerClassName}>
@@ -86,12 +90,18 @@ export function GarmentTypePicker({ labelledBy, kinds, value, onPick, initialQue
         <Input id={`${id}-search`} type="search" value={query} autoComplete="off" placeholder={garmentSearchText.placeholder} aria-controls={`${id}-results`} onChange={(event) => setQuery(event.target.value)} onKeyDown={pickFirst} />
       </Field>
       <p className={typeCountClassName} aria-live="polite">{typed === '' ? '' : garmentSearchText.matches(results.length)}</p>
+      {fabric === undefined ? null : <p role="status" className="m-0 text-ink-2">{fabric.label} belongs on the fabric step. Choose an item below, then search for it there.</p>}
       <div id={`${id}-results`}>
-        {typed === '' ? (
+        {typed === '' || fabric !== undefined ? (
           <div className="grid gap-4" aria-labelledby={labelledBy}>
-            {[{ label: 'Clothing', kinds: kinds.filter((kind) => !['towel', 'sheets', 'other'].includes(kind)) }, { label: 'Household textiles', kinds: kinds.filter((kind) => kind === 'towel' || kind === 'sheets') }, { label: 'Other items', kinds: kinds.filter((kind) => kind === 'other') }].filter((group) => group.kinds.length > 0).map((group) => <IconChoiceGrid key={group.label} label={group.label} columns={4} value={value}
-              options={group.kinds.map((kind) => ({ value: kind, label: kindTileWords[kind], art: <GarmentIcon kind={kind} className="size-8" /> }))}
-              onPick={(kind) => onPick({ kind, article: null })} />)}
+            <p className="m-0 text-[length:var(--step--1)] text-ink-2">Dress shirts are button-up shirts. Henleys and long-sleeve tees are pullover styles. Fabric and label answers determine care.</p>
+            {garmentArticleGroups.map((group) => {
+              const articles = garmentArticles.filter((entry) => group.kinds.includes(entry.kind) && kinds.includes(entry.kind))
+              return articles.length === 0 ? null : <IconChoiceGrid key={group.label} label={group.label} columns={4} value={chosen}
+                options={articles.map((entry) => ({ value: entry.name, label: entry.name, art: <GarmentIcon kind={entry.kind} className="size-8" /> }))}
+                onPick={(name) => { const picked = articles.find((entry) => entry.name === name)!; onPick({ kind: picked.kind, article: picked.name === baseArticle(picked.kind) ? null : picked.name }) }} />
+            })}
+            {other ? <IconChoiceGrid label="Other items" columns={4} value={chosen} options={[{ value: 'Other', label: 'Other', art: <GarmentIcon kind="other" className="size-8" /> }]} onPick={() => onPick({ kind: 'other', article: null })} /> : null}
           </div>
         ) : results.length > 0 ? (
           <ul className={typeResultsClassName} aria-labelledby={labelledBy}>

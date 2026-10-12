@@ -1,11 +1,18 @@
 import { useEffect, useRef, type RefObject } from 'react'
 
-export function CanvasIcon({ name }: { name: 'select' | 'hand' | 'outline' | 'fit' }) {
+export function CanvasIcon({ name }: { name: 'select' | 'hand' | 'outline' | 'fit' | 'inspect' | 'review' | 'coverage' | 'contract' | 'play' | 'edit' | 'chevron' }) {
   const paths = {
     select: 'M5 3v16l4-5 5 7 3-2-5-7 6-1Z',
     hand: 'M8 12V6a2 2 0 0 1 4 0v5-7a2 2 0 0 1 4 0v7-5a2 2 0 0 1 4 0v9c0 4-2 7-6 7h-2c-2 0-3-1-4-3l-4-6a2 2 0 0 1 3-2l1 1Z',
     outline: 'M4 4h16v16H4ZM9 4v16M12 8h5M12 12h5M12 16h5',
     fit: 'M8 3H3v5M16 3h5v5M3 16v5h5M21 16v5h-5',
+    inspect: 'M4 4h16v16H4ZM14 4v16M7 8h4M7 12h4',
+    review: 'M4 4h16v12H9l-5 4ZM8 8h8M8 12h5',
+    coverage: 'M8 4h12M8 12h12M8 20h12M2 4l1 1 2-2M2 12l1 1 2-2M2 20l1 1 2-2',
+    contract: 'M6 3h9l4 4v14H6ZM15 3v4h4M9 12l2 2 4-4M9 17h6',
+    play: 'M7 4l13 8-13 8Z',
+    edit: 'M4 16l12-12 4 4L8 20H4ZM13 7l4 4',
+    chevron: 'M6 9l6 6 6-6',
   }
   return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]} /></svg>
 }

@@ -37,12 +37,12 @@ export function GarmentTiles({ pieces, max = 6 }: { pieces: readonly KitPiece[];
 }
 
 /** Where a load is: Get ready, Wash, Dry, Put away. `at` is the current step (0-3), 4 when all are done. */
-export function StageBar({ at }: { at: number }) {
+export function StageBar({ at, compact = false }: { at: number; compact?: boolean }) {
   return (
-    <div className="grid gap-2" role="img" aria-label={laundryKitText.stageLabel(at)}>
-      <div className="grid grid-cols-4 gap-1" aria-hidden="true">
+    <div className={compact ? 'sr-only' : 'grid gap-2'} role="img" aria-label={laundryKitText.stageLabel(at)}>
+      {compact ? null : <div className="grid grid-cols-4 gap-1" aria-hidden="true">
         {laundryKitText.stages.map((stage, index) => <span key={stage} className={cn('h-1.5 rounded-full', index <= at ? 'bg-[var(--sig)]' : 'bg-surface-3')} />)}
-      </div>
+      </div>}
       <div className="grid grid-cols-4 gap-1 text-[length:0.75rem] text-ink-2" aria-hidden="true">
         {laundryKitText.stages.map((stage, index) => <span key={stage} className={cn(index === at && 'font-bold text-[var(--sig-ink)]')}>{stage}</span>)}
       </div>
@@ -137,9 +137,9 @@ export function TapRow({ media, eyebrow, title, fact, onClick, disabled, highlig
   return (
     <button type="button" onClick={onClick} disabled={disabled}
       className={cn('flex w-full min-h-16 cursor-pointer items-center gap-3.5 border-0 px-4 py-3.5 text-start text-ink disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-3 focus-visible:-outline-offset-3 focus-visible:outline-ring', highlight ? 'bg-accent' : 'bg-transparent')}>
-      <span className="grid size-11 flex-none place-items-center rounded-field bg-surface text-[var(--sig-ink)] [&_svg]:size-6" aria-hidden="true">{media}</span>
+      <span className="grid size-11 flex-none place-items-center rounded-field bg-surface text-link [&_svg]:size-6" aria-hidden="true">{media}</span>
       <span className="flex min-w-0 flex-1 flex-col">
-        {eyebrow === undefined ? null : <span className="text-[length:var(--step--1)] font-semibold text-[var(--sig-ink)]">{eyebrow}</span>}
+        {eyebrow === undefined ? null : <span className="text-[length:var(--step--1)] font-semibold text-accent-foreground">{eyebrow}</span>}
         <span className="text-[length:1.0625rem] font-semibold">{title}</span>
         {fact === undefined ? null : <span className="text-[length:var(--step--1)] text-ink-2">{fact}</span>}
       </span>

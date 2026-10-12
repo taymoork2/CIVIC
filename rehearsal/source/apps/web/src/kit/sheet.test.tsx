@@ -180,3 +180,8 @@ test('a sheet can take its heading id from the content that it names', () => {
   expect(markup).toContain('aria-labelledby="add-title" class="sheet"')
   expect(markup).toContain('<h2 id="add-title"')
 })
+
+test('a recovery prompt names the close action without suggesting it discards the draft', () => {
+  const markup = renderToStaticMarkup(<Sheet title="Continue this product?" onClose={() => undefined} closeIconLabel="Close, keep draft for later" closeAtTop />)
+  expect(markup).toContain('aria-label="Close, keep draft for later"')
+})

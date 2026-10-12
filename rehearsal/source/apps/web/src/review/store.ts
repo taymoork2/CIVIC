@@ -7,8 +7,8 @@ import { classifyWater } from '@convex/waterHardness'
 import { reviewTextiles, reviewGarmentRecord } from '@/dev/closet-preview'
 import { reviewMachines, reviewSupplies, reviewWearers, reviewWater } from '@/dev/household-preview'
 
-export type ReviewConfig = { scenario: string; persona: 'single' | 'student' | 'parent'; role: 'owner' | 'member'; condition: 'normal' | 'save-error' | 'offline' | 'missing-care'; theme: 'light' | 'dark'; textScale: 1 | 2; width: number }
-export type ReviewSnapshot = { revision: { head: string; source: string; capturedAt: string }; design: { project: string; hashes: Record<string, string | null> } }
+import type { ReviewConfig, ReviewSnapshot } from './adapter'
+export type { ReviewConfig, ReviewSnapshot } from './adapter'
 export type ReviewData = Pick<Inventory, 'textiles' | 'machines' | 'supplies' | 'wearers'> & { water: HouseholdWater; saved: Record<string, string[]> }
 const provenance = { source: 'Synthetic review only; not care evidence', confidence: 'user-supplied' as const }
 type Args = Record<string, any>

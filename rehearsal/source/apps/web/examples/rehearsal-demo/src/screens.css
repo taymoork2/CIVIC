@@ -1,0 +1,7 @@
+.notebook-screen { min-height: 100vh; padding: 32px 24px; font: 16px/1.5 system-ui, sans-serif; background: #faf9f6; color: #243126; box-sizing: border-box; }
+.notebook-screen h1 { margin: 0 0 32px; font-size: 28px; }
+.notebook-screen label { display: grid; gap: 8px; margin-bottom: 24px; }
+.notebook-screen input { box-sizing: border-box; width: 100%; padding: 12px; border: 1px solid #89988a; border-radius: 8px; font: inherit; }
+.notebook-screen button { display: block; width: 100%; margin: 12px 0; padding: 12px; border: 1px solid #657965; border-radius: 8px; background: #fff; color: inherit; font: inherit; cursor: pointer; }
+.notebook-screen button:first-of-type { background: #254b33; color: white; }
+.notebook-screen [role=status] { min-height: 24px; }

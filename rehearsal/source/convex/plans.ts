@@ -1,3 +1,4 @@
+import { getPlan, readPlanDocuments, writePlanDocuments, erasePlanDocuments } from './planStorage'
 import { plannerSupplyKinds, availabilityForPlanner, evidence, formulation, recordedCycle, stepDose, canonicalSelection, selectionKey, type PlanPass, storedPass, plannerRule, washerPlacements, stainWords, flaggedStain, plannerCare, profileRequirements, packContents, planResult, loadBlockers, loadStartable, loadBlockedItems, excludedBlockedItems, washerSiblings, startableMachineIds, currentPlanner, loadShape, type QuestionKind, questionOrder, type QuestionContext, labelContext } from './plansHelpers'
 export { recordedDryMethod, recordedCycle, stepDose, canonicalSelection, selectionKey, type PlanPass, storedPass, plannerRule, machinePlacements, washerPlacements, stainWords, plannerCare, type StoredPlanResult, planResult, loadBlockers, loadStartable, type BlockedItemSource, type BlockedItem, reasonItems, loadBlockedItems, excludedBlockedItems, loadOn, loadKind, alternateStartable, sameKindWasher, startableMachineIds, currentPlanner } from './plansHelpers'
 import { v } from 'convex/values'
@@ -232,6 +233,7 @@ async function referencedBySession(ctx: MutationCtx, planId: Id<'plans'>): Promi
  * change to those loads' own garments, products or machines still does.
  */
 export async function storedPlanInput(ctx: ReadCtx, stored: Doc<'plans'>): Promise<PlannerInput> {
+  stored = await readPlanDocuments(ctx, stored)
   const input = await canonicalPlannerInput(ctx, stored.householdId, stored.textileIds ?? [], storedPass(stored))
   const loads = planResult(stored).loads
   const sessions = await ctx.db.query('sessions').withIndex('by_plan', (q) => q.eq('planId', stored._id)).collect()
@@ -251,6 +253,7 @@ export async function storedPlanInput(ctx: ReadCtx, stored: Doc<'plans'>): Promi
  */
 async function refreshedUsedPlan(ctx: MutationCtx, stored: Doc<'plans'>): Promise<boolean> {
   if (!currentPlanner(stored) || stored.textileIds === undefined || stored.textileIds.length === 0) return false
+  stored = await readPlanDocuments(ctx, stored)
   let fresh: PlanResult
   try {
     fresh = plan(await storedPlanInput(ctx, stored))
@@ -266,7 +269,8 @@ async function refreshedUsedPlan(ctx: MutationCtx, stored: Doc<'plans'>): Promis
   if (before.length !== after.length || before.some((shape, index) => shape !== after[index])) return false
   const { inputSnapshot, ...rest } = fresh
   const result = { ...rest, loads: fresh.loads.map((load, index) => (underWay.has(load.id) ? planResult(stored).loads[index]! : load)) }
-  await ctx.db.patch(stored._id, { inputHash: result.inputHash, inputSnapshot, result })
+  await writePlanDocuments(ctx, stored._id, { inputSnapshot, result })
+  await ctx.db.patch(stored._id, { inputHash: result.inputHash })
   return true
 }
 
@@ -303,6 +307,7 @@ async function discardPlan(ctx: MutationCtx, stored: Doc<'plans'>): Promise<void
     // Out of the selection index too, so repeated selections never rescan old plans.
     if (stored.status !== 'retired') await ctx.db.patch(stored._id, { status: 'retired', selectionKey: undefined })
   } else {
+    await erasePlanDocuments(ctx, stored._id)
     await ctx.db.delete(stored._id)
   }
 }
@@ -317,6 +322,7 @@ export async function releasePlan(ctx: MutationCtx, planId: Id<'plans'>): Promis
   const sessions = await ctx.db.query('sessions').withIndex('by_plan', (q) => q.eq('planId', planId)).collect()
   if (sessions.every((session) => session.status !== 'running')) {
     await erasePersonalGuidance(ctx, { planId })
+    await erasePlanDocuments(ctx, planId)
     await ctx.db.delete(planId)
   }
 }
@@ -460,12 +466,13 @@ export const recompute = mutation({
       selectionKey: key,
       textileIds,
       ...(hangTextileIds.size === 0 ? {} : { hangTextileIds: [...hangTextileIds] }),
-      inputSnapshot,
-      result,
+      inputSnapshot: {},
+      result: {},
       ...(pass.mode === 'rush' ? { mode: 'rush' as const } : {}),
       status: result.status,
       createdAt: Date.now(),
     })
+    await writePlanDocuments(ctx, planId, { inputSnapshot, result })
     return {
       status: result.status,
       recomputed: true as const,
@@ -484,7 +491,7 @@ export const recompute = mutation({
 export const get = query({
   args: { planId: v.id('plans') },
   handler: async (ctx, args) => {
-    const stored = await ctx.db.get(args.planId)
+    const stored = await getPlan(ctx, args.planId)
     if (stored === null) return null
     const { actor } = await authorize(ctx, 'plan.read', { householdId: stored.householdId })
     const result = planResult(stored)
@@ -553,7 +560,7 @@ export const confirmRecipe = mutation({
   args: { planId: v.id('plans'), loadId: v.string(), machineId: v.id('machines') },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const stored = await ctx.db.get(args.planId)
+    const stored = await getPlan(ctx, args.planId)
     if (stored === null) fail('not_found', 'Not found')
     const actor = (await authorize(ctx, 'plan.edit', { householdId: stored.householdId })).actor
     if (!currentPlanner(stored) || stored.status === 'stale' || stored.status === 'retired') fail('stale', 'Stale plan')
@@ -576,7 +583,7 @@ export const hangOnce = mutation({
   args: { planId: v.id('plans'), textileIds: v.array(v.id('textiles')) },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const stored = await ctx.db.get(args.planId)
+    const stored = await getPlan(ctx, args.planId)
     if (stored === null) fail('not_found', 'Not found')
     await authorize(ctx, 'plan.edit', { householdId: stored.householdId })
     const planned = new Set(planResult(stored).loads.flatMap((load) => load.textileIds))
@@ -598,7 +605,7 @@ type PreviewStep = { supplyId: Id<'supplies'>; name: string; stage: string; plac
 export const detergentPreview = query({
   args: { planId: v.id('plans'), loadId: v.string(), supplyId: v.id('supplies') },
   handler: async (ctx, args) => {
-    const stored = await ctx.db.get(args.planId)
+    const stored = await getPlan(ctx, args.planId)
     if (stored === null) return null
     await authorize(ctx, 'plan.read', { householdId: stored.householdId, uses: { supplyIds: [args.supplyId] } })
     if (stored.textileIds === undefined) return null
@@ -659,7 +666,7 @@ export type Question = {
 export const questions = query({
   args: { planId: v.id('plans') },
   handler: async (ctx, args): Promise<Question[]> => {
-    const stored = await ctx.db.get(args.planId)
+    const stored = await getPlan(ctx, args.planId)
     if (stored === null) return []
     await authorize(ctx, 'plan.read', { householdId: stored.householdId })
     const result = planResult(stored)
@@ -741,7 +748,7 @@ export const remindStartLoad = mutation({
   args: { planId: v.id('plans'), loadId: v.string(), at: v.number(), basis: v.optional(startLoadBasis) },
   returns: v.object({ dueAt: v.number() }),
   handler: async (ctx, args) => {
-    const plan = await ctx.db.get(args.planId)
+    const plan = await getPlan(ctx, args.planId)
     if (plan === null) fail('not_found', 'Not found')
     await authorize(ctx, 'plan.edit', { householdId: plan.householdId })
     const load = planResult(plan).loads.find((entry) => entry.id === args.loadId)
@@ -777,7 +784,7 @@ export const cancelStartLoadReminder = mutation({
   args: { planId: v.id('plans') },
   returns: v.null(),
   handler: async (ctx, args) => {
-    const plan = await ctx.db.get(args.planId)
+    const plan = await getPlan(ctx, args.planId)
     if (plan === null) fail('not_found', 'Not found')
     await authorize(ctx, 'plan.edit', { householdId: plan.householdId })
     const pending = (await ctx.db.query('reminders').withIndex('by_plan', (q) => q.eq('planId', plan._id)).collect())
@@ -817,7 +824,8 @@ export const upNext = query({
       .flat()
       .filter(currentPlanner)
       .sort((left, right) => right.createdAt - left.createdAt || right._creationTime - left._creationTime)
-    for (const stored of candidates) {
+    for (const candidate of candidates) {
+      const stored = await readPlanDocuments(ctx, candidate)
       const result = planResult(stored)
       const sessions = await ctx.db.query('sessions').withIndex('by_plan', (q) => q.eq('planId', stored._id)).collect()
       const sessionFor = (loadId: string) => sessions.find((session) => session.loadId === loadId && session.status !== 'cancelled')

@@ -180,7 +180,7 @@ const equivalentClassName = cn(
 
 const stepperClassName = cn(
   "stepper",
-  "flex gap-2 items-center justify-between min-h-14",
+  "flex flex-wrap min-w-0 gap-2 items-center justify-between min-h-14",
   "[justify-items:start]",
   "[.edit-clothes-extra_&]:flex [.edit-clothes-extra_&]:items-center [.edit-clothes-extra_&]:justify-between [.edit-clothes-extra_&]:gap-2",
   "[.laundry-care-group_&]:flex [.laundry-care-group_&]:flex-wrap [.laundry-care-group_&]:items-center [.laundry-care-group_&]:justify-between [.laundry-care-group_&]:gap-[.75rem]",
@@ -197,7 +197,8 @@ const stepperControlsClassName = cn(
   "stepper-controls",
   "[.bulk-count_&]:grid-cols-[4rem_minmax(5rem,_auto)_4rem]",
   "[display:inline-grid]",
-  "grid-cols-[2.75rem_minmax(1.75rem,_auto)_2.75rem] items-center gap-1",
+  "w-[8rem] max-w-full min-w-0 grid-cols-[minmax(44px,_1fr)_minmax(1.75rem,_auto)_minmax(44px,_1fr)] items-center gap-1",
+  "[.bulk-count_&]:w-auto [.edit-clothes-extra_&]:w-auto",
   "[.edit-clothes-extra_&]:grid-cols-[2.75rem_minmax(3.25rem,_auto)_2.75rem]",
 )
 
@@ -689,8 +690,8 @@ export function Stepper({ label: text, value, min, max, step = 1, onChange, form
   const id = useId()
   const to = (next: number) => onChange(Math.min(max, Math.max(min, Math.round(next / step) * step)))
   return (
-    <div className={stepperClassName} role="group" aria-labelledby={id}>
-      <span id={id} className={fieldLabelClassName}>{text}</span>
+    <div className={cn(stepperClassName, '[content-visibility:auto] [contain-intrinsic-size:auto_4rem]')} role="group" aria-labelledby={id}>
+      <span id={id} className={cn(fieldLabelClassName, 'min-w-0 flex-[1_1_8rem] [overflow-wrap:anywhere]')}>{text}</span>
       <div className={stepperControlsClassName}>
         <Button variant="unstyled" size="unstyled" className={stepperButtonClassName} type="button" aria-label={uiText.less(text)} disabled={value <= min} onClick={() => to(value - step)}>−</Button>
         <output className={stepperValueClassName} aria-live="polite">{format(value)}</output>
@@ -771,7 +772,7 @@ export function useConvexCall<Reference extends FunctionReference<'mutation'>>(r
 export function Loading({ what, startup = false }: { what: string; startup?: boolean }) {
   return (
     <div className={startup ? appLoadingClassName : skeletonClassName} role="status">
-      <span className={visuallyHiddenClassName}>{uiText.loading(what)}</span>
+      <span className={startup ? visuallyHiddenClassName : 'text-ink-2'}>{uiText.loading(what)}</span>
       {startup ? <div aria-hidden="true">
         <div className={appLoadingArtClassName}><GarmentIcon kind="t_shirt" className="size-[4.5rem]" /></div>
         <p>{uiText.gettingReady}</p>

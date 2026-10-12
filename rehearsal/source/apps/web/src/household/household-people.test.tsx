@@ -3,7 +3,7 @@ import { expect, test, vi } from 'vitest'
 import { getFunctionName } from 'convex/server'
 import type { CurrentHousehold } from '@/account/account'
 import type { Inventory } from '@/household/inventory-types'
-import { Members } from '@/routes/household'
+import { Members } from '@/household/household-people'
 import { MembersView, WearerEditorView, WearerSheetView } from '@/household/household-people'
 
 const state = vi.hoisted(() => ({ members: [] as Array<{ membershipId: string; displayName: string; role: 'owner' | 'member'; isYou: boolean; wearerId: string | null }> }))

@@ -63,8 +63,8 @@ test('every declaration order names a real property exactly once per block', () 
 test('typography keeps canonical families, rem roles and paired body settings', async () => {
   const day = await ruleBody(':root')
   for (const declaration of [
-    "--font-text: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;",
-    "--font-brand: 'Source Serif 4', Georgia, 'Times New Roman', serif;",
+    "--font-text: 'Laundered Sans Latin', 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;",
+    "--font-brand: 'Laundered Serif Latin', 'Source Serif 4', Georgia, 'Times New Roman', serif;",
     '--font-mono: ui-monospace, Menlo, Monaco, Consolas, monospace;',
     '--step--1: 0.875rem;', '--step-0: 1rem;', '--step-1: 1rem;',
     '--step-2: 1.25rem;', '--step-3: 1.5rem;', '--step-4: 1.875rem;',

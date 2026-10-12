@@ -1,11 +1,15 @@
 import towel from '../src/review/towel-journey.json' with { type: 'json' }
+import { journeyGraph, pathId } from '../src/review/journey-graph.mjs'
 
 /**
- * Laundry App's side of the CIVIƆ review shell (@civic/shell/server): the towel journey screens,
- * the presentation properties its intake sheet accepts as proposals, and how to render a fixture.
+ * Laundry App's side of the CIVIC review shell (@civic/shell/server): the towel journey screens,
+ * the journey graph the canvas and server validation share, the presentation properties its
+ * intake sheet accepts as proposals, and how to render a fixture.
  */
 export const laundryReviewAdapter = {
   screens: towel,
+  journeyGraph,
+  pathId,
   proposalProperties: ['title', 'action', 'color'],
   captureFixture,
   launchFixtureBrowser: async () => (await import('@playwright/test')).chromium.launch({ channel: 'chrome', headless: true }),
@@ -27,7 +31,11 @@ async function captureFixture(node, { origin, cookie, browser: sharedBrowser }) 
     const page = await context.newPage()
     const care = node.id.startsWith('care:') ? `&care=${node.id.split(':')[1]}` : ''
     await page.goto(`${origin}/review-frame.html?scenario=${node.scenario}${node.scenario.startsWith('intake.towel.') ? '&journey=towel' : ''}${care}`, { waitUntil: 'networkidle' })
-    if (node.renderer !== 'legacy') await page.getByRole('dialog').first().waitFor({ timeout: 5000 })
+    if (node.renderer === 'adapter') await page.locator('[data-rehearsal-ready]').waitFor({ timeout: 5000 })
+    else if (node.renderer === 'family') await page.getByLabel('Family care progress').waitFor({ timeout: 5000 })
+    else if (node.renderer === 'reminder') await page.locator('.app-main h1').waitFor({ timeout: 5000 })
+    else if (node.renderer !== 'legacy' && node.renderer !== 'route-state') await page.getByRole('dialog').first().waitFor({ timeout: 5000 })
+    if (await page.getByRole('heading', { name: 'Preview unavailable', exact: true }).count() || await page.getByText('Something went wrong!', { exact: true }).count()) throw new Error('Fixture did not render; no verified snapshot was saved.')
     if (node.id === 'saved') { await page.getByRole('button', { name: 'Save item', exact: true }).click(); await page.getByRole('heading', { name: 'Saved', exact: true }).waitFor() }
     return await page.screenshot({ type: 'png', animations: 'disabled' })
   } finally { await context?.close(); if (!sharedBrowser) await browser.close() }

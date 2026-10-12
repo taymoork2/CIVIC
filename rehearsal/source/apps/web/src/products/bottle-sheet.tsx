@@ -8,7 +8,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { productBleachKinds, stainKinds, stainChemistries } from '@washcloset/planner'
 import { cn } from '@/lib/utils'
-import { useEffect, useId, useReducer, useState, type ReactNode } from 'react'
+import { useIntakeRecovery } from '@/kit/device-state'
+import { validBottleIntake } from '@/kit/intake-validation'
+import { HelpTip } from '@/kit/help-tip'
+import { useEffect, useId, useReducer, useRef, useState, type ReactNode } from 'react'
 import { useQuery } from 'convex/react'
 import type { FunctionArgs } from 'convex/server'
 
@@ -24,6 +27,7 @@ import { DesignIcon, type DesignIconName } from '@/kit/design-icons'
 import { Disclosure } from '@/kit/disclosure'
 import { IconChoiceGrid, type IconChoice } from '@/kit/icon-choice-grid'
 import { Sheet } from '@/kit/sheet'
+import { focusLabeledControl } from '@/kit/focus-field'
 import { ConfirmRow, FactsCard, SheetText, segListClassName, segTabClassName, type FactRow } from '@/household/household-blocks'
 import { Choices, ErrorNotice, choiceChipVariants, label as placementLabel, loadSizeLabels, soilLabels, useConvexCall } from '@/kit/ui'
 import { doseParts, useUnits, type UnitSystem } from '@/kit/units'
@@ -103,14 +107,6 @@ const noticeClassName = cn(
   "[border:var(--rule-width)_solid_var(--line)]",
   "[background:var(--label)]",
   "text-[length:var(--step-0)]",
-)
-
-const badClassName = cn(
-  "bad",
-  "[.notice&]:[border-color:var(--danger)]",
-  "[.notice&]:[color:var(--danger)]",
-  "[.notice&]:[background:var(--label)]",
-  "[.notice&]:font-semibold",
 )
 
 const bottleLookupMoreClassName = cn(
@@ -315,8 +311,27 @@ export function bottleStepProblem(draft: BottleDraft, step: BottleStep): string 
   return bottleDraftProblem(draft)
 }
 
+export function bottleProblemTarget(draft: BottleDraft, step?: BottleStep): { tab: TabName; step: BottleStep; label: string; direction?: string } | null {
+  if (step !== undefined && step !== 'review' && bottleStepProblem(draft, step) !== null) return { tab: step === 'measurement' ? 'directions' : 'facts', step, label: step === 'form' ? productText.type : step === 'purpose' ? productText.use : step === 'measurement' ? productText.anotherMark : productText.name }
+  const problem = bottleDraftProblem(draft)
+  if (problem === null) return null
+  if (problem === productText.problems.form) return { tab: 'facts', step: 'form', label: productText.type }
+  if (problem === productText.problems.name) return { tab: 'facts', step: 'identity', label: productText.name }
+  if (problem === productText.problems.use) return { tab: 'facts', step: 'purpose', label: productText.use }
+  if (draft.pendingMark?.trim()) return { tab: 'directions', step: 'measurement', label: productText.anotherMark }
+  const treatment = draft.safety?.pretreatment
+  if (treatment !== undefined && (treatment.stainChemistry === undefined || !Number.isFinite(treatment.dose.amount) || treatment.dose.amount <= 0 || treatment.stainKinds.length === 0 || treatment.safeMaterials.length === 0 || !treatment.timing.trim())) return { tab: 'directions', step: 'review', direction: 'pretreatment', label: treatment.stainChemistry === undefined ? 'Treatment type on the label' : !Number.isFinite(treatment.dose.amount) || treatment.dose.amount <= 0 ? `Pretreatment dose (${treatment.dose.unit === 'g' ? 'g' : 'mL'})` : !treatment.timing.trim() ? 'Pretreatment directions' : 'Materials the label permits' }
+  if (draft.safety?.capabilities?.some((fact) => !fact.variant.trim() || !fact.market.trim() || !fact.formulationRevision.trim() || !fact.source.trim() || !Number.isFinite(fact.retrievedAt) || fact.retrievedAt <= 0)) return { tab: 'contents', step: 'review', label: 'Exact variant and pack code' }
+  if (draft.safety?.lipase !== undefined && draft.safety.lipase.status !== 'unknown' && (!draft.safety.lipase.formulation.trim() || !draft.safety.lipase.source.trim())) return { tab: 'contents', step: 'review', label: !draft.safety.lipase.formulation.trim() ? 'Exact variant, market and pack code' : 'Read from (pack or manufacturer URL)' }
+  const sanitizing = draft.safety?.sanitizing
+  if (sanitizing !== undefined && (!Number.isFinite(sanitizing.minimumContactMinutes) || sanitizing.minimumContactMinutes <= 0 || sanitizing.minimumContactMinutes > 1440 || !sanitizing.formulation.trim() || !sanitizing.source.trim())) return { tab: 'directions', step: 'review', direction: 'sanitizing', label: !sanitizing.formulation.trim() ? 'Exact sanitizing variant, market and pack' : !sanitizing.source.trim() ? 'Rinse sanitizing label source' : 'Label’s minimum rinse contact time (minutes)' }
+  return { tab: 'directions', step: 'review', direction: 'pretreatment', label: 'Label water volume (liters)' }
+}
+
 /** The sheet's fields, without saving, so it can be drawn in tests. Facts, Contents and Directions are tabs; all stay mounted. */
-export function BottleFields({ draft, onChange, supplies = [], focus, step, more }: { draft: BottleDraft; onChange: (draft: BottleDraft) => void; supplies?: readonly Supply[]; focus?: { readonly tab: TabName; readonly at: number }; step?: BottleStep; more?: ReactNode }) {
+export function BottleFields({ draft, onChange, supplies = [], focus, step, more, repair }: { draft: BottleDraft; onChange: (draft: BottleDraft) => void; supplies?: readonly Supply[]; focus?: { readonly tab: TabName; readonly at: number }; step?: BottleStep; more?: ReactNode; repair?: { tab: TabName; label: string; direction?: string; at: number } }) {
+  const handledRepair = useRef<number | undefined>(undefined)
+  const fields = useRef<HTMLDivElement>(null)
   const set = (patch: Partial<BottleDraft>) => onChange({ ...draft, ...patch })
   const nameId = useId()
   const typedId = useId()
@@ -325,6 +340,15 @@ export function BottleFields({ draft, onChange, supplies = [], focus, step, more
   const [selected, setSelected] = useState<TabName | 'more'>(focus?.tab ?? 'facts')
   // An edit opens on the tapped section; a failed Save opens the tab holding the missing answer, so the message never points at a hidden field.
   useEffect(() => { if (focus !== undefined) setSelected(focus.tab) }, [focus])
+  useEffect(() => {
+    if (repair === undefined || handledRepair.current === repair.at) return
+    if (step === undefined && selected !== repair.tab) { setSelected(repair.tab); return }
+    const frame = requestAnimationFrame(() => {
+      handledRepair.current = repair.at
+      focusLabeledControl(fields.current, repair.label)
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [repair, selected, step])
   const tabs: readonly (TabName | 'more')[] = more === undefined ? tabsFor(draft.form) : [...tabsFor(draft.form), 'more']
   const tab = tabs.includes(selected) ? selected : 'facts'
   const tool = draft.form === 'powder' ? productText.tools.scoop : productText.tools.cap
@@ -338,7 +362,7 @@ export function BottleFields({ draft, onChange, supplies = [], focus, step, more
             <Input id={nameId} value={draft.name} maxLength={120} autoComplete="off" placeholder={productText.namePlaceholder}
               onChange={(event) => set({ name: event.target.value })} />
           </Field>
-  const form = <ProductFormGrid draft={draft} onChange={onChange} />
+  const form = <><ProductFormGrid draft={draft} onChange={onChange} /><div className="flex items-center gap-1 text-ink-2">Product type<HelpTip topic="Product type">Type is its physical form, such as liquid, powder or pods. Used for is its job, such as detergent or softener. Copy the pack; its name alone does not establish bleach or other ingredients.</HelpTip></div></>
   const purpose = draft.form === null || usesFor(draft.form).length <= 1 ? null : (
             <Choices label={productText.use} options={usesFor(draft.form)} value={draft.use} onPick={(use) => set({ use })} words={(use) => useWords[use]}
               hint={draft.use === null ? undefined : bottleUseHints[draft.use]} />
@@ -366,13 +390,13 @@ export function BottleFields({ draft, onChange, supplies = [], focus, step, more
           {typed.trim() ? <p className={bulkHintClassName} role="status">Add the mark or clear it before continuing.</p> : null}
           {hasMarks(draft.form) ? <p className={bulkHintClassName}>{productText.marksNext}</p> : null}
   </>
-  if (step !== undefined) return <div className={machineFieldsClassName}>{step === 'form' ? form : step === 'purpose' ? purpose : step === 'identity' ? identity : step === 'measurement' ? measurement : null}</div>
+  if (step !== undefined) return <div ref={fields} className={machineFieldsClassName}>{step === 'form' ? form : step === 'purpose' ? purpose : step === 'identity' ? identity : step === 'measurement' ? measurement : null}</div>
   return (
-    <div className={machineFieldsClassName}>
+    <div ref={fields} className={machineFieldsClassName}>
       <ProductTabs value={tab} onValueChange={setSelected} tabs={tabs}
         facts={<section className="grid gap-4" aria-label="Product details">{identity}{form}{purpose}</section>}
         contents={hasContents(draft.form) ? <ContentsFields form={draft.form} safety={draft.safety} onChange={(safety) => set({ safety })} /> : null}
-        directions={hasDirections(draft.form) ? <>{measurement}<WarningsFields form={draft.form} use={draft.use} safety={draft.safety} supplies={supplies} onChange={(safety) => set({ safety })} /></> : null}
+        directions={hasDirections(draft.form) ? <>{measurement}<WarningsFields form={draft.form} use={draft.use} safety={draft.safety} supplies={supplies} repair={repair} onChange={(safety) => set({ safety })} /></> : null}
         more={more}
       />
     </div>
@@ -468,9 +492,20 @@ function ContentsFields({ form, safety: saved, onChange }: { form: BottleForm | 
 }
 
 /** Label warnings and a measured pretreatment: what the label forbids or directs, copied as printed. */
-function WarningsFields({ form, use, safety: saved, supplies, onChange }: { form: BottleForm | null; use: BottleUse | null; safety?: Safety; supplies: readonly Supply[]; onChange: (safety: Safety) => void }) {
+function WarningsFields({ form, use, safety: saved, supplies, onChange, repair }: { form: BottleForm | null; use: BottleUse | null; safety?: Safety; supplies: readonly Supply[]; onChange: (safety: Safety) => void; repair?: { direction?: string; label: string; at: number } }) {
+  const handledRepair = useRef<number | undefined>(undefined)
   const id = useId()
+  const fields = useRef<HTMLFieldSetElement>(null)
   const [section, setSection] = useState('warnings')
+  useEffect(() => {
+    if (repair?.direction === undefined || handledRepair.current === repair.at) return
+    if (section !== repair.direction) { setSection(repair.direction); return }
+    const frame = requestAnimationFrame(() => {
+      handledRepair.current = repair.at
+      focusLabeledControl(fields.current, repair.label)
+    })
+    return () => cancelAnimationFrame(frame)
+  }, [repair, section])
   const safety = saved ?? blankSafety()
   const canSanitize = use === 'rinse_sanitizer' || safety.sanitizing !== undefined
   const canPretreat = (form === 'liquid' || form === 'powder') && (use === 'detergent' || use === 'booster') || safety.pretreatment !== undefined
@@ -478,7 +513,7 @@ function WarningsFields({ form, use, safety: saved, supplies, onChange }: { form
   const set = (patch: Partial<Safety>) => onChange({ ...safety, ...patch })
   const treatment = safety.pretreatment
   const setTreatment = (patch: Partial<NonNullable<Safety['pretreatment']>>) => treatment === undefined ? undefined : set({ pretreatment: { ...treatment, ...patch } })
-  return <FieldSet className="gap-3"><FieldLegend>Label directions</FieldLegend>
+  return <FieldSet ref={fields} className="gap-3"><FieldLegend>Label directions</FieldLegend>
       <Tabs value={activeSection} onValueChange={(value) => { if (value !== null) setSection(String(value)) }}>
       {canSanitize || canPretreat ? <TabsList aria-label="Label direction sections"><TabsTrigger value="warnings">Warnings</TabsTrigger>{canSanitize ? <TabsTrigger value="sanitizing">Sanitizing</TabsTrigger> : null}{canPretreat ? <TabsTrigger value="pretreatment">Pretreatment</TabsTrigger> : null}</TabsList> : null}
       {canSanitize ? <TabsContent value="sanitizing" keepMounted>
@@ -557,15 +592,21 @@ export function BottleSheet({ householdId, supply = null, supplies = [], title, 
   // The dirty guard compares against the product as it was when this edit began, so it is taken again for every edit.
   const [baseline, setBaseline] = useState<BottleDraft>(() => (supply === null ? newBottleDraft() : draftFromSupply(supply)))
   const [draft, setDraft] = useState<BottleDraft>(baseline)
-  const [tried, setTried] = useState(false)
   const [checked, setChecked] = useState(false)
   const [view, dispatch] = useReducer(productRecordView, { editing: supply === null || initialTab !== undefined, tab: initialTab ?? 'facts', ...(initialTab === undefined ? {} : { focus: { tab: initialTab, at: 0 } }) })
   const editing = view.editing
   const [step, setStep] = useState<BottleStep>('form')
+  const [correctingReview, setCorrectingReview] = useState(false)
+  const [repair, setRepair] = useState<{ tab: TabName; label: string; direction?: string; at: number }>()
+  const confirmation = useRef<HTMLDivElement>(null)
+  const correctReview = (target: BottleStep) => { setCorrectingReview(true); setStep(target) }
   const [createdId, setCreatedId] = useState<Supply['supplyId'] | null>(null)
+  const recovery = useIntakeRecovery({ name: 'product-intake', title: 'this product', value: { draft, step, correctingReview }, valid: validBottleIntake, active: supply === null && createdId === null, dirty: JSON.stringify(draft) !== JSON.stringify(baseline),
+    restore: (saved) => { setDraft(saved.draft); setStep(saved.step); setCorrectingReview(saved.correctingReview ?? false) }, close: onClose })
+  const closeIntake = () => { if (supply === null && !recovery.attempted) recovery.clear(); onClose() }
   const [detail, setDetail] = useState<TabName | undefined>()
   const [removing, setRemoving] = useState(false)
-  const inventory = useQuery(api.inventory.list, createdId === null ? 'skip' : { householdId: householdId as CreateArgs['householdId'] })
+  const inventory = useQuery(api.inventory.list, createdId === null ? 'skip' : { householdId: householdId as CreateArgs['householdId'], textileIds: [] })
   const [barcode, setBarcode] = useState('')
   const [lookingUp, setLookingUp] = useState(false)
   const [lookupMessage, setLookupMessage] = useState<string | null>(null)
@@ -576,12 +617,24 @@ export function BottleSheet({ householdId, supply = null, supplies = [], title, 
   const checkProblem = needsCheck && !checked ? contentsCopy.checkedProblem : null
   const dirty = editing && JSON.stringify(draft) !== JSON.stringify(baseline)
   const pending = create.pending || update.pending || lookingUp
+  const stepProblem = supply === null ? bottleStepProblem(draft, step) : problem
+  const fixProblem = () => {
+    if (problem === null && checkProblem !== null) {
+      confirmation.current?.querySelector<HTMLElement>('[role="checkbox"]')?.focus()
+      confirmation.current?.scrollIntoView({ block: 'center' })
+      return
+    }
+    const target = bottleProblemTarget(draft, supply === null ? step : undefined)
+    if (target === null) return
+    if (supply === null) setStep(target.step)
+    setRepair((current) => ({ ...target, at: (current?.at ?? 0) + 1 }))
+  }
   const startEdit = (section: TabName) => {
     if (supply === null) return
     const saved = draftFromSupply(supply)
     setBaseline(saved)
     setDraft(saved)
-    setTried(false)
+    setRepair(undefined)
     setChecked(false)
     setBarcode('')
     setLookupMessage(null)
@@ -613,7 +666,6 @@ export function BottleSheet({ householdId, supply = null, supplies = [], title, 
     }
   }
   const save = async () => {
-    setTried(true)
     if (problem !== null || checkProblem !== null) {
       const tab: TabName = problem === productText.problems.cap || problem === productText.problems.scoop ? 'directions' : problem === null ? 'contents' : 'facts'
       dispatch({ kind: 'invalid', section: tab, at: Date.now() })
@@ -621,9 +673,12 @@ export function BottleSheet({ householdId, supply = null, supplies = [], title, 
     }
     const name = draft.name.trim()
     if (supply === null) {
-      const created = await create.run({ householdId: householdId as CreateArgs['householdId'], name, ...bottleFieldsFrom(draft) })
+      const intakeKey = recovery.saveKey()
+      if (intakeKey === null) return
+      const created = await create.run({ householdId: householdId as CreateArgs['householdId'], name, ...bottleFieldsFrom(draft), intakeKey })
       if (created === undefined) return
       setCreatedId(created)
+      recovery.clear()
       onSaved?.(productText.addedToast(name))
     } else {
       const result = await update.run({ supplyId: supply.supplyId, name, ...bottleFieldsFrom(draft, supply) })
@@ -650,6 +705,7 @@ export function BottleSheet({ householdId, supply = null, supplies = [], title, 
   const index = steps.indexOf(step)
   const titles: Record<BottleStep, string> = { form: 'Add a product', purpose: 'What is it for?', identity: 'What is it called?', measurement: draft.form === 'powder' ? 'Marks on the scoop' : 'Marks on the cap', review: 'Check your product' }
   const savedSupply = inventory?.supplies.find((entry) => entry.supplyId === createdId)
+  if (recovery.prompt !== null) return recovery.prompt
   if (createdId !== null) {
     if (detail !== undefined && savedSupply !== undefined) return <BottleSheet key={createdId} householdId={householdId} supply={savedSupply} supplies={inventory!.supplies} initialTab={detail} onClose={onClose} onSaved={onSaved} />
     return <Sheet title="Product added" onClose={onClose} closeAtTop footer={<Button onClick={onClose}>Done</Button>}>
@@ -673,39 +729,42 @@ export function BottleSheet({ householdId, supply = null, supplies = [], title, 
       headerArt={editing ? undefined : headerArt}
       step={supply === null ? step : editing ? 'edit' : 'details'}
       progress={supply === null ? { step: index + 1, total: steps.length } : undefined}
-      onBack={supply === null && index > 0 ? () => { if (!pending) setStep(steps[index - 1]!) } : undefined}
+      onBack={supply === null && (index > 0 || correctingReview) ? () => { if (!pending) { setStep(correctingReview ? 'review' : steps[index - 1]!); setCorrectingReview(false) } } : undefined}
       onEdit={supply === null || editing ? undefined : () => startEdit(view.tab === 'contents' && !tabsFor(draftFromSupply(supply).form).includes('contents') ? 'facts' : view.tab)}
       editLabel="Edit details"
-      onClose={supply !== null && editing ? cancelEdit : onClose}
+      onClose={supply !== null && editing ? cancelEdit : closeIntake}
+      onKeepDraft={recovery.canKeep ? recovery.keep : undefined}
       closeLabel="Cancel"
-      dirty={dirty}
+      dirty={dirty && !recovery.attempted}
       busy={pending}
       closeAtTop={supply === null || !editing}
       tall
       compactActions={supply !== null}
       footer={(
-        supply === null ? <Button disabled={pending || bottleStepProblem(draft, step) !== null || checkProblem !== null} onClick={() => step === 'review' ? void save() : setStep(steps[index + 1]!)}>{step === 'review' ? productText.save : 'Next'}</Button> : editing ? <>
+        <>
+        {supply === null ? <Button disabled={pending || stepProblem !== null || checkProblem !== null} onClick={() => { if (step === 'review') void save(); else if (correctingReview && problem === null) { setStep('review'); setCorrectingReview(false) } else setStep(steps[index + 1]!) }}>{step === 'review' ? productText.save : correctingReview && problem === null ? 'Back to review' : 'Next'}</Button> : editing ? <>
           <Button type="button" disabled={pending || problem !== null || checkProblem !== null} onClick={() => void save()}>{productText.save}</Button>
-        </> : <Button onClick={onClose}>Done</Button>
+        </> : <Button onClick={onClose}>Done</Button>}</>
       )}
     >
+      {recovery.notice}
       {editing ? <fieldset disabled={pending} className="m-0 grid min-w-0 gap-4 border-0 p-0">
       {supply === null && step === 'identity' ? <Disclosure className={bottleLookupMoreClassName} summary={productText.findByBarcode}>{lookupFields}</Disclosure> : null}
       {supply !== null && supply.use === null && draft.use !== null && usesFor(draft.form).length > 1 ? <p className={noticeClassName}>{productText.suggestedUseHint}</p> : null}
-      <BottleFields draft={draft} onChange={(next) => { setDraft(next); setChecked(false) }} step={supply === null ? step : undefined} focus={view.focus} supplies={supplies.filter((other) => other.supplyId !== supply?.supplyId && !other.archived)} more={supply === null ? undefined : <>
+      <BottleFields draft={draft} repair={repair} onChange={(next) => { setDraft(next); setChecked(false) }} step={supply === null ? step : undefined} focus={view.focus} supplies={supplies.filter((other) => other.supplyId !== supply?.supplyId && !other.archived)} more={supply === null ? undefined : <>
         <FieldSet className="gap-3"><FieldLegend>{productText.findByBarcode}</FieldLegend>{lookupFields}</FieldSet>
         <CatalogReference holding={{ kind: 'product', id: supply.supplyId }} binding={supply.catalogBinding} name={supply.name} disabled={pending} />
         <Button variant="unstyled" size="unstyled" type="button" className={cn(secondaryButtonClassName, bottleArchiveClassName)} disabled={pending} onClick={() => { update.clearError(); if (supply.archived) void changeArchived(); else setRemoving(true) }}>{supply.archived ? productText.restore : productText.remove}</Button>
       </>} />
       {supply === null && step === 'review' ? <FactsCard label="Product review" rows={[
-        ['Name', draft.name.trim(), () => setStep('identity')],
-        ['Type', draft.form === null ? 'Not recorded' : formWords[draft.form], () => setStep('form')],
-        ...(draft.use === null ? [] : [['Used for', useWords[draft.use], usesFor(draft.form).length > 1 ? () => setStep('purpose') : undefined] as FactRow]),
-        ...(hasMarks(draft.form) ? [[draft.form === 'powder' ? 'Scoop marks' : 'Cap marks', draft.marks.join(' · ') || 'Not recorded', () => setStep('measurement')] as FactRow] : []),
+        ['Name', draft.name.trim(), () => correctReview('identity')],
+        ['Type', draft.form === null ? 'Not recorded' : formWords[draft.form], () => correctReview('form')],
+        ...(draft.use === null ? [] : [['Used for', useWords[draft.use], usesFor(draft.form).length > 1 ? () => correctReview('purpose') : undefined] as FactRow]),
+        ...(hasMarks(draft.form) ? [[draft.form === 'powder' ? 'Scoop marks' : 'Cap marks', draft.marks.join(' · ') || 'Not recorded', () => correctReview('measurement')] as FactRow] : []),
       ]} /> : null}
-      {needsCheck ? <div className="grid gap-2"><ConfirmRow checked={checked} onCheckedChange={setChecked}>{contentsCopy.checked}</ConfirmRow><SheetText>{contentsCopy.checkedHint}</SheetText></div> : null}
-      {(supply !== null || step === 'review' || tried) && (problem ?? checkProblem) !== null ? <p className={cn(noticeClassName, badClassName)} role="alert">{problem ?? checkProblem}</p> : null}
+      {needsCheck ? <div ref={confirmation} className="grid gap-2"><ConfirmRow checked={checked} onCheckedChange={setChecked}>{contentsCopy.checked}</ConfirmRow><SheetText>{contentsCopy.checkedHint}</SheetText></div> : null}
       <ErrorNotice error={create.error ?? update.error} />
+      {(stepProblem ?? checkProblem) === null ? null : <div className="grid w-full gap-1" role="status"><p className="m-0 text-[length:var(--step--1)] text-ink-2">{stepProblem ?? checkProblem}</p><Button variant="ghost" className="justify-self-start" disabled={pending} onClick={fixProblem}>Fix</Button></div>}
       </fieldset> : supply === null ? null : <ProductOverview supply={supply} tab={view.tab} onTab={(tab) => dispatch({ kind: 'view', tab })} onEdit={startEdit} />}
     </Sheet>
   )

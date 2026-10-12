@@ -8,12 +8,25 @@ vi.mock('@tanstack/react-router', async (original) => ({
     <a {...props} href={to + (search && Object.keys(search).length ? `?${new URLSearchParams(search)}` : '')} />,
 }))
 
-import { HomeOverview, type HomeGuidanceInput } from '@/routes/index'
+import { HomeOverview, type HomeGuidanceInput } from '@/home/home-page'
 import type { Inventory, Textile } from '@/household/inventory-types'
 import type { Today } from '@/closet/closet-view'
 import type { HubState } from '@/home/hub-state'
 import { homeHeroView } from '@/home/home-hero'
-import { HomeCareOverview } from '@/home/home-sections'
+import { HomeCareOverview, HomeHero } from '@/home/home-sections'
+
+test('hero headings carry the state; only a timed load needs a separate stage badge', () => {
+  const facts = { garmentGroups: 2, pieces: 2, only: null }
+  const states: HubState[] = [{ kind: 'empty' }, { kind: 'drying', count: 2, sessionIds: ['wash'], runId: 'air' }, { kind: 'hamper', count: 2, loads: null },
+    { kind: 'running', next: null, rows: [{ sessionId: 'wash', machine: 'Washer', stage: 'washing', doneAt: null }] },
+    { kind: 'running', next: null, rows: [{ sessionId: 'wash', machine: 'Washer', stage: 'washing', startedAt: -120_000, doneAt: -60_000 }] }]
+  const markup = (state: HubState) => renderToStaticMarkup(<HomeHero view={homeHeroView(state, facts, 0)} renderLink={(_, { ariaLabel, ...props }) => <a href="/laundry" aria-label={ariaLabel} {...props} />} />)
+  for (const state of states) expect(markup(state)).not.toMatch(/>(Nothing waiting|Drying|Washing|Waiting|Ready)<\/span>/)
+  for (const stage of ['washing', 'drying'] as const) {
+    const result = markup({ kind: 'running', next: null, rows: [{ sessionId: 'wash', machine: 'Machine', stage, startedAt: -60_000, doneAt: 60_000 }] })
+    expect(result).toContain(stage === 'washing' ? '>Washing</span>' : '>Drying</span>')
+  }
+})
 
 test('the care summary is one target with a separate care-details action', () => {
   const markup = renderToStaticMarkup(<HomeCareOverview title="Care overview" caption="23 pieces"
@@ -26,6 +39,11 @@ test('the care summary is one target with a separate care-details action', () =>
   expect(links[0]).toContain('>Refresh</span>')
   expect(links[0]).not.toContain('Check care labels')
   expect(links[1]).toContain('Check care labels')
+  expect(links[0]).toContain('width:56.52173913043478%')
+  expect(links[0]).toContain('width:0%')
+  const empty = renderToStaticMarkup(<HomeCareOverview title="Care overview" caption="0 pieces" counts={[{ key: 'ready', label: 'Ready', count: 0, dot: 'bg-ready' }]} labelFlag={null} renderLink={(_, props) => <a href="/closet" {...props} />} />)
+  expect(empty).not.toContain('NaN')
+  expect(empty).toContain('width:0%')
 })
 
 test('Home reports hamper pieces instead of presenting zero planned loads as a wash estimate', () => {
@@ -62,12 +80,13 @@ function render(textiles: Textile[], ready: Textile[] = [], state: HubState = { 
     today={today} state={state} now={0} outfit={outfit} guidance={guidance} />)
 }
 
-test('outfit picking needs distinct ready garment choices, not identical quantities', () => {
+test('outfit planning remains reachable without an arbitrary three-item threshold', () => {
   const ready = [garment('1', { status: 'clean' }), garment('2', { status: 'clean' }), garment('3', { status: 'clean' })]
   const outfit = <span>Outfit choices</span>
-  expect(render(ready, ready, { kind: 'empty' }, outfit)).not.toContain('Outfit choices')
+  expect(render(ready, ready, { kind: 'empty' }, outfit)).toContain('Choose today’s outfit')
   const distinct = [ready[0]!, garment('4', { status: 'clean', name: 'Jeans', kind: 'pants' }), garment('5', { status: 'clean', name: 'Shirt', kind: 'shirt' })]
-  expect(render(distinct, distinct, { kind: 'empty' }, outfit)).toContain('Outfit choices')
+  expect(render(distinct, distinct, { kind: 'empty' }, outfit)).toContain('Choose today’s outfit')
+  expect(render(distinct, distinct, { kind: 'empty' }, outfit)).not.toContain('Outfit choices')
 })
 
 test('an all-dirty closet offers laundry without presenting dirty clothes as ready', () => {
@@ -78,17 +97,17 @@ test('an all-dirty closet offers laundry without presenting dirty clothes as rea
   expect(markup).not.toContain('id="home-ready"')
 })
 
-test('ready previews count matching pieces and keep named colors apart', () => {
+test('Home keeps the next task, zero counts, quick actions and a bounded ready preview', () => {
   const ready = [garment('1', { status: 'clean' }), garment('2', { status: 'clean' }), garment('3', { status: 'clean', color: 'Forest' })]
   const markup = render([...ready, garment('4', { name: 'Dirty shorts', kind: 'shorts' })], ready)
-  expect(markup).toMatch(/<h2 id="home-ready"[^>]*>Ready to wear<\/h2>/)
-  expect(markup).toContain('aria-label="Crew tee, Navy, 2 pieces, Ready to wear"')
-  expect(markup).toContain('aria-label="Crew tee, Forest, 1 piece, Ready to wear"')
+  expect(markup).toContain('Sort into loads')
+  expect(markup).toContain('aria-label="3 Ready, 1 Hamper, 0 Washing"')
+  expect(markup).toContain('id="home-ready"')
+  expect(markup).toContain('Quick links')
   expect(markup).not.toContain('Dirty shorts')
-  expect(markup).toContain('href="/closet?section=ready"')
+  expect(markup).toContain('href="/closet"')
   expect(markup).not.toContain('>AS Colour</span>')
-  expect(markup).not.toContain('title="2 ready"')
-  expect(markup).not.toContain('title="1 ready"')
+  expect(markup).toContain('aria-label="Crew tee, 2 ready"')
 })
 
 test('a closet with only guest items does not show an owned-clothes overview or gallery', () => {
@@ -114,12 +133,12 @@ test('Home identifies the active dryer instead of presenting its clothes as read
   expect(markup).not.toContain('id="home-ready"')
 })
 
-test('ready tags appear before the clothing gallery, using only tags on ready clothes', () => {
+test('Home leaves clothing and tag browsing to Closet', () => {
   const ready = [garment('1', { status: 'clean', tags: ['Weekend outfit'] })]
   const markup = render([...ready, garment('2', { tags: ['Work'] })], ready)
-  expect(markup).toContain('>Weekend outfit</button>')
+  expect(markup).not.toContain('>Weekend outfit</button>')
   expect(markup).not.toContain('>Work</button>')
-  expect(markup.indexOf('aria-label="Filter by tag"')).toBeLessThan(markup.indexOf('aria-label="Ready to wear pages"'))
+  expect(markup).not.toContain('aria-label="Filter by tag"')
 })
 
 const guidance = (status: HomeGuidanceInput['status']): HomeGuidanceInput => ({ status, pending: false, onResume: () => undefined })

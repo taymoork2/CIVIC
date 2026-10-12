@@ -8,7 +8,10 @@ const loopback = new Set(['localhost', '127.0.0.1', '[::1]'])
 export function resolveConvexUrl(configured: string, page: { protocol: string; hostname: string }, remotePort: string): string {
   const target = new URL(configured)
   if (!loopback.has(target.hostname) || loopback.has(page.hostname)) return configured.replace(/\/$/, '')
-  return `${page.protocol}//${page.hostname}:${remotePort}`
+  target.protocol = page.protocol
+  target.hostname = page.hostname
+  target.port = remotePort
+  return target.href.replace(/\/$/, '')
 }
 
 export function convexUrl(): string {

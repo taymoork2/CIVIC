@@ -1,0 +1,9 @@
+/* Shell foundations belong to Rehearsal; app styles remain inside preview adapters. */
+html { font-family: system-ui, sans-serif; color: #24272c; }
+body { margin: 0; }
+.rehearsal, .rehearsal * { box-sizing: border-box; }
+.rehearsal button, .rehearsal input, .rehearsal select, .rehearsal textarea { font: inherit; color: inherit; }
+.rehearsal button { background: white; border: 1px solid #dde1e8; cursor: pointer; }
+.rehearsal button:disabled { cursor: default; opacity: .5; }
+.rehearsal input, .rehearsal select, .rehearsal textarea { border: 1px solid #dde1e8; border-radius: 6px; background: white; padding: 8px; }
+.rehearsal :focus-visible { outline: 2px solid #2456d6; outline-offset: 2px; }

@@ -1,5 +1,4 @@
 import { Button, buttonVariants } from '@/components/ui/button'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Toggle } from '@/components/ui/toggle'
 import { cn } from '@/lib/utils'
 import type { LoadSize } from '@washcloset/planner'
@@ -14,13 +13,13 @@ import { bottleUseWords, countWord, cycleWord, fullnessText, machineStepText } f
 import { FullnessPictures, MachineQuestionCard, machineAnswer, waitingQuestions, type FullnessMachine, type FullnessStep, type MachineAction, type MachineCalls, type MachineProduct } from '@/laundry/fullness-step'
 import type { Machine, Supply } from '@/household/inventory-types'
 import { machineGroups, machineNumber } from '@/household/machine-sheet'
-import { HowMuch, TrialNote } from '@/laundry/laundry-ui'
+import { TrialNote } from '@/laundry/laundry-ui'
 import { trialText } from '@/copy-trial'
 import { TaskFooter } from '@/kit/task-footer'
 import { DesignIcon, type IconName } from '@/kit/design-icons'
 import { Sheet } from '@/kit/sheet'
-import { Cup, ErrorNotice, dryerHeatLabels, errorMessage, holdOutLabels, slotName } from '@/kit/ui'
-import { markWhySeen, whyKey, whyLine, whySeen } from '@/laundry/why-lines'
+import { Cup, DoseFigure, ErrorNotice, dryerHeatLabels, errorMessage, holdOutLabels, slotName } from '@/kit/ui'
+import { markWhySeen, whyKey, whyLine } from '@/laundry/why-lines'
 import { preparationText } from '@/copy-laundry'
 import { stageWords } from '@/copy-run'
 import { PrivatePieceRows, type PrivatePiece } from '@/laundry/private-piece'
@@ -34,7 +33,7 @@ import { PrivatePieceRows, type PrivatePiece } from '@/laundry/private-piece'
 /** What the block needs from a step: the server's step with its dose, task and garments. */
 const machineStepClassName = cn(
   "machine-step",
-  "grid gap-3.5 text-ink",
+  "grid min-w-0 grid-cols-1 gap-3.5 text-ink [overflow-wrap:anywhere]",
 )
 
 const machineStepEyebrowClassName = cn(
@@ -69,8 +68,8 @@ export const secondaryButtonClassName = cn(
 /** The step's one quiet way out: a row you tap, never a stack of buttons. */
 const stepDifferentClassName = cn(
   "step-different",
-  "flex min-h-13 w-full items-center gap-3 rounded-[18px] bg-surface px-[18px] text-start font-semibold text-ink",
-  "shadow-[inset_0_0_0_1px_var(--line)] focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring",
+  "flex min-h-11 w-fit max-w-full items-center gap-2 rounded-control text-start font-medium text-link",
+  "focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring",
   "text-[length:var(--step-0)]",
 )
 
@@ -87,15 +86,10 @@ const machineStepNoteClassName = cn(
   "text-[length:var(--step-0)]",
 )
 
-const machineStepWhyClassName = cn(
-  "machine-step-why",
-  "-mt-1",
-)
-
 /** The explanation is a quiet link under the instruction, not a peer of the step's actions. */
 const machineStepWhyTriggerClassName = cn(
   "machine-step-why-trigger",
-  "inline-flex min-h-11 items-center gap-1 rounded-control font-semibold text-link",
+  "inline-flex min-h-11 items-center gap-2 rounded-control font-medium text-link",
   "text-[length:var(--step-0)]",
   "cursor-pointer focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring",
 )
@@ -114,19 +108,6 @@ const machineStepWhySourceClassName = cn(
 const machineStepDoseClassName = cn(
   "machine-step-dose",
   "grid gap-2",
-)
-
-const machineStepCapClassName = cn(
-  "machine-step-cap",
-  "flex flex-wrap items-center gap-3 max-w-[24rem]",
-  "[&_p]:m-0 [&_p]:text-ink-2",
-  "[&_p]:text-[length:var(--step-0)]",
-)
-
-const machineStepSlotClassName = cn(
-  "machine-step-slot",
-  "m-0 leading-[1.5]",
-  "text-[length:var(--step-0)]",
 )
 
 export const machineTilesClassName = cn(
@@ -405,10 +386,13 @@ export function StepChoiceList({ choices, onPick }: { choices: readonly StepChoi
 }
 
 /** One segment per step beside Back: done, the one in hand, still to come. */
-export function StepProgress({ dots }: { dots: readonly ('done' | 'current' | 'todo')[] }) {
+export function StepProgress({ dots, label }: { dots: readonly ('done' | 'current' | 'todo')[]; label?: string }) {
   return (
-    <div className="grid min-w-0 flex-1 gap-1 pe-4" style={{ gridTemplateColumns: `repeat(${dots.length}, minmax(0, 1fr))` }} aria-hidden="true">
+    <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-2">
+      {label === undefined ? null : <span className="font-semibold text-ink-2 text-[length:var(--step--1)]">{label}</span>}
+      <div className="grid min-w-[7.5rem] flex-1 gap-1" style={{ gridTemplateColumns: `repeat(${dots.length}, minmax(0, 1fr))` }} aria-hidden="true">
       {dots.map((dot, index) => <span key={index} className={cn('h-[5px] rounded-full [transition:background-color_var(--dur-step)]', dot === 'todo' ? 'bg-surface-3' : 'bg-[var(--sig)]')} />)}
+      </div>
     </div>
   )
 }
@@ -446,6 +430,9 @@ export function StepBlock({ titleId, eyebrow, progress, title, picture, children
   const [ownOpen, setOwnOpen] = useState(false)
   const open = choices.length > 0 && (optionsOpen ?? ownOpen)
   const setOpen = (next: boolean) => { setOwnOpen(next); onOptionsOpenChange?.(next) }
+  const [step, total] = progress?.split(' of ').map(Number) ?? []
+  const segments = step !== undefined && total !== undefined && Number.isInteger(step) && Number.isInteger(total) && step > 0 && step <= total && total <= 1000
+    ? Array.from({ length: total }, (_, index): 'done' | 'current' | 'todo' => index + 1 < step ? 'done' : index + 1 === step ? 'current' : 'todo') : null
   return (
     <>
       <section className={cn(machineStepClassName, canReview && 'touch-pan-y')} aria-labelledby={titleId} aria-live="polite"
@@ -471,20 +458,19 @@ export function StepBlock({ titleId, eyebrow, progress, title, picture, children
           if (direction === 'previous') previous?.onClick()
           if (direction === 'next') nextRecorded?.()
         }}>
-        <p className={machineStepEyebrowClassName}>
-          <span>{progress === undefined ? eyebrow : eyebrow === '' ? `Step ${progress}` : `Step ${progress} · ${eyebrow}`}</span>
-        </p>
-        {picture === undefined ? null : <div className={stepPictureClassName}>{picture}</div>}
+        {segments === null ? null : <StepProgress dots={segments} label={`Step ${progress}`} />}
+        {eyebrow === '' ? null : <p className={machineStepEyebrowClassName}><span>{segments !== null || progress === undefined ? eyebrow : `Step ${progress} · ${eyebrow}`}</span></p>}
         <h2 id={titleId} className={machineStepTitleClassName}>{title}</h2>
+        {picture === undefined ? null : <div className={stepPictureClassName}>{picture}</div>}
         {children}
-        {secondary === undefined || secondary === null ? null : <div className="flex flex-wrap gap-x-2 gap-y-1">{secondary}</div>}
+        {secondary == null && choices.length === 0 ? null : <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-4 gap-y-1">
+        {secondary}
         {choices.length === 0 ? null : (
-          <Button variant="unstyled" size="unstyled" type="button" id={stepOptionsTriggerId(titleId)} className={stepDifferentClassName} aria-haspopup="dialog" aria-expanded={open} onClick={() => setOpen(true)}>
-            <DesignIcon name="sliders" size="1em" strokeWidth={2.2} className="size-5 flex-none text-ink-2" aria-hidden="true"  />
+          <Button variant="unstyled" size="unstyled" type="button" id={stepOptionsTriggerId(titleId)} className={stepDifferentClassName} aria-haspopup="dialog" aria-expanded={open} onClick={(event) => { event.currentTarget.focus({ preventScroll: true }); setOpen(true) }}>
+            <DesignIcon name="sliders" size="1em" strokeWidth={1.6} className="size-[18px] flex-none" aria-hidden="true"  />
             <span className="flex-1">{machineStepText.somethingDifferent}</span>
-            <DesignIcon name="chevronRight" size="1em" strokeWidth={2.2} className="size-[18px] flex-none text-ink-2" aria-hidden="true"  />
           </Button>
-        )}
+        )}</div>}
         {canReview ? <p id={`${titleId}-review`} className="sr-only">Swipe to review recorded steps. Or focus this card and use the left and right arrow keys.</p> : null}
       </section>
       {open ? (
@@ -623,21 +609,22 @@ export function FullnessBlock({ titleId, view, progress, previous, action, sessi
 }
 
 /**
- * "Why here?" or "Why now?": one short, sourced reason for this step, collapsed until asked, open by itself only the
- * first time this product meets this machine kind on this device (remembered in localStorage), then
- * quiet. Never blocks the step: the button above it works the same whether this is open or closed.
+ * One sourced placement/timing explanation in the existing sheet, opened only when asked.
  */
-function WhyDisclosure({ supplyId, doorLocks, line, label, remember = true }: { supplyId: string; doorLocks: boolean; line: { text: string; source: string }; label: string; remember?: boolean }) {
-  const key = whyKey(supplyId, doorLocks)
-  const [open, setOpen] = useState(() => remember && !whySeen(key))
-  useEffect(() => { if (remember) markWhySeen(key) }, [key, remember])
+export function DoseWhy({ action, doorLocks = false, remember = true }: { action: MachineStepAction; doorLocks?: boolean; remember?: boolean }) {
+  const key = whyKey(action.supplyId, doorLocks)
+  const line = whyLine(action)
+  const label = whyLabel(action)
+  const [open, setOpen] = useState(false)
+  useEffect(() => { if (remember && open) markWhySeen(key) }, [key, remember, open])
+  if (line === null) return null
   return (
-    <Collapsible className={machineStepWhyClassName} open={open} onOpenChange={setOpen}>
-      <CollapsibleTrigger className={machineStepWhyTriggerClassName}>{label}</CollapsibleTrigger>
-      <CollapsibleContent>
+    <>
+      <Button variant="unstyled" size="unstyled" className={machineStepWhyTriggerClassName} aria-haspopup="dialog" aria-expanded={open} onClick={(event) => { event.currentTarget.focus({ preventScroll: true }); setOpen(true) }}><DesignIcon name="help" size={18} strokeWidth={1.6} aria-hidden="true" />{label}</Button>
+      {open ? <Sheet title={label} onClose={() => setOpen(false)}>
         <p className={machineStepWhyTextClassName}>{line.text} <span className={machineStepWhySourceClassName}>{line.source}</span></p>
-      </CollapsibleContent>
-    </Collapsible>
+      </Sheet> : null}
+    </>
   )
 }
 
@@ -650,21 +637,23 @@ export function whyLabel(action: Pick<MachineStepAction, 'placement' | 'phase'>)
 }
 
 /** The dose in hand: how much (from the product record), the cap line when it prints one, and where it goes. */
-export function DoseBody({ action, slot, doorLocks = false, rememberExplanation = true, showCup = true }: { action: MachineStepAction; slot: string | null; doorLocks?: boolean; rememberExplanation?: boolean; /** False when the step's picture already draws the cap. */ showCup?: boolean }) {
-  const line = whyLine(action)
+export function DoseBody({ action, slot, picture }: { action: MachineStepAction; slot: string | null; picture?: ReactNode }) {
+  const dose = action.dose
+  const cap = dose?.marks?.includes(dose.mark ?? '') && (dose.fractionOfMark ?? 1) === 1 && dose.target === undefined ? dose : null
   return (
     <div className={machineStepDoseClassName}>
-      {slot === null ? null : <p className={machineStepSlotClassName}>{slot}</p>}
-      {action.textileId === undefined ? null : <div className="grid gap-2"><p className={machineStepNoteClassName}>{action.timing}</p>{action.temperatureC == null ? null : <p className={machineStepNoteClassName}>Use water at {action.temperatureC} °C or cooler.</p>}</div>}
-      {action.dose === null ? null : showCup && action.dose.marks?.length && action.dose.mark ? (
-        // The cap is drawn only from its recorded marks, filled to the planned one; never a guessed level.
-        <div className={machineStepCapClassName}>
-          <Cup amount={action.dose.amount} unit={action.dose.unit} marks={action.dose.marks} mark={action.dose.mark} />
-          <div className="min-w-0 grow basis-auto"><HowMuch dose={action.dose} /></div>
+      <div className="overflow-hidden rounded-card bg-surface shadow-[var(--e1)]">
+        {cap ? <div className="machine-step-cap grid min-h-48 place-items-center p-4 [&_svg]:h-36 [&_svg]:w-auto"><Cup amount={cap.amount} unit={cap.unit} marks={cap.marks} mark={cap.mark} /></div> : picture}
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-4 p-5">
+          <div className="min-w-0 flex-1 basis-[9rem]">
+            <p className="m-0 font-semibold leading-[1.35] text-[length:var(--step-0)]">{action.supplyName ?? machineStepText.thisProduct}</p>
+            {slot === null ? null : <p className="m-0 mt-1 text-[length:var(--step--1)] leading-[1.45] text-ink-2">{slot}</p>}
+          </div>
+          {dose === null ? null : <div className="min-w-0 max-w-full tabular-nums [&_small]:ms-1"><DoseFigure dose={dose} /></div>}
         </div>
-      ) : <HowMuch dose={action.dose} />}
+      </div>
+      {action.textileId === undefined ? null : <div className="grid gap-2"><p className={machineStepNoteClassName}>{action.timing}</p>{action.temperatureC == null ? null : <p className={machineStepNoteClassName}>Use water at {action.temperatureC} °C or cooler.</p>}</div>}
       {action.dose === null || action.textileId !== undefined ? null : <TrialNote>{trialText.dose}</TrialNote>}
-      {line === null ? null : <WhyDisclosure supplyId={action.supplyId} doorLocks={doorLocks} line={line} label={whyLabel(action)} remember={rememberExplanation} />}
     </div>
   )
 }

@@ -86,7 +86,7 @@ export const chemistryText = {
 } as const
 
 export const preparationText = {
-  pourIntoEmptyDrum: (amount: string) => `Pour ${amount} into the empty drum`,
+  pourIntoEmptyDrum: 'Pour into the empty drum',
   chooseSettings: (settings: string) => `Choose ${settings}`,
   closeAfterSettings: (locked: boolean) => locked ? 'Then close the door.' : 'Then close the lid.',
   title: 'Preparation',

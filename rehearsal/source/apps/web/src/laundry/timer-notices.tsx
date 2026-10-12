@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 import type { Id } from '@convex/_generated/dataModel'
 import { api } from '@/api'
 import { sessionStage } from '@/laundry/session-stage'
-import { useNow } from '@/laundry/session-view'
+import { useNow } from '@/kit/use-now'
 import { loadAppearance } from '@/kit/appearance'
 
 export const noticeText = {

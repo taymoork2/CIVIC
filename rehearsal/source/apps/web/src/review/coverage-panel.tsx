@@ -1,12 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import type { MapScenario } from './app-map'
+import type { ReviewSnapshot } from './store'
+import { projectFetch } from './project-request'
 
 type Target = { id: string; title: string; kind: string; component?: string; scenarios: string[]; acceptance: string[]; implementation: string; preview: string; verification: string; reason: string; missingEdges: string[] }
 type Candidate = { id: string; version: number; source: string; title: string; body: string; action: string; brief: string; code: string; stale: boolean; targetPresent: boolean; acknowledged: boolean }
 type Coverage = { version: number; automatic: boolean; source: string; fixtureSource: string; report: { contractVersion: number; targets: Target[]; limits: string[] }; candidates: Candidate[] }
 type Draft = { id: string; title: string; body: string; action: string; source: string; expectedVersion: number }
 
-export function useCoverage(onIndex: (index: { scenarios: MapScenario[]; fixtureSource: string }) => void) {
+export function useCoverage(onIndex: (index: ReviewSnapshot & { scenarios: MapScenario[]; fixtureSource: string; connection?: { applicationRoot: string } }) => void) {
   const [data, setData] = useState<Coverage | null>(null)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
@@ -16,17 +18,19 @@ export function useCoverage(onIndex: (index: { scenarios: MapScenario[]; fixture
   useEffect(() => {
     const controller = new AbortController()
     let timer: ReturnType<typeof setTimeout>
+    let noticeTimer: ReturnType<typeof setTimeout>
     const poll = async () => {
       try {
         if (document.visibilityState !== 'hidden') {
           const version = mutation.current
-          const responses = await Promise.all(['/api/review/index', '/api/review/coverage'].map((path) => fetch(path, { signal: controller.signal })))
+          const responses = await Promise.all(['/api/review/index', '/api/review/coverage'].map((path) => projectFetch(path, { signal: controller.signal })))
+          if (responses.some((response) => response.status === 409)) throw Error('The active project changed in another tab. Reload this tab; previous drafts are retained.')
           if (responses.some((response) => !response.ok)) throw Error('Coverage update unavailable. Previous state and drafts are retained.')
           const [index, next] = await Promise.all(responses.map((response) => response.json()))
           if (index.revision.source !== next.source) throw Error('Inventory changed while loading. Retrying; previous drafts are retained.')
           if (version === mutation.current) {
             const changed = lastSource.current !== next.source
-            if (lastSource.current && changed) setNotice('Code or expectations changed. Inventory refreshed; the open preview and draft are retained.')
+            if (lastSource.current && changed) { setNotice('Updated automatically. Snapshots refresh; your live run keeps its starting revision and draft.'); clearTimeout(noticeTimer); noticeTimer = setTimeout(() => setNotice(''), 6000) }
             lastSource.current = next.source
             setData(next); if (changed) callback.current(index); setError('')
           }
@@ -35,11 +39,11 @@ export function useCoverage(onIndex: (index: { scenarios: MapScenario[]; fixture
       if (!controller.signal.aborted) timer = setTimeout(poll, 5000)
     }
     void poll()
-    return () => { controller.abort(); clearTimeout(timer) }
+    return () => { controller.abort(); clearTimeout(timer); clearTimeout(noticeTimer) }
   }, [])
   const update = async (input: Record<string, unknown>) => {
     mutation.current++
-    const response = await fetch('/api/review/coverage', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(input) })
+    const response = await projectFetch('/api/review/coverage', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(input) })
     const result = await response.json()
     if (!response.ok) throw Error(result.error ?? 'Coverage could not be saved. Your draft is retained.')
     mutation.current++; setData(result); return result as Coverage

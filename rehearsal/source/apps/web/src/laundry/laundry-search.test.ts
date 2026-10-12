@@ -11,4 +11,7 @@ test('Laundry keeps an open plan and a first-run hamper, and drops anything else
   expect(laundrySearch({ plan: 3, add: 'closet', other: 'x' })).toEqual({})
   expect(laundrySearch({ item: 'textile_123' })).toEqual({ item: 'textile_123' })
   expect(laundrySearch({ item: '../bad' })).toEqual({})
+  expect(laundrySearch({ plan: 'p1', load: 'load-001' })).toEqual({ plan: 'p1', load: 'load-001' })
+  expect(laundrySearch({ load: 'load-001' })).toEqual({})
+  expect(laundrySearch({ plan: 'p1', load: '../bad' })).toEqual({ plan: 'p1' })
 })

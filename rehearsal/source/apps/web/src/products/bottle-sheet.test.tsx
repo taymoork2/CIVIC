@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from '@/test/markup'
 import { expect, test } from 'vitest'
 import { useDirections } from '@washcloset/planner'
 
-import { BottleFields, ProductFormGrid, ProductOverview, bottleDraftProblem, bottleIntakeSteps, bottleStepProblem, directionSummary, productRecordRows, productRecordView, bottleFieldsFrom, draftFromSupply, newBottleDraft, suggestedBottle, toggleMark, usesFor, withForm, type BottleDraft } from '@/products/bottle-sheet'
+import { BottleFields, ProductFormGrid, ProductOverview, bottleDraftProblem, bottleProblemTarget, bottleIntakeSteps, bottleStepProblem, directionSummary, productRecordRows, productRecordView, bottleFieldsFrom, draftFromSupply, newBottleDraft, suggestedBottle, toggleMark, usesFor, withForm, type BottleDraft } from '@/products/bottle-sheet'
 import type { Supply } from '@/household/inventory-types'
 import { assertPlainCopy } from '@/kit/test-copy'
 import { ProductTile, productGroup } from '@/household/household-tiles'
@@ -22,6 +22,16 @@ const supply = (overrides: Partial<Supply> = {}): Supply => ({
 } as Supply)
 
 const liquid = (patch: Partial<BottleDraft> = {}): BottleDraft => ({ ...withForm(newBottleDraft(), 'liquid'), name: 'Tide Original', use: 'detergent', marks: ['1', '3', '5'], ...patch })
+
+test('product correction routes use validation order and reveal the applicable safety tab', () => {
+  expect(bottleProblemTarget(liquid())).toBeNull()
+  expect(bottleProblemTarget(newBottleDraft())).toMatchObject({ tab: 'facts', step: 'form' })
+  expect(bottleProblemTarget(liquid({ name: '', use: null }))).toMatchObject({ step: 'identity', label: 'Product name' })
+  expect(bottleProblemTarget(liquid({ name: '', use: null }), 'purpose')).toMatchObject({ step: 'purpose', label: 'What does it do?' })
+  expect(bottleProblemTarget(liquid({ pendingMark: 'half' }))).toMatchObject({ tab: 'directions', step: 'measurement' })
+  expect(bottleProblemTarget(liquid({ safety: { bleachKind: 'unknown', incompatibleMaterials: [], incompatibleSupplyIds: [], lipase: { status: 'present', formulation: '', source: '' } } }))).toMatchObject({ tab: 'contents', label: 'Exact variant, market and pack code' })
+  expect(bottleProblemTarget(liquid({ use: 'rinse_sanitizer', safety: { bleachKind: 'unknown', incompatibleMaterials: [], incompatibleSupplyIds: [], sanitizing: { route: 'rinse', minimumContactMinutes: 0, formulation: 'Exact pack', source: 'Label' } } }))).toMatchObject({ tab: 'directions', direction: 'sanitizing', label: 'Label’s minimum rinse contact time (minutes)' })
+})
 
 test('product intake skips inapplicable questions and saves unrecorded marks without inventing a dose', () => {
   const draft = liquid({ marks: [] })

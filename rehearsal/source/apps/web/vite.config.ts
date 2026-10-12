@@ -10,6 +10,7 @@ import { defineConfig } from 'vite'
 import { reviewPlugin } from './scripts/review-plugin.mjs'
 
 const buildId = process.env.WASHCLOSET_BUILD_ID ?? new Date().toISOString()
+const review = process.env.WASHCLOSET_REVIEW === '1'
 
 export default defineConfig({
   cacheDir: '.vite',
@@ -46,10 +47,9 @@ export default defineConfig({
       },
     },
     tailwindcss(),
-    tanstackStart({
+    ...(review ? [] : [tanstackStart({
       rsc: { enabled: true },
-    }),
-    rsc(),
+    }), rsc()]),
     react(),
   ],
 })

@@ -4,8 +4,8 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { useSteady } from '@/kit/use-steady'
 
 import { api } from '@/api'
-import { hangingSession } from '@/closet/closet-view'
-import { HomeDock } from '@/home/home-dock'
+import { hangingSession } from '@/laundry/hanging-session'
+import { HomeDock, homeDockTaskKey } from '@/home/home-dock'
 import { dryingFacts, hubState, sharedStartSpent, sharedWasherCount, urgentFlag, type DockView, type HubInputs, type HubState, type SharedStart } from '@/home/hub-state'
 import type { Textile } from '@/household/inventory-types'
 import { useHouseholdData } from '@/household/household-data'
@@ -135,7 +135,7 @@ export function useLaundryDay(householdId: string | null, now: number): HubState
   const livePlan = useQuery(api.plans.upNext, args)
   const plan = livePlan === undefined ? shared?.plan : livePlan
   const sessions = useQuery(api.execution.householdSessions, args) ?? shared?.sessions
-  const inventory = useQuery(api.inventory.list, args) ?? shared?.inventory
+  const inventory = useQuery(api.inventory.list, args === 'skip' ? 'skip' : { ...args, activeOnly: true })
   const queue = useQuery(api.dryingQueue.queue, args)
   const attention = useSteady(useQuery(api.closet.attention, householdId === null ? 'skip' : { householdId: householdId as HouseholdId, now: minute })) ?? shared?.attention
   // Live data waits for the drying queue too; the saved copy used offline has none, so it goes without.
@@ -166,9 +166,17 @@ export function useLaundryDay(householdId: string | null, now: number): HubState
 
 export type DockLink = (target: DockView['target'] | { readonly to: 'add' | 'make' }, props: { className: string; children: ReactNode }) => ReactNode
 
+const dismissedDock = phoneStore<{ householdId: string; task: string }>('washcloset:private:dismissed-care-reminder', 'washcloset:dismissed-care-reminder', (value) => typeof value.householdId === 'string' && typeof value.task === 'string')
+
 /** Other tabs show only steps tied to a load, a machine or a clock. Hamper prompts stay in Laundry. */
 export function LaundryDock({ householdId, now, renderLink, idle = true }: { householdId: string | null; now: number; renderLink: DockLink; idle?: boolean }) {
   const state = useLaundryDay(householdId, now)
+  const dismissed = dismissedDock.useValue()
   if (state === undefined || (!idle && (state.kind === 'empty' || state.kind === 'hamper'))) return null
-  return <HomeDock state={state} renderLink={renderLink} />
+  const task = homeDockTaskKey(state)
+  if (dismissed?.householdId === householdId && dismissed.task === task) return null
+  return <HomeDock state={state} renderLink={renderLink} onDismiss={householdId === null ? undefined : () => {
+    dismissedDock.save({ householdId, task })
+    document.getElementById('main-content')?.focus({ preventScroll: true })
+  }} />
 }

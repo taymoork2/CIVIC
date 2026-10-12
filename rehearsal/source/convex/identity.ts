@@ -5,6 +5,7 @@ import { fail } from './errors'
 import { deletePhotoRows } from './photos'
 import { principalFromAuth, type AuthenticatedPrincipal } from './principal'
 import { eraseOutcomeData } from './outcomeAssessments'
+import { eraseIntakeSaves } from './intakeSaves'
 
 export async function ensurePrincipal(ctx: MutationCtx, displayName?: string): Promise<AuthenticatedPrincipal> {
   const normalizedDisplayName = displayName?.trim()
@@ -59,6 +60,7 @@ export const ensureCurrentPrincipal = mutation({
  * histories are removed in bounded scheduled batches; membership loss immediately prevents reads.
  */
 export async function removePrincipalData(ctx: MutationCtx, principalKey: string): Promise<{ removedMemberships: number }> {
+  await eraseIntakeSaves(ctx, principalKey)
   await eraseOutcomeData(ctx, { reporterKey: principalKey })
   const memberships = await ctx.db.query('memberships').withIndex('by_principal', (q) => q.eq('principalKey', principalKey)).collect()
   const subscriptions = await ctx.db.query('notificationSubscriptions').withIndex('by_principal', (q) => q.eq('principalKey', principalKey)).collect()

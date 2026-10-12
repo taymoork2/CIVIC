@@ -5,7 +5,7 @@ import { Item, ItemContent, ItemDescription, ItemGroup, ItemTitle } from '@/comp
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { cn } from '@/lib/utils'
 import { useQuery } from 'convex/react'
-import { useId, useState, type ComponentProps, type ReactElement, type ReactNode, type Ref } from 'react'
+import { useContext, useId, useState, type ComponentProps, type ReactElement, type ReactNode, type Ref } from 'react'
 
 import { api } from '@/api'
 import { dryingText } from '@/copy'
@@ -14,6 +14,7 @@ import { trialText } from '@/copy-trial'
 import { MediaTile, StatusMark, type MarkTone } from '@/kit/record-row'
 import { doseParts, useUnits, type DoseLike } from '@/kit/units'
 import { DesignIcon } from '@/kit/design-icons'
+import { FeedbackContext } from '@/kit/feedback-context'
 
 /**
  * The few shapes the laundry task screens share, built from the shared primitives: a task heading
@@ -34,7 +35,7 @@ export function BackButton({ label, onClick, render, disabled }: { label: string
 }
 
 /** Back, then the page title at 30, then a status mark with its caption. */
-export function TaskHeading({ title, eyebrow, mark, caption, back, titleRef }: {
+export function TaskHeading({ title, eyebrow, mark, caption, back, titleRef, compact = false }: {
   title: ReactNode
   /** A quiet line over the title, such as the load's place in the day. */
   eyebrow?: ReactNode
@@ -42,18 +43,26 @@ export function TaskHeading({ title, eyebrow, mark, caption, back, titleRef }: {
   caption?: ReactNode
   back?: ReactNode
   titleRef?: Ref<HTMLHeadingElement>
+  compact?: boolean
 }) {
+  const feedback = useContext(FeedbackContext)
+  const [reporting, setReporting] = useState(false)
+  const reportButton = feedback === null ? null : <Button type="button" variant="ghost" size="icon" aria-label="Report a problem" title="Report a problem" onClick={() => setReporting(true)}><DesignIcon name="chat" size="1em" aria-hidden="true" /></Button>
+  const heading = <>
+    {eyebrow === undefined ? null : <p className={cn(captionClassName, 'm-0 min-w-0 [overflow-wrap:anywhere]')}>{eyebrow}</p>}
+    <h1 ref={titleRef} tabIndex={titleRef === undefined ? undefined : -1} className={cn('m-0 min-w-0 font-semibold leading-[1.2] tracking-normal text-balance [overflow-wrap:anywhere] focus:outline-none', compact ? 'text-[length:var(--step-0)] text-ink-2' : 'text-[length:var(--step-4)]')}>{title}</h1>
+    {mark === undefined && caption === undefined ? null : <div className="flex flex-wrap items-center gap-2">
+      {mark === undefined ? null : <StatusMark tone={mark.tone}>{mark.text}</StatusMark>}
+      {caption === undefined ? null : <span className={cn(captionClassName, 'min-w-0 [overflow-wrap:anywhere]')}>{caption}</span>}
+    </div>}
+  </>
   return (
     <header className="grid min-w-0 gap-2">
-      {back === undefined ? null : <div className="-mb-1 flex min-h-12 items-center">{back}</div>}
-      {eyebrow === undefined ? null : <p className={cn(captionClassName, 'm-0 min-w-0 [overflow-wrap:anywhere]')}>{eyebrow}</p>}
-      <h1 ref={titleRef} tabIndex={titleRef === undefined ? undefined : -1} className="m-0 min-w-0 text-[length:var(--step-4)] font-semibold leading-[1.2] tracking-normal text-balance [overflow-wrap:anywhere] focus:outline-none">{title}</h1>
-      {mark === undefined && caption === undefined ? null : (
-        <div className="flex flex-wrap items-center gap-2">
-          {mark === undefined ? null : <StatusMark tone={mark.tone}>{mark.text}</StatusMark>}
-          {caption === undefined ? null : <span className={cn(captionClassName, 'min-w-0 [overflow-wrap:anywhere]')}>{caption}</span>}
-        </div>
-      )}
+      {compact ? <div className="flex min-w-0 items-start gap-2">{back}<div className="grid min-w-0 flex-1 gap-1 py-2">{heading}</div>{reportButton}</div> : <>
+        {back === undefined && feedback === null ? null : <div className="-mb-1 flex min-h-12 items-center justify-between">{back}<span className="ms-auto">{reportButton}</span></div>}
+        {heading}
+      </>}
+      {reporting && feedback !== null ? feedback(() => setReporting(false)) : null}
     </header>
   )
 }

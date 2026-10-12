@@ -32,7 +32,7 @@ const columnClassName = 'mx-auto w-full max-w-[45rem]'
 const appHeaderClassName = cn(
   "app-header",
   columnClassName,
-  "flex min-h-12 items-center justify-between gap-3 p-[calc(env(safe-area-inset-top)_+_2px)_var(--space-2)_0]",
+  "flex flex-wrap min-h-12 items-center justify-between gap-3 p-[calc(env(safe-area-inset-top)_+_2px)_var(--space-2)_0]",
   "[.app-shell.is-focus_&]:hidden",
   "[.app-shell:has(.account-page)_&]:hidden",
   "[.app-shell:not(.has-navigation)_&]:max-w-[calc(26rem_+_2_*_var(--gutter))] [.app-shell:not(.has-navigation)_&]:px-[var(--gutter)] [.app-shell:not(.has-navigation)_&]:pt-[calc(env(safe-area-inset-top)_+_var(--space-3))] [.app-shell:not(.has-navigation)_&]:pb-[var(--space-3)]",
@@ -43,11 +43,12 @@ const appHeaderClassName = cn(
 const wordmarkClassName = cn(
   "wordmark",
   "[.app-shell.has-navigation_.app-header:has(.connection-offline)_&]:hidden",
-  "inline-flex items-center gap-2 font-normal leading-[1.2] tracking-normal",
+  "inline-flex min-w-0 items-center gap-2 font-normal leading-[1.2] tracking-normal [&>span]:min-w-0 [&>span]:[overflow-wrap:anywhere]",
   "[color:var(--brand-ink)]",
   "[font-family:var(--font-brand)]",
   "text-[length:var(--type-wordmark)]",
   "[.app-shell.has-navigation_&]:ms-auto [.app-shell.has-navigation_&]:pe-3",
+  "[.app-shell.has-navigation_&]:min-w-[min(100%,14rem)]",
   "[.app-shell:not(.has-navigation)_&]:-order-1",
   "[&_svg]:w-[1.75rem] [&_svg]:h-[1.75rem]",
   "[&_small]:block [&_small]:mt-[.25rem] [&_small]:text-ink-2 [&_small]:font-normal [&_small]:leading-[1.4] [&_small]:font-text [&_small]:normal-case",

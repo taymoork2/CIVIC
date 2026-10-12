@@ -1,43 +1,41 @@
-import towel from './towel-journey.json'
-import { towelEdges } from './journey'
+import { journeyGraph, entryScreens, pathId } from './journey-graph.mjs'
 import { arrowPath, routeArrow } from './arrow-routing'
 
 export type RouteAction = { from: string; action: string; destination?: string; route: string; when: string; returnTo?: string; source: string; status: string }
-export type MapScreen = { id: string; label: string; scenario: string; partial: boolean; x?: number; y?: number; edges: { action: string; destination: string }[]; routeActions?: RouteAction[] }
+export type MapScreen = { id: string; label: string; scenario: string; partial: boolean; section?: string; x?: number; y?: number; branchOf?: string; edges: { action: string; destination: string; when?: string; returnTo?: string }[]; routeActions?: RouteAction[] }
 export type AppFlow = { id: string; label: string; section: string; screens: MapScreen[]; x: number; y: number; width: number; height: number }
-export type MapScenario = { id: string; label: string; journey: string; renderer: string; screen?: string; edges?: { action: string; destination: string }[]; routeActions?: RouteAction[] }
-const areas: Record<string, string> = { home: 'Home', closet: 'Closet', laundry: 'Washing & recovery', drying: 'Drying', household: 'Household', me: 'Me', settings: 'Settings', product: 'Product details', profile: 'Profiles', outfit: 'Outfits' }
+export type MapScenario = { id: string; label: string; journey: string; renderer: string; flow?: string; section?: string; screen?: string; branchOf?: string; edges?: MapScreen['edges']; routeActions?: RouteAction[]; discovery?: { evidence: string } }
 // Tab order comes from kit/app-shell.tsx; entry screens precede the signed-in navigation.
 export const journeySections = ['Start', 'Home', 'Closet', 'Laundry', 'Household', 'Me']
 const sectionOf: Record<string, string> = { 'Sign-in & setup': 'Start', Home: 'Home', Outfits: 'Home', Closet: 'Closet', 'Add a towel': 'Closet', 'Multicolor pack': 'Closet', 'Saved records': 'Closet', 'Nested quick edits': 'Closet', 'Washing & recovery': 'Laundry', Drying: 'Laundry', Household: 'Household', Appliances: 'Household', Products: 'Household', 'Product details': 'Household', Profiles: 'Household', Me: 'Me', Settings: 'Me' }
-const entryScreens = ['sign-in', 'create-account', 'reset-email', 'reset-code', 'reset-password', 'household-choice', 'household-name', 'household-setup', 'household-created', 'household-joined', 'setup-first-use', 'setup-closet']
-const flowOrder = ['Sign-in & setup', 'Home', 'Outfits', 'Closet', 'Add a towel', 'Multicolor pack', 'Saved records', 'Nested quick edits', 'Washing & recovery', 'Drying', 'Household', 'Appliances', 'Products', 'Product details', 'Profiles', 'Me', 'Settings']
-export function appFlows(scenarios: MapScenario[]): AppFlow[] {
-  const flows = new Map<string, { id: string; label: string; screens: MapScreen[] }>()
-  flows.set('towel', { id: 'towel', label: 'Add a towel', screens: towel.map((node) => ({ ...node, partial: false, edges: towelEdges.filter((edge) => edge.from === node.id).map((edge) => ({ action: edge.label, destination: edge.to })) })) })
-  for (const scenario of scenarios) {
-    if (scenario.id.startsWith('intake.towel.')) continue
-    const partial = scenario.renderer === 'legacy'
-    const area = (scenario.screen ?? '').split('-')[0]!
-    const isEntry = entryScreens.includes(scenario.screen ?? '') || area === 'join'
-    const label = partial ? isEntry ? 'Sign-in & setup' : area === 'invite' ? 'Household' : areas[area] ?? 'Washing & recovery' : scenario.journey
-    const id = partial ? `area:${label}` : `flow:${label}`
-    if (!flows.has(id)) flows.set(id, { id, label, screens: [] })
-    flows.get(id)!.screens.push({ id: scenario.id, label: scenario.label, scenario: scenario.id, partial, edges: scenario.edges ?? [], routeActions: scenario.routeActions })
-  }
-  const rows = [...flows.values()].sort((a, b) => flowOrder.indexOf(a.label) - flowOrder.indexOf(b.label))
-  for (const flow of rows) flow.screens.sort((a, b) => {
+const flowOrder = ['Sign-in & setup', 'Home', 'Outfits', 'Closet', 'Add a towel', 'Multicolor pack', 'Saved records', 'Nested quick edits', 'Washing & recovery', 'Drying', 'Family simulation', 'Household', 'Appliances', 'Products', 'Product details', 'Profiles', 'Me', 'Settings']
+export function appFlows(scenarios: MapScenario[], project?: { adapter: string; navigation: string[] }): AppFlow[] {
+  const generic = project?.adapter === 'module'
+  const sections = project?.navigation ?? journeySections
+  const rows = journeyGraph(scenarios, project)
+  if (!generic) rows.sort((a, b) => flowOrder.indexOf(a.label) - flowOrder.indexOf(b.label))
+  if (!generic) for (const flow of rows) flow.screens.sort((a, b) => {
     const key = (screen: MapScreen) => screen.id.replace(/^legacy\./, '')
     if (flow.label === 'Sign-in & setup') return (entryScreens.indexOf(key(a)) < 0 ? 99 : entryScreens.indexOf(key(a))) - (entryScreens.indexOf(key(b)) < 0 ? 99 : entryScreens.indexOf(key(b)))
     const rank = (screen: MapScreen) => /-(index|one)$/.test(key(screen)) ? 0 : /-empty$/.test(key(screen)) ? 1 : 2
     return rank(a) - rank(b)
   })
   const result = rows.map((flow) => {
-    const width = 72 + flow.screens.length * 440
-    return { ...flow, section: sectionOf[flow.label] ?? 'Laundry', x: 0, y: 0, width, height: flow.id === 'towel' || flow.label === 'Multicolor pack' ? 1900 : 1000, screens: flow.screens.map((screen, i) => ({ ...screen, label: screen.partial ? screen.label.replace(/-/g, ' ').replace(/^./, (letter) => letter.toUpperCase()) : screen.label, x: i * 440, y: screen.id === 'dye' || screen.id === 'intake.pack.dye' ? 900 : 0 })) }
+    const main = flow.screens.filter((screen) => !screen.branchOf)
+    const lanes = new Map<number, number>()
+    const screens = flow.screens.map((screen, i) => {
+      const parent = main.findIndex((entry) => entry.id === screen.branchOf)
+      const x = (parent >= 0 ? parent : main.indexOf(screen) >= 0 ? main.indexOf(screen) : i) * 440
+      const lane = (lanes.get(x) ?? 0) + 1
+      if (screen.branchOf) lanes.set(x, lane)
+      return { ...screen, label: screen.partial ? screen.label.replace(/-/g, ' ').replace(/^./, (letter) => letter.toUpperCase()) : screen.label, x, y: screen.branchOf ? lane * 900 : screen.id === 'dye' || screen.id === 'intake.pack.dye' ? 900 : 0 }
+    })
+    const width = 72 + (Math.max(...screens.map((screen) => screen.x)) + 440)
+    const height = Math.max(1000, ...screens.map((screen) => screen.y + 1000))
+    return { ...flow, section: generic ? flow.screens[0]?.section ?? sections[0]! : sectionOf[flow.label] ?? 'Laundry', x: 0, y: 0, width, height, screens }
   })
   let x = 40
-  for (const section of journeySections) {
+  for (const section of sections) {
     const column = result.filter((flow) => flow.section === section)
     let y = 40
     for (const flow of column) { flow.x = x; flow.y = y; y += flow.height + 240 }
@@ -48,7 +46,7 @@ export function appFlows(scenarios: MapScenario[]): AppFlow[] {
 
 // Navigation grouping is layout intent; only registry edges establish declared actions.
 export function overviewFlows(flows: AppFlow[]): AppFlow[] {
-  const sections = journeySections.filter((section) => flows.some((flow) => flow.section === section))
+  const sections = [...new Set(flows.map((flow) => flow.section))]
   return flows.map((flow) => ({ ...flow, x: 40 + sections.indexOf(flow.section) * 460, y: 40 + flows.filter((other) => other.section === flow.section).indexOf(flow) * 360, width: 340, height: 260 }))
 }
 
@@ -69,7 +67,7 @@ export function flowEdges(flow: AppFlow) {
     const points = routeArrow({ x: a.x + 16, y: a.y }, { x: b.x - 16, y: b.y }, boxes, lane)
     if (!points.length) return []
     const bottom = Math.max(...points.map((point) => point.y))
-    return [{ from: screen.id, to: target.id, action: edge.action, d: arrowPath([a, ...points, b]), branch: screen.edges.length > 1, returning: target.x! <= screen.x!, x: a.x + 30, y: bottom > Math.max(a.y, b.y) ? bottom - 12 : b.y > a.y ? a.y + 110 : a.y - 16 }]
+    return [{ id: pathId(screen.id, target.id, edge.action), from: screen.id, to: target.id, action: edge.action, when: edge.when, returnTo: edge.returnTo, d: arrowPath([a, ...points, b]), branch: screen.edges.length > 1, returning: target.x! <= screen.x!, x: a.x + 30, y: bottom > Math.max(a.y, b.y) ? bottom - 12 : b.y > a.y ? a.y + 110 : a.y - 16 }]
   }))
 }
 
@@ -87,6 +85,6 @@ export function crossFlowEdges(flows: AppFlow[]) {
     const points = routeArrow(start, end, flows, lane++)
     if (!points.length) return []
     const d = arrowPath([{ x: startX, y: startY }, ...points, { x: endX, y: endY + 20 }])
-    return [{ id: `${screen.id}-${target.id}-${edge.action}`, action: edge.action, d, x: startX + 20, y: start.y - 12, kind: /^back\b|return\b/i.test(edge.action) ? 'return' : screen.edges.length > 1 ? 'branch' : 'action' }]
+    return [{ id: pathId(screen.id, target.id, edge.action), from: screen.id, to: target.id, action: edge.action, when: edge.when, returnTo: edge.returnTo, d, x: startX + 20, y: start.y - 12, kind: /^back\b|return\b/i.test(edge.action) ? 'return' : screen.edges.length > 1 ? 'branch' : 'action' }]
   })))
 }

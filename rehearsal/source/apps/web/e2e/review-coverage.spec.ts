@@ -6,8 +6,6 @@ test.use({ trace: 'off', viewport: { width: 1440, height: 1000 } })
 test.skip(process.env.WASHCLOSET_REVIEW_E2E !== '1', 'Run explicitly against isolated Rehearsal.')
 
 test('coverage prototypes preserve the app draft and persist independently', async ({ page }) => {
-  const key = (await readFile(resolve('../..', '.review-data/access-key'), 'utf8')).trim()
-  expect((await page.request.post('/api/review/login', { data: { key } })).ok()).toBe(true)
   await page.goto('/review?scenario=intake.towel.fabric')
   await page.getByRole('button', { name: 'Play', exact: true }).click()
   const live = page.locator('iframe[title="Live towel journey"]')

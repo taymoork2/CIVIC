@@ -8,7 +8,8 @@ import { api } from '../api'
 import { RouteError } from '@/kit/route-error'
 import { useOnline } from '../connectivity'
 import { loadSessionProjection, saveSessionProjection } from '../private-state'
-import { OfflineSessionView, SessionView, sessionModel, useNow, type SessionFrom } from '@/laundry/session-view'
+import { OfflineSessionView, SessionView, sessionModel, type SessionFrom } from '@/laundry/session-view'
+import { useNow } from '@/kit/use-now'
 import { Loading } from '@/kit/ui'
 
 export const Route = createFileRoute('/session/$sessionId')({

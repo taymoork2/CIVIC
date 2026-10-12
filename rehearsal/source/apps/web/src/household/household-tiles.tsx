@@ -45,7 +45,7 @@ export function ProductTile({ supply, onOpen }: { supply: Supply; onOpen: () => 
     fact={fact}
     mark={supply.ranOutAt !== null && supply.ranOutAt !== undefined ? { tone: 'waiting', text: 'Ran out' } : missing ? { tone: 'confirm', text: householdListCopy.productFacts.directionsMissing } : undefined}
     onOpen={onOpen}
-    label={`${supply.name.trim()}, ${category}. ${fact}${missing ? `. ${householdListCopy.productFacts.directionsMissing}` : ''}. Open product`}
+    label={`${supply.name.trim()}, ${category}. ${fact}${supply.archived ? '. Removed' : supply.ranOutAt != null ? '. Ran out' : ''}${missing ? `. ${householdListCopy.productFacts.directionsMissing}` : ''}. Open product`}
   />
 }
 
@@ -56,7 +56,7 @@ export function MachineTile({ group, currency, onOpen }: { group: MachineGroup; 
   const fact = machineFactParts(group, currency).join(' · ')
   const icon = role === 'hanging' ? 'hang' : role === 'dryer' ? 'dryer' : 'washer'
   const title = group.machines.length > 1 ? `${group.name} ×${group.machines.length}` : group.name
-  return <RecordRow media={<DesignIcon name={icon} strokeWidth={1.6} />} title={title} fact={fact} onOpen={onOpen} label={`${title}. ${fact}. Edit settings`} />
+  return <RecordRow media={<DesignIcon name={icon} strokeWidth={1.6} />} title={title} fact={fact} onOpen={onOpen} label={`${title}. ${fact}${group.machines.every((machine) => machine.archived) ? '. Removed' : ''}. Open appliance`} />
 }
 
 /** The last row of a section: the same 64px row shape as a record, a plus where the picture goes. */

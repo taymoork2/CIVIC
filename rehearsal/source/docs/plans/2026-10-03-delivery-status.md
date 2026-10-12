@@ -1,7 +1,77 @@
 # Delivery status: personal trial, remaining implementation and external beta
 
+## Rehearsal onboarding (2026-10-11)
+
+- Snapshot refresh now retains stale display images, retries transient failures
+  automatically and reuses persistent per-screen content fingerprints across
+  unrelated revisions/restart. Historical evidence keeps its source alias; visible
+  rendering remains demand-driven and nonblocking. Reminder page readiness no
+  longer waits for a nonexistent dialog. [Cache behavior and proof](../design/review-product/snapshot-cache.md).
+- The released Home/Closet source is linked, with real hanging-reminder visible,
+  dismissed, changed-task and exact-run check fixtures. The native reminder's
+  dismissal/focus and check navigation preserve synthetic care records. A bounded
+  `/design/*.webp` allowance fixes the linked illustrations in preview; backend
+  and nonimage routes remain blocked. [Reconciliation and limits](../design/review-product/root-refinement-reconciliation-2026-10-11.md).
+- Existing-app onboarding now discovers source screens/links, lets the user confirm
+  isolated previews, props, capture fields and branches, and generates an owned
+  scenario registry and adapter through the UI. HTML/native forms and isolated
+  React presenters are playable; router/auth/data states remain visible gaps.
+  Navigation and retained state are explicitly synthetic. No model call or linked
+  app edit is required. [Scope and proof](../design/review-product/project-discovery.md).
+- The canvas top bar is compact, without the duplicate coverage banner. Narrow
+  controls retain panel labels and 44px targets. Overview arrows use separate
+  directional ports, smaller open heads and crossing-aware gutters; path review
+  selection remains available.
+- The project name now opens a picker with saved connections, existing-app
+  onboarding and a runnable new-project starter. Existing checkouts remain read-only;
+  owned integration files live in Rehearsal. Selection restarts only its preview on
+  the same port, keeps saved records isolated and rejects stale-tab writes.
+  [UI operation and boundaries](../design/review-product/project-picker.md).
+- A versioned project manifest and `init`/`check` CLI now connect an existing or
+  greenfield application through an explicit synthetic browser mount adapter.
+  Personas, roles, conditions, screens and branch intent are project-authored;
+  source discoveries remain unconfirmed. No model call is required for this path.
+- The shared canvas, review API, captures and coverage bridge accept the generic
+  project graph. Stores and note drafts are separated by project/checkout identity;
+  source changes refresh inventory and snapshots while retaining open-run state.
+  The contract is proved with an independent Notebook app and three browser cases.
+- Rehearsal remains in f0d3, reading f7ce without editing it. The product owner
+  confirmed its current release lacks native review hooks, so Laundry-only
+  compatibility imports/transforms remain isolated until a separate seam handoff.
+  Seven linked Laundry browser checks pass. Port 3010 and its private Tailscale
+  URL are refreshed; physical-phone acceptance remains unchecked.
+- [Configuration, adapter contract and verification](../design/review-product/project-onboarding.md).
+  Generic proposal editing, framework/native SDKs and
+  design-tool synchronization remain open.
+
 ## Rehearsal update (2026-10-10)
 
+- The persistent canvas supports explicit application, flow, screen, region and
+  path reviews. Arrows have pointer/keyboard targets, and the right pane offers a
+  path list, frozen annotations, durable notes and copy/download agent briefs.
+  Branch conditions, returns, source bindings and rendered evidence are retained;
+  static fixtures remain distinct from live captured inputs. Agent dispatch,
+  simultaneous review collaboration and canonical shell reconciliation remain open.
+  [Operation and agent retrieval](../design/connected-review-workspace.md#feedback-and-retrieval).
+
+- Rehearsal in `f0d3` now reads Laundry App source from `f7ce` through a saved,
+  read-only local connection. Linked file changes refresh inventory and snapshot
+  receipts automatically; open runs retain their original revision and inputs.
+  Rehearsal code, adapters, expectations and review data remain in `f0d3`.
+  The app-owning chat received the optional presenter contract; its adoption is
+  pending. [Connection operation](../design/connected-review-workspace.md).
+
+- Local review entry is now keyless: opening the preview automatically starts or
+  renews its local session, including after server restart. Port 3010 is updated;
+  fresh-browser and server checks pass. Local-only and write-origin boundaries remain.
+- Five previously unmapped route destinations have real-component synthetic
+  previews and conditional entry/return links: first-use Add chooser, running wash
+  from Closet, Laundry item drawer, washer-to-Drying transfer, and garment History.
+  Two guarded origins add seven scenarios in total: 180 registered scenarios,
+  183 map nodes. The 26 curated route bindings all have destination specimens.
+  Bounded memory-only navigation and wash/transfer effects pass six browser cases;
+  full cross-route trace recording, backend acceptance and fresh design handoff
+  remain open. [Current proof and limits](../design/review-product/build-evidence.md).
 - The local [coverage bridge](../design/review-product/coverage-bridge.md) adds a
   Coverage pane to the persistent canvas. Canonical repository expectations are
   editable from Rehearsal; code and contract changes refresh the inventory and

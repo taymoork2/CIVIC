@@ -34,6 +34,7 @@ import { warnBeforeUnload } from '@/kit/sheet'
 import { matchingGroups, type MatchingIdentity } from '@/closet/garment-groups'
 import { LoadSummary, loadStageAt, washOrigins } from '@/laundry/load-summary'
 import { useUnits, doseParts, dryerBlocks, money } from '@/kit/units'
+import { SearchField } from '@/closet/closet-parts'
 
 export type DryingQueue = FunctionReturnType<typeof api.dryingQueue.queue>
 type Piece = DryingQueue['pieces'][number]
@@ -104,7 +105,7 @@ export type DryingScreen =
   | { readonly kind: 'check'; readonly runId: string }
   | { readonly kind: 'putaway' }
 
-const pageClassName = 'page grid gap-5 max-w-[36rem] mx-auto pt-2'
+const pageClassName = 'page grid min-w-0 w-full gap-5 max-w-[36rem] mx-auto pt-2'
 
 /** Use the app's full-row disclosure target for optional settings and reminders. */
 function DryingGuidance({ title, children }: { title: string; children: ReactNode }) {
@@ -295,6 +296,37 @@ export function pieceGroups(pieces: readonly Piece[]): Piece[][] {
   ).map((group) => [...group.members])
 }
 
+export function dryingPage(groups: readonly (readonly Piece[])[], search: string, page: number) {
+  const words = search.trim().toLocaleLowerCase().split(/\s+/).filter(Boolean)
+  const matches = groups.filter(group => words.every(word => group.some(piece =>
+    [piece.name, piece.kind, piece.color, piece.washerName, piece.driedIn].filter(Boolean).join(' ').toLocaleLowerCase().includes(word))))
+  const at = Math.max(0, Math.min(page, Math.ceil(matches.length / 40) - 1))
+  return { matches, at, shown: matches.slice(at * 40, (at + 1) * 40) }
+}
+
+function DryingPieceList({ groups, label, children }: { groups: readonly (readonly Piece[])[]; label: string; children: (group: readonly Piece[]) => ReactNode }) {
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(0)
+  const status = useRef<HTMLParagraphElement>(null)
+  const changingPage = useRef(false)
+  const { matches, at, shown } = dryingPage(groups, search, page)
+  useEffect(() => {
+    if (changingPage.current) { changingPage.current = false; status.current?.focus(); status.current?.scrollIntoView({ block: 'nearest' }) }
+  }, [page])
+  const go = (next: number) => { changingPage.current = true; setPage(next) }
+  return <>
+    {groups.length > 40 || search !== '' ? <li className="grid min-w-0 gap-3 p-4"><SearchField label={`Search ${label}`} placeholder="Name, color or machine" value={search} onChange={value => { setSearch(value); setPage(0) }} />
+    <p ref={status} tabIndex={-1} role="status" className="m-0 text-ink-2 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring">
+      {matches.length === 0 ? 'No matching clothes.' : `Groups ${at * 40 + 1}–${at * 40 + shown.length} of ${matches.length} · ${matches.reduce((sum, group) => sum + group.length, 0)} pieces`}
+    </p></li> : null}
+    {shown.map(children)}
+    {matches.length > 40 ? <li className="p-4"><nav aria-label={`${label} pages`} className="flex flex-wrap gap-2">
+      <Button type="button" variant="outline" disabled={at === 0} onClick={() => go(at - 1)}>Previous 40</Button>
+      <Button type="button" variant="outline" disabled={(at + 1) * 40 >= matches.length} onClick={() => go(at + 1)}>Next 40</Button>
+    </nav></li> : null}
+  </>
+}
+
 function instructionKey(pieces: readonly Piece[], stage: 'beforeDrying' | 'afterDrying'): string {
   return `${stage}:${labelInstructionsToken(pieces)}:${JSON.stringify(pieces.map((piece) => [piece.pieceId, piece.method, piece.noSpinRecorded ?? false]).sort())}`
 }
@@ -321,13 +353,15 @@ function LabelDryingInstructions({ pieces, stage, acknowledged, onAcknowledge, m
   if (required.length === 0 && unmatched.length === 0 && changedRoutines.length === 0) return null
   return <div className="grid min-w-0 gap-3 rounded-control bg-surface-2 p-3">
     <p className="m-0 font-semibold">{stage === 'beforeDrying' ? 'Label instructions before drying' : 'Label instructions when removing it'}</p>
-    {pieceGroups(required).map((group) => <div key={group[0]!.pieceId} className="grid gap-1 break-words"><p className="m-0">{group[0]!.name ?? 'This garment'}{group.length > 1 ? ` ×${group.length}` : ''}</p><ul className="m-0 ps-5">{[...new Set([...group[0]!.instructions![stage], ...(stage === 'beforeDrying' ? group[0]!.instructions!.drying : [])])].map((wording) => <li key={wording}>{wording}</li>)}</ul></div>)}
+    <ItemGroup className="rounded-none bg-transparent shadow-none"><DryingPieceList groups={pieceGroups(required)} label="label instructions">{(group) => <li key={group[0]!.pieceId} className="grid gap-1 break-words"><p className="m-0">{group[0]!.name ?? 'This garment'}{group.length > 1 ? ` ×${group.length}` : ''}</p><ul className="m-0 ps-5">{[...new Set([...group[0]!.instructions![stage], ...(stage === 'beforeDrying' ? group[0]!.instructions!.drying : [])])].map((wording) => <li key={wording}>{wording}</li>)}</ul></li>}</DryingPieceList></ItemGroup>
     {onProcess === undefined ? null : ([['shade', 'shade', 'This drying place is in shade'], ['no_direct_heat', 'noDirectHeat', 'This drying place is away from direct heat'], ['drip_dry', 'drip', 'These pieces are drying without extraction or wringing']] as const).filter(([kind]) => conditions.some((entry) => entry.kind === kind)).map(([kind, key, wording]) => <label key={kind} className="flex min-h-11 items-center gap-3"><Checkbox checked={process[key] === true} onCheckedChange={(value) => onProcess({ ...process, [key]: value === true })} /><span>{wording}</span></label>)}
-    {unmatched.filter((piece) => (piece.instructions?.drying.length ?? 0) > 0).map((piece) => {
+    {unmatched.length === 0 ? null : <p className="m-0 text-conflict-ink" role="status">{unmatched.length} pieces still need their recorded drying process. Every page must satisfy the label before starting.</p>}
+    <ItemGroup className="rounded-none bg-transparent shadow-none"><DryingPieceList groups={pieceGroups(unmatched.filter((piece) => (piece.instructions?.drying.length ?? 0) > 0))} label="drying process issues">{(group) => {
+      const piece = group[0]!
       const incompatible = careProcessRequirements(piece.instructions, 'drying').unresolved.length === 0 && dryingProcessUnmatched(piece.instructions, method ?? piece.method ?? '', { shade: true, drip: true, noDirectHeat: true }).length > 0
-      return <p key={piece.pieceId} role="status" className={`m-0 rounded-control p-3 break-words ${incompatible ? 'bg-conflict-bg text-conflict-ink' : 'bg-hamper-bg text-hamper-ink'}`}>{piece.name ?? 'This garment'} needs its recorded drying process: {piece.instructions!.drying.join('; ')}. Match the method and required conditions before starting.{careProcessRequirements(piece.instructions, 'drying').requirements.some((entry) => entry.kind === 'drip_dry') && piece.noSpinRecorded !== true ? ' This wash has no recorded no-spin process.' : ''}</p>
-    })}
-    {changedRoutines.map((piece) => <p key={piece.pieceId} role="status" className="m-0 text-conflict-ink break-words">{piece.name ?? 'This garment'}: Wash & dry preferences need review after a label change. Choose a drying method for this event using the current label limits.</p>)}
+      return <li key={piece.pieceId} role="status" className={`m-0 rounded-control p-3 break-words ${incompatible ? 'bg-conflict-bg text-conflict-ink' : 'bg-hamper-bg text-hamper-ink'}`}>{piece.name ?? 'This garment'} needs its recorded drying process: {piece.instructions!.drying.join('; ')}. Match the method and required conditions before starting.{careProcessRequirements(piece.instructions, 'drying').requirements.some((entry) => entry.kind === 'drip_dry') && piece.noSpinRecorded !== true ? ' This wash has no recorded no-spin process.' : ''}</li>
+    }}</DryingPieceList></ItemGroup>
+    <ItemGroup className="rounded-none bg-transparent shadow-none"><DryingPieceList groups={pieceGroups(changedRoutines)} label="changed care preferences">{(group) => <li key={group[0]!.pieceId} role="status" className="m-0 text-conflict-ink break-words">{group[0]!.name ?? 'This garment'}: Wash & dry preferences need review after a label change. Choose a drying method for this event using the current label limits.</li>}</DryingPieceList></ItemGroup>
     {required.length === 0 ? null : <label className="flex min-h-11 items-center gap-3"><Checkbox checked={acknowledged} onCheckedChange={(value) => onAcknowledge(value === true)} /><span>I’ve followed these label instructions</span></label>}
   </div>
 }
@@ -434,6 +468,11 @@ function PlanScreen({ queue, householdId, byId, now, onNote, onBack, combine, on
   const [confirmingLeave, setConfirmingLeave] = useState(false)
   const [labelAcknowledgments, setLabelAcknowledgments] = useState<ReadonlySet<string>>(new Set())
   const [naturalProcesses, setNaturalProcesses] = useState<Readonly<Record<string, DryingProcessContext>>>({})
+  const [loadSearch, setLoadSearch] = useState('')
+  const [loadPage, setLoadPage] = useState(0)
+  const loadStatus = useRef<HTMLParagraphElement>(null)
+  const loadPageRequested = useRef(false)
+  useEffect(() => { if (loadPageRequested.current) { loadPageRequested.current = false; loadStatus.current?.focus(); loadStatus.current?.scrollIntoView({ block: 'nearest' }) } }, [loadPage])
   const queued = queue.pieces.filter((piece) => piece.status === 'queued')
   const home = queue.dryers.find((dryer) => dryer.machineId === queue.homeDryerId) ?? null
   // The home dryer as the app tracked it; a shared room's dryers are never called free or busy.
@@ -443,6 +482,9 @@ function PlanScreen({ queue, householdId, byId, now, onNote, onBack, combine, on
   const tumbling = queued.filter((piece) => piece.method === 'tumble')
   const dry = queue.pieces.filter((piece) => piece.status === 'dry')
   const pieceOf = (id: string) => byId.get(id)!
+  const matchingLoads = queue.plan.loads.map((load, index) => ({ load, index })).filter(({ load }) => dryingPage([load.pieceIds.map(pieceOf)], loadSearch, 0).matches.length > 0)
+  const loadAt = Math.max(0, Math.min(loadPage, Math.ceil(matchingLoads.length / 5) - 1))
+  const loadGo = (next: number) => { loadPageRequested.current = true; setLoadPage(next) }
   const openPieces = (sheet ?? []).map((id) => byId.get(id)).filter((piece): piece is Piece => piece?.status === 'queued')
   const open = openPieces[0] ?? null
   const save = (pieces: readonly Piece[], change: { own?: boolean; method?: DryingMethod | null; remember?: boolean; need?: MethodChoice['need'] }) => setPiece.run({ pieceId: pieces[0]!.pieceId, pieceIds: pieces.map((piece) => piece.pieceId), ...change })
@@ -474,7 +516,7 @@ function PlanScreen({ queue, householdId, byId, now, onNote, onBack, combine, on
     piece.method !== null && piece.source !== 'label' ? `${dryMethodText.methods[piece.method]} · Label: ${dryLabelWords(piece.label, piece.maxHeat)}` : dryLabelWords(piece.label, piece.maxHeat),
     methodTag(piece.source, piece.evidence)].filter((part) => part.length > 0).join(' · ')
   const needMark = (piece: Piece) => (piece.need === null ? undefined : { tone: 'waiting' as const, text: dryMethodText.needs[piece.need] })
-  const row = (pieces: Piece[]) => <PieceRow key={pieces[0]!.pieceId} piece={pieces[0]!} count={pieces.length} fact={fact(pieces[0]!)} mark={needMark(pieces[0]!)} onOpen={() => setSheet(pieces.map((piece) => piece.pieceId))} />
+  const row = (pieces: readonly Piece[]) => <PieceRow key={pieces[0]!.pieceId} piece={pieces[0]!} count={pieces.length} fact={fact(pieces[0]!)} mark={needMark(pieces[0]!)} onOpen={() => setSheet(pieces.map((piece) => piece.pieceId))} />
   const needs = queued.filter((piece) => piece.need !== null)
   const natural = (method: NaturalMethod) => queue.plan.natural.filter((entry) => entry.method === method).map((entry) => pieceOf(entry.pieceId))
   const hanging = natural('heated_hanging')
@@ -489,11 +531,11 @@ function PlanScreen({ queue, householdId, byId, now, onNote, onBack, combine, on
     ...(requiresDryingAcknowledgment(pieces) ? { labelInstructionsAcknowledged: labelAcknowledgments.has(instructionKey(pieces, 'beforeDrying')), labelInstructionsToken: labelInstructionsToken(pieces) } : {}),
   }).then((result) => { if (result !== undefined) onNote(dryingDesignText.airStarted(pieces.length)) })
   const labelReady = (pieces: readonly Piece[]) => dryingRequirementsReady(pieces, undefined, naturalProcesses[instructionKey(pieces, 'beforeDrying')]) && (!requiresDryingAcknowledgment(pieces) || labelAcknowledgments.has(instructionKey(pieces, 'beforeDrying')))
-  const labelInstructions = (pieces: readonly Piece[]) => <LabelDryingInstructions pieces={pieces} stage="beforeDrying" process={naturalProcesses[instructionKey(pieces, 'beforeDrying')]} onProcess={(process) => {
+  const labelInstructions = (pieces: readonly Piece[]) => <li className="empty:hidden"><LabelDryingInstructions pieces={pieces} stage="beforeDrying" process={naturalProcesses[instructionKey(pieces, 'beforeDrying')]} onProcess={(process) => {
     const key = instructionKey(pieces, 'beforeDrying')
     setNaturalProcesses((current) => ({ ...current, [key]: process }))
     setLabelAcknowledgments((current) => { const next = new Set(current); next.delete(key); return next })
-  }} acknowledged={labelAcknowledgments.has(instructionKey(pieces, 'beforeDrying'))} onAcknowledge={(value) => setLabelAcknowledgments((current) => { const next = new Set(current); if (value) next.add(instructionKey(pieces, 'beforeDrying')); else next.delete(instructionKey(pieces, 'beforeDrying')); return next })} />
+  }} acknowledged={labelAcknowledgments.has(instructionKey(pieces, 'beforeDrying'))} onAcknowledge={(value) => setLabelAcknowledgments((current) => { const next = new Set(current); if (value) next.add(instructionKey(pieces, 'beforeDrying')); else next.delete(instructionKey(pieces, 'beforeDrying')); return next })} /></li>
 
   return <div className={pageClassName}>
     <TaskHeading
@@ -509,7 +551,7 @@ function PlanScreen({ queue, householdId, byId, now, onNote, onBack, combine, on
       onWait={held.kind === 'busy' && held.runId !== null && held.until !== null ? () => { if (!remind.pending) void remind.run({ runId: held.runId as Id<'dryingRuns'> }) } : undefined} />}
     {held === null ? null : <ErrorNotice error={hang.error ?? remind.error} />}
     {needs.length === 0 ? null : (
-      <Callout>{dryingText.neededSoon(pieceGroups(needs).map((group) => `${group[0]!.name ?? dryingText.pieces(group.length)}${group[0]!.name === null ? '' : ` ×${group.length}`} (${dryMethodText.needShort[group[0]!.need!]})`).join(', '))}</Callout>
+      <Callout>{dryingText.neededSoon(pieceGroups(needs).slice(0, 3).map((group) => `${group[0]!.name ?? dryingText.pieces(group.length)}${group[0]!.name === null ? '' : ` ×${group.length}`} (${dryMethodText.needShort[group[0]!.need!]})`).join(', ') + (pieceGroups(needs).length > 3 ? ` and ${pieceGroups(needs).length - 3} more garment groups` : ''))}</Callout>
     )}
     {queue.share === undefined || queued.length === 0 ? null : <DryerShareLine queue={queue} share={queue.share} combine={combine} onCombine={onCombine} hanging={setPiece.pending || reloading}
       onHang={(ids, words) => void hangKnit(ids).then((done) => { if (done) onNote(dryerShareText.hung(words)) })} />}
@@ -537,37 +579,45 @@ function PlanScreen({ queue, householdId, byId, now, onNote, onBack, combine, on
     </DryingGuidance>}
     {home === null && queue.capacities.length === 0 && queue.plan.loads.length > 0 ? <Callout>{dryingText.unknownTitle}. {dryingText.unknownDetail}</Callout> : null}
 
-    {queue.plan.loads.map((load, index) => (
+    {queue.plan.loads.length > 5 || loadSearch !== '' ? <div className="grid min-w-0 gap-3">
+      <SearchField label="Search dryer loads" placeholder="Name, color or washer" value={loadSearch} onChange={value => { setLoadSearch(value); setLoadPage(0) }} />
+      <p ref={loadStatus} role="status" tabIndex={-1} className="m-0 text-ink-2 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring">{matchingLoads.length === 0 ? 'No matching dryer loads.' : `Loads ${loadAt * 5 + 1}–${Math.min((loadAt + 1) * 5, matchingLoads.length)} of ${matchingLoads.length}`}</p>
+    </div> : null}
+    {matchingLoads.slice(loadAt * 5, (loadAt + 1) * 5).map(({ load, index }) => (
       <DryingLoadCard key={load.pieceIds.join(',')} id={`${loadHeadingId}-${index}`} title={loadContents(load.pieceIds.map(pieceOf))} caption={`${fitCaption(load.pieceIds.length, load.fit)} · ${heatWords(load.heat)}`}
         action={<Button variant="outline" size="sm" className={loadActionClassName} type="button" disabled={held !== null || reloading}
           onClick={() => onScreen({ kind: 'dryer', number: index + 1, heat: load.heat, pieceIds: load.pieceIds })}>{held !== null ? dryerHeldWords(held) : home === null ? dryingText.loadIntoADryer : dryingText.loadInto(home.name)}</Button>}>
-        {pieceGroups(load.pieceIds.map(pieceOf)).map(row)}
+        <DryingPieceList groups={pieceGroups(load.pieceIds.map(pieceOf))} label={`dryer load ${index + 1}`}>{row}</DryingPieceList>
       </DryingLoadCard>
     ))}
+    {matchingLoads.length > 5 ? <nav aria-label="Dryer load pages" className="flex flex-wrap gap-2">
+      <Button type="button" variant="outline" disabled={loadAt === 0} onClick={() => loadGo(loadAt - 1)}>Previous 5 loads</Button>
+      <Button type="button" variant="outline" disabled={(loadAt + 1) * 5 >= matchingLoads.length} onClick={() => loadGo(loadAt + 1)}>Next 5 loads</Button>
+    </nav> : null}
 
     {hanging.length === 0 ? null : (
       <DryingLoadCard id={`${loadHeadingId}-hanging`} title={dryingText.hangingTitle} caption={hanger === null ? dryingDesignText.hangingNone : dryingText.pieces(hanging.length)}
         action={<Button variant="outline" size="sm" className={loadActionClassName} aria-label={hanger === null ? dryingDesignText.hangingNone : dryingText.startHanging(hanger.name)} disabled={hanger === null || reloading || startAir.pending || !labelReady(hanging)} onClick={() => startNatural(hanging, 'heated_hanging')}>{dryingDesignText.beginDrying}</Button>}>
-        {pieceGroups(hanging).map((group) => row(group))}
+        <DryingPieceList groups={pieceGroups(hanging)} label="heated hanging clothes">{row}</DryingPieceList>
         {labelInstructions(hanging)}
       </DryingLoadCard>
     )}
     {line.length === 0 ? null : (
       <DryingLoadCard id={`${loadHeadingId}-line`} title={dryingText.lineTitle} caption={dryingText.pieces(line.length)}
         action={<Button variant="outline" size="sm" className={loadActionClassName} aria-label={dryingText.startLine(line.length)} disabled={startAir.pending || reloading || !labelReady(line)} onClick={() => startNatural(line, 'rack_line')}>{dryingDesignText.beginDrying}</Button>}>
-        {pieceGroups(line).map((group) => row(group))}
+        <DryingPieceList groups={pieceGroups(line)} label="line drying clothes">{row}</DryingPieceList>
         {labelInstructions(line)}
       </DryingLoadCard>
     )}
     {flat.length === 0 ? null : (
       <DryingLoadCard id={`${loadHeadingId}-flat`} title={dryingText.flatTitle} caption={dryingText.pieces(flat.length)}
         action={<Button variant="outline" size="sm" className={loadActionClassName} aria-label={dryingText.startFlat(flat.length)} disabled={startAir.pending || reloading || !labelReady(flat)} onClick={() => startNatural(flat, 'flat')}>{dryingDesignText.beginDrying}</Button>}>
-        {pieceGroups(flat).map((group) => row(group))}
+        <DryingPieceList groups={pieceGroups(flat)} label="flat drying clothes">{row}</DryingPieceList>
         {labelInstructions(flat)}
       </DryingLoadCard>
     )}
     {unset.length === 0 ? null : (
-      <Section heading={dryingText.unsetTitle} caption={dryingText.unsetCaption}>{pieceGroups(unset).map((group) => row(group))}</Section>
+      <Section heading={dryingText.unsetTitle} caption={dryingText.unsetCaption}><DryingPieceList groups={pieceGroups(unset)} label="clothes needing a drying method">{row}</DryingPieceList></Section>
     )}
     <ErrorNotice error={setPiece.error ?? startAir.error ?? setPreference.error ?? answerStain.error} />
 
@@ -575,8 +625,9 @@ function PlanScreen({ queue, householdId, byId, now, onNote, onBack, combine, on
       <Section heading={dryingText.dryingNow}>
         {queue.runs.map((run) => {
           const flagged = pieceNames((run.check?.pieceIds ?? []).map((id) => byId.get(id)).filter((piece): piece is Piece => piece !== undefined))
-          const names = [...new Set(run.pieceIds.map((id) => byId.get(id)?.name).filter((name) => name !== null && name !== undefined))].join(', ')
-          return <RecordRow key={run.runId} media={<DesignIcon name={run.kind === 'air' ? 'hang' : 'dryer'} strokeWidth={1.6} />} title={runTitle(run)} fact={[unsaved[run.runId] === undefined ? null : dryingDesignText.unsavedCheck, dryingText.pieces(run.pieceIds.length), names].filter(Boolean).join(' · ')}
+          const names = [...new Set(run.pieceIds.map((id) => byId.get(id)?.name).filter((name) => name !== null && name !== undefined))]
+          const preview = [...names.slice(0, 3), ...(names.length > 3 ? [`${names.length - 3} more`] : [])].join(', ')
+          return <RecordRow key={run.runId} media={<DesignIcon name={run.kind === 'air' ? 'hang' : 'dryer'} strokeWidth={1.6} />} title={runTitle(run)} fact={[unsaved[run.runId] === undefined ? null : dryingDesignText.unsavedCheck, dryingText.pieces(run.pieceIds.length), preview].filter(Boolean).join(' · ')}
             mark={{ tone: 'drying', text: runMark(run, flagged, now) }} onOpen={() => onScreen({ kind: 'check', runId: run.runId })} />
         })}
       </Section>
@@ -722,7 +773,7 @@ function DryerScreen({ queue, householdId, byId, now, onPlan, onDone, screen, ca
 
     {dryer !== null && staying.length > 0 ? <Callout>{dryingText.wontFitNote(dryer.name, staying.length)}</Callout> : null}
     <Section heading={dryingText.goingIn} caption={fitCaption(going.length, view.fit)}>
-      {pieceGroups(going).map((group) => <PieceRow key={group[0]!.pieceId} piece={group[0]!} count={group.length} fact={[group[0]!.color === null ? null : colorWord(group[0]!.color), dryingText.fromWasher(group[0]!.washerName)].filter((part): part is string => part !== null && part.length > 0).join(' · ')} />)}
+      <DryingPieceList groups={pieceGroups(going)} label="dryer clothes">{(group) => <PieceRow key={group[0]!.pieceId} piece={group[0]!} count={group.length} fact={[group[0]!.color === null ? null : colorWord(group[0]!.color), dryingText.fromWasher(group[0]!.washerName)].filter((part): part is string => part !== null && part.length > 0).join(' · ')} />}</DryingPieceList>
     </Section>
     <DryingGuidance title={dryingDesignText.fitGuidance}>
       <Note>{dryingDesignText.fitEstimate}</Note>
@@ -731,7 +782,7 @@ function DryerScreen({ queue, householdId, byId, now, onPlan, onDone, screen, ca
     <LabelDryingInstructions pieces={going} stage="beforeDrying" method="tumble" acknowledged={labelAcknowledgment === labelKey} onAcknowledge={(value) => setLabelAcknowledgment(value ? labelKey : null)} />
     {staying.length === 0 ? null : (
       <Section heading={dryingText.wontFit} caption={dryingText.pieces(staying.length)}>
-        {pieceGroups(staying).map((group) => <PieceRow key={group[0]!.pieceId} piece={group[0]!} count={group.length} />)}
+        <DryingPieceList groups={pieceGroups(staying)} label="clothes staying out">{(group) => <PieceRow key={group[0]!.pieceId} piece={group[0]!} count={group.length} />}</DryingPieceList>
       </Section>
     )}
 
@@ -931,7 +982,12 @@ function CheckScreen({ queue, byId, onPlan, onDone, runId, draft, onDraft, onPut
     <LoadCard label={sessionText.loadSummary} at={loadStageAt('check_due')} pieces={groups.map((group) => ({ key: group[0]!.pieceId, kind: group[0]!.kind, colorGroup: group[0]!.colorGroup, label: group[0]!.name ?? dryingText.pieces(group.length), count: group.length }))} />
     {knitMissed.length === 0 ? null : <Callout>{midCheckText.missed(dryerShareText.knitWords(knitMissed.map((piece) => piece.kind ?? '')))}</Callout>}
     <Section heading={run.kind === 'air' ? dryingText.airDrying : `In ${where}`} caption={groups.some((group) => group.length > 1) ? dryingText.countDry : dryingText.switchOffDamp}>
-      {groups.map((group) => {
+      <li className="grid gap-3 p-4"><p className="m-0 text-ink-2" role="status">{dry.length} dry · {wet} still drying. Answers include every page.</p>
+      <div className="flex flex-wrap gap-2">
+        <Button type="button" variant="outline" disabled={check.pending} onClick={() => edit({ ...current, counts: {} })}>All dry</Button>
+        <Button type="button" variant="outline" disabled={check.pending} onClick={() => edit({ ...current, counts: Object.fromEntries(groups.map(group => [group[0]!.pieceId, { dry: 0, of: group.length }])) })}>Keep all drying</Button>
+      </div></li>
+      <DryingPieceList groups={groups} label="drying check">{(group) => {
         const piece = group[0]!
         const name = piece.name ?? dryingText.pieces(group.length)
         const dryCount = Math.min(group.length, counts[piece.pieceId] ?? group.length)
@@ -947,7 +1003,7 @@ function CheckScreen({ queue, byId, onPlan, onDone, runId, draft, onDraft, onPut
         return <RecordRow key={piece.pieceId} media={<PieceMedia piece={piece} />} title={`${name} ×${group.length}`}
           fact={dryingText.dryOf(dryCount, group.length, piece.washerName)}
           trailing={<QuantityStepper label={dryingText.dryStepper(name)} value={dryCount} max={group.length} disabled={check.pending} onChange={setCount} />} />
-      })}
+      }}</DryingPieceList>
     </Section>
     <LabelDryingInstructions pieces={dry} stage="afterDrying" acknowledged={labelAcknowledgment === labelKey} onAcknowledge={(value) => setLabelAcknowledgment(value ? labelKey : null)} />
     {askMinutes ? (
@@ -1014,7 +1070,7 @@ function MidCheckScreen({ queue, byId, onPlan, onDone, run, calls, now }: Screen
   const where = runTitle(run)
   const price = queue.dryers.find((dryer) => dryer.machineId === run.dryerId)?.pricePerStart ?? null
   const label = (group: readonly Piece[]) => group[0]!.private ? privatePieceText.pieces(group.length) : `${group[0]!.name ?? dryingText.pieces(group.length)}${group.length > 1 ? ` ×${group.length}` : ''}`
-  const names = (list: readonly (readonly Piece[])[]) => listWords(list.map(label))
+  const names = (list: readonly (readonly Piece[])[]) => listWords([...list.slice(0, 3).map(label), ...(list.length > 3 ? [`${list.slice(3).reduce((count, group) => count + group.length, 0)} more pieces`] : [])])
   const plural = (list: readonly (readonly Piece[])[]) => list.length > 1 || list.some((group) => group.length > 1)
   const instruction = [
     hangGroups.length === 0 ? null : midCheckText.hangPart(names(hangGroups), plural(hangGroups)),
@@ -1022,7 +1078,7 @@ function MidCheckScreen({ queue, byId, onPlan, onDone, run, calls, now }: Screen
     leaving.length === 0 ? null : out.length === 0 ? midCheckText.allIn(where) : midCheckText.leavePart(names(leaving), where),
   ].filter((part): part is string => part !== null).join(' ')
   const toggle = (id: string) => setChanging((current) => { const next = new Set(current); if (next.has(id)) next.delete(id); else next.add(id); return next })
-  const segment = (group: Piece[]) => {
+  const segment = (group: readonly Piece[]) => {
     const piece = group[0]!
     // The answers sit inside the row's own <li>: a list item never wraps another.
     return <div className={midAnswersClassName}>
@@ -1031,24 +1087,24 @@ function MidCheckScreen({ queue, byId, onPlan, onDone, run, calls, now }: Screen
         onChange={(value) => setAnswers((current) => ({ ...current, [piece.pieceId]: value as MidAnswer }))} />
     </div>
   }
-  const row = (group: Piece[]) => {
+  const row = (group: readonly Piece[]) => {
     const piece = group[0]!
     const open = changing.has(piece.pieceId)
     return <PieceRow key={piece.pieceId} piece={piece} count={group.length > 1 ? group.length : undefined} fact={`${answerOf(group) === 'dry' ? midCheckText.dryOut : answerOf(group) === 'hang' ? midCheckText.hangIt : midCheckText.answers.wait} · ${dryingText.fromWasher(piece.washerName)}`}
       trailing={<Button type="button" variant="tonal" size="sm" aria-expanded={open} disabled={check.pending} onClick={() => toggle(piece.pieceId)}>{midCheckText.change}</Button>}
       issues={open ? segment(group) : undefined} />
   }
-  const restRow = (group: Piece[]) => <PieceRow key={group[0]!.pieceId} piece={group[0]!} count={group.length > 1 ? group.length : undefined} fact={`${midCheckText.answers.wait} · ${dryingText.fromWasher(group[0]!.washerName)}`} issues={segment(group)} />
+  const restRow = (group: readonly Piece[]) => <PieceRow key={group[0]!.pieceId} piece={group[0]!} count={group.length > 1 ? group.length : undefined} fact={`${midCheckText.answers.wait} · ${dryingText.fromWasher(group[0]!.washerName)}`} issues={segment(group)} />
   const summary = staying.length === 0 ? null : staying.length <= 2 ? midCheckText.stayIn(names(staying), plural(staying)) : midCheckText.stayInOthers(label(staying[0]!), staying.length - 1)
   return <div className={pageClassName}>
     <TaskHeading title={midCheckText.title} back={<BackButton label={dryingText.title} onClick={onPlan} />} />
     <DryerRunningCard run={run} pieces={pieces} now={now} price={price} />
     <p className="m-0 text-[length:var(--step-1)] font-semibold leading-snug [overflow-wrap:anywhere]" role="status">{instruction}</p>
-    {taking.length === 0 ? null : <Section heading={midCheckText.takeOutHeading}>{taking.map(row)}</Section>}
+    {taking.length === 0 ? null : <Section heading={midCheckText.takeOutHeading}><DryingPieceList groups={taking} label="pieces to take out">{row}</DryingPieceList></Section>}
     {summary === null ? null : (
       <Section label={summary}>
         <RecordRow media={<DesignIcon name="dryer" strokeWidth={1.6} />} title={summary} trailing={<Button type="button" variant="tonal" size="sm" aria-expanded={listRest} disabled={check.pending} onClick={() => setListRest(!listRest)}>{midCheckText.change}</Button>} />
-        {listRest ? staying.map(restRow) : null}
+        {listRest ? <DryingPieceList groups={staying} label="pieces staying in the dryer">{restRow}</DryingPieceList> : null}
       </Section>
     )}
     <LabelDryingInstructions pieces={out} stage="afterDrying" acknowledged={labelAcknowledgment === labelKey} onAcknowledge={(value) => setLabelAcknowledgment(value ? labelKey : null)} />
@@ -1104,23 +1160,29 @@ function PutAwayScreen({ queue, householdId, onPlan, onDone, calls }: ScreenProp
     {dry.length === 0 ? null : <LoadSummary stage="to_put_away" origins={washOrigins(dry.map((piece) => piece.washerName))} pieces={dry} />}
     {dry.length === 0 ? <Note>{dryingText.nothingDry}</Note> : (
       <Section heading={dryingText.dryList} caption={dryingText.acrossDryers}>
-        {groups.map((group) => {
+        <li className="grid gap-3 p-4"><p className="m-0 text-ink-2" role="status">{count} of {dry.length} pieces selected across every page.</p>
+        <div className="flex flex-wrap gap-2">
+          <Button type="button" variant="outline" disabled={putAway.pending} onClick={() => setCounts({})}>Select all dry pieces</Button>
+          <Button type="button" variant="outline" disabled={putAway.pending} onClick={() => setCounts(Object.fromEntries(groups.map(group => [group.key, 0])))}>Clear selection</Button>
+        </div></li>
+        <DryingPieceList groups={groups.map(group => group.pieces)} label="dry clothes">{(pieces) => {
+          const group = groups.find(group => group.pieces === pieces)!
           const first = group.pieces[0]!
           const value = countOf(group)
           return <RecordRow key={group.key} media={<PieceMedia piece={first} />} title={group.name}
             fact={dryingDesignText.putAwayFact(value, group.pieces.length, first.washerName, first.driedIn)}
             trailing={<QuantityStepper label={group.name} value={value} max={group.pieces.length} disabled={putAway.pending} onChange={(next) => setCounts({ ...counts, [group.key]: next })} />} />
-        })}
+        }}</DryingPieceList>
       </Section>
     )}
     {still.length === 0 ? null : (
       <Section heading={dryingText.notDryYet}>
-        {putAwayGroups(still).map(({ pieces: group }) => {
+        <DryingPieceList groups={putAwayGroups(still).map(group => group.pieces)} label="clothes still drying">{(group) => {
           const piece = group[0]!
           const run = runName(piece)
           const where = piece.status === 'queued' ? dryingText.inQueue : run?.kind === 'air' ? dryingText.airDrying.toLowerCase() : dryingText.inDryer(run?.dryerName ?? dryingText.dryerTitle)
           return <PieceRow key={piece.pieceId} piece={piece} count={group.length} fact={`${dryingText.fromWasher(piece.washerName)} · ${where}`} mark={{ tone: piece.status === 'queued' ? 'waiting' : 'drying', text: piece.status === 'queued' ? dryingText.queued : dryingText.drying }} />
-        })}
+        }}</DryingPieceList>
       </Section>
     )}
     {dry.length === 0 ? null : (

@@ -368,7 +368,7 @@ test('Edit is dirty only with unsaved answers, so closing asks before discarding
   expect(editDirty(before, { ...before, tag: { ...before.tag, iron: 'no' } }, { ...pieces, careOnly: true })).toBe(true)
 })
 
-test('Edit offers the intake type tiles under Item type, with the current type pressed', () => {
+test('Edit shows the expanded intake tiles as a visible Item type section, with the current type pressed', () => {
   const edit = (focusField?: 'kind') => renderToStaticMarkup(<EditClothesSheet editing={[garment()]} wearers={wearers} calls={calls} renderPhotos={() => null} focusField={focusField} onClose={() => undefined} onSaved={() => undefined} />)
   const markup = edit()
   expect(markup).toContain('>Item type</legend>')
@@ -504,14 +504,19 @@ test('red shows Medium for its Bright sorting group and shades describe the sele
   expect(darkBlue).not.toContain('burgundy')
 })
 
-test('the type step offers every type as a hanger-free tile, with a bodysuit only for a baby', () => {
+test('the type step browses specific articles in visible groups, with a bodysuit only for a baby', () => {
   const markup = render(emptyAddDraft)
   const tiles = markup.match(/<button\b[^>]*aria-pressed="(?:true|false)"[^>]*>/g) ?? []
-  expect(tiles).toHaveLength(16)
+  expect(tiles.length).toBeGreaterThan(50)
   expect(markup).not.toContain('garment-hook')
   expect(markup).not.toContain('Bodysuit')
   for (const word of ['T-shirt', 'Pants', 'Jacket', 'Towel', 'Sheets', 'Other']) expect(markup).toContain(`<span>${word}</span>`)
-  for (const label of ['Clothing', 'Household textiles', 'Other items']) expect(markup).toContain(`>${label}</p>`)
+  for (const label of ['Tops', 'Bottoms', 'Dresses &amp; skirts', 'Jackets &amp; suits', 'Underwear &amp; sleepwear', 'Workout', 'Household textiles', 'Other items']) expect(markup).toContain(`>${label}</p>`)
+  for (const name of ['Button-up shirt', 'Dress shirt', 'Long-sleeve tee', 'Henley', 'Hoodie', 'Jeans', 'Boxer briefs', 'Hand towel', 'Pillowcase', 'Duvet cover']) expect(markup).toContain(`<span>${name}</span>`)
+  expect(markup).toContain('Fabric and label answers determine care.')
+  const henley = render(draft({ kind: 't_shirt', article: 'Henley' }))
+  expect(henley.match(/aria-pressed="true"/g)).toHaveLength(1)
+  expect(henley).toMatch(/aria-pressed="true"[^>]*>(?:(?!<\/button>).)*<span>Henley<\/span>/)
   const baby = renderToStaticMarkup(<AddClothesSheet householdId="h1" mode={closet as Extract<AddMode, { kind: 'add' }>} wearers={[...wearers, { wearerId: 'ada', name: 'Ada', kind: 'baby' }]} calls={calls} onClose={() => undefined} onSaved={() => undefined} />)
   expect(baby).toContain('<span>Bodysuit</span>')
   expect(intakeKinds([{ kind: 'adult' }])).not.toContain('baby_bodysuit')

@@ -1,4 +1,3 @@
-import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { expect, test } from '@playwright/test'
 import scenarios from '../src/review/scenarios.json' with { type: 'json' }
@@ -9,9 +8,6 @@ test.skip(process.env.WASHCLOSET_REVIEW_E2E !== '1', 'Run explicitly against the
 
 test.beforeEach(async ({ page }) => {
   page.on('pageerror', (error) => console.log('Review browser error:', error.message))
-  const key = (await readFile(resolve('../..', '.review-data/access-key'), 'utf8')).trim()
-  const login = await page.request.post('/api/review/login', { data: { key } })
-  expect(login.ok()).toBe(true)
 })
 
 test('review opens real synthetic sheets without a household connection', async ({ page }, testInfo) => {
@@ -20,6 +16,8 @@ test('review opens real synthetic sheets without a household connection', async 
   page.on('pageerror', (error) => errors.push(error.message))
   page.on('request', (request) => { if (/:(3220|3221|3258|3259|1)\//.test(request.url())) backend.push(request.url()) })
   await page.goto('/review?legacy=1&scenario=intake.pack.final')
+  await expect(page.getByLabel('Review key', { exact: true })).toHaveCount(0)
+  expect((await page.request.get('/api/review/index')).ok()).toBe(true)
   await expect(page.getByRole('heading', { name: 'A Laundered Closet · review' })).toBeVisible()
   const frame = page.frameLocator('iframe')
   await expect(frame.getByRole('button', { name: 'Save item', exact: true })).toBeEnabled()

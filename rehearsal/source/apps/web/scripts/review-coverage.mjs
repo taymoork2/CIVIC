@@ -1,6 +1,7 @@
-import { createHash } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { readFile, writeFile, rename } from 'node:fs/promises'
-import { join } from 'node:path'
+import { join, relative } from 'node:path'
+import { projectPath } from './review-project.mjs'
 
 export const coveragePath = 'docs/design/review-product/coverage.json'
 const fail = (message, status = 400) => { throw Object.assign(new Error(message), { status }) }
@@ -12,7 +13,7 @@ export function checkedContract(input) {
     if (!t || !/^[a-z][a-z0-9.-]{0,119}$/.test(t.id) || ids.has(t.id) || !['screen', 'interaction', 'journey'].includes(t.kind)) fail('Invalid or duplicate coverage identity')
     ids.add(t.id)
     if (!Array.isArray(t.scenarios) || t.scenarios.length > 100 || !Array.isArray(t.acceptance) || t.acceptance.length > 20) fail('Invalid coverage expectations')
-    if (t.component !== undefined && (!/^apps\/web\/src\/(?:[a-zA-Z0-9_$.-]+\/)*[a-zA-Z0-9_$.-]+\.tsx?(?:#[a-zA-Z0-9_]+)?$/.test(t.component) || t.component.split('/').some((part) => part === '..' || part === '.'))) fail('Use an application source path')
+    if (t.component !== undefined && (!/^(?:[a-zA-Z0-9_$.-]+\/)*[a-zA-Z0-9_$.-]+\.(?:[cm]?[jt]sx?)(?:#[a-zA-Z0-9_]+)?$/.test(t.component) || t.component.split('/').some((part) => part === '..' || part === '.' || part === '.git' || part === '.review-data'))) fail('Use an application source path')
     return { id: t.id, title: words(t.title, 160), kind: t.kind, ...(t.component ? { component: t.component } : {}), scenarios: t.scenarios.map((id) => words(id, 200)), acceptance: t.acceptance.map((s) => words(s, 1000)) }
   })
   return { version: input.version, targets }
@@ -37,7 +38,7 @@ export function coverageReport(metadata, contract, sourcePaths) {
     const preview = !known.length || known.some((s) => !s) ? 'missing' : known.some((s) => s.renderer === 'legacy') ? 'partial' : 'registered'
     const edges = t.scenarios.slice(0, -1).filter((id, i) => !reachable(id, t.scenarios[i + 1]))
     const verification = metadata.validation?.status === 'source-current' && t.scenarios.length && t.scenarios.every((id) => metadata.validation.receipt?.behaviorScenarios?.includes(id)) ? 'scoped receipt' : 'unverified'
-    return { ...t, implementation, preview, missingEdges: edges, verification, reason: preview === 'missing' ? 'Expected state has no registered working preview.' : preview === 'partial' ? 'Some expected states are partial specimens.' : t.kind === 'journey' ? edges.length ? 'Expected transitions are not all declared.' : 'Declared transitions still need a continuous runtime and execution evidence.' : 'Registered preview still needs execution evidence.' }
+    return { ...t, implementation, preview, missingEdges: edges, verification, reason: preview === 'missing' ? 'Expected state has no registered working preview.' : preview === 'partial' ? 'Some expected states are partial specimens.' : t.kind === 'journey' ? edges.length ? 'Expected transitions are not all declared.' : verification === 'scoped receipt' ? 'Scoped local behavior has execution evidence; full acceptance remains unverified.' : 'Declared transitions still need a continuous runtime and execution evidence.' : 'Registered preview still needs execution evidence.' }
   })
   const coveredComponents = new Set(contract.targets.map((t) => t.component))
   const discovered = metadata.surfaces.filter((s) => !s.scenarios.length && !coveredComponents.has(s.id) && !/\/src\/(components|kit|dev|review)\//.test(s.path) && (s.kind === 'sheet' || s.kind === 'route' && !/\/api\/|care-photo|product-lookup|design-preview/.test(s.name)))
@@ -51,7 +52,7 @@ export function candidateCode(candidate) {
 }
 
 /** One local queue owns expectations and candidates; it never mutates application code. */
-export async function coverageBridge({ repo, dataDir, metadata }) {
+export async function coverageBridge({ repo, dataDir, metadata, contractFile = repo && join(repo, coveragePath), contractRoot = repo }) {
   const path = join(dataDir, 'coverage-candidates.json')
   let queue = Promise.resolve()
   const serial = (fn) => { const next = queue.then(fn); queue = next.catch(() => {}); return next }
@@ -77,12 +78,14 @@ export async function coverageBridge({ repo, dataDir, metadata }) {
         if (typeof input.enabled !== 'boolean') fail('Invalid generation setting')
         store.automatic = input.enabled
       } else if (input.operation === 'intent') {
-        if (!repo) fail('Repository bridge unavailable', 503)
-        const contract = checkedContract(JSON.parse(await readFile(join(repo, coveragePath), 'utf8')))
+        if (!contractFile) fail('Repository bridge unavailable', 503)
+        projectPath(contractRoot, relative(contractRoot, contractFile))
+        const contract = checkedContract(JSON.parse(await readFile(contractFile, 'utf8')))
         if (input.contractVersion !== contract.version) fail('Expectations changed elsewhere. Refresh first.', 409)
         const target = checkedContract({ version: 1, targets: [input.target] }).targets[0]
         const next = checkedContract({ version: contract.version + 1, targets: [...contract.targets.filter((t) => t.id !== target.id), target] })
-        await writeFile(join(repo, coveragePath) + '.tmp', JSON.stringify(next, null, 2) + '\n'); await rename(join(repo, coveragePath) + '.tmp', join(repo, coveragePath))
+        const temporary = `${contractFile}.${randomUUID()}.tmp`
+        await writeFile(temporary, JSON.stringify(next, null, 2) + '\n', { flag: 'wx', mode: 0o600 }); await rename(temporary, contractFile)
         return result(store)
       } else if (input.operation === 'candidate' || input.operation === 'generate') {
         if (input.operation === 'generate' && !store.candidates.some((c) => c.id === input.id)) {

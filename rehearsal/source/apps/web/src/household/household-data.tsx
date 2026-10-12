@@ -4,7 +4,7 @@ import type { FunctionReturnType, FunctionArgs } from 'convex/server'
 import { api } from '@/api'
 import { authClient } from '@/auth-client'
 import { useStartup } from '@/startup-context'
-import { useNow } from '@/laundry/session-view'
+import { useNow } from '@/kit/use-now'
 
 export type HouseholdSnapshot = {
   householdId: FunctionArgs<typeof api.inventory.list>['householdId']
@@ -37,14 +37,13 @@ function Subscriptions({ householdId, authenticated, seed, children }: {
 }) {
   const now = useNow(30_000)
   const args = householdId !== undefined && authenticated ? { householdId } : 'skip'
-  const inventory = useQuery(api.inventory.list, args)
+  const inventory = useQuery(api.inventory.list, args === 'skip' ? 'skip' : { ...args, textileIds: [] })
   const sessions = useQuery(api.execution.householdSessions, args)
   const attention = useQuery(api.closet.attention, args === 'skip' ? 'skip' : { ...args, now: Math.floor(now / 60_000) * 60_000 })
-  const today = useQuery(api.closet.today, args)
+  const today = useQuery(api.closet.today, args === 'skip' ? 'skip' : { ...args, summaryOnly: true })
   const plan = useQuery(api.plans.upNext, args)
   // These ancillary screens also arrive from the same live Convex cache.
   useQuery(api.households.members, args)
-  useQuery(api.inventory.listTrash, args)
   const previousAttention = useRef(attention)
   if (attention !== undefined) previousAttention.current = attention
   // Keep the authorized startup snapshot until each live query arrives. The keyed parent

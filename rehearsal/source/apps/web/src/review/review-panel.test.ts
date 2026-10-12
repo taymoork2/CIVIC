@@ -14,3 +14,9 @@ test('older scenario-only reviews remain visible without inventing a screen iden
   expect(feedbackOnScreen(comment, wash)).toBe(true)
   expect(feedbackOnScreen(comment, { ...wash, scenario: 'intake.towel.fabric' })).toBe(false)
 })
+test('a branch or flow review is not misidentified as feedback on its representative screen', () => {
+  for (const kind of ['app', 'flow', 'path'] as const) {
+    expect(feedbackOnScreen({ target: { kind, id: wash.id, label: 'Target' }, context: { screen: wash.id, scenario: wash.scenario } } as Feedback, wash)).toBe(false)
+  }
+  expect(feedbackOnScreen({ target: { kind: 'region', id: wash.id, label: 'Target' }, context: { screen: wash.id, scenario: wash.scenario } } as Feedback, wash)).toBe(true)
+})

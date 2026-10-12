@@ -1,6 +1,7 @@
 import { expect, test } from 'vitest'
 import { appFlows, crossFlowEdges, flowAtCenter, screenAtCenter, overviewFlows, flowEdges } from './app-map'
 import scenarios from './scenarios.json'
+import routeActions from './route-actions.json'
 
 test('the app map retains every registered screen once and adds the separate towel care states', () => {
   const flows = appFlows([...scenarios, { id: 'legacy.drying-queue', label: 'Drying queue', journey: 'Existing specimens', renderer: 'legacy', screen: 'drying-queue' }])
@@ -12,8 +13,8 @@ test('the app map retains every registered screen once and adds the separate tow
   expect(towel.screens.find((screen) => screen.id === 'origin')!.edges.map((edge) => edge.destination)).toEqual(['dye', 'care:wash'])
   expect(towel.screens.every((screen, i) => screen.x === i * 440)).toBe(true)
   expect(towel.screens.find((screen) => screen.id === 'dye')!.y).toBeGreaterThan(towel.screens.find((screen) => screen.id === 'origin')!.y!)
-  expect(crossFlowEdges(flows).some((edge) => edge.id.startsWith('intake.pack.final-records.pack-'))).toBe(true)
-  expect(flows.find((flow) => flow.label === 'Drying')!.screens[0]!.partial).toBe(true)
+  expect(crossFlowEdges(flows).some((edge) => edge.from === 'intake.pack.final' && edge.to === 'records.pack')).toBe(true)
+  expect(flows.find((flow) => flow.label === 'Drying')!.screens.find((screen) => screen.id === 'legacy.drying-queue')!.partial).toBe(true)
   for (const flow of flows) expect(flowAtCenter(flows, flow.x + flow.width / 2, flow.y + flow.height / 2)?.id).toBe(flow.id)
   expect(flowAtCenter(flows, -1, -1)).toBeUndefined()
   const pack = flows.find((flow) => flow.label === 'Multicolor pack')!
@@ -29,6 +30,28 @@ test('the app map retains every registered screen once and adds the separate tow
   expect(screenAtCenter(towel, towel.x + 36 + origin.x! + 350, towel.y + 500)).toBeUndefined()
 })
 
+test('route variants share their existing area and occupy separate branch lanes', () => {
+  const flows = appFlows([...scenarios, { id: 'legacy.closet-record', label: 'Closet record', screen: 'closet-record', journey: 'Existing specimens', renderer: 'legacy' }])
+  expect(flows.filter((flow) => flow.label === 'Closet')).toHaveLength(1)
+  for (const flow of flows) for (const screen of flow.screens.filter((screen) => screen.branchOf)) {
+    expect(screen.y).toBeGreaterThan(737)
+    expect(screen.y! + 797).toBeLessThan(flow.height)
+    for (const other of flow.screens.filter((other) => other !== screen)) expect(other.x !== screen.x || Math.abs(other.y! - screen.y!) >= 900).toBe(true)
+  }
+})
+
+test('all five newly mapped destinations have routed arrows and their returns retain conditions', () => {
+  const ids = [...new Set(routeActions.flatMap((action) => [action.from, action.destination]))]
+  const legacy = ids.filter((id) => id.startsWith('legacy.')).map((id) => ({ id, label: id, screen: id.slice(7), renderer: 'legacy', journey: 'Existing specimens' }))
+  const entries = [...scenarios, ...legacy].map((scenario) => ({ ...scenario, edges: routeActions.filter((action) => action.from === scenario.id).map((action) => ({ action: action.action, destination: action.destination, when: action.when, returnTo: action.returnTo })) }))
+  const flows = appFlows(entries)
+  const arrows = crossFlowEdges(flows)
+  for (const id of ['route.closet.add-choose', 'route.laundry.session-closet', 'route.laundry.hamper-item', 'route.drying.washer-queued', 'route.closet.history']) {
+    expect(arrows.some((edge) => edge.to === id)).toBe(true)
+    expect(flows.flatMap((flow) => flow.screens).find((screen) => screen.id === id)!.edges.some((edge) => edge.when && edge.returnTo)).toBe(true)
+  }
+})
+
 test('app overview keeps navigation horizontal and related flows in nonoverlapping vertical lanes', () => {
   const flows = overviewFlows(appFlows(scenarios))
   const towel = flows.find((flow) => flow.id === 'towel')!
@@ -39,7 +62,7 @@ test('app overview keeps navigation horizontal and related flows in nonoverlappi
   for (const from of flows) for (const to of flows.filter((flow) => flow !== from)) {
     expect(from.x + from.width <= to.x || to.x + to.width <= from.x || from.y + from.height <= to.y || to.y + to.height <= from.y).toBe(true)
   }
-  expect(crossFlowEdges(flows).some((edge) => edge.id.startsWith('saved-intake.pack.type-'))).toBe(false)
+  expect(crossFlowEdges(flows).some((edge) => edge.from === 'saved' && edge.to === 'intake.pack.type')).toBe(false)
 })
 
 test('declared actions can jump across navigation areas and back without inventing adjacent-tab edges', () => {
@@ -51,9 +74,9 @@ test('declared actions can jump across navigation areas and back without inventi
   const me = flows.find((flow) => flow.section === 'Me')!
   const laundry = flows.find((flow) => flow.section === 'Laundry')!
   expect(me.x).toBeGreaterThan(laundry.x)
-  expect(edges.some((edge) => edge.id.startsWith('legacy.me-history-legacy.laundry-completed'))).toBe(true)
-  expect(edges.some((edge) => edge.id.startsWith('legacy.laundry-completed-legacy.me-history'))).toBe(true)
-  expect(edges.some((edge) => edge.id.includes('home-one'))).toBe(false)
+  expect(edges.some((edge) => edge.from === 'legacy.me-history' && edge.to === 'legacy.laundry-completed')).toBe(true)
+  expect(edges.some((edge) => edge.from === 'legacy.laundry-completed' && edge.to === 'legacy.me-history')).toBe(true)
+  expect(edges.some((edge) => edge.from === 'legacy.home-one' || edge.to === 'legacy.home-one')).toBe(false)
 })
 
 test('entry precedes Home and flows belong to their launching navigation area', () => {

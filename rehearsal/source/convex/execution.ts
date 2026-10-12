@@ -1,6 +1,9 @@
+import { getPlan } from './planStorage'
 import { type Machine, type Times, cycleTiming, findLoad, timelineActions, mergeRecorded, reminderDueAt, recordedTimes, dryerBusyReason, dryingSnapshot, clientTime, machineDose, plannedWasherClass, sessionWasherName, dryReady, dryerRuns, unsupportedPreparationActions, stepWords, pretreated, withoutDrawerProfile, keepUnchanged, recoveredPreparationLoad } from './executionHelpers'
 export { recordedAdditionOffsetMinutes, recordedTimes, dryerBusyReason, clientTime, unsupportedPreparationActions } from './executionHelpers'
 import { ConvexError, v, type Infer } from 'convex/values'
+import { paginationOptsValidator } from 'convex/server'
+import { washerCost } from './costs'
 import { routineCurrent } from './personalRoutineValues'
 import { preparedGarmentFacts } from './personalOutcomeContext'
 
@@ -28,7 +31,7 @@ export async function sessionLoad(ctx: ReadCtx, session: Doc<'sessions'>, timeli
     if (load === undefined) fail('conflict', 'Recalculate without the drawer again before starting, or cancel this load and plan again')
     return load
   }
-  const stored = await ctx.db.get(session.planId)
+  const stored = await getPlan(ctx, session.planId)
   if (stored === null) fail('not_found', 'Not found')
   const planLoad = findLoad(stored, session.loadId)
   const machineId = timeline.machineId ?? planLoad.machineId
@@ -94,7 +97,7 @@ export async function applyMachineStart(
   const load = await sessionLoad(ctx, session, timeline)
   if (machineId !== undefined) {
     // The steps are the ones for the kind of washer it started on; another kind takes others.
-    const stored = await ctx.db.get(session.planId)
+    const stored = await getPlan(ctx, session.planId)
     const planLoad = stored === null ? null : findLoad(stored, session.loadId)
     const current = timeline.machineId ?? planLoad?.machineId ?? null
     if (planLoad !== null && current !== null && loadKind(planLoad, machineId) !== loadKind(planLoad, current)) {
@@ -103,7 +106,7 @@ export async function applyMachineStart(
   }
   const machine = await machineFor(ctx, session.householdId, machineId ?? timeline.machineId, load.machineId)
   if (session.machineStartedAt === undefined) {
-    const stored = await ctx.db.get(session.planId)
+    const stored = await getPlan(ctx, session.planId)
     const input = stored?.inputSnapshot as PlannerInput | undefined
     const words = input?.textiles?.filter((piece) => load.textileIds.includes(piece.id ?? '')).map((piece) => piece.care?.instructions) ?? []
     const detergentUsed = timeline.actions.some((action) => {
@@ -127,7 +130,7 @@ export async function applyMachineStart(
     }
   }
   if (session.machineStartedAt === undefined && machine !== null) {
-    const stored = await ctx.db.get(session.planId)
+    const stored = await getPlan(ctx, session.planId)
     const input = stored?.inputSnapshot as PlannerInput | undefined
     const words = input?.textiles?.filter((piece) => load.textileIds.includes(piece.id ?? '')).map((piece) => piece.care?.instructions) ?? []
     const facts = { id: machine._id, capacityUnits: machine.capacityUnits, capacityConfidence: machine.capacityConfidence, washProcesses: machine.washProcesses }
@@ -355,7 +358,7 @@ export const start = mutation({
     const loadName = args.loadName?.trim()
     if (loadName !== undefined && (loadName === '' || loadName.length > 80)) fail('invalid', 'loadName must be a short name')
     for (const count of [args.loadNumber, args.loadCount]) if (count !== undefined && !(Number.isInteger(count) && count >= 1 && count <= 99)) fail('invalid', 'Load numbers must be small whole numbers')
-    const stored = await ctx.db.get(args.planId)
+    const stored = await getPlan(ctx, args.planId)
     if (stored === null) fail('not_found', 'Not found')
     const actor = (await authorize(ctx, 'session.run', { householdId: stored.householdId })).actor
     if (stored.status === 'stale' || stored.status === 'retired') fail('stale', 'Stale plan')
@@ -731,7 +734,7 @@ export const recordEvent = internalMutation({
 /** The cycle a session runs, recorded on the session since it started (older sessions read their plan). */
 async function sessionCycle(ctx: ReadCtx, session: Doc<'sessions'>): Promise<string> {
   if (session.cycle !== undefined) return session.cycle
-  const stored = await ctx.db.get(session.planId)
+  const stored = await getPlan(ctx, session.planId)
   return (stored === null ? undefined : planResult(stored).loads.find((load) => load.id === session.loadId)?.cycle) ?? 'normal'
 }
 
@@ -773,7 +776,7 @@ export const sessionDetail = query({
       ctx.db.query('timelines').withIndex('by_session', (q) => q.eq('sessionId', session._id)).unique(),
       ctx.db.query('reminders').withIndex('by_session', (q) => q.eq('sessionId', session._id)).collect(),
       ctx.db.query('usage').withIndex('by_session', (q) => q.eq('sessionId', session._id)).collect(),
-      ctx.db.get(session.planId),
+      getPlan(ctx, session.planId),
       ctx.db.query('dryingPieces').withIndex('by_wash_session', (q) => q.eq('washSessionId', session._id)).collect(),
       ctx.db.query('history').withIndex('by_session', (q) => q.eq('sessionId', session._id)).filter((q) => q.eq(q.field('event'), 'dried')).collect(),
     ])
@@ -914,7 +917,11 @@ export const householdSessions = query({
   args: { householdId: v.id('households') },
   handler: async (ctx, args) => {
     const { actor } = await authorize(ctx, 'session.read', { householdId: args.householdId })
-    const sessions = await visible(ctx, actor, await ctx.db.query('sessions').withIndex('by_household', (q) => q.eq('householdId', args.householdId)).order('desc').take(20))
+    const [recent, running] = await Promise.all([
+      ctx.db.query('sessions').withIndex('by_household', q => q.eq('householdId', args.householdId)).order('desc').take(20),
+      ctx.db.query('sessions').withIndex('by_household_status', q => q.eq('householdId', args.householdId).eq('status', 'running')).collect(),
+    ])
+    const sessions = await visible(ctx, actor, [...new Map([...recent, ...running].map(session => [session._id, session])).values()].sort((left, right) => right._creationTime - left._creationTime))
     return Promise.all(sessions.map(async (session) => {
       const timeline = await ctx.db.query('timelines').withIndex('by_session', (q) => q.eq('sessionId', session._id)).unique()
       const actions = timeline?.actions ?? []
@@ -974,11 +981,31 @@ export const householdSessions = query({
   },
 })
 
+/** Completed history is paged independently of Home's bounded recent-session feed. */
+export const completedHistory = query({
+  args: { householdId: v.id('households'), paginationOpts: paginationOptsValidator },
+  handler: async (ctx, args) => {
+    const { actor } = await authorize(ctx, 'session.read', { householdId: args.householdId })
+    const page = await ctx.db.query('sessions').withIndex('by_household_status_completed', q => q.eq('householdId', args.householdId).eq('status', 'completed')).order('desc').paginate({ ...args.paginationOpts, numItems: Math.min(args.paginationOpts.numItems, 20) })
+    return { ...page, page: await Promise.all(page.page.map(async session => {
+      const timeline = await ctx.db.query('timelines').withIndex('by_session', q => q.eq('sessionId', session._id)).unique()
+      const washer = timeline?.machineId === undefined ? null : await ctx.db.get(timeline.machineId)
+      const garments = await Promise.all(session.textileIds.map(async textileId => {
+        const identity = await loadIdentity(ctx, actor.key, textileId)
+        return { name: identity.name, color: identity.color }
+      }))
+      return { sessionId: session._id, status: session.status, completedAt: session.completedAt ?? null,
+        machineName: sessionWasherName(session, null), textileCount: session.textileIds.length, garments,
+        washPrice: session.machineStartedAt === undefined ? null : washerCost(washer?.householdId === args.householdId ? washer : null).price }
+    })) }
+  },
+})
+
 
 
 /** The steps this load would take on another washer in the same room, before it starts. */
 async function movedSteps(ctx: ReadCtx, session: Doc<'sessions'>, timeline: Doc<'timelines'>, machine: Machine) {
-  const stored = await ctx.db.get(session.planId)
+  const stored = await getPlan(ctx, session.planId)
   if (stored === null) fail('not_found', 'Not found')
   const load = await loadOnPicked(ctx, stored, findLoad(stored, session.loadId), machine)
   const fresh = timelineActions(load, machine, timeline.drying?.minutes ?? null, { machineStartedAt: null, washDoneAt: null, dryerStartedAt: null })
@@ -1113,7 +1140,7 @@ async function preparationRecoveryContext(ctx: ReadCtx, session: Doc<'sessions'>
   if (washer === null) return null
   const action = unsupportedPreparationActions(timeline.actions, washer).find((entry) => entry.id === actionId)
   if (action === undefined) return null
-  const stored = await ctx.db.get(session.planId)
+  const stored = await getPlan(ctx, session.planId)
   if (stored === null) fail('not_found', 'Plan not found')
   const current = await sessionLoad(ctx, session, timeline)
   const matches = current.treatments.flatMap((step, index) => step.supplyId === action.supplyId && step.stage === action.stage && step.placement === action.placement && step.textileId === action.textileId ? [index] : [])
@@ -1175,7 +1202,7 @@ export const recoverPreparationPlacement = mutation({
 
 /** This load's steps with the washer's drawer taken away, before the washer starts. */
 async function drawerlessSteps(ctx: ReadCtx, session: Doc<'sessions'>, timeline: Doc<'timelines'>) {
-  const stored = await ctx.db.get(session.planId)
+  const stored = await getPlan(ctx, session.planId)
   if (stored === null) fail('not_found', 'Not found')
   const planLoad = findLoad(stored, session.loadId)
   const washer = await machineFor(ctx, session.householdId, timeline.machineId, planLoad.machineId)

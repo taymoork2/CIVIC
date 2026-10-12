@@ -5,6 +5,7 @@ import type { ComponentProps, ReactNode } from 'react'
 import { DroppedOffSheet, GarmentSheet, markTreatToast, garmentSheetView, hamperActionMembers, laundryCareGroups, steamAnswer, type GarmentCalls, type GarmentSheetFacts } from '@/closet/garment-sheet'
 import type { Care, Textile } from '@/household/inventory-types'
 import { assertPlainCopy } from '@/kit/test-copy'
+import { garmentCategoryPhoto } from '@/kit/garment-icon'
 
 // The Facts rows each record shows, kept so a test can tap a row's Edit outside the static render.
 const shownFacts = vi.hoisted(() => [] as { key: string; onEdit?: () => void }[][])
@@ -14,6 +15,16 @@ vi.mock('@/closet/closet-parts', async (importOriginal) => {
 })
 
 const day = 86_400_000
+
+test('photo-led records use matching category artwork without changing other garment identity', () => {
+  expect(garmentCategoryPhoto('t_shirt', 'white')).toBe('/design/ivory-tee.png')
+  expect(garmentCategoryPhoto('t_shirt', 'dark')).toBeUndefined()
+  expect(garmentCategoryPhoto('towel', 'white')).toBeUndefined()
+  const markup = renderToStaticMarkup(<GarmentSheet facts={facts([textile({ name: 'White tee', colorGroup: 'white' })])} calls={calls} onClose={() => undefined} onDone={() => undefined} onNext={() => undefined} />)
+  expect(markup).toContain('has-photo-header')
+  expect(markup).toContain('/design/ivory-tee.png')
+  expect(markup).toContain('Edit item details')
+})
 
 test('saved owned garment records offer a header edit, while guest and planning records do not', () => {
   const render = (guest: boolean, planning?: ComponentProps<typeof GarmentSheet>['planning']) => renderToStaticMarkup(<GarmentSheet facts={facts([textile({ guest })])} calls={calls} planning={planning} onClose={() => undefined} onDone={() => undefined} onNext={() => undefined} />)

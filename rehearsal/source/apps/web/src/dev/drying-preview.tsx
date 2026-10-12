@@ -44,9 +44,10 @@ const dryers: DryingQueue['dryers'] = [{ number: 4, capacityUnits: 28 }, { numbe
 }))
 
 export type DryingPreviewState = 'index' | 'unknown' | 'method-conflict' | 'preference' | 'second-wash' | 'dryer' | 'check' | 'check-empty' | 'putaway' | 'home' | 'stain'
+  | 'scale-plan' | 'scale-mixed' | 'scale-check' | 'scale-putaway'
   | 'wait' | 'wait-smell' | 'none-free' | 'early-check' | 'check-marks' | 'take-out-early' | 'check-missed'
 export const dryingPreviewStates: readonly DryingPreviewState[] = ['index', 'unknown', 'method-conflict', 'preference', 'second-wash', 'dryer', 'check', 'check-empty', 'putaway', 'home', 'stain',
-  'wait', 'wait-smell', 'none-free', 'early-check', 'check-marks', 'take-out-early', 'check-missed']
+  'wait', 'wait-smell', 'none-free', 'early-check', 'check-marks', 'take-out-early', 'check-missed', 'scale-plan', 'scale-mixed', 'scale-check', 'scale-putaway']
 const atHome = (variant: DryingPreviewState) => variant === 'home' || variant === 'wait' || variant === 'wait-smell'
 const ids = (list: readonly Piece[], ...keys: string[]) => list.filter((piece) => keys.some((key) => piece.pieceId.startsWith(`preview-dry-${key}-`))).map((piece) => piece.pieceId)
 /** An early check (design 8.4) for the tees, due `dueIn` minutes from now; `missed` once the run ended without it. */
@@ -71,13 +72,13 @@ function laundryDayRuns(variant: DryingPreviewState, list: readonly Piece[]): Dr
 }
 
 /** Interactive, memory-only examples. Calls never write to a household or start real equipment. */
-export function DryingPreview({ variant = 'index', state, onBack = previewCall('go back') }: { variant?: DryingPreviewState; state?: 'invalid' | 'error' | 'busy'; onBack?: () => void }) {
+export function DryingPreview({ variant = 'index', state, pieceCount = 1000, onBack = previewCall('go back') }: { variant?: DryingPreviewState; state?: 'invalid' | 'error' | 'busy'; pieceCount?: 100 | 500 | 1000; onBack?: () => void }) {
   const unknown = variant === 'unknown'
   const [combine, setCombine] = useState(false)
   const [capacityUnits, setCapacity] = useState<number | null>(unknown ? null : 28)
   const [chooserOpen, setChooserOpen] = useState(variant === 'method-conflict')
   const [stainOpen, setStainOpen] = useState(variant === 'stain')
-  const [selectedPieces, setPieces] = useState(() => piecesFor(variant))
+  const [selectedPieces, setPieces] = useState(() => piecesFor(variant, pieceCount))
   const [reset, setReset] = useState(0)
   const sequence = useRef(0)
   const homeDryer = { ...dryers[0]!, machineId: 'preview-home-dryer' as Id<'machines'>, name: 'Dryer', location: 'home' as const, pricePerStart: null }
@@ -85,15 +86,15 @@ export function DryingPreview({ variant = 'index', state, onBack = previewCall('
   const hasHanging = !home
   const [extraDryers, setExtraDryers] = useState<DryingQueue['dryers']>([])
   const initialRuns = (): DryingQueue['runs'] => {
-    const laundryDay = laundryDayRuns(variant, piecesFor(variant))
+    const laundryDay = laundryDayRuns(variant, piecesFor(variant, pieceCount))
     if (laundryDay !== null) return laundryDay
-    const runPieces = piecesFor(variant).filter((piece) => piece.status === 'drying')
+    const runPieces = piecesFor(variant, pieceCount).filter((piece) => piece.status === 'drying')
     return runPieces.length === 0 ? [] : [{
       runId: 'preview-drying-run' as Id<'dryingRuns'>, dryerId: null, reminded: false,
-      kind: variant === 'putaway' ? 'air' : 'dryer', method: variant === 'putaway' ? 'rack_line' : 'tumble',
-      dryerName: variant === 'putaway' ? null : 'Dryer 4', heatLabel: variant === 'putaway' ? null : 'Low',
+      kind: variant === 'putaway' || variant === 'scale-check' ? 'air' : 'dryer', method: variant === 'putaway' || variant === 'scale-check' ? 'rack_line' : 'tumble',
+      dryerName: variant === 'putaway' || variant === 'scale-check' ? null : 'Dryer 4', heatLabel: variant === 'putaway' || variant === 'scale-check' ? null : 'Low',
       startedAt: now - (variant === 'putaway' ? 30 : 41) * 60_000,
-      minutes: variant === 'putaway' ? null : 40, pieceIds: runPieces.map((piece) => piece.pieceId),
+      minutes: variant === 'putaway' || variant === 'scale-check' ? null : 40, pieceIds: runPieces.map((piece) => piece.pieceId),
     }]
   }
   const [runs, setRuns] = useState(initialRuns)
@@ -121,8 +122,8 @@ export function DryingPreview({ variant = 'index', state, onBack = previewCall('
     // The tees and towels shared on low in Dryer 4, as "All on low heat" plans them.
     : variant === 'early-check' ? { kind: 'dryer', number: 1, heat: 'low', pieceIds: ids(selectedPieces, 'tee', 'towel'), dryerId: 'preview-dryer-4' }
     : variant === 'take-out-early' || variant === 'check-missed' ? { kind: 'check', runId: 'preview-run-4' }
-    : variant === 'check' || variant === 'check-empty' ? { kind: 'check', runId: 'preview-drying-run' }
-    : variant === 'putaway' ? { kind: 'putaway' } : { kind: 'plan' }
+    : variant === 'check' || variant === 'check-empty' || variant === 'scale-check' ? { kind: 'check', runId: 'preview-drying-run' }
+    : variant === 'putaway' || variant === 'scale-putaway' ? { kind: 'putaway' } : { kind: 'plan' }
   const nextRunId = () => `preview-drying-run-${++sequence.current}` as Id<'dryingRuns'>
   const calls: DryingCalls = {
     setPiece: { ...previewConvexCall('save the piece'), run: async (args) => {
@@ -188,7 +189,7 @@ export function DryingPreview({ variant = 'index', state, onBack = previewCall('
   return <>
     <div className="mx-auto flex max-w-[36rem] flex-wrap items-center justify-between gap-2 px-4 py-2 text-[length:var(--step--1)] text-muted-foreground" role="note">
       <span>Interactive preview · changes stay on this page</span>
-      <Button variant="ghost" size="sm" onClick={() => { setPieces(piecesFor(variant)); setRuns(initialRuns()); setExtraDryers([]); setCombine(false); setCapacity(unknown ? null : 28); setChooserOpen(variant === 'method-conflict'); setReset((value) => value + 1) }}>Reset preview</Button>
+      <Button variant="ghost" size="sm" onClick={() => { setPieces(piecesFor(variant, pieceCount)); setRuns(initialRuns()); setExtraDryers([]); setCombine(false); setCapacity(unknown ? null : 28); setChooserOpen(variant === 'method-conflict'); setReset((value) => value + 1) }}>Reset preview</Button>
     </div>
     <DryingView key={reset} queue={queue} householdId="preview-household" now={now} initialScreen={initialScreen} recentDryers={['preview-dryer-4', 'preview-dryer-2']}
       onBack={onBack} combine={combine} onCombine={setCombine} onCapacity={setCapacity} calls={calls}
@@ -217,7 +218,16 @@ const previewSteps: Partial<Record<DryingPreviewState, readonly PreviewStep[]>> 
   'early-check': [{ type: '#dryer-minutes', value: '50' }],
 }
 
-function piecesFor(variant: DryingPreviewState): Piece[] {
+function piecesFor(variant: DryingPreviewState, pieceCount: 100 | 500 | 1000): Piece[] {
+  if (variant.startsWith('scale-')) return Array.from({ length: pieceCount }, (_, index) => ({
+    ...pieces[0]!, pieceId: `scale-${index}` as Id<'dryingPieces'>, textileId: `scale-textile-${index}` as Id<'textiles'>,
+    name: `Family item ${String(index).padStart(4, '0')}`, washerName: `Washer ${index % 5 + 1}`,
+    label: variant === 'scale-mixed' && index % 2 === 0 ? 'tumble_dry' : 'line_dry',
+    method: variant === 'scale-mixed' && index % 2 === 0 ? 'tumble' : 'rack_line',
+    status: variant === 'scale-check' ? 'drying' : variant === 'scale-putaway' ? 'dry' : 'queued',
+    dryingRunId: variant === 'scale-check' ? 'preview-drying-run' as Id<'dryingRuns'> : null,
+    driedIn: variant === 'scale-putaway' ? 'Line' : null,
+  }))
   const is = (piece: Piece, key: string) => piece.pieceId.startsWith(`preview-dry-${key}-`)
   let result = pieces
   if (variant === 'method-conflict' || variant === 'preference') result = result.filter((piece) => !is(piece, 'pyjamas'))

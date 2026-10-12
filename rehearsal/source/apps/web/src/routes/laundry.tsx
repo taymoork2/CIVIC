@@ -13,15 +13,16 @@ export const Route = createFileRoute('/laundry')({
   component: Home,
 })
 
-const routerLink: LaundryLink = (target, { className, children }) => (target.to === 'session'
-  ? <Link to="/session/$sessionId" params={{ sessionId: target.sessionId }} className={className}>{children}</Link>
-  : target.to === 'drying' && target.run !== undefined ? <Link to="/drying" search={{ run: target.run }} className={className}>{children}</Link>
-  : <Link to={target.to === 'household' ? '/household' : target.to === 'drying' ? '/drying' : '/closet'} className={className}>{children}</Link>)
-
 function Home() {
-  const { plan, add, make, item } = Route.useSearch()
+  const { plan, load, add, make, item } = Route.useSearch()
   const navigate = useNavigate()
   const router = useRouter()
+  const returnState = { itemReturnTo: router.state.location.href }
+  const routerLink: LaundryLink = (target, { className, children }) => target.to === 'session'
+    ? <Link to="/session/$sessionId" params={{ sessionId: target.sessionId }} state={returnState} className={className}>{children}</Link>
+    : target.to === 'household' ? <Link to="/household" search={target.section === undefined ? {} : { section: target.section }} className={className}>{children}</Link>
+      : target.to === 'drying' && target.run !== undefined ? <Link to="/drying" search={{ run: target.run }} className={className}>{children}</Link>
+        : <Link to={target.to === 'drying' ? '/drying' : '/closet'} className={className}>{children}</Link>
   // `/laundry?add=hamper` opens Add dirty clothes once.
   const [addHamper] = useState(add === 'hamper')
   const [makeLoads] = useState(make === 'loads')
@@ -35,11 +36,13 @@ function Home() {
           key={household.householdId}
           household={household}
           initialItem={item}
-          onItemOpen={(item) => void navigate({ to: '/laundry', search: { ...(plan === undefined ? {} : { plan }), item }, state: { itemReturnTo: router.state.location.href }, resetScroll: false })}
-          onItemClose={() => dismissItem(router, () => void navigate({ to: '/laundry', search: plan === undefined ? {} : { plan }, replace: true, resetScroll: false }))}
+          onItemOpen={(item) => void navigate({ to: '/laundry', search: { ...(plan === undefined ? {} : { plan, ...(load === undefined ? {} : { load }) }), item }, state: { itemReturnTo: router.state.location.href }, resetScroll: false })}
+          onItemClose={() => dismissItem(router, () => void navigate({ to: '/laundry', search: plan === undefined ? {} : { plan, ...(load === undefined ? {} : { load }) }, replace: true, resetScroll: false }))}
           planId={plan ?? null}
-          onPlan={(planId, replace) => void navigate({ to: '/laundry', search: planId === null ? {} : { plan: planId }, replace })}
-          onSession={(sessionId) => void navigate({ to: '/session/$sessionId', params: { sessionId } })}
+          loadId={load ?? null}
+          onOpenLoad={(planId, loadId) => void navigate({ to: '/laundry', search: { plan: planId, ...(loadId === null ? {} : { load: loadId }) } })}
+          onPlan={(planId, replace) => void navigate({ to: '/laundry', search: planId === null ? {} : { plan: planId, ...(replace && load !== undefined ? { load } : {}) }, replace })}
+          onSession={(sessionId) => void navigate({ to: '/session/$sessionId', params: { sessionId }, state: returnState })}
           renderLink={routerLink}
           openAddHamper={addHamper}
           openMakeLoads={makeLoads}

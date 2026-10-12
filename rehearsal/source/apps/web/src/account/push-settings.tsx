@@ -70,8 +70,11 @@ export function PushSettings() {
 export async function clearPushDevice(): Promise<void> {
   if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) return
   try {
-    const registration = await navigator.serviceWorker.getRegistration()
-    await (await registration?.pushManager.getSubscription())?.unsubscribe()
+    // WebKit push cleanup can remain pending when notifications have not been allowed.
+    if ('Notification' in window && Notification.permission === 'granted') {
+      const registration = await navigator.serviceWorker.getRegistration()
+      await (await registration?.pushManager.getSubscription())?.unsubscribe()
+    }
     const device = localStorage.getItem(deviceKey)
     if (!device) return
     const response = await fetch('/api/auth/convex/token', { signal: AbortSignal.timeout(5_000) })

@@ -83,9 +83,9 @@ export async function buildStartup(pathname: string): Promise<StartupData> {
     const household = onboarding.households[0]
     const args = household === undefined ? null : { householdId: household.householdId }
     const snapshot = args === null ? null : await Promise.all([
-      fetchAuthQuery(api.inventory.list, args), fetchAuthQuery(api.execution.householdSessions, args),
+      fetchAuthQuery(api.inventory.list, { ...args, textileIds: [] }), fetchAuthQuery(api.execution.householdSessions, args),
       fetchAuthQuery(api.closet.attention, { ...args, now: Math.floor(Date.now() / 60_000) * 60_000 }),
-      fetchAuthQuery(api.closet.today, args), fetchAuthQuery(api.plans.upNext, args),
+      fetchAuthQuery(api.closet.today, { ...args, summaryOnly: true }), fetchAuthQuery(api.plans.upNext, args),
     ]).then(([inventory, sessions, attention, today, plan]) => ({ ...args, inventory, sessions, attention, today, plan }))
     const attention = pathname === '/' ? snapshot?.attention ?? null : null
     const homeSummary = attention === null ? null : await renderServerComponent(

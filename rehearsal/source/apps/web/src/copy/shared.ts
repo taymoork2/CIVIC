@@ -1,4 +1,5 @@
 import type { ColorGroup, DryMethod, DryerHeat, EvidenceLevel, FlagReason, GarmentKind, LoadSize, Occasion, Placement, SoilLevel, WearerKind, washerStages } from '@washcloset/planner'
+import { clothingKindWords } from '@washcloset/planner'
 
 import type { CareSymbolKind } from '@/closet/care-symbols'
 import type { WashPlace } from '../private-state'
@@ -133,25 +134,7 @@ export const occasionWords = {
 } as const satisfies Record<Occasion, string>
 
 /** The "What is it?" grid, in the order it is shown. */
-export const kindWords = {
-  t_shirt: 'T-shirt',
-  shirt: 'Shirt or blouse',
-  sweater: 'Sweater',
-  pants: 'Jeans or pants',
-  shorts: 'Shorts',
-  skirt: 'Skirt',
-  dress: 'Dress',
-  outerwear: 'Jacket or coat',
-  suit: 'Suit or blazer',
-  pajamas: 'Pajamas',
-  underwear: 'Underwear',
-  socks: 'Socks',
-  workout: 'Workout clothes',
-  baby_bodysuit: 'Baby bodysuit',
-  towel: 'Towel',
-  sheets: 'Sheets',
-  other: 'Other',
-} as const satisfies Record<GarmentKind, string>
+export const kindWords = clothingKindWords
 
 /**
  * A kind as a new garment's name ("Sam’s pants", or "Towel" when shared). "Other" has no name to
@@ -386,6 +369,7 @@ export const homeText = {
   },
   dock: {
     nextStep: 'Next laundry step',
+    dismiss: (task: string) => `Dismiss ${task} reminder`,
     checkCloset: 'Your closet',
     startLoad: (number: number) => `Start load ${number}`,
     startNamedLoad: (name: string) => `Start the ${name}`,
@@ -877,6 +861,8 @@ export const flagText = {
 export const carePhotoText = {
   readFailure: 'Could not read that photo',
   uploadFailure: 'Upload failed',
+  viewFailure: 'Couldn’t load this photo. Try opening it again.',
+  retry: 'Try again',
   title: 'Care label photos',
   privacy: 'Only your household can see these. Location data is removed before upload.',
   photoNumber: (number: number) => `Photo ${number}`,
@@ -899,7 +885,7 @@ export const pwaText = {
 
 export const offlineText = {
   title: 'You’re offline',
-  explanation: 'Reconnect to see your household. If a wash is running, its saved checklist is available on this device.',
+  explanation: 'Reconnect to see your household. A checklist is available only if it was saved on this device.',
   retry: 'Try again',
   otherLoads: (count: number) => count === 1 ? 'Your other load' : 'Your other loads',
 } as const

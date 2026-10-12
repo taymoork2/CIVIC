@@ -1,7 +1,7 @@
 import { garmentKinds } from '@washcloset/planner'
 import { expect, test } from 'vitest'
 
-import { articlePlural, garmentArticles, searchArticles } from '@/closet/garment-articles'
+import { articlePlural, garmentArticles, garmentArticleGroups, searchArticles } from '@/closet/garment-articles'
 
 const names = (query: string, baby = false) => searchArticles(query, { baby }).map((article) => article.name)
 
@@ -41,8 +41,18 @@ test('nothing typed is no matches, and at most eight are offered', () => {
 })
 
 test('every article sorts as a known type and is named once', () => {
-  for (const article of garmentArticles) expect(garmentKinds).toContain(article.kind)
+  for (const article of garmentArticles) {
+    expect(garmentKinds).toContain(article.kind)
+    expect(garmentArticleGroups.filter((group) => group.kinds.includes(article.kind))).toHaveLength(1)
+  }
   expect(new Set(garmentArticles.map((article) => article.name.toLowerCase())).size).toBe(garmentArticles.length)
+})
+
+test('shirt and sleeve names stay separate from care permissions', () => {
+  expect(names('shirt')[0]).toBe('Button-up shirt')
+  expect(searchArticles('dress shirt', { baby: false })[0]?.kind).toBe('shirt')
+  expect(searchArticles('long-sleeve tee', { baby: false })[0]?.kind).toBe('t_shirt')
+  for (const query of ['henley', 'Henley shirt', 'short-sleeve henley', 'long-sleeve henley']) expect(searchArticles(query, { baby: false })[0]).toMatchObject({ name: 'Henley', kind: 't_shirt' })
 })
 
 test('articles count as plurals, and names already plural stay', () => {

@@ -45,10 +45,10 @@ mkdir -p .review-data/fixtures && cp -n ../fixtures/*.png .review-data/fixtures/
 pnpm --dir apps/web run review
 ```
 
-Open <http://127.0.0.1:3010/review> and sign in with the key in `rehearsal/source/.review-data/access-key`. This repository is the Git checkout the inventory needs, so skip the `git init` step in the handoff's own README.
+Open <http://127.0.0.1:3010/review>. A browser on loopback needs no key. CIVIC's own tools (`civic recapture`, `civic repro --capture`) and Amp portal visitors who aren't collaborators use the key in `rehearsal/source/.review-data/access-key`. The bundled thumbnails predate v6's per-screen fingerprints, so they show as stale placeholders until current snapshots render.
 
 Before a pull request merges, run [`bin/signoff`](bin/signoff) from a clean checkout of its branch. It runs the [graph](graph), [review loop](review), [importer](importers), Button demo and Card demo checks, the `civic check` gate, `pnpm run check`, `pnpm test` and the review-server tests locally, then posts a green `signoff` commit status and a `civic` gate status on GitHub through the GitHub CLI. `bin/civic check --post` posts the `civic` status on its own, red or green. Add `--browser` to include the Button demo's web evidence and the Playwright review-canvas journey while the review server is running. CIVIC uses local signoffs instead of GitHub Actions to keep CI costs down.
 
 ## Status
 
-The journey engine is at the v4 handoff, verified, and running in an orb, with coverage, cross-route actions, and routed arrows alongside the Contract panel. Web implementation evidence covers all 173 registered screens; design reference, native, and QA evidence are the next gaps.
+The journey engine is at the v6 handoff, with a project manifest and picker, static discovery for existing apps, per-screen snapshot fingerprints and a direct agent-session bridge, alongside the Contract panel. It runs in an orb. Web implementation evidence covers all 204 registered screens; design reference, native, and QA evidence are the next gaps.

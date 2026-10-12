@@ -5,6 +5,7 @@ import { DiscardChecksCallout, Drying, DryingView, midRunPiece, pieceNames, runM
 import { assertPlainCopy } from '@/kit/test-copy'
 import { midCheckText } from '@/copy-drying'
 import { dryerContextSuggestion } from '@washcloset/planner'
+import { dryingPage } from './drying-view'
 
 const queryState = vi.hoisted(() => ({ value: [] as unknown, reasking: false, asked: 0 }))
 vi.mock('convex/react', async (original) => {
@@ -60,6 +61,25 @@ const queue = (extra: Partial<DryingQueue> = {}): DryingQueue => ({
 const render = (screen: DryingScreen, data = queue(), drafts: CheckDrafts = {}) => renderToStaticMarkup(
   <DryingView queue={data} householdId="home" now={0} onBack={() => undefined} combine={false} onCombine={() => undefined} onCapacity={() => undefined} initialScreen={screen} initialDrafts={drafts} />,
 )
+
+test('1000 distinct drying groups page and search the complete set without changing care selections', () => {
+  const pieces = Array.from({ length: 1000 }, (_, index) => piece(`p${index}`, `Care item ${String(index).padStart(4, '0')}`, index % 2 ? 'Washer 3' : 'Washer 5'))
+  const groups = pieceGroups(pieces)
+  expect(dryingPage(groups, '', 0).shown).toHaveLength(40)
+  expect(dryingPage(groups, '', 24).shown.at(-1)![0]!.pieceId).toBe('p999')
+  expect(dryingPage(groups, '', 100).at).toBe(24)
+  expect(dryingPage(groups, 'ITEM 0999 washer 3', 24).shown.flat().map(piece => piece.pieceId)).toEqual(['p999'])
+  expect(dryingPage(groups, 'unmatched', 2).shown).toHaveLength(0)
+  expect(dryByCount(groups, { p999: 0 })).toHaveLength(999)
+  const running = pieces.map(piece => ({ ...piece, status: 'drying' as const, dryingRunId: 'run' as never }))
+  const runs: DryingQueue['runs'] = [{ runId: 'run' as never, kind: 'air', method: 'rack_line', dryerId: null, dryerName: null, heatLabel: null, startedAt: 0, minutes: null, reminded: false, pieceIds: pieces.map(piece => piece.pieceId) }]
+  const markup = render({ kind: 'check', runId: 'run' }, queue({ pieces: running, runs }))
+  expect(markup.match(/role="checkbox"/g)).toHaveLength(40)
+  expect(markup).toContain('1000 dry')
+  const away = render({ kind: 'putaway' }, queue({ pieces: pieces.map(piece => ({ ...piece, status: 'dry', driedIn: 'Line' })) }))
+  expect(away).toContain('1000 of 1000 pieces selected')
+  expect(away).not.toContain('Care item 0999')
+})
 
 test('matched flat shade and drip instructions require method, recorded extraction and explicit place confirmations', () => {
   const instructions = { source: 'Synthetic checked sewn label', preparation: [], washing: [], beforeDrying: [], drying: ['Drip dry flat in shade away from direct heat'], afterDrying: [], ironing: [],
@@ -152,6 +172,17 @@ test('an altered drying method is distinct from the recorded label, and running 
   const markup = render({ kind: 'plan' }, running)
   expect(markup).toContain('2 pieces · Cotton tee')
   expect(markup).not.toContain('Cotton tee, Cotton tee')
+})
+
+test('large drying runs show a bounded preview and keep the full piece count', () => {
+  const pieces = Array.from({ length: 1000 }, (_, index) => piece(`p${index}`, `Care item ${index}`, 'Washer 3', { status: 'drying', dryingRunId: 'run' as never }))
+  const markup = render({ kind: 'plan' }, queue({ pieces,
+    plan: { loads: [], natural: [], unset: [], mixedHeats: false },
+    runs: [{ runId: 'run' as never, dryerId: null, reminded: false, kind: 'air', method: 'rack_line', startedAt: 0, minutes: null, pieceIds: pieces.map((entry) => entry.pieceId), dryerName: null, heatLabel: null }],
+  }))
+  expect(markup).toContain('1000 pieces · Care item 0, Care item 1, Care item 2, 997 more')
+  expect(markup).not.toContain('Care item 999')
+  expect(markup).toContain('Check when dry')
 })
 
 test('the dryer screen asks which dryer first, then lists what goes in; only this load\'s overflow stays queued', () => {

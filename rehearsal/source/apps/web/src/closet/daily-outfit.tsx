@@ -12,13 +12,24 @@ import { GarmentIcon } from '@/kit/garment-icon'
 import { colourWord } from '@/copy'
 import { Sheet } from '@/kit/sheet'
 import { TaskFooter } from '@/kit/task-footer'
-import { chipClassName } from '@/closet/closet-parts'
+import { chipClassName, SearchField } from '@/closet/closet-parts'
 import { ErrorNotice, Loading, useConvexCall } from '@/kit/ui'
 import { DesignIcon } from '@/kit/design-icons'
 
 export function localOutfitDate(now: number) {
   const day = new Date(now)
   return `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`
+}
+
+/** Root summary stays small; loading the recipient's ready wardrobe waits until the picker opens. */
+export function DailyOutfitSummary({ householdId, now, wearerId }: { householdId: string; now: number; wearerId: string | null }) {
+  const [date, setDate] = useState<string | null>(null)
+  useEffect(() => setDate(localOutfitDate(now)), [now])
+  const plans = useQuery(api.outfits.today, date === null ? 'skip' : { householdId: householdId as FunctionArgs<typeof api.outfits.today>['householdId'], wearerId: wearerId as FunctionArgs<typeof api.outfits.today>['wearerId'], date })
+  const items = plans?.find(plan => plan.isYou)?.items ?? []
+  return plans === undefined ? <Loading what="today’s outfit" /> : items.length === 0 ? <p className="m-0 text-[length:var(--step--1)] text-ink-2">Choose ready clothes and record what you wear.</p> : <ul aria-label="Your planned outfit" className="m-0 grid list-none gap-2 p-0">
+    {items.map(item => <li key={item.key} className="flex min-w-0 items-center gap-3"><GarmentIcon kind={item.kind} colorGroup={item.colorGroup} /><span className="min-w-0 text-[length:var(--step--1)] font-semibold [overflow-wrap:anywhere]">{item.name}{item.quantity > 1 ? ` ×${item.quantity}` : ''}</span></li>)}
+  </ul>
 }
 
 /** Reuse pieces already worn today before recording another wear of the same style. */
@@ -36,14 +47,20 @@ export function DailyOutfit({ householdId, inventory, now, meWearerId }: {
   useEffect(() => { setDay({ date: localOutfitDate(now) }) }, [now])
   const recipient = chosenRecipient !== null && (chosenRecipient === 'unassigned' || inventory.wearers.some((person) => person.wearerId === chosenRecipient)) ? chosenRecipient : meWearerId ?? inventory.wearers[0]?.wearerId ?? 'unassigned'
   const wearerId = recipient === 'unassigned' ? null : recipient as FunctionArgs<typeof api.outfits.today>['wearerId']
-  const hasUnassigned = inventory.wearers.length === 0 || inventory.textiles.some((item) => !item.guest && item.wearerId === null)
+  const overview = useQuery(api.inventoryBrowse.summary, { householdId: householdId as FunctionArgs<typeof api.inventoryBrowse.summary>['householdId'], search: '', section: 'all', tags: [] })
+  const hasUnassigned = inventory.wearers.length === 0 || (overview?.people.find(person => person.wearerId === null)?.count ?? 0) > 0
   const recipientCount = inventory.wearers.length + (hasUnassigned ? 1 : 0)
   return <section className="daily-outfit grid gap-3" aria-labelledby="today-outfit-title">
     {day === null ? <><h2 id="today-outfit-title" className="m-0 text-[length:var(--step-2)] font-semibold">Today’s outfit</h2><Loading what="today’s outfit" /></> : <>
-    <DailyOutfitPick key={`${day.date}:${recipient}`} householdId={householdId} inventory={inventory} date={day.date} wearerId={wearerId}
+    <ConnectedOutfitPick key={`${day.date}:${recipient}`} householdId={householdId} date={day.date} wearerId={wearerId}
       recipientControl={recipientCount > 1 ? <span className="max-w-[9rem] [&>div]:w-auto"><label htmlFor="outfit-recipient" className="sr-only">Outfit for</label><NativeSelect id="outfit-recipient" size="sm" value={recipient} onChange={(event) => setRecipient(event.target.value)}>{inventory.wearers.map((person) => <option key={person.wearerId} value={person.wearerId}>{person.wearerId === meWearerId ? 'Me' : person.name}</option>)}{hasUnassigned ? <option value="unassigned">Unassigned clothes</option> : null}</NativeSelect></span> : null} />
     </>}
   </section>
+}
+
+function ConnectedOutfitPick(props: Omit<Parameters<typeof DailyOutfitPick>[0], 'inventory'>) {
+  const inventory = useQuery(api.inventory.list, { householdId: props.householdId as FunctionArgs<typeof api.inventory.list>['householdId'], readyWearer: props.wearerId })
+  return inventory === undefined ? <Loading what="ready clothes" /> : <DailyOutfitPick {...props} inventory={inventory} />
 }
 
 function OutfitItems({ items, unavailableKeys }: { items: FunctionReturnType<typeof api.outfits.today>[number]['items']; unavailableKeys: ReadonlySet<string> }) {
@@ -93,23 +110,31 @@ export function OutfitPickerSheet({ choices, tags, tag, draft, dirty, pending, s
   draft: Record<string, number>; dirty: boolean; pending: boolean; staleDraft: boolean; selectedCount: number; hasOutfit: boolean; error: string | null;
   onClose: () => void; onSave: () => void; onTag: (tag: string | null) => void; onChange: (key: string, quantity: number) => void;
 }) {
+  const [search, setSearch] = useState('')
+  const words = search.trim().toLocaleLowerCase().split(/\s+/u).filter(Boolean)
+  const names = new Map<string, number>()
+  for (const [, { textile }] of choices) names.set(textile.name, (names.get(textile.name) ?? 0) + 1)
+  const matching = choices.filter(([, { textile }]) => words.every(word => [textile.name, textile.color, colourWord(textile.colorGroup)].filter(Boolean).join(' ').toLocaleLowerCase().includes(word)))
   return <Sheet title="Outfit" onClose={onClose} dirty={dirty}
     footer={<TaskFooter>
       <Button size="lg" disabled={pending || staleDraft || !dirty} onClick={onSave}>{pending ? 'Saving…' : selectedCount === 0 && hasOutfit ? 'Clear outfit' : 'Save outfit'}</Button>
     </TaskFooter>}>
+    <SearchField label="Find ready clothes" placeholder="Search name or color" value={search} onChange={setSearch} />
+    <p className="m-0 text-ink-2" role="status">{matching.length} {matching.length === 1 ? 'item' : 'items'} · {selectedCount} selected</p>
     {tags.length > 0 || tag !== null ? <div className="-mx-6 flex gap-2 overflow-x-auto px-6 [scrollbar-width:none]" role="group" aria-label="Outfit tags"><button type="button" className={chipClassName} aria-pressed={tag === null} onClick={() => onTag(null)} disabled={pending}>All tags</button>{tags.map((value) => <button key={value} type="button" className={chipClassName} aria-pressed={tag === value} onClick={() => onTag(value)} disabled={pending}>{value}</button>)}</div> : null}
     <ul className="m-0 flex list-none flex-wrap items-start gap-2 p-0" aria-label="Choose ready clothes">
-      {choices.map(([key, { textile, count }]) => {
+      {matching.map(([key, { textile, count }]) => {
         const quantity = draft[key] ?? 0
-        return <li key={key} className="grid max-w-full gap-1">
+        return <li key={key} className="grid max-w-full gap-1 [content-visibility:auto] [contain-intrinsic-size:auto_4rem]">
           <button type="button" className={cn(chipClassName, 'min-w-0 max-w-full whitespace-normal py-2 text-start [overflow-wrap:anywhere]')} aria-pressed={quantity > 0} aria-label={`Choose ${textile.name}, ${textile.color ?? colourWord(textile.colorGroup)}`} disabled={pending} onClick={() => onChange(key, quantity > 0 ? 0 : 1)}>
-            <span className="min-w-0 [overflow-wrap:anywhere]"><GarmentIcon kind={textile.kind ?? null} colorGroup={textile.colorGroup} className="me-1.5 size-[1.25em] align-[-0.3em]" /><span>{textile.name}{choices.some(([otherKey, { textile: other }]) => otherKey !== key && other.name === textile.name) ? ` · ${textile.color ?? colourWord(textile.colorGroup)}` : ''}</span></span>
+            <span className="min-w-0 [overflow-wrap:anywhere]"><GarmentIcon kind={textile.kind ?? null} colorGroup={textile.colorGroup} className="me-1.5 size-[1.25em] align-[-0.3em]" /><span>{textile.name}{(names.get(textile.name) ?? 0) > 1 ? ` · ${textile.color ?? colourWord(textile.colorGroup)}` : ''}</span></span>
           </button>
           {quantity > 0 && count > 1 ? <div className="flex flex-wrap items-center justify-end gap-1 px-4 pb-3 [@container_(width_<_16rem)]:justify-center [@container_(width_<_16rem)]:px-0"><Button variant="tonal" size="icon" aria-label={`Fewer ${textile.name}, ${textile.color}`} disabled={pending || quantity <= 1} onClick={() => onChange(key, quantity - 1)}><DesignIcon name="minus" size="1em"  /></Button><span className="min-w-14 text-center text-[length:var(--step-1)] font-semibold tabular-nums">{quantity} of {count}</span><Button variant="tonal" size="icon" aria-label={`More ${textile.name}, ${textile.color}`} disabled={pending || quantity >= Math.min(count, 20)} onClick={() => onChange(key, quantity + 1)}><DesignIcon name="plus" size="1em"  /></Button></div> : null}
         </li>
       })}
     </ul>
     {choices.length === 0 ? <p className="m-0 text-[length:var(--step-0)] text-ink-2">No ready clothes{tag ? ` tagged “${tag}”` : ''}.</p> : null}
+    {choices.length > 0 && matching.length === 0 ? <p className="m-0 text-ink-2">No ready clothes match this search.</p> : null}
     {staleDraft ? <p role="alert" className="m-0 text-[length:var(--step--1)] text-ink-2">Some clothes are no longer ready. Close and choose again.</p> : null}
     <ErrorNotice error={error} />
   </Sheet>

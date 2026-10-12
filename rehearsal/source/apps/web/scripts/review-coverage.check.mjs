@@ -28,6 +28,10 @@ test('coverage separates planned intent, source presence, partial previews, tran
   m.scenarios[0].edges = [{ destination: 'middle' }]
   m.scenarios.push({ id: 'middle', edges: [{ destination: 'first' }, { destination: 'last' }] })
   assert.deepEqual(coverageReport(m, { version: 1, targets: [target] }, new Set()).targets[0].missingEdges, [], 'journey checkpoints can connect through intermediate screens and loops')
+  m.scenarios[1].renderer = 'route-state'
+  assert.match(coverageReport(m, { version: 1, targets: [target] }, new Set()).targets[0].reason, /Scoped local behavior has execution evidence/)
+  m.validation.status = 'stale'
+  assert.match(coverageReport(m, { version: 1, targets: [target] }, new Set()).targets[0].reason, /still need a continuous runtime/)
 })
 
 test('coverage contract rejects duplicate identities, traversal, oversized data and invalid target kinds', () => {

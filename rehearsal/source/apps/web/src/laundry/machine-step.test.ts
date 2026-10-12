@@ -14,6 +14,14 @@ test('review swipes require a deliberate horizontal gesture', () => {
   expect(reviewSwipe(60, 80)).toBeNull()
 })
 
+test('step progress labels its own instruction count and falls back safely for unknown counts', () => {
+  const render = (progress: string) => renderToStaticMarkup(createElement(StepBlock, { titleId: 'step', eyebrow: 'Before clothes', title: 'Pour into the empty drum', progress }))
+  expect(render('2 of 5')).toContain('Step 2 of 5')
+  expect(render('2 of 5')).toContain('repeat(5, minmax(0, 1fr))')
+  expect(render('unknown')).not.toContain('grid-template-columns')
+  expect(render('0 of 5')).not.toContain('grid-template-columns')
+})
+
 const facts: MachineFacts = {
   doorLocks: true,
   cycle: 'normal',

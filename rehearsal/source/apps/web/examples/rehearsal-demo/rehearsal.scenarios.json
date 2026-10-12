@@ -1,0 +1,6 @@
+[
+  { "id": "demo.home", "label": "Notebook home", "journey": "Write a note", "section": "Main", "component": "src/screens.js", "edges": [{ "action": "New note", "destination": "demo.edit" }] },
+  { "id": "demo.edit", "label": "Compose note", "journey": "Write a note", "section": "Main", "component": "src/screens.js", "captureFields": ["Title"], "edges": [{ "action": "Save", "destination": "demo.saved", "when": "Author, normal condition and a nonempty title" }, { "action": "Review first", "destination": "demo.review", "when": "A nonempty title", "returnTo": "Compose note, keeping the draft" }, { "action": "Cancel", "destination": "demo.home", "returnTo": "Notebook home" }] },
+  { "id": "demo.saved", "label": "Saved note", "journey": "Write a note", "section": "Main", "component": "src/screens.js", "fixture": { "title": "Saved synthetic note" }, "edges": [{ "action": "Back home", "destination": "demo.home", "returnTo": "Notebook home" }] },
+  { "id": "demo.review", "label": "Review draft", "journey": "Write a note", "section": "Main", "component": "src/screens.js", "branchOf": "demo.edit", "edges": [{ "action": "Back to draft", "destination": "demo.edit", "returnTo": "Compose note, keeping all inputs" }] }
+]

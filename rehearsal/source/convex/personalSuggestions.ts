@@ -1,3 +1,4 @@
+import { getPlan } from './planStorage'
 import { ConvexError, v } from 'convex/values'
 import { personalContextKey, personalPlannerPolicyVersion, personalSuggestionGuidance, personalSuggestionRank, plan, plannerVersion, productBenefit, sha256, stableJson, type PersonalOutcomeContext } from '@washcloset/planner'
 import { mutation, query } from './_generated/server'
@@ -23,7 +24,7 @@ const comparisonView = v.object({ proposalPolicyVersion: v.literal(proposalPolic
       guidance: guidanceView, summaries: v.array(candidateSummaryView) })) })
 
 async function compareForPlan(ctx: ReadCtx, action: Action, args: import('convex/values').Infer<typeof comparisonArgs>) {
-    const stored = await ctx.db.get(args.planId)
+    const stored = await getPlan(ctx, args.planId)
     if (stored === null) fail('not_found', 'Plan not found')
     const actor = (await authorize(ctx, action, { householdId: stored.householdId })).actor
     if (stored.plannerVersion !== plannerVersion || stored.status === 'stale' || stored.status === 'retired' || stored.textileIds === undefined) fail('stale', 'Review the current plan before comparing optional choices')
@@ -142,7 +143,7 @@ export const savedForPlan = query({ args: { planId: v.id('plans'), loadId: v.str
   returns: v.union(v.null(), v.object({ ...savedMetadata, status: v.literal('current'), result: v.any() }),
     v.object({ ...savedMetadata, status: v.literal('stale'), reason: v.string() })),
   handler: async (ctx, args) => {
-    const stored = await ctx.db.get(args.planId)
+    const stored = await getPlan(ctx, args.planId)
     if (stored === null) return null
     const actor = (await authorize(ctx, 'plan.read', { householdId: stored.householdId })).actor
     const saved = await ctx.db.query('personalPlanGuidance').withIndex('by_plan_principal_load', (q) => q.eq('planId', args.planId).eq('principalKey', actor.key).eq('loadId', args.loadId)).unique()

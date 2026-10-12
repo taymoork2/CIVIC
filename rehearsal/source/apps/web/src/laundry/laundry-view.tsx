@@ -1,6 +1,6 @@
 import { buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { doorLocksDuringCycle, type SoilLevel } from '@washcloset/planner'
+import { doorLocksDuringCycle, matchesClothingSearch, type SoilLevel } from '@washcloset/planner'
 import { useMutation, useQuery } from 'convex/react'
 import { useHouseholdData } from '@/household/household-data'
 import type { FunctionArgs, FunctionReference, FunctionReturnType } from 'convex/server'
@@ -23,6 +23,7 @@ import { colorWord, countWord, dayWord, laundryText, planningText, soilButtonWor
 import { FlagSheet, draftFromFlag, type FlagCall } from '@/closet/flag-sheet'
 import { StainInspectionSheet } from '@/closet/stain-inspection'
 import { groupGarments } from '@/closet/garment-groups'
+import { SearchField } from '@/closet/closet-parts'
 import { DroppedOffSheet, GarmentSheet, type GarmentCalls, type GarmentSheetNext } from '@/closet/garment-sheet'
 import type { HubState } from '@/home/hub-state'
 import { homeClock } from '@/home/home-clock'
@@ -34,9 +35,10 @@ import {
   chooseDetergent, chooseOptionalProduct, choosePretreatment, currentPass, emptyPass, frozenPins, groupCareQuestions, handWashList, hamperGroups, hamperSelection, machineHamper, leaveOutProduct, passArgs, pinRefusal, withoutGarments, washOrder, dryerRuns,
   type Pass, type Pin, type PlanLoad, type PlanQuestion, type StoredPlan,
 } from '@/laundry/laundry-pass'
-import { doseLine, loadNames, flagWords, loadCardView, loadHasQuestion, type CardGarment, type DoseLineView, type LoadFacts, type LoadStart } from '@/laundry/load-card'
+import { doseLine, loadNames, flagWords, loadCardView, loadHasQuestion, type CardGarment, type DoseLineView, type LoadFacts, type LoadStart, type LoadCardView } from '@/laundry/load-card'
 import { hubScreenText, loadScreenText, planReviewText, washerPathText } from '@/copy-laundry'
 import { DayPlan, type UpNext } from '@/laundry/plan-pick'
+import { LaundryWorkspace } from '@/laundry/laundry-workspace'
 import { BackButton, Callout, HeldNote, Note, QuantityStepper, Section, SwitchRow, TaskHeading, TrialNote, MachineEntry, useRecentMachines, washerEntryWords, largeClassName } from '@/laundry/laundry-ui'
 import { NextStepCard, SharedCounts } from '@/laundry/next-step'
 import { ItemContent, ItemDescription, ItemTitle, itemVariants } from '@/components/ui/item'
@@ -59,7 +61,7 @@ import { DesignIcon } from '@/kit/design-icons'
 import { blockingCount, nextCheck, sourceGroups, type IssueAction, type SourceGroup } from '@/products/source-issues'
 import { QuestionCard, questionEffect, washerGroupIds, type QuestionAction, type QuestionCalls } from '@/laundry/question-card'
 import type { SessionStage } from '@/laundry/session-stage'
-import { useNow } from '@/laundry/session-view'
+import { useNow } from '@/kit/use-now'
 import { Sheet } from '@/kit/sheet'
 import { TaskFooter } from '@/kit/task-footer'
 import { GarmentIcon } from '@/kit/garment-icon'
@@ -149,7 +151,7 @@ const segmentsLabelClassName = cn(
 
 const washMainClassName = cn(
   "wash-main",
-  "grid gap-6",
+  "grid min-w-0 grid-cols-[minmax(0,1fr)] gap-6",
   "lg:[.page.wash:not(.wash-pass)_>_&]:col-[1]",
 )
 
@@ -171,12 +173,12 @@ export type LaundryCalls = QuestionCalls & GarmentCalls & {
 }
 
 /** Where a Wash button goes outside the tab: Household (to add a washer or a bottle), the Closet, or a started load. */
-export type LaundryTarget = { readonly to: 'household' } | { readonly to: 'closet' } | { readonly to: 'drying'; readonly run?: string } | { readonly to: 'session'; readonly sessionId: string }
+export type LaundryTarget = { readonly to: 'household'; readonly section?: 'machines' | 'bottles' } | { readonly to: 'closet' } | { readonly to: 'drying'; readonly run?: string } | { readonly to: 'session'; readonly sessionId: string }
 export type LaundryLink = (target: LaundryTarget, props: { className: string; children: ReactNode }) => ReactNode
 
 /** Plain links, for tests and anywhere without the router. */
 export const plainLaundryLink: LaundryLink = (target, { className, children }) => (
-  <a className={className} href={target.to === 'session' ? `/session/${target.sessionId}` : target.to === 'drying' && target.run !== undefined ? `/drying?run=${target.run}` : `/${target.to}`}>{children}</a>
+  <a className={className} href={target.to === 'session' ? `/session/${target.sessionId}` : target.to === 'drying' && target.run !== undefined ? `/drying?run=${target.run}` : target.to === 'household' && target.section !== undefined ? `/household?section=${target.section}` : `/${target.to}`}>{children}</a>
 )
 
 export type WashSegment = 'hamper' | 'dry_cleaning'
@@ -622,12 +624,15 @@ export type LaundryViewProps = {
   /** The person looking, so the hamper never says a flag came from them. */
   viewerKey: string | null
   inventory: Inventory
+  inventoryCounts?: { ready: number; total: number }
   hamper: Pick<HamperSummary, 'count' | 'loads'>
   place?: WasherPathView['place']
   /** The hamper as this device left it: rows marked "Not this time" stay out of Make loads. */
   draft: Pick<PlanningDraft, 'selectedTextileIds' | 'seenTextileIds'> | null
   onDraft: (selection: readonly string[], seen: readonly string[]) => void
   planId: string | null
+  loadId?: string | null
+  onOpenLoad?: (planId: string, loadId: string | null) => void
   /** The open plan: undefined while it loads, null when it was replaced. */
   plan: StoredPlan | null | undefined
   questions: readonly PlanQuestion[] | undefined
@@ -680,10 +685,16 @@ export function LaundryView(props: LaundryViewProps) {
   // here with `atMachine`, so a plan updated while she stands at the washer (its review remounts while the
   // new plan loads) keeps the washer she picked; keyed by the load's clothes, so a regrouped load drops it.
   const [chosen, setChosen] = useState<ReadonlyMap<string, PickedWasher>>(() => new Map())
-  // The load opened from the hamper's list; without one, a plan opens on its first load still to start.
+  // The load opened from the hamper's list; without one, show the plan overview.
   const [wantLoad, setWantLoad] = useState<string | null>(null)
+  const selectedLoad = props.loadId === undefined ? wantLoad : props.loadId
+  const openLoad = (planId: string, loadId: string | null) => {
+    setWantLoad(loadId)
+    if (props.onOpenLoad !== undefined) props.onOpenLoad(planId, loadId)
+    else if (props.planId !== planId) onPlan(planId, false)
+  }
   const passTitle = useRef<HTMLHeadingElement>(null)
-  useEffect(() => { passTitle.current?.focus() }, [activeTask, atMachine, plan?.planId])
+  useEffect(() => { passTitle.current?.focus() }, [activeTask, atMachine, plan?.planId, selectedLoad])
   // Leaving the pass closes its washer path, so a new plan never opens on a stale load.
   useEffect(() => { if (props.planId === null) { setAtMachine(null); setChosen(new Map()); setWantLoad(null); setInspectingStain(null) } }, [props.planId])
   // Loads started at the tap that the server has not answered yet, with the tap's time.
@@ -747,7 +758,7 @@ export function LaundryView(props: LaundryViewProps) {
 
   if (props.planId !== null) {
     const stale = plan === null || (plan !== undefined && (plan.status === 'stale' || plan.status === 'retired'))
-    const goBack = () => { if (atMachine !== null) setAtMachine(null); else if (activeTask !== null) setActiveTask(null); else onPlan(null, false) }
+    const goBack = () => { if (atMachine !== null) setAtMachine(null); else if (activeTask !== null) setActiveTask(null); else if (plan?.result.loads.some(load => load.id === selectedLoad)) openLoad(props.planId!, null); else onPlan(null, false) }
     const body = plan === undefined || questions === undefined || cards === undefined ? <Loading what={laundryText.loadingLoads} /> : plan === null ? null : (
       <PassScreen
         recentWashers={props.recentWashers}
@@ -786,7 +797,8 @@ export function LaundryView(props: LaundryViewProps) {
           const next = withoutGarments(current.selection, current.pass, [textileId])
           await replan(next.selection, next.pass, true)
         })}
-        loadId={wantLoad}
+        loadId={selectedLoad}
+        onOpenLoad={(loadId) => openLoad(plan.planId, loadId)}
         outIds={out.filter((id) => hamperIds.includes(id))}
         // The stepper going down, or "Not this time" for a whole row: these pieces stay in the hamper for the next pass.
         onLeaveOut={(textileIds) => void run(async () => {
@@ -957,7 +969,7 @@ export function LaundryView(props: LaundryViewProps) {
       pending={pending}
       nameOf={nameOf}
       onOut={markOut}
-      onOpenLoad={(planId, loadId) => { setWantLoad(loadId); props.onPlan(planId, false) }}
+      onOpenLoad={openLoad}
       onMakeLoads={() => void run(async () => {
         setActiveTask(null)
         // A new Make loads is a new pass: questions set aside last time are asked again.
@@ -1089,7 +1101,7 @@ export function WhichWasherSheet({ choosing, load, pending, product, recentWashe
   )
 }
 
-function PassScreen({ plan, questions, cards, activeQuestion, onQuestion, onChangeClothes, docked, onBack, titleRef, atMachine, onAtMachine, chosen, onChosen: setChosen, loadId, outIds, inventory, place, now, pending, starting, renderLink, onAnswer, onMove, onNotThisTime, onLeaveOut, onAddToLoad, onToggleSoftener, onWashGoal, onLeaveOutProduct, onChoosePretreatment, onInspectStain, onRanOut, onSwitchDetergent, onRestock, onStart, onConfirm, onAddLabel, onAddWasher, onAddBottle, onFindPack, recentWashers }: {
+function PassScreen({ plan, questions, cards, activeQuestion, onQuestion, onChangeClothes, docked, onBack, titleRef, atMachine, onAtMachine, chosen, onChosen: setChosen, loadId, onOpenLoad, outIds, inventory, place, now, pending, starting, renderLink, onAnswer, onMove, onNotThisTime, onLeaveOut, onAddToLoad, onToggleSoftener, onWashGoal, onLeaveOutProduct, onChoosePretreatment, onInspectStain, onRanOut, onSwitchDetergent, onRestock, onStart, onConfirm, onAddLabel, onAddWasher, onAddBottle, onFindPack, recentWashers }: {
   /** The washers this household used most recently, newest first. */
   recentWashers?: readonly string[]
   plan: StoredPlan
@@ -1111,8 +1123,9 @@ function PassScreen({ plan, questions, cards, activeQuestion, onQuestion, onChan
   chosen: ReadonlyMap<string, PickedWasher>
   onChosen: Dispatch<SetStateAction<ReadonlyMap<string, PickedWasher>>>
   onAtMachine: (loadId: string | null) => void
-  /** The load chosen on the Laundry tab; null opens the first load still to start. */
+  /** Null shows the plan overview, including after an outdated load disappears. */
   loadId: string | null
+  onOpenLoad: (loadId: string) => void
   /** Hamper pieces set aside ("Not this time"): what a stepper can bring back, and the left-out rows. */
   outIds: readonly string[]
   inventory: Inventory
@@ -1380,8 +1393,7 @@ function PassScreen({ plan, questions, cards, activeQuestion, onQuestion, onChan
     </Section>
   )
 
-  // The journey is Hamper, Load review, Room: the load chosen on the Laundry tab, else the first one still to start.
-  const shown = loads.find((entry) => entry.id === loadId) ?? loads.find((entry, index) => detailOf(entry, index).start !== 'open') ?? loads[0]
+  const shown = loads.find((entry) => entry.id === loadId)
   if (shown !== undefined) {
     const index = loads.indexOf(shown)
     const { state, startingEntry, view, start, loadQuestion, otherClassNote, problems, check, treatments } = detailOf(shown, index)
@@ -1395,6 +1407,7 @@ function PassScreen({ plan, questions, cards, activeQuestion, onQuestion, onChan
     return (
       <>
         <LoadScreen
+          key={shown.id}
           view={view}
           review={review}
           start={start}
@@ -1432,10 +1445,11 @@ function PassScreen({ plan, questions, cards, activeQuestion, onQuestion, onChan
           onToggleSoftener={onToggleSoftener}
           onPickDetergent={onSwitchDetergent === undefined || state?.sessionId ? undefined : () => setPickingDetergent(shown.id)}
           leftIssues={index === 0 ? leftGroups : undefined}
-          leftNotes={index === 0 ? leftRest.map((row) => row.text) : undefined}
-          extra={<>{householdSection}{state?.sessionId || shown.productRecommendations === undefined ? null : <>
+          leftNotes={index === 0 ? leftRest : undefined}
+          extra={householdSection}
+          optionsExtra={state?.sessionId || shown.productRecommendations === undefined ? null : <>
             <PersonalProductGuidance householdId={plan.householdId} planId={plan.planId} loadId={shown.id} inputHash={plan.inputHash} textileIds={shown.textileIds} textiles={inventory.textiles} supplyIds={shown.productRecommendations.map((decision) => decision.supplyId)} supplies={inventory.supplies} selected={(plan.pass.optionalSupplyIds ?? []).filter((id) => !plan.pass.excludedSupplyIds.includes(id))} disabled={pending || startingEntry !== undefined} benefits={{ decisions: shown.productRecommendations, goal: plan.pass.washGoals?.[0] ?? 'ordinary', onGoal: onWashGoal, onChoose: onToggleSoftener }} />
-          </>}</>}
+          </>}
           onBack={onBack}
           titleRef={titleRef}
           docked={docked}
@@ -1455,7 +1469,7 @@ function PassScreen({ plan, questions, cards, activeQuestion, onQuestion, onChan
     )
   }
 
-  // No load to open: what keeps the clothes out of a wash (a care question, a missing washer) is answered from here.
+  const nextLoad = loads.find((load, index) => detailOf(load, index).start !== 'open') ?? loads[0]
   return (
     <>
       <TaskHeading
@@ -1463,9 +1477,10 @@ function PassScreen({ plan, questions, cards, activeQuestion, onQuestion, onChan
         titleRef={titleRef}
         back={<BackButton label={laundryText.backToHamper} disabled={pending} onClick={onBack} />}
         mark={cards.length > 0 ? { tone: 'waiting', text: planReviewText.toResolve(cards.length) } : undefined}
-        caption={planningText.selected(selected.length)}
+        caption={`${planningText.selected(selected.length)} · ${countWord(loads.length, 'load')}`}
       />
       {cards.length > 0 ? <Note>{planReviewText.waitingTasks}</Note> : null}
+      {loads.length === 0 ? null : <PlanLoadRows loads={loads} detailOf={detailOf} pending={pending} onOpenLoad={onOpenLoad} />}
       <Section heading={planReviewText.clothes}>
         <RecordRow
           media={<DesignIcon name="laundry" size="1em" strokeWidth={2.2}  />}
@@ -1485,7 +1500,7 @@ function PassScreen({ plan, questions, cards, activeQuestion, onQuestion, onChan
           />
         ))}
       </Section>
-      <Note>{pendingCare.size > 0 ? planningText.waitingForCare : planningText.noWashes}</Note>
+      {loads.length > 0 ? null : <Note>{pendingCare.size > 0 ? planningText.waitingForCare : planningText.noWashes}</Note>}
       {washerSheet}
       {householdSection}
       {leftGroups.length === 0 ? null : <SourceRows groups={leftGroups} heading={sourceIssueText.leftOutHeading(leftGroups.length)} pending={pending} onAction={runAction} />}
@@ -1494,8 +1509,30 @@ function PassScreen({ plan, questions, cards, activeQuestion, onQuestion, onChan
           {leftRest.map((row) => <RecordRow key={row.textileId} media={<DesignIcon name="tag" size="1em" strokeWidth={2.2}  />} title={row.text} />)}
         </Section>
       )}
+      {!docked || nextLoad === undefined ? null : <TaskFooter><Button type="button" size="lg" className="w-full" disabled={pending} onClick={() => onOpenLoad(nextLoad.id)}>Review next load</Button></TaskFooter>}
     </>
   )
+}
+
+function PlanLoadRows({ loads, detailOf, pending, onOpenLoad }: {
+  loads: readonly PlanLoad[]
+  detailOf: (load: PlanLoad, index: number) => { view: LoadCardView; start: LoadStart }
+  pending: boolean
+  onOpenLoad: (loadId: string) => void
+}) {
+  const [limit, setLimit] = useState(5)
+  return <>
+    <Section heading="Your loads" caption={countWord(loads.length, 'load')}>
+      {loads.slice(0, limit).map((load, index) => {
+        const { view, start } = detailOf(load, index)
+        return <RecordRow key={load.id} media={<DesignIcon name="washer" size="1em" />} title={view.title}
+          fact={`${countWord(load.textileIds.length, 'piece')} · ${view.settings}`}
+          mark={{ tone: start === 'open' ? 'washing' : start === 'start' ? 'ready' : 'confirm', text: start === 'open' ? 'In progress' : start === 'start' ? 'Ready to review' : 'Needs attention' }}
+          onOpen={pending ? undefined : () => onOpenLoad(load.id)} />
+      })}
+    </Section>
+    {loads.length <= limit ? null : <Button type="button" variant="outline" onClick={() => setLimit(current => current + 5)}>Show next {Math.min(5, loads.length - limit)} loads</Button>}
+  </>
 }
 
 const sourceIcon = { garment: <DesignIcon name="tag" size="1em" strokeWidth={2.2}  />, product: <DesignIcon name="drop" size="1em" strokeWidth={2.2}  />, washer: <DesignIcon name="washer" size="1em" strokeWidth={2.2}  /> } as const
@@ -1654,10 +1691,7 @@ function HamperScreens(props: HamperScreensProps) {
       <div className={cn(laundryPageClassName, washClassName, 'is-selecting')}>
         <CareHero title="Laundry" />
         <div className={washMainClassName}>
-          <CareEmpty icon="laundry" title="Your hamper is clear">
-            <Button variant="outline" onClick={() => setSheet({ kind: 'add_hamper' })}>Add clothes to wash</Button>
-            {renderLink({ to: 'closet' }, { className: buttonVariants({ variant: 'ghost' }), children: 'Choose from closet' })}
-          </CareEmpty>
+          <LaundryWorkspace householdId={props.householdId} inventory={inventory} counts={props.inventoryCounts} now={now} waiting={0} empty active={false} pending={pending} renderLink={renderLink} onAdd={() => setSheet({ kind: 'add_hamper' })} flag={calls.flagDirty} onDone={done} />
           {itemNotice}
           {props.error}
         </div>
@@ -1697,16 +1731,12 @@ function HamperScreens(props: HamperScreensProps) {
     </TaskFooter>
   ) : null
 
+  const workspace = <LaundryWorkspace householdId={props.householdId} inventory={inventory} counts={props.inventoryCounts} now={now} waiting={hamper.count} empty={false} active={nextLoad !== null || runningRows.length > 0} pending={pending} renderLink={renderLink} onAdd={() => setSheet({ kind: 'add_hamper' })} flag={calls.flagDirty} onDone={done} />
   return <>
     <div className={cn(laundryPageClassName, washClassName, 'is-selecting')}>
       <CareHero title="Laundry" />
       <div className={washMainClassName}>
-        {nextLoad !== null || runningRows.length > 0 || hamperIds.length === 0 ? null : <section aria-label="Plan your wash" className="grid min-w-0 grid-cols-[minmax(0,1fr)] gap-2 rounded-card bg-surface p-5 shadow-[var(--e1)]">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="grid size-12 flex-none place-items-center rounded-control bg-hamper-bg text-hamper-ink" aria-hidden="true"><DesignIcon name="laundry" size={28} /></span>
-            <h2 className="m-0 min-w-0 flex-1 basis-[10rem] text-[length:var(--step-2)] font-semibold">{selection.length === 0 ? 'Choose clothes to wash' : `${countWord(selection.length, 'piece')} selected`}</h2>
-          </div>
-        </section>}
+        {nextLoad === null && runningRows.length === 0 ? workspace : null}
         {/* At home with one dryer: the next wash, timed against the dryer, and the minutes it needs. */}
         {(state.kind === 'running' || state.kind === 'finished' || state.kind === 'pass') && state.step !== undefined ? <NextStepCard step={state.step} moving={state.kind === 'finished'} now={now} /> : null}
         <EarlyChecks checks={props.checks ?? []} now={now} renderOpen={(run, linkProps) => renderLink({ to: 'drying', run }, linkProps)} />
@@ -1727,8 +1757,9 @@ function HamperScreens(props: HamperScreensProps) {
             {hanging === 0 ? null : <LinkRow renderLink={renderLink} to={{ to: 'drying' }} media={<DesignIcon name="hang" size={24} strokeWidth={1.6} />} title={hubScreenText.hangingCount(hanging)} fact={hubScreenText.plannedByTag} mark={{ tone: 'drying' }} />}
           </Section>
         )}
-        {pipeline.counts.hamper > 0 ? <HamperSegment {...props} onSheet={openSheet} /> : runningRows.length + queued + dryPieces + hanging + dryCleaningCount === 0 && nextLoad === null ? <Note>{hubScreenText.hamperEmptyNote}</Note> : null}
+        {pipeline.counts.hamper > 0 || handWashList(inventory.textiles).length > 0 ? <HamperSegment {...props} onSheet={openSheet} /> : runningRows.length + queued + dryPieces + hanging + dryCleaningCount === 0 && nextLoad === null ? <Note>{hubScreenText.hamperEmptyNote}</Note> : null}
         {dryCleaningCount === 0 ? null : dryClean}
+        {nextLoad === null && runningRows.length === 0 ? null : workspace}
 
         {/* No "Ready for today": nothing in the real data says what is ready for a given occasion today. */}
 
@@ -1765,36 +1796,72 @@ function RoutedLaundrySheets(props: ComponentProps<typeof LaundrySheets>) {
 }
 
 function HamperSegment({ now, inventory, viewerKey, out, pending, calls, run, onOut, onSheet }: HamperScreensProps & { onSheet: (sheet: LaundrySheet) => void }) {
-  const groups = hamperGroups(inventory.textiles, inventory.wearers)
-  const handWash = handWashList(inventory.textiles)
+  const [search, setSearch] = useState('')
+  const [page, setPage] = useState(0)
+  const status = useRef<HTMLParagraphElement>(null)
+  const changingPage = useRef(false)
+  const entries = useMemo(() => {
+    const machine = hamperGroups(inventory.textiles, inventory.wearers).flatMap(group => {
+      const pieces = new Map(group.rows.map(piece => [piece.textileId as string, piece]))
+      const owner = group.name || inventory.wearers.find(person => person.wearerId === group.key)?.name || (group.guests ? 'Guest' : 'Shared')
+      return hamperPiles(group.rows, now, inventory.wearers, viewerKey).map(pile => ({ key: `${group.key}:${pile.key}`, pile, owner, pieces: pile.textileIds.map(id => pieces.get(id)!), hand: false as const }))
+    })
+    const hand = handWashList(inventory.textiles).map(piece => ({ key: piece.textileId as string, owner: inventory.wearers.find(person => person.wearerId === piece.wearerId)?.name ?? 'Shared', pieces: [piece], hand: true as const }))
+    return [...machine, ...hand]
+  }, [inventory.textiles, inventory.wearers, now, viewerKey])
+  const words = search.trim().split(/\s+/).filter(Boolean)
+  const matches = entries.filter(entry => entry.pieces.some(piece => words.every(word => matchesClothingSearch(piece, entry.owner, word))))
+  const at = Math.max(0, Math.min(page, Math.ceil(matches.length / 40) - 1))
+  const shown = matches.slice(at * 40, (at + 1) * 40)
+  const machine = shown.filter(entry => !entry.hand)
+  const handWash = shown.filter(entry => entry.hand)
+  const machineIds = entries.filter(entry => !entry.hand).flatMap(entry => entry.pile.textileIds)
+  const selected = machineIds.filter(id => !out.includes(id)).length
+  useEffect(() => {
+    if (changingPage.current) { changingPage.current = false; status.current?.focus(); status.current?.scrollIntoView({ block: 'nearest' }) }
+  }, [page])
+  const go = (next: number) => { changingPage.current = true; setPage(next) }
 
   return (
     <>
-      {groups.length === 0 ? null : (
+      {entries.length > 40 || search !== '' ? <div className="grid min-w-0 gap-3">
+        <SearchField label="Search hamper" placeholder="Name, color, fabric or person" value={search} onChange={value => { setSearch(value); setPage(0) }} />
+        <p ref={status} tabIndex={-1} role="status" className="m-0 text-ink-2 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-ring">
+          {matches.length === 0 ? 'No matching clothes.' : `Groups ${at * 40 + 1}–${at * 40 + shown.length} of ${matches.length} · ${countWord(matches.reduce((sum, entry) => sum + entry.pieces.length, 0), 'piece')}`}
+        </p>
+        {machineIds.length === 0 ? null : <>
+          <p className="m-0 text-ink-2">{selected} of {machineIds.length} machine-wash pieces selected across every page.</p>
+          <div className="flex flex-wrap gap-2">
+            <Button type="button" variant="outline" disabled={pending || selected === machineIds.length} onClick={() => onOut(machineIds, false)}>Select all machine-wash pieces</Button>
+            <Button type="button" variant="outline" disabled={pending || selected === 0} onClick={() => onOut(machineIds, true)}>Clear wash selection</Button>
+          </div>
+        </>}
+      </div> : null}
+      {machine.length === 0 ? null : (
         <Section heading={hubScreenText.inHamper2}>
-          {groups.flatMap((group) => hamperPiles(group.rows, now, inventory.wearers, viewerKey).map((pile) => {
+          {machine.map(({ key, pile, owner }) => {
+            const ownerLabel = entries.length > 40 ? owner : ''
             const selectedIds = pile.textileIds.filter((textileId) => !out.includes(textileId))
             const count = selectedIds.length
-            // The design's hamper row says only how many are selected and the colour; needed-by stays because it changes the plan.
-            const fact = [hubScreenText.selectedOf(count, pile.count), pile.color, pile.neededBy === null ? null : laundryText.needed(pile.neededBy)].filter((part): part is string => part !== null).join(' · ')
+            const fact = [hubScreenText.selectedOf(count, pile.count), pile.color, ownerLabel || null, pile.neededBy === null ? null : laundryText.needed(pile.neededBy)].filter((part): part is string => part !== null).join(' · ')
             return (
               <RecordRow
-                key={pile.key}
+                key={key}
                 media={<GarmentIcon kind={pile.kind} colorGroup={pile.colorGroup} />}
                 title={pile.name}
                 fact={fact}
                 onOpen={() => onSheet({ kind: 'garment', textileIds: pile.textileIds })}
-                label={pileLabel(pile)}
-                trailing={<QuantityStepper value={count} max={pile.count} label={[pile.name, pile.color].filter(Boolean).join(', ')} onChange={(next) => { const delta = washCountDelta(pile.textileIds, selectedIds, next); if (delta.ids.length > 0) onOut(delta.ids, delta.setAside) }} />}
+                label={[ownerLabel, pileLabel(pile)].filter(Boolean).join(', ')}
+                trailing={<QuantityStepper value={count} max={pile.count} disabled={pending} label={[ownerLabel, pile.name, pile.color].filter(Boolean).join(', ')} onChange={(next) => { const delta = washCountDelta(pile.textileIds, selectedIds, next); if (delta.ids.length > 0) onOut(delta.ids, delta.setAside) }} />}
               />
             )
-          }))}
+          })}
         </Section>
       )}
 
       {handWash.length === 0 ? null : (
-        <Section heading={laundryText.handWashCount(handWash.length)}>
-          {handWash.map((textile) => (
+        <Section heading={laundryText.handWashCount(entries.filter(entry => entry.hand).length)}>
+          {handWash.map(entry => { const textile = entry.pieces[0]!; return (
             <RecordRow
               key={textile.textileId}
               media={<GarmentIcon kind={textile.kind} colorGroup={textile.colorGroup} />}
@@ -1805,9 +1872,13 @@ function HamperSegment({ now, inventory, viewerKey, out, pending, calls, run, on
                 return backInClosetToast([textile.name], result.changed)
               })}>{laundryText.washedByHand}</Button>}
             />
-          ))}
+          ) })}
         </Section>
       )}
+      {matches.length > 40 ? <nav aria-label="Hamper pages" className="flex flex-wrap gap-2">
+        <Button type="button" variant="outline" disabled={at === 0} onClick={() => go(at - 1)}>Previous 40</Button>
+        <Button type="button" variant="outline" disabled={(at + 1) * 40 >= matches.length} onClick={() => go(at + 1)}>Next 40</Button>
+      </nav> : null}
     </>
   )
 }
@@ -1922,7 +1993,7 @@ export function PlanWasherSheet({ householdId, savedPlace, onClose, onSaved }: {
 }
 
 /** The Laundry tab with its live data. */
-export function Laundry({ household, planId, onPlan, onSession, renderLink, openAddHamper = false, openMakeLoads = false, initialItem, onItemOpen, onItemClose }: {
+export function Laundry({ household, planId, loadId, onOpenLoad, onPlan, onSession, renderLink, openAddHamper = false, openMakeLoads = false, initialItem, onItemOpen, onItemClose }: {
   household: CurrentHousehold
   initialItem?: string
   onItemOpen?: LaundryViewProps['onItemOpen']
@@ -1931,6 +2002,8 @@ export function Laundry({ household, planId, onPlan, onSession, renderLink, open
   openAddHamper?: boolean
   openMakeLoads?: boolean
   planId: string | null
+  loadId?: LaundryViewProps['loadId']
+  onOpenLoad?: LaundryViewProps['onOpenLoad']
   onPlan: LaundryViewProps['onPlan']
   onSession: LaundryViewProps['onSession']
   renderLink: LaundryLink
@@ -1940,7 +2013,8 @@ export function Laundry({ household, planId, onPlan, onSession, renderLink, open
   const now = useNow(30_000)
   const minute = Math.floor(now / 60_000) * 60_000
   const status = useQuery(api.households.onboardingStatus, {})
-  const inventory = useQuery(api.inventory.list, { householdId }) ?? shared?.inventory
+  const inventory = useQuery(api.inventory.list, { householdId, activeOnly: true })
+  const inventorySummary = useQuery(api.inventoryBrowse.summary, { householdId, search: '', section: 'all', tags: [] })
   const attention = useSteady(useQuery(api.closet.attention, { householdId, now: minute })) ?? shared?.attention
   const planArgs = planId === null ? 'skip' as const : { planId: planId as FunctionArgs<typeof api.plans.get>['planId'] }
   const plan = useQuery(api.plans.get, planArgs)
@@ -1982,7 +2056,7 @@ export function Laundry({ household, planId, onPlan, onSession, renderLink, open
     saveDraft({ householdId, selectedTextileIds: selection, seenTextileIds: seen, planId: opened?.planId ?? previous?.planId ?? null, inputHash: opened?.inputHash ?? previous?.inputHash ?? null })
   }
 
-  if (draft === undefined || inventory === undefined || attention === undefined || hub === undefined) {
+  if (draft === undefined || inventory === undefined || inventorySummary === undefined || attention === undefined || hub === undefined) {
     return (
       <div className={cn(laundryPageClassName, washClassName)}>
         <CareHero title="Laundry" detail={laundryText.loadingHamper} />
@@ -2000,12 +2074,15 @@ export function Laundry({ household, planId, onPlan, onSession, renderLink, open
       viewerKey={status?.principalKey ?? null}
       place={household.washPlace}
       inventory={inventory}
+      inventoryCounts={{ ready: inventorySummary.counts.ready, total: inventorySummary.total }}
       recentWashers={recent.washers}
       checks={checks}
       hamper={attention.hamper}
       draft={draft}
       onDraft={(selection, seen) => saved(selection, seen)}
       planId={planId}
+      loadId={loadId}
+      onOpenLoad={onOpenLoad}
       plan={plan}
       questions={questions}
       calls={calls}
@@ -2016,7 +2093,7 @@ export function Laundry({ household, planId, onPlan, onSession, renderLink, open
       drying={drying}
       addToHamper={(onClose, firstRun) => hamperIntake(householdId, firstRun, onClose)}
       // Read once: the screen keeps this sheet in state, so a save that fills the hamper keeps the first-run title.
-      initialSheet={openAddHamper ? { kind: 'add_hamper', firstRun: household.firstHamperNotePending && inventory.textiles.length === 0 } : null}
+      initialSheet={openAddHamper ? { kind: 'add_hamper', firstRun: household.firstHamperNotePending && inventorySummary.total === 0 } : null}
       itemSheet={arrivalIds.length === 0 ? null : { kind: 'garment', textileIds: arrivalIds }}
       itemKey={initialItem}
       onItemOpen={onItemOpen}

@@ -1,23 +1,25 @@
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { DeviceScope } from '@/kit/device-state'
 import { useConvexAuth, useQuery } from 'convex/react'
 import { useNavigate, useRouter } from '@tanstack/react-router'
-import { useEffect, useState, type ReactNode } from 'react'
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react'
 
 import type { FunctionReturnType } from 'convex/server'
 
 import { api } from '@/api'
 import { authClient } from '@/auth-client'
 import { accountText } from '@/copy'
-import { FirstRun } from '@/account/first-run'
 import { useOnline } from '@/connectivity'
-import { OfflineNotice } from '@/offline-view'
 import { purgePrivateState } from '@/private-state'
 import { Loading, errorMessage } from '@/kit/ui'
 import { endOnboarding, useOnboardingActive } from '@/account/onboarding-state'
-import { safeRedirect } from '@/account/auth-pages'
+import { safeRedirect } from '@/account/safe-redirect'
 import { useStartup } from '@/startup-context'
 import { clearPushDevice } from '@/account/push-settings'
+
+const FirstRun = lazy(() => import('@/account/first-run').then(module => ({ default: module.FirstRun })))
+const OfflineNotice = lazy(() => import('@/offline-view').then(module => ({ default: module.OfflineNotice })))
 
 const welcomeClassName = cn(
   "welcome",
@@ -70,7 +72,11 @@ function RedirectToSignIn() {
  * (removed, or the account deleted) purges this device's private state. On a load's page,
  * `sessionId` names the load, so offline it shows that load's saved copy and no other.
  */
-export function RequireHousehold({ sessionId, children }: { sessionId?: string; children: (household: CurrentHousehold) => ReactNode }) {
+export function RequireHousehold(props: { sessionId?: string; children: (household: CurrentHousehold) => ReactNode }) {
+  return <Suspense fallback={<Loading what={accountText.loadingHousehold} startup />}><HouseholdAccess {...props} /></Suspense>
+}
+
+function HouseholdAccess({ sessionId, children }: { sessionId?: string; children: (household: CurrentHousehold) => ReactNode }) {
   const onboarding = useOnboardingActive()
   const startup = useStartup()
   const { data: session, isPending, error } = authClient.useSession()
@@ -90,29 +96,31 @@ export function RequireHousehold({ sessionId, children }: { sessionId?: string; 
 
   if (unreachable && (session === null || !isAuthenticated || status === undefined)) return <OfflineNotice sessionId={sessionId} />
   if (authError) {
-    return (
-      <section className={cn(labelCardClassName, paddedClassName, welcomeClassName)} role="alert">
-        <h1>{accountText.signInUnavailable}</h1>
-        <p className={mutedClassName}>{accountText.signInUnavailableDetail}</p>
-        <Button type="button" onClick={() => window.location.reload()}>{accountText.tryAgain}</Button>
-      </section>
-    )
+    return <SignInUnavailable />
   }
   if (isPending || (session !== null && (isLoading || (isAuthenticated && status === undefined)))) {
-    if (startup?.seedActive && startup.data.account === 'signed-out') return <RedirectToSignIn />
+    // A cached public shell is signed out; wait for the live session before redirecting.
     if (startup?.seedActive && startup.data.account === 'signed-in' && startup.data.onboarding !== null) {
       const initialStatus = status ?? startup.data.onboarding
       const initialHousehold = initialStatus.households[0]
-      if (initialHousehold === undefined || onboarding) return <FirstRun displayName={initialStatus.displayName} household={initialHousehold} />
-      return <>{children(initialHousehold)}</>
+      if (initialHousehold === undefined) return <FirstRun displayName={initialStatus.displayName} />
+      return <DeviceScope key={`${initialStatus.principalKey}:${initialHousehold.householdId}`} value={`${initialStatus.principalKey}:${initialHousehold.householdId}`}>{onboarding ? <FirstRun displayName={initialStatus.displayName} household={initialHousehold} /> : children(initialHousehold)}</DeviceScope>
     }
     return <Loading what={accountText.loadingHousehold} startup />
   }
   if (session === null || !isAuthenticated) return <RedirectToSignIn />
   // Full-screen setup belongs to this tab's first-run hold. Guidance started elsewhere shows the
   // app, and Home names the unfinished task instead of trapping every route.
-  if (household === undefined || onboarding) return <FirstRun displayName={status?.displayName ?? session.user.name ?? null} household={household} />
-  return <>{children(household)}</>
+  if (household === undefined) return <FirstRun displayName={status?.displayName ?? session.user.name ?? null} />
+  return <DeviceScope key={`${status!.principalKey}:${household.householdId}`} value={`${status!.principalKey}:${household.householdId}`}>{onboarding ? <FirstRun displayName={status!.displayName} household={household} /> : children(household)}</DeviceScope>
+}
+
+export function SignInUnavailable() {
+  return <section className={cn(labelCardClassName, paddedClassName, welcomeClassName)} role="alert">
+    <h1>{accountText.signInUnavailable}</h1>
+    <p className={mutedClassName}>{accountText.signInUnavailableDetail}</p>
+    <Button type="button" onClick={() => window.location.reload()}>{accountText.tryAgain}</Button>
+  </section>
 }
 
 export async function signOut() {

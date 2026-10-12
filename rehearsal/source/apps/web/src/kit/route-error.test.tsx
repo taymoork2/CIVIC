@@ -9,7 +9,7 @@ const router = vi.hoisted(() => ({ canGoBack: false }))
 
 vi.mock('@tanstack/react-router', async (importOriginal) => ({
   ...await importOriginal<typeof import('@tanstack/react-router')>(),
-  useRouter: () => ({ history: { back: vi.fn() } }),
+  useRouter: () => ({ history: { back: vi.fn() }, invalidate: vi.fn() }),
   useCanGoBack: () => router.canGoBack,
   Link: ({ to, children, ...props }: { to: string; children?: React.ReactNode }) => createElement('a', { ...props, href: to }, children),
 }))
@@ -38,7 +38,9 @@ test('the route error keeps its heading and home action on the shared message pa
   expect(denied).toMatch(new RegExp(`<h1[^>]*>${routeErrorText.denied}</h1>`))
   expect(denied).toContain(routeErrorText.deniedDetail)
   expect(denied).toMatch(new RegExp(`<a[^>]*href="/"[^>]*>${routeErrorText.home}</a>`))
+  expect(denied).not.toContain('>Try again</button>')
 
   const failed = renderToStaticMarkup(<RouteError error={new Error('Server unavailable')} />)
   expect(failed).toMatch(new RegExp(`<h1[^>]*>${routeErrorText.failed}</h1>`))
+  expect(failed).toContain('>Try again</button>')
 })

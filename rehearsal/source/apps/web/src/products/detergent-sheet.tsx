@@ -169,7 +169,7 @@ export function SessionDetergentSheet({ sessionId, planId, loadId, householdId, 
   onSwitched: (planId: Id<'plans'>) => void
 }) {
   const plan = useQuery(api.plans.get, { planId })
-  const inventory = useQuery(api.inventory.list, { householdId })
+  const inventory = useQuery(api.inventory.list, { householdId, textileIds: [] })
   const [picked, setPicked] = useState<string | null>(null)
   const preview = useQuery(api.plans.detergentPreview, picked === null ? 'skip' : { planId, loadId, supplyId: picked as Id<'supplies'> })
   const cancel = useConvexCall(api.execution.cancel)

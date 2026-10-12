@@ -66,7 +66,7 @@ export function Segmented<Value extends string>({ label, value, options, onChang
 
 /** The search field: 48px, radius 14, on the secondary fill. */
 export function SearchField({ label, value, placeholder, onChange }: { label: string; value: string; placeholder: string; onChange: (value: string) => void }) {
-  return <label className="flex min-h-12 items-center gap-2.5 rounded-field bg-surface-2 px-3.5 text-ink-2 focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-ring">
+  return <label className="flex min-w-0 min-h-12 items-center gap-2.5 rounded-field bg-surface-2 px-3.5 text-ink-2 focus-within:outline-3 focus-within:outline-offset-2 focus-within:outline-ring">
     <DesignIcon name="search" size="1em" strokeWidth={2.2} className="size-5 flex-none" aria-hidden="true"  />
     <input type="search" aria-label={label} value={value} placeholder={placeholder} onChange={(event) => onChange(event.target.value)}
       className="min-w-0 flex-1 border-0 bg-transparent p-0 text-[length:var(--step-1)] text-ink outline-none placeholder:text-ink-2" />
@@ -75,7 +75,7 @@ export function SearchField({ label, value, placeholder, onChange }: { label: st
 
 /** A section: a 20px heading with a caption at the end, then its card. */
 export function SectionHead({ title, caption, id }: { title: string; caption?: string; id?: string }) {
-  return <div className="flex items-baseline justify-between gap-2">
+  return <div className="flex flex-wrap items-baseline justify-between gap-2">
     <h2 id={id} className="m-0 text-[length:var(--step-2)] font-semibold">{title}</h2>
     {caption === undefined ? null : <span className="text-[length:var(--step--1)] text-ink-2">{caption}</span>}
   </div>

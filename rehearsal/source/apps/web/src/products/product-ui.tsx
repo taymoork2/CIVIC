@@ -93,14 +93,17 @@ const sectionNavClassName = cn(
   "[@media_(forced-colors:_active)]:[&_button[aria-pressed='true']]:[outline:2px_solid_Highlight]",
 )
 
-export function CareEmpty({ icon, title, description, children }: { icon: IconName; title: string; description?: string; children?: ReactNode }) {
-  return <Empty className="rounded-[1rem] border border-solid border-border bg-surface py-8 sm:py-10">
-    <EmptyHeader><EmptyMedia variant="icon" className="size-12 rounded-[1rem]"><DesignIcon name={icon} className="size-6" /></EmptyMedia><EmptyTitle><h2 className="m-0 text-base font-semibold">{title}</h2></EmptyTitle>{description ? <EmptyDescription>{description}</EmptyDescription> : null}</EmptyHeader>
+export function CareEmpty({ icon, art, title, description, children }: { icon: IconName; art?: ReactNode; title: string; description?: string; children?: ReactNode }) {
+  return <Empty className={art === undefined ? 'rounded-[1rem] border border-solid border-border bg-surface py-8 sm:py-10' : 'rounded-card border-0 bg-surface py-6 shadow-[var(--e1)] sm:py-8'}>
+    <EmptyHeader>{art === undefined ? <EmptyMedia variant="icon" className="size-12 rounded-field"><DesignIcon name={icon} className="size-6" /></EmptyMedia> : <div aria-hidden="true" className="mx-auto w-full max-w-[14rem] [&_img]:[mask-image:linear-gradient(to_bottom,_#000_65%,_transparent_100%)]">{art}</div>}<EmptyTitle><h2 className="m-0 text-[length:var(--step-2)] font-semibold">{title}</h2></EmptyTitle>{description ? <EmptyDescription>{description}</EmptyDescription> : null}</EmptyHeader>
     {children ? <EmptyContent>{children}</EmptyContent> : null}
   </Empty>
 }
 
 export const headingMetaClassName = cn('inline-flex w-fit flex-wrap items-center rounded-md bg-muted px-2 py-1 text-xs leading-normal text-muted-foreground tabular-nums')
+
+// Blend only image pixels into their containing surface; icons remain crisp.
+export const photoBlendClassName = '[mask-image:linear-gradient(to_bottom,_#000_65%,_transparent_100%)]'
 
 /** Local category imagery; failure leaves the surrounding item control usable. */
 export function CategoryPhoto({ src, fallback, className, loading = 'lazy' }: { src: string; fallback: ReactNode; className?: string; loading?: 'lazy' | 'eager' }) {
@@ -111,16 +114,26 @@ export function CategoryPhoto({ src, fallback, className, loading = 'lazy' }: { 
 // Shared page-title role: 1.875rem at 600, the same as Home's "Today".
 export const pageHeadingClassName = cn('m-0 font-text text-[length:var(--step-4)] font-semibold leading-[1.2] [overflow-wrap:anywhere]')
 
-/** Compact page orientation; Home retains its illustrated next-action panel. */
+/** Root feature panels share composition; task pages can keep compact orientation. */
 export function CareHero({ title, detail, art, action, photo = false, variant = 'page' }: {
   title: string
   detail?: ReactNode
   art?: ReactNode
   action?: ReactNode
   photo?: boolean
-  variant?: 'page' | 'home'
+  variant?: 'page' | 'home' | 'feature'
 }) {
-  if (variant === 'page') return <header className="page-header relative grid min-w-0 gap-2 [.page.wash_>_&]:col-span-full">
+  if (variant === 'feature') return <header className="care-feature grid min-w-0 gap-4 rounded-card bg-surface p-4 text-ink shadow-[var(--e1)] [container-type:inline-size] sm:p-5">
+    <div className={cn('relative isolate flex min-w-0 flex-wrap items-center justify-between gap-3', photo && 'min-h-[128px] items-end [@container_(width_<_12rem)]:min-h-0')}>
+      {photo && art !== undefined ? <div aria-hidden="true" className="pointer-events-none absolute -inset-x-4 -top-4 bottom-0 -z-10 overflow-hidden [&_img]:size-full [&_img]:object-cover [&_img]:[object-position:center_50%] [&_img]:[mask-image:linear-gradient(to_bottom,_#000_25%,_transparent_94%)] sm:-inset-x-5 sm:-top-5 [@container_(width_<_12rem)]:hidden">{art}</div> : null}
+      <h1 className={cn(pageHeadingClassName, 'flex-1 basis-[8rem]')}>{title}</h1>
+      {photo ? action : art === undefined ? null : <div aria-hidden="true" className="w-[8rem] max-w-[40%] flex-none [&_img]:h-24 [&_img]:w-full [&_img]:object-contain [&_img]:[mask-image:linear-gradient(to_bottom,_#000_65%,_transparent_100%)]">{art}</div>}
+    </div>
+    {detail === undefined ? null : <div className="grid min-w-0 gap-3 text-[length:var(--step--1)] text-ink-2 [overflow-wrap:anywhere]">{detail}</div>}
+    {action === undefined || photo ? null : <div className="flex min-w-0 flex-wrap items-center gap-2 [&_>_*]:max-w-full">{action}</div>}
+  </header>
+  if (variant === 'page') return <header className={cn('page-header relative grid min-w-0 gap-2 [.page.wash_>_&]:col-span-full', art !== undefined && 'grid-cols-[minmax(0,1fr)_5rem] items-center')}>
+    {art === undefined ? null : <div aria-hidden="true" className="col-start-2 row-span-2 row-start-1 [&_img]:[mask-image:linear-gradient(to_bottom,_#000_65%,_transparent_100%)]">{art}</div>}
     <h1 className={cn(pageHeadingClassName, action === undefined ? '' : 'pe-14')}>{title}</h1>
     {detail ? <div className={headingMetaClassName}>{detail}</div> : null}
     {action === undefined ? null : <div className="absolute -top-1.5 end-0 flex items-center gap-2">{action}</div>}

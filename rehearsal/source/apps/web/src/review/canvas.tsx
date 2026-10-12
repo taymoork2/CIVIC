@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
 import nodes from './towel-journey.json'
-import type { IntakePresentation } from '@/closet/add-clothes'
+import type { Presentation } from './adapter'
 import type { Proposal, JourneyState, JourneyVisit } from './journey'
 import { captureScreen } from '@civic/shell/capture'
+import { projectFetch } from './project-request'
 
 export async function reviewApi<T>(path: string, data?: unknown): Promise<T> {
-  const response = await fetch(`/api/review/${path}`, data === undefined ? {} : { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) })
+  const response = await projectFetch(`/api/review/${path}`, data === undefined ? {} : { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(data) })
   const result = await response.json()
   if (!response.ok) throw new Error(result.error ?? 'Review request failed. Your draft is kept.')
   return result
@@ -15,11 +16,11 @@ const boot = new URLSearchParams(typeof location === 'undefined' ? '' : location
 const runKey = 'rehearsal:towel:visits:v1'
 
 // The app canvas owns navigation; this session keeps the same iframe across screen transitions.
-export function useTowelSession(selectionId: string | null) {
+export function useTowelSession(selectionId: string | null, enabled = true) {
   const [state, setState] = useState<JourneyState | null>(null)
   const [mode, setMode] = useState<'play' | 'edit'>('play')
   const [proposal, setProposal] = useState<Proposal>(emptyProposal)
-  const [edits, setEdits] = useState<IntakePresentation>({})
+  const [edits, setEdits] = useState<Presentation>({})
   const [candidate, setCandidate] = useState(false)
   const [visits, setVisits] = useState<JourneyVisit[]>(() => { try { return JSON.parse(sessionStorage.getItem(runKey) ?? '[]') } catch { return [] } })
   const [queued, setQueued] = useState<string | null>(null)
@@ -49,10 +50,12 @@ export function useTowelSession(selectionId: string | null) {
   const selectedEdit = edits[selected] ?? {}
   const snapshots = new Map(visits.filter((visit) => visit.capture && visit.source === source).map((visit) => [visit.from, visit]))
   useEffect(() => {
+    if (!enabled) return
     reviewApi<Proposal[]>('proposals').then((rows) => { const last = rows.at(-1); if (last) { setProposal(last); setEdits(last.edits) } }).catch((error) => setError(error.message))
     reviewApi<{ revision: { source: string } }>('index').then((data) => { setSource(data.revision.source); sourceRef.current = data.revision.source }).catch((error) => setError(error.message))
   }, [])
   useEffect(() => {
+    if (!enabled) return
     try { sessionStorage.setItem(runKey, JSON.stringify(visits.slice(-60))) } catch { setError('Run history could not be retained in this tab. Keep it open until captures finish.') }
   }, [visits])
   useEffect(() => {

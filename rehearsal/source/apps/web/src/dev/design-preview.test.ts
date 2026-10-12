@@ -3,6 +3,7 @@ import { afterEach, beforeAll, expect, test, vi } from 'vitest'
 
 import { machineStepText, productText } from '@/copy'
 import { recipeActions } from '@/dev/laundry-preview'
+import { DryingPreview } from '@/dev/drying-preview'
 import { Route } from '@/routes/design-preview'
 import { stepActions, stepOptionLabels, stepRecoveryLabels } from '@/laundry/session-view'
 import { renderWithConvex } from '@/test/markup'
@@ -18,6 +19,15 @@ const screen = (name: string) => {
   vi.spyOn(Route, 'useSearch').mockReturnValue({ screen: name, state: undefined, textScale: 1 } as never)
   return renderWithConvex(createElement(Route.options.component!)).replace(/&amp;/g, '&')
 }
+
+test('Rehearsal drying fixtures use the requested family inventory size', () => {
+  for (const pieceCount of [100, 500, 1000] as const) {
+    const markup = renderWithConvex(createElement(DryingPreview, { variant: 'scale-check', pieceCount }))
+    expect(markup).toContain(`${pieceCount} dry · 0 still drying`)
+    expect(markup.match(/role="checkbox"/g)).toHaveLength(40)
+    expect(markup).toContain('Interactive preview · changes stay on this page')
+  }
+})
 
 test('development visual previews are available without redirecting to the live app', () => {
   vi.stubEnv('DEV', true)
@@ -68,7 +78,7 @@ test('the garment-safety specimens reach the states the reference captures', () 
     'closet-stain-next': ['What next?', 'Take it to a cleaner'],
     'drying-stain': ['Stain gone?', 'air dry until you check it'],
     'household-water': ['EBMUD, Oakland'],
-    'household-water-sheet': ['Edit water details', '94610'],
+    'household-water-sheet': ['Edit water details', 'EBMUD, Oakland', '94610'],
     'laundry-completed': ['White cotton tee ×2', 'Low heat, 40 min'],
   }
   for (const [name, texts] of Object.entries(expected)) {
