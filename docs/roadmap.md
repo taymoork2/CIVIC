@@ -141,7 +141,7 @@ Progress, 2026-10-12: the v7 handoff adds a deterministic recorder with saved, d
 
 - Done: the repository is on GitHub at [taymoork2/CIVIC](https://github.com/taymoork2/CIVIC), with local signoffs (`bin/signoff`) instead of GitHub Actions.
 - Done, 2026-10-12: `rehearsal/` is now `journey-engine/`. Rehearsal stays only as the engine's codename and in the vendored handoff files.
-- Decide what stays vendored. `journey-engine/design/skills`, the fixture PNGs, and the handoff manifest are handoff material and could move to a release artifact.
+- Done, 2026-10-12: the handoff material stays vendored (Taymoor's call). `journey-engine/design/skills` (2.7 MB), the fixture PNGs (about 18 MB) and the handoff manifest stay in the tree, so a handoff merge and its notes keep working from a plain clone. Revisit if the repository grows enough to slow clones.
 
 ## 8. The gate: `civic check`
 
