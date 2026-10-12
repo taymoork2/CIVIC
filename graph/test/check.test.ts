@@ -22,12 +22,8 @@ test('the Button gate fails on each undecided conflict and passes once decisions
   const ios = ['open-conflict conflict:button.ios.danger ios', 'open-conflict conflict:button.ios.transparent-neutral ios']
   assert.deepEqual(raised.fresh.map((item) => item.key).sort(), ['open-conflict conflict:button.android.brand-outline android', ...ios])
 
-  // The demo decides the Android conflict; the iOS kit's two are left for a person to decide.
-  const resolved = compareToBaseline([run('button', demo('fluent-button/out/resolved'))], undefined)
-  assert.deepEqual(resolved.fresh.map((item) => item.key).sort(), ios)
-  const decided = demo('fluent-button/out/resolved')
-  for (const id of ['conflict:button.ios.danger', 'conflict:button.ios.transparent-neutral']) decide(decided, id, { evidenceIds: ['evidence:figma.ios-kit.button'] })
-  const passed = compareToBaseline([run('button', decided)], undefined)
+  // The demo's decision records cover all three, so the resolved graph passes.
+  const passed = compareToBaseline([run('button', demo('fluent-button/out/resolved'))], undefined)
   assert.equal(passed.passed, true)
   assert.deepEqual(passed.fresh, [])
   // Known, recorded facts are reported without blocking.
@@ -37,7 +33,7 @@ test('the Button gate fails on each undecided conflict and passes once decisions
 test('counts come with their denominators', () => {
   const { measures } = run('card', demo('card/out/resolved'))
   const count = (check: string) => measures.find((item) => item.check === check)
-  assert.deepEqual(count('Contract conflicts open'), { graph: 'card', check: 'Contract conflicts open', found: 4, of: 5 })
+  assert.deepEqual(count('Contract conflicts open'), { graph: 'card', check: 'Contract conflicts open', found: 1, of: 5 })
   assert.deepEqual(count('Overrides without a decision'), { graph: 'card', check: 'Overrides without a decision', found: 1, of: 2 })
   assert.deepEqual(count('Product states missing from designs'), { graph: 'card', check: 'Product states missing from designs', found: 3, of: 3 })
   assert.deepEqual(count('Journey screens that are dead ends'), { graph: 'card', check: 'Journey screens that are dead ends', found: 1, of: 3 })
@@ -53,11 +49,11 @@ test('baselined findings are ignored, a new one still fails, and a fixed one is 
   const baseline = baselineFrom(compareToBaseline([run('card', demo('card/out/raised'))], undefined))
   assert.equal(compareToBaseline([run('card', demo('card/out/raised'))], baseline).passed, true)
 
-  // One of the two overrides is decided in the resolved graph, so it leaves the baseline's findings.
+  // One of the two overrides and the three iOS library defaults are decided in the resolved graph, so they leave the baseline's findings.
   const resolved = compareToBaseline([run('card', demo('card/out/resolved'))], baseline)
   assert.equal(resolved.passed, true)
-  assert.equal(resolved.baselined.length, 9)
-  assert.equal(resolved.fixed.length, 1)
+  assert.equal(resolved.baselined.length, 6)
+  assert.equal(resolved.fixed.length, 4)
 
   // A new undecided override on the same graph is raised at the change that caused it.
   const changed = demo('card/out/resolved')
