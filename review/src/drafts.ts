@@ -1,5 +1,5 @@
 import { createHash, randomUUID } from 'node:crypto'
-import { resolveAnchor, type AnchorOutcome, type Annotation, type DesignFrame, type DraftChoice, type Graph, type GraphDocument, type Line, type ObservedElement } from '../../graph/src/index.ts'
+import { resolveAnchor, type AnchorOutcome, type Annotation, type DesignFrame, type DraftChoice, type Graph, type GraphDocument, type Line, type ObservedElement, type WorkRequest } from '../../graph/src/index.ts'
 import { idPath } from './git.ts'
 import { ensureActor } from './identity.ts'
 import { allow, find, type Context } from './loop.ts'
@@ -285,4 +285,47 @@ export function renderDesignLens(lens: DesignLens): string {
     for (const target of item.targets) lines.push(`         code: ${target.id} in ${target.graph}: ${target.passing} passing, ${target.failing} failing run(s)${target.annotations ? `, ${target.annotations} note(s)` : ''}`)
   }
   return lines.join('\n')
+}
+
+// --- Open lines changing a target (D36) ---------------------------------------------------
+
+/** An open line that is changing a target, and why CIVIC knows it is. */
+export interface ChangingLine {
+  line: string
+  title: string
+  type: Line['type']
+  why: string[]
+}
+
+/**
+ * Every open line other than main that is changing each target, so two agents or two
+ * designers working on the same screen see each other before they merge (D36). A code line
+ * changes a target when a work request about it is claimed on that line or has a fix
+ * reported there; a design draft changes the targets its changed frames design, as its
+ * lens reads them. Annotations alone change nothing.
+ */
+export function linesChanging(document: GraphDocument, lenses: Record<string, DesignLens> = {}): Record<string, ChangingLine[]> {
+  const open = new Map(document.records.filter((record): record is Line => record.kind === 'line' && record.status === 'open' && record.type !== 'main').map((line) => [line.id, line]))
+  const annotations = new Map(document.records.filter((record): record is Annotation => record.kind === 'annotation').map((note) => [note.id, note]))
+  const changing = new Map<string, Map<string, Set<string>>>()
+  const add = (targetId: string, lineId: string, why: string) => {
+    if (!open.has(lineId)) return
+    const lines = changing.get(targetId) ?? new Map<string, Set<string>>()
+    lines.set(lineId, (lines.get(lineId) ?? new Set()).add(why))
+    changing.set(targetId, lines)
+  }
+  for (const request of document.records.filter((record): record is WorkRequest => record.kind === 'work-request' && record.status !== 'resolved')) {
+    const targets = new Set(request.annotationIds.flatMap((id) => annotations.get(id)?.anchor?.targetIds ?? []))
+    const on = new Map<string, string>()
+    if (request.claim) on.set(request.claim.line, `claimed: ${request.title}`)
+    for (const fix of request.fixes) on.set(fix.line, `fix reported: ${request.title}`)
+    for (const target of targets) for (const [line, why] of on) add(target, line, why)
+  }
+  for (const [lineId, lens] of Object.entries(lenses)) {
+    for (const item of lens.changes) for (const target of item.targets) add(target.id, lineId, `${item.change} frame ${item.name}`)
+  }
+  return Object.fromEntries([...changing].sort(([a], [b]) => a.localeCompare(b)).map(([targetId, lines]) => [
+    targetId,
+    [...lines].sort(([a], [b]) => a.localeCompare(b)).map(([lineId, why]) => ({ line: lineId, title: open.get(lineId)!.title, type: open.get(lineId)!.type, why: [...why] })),
+  ]))
 }

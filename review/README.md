@@ -56,6 +56,8 @@ A designer's draft is a line too. CIVIC reads it from the Figma file export (`GE
 
 `civic lens <draft line> [--graph <file>]... [--json]` is the design lens. Each design line records its top-level frames with a fingerprint of each frame's content, so the lens can compare a draft with its base frame by frame, by node ID. It says which frames the draft added, changed (renames included) or removed, and which annotations are on each. It then reads each frame on this checkout's code line, through the graphs in `civic.check.json` or the ones given. That gives the targets the frame designs (matched by Figma node ID, never by name), their passing and failing runs, and the notes made about them on this code line. A frame no graph anchors designs no target. The base is compared as last registered, so register the main file again when it moves. Laundry's review shows the lens for the selected draft under "Across lines of work".
 
+`civic lines --json` also lists each open draft's lens, plus `changing`: every target with the other open lines changing it, so two agents or two designers working on the same screen see each other before they merge. A code line changes a target when an unresolved work request about it is claimed there or has a fix reported there. A draft changes the targets its changed frames design. An annotation alone changes nothing. Laundry's review names those lines on the screen being reviewed.
+
 ## The loop
 
 ```sh

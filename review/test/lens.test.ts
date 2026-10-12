@@ -5,8 +5,8 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { before, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
-import { validateGraph, type Line } from '../../graph/src/index.ts'
-import { readCheckout, run, Store, type DesignLens } from '../src/index.ts'
+import { validateGraph, type Annotation, type GraphDocument, type Line, type WorkRequest } from '../../graph/src/index.ts'
+import { linesChanging, readCheckout, run, Store, type DesignLens } from '../src/index.ts'
 
 // The design lens (D36): a draft's frames compared with its base, read on the checkout's
 // code line through the graphs that anchor targets to the same Figma nodes.
@@ -76,4 +76,30 @@ test('the lens says what a draft adds, changes and removes, and what each frame 
 
 test('the lens refuses a line that is not a draft', async () => {
   await assert.rejects(civic('lens', 'line:figma.SHOPfile123'), /not a design draft/)
+})
+
+test('lines --json says which open lines change each target: drafts through their lens, code lines through claimed requests', async () => {
+  const out = JSON.parse(await civic('lines', '--json')) as { lenses: Record<string, DesignLens>; changing: Record<string, { line: string; why: string[] }[]> }
+  // No civic.check.json in this repository, so the draft's frames design no target here.
+  assert.deepEqual(Object.keys(out.lenses), [draft])
+  assert.deepEqual(out.changing, {})
+
+  const line = (id: string, type: Line['type'], status: Line['status'] = 'open'): Line => ({ id, kind: 'line', title: id, type, tool: 'git', ref: id, ...(type === 'main' ? {} : { base: 'line:git.main' }), head: 'abc', status })
+  const note: Annotation = { id: 'annotation:1', kind: 'annotation', title: 'Label clips', comment: 'Label clips', anchor: { targetIds: ['target:app.form'] }, seenOn: { line: 'line:git.main', revision: 'abc' }, at: '2026-10-12T00:00:00Z', writtenBy: 'actor:person.t' }
+  const request = (id: string, fields: Partial<WorkRequest>) => ({ id, kind: 'work-request', title: `Fix ${id}`, annotationIds: [note.id], status: 'claimed', fixes: [], ...fields }) as WorkRequest
+  const document = { schema: 'civic.graph/0', links: [], records: [
+    line('line:git.main', 'main'), line('line:git.branch.wrap', 'branch'), line('line:git.branch.old', 'branch', 'abandoned'), note,
+    request('work:a', { claim: { by: 'actor:agent.a', line: 'line:git.branch.wrap', at: '', expires: '' } }),
+    request('work:b', { status: 'resolved', claim: { by: 'actor:agent.b', line: 'line:git.branch.wrap', at: '', expires: '' } }),
+    request('work:c', { status: 'fix-ready', fixes: [{ by: 'actor:agent.c', line: 'line:git.branch.old', revision: 'def', at: '' }] }),
+  ] } as unknown as GraphDocument
+  const lens = { changes: [{ change: 'changed', node: '1:1', name: 'Form', page: 'P', annotations: [], targets: [{ graph: 'g', id: 'target:app.form', title: 'Form', passing: 0, failing: 0, annotations: 0 }] }] } as unknown as DesignLens
+  const draftLine: Line = { ...line('line:figma.f.draft.x', 'design-draft'), tool: 'figma', base: 'line:figma.f' }
+  document.records.push(draftLine)
+  assert.deepEqual(linesChanging(document, { [draftLine.id]: lens }), {
+    'target:app.form': [
+      { line: 'line:figma.f.draft.x', title: 'line:figma.f.draft.x', type: 'design-draft', why: ['changed frame Form'] },
+      { line: 'line:git.branch.wrap', title: 'line:git.branch.wrap', type: 'branch', why: ['claimed: Fix work:a'] },
+    ],
+  }, 'resolved requests and closed lines change nothing')
 })
