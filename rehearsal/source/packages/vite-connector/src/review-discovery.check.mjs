@@ -58,7 +58,7 @@ test('confirmed scenarios retain named branches/returns and refuse unsupported s
 })
 test('onboarding generation owns its files, rejects stale source and does not import or change the app', async () => {
   const root = await fixture(), host = await mkdtemp(join(await realpath(tmpdir()), 'rehearsal-discovery-host-'))
-  const current = loadProject(repo, { manifest: join(repo, 'apps/web/examples/rehearsal-demo/civic.project.json') })
+  const current = loadProject(repo, { manifest: join(repo, 'packages/canvas/examples/notebook/civic.project.json') })
   const picker = await projectPicker(host, current)
   const before = await readFile(join(root, 'src/index.html'), 'utf8')
   const { discovery } = await picker.discover({ root, source: 'src' })

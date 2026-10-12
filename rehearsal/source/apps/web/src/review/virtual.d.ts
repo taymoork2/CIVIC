@@ -1,11 +1,4 @@
-declare module 'virtual:rehearsal-project' {
-  const project: import('./adapter').ProjectProfile
-  export default project
-}
-declare module 'virtual:rehearsal-preview' {
-  export const mount: import('./adapter').MountAdapter
-}
-declare module 'virtual:rehearsal-shell-style' {}
+/// <reference path="../../../../packages/canvas/src/virtual.d.ts" />
 declare module 'virtual:rehearsal-laundry-routes' {
   export const routeTree: typeof import('../routeTree.gen').routeTree
 }

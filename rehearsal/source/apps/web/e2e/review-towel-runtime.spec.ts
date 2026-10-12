@@ -1,12 +1,12 @@
 import { expect, test, type Page } from '@playwright/test'
-import type { RuntimeRecording } from '../src/review/runtime-bridge'
+import type { RuntimeRecording } from '@civic/canvas/runtime-bridge'
 
 const tape = (page: Page) => page.evaluate(() => window.reviewPreview!.recording!())
 const replay = (page: Page, recording: RuntimeRecording) => page.evaluate(async (input) => {
   try { return await window.reviewPreview!.replay!(input) }
   catch (error) { throw Error(`${(error as Error).message}\n${JSON.stringify(window.reviewPreview!.replayMismatch?.())}`) }
 }, recording)
-const screen = (page: Page) => page.evaluate(() => window.towelJourney?.state()?.screen)
+const screen = (page: Page) => page.evaluate(() => window.guidedJourney?.state()?.screen)
 const next = (page: Page) => page.locator('button[type="submit"]').click()
 
 for (const branch of ['new', 'pre-owned']) test(`towel ${branch} branch captures real inputs, saves through the app and replays from a fresh seed`, async ({ page }) => {
@@ -38,7 +38,7 @@ test('proposal commands are part of the shared tape and replay without discardin
   await page.goto('/review-frame.html?scenario=intake.towel.fabric&journey=towel')
   await expect(page.getByLabel('Other material 1', { exact: true })).toBeVisible()
   await page.getByLabel('Other material 1', { exact: true }).fill('Proposal cotton')
-  await page.evaluate(() => window.towelJourney!.setPresentation({ fabric: { title: 'Your towel fibers', action: 'Try this composition', color: '#123456' } }, 7))
+  await page.evaluate(() => window.guidedJourney!.setPresentation({ fabric: { title: 'Your towel fibers', action: 'Try this composition', color: '#123456' } }, 7))
   await expect(page.getByRole('heading', { name: 'Your towel fibers' })).toBeVisible()
   await expect(page.getByRole('button', { name: 'Try this composition' })).toHaveCSS('background-color', 'rgb(18, 52, 86)')
   await expect(page.getByLabel('Other material 1', { exact: true })).toHaveValue('Proposal cotton')
@@ -46,7 +46,7 @@ test('proposal commands are part of the shared tape and replay without discardin
   const recording = await tape(page)
   expect(recording.steps.some((step) => step.gesture.kind === 'command')).toBe(true)
   expect(await replay(page, recording)).toEqual({ verified: recording.steps.length })
-  expect(await page.evaluate(() => window.towelJourney!.state()?.draft)).toMatchObject({ material: expect.stringContaining('Proposal cotton') })
+  expect(await page.evaluate(() => window.guidedJourney!.state()?.draft)).toMatchObject({ material: expect.stringContaining('Proposal cotton') })
   await page.getByRole('button', { name: 'Back', exact: true }).click()
   await expect(page.getByRole('heading', { name: 'Your towel fibers' })).toBeVisible()
   const saved = await page.request.post('/api/review/runs', { data: await tape(page) }); expect(saved.ok()).toBe(true)

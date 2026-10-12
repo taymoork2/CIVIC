@@ -32,6 +32,8 @@ export default defineConfig({
     // Browser journeys live in e2e/ and run under Playwright, not Vitest.
     exclude: ['e2e/**', 'node_modules/**', 'dist/**'],
     setupFiles: ['src/test/setup.ts'],
+    // The canvas reads Laundry's layout through its extension module, which the review plugin serves in dev.
+    alias: { 'virtual:civic-canvas-extension': fileURLToPath(new URL('./src/review/canvas-extension.ts', import.meta.url)) },
   },
   plugins: [
     ...(process.env.WASHCLOSET_REVIEW === '1' ? [reviewPlugin()] : []),

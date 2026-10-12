@@ -1,6 +1,7 @@
 import { dirname, join, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { civicReview } from '@civic/vite-connector'
+import { canvasRoot } from '@civic/canvas/root'
 import { laundryReviewAdapter } from './review-adapter.mjs'
 import { agentDestinations, dispatchReview, publicDestination } from './review-agents.mjs'
 import { coverageBridge } from '@civic/vite-connector/coverage'
@@ -8,17 +9,18 @@ import { civicShared } from './review-civic.mjs'
 import { laundryConnector } from './review-laundry-connector.mjs'
 import { runtimeService } from './review-runtime.mjs'
 
-/** This host's review: CIVIC's Vite connector with Laundry's connector, review adapter, agents and isolated runtime. */
+/** This host's review: CIVIC's canvas and Vite connector with Laundry's connector, review adapter, agents and isolated runtime. */
 export function reviewPlugin() {
   const web = resolve(dirname(fileURLToPath(import.meta.url)), '..')
   const repo = resolve(web, '../..')
   return civicReview({
     host: web,
+    canvas: canvasRoot,
     repo,
     connectors: { laundry: laundryConnector },
     runtime: runtimeService,
-    engineRoots: [join(web, 'src/review'), join(web, 'scripts')],
-    picker: { discoveredAdapter: join(web, 'src/review/discovered-adapter.tsx'), starterTemplate: join(web, 'examples/rehearsal-demo') },
+    engineRoots: [join(canvasRoot, 'src'), join(web, 'src/review'), join(web, 'scripts')],
+    picker: { starterTemplate: join(canvasRoot, 'examples/notebook') },
     review: ({ project }) => ({
       adapter: laundryReviewAdapter,
       coverage: (context) => coverageBridge({ repo, contractFile: project.coverageFile, contractRoot: project.manifestRoot, ...context }),

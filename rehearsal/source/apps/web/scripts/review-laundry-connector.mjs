@@ -9,7 +9,8 @@ const web = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 /**
  * Laundry App's connector for @civic/vite-connector (adapter kind `laundry`). It builds Laundry's own
  * review index, mounts the real route tree with review substitutes for auth, the document root and
- * server routes, applies the checked in-memory source overlay, and styles frames with Laundry's CSS.
+ * server routes, applies the checked in-memory source overlay, styles frames with Laundry's CSS, and
+ * extends the canvas with Laundry's layout and towel journey.
  * The connector package itself names nothing from Laundry.
  */
 export const laundryConnector = {
@@ -19,7 +20,7 @@ export const laundryConnector = {
   fingerprint: {
     common: /^(?:apps\/web\/public\/|packages\/(?!shell\/|vite-connector\/)|convex\/)|\/review-(?:application|laundry|adapter)\.mjs$/,
     frame: /\/review\/(?:frame\.tsx|laundry-frame\.tsx|adapter\.ts|journey\.ts|store\.ts|adapters\/laundry\.ts)$/,
-    runtime: /\/review\/(?:runtime-[^/]+|convex-runtime-client|adapters\/laundry-[^/]+)\.[cm]?[jt]sx?$|\/review-(?:runtime|recording|plugin|laundry)(?:-worker)?\.mjs$/,
+    runtime: /(?:\/review\/|^packages\/canvas\/src\/)(?:runtime-[^/]+|convex-runtime-client|adapters\/laundry-[^/]+)\.[cm]?[jt]sx?$|\/review-(?:runtime|recording|plugin|laundry)(?:-worker)?\.mjs$/,
   },
   // The handoff ships bounded Laundry design references beside the source tree.
   designRoot: (repo) => process.env.WASHCLOSET_REVIEW_DESIGN ?? resolve(repo, '../design/laundry-reference'),
@@ -27,6 +28,8 @@ export const laundryConnector = {
   sharedStore: (project) => project.manifest.id === 'laundry-app',
   dedupe: ['@tanstack/react-router', 'convex', 'sonner'],
   serveSources: false,
+  // Laundry's flow layout, the towel journey as a guided run, and the older workspace.
+  canvasExtension: () => join(web, 'src/review/canvas-extension.ts'),
   resolveId(id, project, importer) {
     if (id === 'virtual:rehearsal-laundry-routes') return '\0' + id
     const appRepo = project.root

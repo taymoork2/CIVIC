@@ -5,6 +5,7 @@ import { dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { referenceInputHashes } from './opendesign-reference-inputs.mjs'
 import { coveragePath, checkedContract, coverageReport } from '@civic/vite-connector/coverage'
+import { canvasFrame } from '@civic/vite-connector/fixture-hashes'
 import { reviewOverlay } from './review-laundry.mjs'
 
 const sha = (bytes) => createHash('sha256').update(bytes).digest('hex')
@@ -88,16 +89,16 @@ export async function reviewInventory(repo, designRoot, appRepo = repo) {
     scenario.checkCoverage = {}
     for (const path of scenario.checks) { try { evidence.set(path, await readFile(join(path.includes('/review') ? repo : appRepo, path), 'utf8')); scenario.checkCoverage[path] = 'source present; execution not attested by this index' } catch (error) { if (error.code !== 'ENOENT') throw error; scenario.checkCoverage[path] = 'missing' } }
   }
-  for (const path of ['pnpm-lock.yaml', 'package.json', 'apps/web/playwright.config.ts', 'apps/web/tsconfig.json', 'apps/web/review.html', 'apps/web/review-frame.html', 'apps/web/vite.config.ts', 'apps/web/package.json', ...[...evidence.keys()].filter((path) => /(?:test|spec)\./.test(path)), ...(await files(join(web, 'scripts'))).filter((path) => /review-[^/]+\.mjs$/.test(path)).map((path) => relative(repo, path))]) {
+  for (const path of ['pnpm-lock.yaml', 'package.json', 'apps/web/playwright.config.ts', 'apps/web/tsconfig.json', 'apps/web/vite.config.ts', 'apps/web/package.json', ...[...evidence.keys()].filter((path) => /(?:test|spec)\./.test(path)), ...(await files(join(web, 'scripts'))).filter((path) => /review-[^/]+\.mjs$/.test(path)).map((path) => relative(repo, path))]) {
     const content = evidence.get(path) ?? await readFile(join(repo, path), 'utf8'); source.push([path, sha(content)])
   }
   // The CIVIC shell renders and stores every review, so its source is part of the attested revision.
   // Hash the shell this server actually loads, wherever its workspace link points.
-  // The same holds for the Vite connector that builds this index and serves the frames.
-  for (const [name, entry] of [['shell', '@civic/shell/server'], ['vite-connector', '@civic/vite-connector']]) {
+  // The same holds for the Vite connector that builds this index and serves the frames, and the canvas.
+  for (const [name, entry] of [['shell', '@civic/shell/server'], ['vite-connector', '@civic/vite-connector'], ['canvas', '@civic/canvas']]) {
     const root = resolve(dirname(fileURLToPath(import.meta.resolve(entry))), '..')
     for (const file of await files(root)) {
-      if (file.includes('/node_modules/') || !/\.(tsx?|mjs|css|json)$/.test(file)) continue
+      if (file.includes('/node_modules/') || file.includes('/examples/') || !/\.(tsx?|mjs|css|json|html)$/.test(file)) continue
       const path = `packages/${name}/${relative(root, file)}`
       const content = await readFile(file, 'utf8')
       source.push([path, sha(content)]); evidence.set(path, content)
@@ -116,7 +117,7 @@ export async function reviewInventory(repo, designRoot, appRepo = repo) {
     source.push([relative(appRepo, path), sha(await readFile(path))])
   }
   const revision = { head, source: sha(JSON.stringify([...new Map(source)].sort())), capturedAt: new Date().toISOString() }
-  const fixtureSource = sha(JSON.stringify([...new Map(source)].filter(([path]) => !/\.(test|spec)\./.test(path) && (path === 'connection' || path.startsWith('application:') || /\/review-(application|laundry|adapter)\.mjs$/.test(path) || path.startsWith('apps/web/public/') || path.startsWith('packages/') && !/^packages\/(?:shell|vite-connector)\//.test(path) || path.startsWith('convex/') || path.startsWith('apps/web/src/') && (!path.includes('/review/') || /\/review\/(frame\.tsx|laundry-frame\.tsx|adapters\/laundry\.ts|adapter\.ts|journey\.ts|store\.ts|route-preview\.tsx|family-preview\.tsx|scenarios\.json)$/.test(path)))).sort()))
+  const fixtureSource = sha(JSON.stringify([...new Map(source)].filter(([path]) => !/\.(test|spec)\./.test(path) && (path === 'connection' || path.startsWith('application:') || /\/review-(application|laundry|adapter)\.mjs$/.test(path) || path.startsWith('apps/web/public/') || path.startsWith('packages/') && (!/^packages\/(?:shell|vite-connector|canvas)\//.test(path) || canvasFrame.test(path)) || path.startsWith('convex/') || path.startsWith('apps/web/src/') && (!path.includes('/review/') || /\/review\/(frame\.tsx|laundry-frame\.tsx|adapters\/laundry\.ts|adapter\.ts|journey\.ts|store\.ts|route-preview\.tsx|family-preview\.tsx|scenarios\.json)$/.test(path)))).sort()))
   const validationPath = 'docs/design/review-validation.json'
   let validation = { path: validationPath, status: 'missing', receipt: null }
   try {

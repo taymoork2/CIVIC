@@ -1,7 +1,7 @@
 import { runtimeRequest, runtimeTransport, type RuntimeSession } from '../runtime-client'
 import { convexRuntimeClient } from '../convex-runtime-client'
 import { setRuntimeIdentity } from './laundry-auth'
-import type { AdapterContext } from '../adapter'
+import type { AdapterContext } from '@civic/canvas/adapter'
 
 function memoryStorage(): Storage {
   const rows = new Map<string, string>()

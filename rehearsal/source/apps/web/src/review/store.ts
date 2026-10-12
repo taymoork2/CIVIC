@@ -7,8 +7,8 @@ import { classifyWater } from '@convex/waterHardness'
 import { reviewTextiles, reviewGarmentRecord } from '@/dev/closet-preview'
 import { reviewMachines, reviewSupplies, reviewWearers, reviewWater } from '@/dev/household-preview'
 
-import type { ReviewConfig, ReviewSnapshot } from './adapter'
-export type { ReviewConfig, ReviewSnapshot } from './adapter'
+import type { ReviewConfig, ReviewSnapshot } from '@civic/canvas/adapter'
+export type { ReviewConfig, ReviewSnapshot } from '@civic/canvas/adapter'
 export type ReviewData = Pick<Inventory, 'textiles' | 'machines' | 'supplies' | 'wearers'> & { water: HouseholdWater; saved: Record<string, string[]> }
 const provenance = { source: 'Synthetic review only; not care evidence', confidence: 'user-supplied' as const }
 type Args = Record<string, any>

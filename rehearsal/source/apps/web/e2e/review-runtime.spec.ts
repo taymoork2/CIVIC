@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test'
-import type { RuntimeRecording } from '../src/review/runtime-bridge'
+import type { RuntimeRecording } from '@civic/canvas/runtime-bridge'
 
 async function open(page: import('@playwright/test').Page, scenario: string, condition = 'normal') {
   await page.goto(`/review-frame.html?scenario=${scenario}&condition=${condition}`)

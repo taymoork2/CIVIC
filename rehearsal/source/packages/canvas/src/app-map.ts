@@ -1,25 +1,20 @@
-import { journeyGraph, entryScreens, pathId } from './journey-graph.mjs'
+import { journeyGraph, pathId } from './journey-graph.mjs'
+import { extension } from './extension'
 import { arrowPath, routeArrow } from './arrow-routing'
 
 export type RouteAction = { from: string; action: string; destination?: string; route: string; when: string; returnTo?: string; source: string; status: string }
 export type MapScreen = { id: string; label: string; scenario: string; partial: boolean; section?: string; x?: number; y?: number; branchOf?: string; edges: { action: string; destination: string; when?: string; returnTo?: string }[]; routeActions?: RouteAction[] }
 export type AppFlow = { id: string; label: string; section: string; screens: MapScreen[]; x: number; y: number; width: number; height: number }
 export type MapScenario = { id: string; label: string; journey: string; renderer: string; flow?: string; section?: string; screen?: string; branchOf?: string; edges?: MapScreen['edges']; routeActions?: RouteAction[]; discovery?: { evidence: string } }
-// Tab order comes from kit/app-shell.tsx; entry screens precede the signed-in navigation.
-export const journeySections = ['Start', 'Home', 'Closet', 'Laundry', 'Household', 'Me']
-const sectionOf: Record<string, string> = { 'Sign-in & setup': 'Start', Home: 'Home', Outfits: 'Home', Closet: 'Closet', 'Add a towel': 'Closet', 'Multicolor pack': 'Closet', 'Saved records': 'Closet', 'Nested quick edits': 'Closet', 'Washing & recovery': 'Laundry', Drying: 'Laundry', Household: 'Household', Appliances: 'Household', Products: 'Household', 'Product details': 'Household', Profiles: 'Household', Me: 'Me', Settings: 'Me' }
-const flowOrder = ['Sign-in & setup', 'Home', 'Outfits', 'Closet', 'Add a towel', 'Multicolor pack', 'Saved records', 'Nested quick edits', 'Washing & recovery', 'Drying', 'Family simulation', 'Household', 'Appliances', 'Products', 'Product details', 'Profiles', 'Me', 'Settings']
+export type GraphFlow = { id: string; label: string; screens: MapScreen[] }
+/**
+ * Lays out the journey graph. Module projects group screens by their declared flow and section; a
+ * host's canvas extension may supply its own graph, flow order and sections (Laundry does).
+ */
 export function appFlows(scenarios: MapScenario[], project?: { adapter: string; navigation: string[] }): AppFlow[] {
-  const generic = project?.adapter === 'module'
-  const sections = project?.navigation ?? journeySections
-  const rows = journeyGraph(scenarios, project)
-  if (!generic) rows.sort((a, b) => flowOrder.indexOf(a.label) - flowOrder.indexOf(b.label))
-  if (!generic) for (const flow of rows) flow.screens.sort((a, b) => {
-    const key = (screen: MapScreen) => screen.id.replace(/^legacy\./, '')
-    if (flow.label === 'Sign-in & setup') return (entryScreens.indexOf(key(a)) < 0 ? 99 : entryScreens.indexOf(key(a))) - (entryScreens.indexOf(key(b)) < 0 ? 99 : entryScreens.indexOf(key(b)))
-    const rank = (screen: MapScreen) => /-(index|one)$/.test(key(screen)) ? 0 : /-empty$/.test(key(screen)) ? 1 : 2
-    return rank(a) - rank(b)
-  })
+  const sections = project?.navigation ?? extension.sections ?? []
+  const rows: GraphFlow[] = (extension.journeyGraph ?? journeyGraph)(scenarios, project)
+  extension.arrange?.(rows)
   const result = rows.map((flow) => {
     const main = flow.screens.filter((screen) => !screen.branchOf)
     const lanes = new Map<number, number>()
@@ -28,11 +23,11 @@ export function appFlows(scenarios: MapScenario[], project?: { adapter: string; 
       const x = (parent >= 0 ? parent : main.indexOf(screen) >= 0 ? main.indexOf(screen) : i) * 440
       const lane = (lanes.get(x) ?? 0) + 1
       if (screen.branchOf) lanes.set(x, lane)
-      return { ...screen, label: screen.partial ? screen.label.replace(/-/g, ' ').replace(/^./, (letter) => letter.toUpperCase()) : screen.label, x, y: screen.branchOf ? lane * 900 : screen.id === 'dye' || screen.id === 'intake.pack.dye' ? 900 : 0 }
+      return { ...screen, label: screen.partial ? screen.label.replace(/-/g, ' ').replace(/^./, (letter) => letter.toUpperCase()) : screen.label, x, y: screen.branchOf ? lane * 900 : extension.lowered?.includes(screen.id) ? 900 : 0 }
     })
     const width = 72 + (Math.max(...screens.map((screen) => screen.x)) + 440)
     const height = Math.max(1000, ...screens.map((screen) => screen.y + 1000))
-    return { ...flow, section: generic ? flow.screens[0]?.section ?? sections[0]! : sectionOf[flow.label] ?? 'Laundry', x: 0, y: 0, width, height, screens }
+    return { ...flow, section: extension.sectionOf?.(flow) ?? flow.screens[0]?.section ?? sections[0]!, x: 0, y: 0, width, height, screens }
   })
   let x = 40
   for (const section of sections) {

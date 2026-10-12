@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { MapScenario } from './app-map'
-import type { ReviewSnapshot } from './store'
+import type { ReviewSnapshot } from './adapter'
 import { projectFetch } from './project-request'
 
 type Target = { id: string; title: string; kind: string; component?: string; scenarios: string[]; acceptance: string[]; implementation: string; preview: string; verification: string; reason: string; missingEdges: string[] }

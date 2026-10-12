@@ -8,9 +8,8 @@ import { feedbackText, type FeedbackKind } from '@/copy/feedback'
 import type { ReviewConfig, ReviewSnapshot } from './store'
 import '@/app.css'
 import '@/generated/tokens.css'
-import './review.css'
-import { AppCanvas } from './app-canvas'
-import { projectFetch } from './project-request'
+import '@civic/canvas/styles/review.css'
+import { projectFetch } from '@civic/canvas/project-request'
 
 type Scenario = { id: string; label: string; journey: string; renderer: string; component: string; design: string[]; checks: string[]; preview: string; implementation: string; designCoverage: string; reference: string; behavior: string; native: string; device: string; edges?: { action: string; destination: string; effect: string }[] }
 type Index = { validation: { path: string; status: string }; revision: { head: string; source: string; capturedAt: string }; design: { project: string; hashes: Record<string, string | null>; reconciliation: string }; scenarios: Scenario[]; surfaces: { id: string; name: string; path: string; kind: string; scenarios: string[] }[]; limits: string[] }
@@ -186,5 +185,5 @@ function Workspace() {
     </div>
   </main>
 }
-const pageParams = new URLSearchParams(location.search)
-createRoot(document.getElementById('review-root')!).render(pageParams.get('legacy') === '1' ? <Workspace /> : <AppCanvas />)
+// The canvas opens this older workspace only with ?legacy=1.
+createRoot(document.getElementById('review-root')!).render(<Workspace />)

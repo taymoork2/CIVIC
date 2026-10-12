@@ -1,11 +1,16 @@
 {
-  "version": 7,
+  "version": 8,
   "targets": [
     {
       "id": "journey.hanging-reminder",
       "title": "Hanging reminder · visible, dismissed, changed task and exact run check",
       "kind": "journey",
-      "scenarios": ["route.home.reminder-visible", "route.home.reminder-dismissed", "route.home.reminder-changed", "route.drying.reminder-check"],
+      "scenarios": [
+        "route.home.reminder-visible",
+        "route.home.reminder-dismissed",
+        "route.home.reminder-changed",
+        "route.drying.reminder-check"
+      ],
       "acceptance": [
         "Mount the released Home/Closet and real reminder presenters against synthetic records; refuse household writes.",
         "Opening follows /drying?run=<runId> and records no dryness; Home and Laundry remain accessible after dismissal.",
@@ -17,7 +22,12 @@
       "id": "journey.family-scale-care-loop",
       "title": "Family of five · complete care loop at 100, 500 and 1000 items",
       "kind": "journey",
-      "scenarios": ["family.planning", "family.washing", "family.drying", "family.putaway"],
+      "scenarios": [
+        "family.planning",
+        "family.washing",
+        "family.drying",
+        "family.putaway"
+      ],
       "acceptance": [
         "Keep the same synthetic account and items across planning, every wash load, drying and partial put-away.",
         "Changing family size or starting stage requires explicit reset; cancellation retains the current run.",

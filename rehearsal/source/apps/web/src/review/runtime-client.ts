@@ -1,5 +1,5 @@
-import { projectFetch } from './project-request'
-import type { RuntimeBridge } from './runtime-bridge'
+import { projectFetch } from '@civic/canvas/project-request'
+import type { RuntimeBridge } from '@civic/canvas/runtime-bridge'
 
 export async function runtimeRequest<T>(input: Record<string, unknown>): Promise<T> {
   const response = await projectFetch('/api/review/runtime', { method: 'POST', keepalive: input.action === 'close', headers: { 'content-type': 'application/json' }, body: JSON.stringify(input) })

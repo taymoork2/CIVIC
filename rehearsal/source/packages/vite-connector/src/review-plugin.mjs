@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises'
 import { dirname, join, resolve, relative } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { searchForWorkspaceRoot } from 'vite'
 import { captureReview, reviewMiddleware } from '@civic/shell/server'
 import { reviewInventory } from './review-inventory.mjs'
 import { loadProject, publicProject } from './review-project.mjs'
@@ -13,7 +14,8 @@ import { projectPicker } from './review-projects.mjs'
  * review entries and the app's sources to them, refreshes on change, and mounts the
  * `@civic/shell` review server.
  *
- * `host` is the folder holding `review.html` and `review-frame.html`; `repo` is the workspace
+ * `host` is the Vite root; `canvas` is the folder holding the canvas entries (`review.html`,
+ * `review-frame.html` and their `src/`, normally `@civic/canvas`) and defaults to `host`. `repo` is the workspace
  * that owns the review store (`.review-data`). A `module` project needs nothing else. Any other
  * adapter kind needs a connector in `connectors` (Laundry registers `laundry`), which may supply:
  *   inventory(repo, designRoot, appRoot)  its own review index
@@ -24,6 +26,7 @@ import { projectPicker } from './review-projects.mjs'
  *   resolveId/load(id, project, importer)  extra modules, such as substitutes for app boot or auth files
  *   transform(path, code, project)         checked, in-memory edits of app source (never written back)
  *   shellStyle(project)                    CSS imports that style the review frame like the app
+ *   canvasExtension(project)               a module whose default export extends the canvas (layout, a guided run)
  *   serveSources                           false when the host already serves the app's sources
  * `review({ project, repo, dataDir })` returns the shell's options (adapter, coverage, agents, shared,
  * publicHost). `runtime(project, source)` starts the isolated backend for live runs, when the app has one.
@@ -32,7 +35,9 @@ import { projectPicker } from './review-projects.mjs'
 // CIVIC_* settings, with the engine's older REHEARSAL_* names still read.
 const env = (name) => process.env[`CIVIC_${name}`] ?? process.env[`REHEARSAL_${name}`]
 
-export function civicReview({ host, repo = resolve(host, '../..'), connectors = {}, review = () => ({}), runtime = null, engineRoots, picker = {} }) {
+export function civicReview({ host, canvas = host, repo = resolve(host, '../..'), connectors = {}, review = () => ({}), runtime = null, engineRoots, picker = {} }) {
+  // The canvas, the shell it imports, and the packages they resolve from its workspace.
+  const canvasRoots = [canvas, resolve(dirname(fileURLToPath(import.meta.resolve('@civic/shell/server'))), '..'), join(searchForWorkspaceRoot(canvas), 'node_modules')]
   const viteClientEnv = join(dirname(fileURLToPath(import.meta.resolve('vite/package.json'))), 'dist/client/env.mjs')
   let project = loadProject(repo)
   const kind = project.manifest.adapter.kind
@@ -43,11 +48,12 @@ export function civicReview({ host, repo = resolve(host, '../..'), connectors = 
   const storeRoot = env('DATA_DIR') ? resolve(env('DATA_DIR')) : join(repo, '.review-data')
   const dataDir = connector?.sharedStore?.(project) ? storeRoot : join(storeRoot, 'projects', project.key)
   const designRoot = env('DESIGN_ROOT') ?? connector?.designRoot?.(repo)
-  const inventoryOptions = { connector, ...(engineRoots ? { engineRoots } : {}) }
-  const watchPaths = () => [...project.sources, project.manifestPath, project.scenariosPath, project.coverageFile, ...(project.entry ? [dirname(project.entry)] : []), ...(project.publicDir ? [project.publicDir] : []), ...(engineRoots ?? [join(host, 'src/review'), join(host, 'scripts')]), dirname(fileURLToPath(import.meta.url)), join(repo, '.review-data/application.json'), join(repo, 'docs/design/review-validation.json'), ...[repo, appRepo].flatMap((root) => ['package.json', 'pnpm-lock.yaml', 'package-lock.json', 'yarn.lock', 'tsconfig.json'].map((file) => join(root, file)))]
+  const roots = engineRoots ?? [join(canvas, 'src')]
+  const inventoryOptions = { connector, engineRoots: roots }
+  const watchPaths = () => [...project.sources, project.manifestPath, project.scenariosPath, project.coverageFile, ...(project.entry ? [dirname(project.entry)] : []), ...(project.publicDir ? [project.publicDir] : []), ...roots, dirname(fileURLToPath(import.meta.url)), join(repo, '.review-data/application.json'), join(repo, 'docs/design/review-validation.json'), ...[repo, appRepo].flatMap((root) => ['package.json', 'pnpm-lock.yaml', 'package-lock.json', 'yarn.lock', 'tsconfig.json'].map((file) => join(root, file)))]
   const compilation = (value) => JSON.stringify([value.root, value.entry, value.runtimeEntry, value.aliases, value.publicDir, value.coverageFile, value.manifest.adapter.kind, value.key, env('PUBLIC_ORIGIN') ?? value.local.publicOrigin])
   const binding = compilation(project)
-  const modules = { 'virtual:rehearsal-project': () => `export default ${JSON.stringify(publicProject(project))}`, 'virtual:rehearsal-preview': () => project.entry ? `export { mount } from ${JSON.stringify('/@fs/' + project.entry)}` : 'export function mount() { throw Error("This project has no preview adapter. Connect a synthetic mount entry first.") }', 'virtual:rehearsal-shell-style': () => connector?.shellStyle?.(project) ?? '' }
+  const modules = { 'virtual:civic-project': () => `export default ${JSON.stringify(publicProject(project))}`, 'virtual:civic-preview': () => project.entry ? `export { mount } from ${JSON.stringify('/@fs/' + project.entry)}` : 'export function mount() { throw Error("This project has no preview adapter. Connect a synthetic mount entry first.") }', 'virtual:civic-shell-style': () => connector?.shellStyle?.(project) ?? '', 'virtual:civic-canvas-extension': () => { const file = connector?.canvasExtension?.(project); return file ? `export { default } from ${JSON.stringify('/@fs' + file)}` : 'export default {}' } }
   return {
     name: 'isolated-product-review',
     enforce: 'pre',
@@ -58,8 +64,8 @@ export function civicReview({ host, repo = resolve(host, '../..'), connectors = 
       config.publicDir = project.publicDir
       config.resolve.alias = { ...config.resolve.alias, ...project.aliases }
       config.resolve.dedupe = [...new Set(['react', 'react-dom', ...(connector?.dedupe ?? [])])]
-      config.server.fs = { ...config.server.fs, allow: [...new Set([repo, appRepo, project.manifestRoot, viteClientEnv])] }
-      config.optimizeDeps = { ...config.optimizeDeps, entries: ['review.html', 'review-frame.html'] }
+      config.server.fs = { ...config.server.fs, allow: [...new Set([repo, appRepo, project.manifestRoot, ...canvasRoots, viteClientEnv])] }
+      config.optimizeDeps = { ...config.optimizeDeps, entries: [join(canvas, 'src/main.tsx'), join(canvas, 'src/frame.tsx')] }
     },
     resolveId(id, importer) {
       if (id in modules) return '\0' + id
@@ -110,7 +116,7 @@ export function civicReview({ host, repo = resolve(host, '../..'), connectors = 
         debounce = setTimeout(() => { const pending = scheduled; scheduled = null; pending.wake() }, 250)
       }
       server.watcher.on('change', refresh).on('add', refresh).on('unlink', refresh)
-      const projects = await projectPicker(repo, project, { ...picker, kinds: ['module', ...Object.keys(connectors)] })
+      const projects = await projectPicker(repo, project, { discoveredAdapter: join(canvas, 'src/discovered-adapter.tsx'), starterTemplate: join(canvas, 'examples/notebook'), ...picker, kinds: ['module', ...Object.keys(connectors)] })
       const source = () => { if (pendingRefreshes) throw Object.assign(Error('Source is updating. Wait for refresh before starting a new run.'), { status: 409 }); if (metadata.refreshError) throw Error(metadata.refreshError); return metadata.revision.source }
       const runs = runtime?.(project, source)
       const options = await review({ project, repo, dataDir })
@@ -130,7 +136,7 @@ export function civicReview({ host, repo = resolve(host, '../..'), connectors = 
         if (entry === null) {
           let path
           try { path = decodeURIComponent(url.pathname) } catch { res.writeHead(400); res.end(); return }
-          if (/(?:^|\/)(?:\.review-data|\.git|\.env[^/]*)(?:\/|$)/.test(path) || path.startsWith('/@fs/') && resolve(path.slice(4)) !== viteClientEnv && ![repo, appRepo, project.manifestRoot].some((root) => resolve(path.slice(4)).startsWith(root + '/')) || !['GET', 'HEAD'].includes(req.method)) { res.writeHead(404); res.end(); return }
+          if (/(?:^|\/)(?:\.review-data|\.git|\.env[^/]*)(?:\/|$)/.test(path) || path.startsWith('/@fs/') && resolve(path.slice(4)) !== viteClientEnv && ![repo, appRepo, project.manifestRoot, ...canvasRoots].some((root) => resolve(path.slice(4)).startsWith(root + '/')) || !['GET', 'HEAD'].includes(req.method)) { res.writeHead(404); res.end(); return }
           const cachePath = relative(host, server.config.cacheDir)
           const cachedModule = !cachePath.startsWith('../') && path.startsWith('/' + cachePath + '/deps/') && /\.(?:js|map|json)$/.test(path)
           if (cachedModule || /^\/(?:@(?:vite|id|fs)(?:\/|$)|@react-refresh$|\.vite\/deps\/|src\/|node_modules\/|assets\/|fonts\/|icons\/)/.test(url.pathname) || /^\/[^/]+\.(?:png|webp|jpe?g|svg|ico|woff2?)$/.test(url.pathname) || /^\/design\/[^/]+\.(?:png|webp|jpe?g|svg)$/.test(url.pathname)) return next()
@@ -139,7 +145,9 @@ export function civicReview({ host, repo = resolve(host, '../..'), connectors = 
           res.end(JSON.stringify({ error: 'This route is outside synthetic review. No application or research request was sent.' })); return
         }
         try {
-          const html = await server.transformIndexHtml(url.pathname, await readFile(join(host, entry), 'utf8'))
+          // Canvas entries load their scripts from the canvas package, wherever the Vite root is.
+          const page = (await readFile(join(canvas, entry), 'utf8')).replaceAll('src="/src/', `src="/@fs${canvas}/src/`)
+          const html = await server.transformIndexHtml(url.pathname, page)
           if (entry === 'review-frame.html') res.setHeader('content-security-policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self'; frame-src 'self' blob:; form-action 'none'; object-src 'none'; base-uri 'self'")
           res.writeHead(200, { 'content-type': 'text/html', 'cache-control': 'no-store', 'x-frame-options': 'SAMEORIGIN' }); res.end(html)
         } catch (error) { next(error) }

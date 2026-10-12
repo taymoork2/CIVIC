@@ -1,14 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import { feedbackText, type FeedbackKind } from './feedback-copy'
 import type { MapScreen } from './app-map'
-import type { ReviewConfig, ReviewSnapshot } from './store'
+import type { ReviewConfig, ReviewSnapshot } from './adapter'
 import { readFixtureFields } from './journey'
 import { captureScreen } from '@civic/shell/capture'
-import { reviewApi } from './canvas'
+import { reviewApi } from './review-api'
 import { projectFetch } from './project-request'
 import { pathId } from './journey-graph.mjs'
 import { AgentDelivery, type Delivery } from './agent-delivery'
 import type { ProjectProfile } from './adapter'
+import { extension } from './extension'
 
 export type ReviewTarget = { kind: 'app' | 'flow' | 'screen' | 'region' | 'path'; id: string; label: string; flow?: string; screen?: string; from?: string; to?: string; action?: string; when?: string | null; returnTo?: string | null; selector?: string }
 type Anchor = { label: string; x: number; y: number; width: number; height: number }
@@ -96,7 +97,7 @@ export function ReviewPanel({ project, selected, flowScreens, allScreens, frame,
   selected: MapScreen | null; flowScreens: MapScreen[]; allScreens: MapScreen[]; frame: HTMLIFrameElement | null; target: ReviewTarget; canvas: HTMLElement | null
   fixture: { source: string; snapshot: ReviewSnapshot | null }; focus: (target: ReviewTarget) => void; navigationReady: boolean
 }) {
-  const noteKey = project.adapter === 'laundry' ? 'rehearsal:review:draft:v1' : `rehearsal:${project.key}:review:draft:v1`
+  const noteKey = extension.draftKey ?? `rehearsal:${project.key}:review:draft:v1`
   const [comments, setComments] = useState<Feedback[]>([])
   const [scope, setScope] = useState('selection')
   const [statusFilter, setStatusFilter] = useState('all')
@@ -142,7 +143,7 @@ export function ReviewPanel({ project, selected, flowScreens, allScreens, frame,
       if (['screen', 'region'].includes(target.kind) && frame) {
         const doc = frame.contentDocument, bridge = frame.contentWindow?.reviewPreview
         if (!doc || !bridge || !doc.querySelector('[role="dialog"],h1')) throw Error('The live screen is still loading. Wait and retry.')
-        const runtime = frame.contentWindow?.reviewPreview?.state?.() ?? frame.contentWindow?.towelJourney?.state()
+        const runtime = frame.contentWindow?.reviewPreview?.state?.() ?? frame.contentWindow?.guidedJourney?.state()
         if (bridge.recording && runtime?.screen !== representative.scenario) throw Error('The application reached another or unmapped screen. Focus its current screen before capturing a review.')
         snapshot = bridge.snapshot; html = captureScreen(doc); evidence = { kind: 'live' }
         config = { ...bridge.config, condition: bridge.recording ? bridge.config.condition : doc.documentElement.dataset.reviewCondition as ReviewConfig['condition'] ?? bridge.config.condition }

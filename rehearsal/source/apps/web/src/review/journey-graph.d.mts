@@ -1,4 +1,4 @@
-import type { MapScenario, MapScreen } from './app-map'
+import type { MapScenario, MapScreen } from '@civic/canvas/app-map'
 export const entryScreens: string[]
 export const towelEdges: { from: string; to: string; label: string; when?: string }[]
 export function journeyGraph(scenarios: MapScenario[], project?: { adapter: string }): { id: string; label: string; screens: MapScreen[] }[]

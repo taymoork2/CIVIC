@@ -92,6 +92,8 @@ Progress, 2026-10-12: the v7 handoff of the journey engine mounts the real Laund
 
 Progress, 2026-10-12: the build connector is a package. [`@civic/vite-connector`](../rehearsal/source/packages/vite-connector) holds the Vite plugin, the project manifest and picker, discovery, the review index, fixture fingerprints and the coverage bridge, and imports only Node, Vite and `@civic/shell`. Laundry is one connector registered by the host (kind `laundry`); a plain `module` app connects through the package with no app connector, which its checks prove. Still to come: the canvas UI outside the Laundry monorepo host, and a runtime and data adapter beyond Laundry's Convex.
 
+Progress, 2026-10-12: the canvas runs on its own. [`@civic/canvas`](../rehearsal/source/packages/canvas) holds the journey canvas UI, its frame entry, the Notebook example and a standalone host (`civic-canvas --project <app>/civic.project.json`) that keeps its store outside the app. Laundry-only layout and the towel journey's guided run reach the canvas through a canvas extension that Laundry's connector supplies; a module app gets CIVIC's own layout. Still to come: a runtime and data adapter beyond Laundry's Convex.
+
 ## 5. Identity, permissions, and multiplayer
 
 Real identities, scoped permissions, and versioned shared records, following the spec's [multiplayer boundary](product-spec.md#multiplayer-and-ownership). The single local access key and the portal's collaborator access are not this model.

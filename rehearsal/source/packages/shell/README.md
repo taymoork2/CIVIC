@@ -25,14 +25,11 @@ It also takes an optional `coverage({ dataDir, metadata })` factory that opens t
 
 ## Still inside the Laundry adapter
 
-This is the first extraction step, not a finished plugin contract. These remain in `apps/web/src/review` because they still import Laundry components, fixtures or vocabulary:
+The canvas UI itself is now [`@civic/canvas`](../canvas), and the Vite plugin, manifest, picker, discovery, inventory and coverage bridge are [`@civic/vite-connector`](../vite-connector). These remain in `apps/web` because they import Laundry components, fixtures or vocabulary:
 
-- The canvas composition (`app-canvas.tsx`), journey graph (`app-map.ts`, `journey.ts`), towel runtime (`canvas.tsx`), review and contract panels.
-- Laundry's connector for [`@civic/vite-connector`](../vite-connector) (`apps/web/scripts/review-laundry-connector.mjs`), which scans Laundry design references, previews and source paths. The Vite plugin, project manifest, picker, discovery, inventory and coverage bridge themselves are in that package.
-- The cross-route bindings (`route-actions.json`), app overview and arrow routing (`app-overview.tsx`, `arrow-routing.ts`) and the coverage pane.
+- Laundry's connector (`apps/web/scripts/review-laundry-connector.mjs`) and its canvas extension (`apps/web/src/review/canvas-extension.ts`): the flow layout, the towel journey's guided run (`towel-session.tsx`) and the older workspace.
+- The fixture frames, synthetic store and Convex runtime adapter (`laundry-frame.tsx`, `store.ts`, `adapters/`, `scripts/review-runtime.mjs`), and the cross-route bindings (`route-actions.json`).
 - The feedback context vocabulary in `server/review-server.mjs` (personas, roles and conditions) is still Laundry's.
-
-Prove a second, minimal integration before generalizing any of these.
 
 ## Checks
 

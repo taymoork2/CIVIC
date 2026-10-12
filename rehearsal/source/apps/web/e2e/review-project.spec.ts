@@ -99,7 +99,7 @@ test('replay from start walks declared paths in a fresh run and stops visibly on
 test('unregistered states and adapter errors fail visibly without claiming a ready preview', async ({ page }) => {
   await page.goto('/review-frame.html?scenario=demo.unknown')
   await expect(page.getByRole('alert')).toContainText('not registered')
-  await page.route('**/examples/rehearsal-demo/src/rehearsal.js', (route) => route.fulfill({ contentType: 'text/javascript', body: "export function mount(root, context) { context.publish({ screen: 'unmapped.screen' }) }" }))
+  await page.route('**/examples/notebook/src/preview.js', (route) => route.fulfill({ contentType: 'text/javascript', body: "export function mount(root, context) { context.publish({ screen: 'unmapped.screen' }) }" }))
   await page.goto('/review-frame.html?scenario=demo.edit')
   await expect(page.getByRole('alert')).toHaveText('Unmapped adapter screen: unmapped.screen')
   await expect(page.locator('[data-rehearsal-ready]')).toHaveCount(0)

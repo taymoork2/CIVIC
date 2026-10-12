@@ -4,7 +4,7 @@ import { createMemoryHistory, createRouter, RouterProvider } from '@tanstack/rea
 import { Toaster } from 'sonner'
 import { routeTree } from 'virtual:rehearsal-laundry-routes'
 import { openLaundrySession } from './laundry-session'
-import type { AdapterContext } from '../adapter'
+import type { AdapterContext } from '@civic/canvas/adapter'
 import '@/app.css'
 import '@/generated/tokens.css'
 

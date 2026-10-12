@@ -16,7 +16,7 @@ async function atomic(file, value) {
 
 // Connections and starters belong to the review host. Connecting never writes into an app checkout.
 // The host supplies the runtime that mounts discovered screens and the starter project it copies.
-export async function projectPicker(repo, current, { discoveredAdapter = join(repo, 'apps/web/src/review/discovered-adapter.tsx'), starterTemplate = join(repo, 'apps/web/examples/rehearsal-demo'), kinds = null } = {}) {
+export async function projectPicker(repo, current, { discoveredAdapter = join(repo, 'packages/canvas/src/discovered-adapter.tsx'), starterTemplate = join(repo, 'packages/canvas/examples/notebook'), kinds = null } = {}) {
   const store = join(repo, '.review-data/project-picker.json')
   await mkdir(dirname(store), { recursive: true, mode: 0o700 })
   let rows

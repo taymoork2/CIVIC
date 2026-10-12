@@ -18,6 +18,7 @@
   },
   "dependencies": {
     "@base-ui/react": "1.8.0",
+    "@civic/canvas": "workspace:*",
     "@civic/shell": "workspace:*",
     "@civic/vite-connector": "workspace:*",
     "@convex-dev/better-auth": "0.12.5",

@@ -1,12 +1,13 @@
 import { createRoot } from 'react-dom/client'
-import project from 'virtual:rehearsal-project'
+import project from 'virtual:civic-project'
 import { bindProjectRequests } from './project-request'
-import 'virtual:rehearsal-shell-style'
+import 'virtual:civic-shell-style'
 import './shell.css'
 import './review.css'
 import { AppCanvas } from './app-canvas'
+import { extension } from './extension'
 
 bindProjectRequests(project.key)
 document.title = `${project.name} · CIVIC`
-if (project.adapter === 'laundry' && new URLSearchParams(location.search).get('legacy') === '1') await import('./workspace')
+if (extension.legacy && new URLSearchParams(location.search).get('legacy') === '1') await extension.legacy()
 else createRoot(document.getElementById('review-root')!).render(<AppCanvas />)
