@@ -1,6 +1,6 @@
 # The discovery example, onboarded by a crawl
 
-Roadmap [step 4](../../docs/roadmap.md#4-the-journey-engine-as-a-graph-viewer): a second app connects without importing Laundry code, discovered by crawling first (D34). The app is the journey engine's manifest-free example in [`rehearsal/source/apps/web/examples/discovery-app`](../../rehearsal/source/apps/web/examples/discovery-app): four static HTML pages for writing and archiving notes, plus two React components nothing links to.
+Roadmap [step 4](../../docs/roadmap.md#4-the-journey-engine-as-a-graph-viewer): a second app connects without importing Laundry code, discovered by crawling first (D34). The app is the journey engine's manifest-free example in [`journey-engine/source/apps/web/examples/discovery-app`](../../journey-engine/source/apps/web/examples/discovery-app): four static HTML pages for writing and archiving notes, plus two React components nothing links to.
 
 [`out/crawl.md`](out/crawl.md) shows what CIVIC's [crawl](../../crawl) found: 4 screens and 6 paths, with nothing blocked and nothing out of reach. The crawl filled the note title, the one field on its allowlist. Every screen is discovered and every path proposed, so `civic check` reports the 4 screens as awaiting confirmation and nothing counts for readiness yet.
 

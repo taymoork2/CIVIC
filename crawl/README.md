@@ -22,7 +22,7 @@ cd crawl
 pnpm install --frozen-lockfile
 pnpm run check
 pnpm test                       # the loop on fake apps, and one crawl of a static site in a real browser
-node src/cli.ts --folder ../rehearsal/source/apps/web/examples/discovery-app/src --seed index.html --revision HEAD --input "Title=Crawl note"
+node src/cli.ts --folder ../journey-engine/source/apps/web/examples/discovery-app/src --seed index.html --revision HEAD --input "Title=Crawl note"
 node src/cli.ts http://127.0.0.1:3000/ --revision <commit> --out crawl.json
 ```
 

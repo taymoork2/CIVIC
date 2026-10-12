@@ -34,12 +34,12 @@ Both name the commit they were captured at, and every record carries it.
 ## Recapturing
 
 ```sh
-cd rehearsal/source && pnpm --dir apps/web run review     # a review server on port 3010
-node projects/laundry/capture.ts                           # from the repository root, on a clean rehearsal/source
+cd journey-engine/source && pnpm --dir apps/web run review     # a review server on port 3010
+node projects/laundry/capture.ts                           # from the repository root, on a clean journey-engine/source
 node projects/laundry/build.ts                             # rebuild out/
 bin/civic check                                            # new findings block; fixed ones are listed
 ```
 
-Or let the signoff decide: `bin/signoff --capture` recaptures only when the gate finds the evidence stale, meaning `rehearsal/source` changed since the commit it was captured at ([`civic.check.json`](../../civic.check.json)'s freshness rule). A recapture stops the signoff so the new evidence is reviewed and committed first. The recapture at `c694591b9b25`, after the Contract panel change, gave the same 24 passes and 3 failures.
+Or let the signoff decide: `bin/signoff --capture` recaptures only when the gate finds the evidence stale, meaning `journey-engine/source` changed since the commit it was captured at ([`civic.check.json`](../../civic.check.json)'s freshness rule). A recapture stops the signoff so the new evidence is reviewed and committed first. The recapture at `c694591b9b25`, after the Contract panel change, gave the same 24 passes and 3 failures. On 2026-10-12, after the v7 import and the move to `journey-engine/`, five stale review tests were brought up to date (renamed headings and controls, whole-screen renderers that aren't drawers, and the towel now saving through the app). The recapture at `e8cb256b31d3` runs 39 tests across 6 spec files, and all pass. The v7 index adds a Live application journey whose 14 screens have no declared paths yet, so they're dead ends, held by the baseline.
 
-The capture refuses a dirty `rehearsal/source`, and it refuses a review server that read a different commit, because the evidence would describe code no commit holds. Laundry's Playwright config uses installed Chrome. `bin/signoff` fails when `out/` doesn't match the inputs. Because the build reads the spec files to see which scenarios each test opens, an edited spec can also change `out/`, which is a sign to recapture.
+The capture refuses a dirty `journey-engine/source`, and it refuses a review server that read a different commit, because the evidence would describe code no commit holds. Laundry's Playwright config uses installed Chrome. `bin/signoff` fails when `out/` doesn't match the inputs. Because the build reads the spec files to see which scenarios each test opens, an edited spec can also change `out/`, which is a sign to recapture.

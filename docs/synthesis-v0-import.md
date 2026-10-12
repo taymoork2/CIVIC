@@ -3,7 +3,7 @@
 - **Date:** 2026-10-10
 - **Decision:** [0002 — The v0 journey engine is the CIVIC base](decisions/0002-v0-journey-engine-is-civic-base.md)
 
-On October 10, 2026 the founder's v0 journey engine handoff — built in the Laundry App repository — was imported into [`rehearsal/`](../rehearsal/) and continued as CIVIC's implementation base. This document states plainly what the imported system already does, what was added in this repository, and what evidence exists for each claim.
+On October 10, 2026 the founder's v0 journey engine handoff — built in the Laundry App repository — was imported into [`journey-engine/`](../journey-engine/) and continued as CIVIC's implementation base. This document states plainly what the imported system already does, what was added in this repository, and what evidence exists for each claim.
 
 ## What the v0 engine already provides
 
@@ -16,7 +16,7 @@ On October 10, 2026 the founder's v0 journey engine handoff — built in the Lau
 
 ## What is deliberately not done
 
-- The Laundry App domain code still sits inside `rehearsal/source`. Shell extraction has started with `@civic/shell` ([decision 0003](decisions/0003-civic-shell-package.md)); the canvas composition and panels are still in the Laundry app.
+- The Laundry App domain code still sits inside `journey-engine/source`. Shell extraction has started with `@civic/shell` ([decision 0003](decisions/0003-civic-shell-package.md)); the canvas composition and panels are still in the Laundry app.
 - Native (iOS/Android) evidence is 0/173 proven; the Fluent 2 cross-platform adapter ([decision 0001](0001-fluent-2-demo-design-system.md)) is not implemented.
 - Coverage counts come from the current specimen inventory; they are not a claim of full app coverage.
 - Portal access is personal-thread access, not the multiplayer permission model.
@@ -53,7 +53,7 @@ The six web tests that moved now run in the shell package, which is why the web 
 
 ## v4 handoff update
 
-On October 10, 2026 the founder sent a v4 handoff of the journey engine. It was merged into `rehearsal/` on top of this repository's own changes (the `@civic/shell` extraction, the Laundry adapter and the Product Contract panel), using the handoff's verified patch against the original import as the common base. The handoff's `REPORT.md` lists every changed file.
+On October 10, 2026 the founder sent a v4 handoff of the journey engine. It was merged into `journey-engine/` on top of this repository's own changes (the `@civic/shell` extraction, the Laundry adapter and the Product Contract panel), using the handoff's verified patch against the original import as the common base. The handoff's `REPORT.md` lists every changed file.
 
 What v4 adds:
 
@@ -85,7 +85,7 @@ The handoff's `MANIFEST.json` and `SHA256SUMS` describe the v4 bundle as sent, s
 
 ## v6 handoff update
 
-On October 11, 2026 the founder sent a v6 handoff of the journey engine. It was merged into `rehearsal/` the same way as v4: a three-way merge whose base is the v4 handoff's source exactly as sent (checked against its `SHA256SUMS`), with this repository's changes on one side and v6 on the other. v6's own `context/since-v5.patch` was checked by rebuilding v5 from it. The v4 handoff documents and context moved to `rehearsal/history/v4/`; `rehearsal/` now carries v6's (`HANDOFF.md`, `CHANGES-SINCE-V5.md`, `EXTRACTION.md`, `history/v5/`). Host paths, the private tailnet address and session IDs are redacted in the committed copies of the handoff notes.
+On October 11, 2026 the founder sent a v6 handoff of the journey engine. It was merged into `journey-engine/` the same way as v4: a three-way merge whose base is the v4 handoff's source exactly as sent (checked against its `SHA256SUMS`), with this repository's changes on one side and v6 on the other. v6's own `context/since-v5.patch` was checked by rebuilding v5 from it. The v4 handoff documents and context moved to `journey-engine/history/v4/`; `journey-engine/` now carries v6's (`HANDOFF.md`, `CHANGES-SINCE-V5.md`, `EXTRACTION.md`, `history/v5/`). Host paths, the private tailnet address and session IDs are redacted in the committed copies of the handoff notes.
 
 What v5 and v6 add, over v4:
 
@@ -116,7 +116,7 @@ Verified on the merge branch with Node 22 and pnpm 12.5.1: `pnpm install --froze
 
 ## v7 handoff update
 
-On October 12, 2026 the founder sent a v7 handoff of the journey engine, with a note on platform adapters. It was merged into `rehearsal/` the same way as v6: a three-way merge whose base is the v6 handoff's source exactly as sent (checked against its `SHA256SUMS`), with this repository's changes on one side and v7 on the other. v7's own `context/since-v6.patch` was checked by applying it to v6's source, which reproduced v7's source exactly. The v6 handoff documents, context and evidence moved to `rehearsal/history/v6/` and `rehearsal/evidence/historical/`; `rehearsal/` now carries v7's (`HANDOFF.md`, `CHANGES-SINCE-V6.md`, `EXTRACTING-REHEARSAL.md`, `PACKAGE-VERIFICATION.md`). Host paths and the owner's session ID are redacted in the committed `HANDOFF.md`.
+On October 12, 2026 the founder sent a v7 handoff of the journey engine, with a note on platform adapters. It was merged into `journey-engine/` the same way as v6: a three-way merge whose base is the v6 handoff's source exactly as sent (checked against its `SHA256SUMS`), with this repository's changes on one side and v7 on the other. v7's own `context/since-v6.patch` was checked by applying it to v6's source, which reproduced v7's source exactly. The v6 handoff documents, context and evidence moved to `journey-engine/history/v6/` and `journey-engine/evidence/historical/`; `journey-engine/` now carries v7's (`HANDOFF.md`, `CHANGES-SINCE-V6.md`, `EXTRACTING-REHEARSAL.md`, `PACKAGE-VERIFICATION.md`). Host paths and the owner's session ID are redacted in the committed `HANDOFF.md`.
 
 What v7 adds, over v6:
 
@@ -144,4 +144,4 @@ Verified on the merge branch with Node 22 and pnpm 12.5.1: `pnpm install --froze
 
 ## How to run
 
-The review service is declared in `.amp/services.yaml` (`amp orb services ensure`) and opens through the authenticated Amp portal at the `CIVIC journey engine` portal. Locally: `pnpm --dir rehearsal/source/apps/web run review` and open the page; a loopback browser needs no key. CIVIC's tools use the key in `rehearsal/source/.review-data/access-key` (generated at first run, never committed).
+The review service is declared in `.amp/services.yaml` (`amp orb services ensure`) and opens through the authenticated Amp portal at the `CIVIC journey engine` portal. Locally: `pnpm --dir journey-engine/source/apps/web run review` and open the page; a loopback browser needs no key. CIVIC's tools use the key in `journey-engine/source/.review-data/access-key` (generated at first run, never committed).

@@ -3,11 +3,11 @@
 // review index, and a Playwright JSON report from the browser specs the index declares as
 // its scenarios' checks. Laundry's suite runs unchanged; nothing is added to it.
 //
-// Start a review server first, from rehearsal/source:  pnpm --dir apps/web run review
+// Start a review server first, from journey-engine/source:  pnpm --dir apps/web run review
 // Then, from the repository root:                    node projects/laundry/capture.ts [base URL]
 //
 // The base URL defaults to http://127.0.0.1:3010. The report is stamped with the commit the
-// review server read, so a dirty rehearsal/source tree is refused: the evidence would
+// review server read, so a dirty journey-engine/source tree is refused: the evidence would
 // describe code no commit holds. Then run `node projects/laundry/build.ts` to rebuild out/.
 
 import { execFileSync, spawnSync } from 'node:child_process'
@@ -17,11 +17,11 @@ import { join } from 'node:path'
 
 const base = process.argv[2] ?? 'http://127.0.0.1:3010'
 const root = new URL('../../', import.meta.url).pathname
-const web = join(root, 'rehearsal/source/apps/web')
+const web = join(root, 'journey-engine/source/apps/web')
 const inputs = new URL('inputs/', import.meta.url).pathname
 const git = (...args: string[]) => execFileSync('git', ['-C', root, ...args], { encoding: 'utf8' }).trim()
 
-if (git('status', '--porcelain', '--', 'rehearsal/source')) throw new Error('rehearsal/source has uncommitted changes; commit them so the evidence names a real revision.')
+if (git('status', '--porcelain', '--', 'journey-engine/source')) throw new Error('journey-engine/source has uncommitted changes; commit them so the evidence names a real revision.')
 
 // The review server sets its session cookie on the workspace page and serves the index behind it.
 const page = await fetch(`${base}/review.html`)

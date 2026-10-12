@@ -139,7 +139,7 @@ Each TV operating system is its own platform target with its own alignment state
 - CIVIC isn't a drawing or authoring tool (D24). Drawing stays in design tools.
 - The scenario player plays the intended experience. Edit changes a real, versioned, testable proposal, and testing it isn't adopting it (D21).
 - Fixture jumps are labelled as jumps, evidence tiers stay separate, and a fixture jump or old screenshot is never runtime evidence.
-- The journey engine already generates a durable candidate per coverage gap: an editable prototype plus a React form scaffold (`rehearsal/REPORT.md`). It's labelled as not implementing the feature.
+- The journey engine already generates a durable candidate per coverage gap: an editable prototype plus a React form scaffold (`journey-engine/REPORT.md`). It's labelled as not implementing the feature.
 
 **New proposal: three levels of "walkable", and a firm line before no-code**
 

@@ -23,7 +23,7 @@ const OWNERS: Owner[] = [
 ]
 // Spec paths in the index are relative to the journey engine's source root; test files in
 // the report are relative to Laundry's Playwright test directory.
-const SOURCE_ROOT = 'rehearsal/source'
+const SOURCE_ROOT = 'journey-engine/source'
 const TEST_DIR = 'apps/web/e2e'
 
 const index = json<JourneyIndex>('inputs/review-index.json')

@@ -9,7 +9,7 @@ import { execFileSync } from 'node:child_process'
 import { writeFileSync } from 'node:fs'
 import { crawl, launchBrowser, serveFolder, webDriver } from '../../crawl/src/index.ts'
 
-export const APP = 'rehearsal/source/apps/web/examples/discovery-app/src'
+export const APP = 'journey-engine/source/apps/web/examples/discovery-app/src'
 const root = new URL('../../', import.meta.url).pathname
 const git = (...args: string[]) => execFileSync('git', ['-C', root, ...args], { encoding: 'utf8' }).trim()
 if (git('status', '--porcelain', '--', APP)) throw new Error(`${APP} has uncommitted changes; commit them so the crawl names a real revision.`)

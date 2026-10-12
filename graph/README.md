@@ -1,6 +1,6 @@
 # CIVIC graph schema
 
-Roadmap step 1. This package is the CIVIC-owned schema that every importer writes and every view reads ([decision 0004](../docs/decisions/0004-graph-first-journey-engine-as-viewer.md)). It lives outside `rehearsal/` and imports nothing from the journey engine or Laundry. It has no runtime dependencies and makes no model calls ([decision 0006](../docs/decisions/0006-deterministic-civic-for-agentic-teams.md)). A test enforces both.
+Roadmap step 1. This package is the CIVIC-owned schema that every importer writes and every view reads ([decision 0004](../docs/decisions/0004-graph-first-journey-engine-as-viewer.md)). It lives outside `journey-engine/` and imports nothing from the journey engine or Laundry. It has no runtime dependencies and makes no model calls ([decision 0006](../docs/decisions/0006-deterministic-civic-for-agentic-teams.md)). A test enforces both.
 
 Storage is plain JSON files until the Button demo shows what storage it needs. The event log from [onboarding and ingestion](../docs/onboarding-and-ingestion.md#4b-how-data-gets-back-to-the-engine) comes later; a graph document here is the current state that log would produce.
 
@@ -126,7 +126,7 @@ Two read-only queries over a graph (D31). Both are deterministic and print Markd
 - **Stale evidence.** Evidence proves the code at the revision it was captured at (roadmap step 6). A `freshness` rule in `civic.check.json` names a graph, the tools whose evidence proves code in this repository, and where that code lives. Evidence is stale when git shows a change there since its revision, uncommitted edits included, or when git doesn't know the revision. It's reported as advisory with a count, such as 0 of 27, and `civic screen` and the Contract panel mark it. Evidence pinned to an upstream release, such as Fluent's source, has no rule.
 
   ```json
-  { "freshness": [{ "graph": "projects/laundry/out/graph.json", "tools": ["playwright"], "watch": ["rehearsal/source"] }] }
+  { "freshness": [{ "graph": "projects/laundry/out/graph.json", "tools": ["playwright"], "watch": ["journey-engine/source"] }] }
   ```
 
 - **Dates.** Expiry is compared with today's date, or `--today <date>` for a repeatable run. The same graphs, date and checkout always give the same report.

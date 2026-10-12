@@ -58,6 +58,76 @@
     },
     {
       "graph": "projects/laundry/out/graph.json",
+      "key": "dead-end target:laundry.app.account target:laundry.journey.live-application",
+      "summary": "Live account is a dead end in Live application: no path leads on and it isn't a declared exit."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "dead-end target:laundry.app.closet target:laundry.journey.live-application",
+      "summary": "Live closet is a dead end in Live application: no path leads on and it isn't a declared exit."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "dead-end target:laundry.app.drying target:laundry.journey.live-application",
+      "summary": "Live drying is a dead end in Live application: no path leads on and it isn't a declared exit."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "dead-end target:laundry.app.drying.empty target:laundry.journey.live-application",
+      "summary": "Drying · empty queue is a dead end in Live application: no path leads on and it isn't a declared exit."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "dead-end target:laundry.app.drying.putaway-one target:laundry.journey.live-application",
+      "summary": "Drying · one item to put away is a dead end in Live application: no path leads on and it isn't a declared exit."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "dead-end target:laundry.app.home target:laundry.journey.live-application",
+      "summary": "Live home is a dead end in Live application: no path leads on and it isn't a declared exit."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "dead-end target:laundry.app.home.no-ready target:laundry.journey.live-application",
+      "summary": "Home · no ready outfit is a dead end in Live application: no path leads on and it isn't a declared exit."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "dead-end target:laundry.app.household target:laundry.journey.live-application",
+      "summary": "Live household is a dead end in Live application: no path leads on and it isn't a declared exit."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "dead-end target:laundry.app.join.code target:laundry.journey.live-application",
+      "summary": "Live join code is a dead end in Live application: no path leads on and it isn't a declared exit."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "dead-end target:laundry.app.laundry target:laundry.journey.live-application",
+      "summary": "Live laundry is a dead end in Live application: no path leads on and it isn't a declared exit."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "dead-end target:laundry.app.me target:laundry.journey.live-application",
+      "summary": "Live me is a dead end in Live application: no path leads on and it isn't a declared exit."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "dead-end target:laundry.app.session.sessionid target:laundry.journey.live-application",
+      "summary": "Live session sessionid is a dead end in Live application: no path leads on and it isn't a declared exit."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "dead-end target:laundry.app.settings target:laundry.journey.live-application",
+      "summary": "Live settings is a dead end in Live application: no path leads on and it isn't a declared exit."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "key": "dead-end target:laundry.app.setup target:laundry.journey.live-application",
+      "summary": "Live setup is a dead end in Live application: no path leads on and it isn't a declared exit."
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
       "key": "dead-end target:laundry.intake.appliance target:laundry.journey.appliances",
       "summary": "Basic appliance intake is a dead end in Appliances: no path leads on and it isn't a declared exit."
     },
@@ -115,21 +185,6 @@
       "graph": "projects/laundry/out/graph.json",
       "key": "dead-end target:laundry.records.water target:laundry.journey.saved-records",
       "summary": "Saved water result is a dead end in Saved records: no path leads on and it isn't a declared exit."
-    },
-    {
-      "graph": "projects/laundry/out/graph.json",
-      "key": "failing-evidence evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer web",
-      "summary": "every initial named scenario renders a real task drawer fails."
-    },
-    {
-      "graph": "projects/laundry/out/graph.json",
-      "key": "failing-evidence evidence:playwright.returning-to-the-family-plan-retains-a-completed-wash-and-an-unfinished-drying-selection web",
-      "summary": "returning to the family plan retains a completed wash and an unfinished drying selection fails."
-    },
-    {
-      "graph": "projects/laundry/out/graph.json",
-      "key": "failing-evidence evidence:playwright.review-opens-real-synthetic-sheets-without-a-household-connection web",
-      "summary": "review opens real synthetic sheets without a household connection fails."
     }
   ]
 }

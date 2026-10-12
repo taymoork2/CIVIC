@@ -1,7 +1,7 @@
 {
   "revision": {
-    "head": "58a6c1a09fa88447418a521521ebff718d1bed6a",
-    "source": "d571e9e0dd68c2b3d801ace30007cca0973082848f4a1f6d549845f85900f69c"
+    "head": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+    "source": "f85058d5f5316b771ecf835d14e01b6e2c6d83a496744252105f51e602109bc8"
   },
   "project": {
     "id": "laundry-app",
@@ -364,10 +364,11 @@
       "id": "intake.towel.type",
       "label": "Cotton/polyester towel · type",
       "journey": "Cotton/polyester towel",
-      "renderer": "intake",
+      "renderer": "towel-runtime",
       "component": "apps/web/src/closet/add-clothes.tsx",
       "checks": [
-        "apps/web/e2e/review-workspace.spec.ts"
+        "apps/web/e2e/review-workspace.spec.ts",
+        "apps/web/e2e/review-towel-runtime.spec.ts"
       ],
       "edges": [
         {
@@ -381,10 +382,11 @@
       "id": "intake.towel.whose",
       "label": "Cotton/polyester towel · whose",
       "journey": "Cotton/polyester towel",
-      "renderer": "intake",
+      "renderer": "towel-runtime",
       "component": "apps/web/src/closet/add-clothes.tsx",
       "checks": [
-        "apps/web/e2e/review-workspace.spec.ts"
+        "apps/web/e2e/review-workspace.spec.ts",
+        "apps/web/e2e/review-towel-runtime.spec.ts"
       ],
       "edges": [
         {
@@ -398,10 +400,11 @@
       "id": "intake.towel.details",
       "label": "Cotton/polyester towel · details",
       "journey": "Cotton/polyester towel",
-      "renderer": "intake",
+      "renderer": "towel-runtime",
       "component": "apps/web/src/closet/add-clothes.tsx",
       "checks": [
-        "apps/web/e2e/review-workspace.spec.ts"
+        "apps/web/e2e/review-workspace.spec.ts",
+        "apps/web/e2e/review-towel-runtime.spec.ts"
       ],
       "edges": [
         {
@@ -415,10 +418,11 @@
       "id": "intake.towel.fabric",
       "label": "Cotton/polyester towel · fabric",
       "journey": "Cotton/polyester towel",
-      "renderer": "intake",
+      "renderer": "towel-runtime",
       "component": "apps/web/src/closet/add-clothes.tsx",
       "checks": [
-        "apps/web/e2e/review-workspace.spec.ts"
+        "apps/web/e2e/review-workspace.spec.ts",
+        "apps/web/e2e/review-towel-runtime.spec.ts"
       ],
       "edges": [
         {
@@ -432,10 +436,11 @@
       "id": "intake.towel.color",
       "label": "Cotton/polyester towel · color",
       "journey": "Cotton/polyester towel",
-      "renderer": "intake",
+      "renderer": "towel-runtime",
       "component": "apps/web/src/closet/add-clothes.tsx",
       "checks": [
-        "apps/web/e2e/review-workspace.spec.ts"
+        "apps/web/e2e/review-workspace.spec.ts",
+        "apps/web/e2e/review-towel-runtime.spec.ts"
       ],
       "edges": [
         {
@@ -449,10 +454,11 @@
       "id": "intake.towel.origin",
       "label": "Cotton/polyester towel · origin",
       "journey": "Cotton/polyester towel",
-      "renderer": "intake",
+      "renderer": "towel-runtime",
       "component": "apps/web/src/closet/add-clothes.tsx",
       "checks": [
-        "apps/web/e2e/review-workspace.spec.ts"
+        "apps/web/e2e/review-workspace.spec.ts",
+        "apps/web/e2e/review-towel-runtime.spec.ts"
       ],
       "edges": [
         {
@@ -471,10 +477,11 @@
       "id": "intake.towel.dye",
       "label": "Cotton/polyester towel · dye",
       "journey": "Cotton/polyester towel",
-      "renderer": "intake",
+      "renderer": "towel-runtime",
       "component": "apps/web/src/closet/add-clothes.tsx",
       "checks": [
-        "apps/web/e2e/review-workspace.spec.ts"
+        "apps/web/e2e/review-workspace.spec.ts",
+        "apps/web/e2e/review-towel-runtime.spec.ts"
       ],
       "edges": [
         {
@@ -488,10 +495,11 @@
       "id": "intake.towel.care",
       "label": "Cotton/polyester towel · care",
       "journey": "Cotton/polyester towel",
-      "renderer": "intake",
+      "renderer": "towel-runtime",
       "component": "apps/web/src/closet/add-clothes.tsx",
       "checks": [
-        "apps/web/e2e/review-workspace.spec.ts"
+        "apps/web/e2e/review-workspace.spec.ts",
+        "apps/web/e2e/review-towel-runtime.spec.ts"
       ],
       "edges": [
         {
@@ -505,10 +513,11 @@
       "id": "intake.towel.stain",
       "label": "Cotton/polyester towel · stain",
       "journey": "Cotton/polyester towel",
-      "renderer": "intake",
+      "renderer": "towel-runtime",
       "component": "apps/web/src/closet/add-clothes.tsx",
       "checks": [
-        "apps/web/e2e/review-workspace.spec.ts"
+        "apps/web/e2e/review-workspace.spec.ts",
+        "apps/web/e2e/review-towel-runtime.spec.ts"
       ],
       "edges": [
         {
@@ -522,10 +531,11 @@
       "id": "intake.towel.final",
       "label": "Cotton/polyester towel · final",
       "journey": "Cotton/polyester towel",
-      "renderer": "intake",
+      "renderer": "towel-runtime",
       "component": "apps/web/src/closet/add-clothes.tsx",
       "checks": [
-        "apps/web/e2e/review-workspace.spec.ts"
+        "apps/web/e2e/review-workspace.spec.ts",
+        "apps/web/e2e/review-towel-runtime.spec.ts"
       ],
       "edges": [
         {
@@ -837,6 +847,146 @@
           "when": "An untransferred family load remains",
           "effect": "Retain the put-away selection and all drying state"
         }
+      ]
+    },
+    {
+      "id": "app.account",
+      "label": "Live account",
+      "journey": "Live application",
+      "renderer": "runtime",
+      "component": "apps/web/src/routes/account.tsx",
+      "checks": [
+        "apps/web/e2e/review-runtime.spec.ts"
+      ]
+    },
+    {
+      "id": "app.closet",
+      "label": "Live closet",
+      "journey": "Live application",
+      "renderer": "runtime",
+      "component": "apps/web/src/routes/closet.tsx",
+      "checks": [
+        "apps/web/e2e/review-runtime.spec.ts"
+      ]
+    },
+    {
+      "id": "app.drying",
+      "label": "Live drying",
+      "journey": "Live application",
+      "renderer": "runtime",
+      "component": "apps/web/src/routes/drying.tsx",
+      "checks": [
+        "apps/web/e2e/review-runtime.spec.ts"
+      ]
+    },
+    {
+      "id": "app.household",
+      "label": "Live household",
+      "journey": "Live application",
+      "renderer": "runtime",
+      "component": "apps/web/src/routes/household.tsx",
+      "checks": [
+        "apps/web/e2e/review-runtime.spec.ts"
+      ]
+    },
+    {
+      "id": "app.home",
+      "label": "Live home",
+      "journey": "Live application",
+      "renderer": "runtime",
+      "component": "apps/web/src/routes/index.tsx",
+      "checks": [
+        "apps/web/e2e/review-runtime.spec.ts"
+      ]
+    },
+    {
+      "id": "app.join.code",
+      "label": "Live join code",
+      "journey": "Live application",
+      "renderer": "runtime",
+      "component": "apps/web/src/routes/join.$code.tsx",
+      "checks": [
+        "apps/web/e2e/review-runtime.spec.ts"
+      ]
+    },
+    {
+      "id": "app.laundry",
+      "label": "Live laundry",
+      "journey": "Live application",
+      "renderer": "runtime",
+      "component": "apps/web/src/routes/laundry.tsx",
+      "checks": [
+        "apps/web/e2e/review-runtime.spec.ts"
+      ]
+    },
+    {
+      "id": "app.me",
+      "label": "Live me",
+      "journey": "Live application",
+      "renderer": "runtime",
+      "component": "apps/web/src/routes/me.tsx",
+      "checks": [
+        "apps/web/e2e/review-runtime.spec.ts"
+      ]
+    },
+    {
+      "id": "app.session.sessionid",
+      "label": "Live session sessionid",
+      "journey": "Live application",
+      "renderer": "runtime",
+      "component": "apps/web/src/routes/session.$sessionId.tsx",
+      "checks": [
+        "apps/web/e2e/review-runtime.spec.ts"
+      ]
+    },
+    {
+      "id": "app.settings",
+      "label": "Live settings",
+      "journey": "Live application",
+      "renderer": "runtime",
+      "component": "apps/web/src/routes/settings.tsx",
+      "checks": [
+        "apps/web/e2e/review-runtime.spec.ts"
+      ]
+    },
+    {
+      "id": "app.setup",
+      "label": "Live setup",
+      "journey": "Live application",
+      "renderer": "runtime",
+      "component": "apps/web/src/routes/setup.tsx",
+      "checks": [
+        "apps/web/e2e/review-runtime.spec.ts"
+      ]
+    },
+    {
+      "id": "app.home.no-ready",
+      "label": "Home · no ready outfit",
+      "journey": "Live application",
+      "renderer": "runtime",
+      "component": "apps/web/src/routes/index.tsx",
+      "checks": [
+        "apps/web/e2e/review-runtime.spec.ts"
+      ]
+    },
+    {
+      "id": "app.drying.empty",
+      "label": "Drying · empty queue",
+      "journey": "Live application",
+      "renderer": "runtime",
+      "component": "apps/web/src/routes/drying.tsx",
+      "checks": [
+        "apps/web/e2e/review-runtime.spec.ts"
+      ]
+    },
+    {
+      "id": "app.drying.putaway-one",
+      "label": "Drying · one item to put away",
+      "journey": "Live application",
+      "renderer": "runtime",
+      "component": "apps/web/src/routes/drying.tsx",
+      "checks": [
+        "apps/web/e2e/review-runtime.spec.ts"
       ]
     },
     {
@@ -1204,6 +1354,16 @@
       ]
     },
     {
+      "id": "legacy.drying-empty",
+      "label": "drying-empty",
+      "journey": "Existing specimens",
+      "renderer": "legacy",
+      "component": "apps/web/src/routes/design-preview.tsx",
+      "checks": [
+        "apps/web/src/dev/design-preview.test.ts"
+      ]
+    },
+    {
       "id": "legacy.drying-home",
       "label": "drying-home",
       "journey": "Existing specimens",
@@ -1264,6 +1424,16 @@
     {
       "id": "legacy.drying-putaway",
       "label": "drying-putaway",
+      "journey": "Existing specimens",
+      "renderer": "legacy",
+      "component": "apps/web/src/routes/design-preview.tsx",
+      "checks": [
+        "apps/web/src/dev/design-preview.test.ts"
+      ]
+    },
+    {
+      "id": "legacy.drying-putaway-one",
+      "label": "drying-putaway-one",
       "journey": "Existing specimens",
       "renderer": "legacy",
       "component": "apps/web/src/routes/design-preview.tsx",

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-source_dir="$repo_root/rehearsal/source"
+source_dir="$repo_root/journey-engine/source"
 step() { printf '\n[%s] %s\n' "$(date +%H:%M:%S)" "$1"; }
 
 step "CIVIC: installing Rehearsal dependencies"
@@ -18,7 +18,7 @@ fi
 # as stale placeholders while current snapshots render; they are never counted as current evidence.
 step "CIVIC: seeding cached screen thumbnails"
 mkdir -p "$source_dir/.review-data/fixtures"
-for fixture in "$repo_root"/rehearsal/fixtures/*.png; do
+for fixture in "$repo_root"/journey-engine/fixtures/*.png; do
   target="$source_dir/.review-data/fixtures/$(basename "$fixture")"
   [ -e "$target" ] || cp -- "$fixture" "$target"
 done
