@@ -170,6 +170,8 @@ test('live element annotations freeze inputs and survive navigation and reload',
   await frame.getByLabel('Other material 1', { exact: true }).fill('QA retained cotton')
   await page.getByRole('button', { name: 'Review', exact: true }).click()
   await page.getByRole('button', { name: 'Comment on selection' }).click()
+  // Freezing live evidence uploads the run recording first, so the draft form appears asynchronously.
+  await expect(page.getByLabel('Annotation target')).toBeVisible()
   const option = await page.getByLabel('Annotation target').locator('option').evaluateAll((options) => options.find((option) => option.textContent === 'Search fibers or fabric details · input')?.getAttribute('value'))
   expect(option).toBeTruthy()
   await page.getByLabel('Annotation target').selectOption(option!)

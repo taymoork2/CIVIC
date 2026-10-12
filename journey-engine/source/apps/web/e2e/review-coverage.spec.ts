@@ -51,7 +51,7 @@ test('coverage prototypes preserve the app draft and persist independently', asy
   await editor.fill(JSON.stringify(intent, null, 2))
   await panel.getByRole('button', { name: 'Save expectation', exact: true }).click()
   await expect(panel.getByText('Repository expectation saved. Inventory will refresh automatically.')).toBeVisible()
-  await expect(page.getByText('Code or expectations changed. Inventory refreshed; the open preview and draft are retained.')).toBeVisible()
+  await expect(page.getByText('Updated automatically. Snapshots refresh; your live run keeps its starting revision and draft.')).toBeVisible()
   const contract = JSON.parse(await readFile(resolve('../..', 'docs/design/review-product/coverage.json'), 'utf8'))
   expect(contract.targets.find((t: { id: string }) => t.id === 'screen.machine-problem').acceptance).toContain(expected)
   await expect(frame.getByLabel('Other material 1', { exact: true })).toHaveValue('Coverage retained draft')
