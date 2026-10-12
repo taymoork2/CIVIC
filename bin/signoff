@@ -105,8 +105,13 @@ if [ "${#since[@]}" -gt 0 ]; then
   # Library releases on this branch (step 10): variants left unmapped and overrides broken.
   # Reported, not gating: the gate's conflicts are where someone decides a breaking release.
   step "Library releases since $base_ref"
-  "$repo_root/bin/civic" release --config "$repo_root/civic.check.json" "${since[@]}" ||
+  release_status=0
+  "$repo_root/bin/civic" release --config "$repo_root/civic.check.json" "${since[@]}" || release_status=$?
+  if [ "$release_status" = 1 ]; then
     echo "A release above breaks a product override or unmaps a variant; its owners are asked to decide it."
+  elif [ "$release_status" != 0 ]; then
+    exit "$release_status"
+  fi
 fi
 if [ "$browser" = 1 ]; then
   step "Fluent Button web evidence (Playwright)"

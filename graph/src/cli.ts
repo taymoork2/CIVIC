@@ -452,7 +452,8 @@ async function check(): Promise<number> {
 /**
  * A check on a library release (roadmap step 10): every platform component that changed
  * since `--since`, the variants it leaves without a mapping and the product overrides it
- * breaks. Exits 1 when a release breaks an override or unmaps a variant that had a mapping.
+ * breaks. Exits 1 when a release breaks an override or unmaps a variant that had a mapping,
+ * and 3 when a graph is invalid.
  */
 async function release(): Promise<number> {
   const valued = new Set(['--config', '--since'])
@@ -469,12 +470,13 @@ async function release(): Promise<number> {
   }
   const base = baseDocuments(root, since, graphs)
   if (base instanceof Error) return usage(base.message)
-  const results = graphs.map((file, index) => {
-    const head = JSON.parse(readFileSync(resolve(root, file), 'utf8')) as GraphDocument
-    const errors = validateGraph(head).filter((issue) => issue.severity === 'error')
-    if (errors.length > 0) throw new Error(`${file} is invalid: ${errors.map((issue) => issue.code).join(', ')}. Run civic validate.`)
-    return { graph: file, releases: releasesBetween(base.documents[index], head) }
-  })
+  const heads = graphs.map((file) => JSON.parse(readFileSync(resolve(root, file), 'utf8')) as GraphDocument)
+  const invalid = graphs.filter((_, index) => validateGraph(heads[index]).some((issue) => issue.severity === 'error'))
+  if (invalid.length > 0) {
+    console.error(`Invalid, so no release is read from it: ${invalid.join(', ')}. Run civic validate.`)
+    return 3
+  }
+  const results = graphs.map((file, index) => ({ graph: file, releases: releasesBetween(base.documents[index], heads[index]!) }))
   if (args.includes('--json')) console.log(JSON.stringify({ since: base.label, graphs: results }, null, 2))
   else {
     const sections = results.filter((result) => result.releases.length > 0).map((result) => `${result.graph}\n\n${renderReleases(result.releases, base.label)}`)

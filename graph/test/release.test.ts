@@ -97,4 +97,8 @@ test('civic release --since reads the base from git and exits 1 when the release
   assert.match(result.stdout, /Told: shop-design \(design\)\./)
   assert.equal(cli('--since', 'HEAD').status, 0)
   assert.match(cli().stderr, /release needs --since/)
+  writeFileSync(join(root, 'out/card.json'), JSON.stringify({ schema: 'civic.graph/0', records: [{ id: 'nope' }], links: [] }))
+  const invalid = cli('--since', 'HEAD')
+  assert.equal(invalid.status, 3)
+  assert.match(invalid.stderr, /Invalid, so no release is read from it: out\/card\.json/)
 })
