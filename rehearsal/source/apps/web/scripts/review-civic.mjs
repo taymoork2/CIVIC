@@ -55,6 +55,24 @@ export function civicShared({ repo, civicRoot = resolve(repo, '../..') }) {
       return { current, lines, annotations, requests }
     },
 
+    /**
+     * What CIVIC's graphs know about one screen (decision 0004: the canvas is a viewer of the
+     * graph): its journeys, paths, run evidence and gate findings. Reads the graphs listed in
+     * the CIVIC repository's civic.check.json; null when no graph has the screen. A scenario's
+     * target ID is the one its whole-screen annotations use.
+     */
+    async screen(scenario) {
+      if (!/^[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)*$/.test(scenario)) throw Object.assign(new Error('Not a scenario ID'), { status: 400 })
+      const targetId = `target:laundry.${scenario}`
+      try {
+        const out = await run(process.execPath, [join(civicRoot, 'graph', 'src', 'cli.ts'), 'screen', targetId, '--config', join(civicRoot, 'civic.check.json'), '--json'], { cwd: civicRoot, env, maxBuffer: 4 * 1024 * 1024 })
+        return JSON.parse(out.stdout)
+      } catch (error) {
+        if (error.code === 3) return null
+        throw error
+      }
+    },
+
     async handOff({ annotationIds, ask, checks }) {
       return json('request', ...annotationIds, '--ask', ask, '--platform', 'web', ...checks.flatMap((check) => ['--check', check]))
     },

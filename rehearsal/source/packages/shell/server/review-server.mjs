@@ -350,6 +350,10 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
         if (!file) { json(404, { error: 'Evidence missing' }); return }
         res.writeHead(200, { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' }); res.end(file); return
       }
+      if (url.pathname === '/api/review/civic-screen' && req.method === 'GET') {
+        if (!shared?.screen) { json(404, { error: 'This review server is not connected to CIVIC.' }); return }
+        json(200, { facts: await shared.screen(url.searchParams.get('scenario') ?? '') }); return
+      }
       if (url.pathname === '/api/review/shared' && req.method === 'GET') {
         if (!shared) { json(404, { error: 'This review server is not connected to a shared CIVIC store.' }); return }
         json(200, await shared.list()); return

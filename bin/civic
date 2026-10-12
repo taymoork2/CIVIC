@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # civic: one command for CIVIC's local tools. Graph commands (validate, forecast, overrides, context,
-# gaps, completeness, check, decide) go to graph/; the review to agent loop (annotate, request, requests, claim,
+# gaps, completeness, check, decide, screen) go to graph/; the review to agent loop (annotate, request, requests, claim,
 # report-fix, recapture, repro, resolve and the rest) goes to review/. No model calls.
 set -euo pipefail
 repo_root="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
 case "${1:-}" in
-  validate|forecast|overrides|context|gaps|completeness|check|decide) exec node "$repo_root/graph/src/cli.ts" "$@" ;;
+  validate|forecast|overrides|context|gaps|completeness|check|decide|screen) exec node "$repo_root/graph/src/cli.ts" "$@" ;;
   *) exec node "$repo_root/review/src/cli.ts" "$@" ;;
 esac

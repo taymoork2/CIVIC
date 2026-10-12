@@ -7,6 +7,7 @@ Roadmap [step 9](../../docs/roadmap.md#9-real-inputs-replace-the-stand-ins): rea
 | Question | Where to look |
 |---|---|
 | Which journeys and screens have run evidence, and which fail? | [`out/runs.md`](out/runs.md): one row per journey, then every failing test with the screens it covers. |
+| What does one screen look like in the graph? | `bin/civic screen target:laundry.<scenario>`, or the Contract panel on the journey canvas, which shows the same facts for the selected screen. |
 | What does the gate say? | `bin/civic check`, which reads [`out/graph.json`](out/graph.json) with the demo graphs ([`civic.check.json`](../../civic.check.json)). |
 
 On the first capture, at commit `ea0d4e83a6b0`, 24 of Laundry's 27 review tests pass and 3 fail, and 12 of the 49 journey screens are dead ends. All 15 findings are real and are held in [`civic.baseline.json`](../../civic.baseline.json), so the gate passes today and blocks the next new one.

@@ -144,3 +144,16 @@ test('all screens setting survives reload and narrow canvases can pan without co
   await expect(page.getByLabel('Canvas detail', { exact: true })).toBeVisible()
   await page.screenshot({ path: resolve('../..', '.review-data/all-screens-narrow-qa.png') })
 })
+
+test('the Contract panel shows what the CIVIC graph knows about the selected screen', async ({ page }) => {
+  await page.goto('/review?scenario=intake.appliance')
+  const { facts } = await (await page.request.get('/api/review/civic-screen?scenario=intake.appliance')).json()
+  test.skip(!facts, 'This review server is not connected to a CIVIC graph that has the screen.')
+  await page.getByRole('button', { name: 'Contract', exact: true }).click()
+  const graph = page.getByRole('region', { name: 'CIVIC graph' })
+  await expect(graph).toContainText('Run evidence')
+  const failing = facts.evidence.filter((item: { outcome: string }) => item.outcome === 'fail').length
+  await expect(graph).toContainText(`${facts.evidence.length - failing} passed, ${failing} failed`)
+  for (const finding of facts.findings) await expect(graph.getByRole('list', { name: 'Gate findings' })).toContainText(finding.summary)
+  await expect(graph).toContainText(`From ${facts.graph}.`)
+})
