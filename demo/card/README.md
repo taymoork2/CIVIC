@@ -11,6 +11,7 @@ Everything in [`out/`](out) is built by `node build.ts` from the inputs below. T
 | Can each change be built, and on which platforms? | [`out/raised.overrides.md`](out/raised.overrides.md): one row per change, one column per platform. |
 | Who is asked, and who is told? | The same file. The product designer and the Card's maintainers are asked to decide. Design engineering for each platform that needs a library change is told, and so are Shop's engineers and QA. |
 | What did the design forget? | [`out/completeness.md`](out/completeness.md): the Card's loading, empty and error states, a dead-end screen, and a screen nothing links to. |
+| What does the checkout look like when you click through it? | [`out/walk.html`](out/walk.html), the frame walk (D33): Shop's frames along their prototype links, labelled as design intent. Open it from disk; [`out/walk.md`](out/walk.md) is the same walk as text. |
 | How are the decisions kept? | [`out/resolved.overrides.md`](out/resolved.overrides.md) and [`out/resolved.graph.json`](out/resolved.graph.json). |
 | What does every product inherit that a platform can't build? | The `[ios]` open conflicts in [`out/raised.gaps.md`](out/raised.gaps.md): the library Card's default body, footer and header action. |
 | What is still missing, with owners? | [`out/raised.gaps.md`](out/raised.gaps.md) and [`out/resolved.gaps.md`](out/resolved.gaps.md). |
