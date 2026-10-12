@@ -1,9 +1,4 @@
-12 gap(s)
-
-## open-conflict (2)
-
-- [ios] Fluent iOS Button offers Danger, which the Microsoft Fluent 2 iOS Figma kit does not draw. Classification unclassified. Owners: design design-system-maintainers, design-engineering fluent-ios. (`conflict:button.ios.danger`)
-- [ios] Fluent iOS Button offers Transparent neutral, which the Microsoft Fluent 2 iOS Figma kit does not draw. Classification unclassified. Owners: design design-system-maintainers, design-engineering fluent-ios. (`conflict:button.ios.transparent-neutral`)
+11 gap(s)
 
 ## missing-variant (4)
 
@@ -23,3 +18,7 @@
 
 - [android] No automated or device evidence for Fluent Android Compose Button; only static analysis. Owners: qa button-qa. (`platform:fluent-android.compose-button`)
 - [ios] No automated or device evidence for Fluent iOS Button; only static analysis. Owners: qa button-qa. (`platform:fluent-apple.button`)
+
+## approved-exception (1)
+
+- [ios] Transparent neutral Button on ios: accepted as approved-adaptation. Revisit when: Another platform adds Transparent neutral, or the iOS kit starts drawing it. Owners: design design-system-maintainers, design-engineering fluent-ios. (`conflict:button.ios.transparent-neutral`)

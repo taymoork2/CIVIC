@@ -18,7 +18,6 @@ Reprioritized on 2026-10-12. The 2026-10-11 order is done: the gate (step 8), th
 
 Waiting on something other than a build:
 
-- **People's decisions.** Five iOS conflicts are baselined and undecided: the Danger and Transparent neutral Buttons the iOS kit doesn't draw, and the Card body, footer and header action iOS `CardView` can't build. Only people decide them (`civic decide`).
 - **A device.** The first native crawl and native captures (steps 4 and 6) need a device or simulator. The cloud has none, so the iOS crawl runs on the founder's Mac.
 - **A hosted remote.** Presence, following and shared driving ([step 5](#5-identity-permissions-and-multiplayer)) need a live service; records sync through git today.
 
@@ -150,7 +149,7 @@ Progress, 2026-10-11: the Button demo reads the real Android kit export. The kit
 
 Progress, 2026-10-12: [Laundry's graph](../projects/laundry) is built from real inputs. `readJourneyIndex` reads the journey engine's review index (204 scenarios, their journeys and declared paths), and Laundry's own review specs run unchanged into a Playwright report that `readPlaywrightReport` ties to those scenarios through the checks each one declares. The gate reads it with the demo graphs: 3 of 27 tests fail and 12 of 49 journey screens are dead ends, all held by the baseline. This is also the first piece of [step 4](#4-the-journey-engine-as-a-graph-viewer): the engine's journey graph now reaches the CIVIC graph. Still to come: the Card demo's library file from a real Fluent kit export (the Shop product file stays illustrative), and Laundry's full browser suite, which needs its local Convex backend.
 
-Progress, 2026-10-12: the demos read real Fluent 2 kits, trimmed to what they use. The Card's library file is the Fluent 2 Web kit, and the Button's iOS side reads the Fluent 2 iOS kit, which raises two conflicts: iOS ships Danger and Transparent neutral buttons the kit doesn't draw. The Card raises three more where iOS `CardView` can't build library-default content (body, footer, header action). All five are baselined until people decide them. The Shop product file stays illustrative. Laundry's review suite is 39 of 39 passing after stale tests were fixed.
+Progress, 2026-10-12: the demos read real Fluent 2 kits, trimmed to what they use. The Card's library file is the Fluent 2 Web kit, and the Button's iOS side reads the Fluent 2 iOS kit, which raises two conflicts: iOS ships Danger and Transparent neutral buttons the kit doesn't draw. The Card raises three more where iOS `CardView` can't build library-default content (body, footer, header action). Fluent is the demo's example design system, not one CIVIC's team owns, so illustrative decisions settle all five: the iOS kit gains a Danger button, Transparent neutral stays iOS-only, iOS `CardView` gains a body slot, and iOS goes without the footer and header action as an accepted limitation. The Shop product file stays illustrative. Laundry's review suite is 39 of 39 passing after stale tests were fixed.
 
 ## 10. Checks where each role works
 

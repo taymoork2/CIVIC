@@ -28,13 +28,13 @@ Shop's Card also shows the header's quick action and the footer. The real Fluent
 
 ### Library defaults a platform can't build
 
-`compareLibraryDefaults` compares what the library's Card shows by default with each platform's extension points. Every product using the Card as drawn inherits that content, so a platform with no way to express it is a gap for all of them. Each one is raised as an open conflict for that platform and listed in [`out/raised.gaps.md`](out/raised.gaps.md). The real web kit turns on the body, the footer and the header's quick action. Web and Android can express all three. iOS `CardView` can express none of them, so CIVIC raises three iOS conflicts: `conflict:card.ios.default.body`, `.actions` and `.header-action`. Nobody has decided them, so the project's baseline holds them.
+`compareLibraryDefaults` compares what the library's Card shows by default with each platform's extension points. Every product using the Card as drawn inherits that content, so a platform with no way to express it is a gap for all of them. Each one is raised as an open conflict for that platform and listed in [`out/raised.gaps.md`](out/raised.gaps.md). The real web kit turns on the body, the footer and the header's quick action. Web and Android can express all three. iOS `CardView` can express none of them, so CIVIC raises three iOS conflicts: `conflict:card.ios.default.body`, `.actions` and `.header-action`. Illustrative decisions settle them: iOS `CardView` gains a body slot (Awaiting adoption), and iOS goes without the footer and the header action as an accepted limitation.
 
 The corner radius is forbidden on every platform, even though Android's `basicCardTokens` could technically set one. The contract's `shape-from-token` rule decides, not what the code allows.
 
 ### The decisions
 
-[`contract/decisions.json`](contract/decisions.json) holds an illustrative Decision record with the demo's placeholder owners. It isn't a real Fluent team's call. The gate reads it: the decided override doesn't block, and the undecided one is held by the baseline.
+[`contract/decisions.json`](contract/decisions.json) holds illustrative Decision records with the demo's placeholder owners. It isn't a real Fluent team's call. The gate reads it: the decided override doesn't block, and the undecided one is held by the baseline.
 
 - **Reject** the corner radius. Shop's design reverts it, and the Card reads Awaiting adoption until the file matches.
 - The **selectable Card** is left undecided on purpose. Its drift stays open, so the design still reads "not yet adoptable".
