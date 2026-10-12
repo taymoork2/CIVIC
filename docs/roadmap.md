@@ -162,7 +162,7 @@ Part 2 of [decision 0005](decisions/0005-what-civic-is.md): raise each finding a
 - **Find the side that moved.** Compare each side with the last revision where they agreed, ask the owner of the change that introduced the difference, and tell the other side's owners. *Built:* `civic check --since <ref>` compares with the merge base ([graph README](../graph/README.md#the-gate-civic-check)).
 - **Engineering:** a pull request check whose summary lists the new findings with their owners, through the same local signoff and no GitHub Actions. *Built:* `bin/signoff` puts that summary on the open pull request as one comment, edited in place, beside the `civic` status.
 - **QA:** a Playwright reporter that writes run evidence into the graph and prints the scenarios a run left uncovered. *Built:* `CivicReporter` in [`importers/`](../importers/README.md) writes a `civic.run/0` file and prints what now fails, what now passes and what was left uncovered, with QA owners; the Button demo's web suite runs it.
-- **Design Engineering:** a check on a library release that names the variants left without a mapping and the product overrides the release breaks.
+- **Design Engineering:** a check on a library release that names the variants left without a mapping and the product overrides the release breaks. *Built:* `civic release --since <ref>`, printed by `bin/signoff`.
 - **Design:** findings on a Figma frame wait for the Figma plugin ([later](#later-not-scheduled)); until then they reach designers through the review loop.
 
 Acceptance: a change to one side of the Button or Card raises its finding on that change only, names who is asked and who is told, and makes no model calls.

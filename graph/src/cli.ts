@@ -12,6 +12,7 @@
 //   civic completeness <file> <journey-id> [--json]
 //   civic screen <target-id> [<file>...] [--config civic.check.json] [--today <date>] [--json]
 //   civic check [<file>...] [--config civic.check.json] [--baseline <file>] [--update-baseline] [--today <date>] [--since <ref>] [--json] [--post] [--comment <pr>]
+//   civic release [<file>...] --since <ref> [--config civic.check.json] [--json]
 //   civic decide <decisions.json> <conflict-id> --graph <file> --outcome <o> --classification <c> --by <role>:<who>
 //                --rationale <text> --evidence <id,...> [--proposal <id>] [--alignment <a>] [--title <t>] [--revisit <text>] [--expires <date>] [--at <time>]
 //   civic propose <decisions.json> --graph <file> --targets <id,...> --scope <s> --outcome <o> --by <role>:<who> --rationale <text>
@@ -26,6 +27,7 @@ import { dirname, relative, resolve } from 'node:path'
 import { baselineFrom, checkDocument, compareToBaseline, DEFAULT_BLOCKING, FINDING_KINDS, renderCheck, statusLine, type Baseline, type FindingKind } from './check.ts'
 import { changeBetween, renderChange, type ChangeReport, type GraphAtRevisions } from './change.ts'
 import { completenessOf, renderCompleteness } from './completeness.ts'
+import { releaseBreaks, releasesBetween, renderReleases } from './release.ts'
 import {
   ALIGNMENT_FOR,
   decisionFileRecords,
@@ -119,6 +121,7 @@ async function main(): Promise<number> {
     return 0
   }
   if (command === 'check') return check()
+  if (command === 'release') return release()
   if (command === 'screen') return screen()
   if (command === 'decide' && args.length >= 2) return decide(args[0]!, args[1]!)
   if (command === 'propose' && args.length >= 1) return propose(args[0]!)
@@ -447,6 +450,40 @@ async function check(): Promise<number> {
 }
 
 /**
+ * A check on a library release (roadmap step 10): every platform component that changed
+ * since `--since`, the variants it leaves without a mapping and the product overrides it
+ * breaks. Exits 1 when a release breaks an override or unmaps a variant that had a mapping.
+ */
+async function release(): Promise<number> {
+  const valued = new Set(['--config', '--since'])
+  const files = args.filter((arg, index) => !arg.startsWith('--') && !valued.has(args[index - 1] ?? ''))
+  const since = option('--since')
+  if (!since) return usage('release needs --since, the revision the release is compared with.')
+  const configPath = resolve(option('--config') ?? 'civic.check.json')
+  let graphs = files
+  let root = process.cwd()
+  if (files.length === 0) {
+    if (!existsSync(configPath)) return usage(`No graphs given and no ${relative(process.cwd(), configPath) || configPath} to read them from.`)
+    graphs = (JSON.parse(readFileSync(configPath, 'utf8')) as CheckConfig).graphs
+    root = dirname(configPath)
+  }
+  const base = baseDocuments(root, since, graphs)
+  if (base instanceof Error) return usage(base.message)
+  const results = graphs.map((file, index) => {
+    const head = JSON.parse(readFileSync(resolve(root, file), 'utf8')) as GraphDocument
+    const errors = validateGraph(head).filter((issue) => issue.severity === 'error')
+    if (errors.length > 0) throw new Error(`${file} is invalid: ${errors.map((issue) => issue.code).join(', ')}. Run civic validate.`)
+    return { graph: file, releases: releasesBetween(base.documents[index], head) }
+  })
+  if (args.includes('--json')) console.log(JSON.stringify({ since: base.label, graphs: results }, null, 2))
+  else {
+    const sections = results.filter((result) => result.releases.length > 0).map((result) => `${result.graph}\n\n${renderReleases(result.releases, base.label)}`)
+    console.log(sections.length > 0 ? sections.join('\n\n') : `# civic release: no library release since ${base.label}`)
+  }
+  return results.some((result) => releaseBreaks(result.releases)) ? 1 : 0
+}
+
+/**
  * Records the result as a `civic` commit status, the way bin/signoff records `signoff`. A
  * status vouches for one commit, so it is posted only from a clean working tree.
  */
@@ -528,6 +565,7 @@ function usage(problem?: string): number {
       '  civic completeness <file> <journey-id> [--json]',
       '  civic screen <target-id> [<file>...] [--config civic.check.json] [--today <date>] [--json]',
       '  civic check [<file>...] [--config civic.check.json] [--baseline <file>] [--update-baseline] [--today <date>] [--since <ref>] [--json] [--post] [--comment <pr>]',
+      '  civic release [<file>...] --since <ref> [--config civic.check.json] [--json]',
       '  civic decide <decisions.json> <conflict-id> --graph <file> --outcome <o> --classification <c> --by <role>:<who>',
       '               --rationale <text> --evidence <id,...> [--proposal <id>] [--alignment <a>] [--title <t>] [--revisit <text>] [--expires <date>] [--at <time>]',
       '  civic propose <decisions.json> --graph <file> --targets <id,...> --scope <s> --outcome <o> --by <role>:<who> --rationale <text>',
