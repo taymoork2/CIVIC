@@ -35,3 +35,10 @@ test('a screen\'s facts: its journeys, paths, evidence and the gate\'s findings 
   assert.match(renderScreen(facts), /fail: shows errors \(playwright, abc123def456\): expected alert/)
   assert.throws(() => screenFacts(graph, 'app.graph.json', 'target:app.nope', { today: '2026-10-12' }), /not a target/)
 })
+
+test('an open collaboration record about a screen, such as a coverage gap, shows with its findings', () => {
+  const gap = { id: 'collab:coverage-gap.app.done', kind: 'collaboration' as const, title: 'Coverage gap: Done', type: 'coverage-gap' as const, subjectIds: ['target:app.done'], summary: 'No passing run covers `done`.', perspectives: ['qa' as const], owners, raisedBy: owners[0]!, at: '2026-10-12T00:00:00Z', status: 'open' as const }
+  const graph = indexGraph({ ...document, records: [...document.records, gap] })
+  assert.deepEqual(screenFacts(graph, 'app.graph.json', 'target:app.done', { today: '2026-10-12' }).findings.map((item) => [item.kind, item.subjectId, item.blocks]), [['dead-end', 'target:app.done', true], ['open-collaboration', 'collab:coverage-gap.app.done', false]])
+  assert.ok(!screenFacts(graph, 'app.graph.json', 'target:app.form', { today: '2026-10-12' }).findings.some((item) => item.kind === 'open-collaboration'))
+})
