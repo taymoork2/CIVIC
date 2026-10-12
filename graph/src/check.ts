@@ -32,6 +32,7 @@ export const FINDING_KINDS = [
   'open-proposal',
   'awaiting-adoption',
   'unverified-adoption',
+  'open-collaboration',
 ] as const
 export type FindingKind = (typeof FINDING_KINDS)[number]
 
@@ -144,6 +145,23 @@ export function checkGraph(label: string, graph: Graph, options: CheckOptions): 
     add('open-proposal', proposal.id, `${proposal.title} proposes ${proposal.outcome} at ${proposal.candidate.tool} ${proposal.candidate.revision} and waits for a decision.`, conflict?.owners ?? [proposal.proposedBy])
   }
   measure('Proposals waiting for a decision', undecidedProposals.length, proposals.length)
+
+  // Collaboration records (roadmap step 3). An exception in force is reported like an approved
+  // exception on a conflict and fails once it expires; any other open record is advisory and
+  // says when it is overdue.
+  const collaboration = graph.ofKind('collaboration')
+  const open = collaboration.filter((record) => record.status === 'open')
+  for (const record of open) {
+    const typeLabel = record.type === 'exception' ? (record.limitation ? 'accepted limitation' : 'exception') : record.type.replace('-', ' ')
+    if (record.type === 'exception') {
+      if (record.expires! < options.today) add('expired-exception', record.id, `${record.title}: the ${typeLabel} expired on ${record.expires}. Revisit when: ${record.revisitTrigger}`, record.owners, record.platform)
+      else add('approved-exception', record.id, `${record.title}: ${typeLabel} until ${record.expires}. Revisit when: ${record.revisitTrigger}`, record.owners, record.platform)
+    } else {
+      const overdue = record.due && record.due < options.today ? ` It was due ${record.due}.` : ''
+      add('open-collaboration', record.id, `Open ${typeLabel}: ${record.summary}${overdue} Needs ${record.perspectives.join(', ') || 'its owners'}.`, record.owners, record.platform, record.type)
+    }
+  }
+  measure('Collaboration records open', open.filter((record) => record.type !== 'exception').length, collaboration.filter((record) => record.type !== 'exception').length)
 
   const overrides = graph.ofKind('override')
   let undecided = 0

@@ -2,7 +2,7 @@
 // civic: validate graph files, forecast overrides, export contracts and gaps (D31), run the
 // gate, and keep the decision loop: propose a fix, decide a conflict, record the revision that
 // adopts it and the evidence that verifies it. Only `propose`, `decide`, `adopt` and `verify`
-// write, and only to a decision file; all are deterministic, and none makes a model call (D30).
+// write, and only to a decision file, with `raise` and `close` for collaboration records; all are deterministic, and none makes a model call (D30).
 //
 //   civic validate <file>...
 //   civic forecast <file> <override-id> [--platforms web,ios,android]
@@ -21,6 +21,9 @@
 //   civic adopt <decisions.json> <decision-id> --graph <file> --revision <tool>:<rev> --by <role>:<who> [--preview <url>] [--note <text>] [--at <time>]
 //   civic verify <decisions.json> <adoption-id> --graph <file> --evidence <id,...> --by <role>:<who> [--at <time>]
 //   civic fixes <file> [--json]
+//   civic raise <decisions.json> <type> --graph <file> --about <id,...> --summary <text> --by <role>:<who> --owners <role>:<who>,...
+//                [--perspectives <role,...>] [--platform <p>] [--due <date>] [--impact <text> --revisit <text> --expires <date> [--limitation]] [--title <t>] [--at <time>]
+//   civic close <decisions.json> <collab-id> --graph <file> --by <role>:<who> --note <text> [--withdraw] [--records <id,...>] [--changes <tool>:<rev>,...] [--at <time>]
 
 import { execFileSync } from 'node:child_process'
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
@@ -36,7 +39,9 @@ import {
   DECISION_FILE_SCHEMA,
   fixesIn,
   openProposals,
+  closeCollaboration,
   recordAdoption,
+  recordCollaboration,
   recordDecision,
   recordProposal,
   recordVerification,
@@ -53,17 +58,20 @@ import { indexGraph } from './graph.ts'
 import { loadGraph, readGraphFile } from './load.ts'
 import {
   CLASSIFICATIONS,
+  COLLABORATION_TYPES,
   DECISION_OUTCOMES,
   PLATFORMS,
   ROLES,
   type AlignmentState,
   type Classification,
+  type CollaborationType,
   type DecisionOutcome,
   type GraphDocument,
   type Owner,
   type Platform,
   type Proposal,
   type RevisionRef,
+  type Role,
 } from './schema.ts'
 import { validateGraph } from './validate.ts'
 
@@ -148,6 +156,8 @@ async function main(): Promise<number> {
   if (command === 'propose' && args.length >= 1) return propose(args[0]!)
   if (command === 'adopt' && args.length >= 2) return adopt(args[0]!, args[1]!)
   if (command === 'verify' && args.length >= 2) return verify(args[0]!, args[1]!)
+  if (command === 'raise' && args.length >= 2) return raise(args[0]!, args[1]!)
+  if (command === 'close' && args.length >= 2) return close(args[0]!, args[1]!)
   if (command === 'fixes' && args.length >= 1) {
     const graph = await loadGraph(args[0]!)
     console.log(args.includes('--json') ? JSON.stringify({ fixes: fixesIn(graph), proposals: openProposals(graph) }, null, 2) : renderFixes(graph))
@@ -323,6 +333,90 @@ async function verify(file: string, adoptionId: string): Promise<number> {
   return outcome === 'pass' ? 0 : 1
 }
 
+/**
+ * Raises a collaboration record (roadmap step 3): an ambiguity, constraint, coverage gap,
+ * divergence or risk anyone may raise, or an exception a person records with its user
+ * impact, revisit trigger and end date. It is checked against the graph before it is kept.
+ */
+async function raise(file: string, type: string): Promise<number> {
+  if (!(COLLABORATION_TYPES as readonly string[]).includes(type)) return usage(`The type is one of ${COLLABORATION_TYPES.join(', ')}.`)
+  const graphPath = option('--graph')
+  if (!graphPath) return usage('raise needs --graph, to check what the record is about.')
+  const subjectIds = list('--about')
+  if (subjectIds.length === 0) return usage('--about lists what it affects, as graph IDs.')
+  const summary = option('--summary')
+  if (!summary) return usage('--summary says what is unclear, limited, missing, disagreeing, at risk or excepted.')
+  const raisedBy = owner()
+  if (!raisedBy) return usage(BY_USAGE)
+  const owners = list('--owners').map(parseOwner)
+  if (owners.length === 0 || owners.some((item) => !item)) return usage(`--owners is <role>:<who>,..., the people who see it through.`)
+  const perspectives = list('--perspectives')
+  if (perspectives.some((role) => !(ROLES as readonly string[]).includes(role))) return usage(`--perspectives are roles: ${ROLES.join(', ')}.`)
+  const platform = option('--platform')
+  if (platform !== undefined && !isPlatform(platform)) return usage(`Unknown platform: ${platform}`)
+  const terms = { userImpact: option('--impact'), revisitTrigger: option('--revisit'), expires: option('--expires') }
+  if (type === 'exception' && (!terms.userImpact || !terms.revisitTrigger || !terms.expires)) return usage('An exception needs --impact, --revisit and --expires: it is temporary and owned.')
+  const due = option('--due')
+  const document = (await readGraphFile(graphPath)) as GraphDocument
+  const existing = readDecisionFile(file)
+  if (!existing) return usage(`${file} is not a decision file (schema ${DECISION_FILE_SCHEMA}).`)
+  const subject = Array.isArray(document.records) ? document.records.find((record) => record.id === subjectIds[0]) : undefined
+  const { file: next, record } = recordCollaboration(existing, {
+    title: option('--title') ?? `${type.charAt(0).toUpperCase()}${type.slice(1).replace('-', ' ')} on ${subject?.title ?? subjectIds[0]}`,
+    type: type as CollaborationType,
+    subjectIds,
+    ...(platform ? { platform } : {}),
+    summary,
+    perspectives: perspectives as Role[],
+    owners: owners as Owner[],
+    raisedBy,
+    at: option('--at') ?? new Date().toISOString(),
+    ...(due ? { due } : {}),
+    ...(terms.userImpact ? { userImpact: terms.userImpact } : {}),
+    ...(terms.revisitTrigger ? { revisitTrigger: terms.revisitTrigger } : {}),
+    ...(terms.expires ? { expires: terms.expires } : {}),
+    ...(args.includes('--limitation') ? { limitation: true } : {}),
+  })
+  if (!writeChecked(file, next, document, graphPath, record.id)) return 1
+  console.log(`Recorded ${record.id} in ${file}. Rebuild the graph; civic check and civic gaps list it until a person closes it with civic close.`)
+  return 0
+}
+
+/** Closes a collaboration record as resolved (or withdrawn), with the records and revisions that resulted. */
+async function close(file: string, id: string): Promise<number> {
+  const graphPath = option('--graph')
+  if (!graphPath) return usage('close needs --graph, to check the records the resolution names.')
+  const by = owner()
+  if (!by) return usage(BY_USAGE)
+  const note = option('--note')
+  if (!note) return usage('--note says how it was resolved, or why it was withdrawn.')
+  const changes = list('--changes').map((value) => revisionRef(value))
+  if (changes.some((change) => !change)) return usage('--changes are <tool>:<revision>, such as git:4f2a9c1 or figma:2215441.')
+  const document = (await readGraphFile(graphPath)) as GraphDocument
+  const existing = readDecisionFile(file)
+  if (!existing) return usage(`${file} is not a decision file (schema ${DECISION_FILE_SCHEMA}).`)
+  let closed
+  try {
+    closed = closeCollaboration(existing, id, args.includes('--withdraw') ? 'withdrawn' : 'resolved', { by, at: option('--at') ?? new Date().toISOString(), note, recordIds: list('--records'), changes: changes as RevisionRef[] })
+  } catch (error) {
+    return usage((error as Error).message)
+  }
+  if (!writeChecked(file, closed.file, document, graphPath, id)) return 1
+  console.log(`${id} is ${closed.record.status} in ${file}. Rebuild the graph.`)
+  return 0
+}
+
+function list(name: string): string[] {
+  return (option(name) ?? '').split(',').map((item) => item.trim()).filter(Boolean)
+}
+
+function parseOwner(value: string): Owner | undefined {
+  const split = value.indexOf(':')
+  const role = value.slice(0, split)
+  const who = value.slice(split + 1)
+  return split > 0 && who && (ROLES as readonly string[]).includes(role) ? { role: role as Owner['role'], who } : undefined
+}
+
 const BY_USAGE = `--by is <role>:<who>, where role is one of ${ROLES.join(', ')}.`
 
 function owner(): Owner | undefined {
@@ -349,7 +443,7 @@ function readDecisionFile(file: string): DecisionFile | undefined {
  * it already holds, stays valid. Prints the errors and the new record's warnings either way.
  */
 function writeChecked(file: string, next: DecisionFile, document: GraphDocument, graphPath: string, recordId: string): boolean {
-  const loop = new Set(['proposal', 'decision', 'adoption', 'verification'])
+  const loop = new Set(['proposal', 'decision', 'adoption', 'verification', 'collaboration'])
   const candidate = { ...document, records: [...document.records.filter((record) => !loop.has(record.kind)), ...decisionFileRecords(next)] }
   const issues = validateGraph(candidate).filter((issue) => issue.severity === 'error' || issue.at === recordId)
   const errors = issues.filter((issue) => issue.severity === 'error')
@@ -597,6 +691,9 @@ function usage(problem?: string): number {
       '  civic adopt <decisions.json> <decision-id> --graph <file> --revision <tool>:<rev> --by <role>:<who> [--preview <url>] [--note <text>] [--at <time>]',
       '  civic verify <decisions.json> <adoption-id> --graph <file> --evidence <id,...> --by <role>:<who> [--at <time>]',
       '  civic fixes <file> [--json]',
+      '  civic raise <decisions.json> <type> --graph <file> --about <id,...> --summary <text> --by <role>:<who> --owners <role>:<who>,...',
+      '               [--perspectives <role,...>] [--platform <p>] [--due <date>] [--impact <text> --revisit <text> --expires <date> [--limitation]] [--title <t>] [--at <time>]',
+      '  civic close <decisions.json> <collab-id> --graph <file> --by <role>:<who> --note <text> [--withdraw] [--records <id,...>] [--changes <tool>:<rev>,...] [--at <time>]',
     ].join('\n'),
   )
   return 2

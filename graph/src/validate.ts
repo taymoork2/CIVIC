@@ -6,6 +6,7 @@ import {
   ALIGNMENT_STATES,
   ANCHOR_OUTCOMES,
   CLASSIFICATIONS,
+  COLLABORATION_TYPES,
   DECISION_OUTCOMES,
   EVIDENCE_TIERS,
   LINE_TYPES,
@@ -298,6 +299,28 @@ export function validateGraph(input: unknown): Issue[] {
         for (const revision of [record.baseline, record.candidate]) if (revision.line) ref(at, 'line', revision.line, ['line'])
         if (record.baseline.tool === record.candidate.tool && record.baseline.revision === record.candidate.revision) {
           error('proposal-candidate', at, 'The candidate is a different revision from the baseline; otherwise there is nothing to play or compare.')
+        }
+        break
+      }
+      case 'collaboration': {
+        if (record.subjectIds.length === 0) error('collaboration-subjects', at, 'A collaboration record names the contract or scenario it affects.')
+        // A closed record keeps its history even after an import stops raising what it was about.
+        if (record.status === 'open') for (const id of record.subjectIds) ref(at, 'subjectIds', id, RECORD_KINDS)
+        if (record.owners.length === 0) error('collaboration-owner', at, 'A collaboration record has an owner who sees it through.')
+        if (record.type === 'exception') {
+          for (const key of ['userImpact', 'revisitTrigger', 'expires'] as const) {
+            if (!record[key]) error('exception-terms', at, `An exception is temporary and owned: it needs ${key}.`)
+          }
+        } else if (record.userImpact || record.revisitTrigger || record.expires || record.limitation) {
+          error('exception-terms', at, 'Only an exception has user impact, a revisit trigger, an end date or a limitation flag.')
+        }
+        if ((record.status === 'open') !== !record.resolution) error('collaboration-resolution', at, record.status === 'open' ? 'An open record has no resolution yet.' : `A ${record.status} record says how it closed.`)
+        for (const id of record.resolution?.recordIds ?? []) ref(at, 'resolution.recordIds', id, RECORD_KINDS)
+        for (const revision of record.resolution?.changes ?? []) if (revision.line) ref(at, 'resolution.changes.line', revision.line, ['line'])
+        const author = record.writtenBy ? actorOf(record.writtenBy) : undefined
+        if (author?.type === 'agent') {
+          if (record.type === 'exception') error('agent-decision', at, `${author.id} is an agent; agents can't approve an exception. A person records it.`)
+          if (record.resolution) error('agent-resolved', at, `${author.id} is an agent; only a person closes a collaboration record.`)
         }
         break
       }
@@ -607,6 +630,30 @@ function checkRecordShape(raw: unknown, at: string, error: Report) {
       field.string('expected')
       checkOwner(raw.proposedBy, `${at}.proposedBy`, error)
       field.string('at')
+      break
+    case 'collaboration':
+      field.oneOf('type', COLLABORATION_TYPES)
+      field.list('subjectIds', (value, path) => checkString(value, path, error))
+      field.optional('platform', (value, path) => checkEnum(value, PLATFORMS, path, error))
+      field.string('summary')
+      field.list('perspectives', (value, path) => checkEnum(value, ROLES, path, error))
+      field.list('owners', (value, path) => checkOwner(value, path, error))
+      checkOwner(raw.raisedBy, `${at}.raisedBy`, error)
+      field.string('at')
+      for (const key of ['due', 'userImpact', 'revisitTrigger', 'expires']) field.optional(key, (value, path) => checkString(value, path, error))
+      field.optional('limitation', (value, path) => {
+        if (typeof value !== 'boolean') error('shape', path, 'Must be true or false.')
+      })
+      field.oneOf('status', ['open', 'resolved', 'withdrawn'])
+      field.optional('resolution', (resolution, path) => {
+        if (!isObject(resolution)) return error('shape', path, 'Must be an object.')
+        const r = fieldChecker(resolution, path, error)
+        checkOwner(resolution.by, `${path}.by`, error)
+        r.string('at')
+        r.string('note')
+        r.list('recordIds', (value, itemPath) => checkString(value, itemPath, error))
+        r.list('changes', (value, itemPath) => checkRevision(value, itemPath, error))
+      })
       break
     case 'adoption':
       field.string('decisionId')

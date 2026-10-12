@@ -410,6 +410,60 @@ export interface Verification extends RecordBase {
 }
 
 // ---------------------------------------------------------------------------
+// Collaboration records (roadmap step 3, spec: Collaboration records). Typed, actionable
+// records instead of passive comments, kept in the decision file next to the loop records.
+
+export const COLLABORATION_TYPES = ['ambiguity', 'constraint', 'coverage-gap', 'divergence', 'risk', 'exception'] as const
+export type CollaborationType = (typeof COLLABORATION_TYPES)[number]
+
+/**
+ * One typed concern about the contract or a scenario: expected behavior is unclear
+ * (ambiguity), a technical, platform, business or policy limit (constraint), a state,
+ * platform or condition without validation (coverage gap), artifacts or shipped behavior
+ * that disagree (divergence), a possible harmful or costly outcome (risk), or a temporary,
+ * owned, expiring departure from policy or contract (exception). An exception that accepts
+ * a platform or library constraint is an Accepted limitation.
+ *
+ * Each names what it affects, the perspectives it needs, its owners, an optional deadline,
+ * and once closed, its resolution and the artifact changes that resulted. Anyone may raise
+ * one, an agent included, except an exception, which only a person records; only a person
+ * closes one (D35).
+ */
+export interface CollaborationRecord extends RecordBase {
+  kind: 'collaboration'
+  type: CollaborationType
+  /** What it affects: the contract or scenario, as graph IDs (targets, components, conflicts). */
+  subjectIds: string[]
+  platform?: Platform
+  summary: string
+  /** The perspectives that must weigh in before it closes. */
+  perspectives: Role[]
+  owners: Owner[]
+  raisedBy: Owner
+  at: string
+  /** The deadline (ISO date). The gate reports an open record past it as overdue. */
+  due?: string
+  /** An exception's user impact, revisit trigger and end date (ISO). The gate fails once it has passed. */
+  userImpact?: string
+  revisitTrigger?: string
+  expires?: string
+  /** An exception that accepts a platform or library constraint: an Accepted limitation. */
+  limitation?: boolean
+  status: 'open' | 'resolved' | 'withdrawn'
+  resolution?: CollaborationResolution
+}
+
+export interface CollaborationResolution {
+  by: Owner
+  at: string
+  note: string
+  /** Records the resolution produced or relied on, such as a Decision or a Proposal. */
+  recordIds: string[]
+  /** The artifact revisions that changed because of it. */
+  changes: RevisionRef[]
+}
+
+// ---------------------------------------------------------------------------
 // The review to agent loop (decision 0007, D35 to D39). These start roadmap step 3's
 // collaboration records: who acts, which line of work they act on, what was annotated,
 // and the work request an agent can claim.
@@ -654,6 +708,7 @@ export type GraphRecord =
   | Annotation
   | WorkRequest
   | DraftChoice
+  | CollaborationRecord
 
 export type RecordKind = GraphRecord['kind']
 

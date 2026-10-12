@@ -13,6 +13,7 @@ export const GAP_KINDS = [
   'no-run-evidence',
   'unconfirmed-link',
   'approved-exception',
+  'open-collaboration',
 ] as const
 export type GapKind = (typeof GAP_KINDS)[number]
 
@@ -73,6 +74,18 @@ function gapsForComponent(graph: Graph, semantic: SemanticComponent): Gap[] {
         summary: `${conflict.title}: accepted as ${state.alignment}. Revisit when: ${revisitTrigger}${expires ? ` Expires ${expires}.` : ''}`,
         owners: conflict.owners,
       })
+    }
+  }
+
+  // Collaboration records on the component, its implementations or its conflicts (roadmap step 3).
+  const conflictIds = new Set(graph.ofKind('contract-conflict').filter((conflict) => conflict.targetId === semantic.id || conflict.sides.some((side) => side.recordId && componentIds.has(side.recordId))).map((conflict) => conflict.id))
+  for (const record of graph.ofKind('collaboration')) {
+    if (record.status !== 'open' || !record.subjectIds.some((id) => scopeIds.has(id) || conflictIds.has(id))) continue
+    const where = { ...(record.platform ? { platform: record.platform } : {}) }
+    if (record.type === 'exception') {
+      gaps.push({ kind: 'approved-exception', subjectId: record.id, ...where, summary: `${record.title}: ${record.limitation ? 'accepted limitation' : 'exception'} until ${record.expires}. Revisit when: ${record.revisitTrigger}`, owners: record.owners })
+    } else {
+      gaps.push({ kind: 'open-collaboration', subjectId: record.id, ...where, detail: record.type, summary: `Open ${record.type.replace('-', ' ')}: ${record.summary}${record.due ? ` Due ${record.due}.` : ''}`, owners: record.owners })
     }
   }
 

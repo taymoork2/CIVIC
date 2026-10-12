@@ -35,6 +35,8 @@ export {
   recordDecision,
   recordProposal,
   recordVerification,
+  recordCollaboration,
+  closeCollaboration,
   renderFixes,
   verificationsOf,
   type ConflictState,

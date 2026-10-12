@@ -33,6 +33,7 @@ Every record has a stable ID, `<prefix>:<dot.separated.path>`, a title, and opti
 | Evidence | `evidence:` | What a source shows, tied to the exact revision it read, in one evidence tier |
 | Contract Conflict | `conflict:` | Two sources that disagree on a target, as the import raised it: the sides and their evidence, owners, and the state it was raised in |
 | Decision | `decision:` | A person's call on a conflict: outcome, classification, the alignment state it leaves, who decided, rationale, evidence, and for an exception its revisit trigger and expiry. A later decision `supersedes` an earlier one. |
+| Collaboration record | `collab:` | An ambiguity, constraint, coverage gap, divergence, risk or exception: what it affects, the perspectives it needs, owners, a deadline, and once closed, how it closed and the artifact changes that resulted. An exception also has user impact, a revisit trigger and an end date. |
 | Actor | `actor:` | Who wrote something: a person, an agent acting for a named person, or CIVIC's own deterministic process |
 | Line | `line:` | A stream of work with revisions: main, a branch, a worktree, a PR with its preview, or a design draft |
 | Annotation | `annotation:` | A comment on a journey, screen, part of a screen, path or branch, with layered anchors, a frozen capture, and the line and revision it was made on |
@@ -91,6 +92,30 @@ civic fixes <file>                       # every decided fix with its stage, and
 Each writes only after checking the decision file against the graph. `civic verify` reads the outcome from the evidence, never from a flag, and refuses evidence the graph holds at any revision other than the adopted one; it exits 1 when the verification it records fails.
 
 Any record can name the actor that wrote it in `writtenBy`, and a `SourceRef` can name the `line` its revision was seen on.
+
+### Collaboration records
+
+Collaboration uses typed, owned records instead of passive comments ([spec](../docs/product-spec.md#collaboration-records), roadmap step 3). They live in the same decision file as the loop, under `collaboration`, so importers add them to the graph they raise. Each record has a type:
+
+- **Ambiguity:** expected behavior is unclear.
+- **Constraint:** a technical, platform, business or policy limit.
+- **Coverage gap:** a state, platform or condition has no validation.
+- **Divergence:** artifacts or shipped behavior disagree.
+- **Risk:** something could cause harm or cost.
+- **Exception:** a temporary, owned, expiring departure from policy or contract. With `limitation` it is an Accepted limitation, which accepts a platform or library constraint.
+
+Each record names what it affects, as graph IDs, along with the perspectives it needs, its owners, who raised it and an optional `due` date. An exception also needs `userImpact`, `revisitTrigger` and `expires`. Closing a record marks it resolved or withdrawn, says who closed it and how, and lists the records and artifact revisions that resulted. The record stays in the file as history.
+
+Anyone may raise a record, an agent included, except an exception, which only a person records. Only a person closes one (D35). An open record's subjects must be in the graph. A closed record keeps its history even after an import stops raising what it was about. The gate reports each open record as `open-collaboration`, which is advisory and says when the record is overdue. An exception in force is reported like an approved exception on a conflict, and it fails as `expired-exception` once its end date passes. `civic gaps` lists open records on a component, its implementations or its conflicts, with their owners.
+
+```sh
+civic raise <decisions.json> ambiguity --graph <file> --about semantic:button --summary "Should a disabled Button stay focusable on Android?" \
+  --by qa:button-qa --owners design:design-system-maintainers --perspectives design,engineering --platform android --due 2026-11-01
+civic raise <decisions.json> exception --graph <file> --about semantic:button --summary "..." --by design:a --owners design:a \
+  --impact "Toolbars use the subtle style." --revisit "Compose adds a transparent style." --expires 2027-01-01 [--limitation]
+civic close <decisions.json> collab:ambiguity.button --graph <file> --by design:design-system-maintainers --note "Disabled Buttons stay focusable." \
+  [--records decision:...] [--changes git:4f2a9c1] [--withdraw]
+```
 
 ## Links
 
@@ -166,7 +191,7 @@ Two read-only queries over a graph (D31). Both are deterministic and print Markd
 { "graphs": ["demo/card/out/resolved.graph.json"], "baseline": "civic.baseline.json", "blocking": ["open-conflict"] }
 ```
 
-- **What blocks by default.** Findings that wait on a decision or undo one: an invalid graph, an open conflict, an override no conflict tracks, an approved exception past its `expires` date, a decided fix that failed or regressed ([the decision loop](#the-decision-loop)), failing evidence, a product state a design neither shows nor inherits, and a journey screen that is a dead end or unreachable. Recorded facts and evidence debt are reported as advisory: variants mapped to `none`, platform-only variants, no run evidence, unconfirmed links, screens a crawl discovered that nobody has confirmed (D34), stale evidence, approved exceptions, decided fixes not yet adopted or adopted but not verified, and proposals waiting for a decision.
+- **What blocks by default.** Findings that wait on a decision or undo one: an invalid graph, an open conflict, an override no conflict tracks, an approved exception past its `expires` date, a decided fix that failed or regressed ([the decision loop](#the-decision-loop)), failing evidence, a product state a design neither shows nor inherits, and a journey screen that is a dead end or unreachable. Recorded facts and evidence debt are reported as advisory: variants mapped to `none`, platform-only variants, no run evidence, unconfirmed links, screens a crawl discovered that nobody has confirmed (D34), stale evidence, approved exceptions, decided fixes not yet adopted or adopted but not verified, proposals waiting for a decision, and open [collaboration records](#collaboration-records).
 - **Baseline.** Each finding has a stable key (kind, subject, platform and what tells it apart, such as the state). A baselined finding doesn't block, so old debt doesn't stop a change, and a new one is raised at the change that caused it. `--update-baseline` writes every current blocking finding to the baseline, which shows up in review as a diff. Findings that are gone are listed as fixed until the baseline is updated. An invalid graph can't be baselined.
 - **Counts.** The report gives each check's count with its denominator, such as 1 of 4 conflicts open, never a score.
 - **Status.** `--post` records the result as a `civic` commit status through the GitHub CLI, from a clean working tree, the way `bin/signoff` records `signoff`. There are no GitHub Actions.
