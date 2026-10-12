@@ -41,3 +41,15 @@ test('a canvas note becomes a shared annotation and can be handed to an agent', 
 test('without the civic CLI the review works as before', () => {
   assert.equal(civicShared({ repo: tmpdir(), civicRoot: tmpdir() }), null)
 })
+
+test('a screen reads what CIVIC\'s graphs know about it: journeys, paths, run evidence and findings', async () => {
+  const shared = civicShared({ repo: tmpdir(), civicRoot })
+  const facts = await shared.screen('intake.pack.final')
+  assert.equal(facts.graph, 'projects/laundry/out/graph.json')
+  assert.equal(facts.target.id, 'target:laundry.intake.pack.final')
+  assert.deepEqual(facts.journeys.map((journey) => journey.title), ['Multicolor pack'])
+  assert.ok(facts.evidence.length > 0 && facts.evidence.every((item) => item.source.tool === 'playwright'))
+  assert.ok(facts.findings.every((item) => typeof item.baselined === 'boolean'))
+  assert.equal(await shared.screen('no.such.scenario'), null)
+  await assert.rejects(shared.screen('target:laundry.x; rm'), /Not a scenario ID/)
+})

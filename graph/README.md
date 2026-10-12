@@ -107,6 +107,10 @@ Two read-only queries over a graph (D31). Both are deterministic and print Markd
 - **`civic context <graph> <semantic-id> --platform <p> [--variant <key>]`** prints one work order: intent, states, slots, the platform's mapping and default, the other platforms' mappings, tokens, extension points, conflicts with their decisions, evidence by tier, acceptance, and the IDs to put in code ([`src/context.ts`](src/context.ts)).
 - **`civic gaps <graph> [--scope <semantic-id>] [--platform <p>]`** lists what's expected but missing, each with owners: open conflicts, missing variants, missing product states in designs, platform-only variants, failing evidence, platforms with no run evidence, unconfirmed links, and approved exceptions with their revisit triggers ([`src/gaps.ts`](src/gaps.ts)).
 
+## One screen: `civic screen`
+
+`civic screen <target-id> [<file>...] [--json]` answers what the graphs know about one screen ([`src/screen.ts`](src/screen.ts)): the journeys that contain it, its paths on and whether they count, the evidence about it, and the gate's findings on it or its evidence, each marked as new or held by the baseline. With no files it reads the graphs and baseline in `civic.check.json` and uses the first graph that has the screen. It is how a viewer reads the graph: the journey canvas's Contract panel shows it for the selected screen (decision 0004).
+
 ## The gate: `civic check`
 
 `civic check` is roadmap step 8 ([`src/check.ts`](src/check.ts)). It runs every check above on one or more graphs and exits non-zero when there is a new finding nobody has decided. With no files it reads `civic.check.json`, which lists the graphs, the baseline and optionally which finding kinds block:
@@ -137,6 +141,8 @@ node src/cli.ts completeness examples/card-override.graph.json target:shop.check
 node src/cli.ts gaps examples/fluent-button.graph.json
 node src/cli.ts context examples/fluent-button.graph.json semantic:button --platform android --variant neutral-default
 node src/cli.ts check ../demo/fluent-button/out/raised.graph.json     # fails: the brand outline conflict is undecided
+cd .. && bin/civic screen target:laundry.intake.appliance                # one screen's journeys, paths, evidence and findings
+cd graph
 cd .. && bin/civic check                                             # the repository's gate
 ```
 

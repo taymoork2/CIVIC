@@ -9,6 +9,7 @@
 //   civic context <file> <semantic-id> --platform <p> [--variant <key>] [--json]
 //   civic gaps <file> [--scope <semantic-id>] [--platform <p>] [--json]
 //   civic completeness <file> <journey-id> [--json]
+//   civic screen <target-id> [<file>...] [--config civic.check.json] [--today <date>] [--json]
 //   civic check [<file>...] [--config civic.check.json] [--baseline <file>] [--update-baseline] [--today <date>] [--json] [--post]
 //   civic decide <decisions.json> <conflict-id> --graph <file> --outcome <o> --classification <c> --by <role>:<who>
 //                --rationale <text> --evidence <id,...> [--alignment <a>] [--title <t>] [--revisit <text>] [--expires <date>] [--at <time>]
@@ -23,6 +24,8 @@ import { contextFor, renderWorkOrder } from './context.ts'
 import { forecastOverride } from './forecast.ts'
 import { gapsIn, renderGaps } from './gaps.ts'
 import { renderInstanceReview, reviewInstance } from './overrides.ts'
+import { renderScreen, screenFacts } from './screen.ts'
+import { indexGraph } from './graph.ts'
 import { loadGraph, readGraphFile } from './load.ts'
 import { CLASSIFICATIONS, DECISION_OUTCOMES, PLATFORMS, ROLES, type AlignmentState, type Classification, type DecisionOutcome, type GraphDocument, type Platform, type Role } from './schema.ts'
 import { validateGraph } from './validate.ts'
@@ -83,6 +86,7 @@ async function main(): Promise<number> {
     return 0
   }
   if (command === 'check') return check()
+  if (command === 'screen') return screen()
   if (command === 'decide' && args.length >= 2) return decide(args[0]!, args[1]!)
   return usage()
 }
@@ -152,6 +156,38 @@ interface CheckConfig {
   blocking?: FindingKind[]
 }
 
+/** What the graphs know about one screen: the first graph, given or configured, that has it. */
+async function screen(): Promise<number> {
+  const valued = new Set(['--config', '--today'])
+  const [targetId, ...files] = args.filter((arg, index) => !arg.startsWith('--') && !valued.has(args[index - 1] ?? ''))
+  if (!targetId) return usage('screen needs a target ID.')
+  const configPath = resolve(option('--config') ?? 'civic.check.json')
+  let config: CheckConfig = { graphs: files }
+  let root = process.cwd()
+  if (files.length === 0) {
+    if (!existsSync(configPath)) return usage(`No graphs given and no ${relative(process.cwd(), configPath) || configPath} to read them from.`)
+    config = JSON.parse(readFileSync(configPath, 'utf8')) as CheckConfig
+    root = dirname(configPath)
+  }
+  const today = option('--today') ?? new Date().toISOString().slice(0, 10)
+  const baselinePath = files.length === 0 && config.baseline ? resolve(root, config.baseline) : undefined
+  const baseline = baselinePath && existsSync(baselinePath) ? (JSON.parse(readFileSync(baselinePath, 'utf8')) as Baseline) : undefined
+  for (const file of config.graphs) {
+    const document = JSON.parse(readFileSync(resolve(root, file), 'utf8')) as GraphDocument
+    if (!document.records.some((record) => record.id === targetId)) continue
+    const errors = validateGraph(document).filter((issue) => issue.severity === 'error')
+    if (errors.length > 0) {
+      console.error(`${file} is invalid: ${errors.map((issue) => issue.code).join(', ')}.`)
+      return 1
+    }
+    const facts = screenFacts(indexGraph(document), file, targetId, { today, ...(baseline ? { baseline } : {}) })
+    console.log(args.includes('--json') ? JSON.stringify(facts, null, 2) : renderScreen(facts))
+    return 0
+  }
+  console.error(`No graph has ${targetId}.`)
+  return 3
+}
+
 async function check(): Promise<number> {
   const valued = new Set(['--config', '--baseline', '--today'])
   const files = args.filter((arg, index) => !arg.startsWith('--') && !valued.has(args[index - 1] ?? ''))
@@ -218,6 +254,7 @@ function usage(problem?: string): number {
       '  civic context <file> <semantic-id> --platform <p> [--variant <key>] [--json]',
       '  civic gaps <file> [--scope <semantic-id>] [--platform <p>] [--json]',
       '  civic completeness <file> <journey-id> [--json]',
+      '  civic screen <target-id> [<file>...] [--config civic.check.json] [--today <date>] [--json]',
       '  civic check [<file>...] [--config civic.check.json] [--baseline <file>] [--update-baseline] [--today <date>] [--json] [--post]',
       '  civic decide <decisions.json> <conflict-id> --graph <file> --outcome <o> --classification <c> --by <role>:<who>',
       '               --rationale <text> --evidence <id,...> [--alignment <a>] [--title <t>] [--revisit <text>] [--expires <date>] [--at <time>]',

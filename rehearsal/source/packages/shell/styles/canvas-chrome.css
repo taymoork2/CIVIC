@@ -191,6 +191,9 @@
 .rh-tone.is-proven { color: #236748; background: #eaf5ef; }
 .rh-tone.is-partial { color: #7a5a06; background: #fdf3d7; }
 .rh-tone.is-missing { color: #68707c; background: #f0f1f3; }
+.rh-tone.is-failing { color: #a1262b; background: #fbeaea; }
+.rh-civic-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; font-size: 12px; }
+.rh-civic-list small { display: block; color: var(--rh-muted); font-size: 11px; overflow-wrap: anywhere; }
 .rh-contract-rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
 .rh-contract-rows li { display: grid; gap: 4px; font-size: 12px; }
 .rh-contract-rows span { display: flex; justify-content: space-between; gap: 8px; }

@@ -26,7 +26,44 @@ export function ContractPanel({ selected, scenarios, openReviewPane }: { selecte
     <p className={`rh-alignment is-${state === 'Aligned' ? 'aligned' : state === 'Unreviewed drift' ? 'drift' : 'unknown'}`}><strong>{state}</strong>{state === 'Unreviewed drift' ? `${open.length} open review${open.length === 1 ? '' : 's'} without a decision.` : state === 'Aligned' ? 'Every dimension has current evidence.' : 'Missing or stale evidence prevents an alignment judgment.'}</p>
     {error && <p role="alert" className="rh-alert">{error}</p>}
     {owners.map((owner) => <section key={owner} aria-label={`${owner} evidence`}><h3>{owner}</h3><dl className="rh-fields">{dimensions.filter((dimension) => dimension.owner === owner).map((dimension) => <div key={dimension.label}><dt>{dimension.label}</dt><dd><span className={`rh-tone is-${dimension.tone}`}>{toneLabel[dimension.tone]}</span> {['missing', 'unverified', 'present'].includes(dimension.value) ? '' : dimension.value}</dd></div>)}</dl></section>)}
+    <CivicGraph scenario={selected.scenario} />
     {open.length > 0 && <button onClick={openReviewPane}>Open {open.length} review{open.length === 1 ? '' : 's'}</button>}
     <p className="rh-muted">Approved adaptations, accepted limitations and adoption need recorded decisions, which this build does not store yet.</p>
   </div>
+}
+
+interface ScreenFacts {
+  graph: string
+  journeys: { id: string; title: string }[]
+  paths: { action?: string; toTitle?: string; unmapped?: string; status: string; counts: boolean }[]
+  evidence: { id: string; title: string; outcome: 'pass' | 'fail' | 'finding'; finding?: string; source: { revision: string } }[]
+  findings: { key: string; kind: string; summary: string; baselined: boolean }[]
+}
+
+/** What CIVIC's graph says about this screen: run evidence and the gate's findings (decision 0004). */
+function CivicGraph({ scenario }: { scenario: string }) {
+  const [state, setState] = useState<{ scenario: string; facts?: ScreenFacts | null; error?: string } | null>(null)
+  useEffect(() => {
+    let current = true
+    reviewApi<{ facts: ScreenFacts | null }>(`civic-screen?scenario=${encodeURIComponent(scenario)}`)
+      .then(({ facts }) => { if (current) setState({ scenario, facts }) })
+      .catch((caught) => { if (current) setState({ scenario, error: (caught as Error).message }) })
+    return () => { current = false }
+  }, [scenario])
+  if (!state || state.scenario !== scenario) return <section aria-label="CIVIC graph"><h3>CIVIC graph</h3><p className="rh-muted">Loading…</p></section>
+  if (state.error) return <section aria-label="CIVIC graph"><h3>CIVIC graph</h3><p className="rh-muted">{state.error}</p></section>
+  const facts = state.facts
+  if (!facts) return <section aria-label="CIVIC graph"><h3>CIVIC graph</h3><p className="rh-muted">This screen isn't in a CIVIC graph yet.</p></section>
+  const failing = facts.evidence.filter((item) => item.outcome === 'fail')
+  const passing = facts.evidence.filter((item) => item.outcome === 'pass')
+  const revisions = [...new Set(facts.evidence.map((item) => item.source.revision.slice(0, 12)))]
+  return <section aria-label="CIVIC graph"><h3>CIVIC graph</h3>
+    <dl className="rh-fields">
+      <div><dt>Run evidence</dt><dd>{facts.evidence.length === 0 ? <span className="rh-tone is-missing">Missing</span> : <><span className={`rh-tone ${failing.length ? 'is-failing' : 'is-proven'}`}>{failing.length ? 'Failing' : 'Passing'}</span>{passing.length} passed, {failing.length} failed{revisions.length ? ` at ${revisions.join(', ')}` : ''}</>}</dd></div>
+      <div><dt>Paths on</dt><dd>{facts.paths.length === 0 ? 'None declared' : facts.paths.map((path) => `${path.action ?? 'Path'} → ${path.toTitle ?? path.unmapped}${path.counts ? '' : ` (${path.status})`}`).join('; ')}</dd></div>
+    </dl>
+    {failing.length > 0 && <ul className="rh-civic-list" aria-label="Failing tests">{failing.map((item) => <li key={item.id}>{item.title}{item.finding ? <small>{item.finding}</small> : null}</li>)}</ul>}
+    {facts.findings.length > 0 && <ul className="rh-civic-list" aria-label="Gate findings">{facts.findings.map((item) => <li key={item.key}><strong>{item.kind}</strong> {item.summary}<small>{item.baselined ? 'Held by the baseline: known, not blocking.' : 'New: blocks civic check.'}</small></li>)}</ul>}
+    <p className="rh-muted">From {facts.graph}.</p>
+  </section>
 }
