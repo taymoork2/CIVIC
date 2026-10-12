@@ -50,6 +50,8 @@ What each person may do comes from `civic.access.json` on the default branch, so
 
 The line is read from the checkout: main for the default branch, a worktree line for a linked worktree, and a branch line otherwise. Each write records the line's current revision, and a worktree line keeps its path, so CIVIC can run acceptance checks there. `civic preview <url>` says that a dev server serves this line at HEAD. An annotation made on that URL is recorded against that line and revision. `civic lines` is the lens: every line, its previews, and the requests claimed on it.
 
+A pull request is a line of its own. `civic pr <number> --preview <url>` fetches the head its remote serves (`refs/pull/<n>/head` on GitHub) and records it as `line:github.pr.<n>`, with the hosted preview that serves it. Annotations made on that preview's URL land on the PR's line and revision, and fixes reported there can be re-captured on it. Run it again when the PR moves. Its previews then serve the new head, since a hosted preview redeploys on every push. Once the head is on the default branch, the line is marked merged. Agents call the MCP `register_pr` after opening a PR.
+
 ## The loop
 
 ```sh

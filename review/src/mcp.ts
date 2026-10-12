@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 // civic-mcp: the review to agent loop over MCP (decision 0007, D35, D40). The same calls as
 // the civic CLI, over stdio JSON-RPC, so any harness that speaks MCP can work CIVIC requests.
-// Agents get only D35's narrow write path: read, claim, comment, report a fix, add a check and
-// record an annotation for their person. They can't resolve, accept checks or escalate.
+// Agents get only D35's narrow write path: read, claim, comment, report a fix, add a check,
+// register the pull request they opened, and record an annotation for their person. They can't resolve, accept checks or escalate.
 // CIVIC makes no model calls; the agent runs in its own harness.
 //
 // Environment: CIVIC_AGENT (the harness, default "mcp-agent"), CIVIC_FOR (the person it acts
@@ -14,7 +14,7 @@ import { createInterface } from 'node:readline'
 import { contextFor, gapsIn, loadGraph, renderGaps, renderWorkOrder, PLATFORMS, type Annotation, type CaptureRef, type Platform, type RequestStatus } from '../../graph/src/index.ts'
 import { readCheckout } from './git.ts'
 import { identityFromEnv } from './identity.ts'
-import { addCheck, annotate, claim, comment, find, getRequest, listRequests, lineIdFor, release, reportFix, type Context } from './loop.ts'
+import { addCheck, annotate, claim, comment, find, getRequest, listRequests, lineIdFor, registerPullRequest, release, reportFix, type Context } from './loop.ts'
 import { recapture, reproductionUrl } from './recapture.ts'
 import { renderList, renderRequest } from './render.ts'
 import { Store } from './store.ts'
@@ -33,6 +33,7 @@ export const TOOLS = [
   { name: 'comment', description: 'Ask a question or explain a choice on a work request. People see it on the request.', inputSchema: { type: 'object', properties: { ...cwdProperty, ...id, text: { type: 'string' } }, required: ['id', 'text'] } },
   { name: 'repro', description: 'The URLs that open each annotation\'s exact scenario on a preview, such as your worktree\'s dev server.', inputSchema: { type: 'object', properties: { ...cwdProperty, ...id, url: { type: 'string', description: 'The preview origin, for example http://127.0.0.1:3011.' } }, required: ['id', 'url'] } },
   { name: 'report_fix', description: 'Report a fix as ready, with the preview that serves it (commit first: the revision is your checkout\'s HEAD). This only moves the request to Fix ready for review. CIVIC then re-captures the scenario on the preview; in the Auto lane it resolves or reopens the request, otherwise a person reviews it. You never resolve requests.', inputSchema: { type: 'object', properties: { ...cwdProperty, ...id, preview: { type: 'string' }, note: { type: 'string' } }, required: ['id'] } },
+  { name: 'register_pr', description: 'After opening a pull request, record it as its own line with the preview that serves its head, so annotations made on that preview land on the PR and fixes can be re-captured there. Run it again when the PR moves.', inputSchema: { type: 'object', properties: { ...cwdProperty, number: { type: 'number' }, preview: { type: 'string', description: 'The hosted preview URL for the PR, if it has one.' }, remote: { type: 'string', description: 'The git remote hosting the PR. Default origin.' } }, required: ['number'] } },
   { name: 'add_check', description: 'Add an acceptance check command. It counts toward the Auto lane only after a person accepts it.', inputSchema: { type: 'object', properties: { ...cwdProperty, ...id, command: { type: 'string' } }, required: ['id', 'command'] } },
   { name: 'annotate', description: 'Record an annotation for your person, for example from a screenshot they pasted. Without target_ids or a locator it is unanchored.', inputSchema: { type: 'object', properties: { ...cwdProperty, comment: { type: 'string' }, url: { type: 'string' }, target_ids: { type: 'array', items: { type: 'string' } }, role: { type: 'string' }, name: { type: 'string' }, test_id: { type: 'string' }, image_base64: { type: 'string' }, media_type: { type: 'string', enum: ['image/png', 'image/jpeg', 'image/webp'] } }, required: ['comment'] } },
   { name: 'context', description: 'The civic context export (D31): one component variant\'s contract as a work order.', inputSchema: { type: 'object', properties: { graph: { type: 'string' }, semantic_id: { type: 'string' }, platform: { type: 'string', enum: [...PLATFORMS] }, variant: { type: 'string' } }, required: ['graph', 'semantic_id', 'platform'] } },
@@ -102,6 +103,13 @@ export async function callTool(name: string, args: Args, env: NodeJS.ProcessEnv 
       } catch (error) {
         return text(`${request.id} is Fix ready for review. CIVIC's re-capture did not run: ${(error as Error).message} Run civic recapture ${request.id} once the preview is up.`)
       }
+    }
+    case 'register_pr': {
+      if (typeof args.number !== 'number') fail('number is required.')
+      const preview = str('preview')
+      const remote = str('remote')
+      const line = registerPullRequest(context(), { number: args.number as number, ...(preview ? { preview } : {}), ...(remote ? { remote } : {}) })
+      return text(`${line.id} is ${line.status} at ${line.head}${line.previews?.length ? `, served at ${line.previews.map((p) => p.url).join(', ')}` : ''}.`)
     }
     case 'add_check':
       return text(`Check added to ${addCheck(context(), need('id'), need('command')).id}. It counts toward Auto once a person accepts it.`)

@@ -18,7 +18,7 @@ import {
   type WorkRequest,
 } from '../../graph/src/index.ts'
 import { ForbiddenError, loadAccess, scopesOf, type AccessPolicy, type Scope } from './access.ts'
-import { idPath, revisionOf, type Checkout } from './git.ts'
+import { git, idPath, revisionOf, type Checkout } from './git.ts'
 import { actorId, ensureActor, type Identity } from './identity.ts'
 import type { Store } from './store.ts'
 
@@ -109,6 +109,63 @@ export function registerPreview(context: Context, url: string, bearerFile?: stri
     line.previews = [...(line.previews ?? []).filter((preview) => new URL(preview.url).origin !== origin), { url: origin, revision: context.checkout.head }]
     return structuredClone(line)
   })
+}
+
+export interface PullRequestInput {
+  number: number
+  /** Where the PR's head runs, such as a hosted preview deploy. */
+  preview?: string
+  /** The git remote that hosts the PR; GitHub serves its head as `refs/pull/<n>/head`. */
+  remote?: string
+}
+
+/**
+ * Records a pull request as its own line (D36), at the head its remote has now, with the
+ * preview that serves that head. Annotations made on the preview's URL then land on the PR's
+ * line and revision, and fixes can be re-captured there. Run it again when the PR moves; once
+ * its head is on the default branch, the line is marked merged.
+ */
+export function registerPullRequest(context: Context, input: PullRequestInput): Line {
+  allow(context, 'write', 'register a pull request')
+  if (!Number.isInteger(input.number) || input.number < 1) throw new Error(`A pull request number is a whole number from 1. Got ${input.number}.`)
+  const remote = input.remote ?? 'origin'
+  const local = `refs/civic/pulls/${remote}/${input.number}`
+  const root = context.checkout.root
+  try {
+    git(root, 'fetch', '--quiet', '--no-tags', remote, `+refs/pull/${input.number}/head:${local}`, `+refs/heads/${context.checkout.defaultBranch}:refs/civic/pulls/${remote}/base`)
+  } catch (error) {
+    throw new Error(`Couldn't fetch pull request ${input.number} from ${remote}: ${String((error as { stderr?: unknown }).stderr ?? (error as Error).message).trim()}`)
+  }
+  const head = git(root, 'rev-parse', local)
+  const merged = isAncestor(root, head, `refs/civic/pulls/${remote}/base`)
+  return context.store.transact((document) => {
+    ensureLines(document, context.checkout)
+    const id = `line:github.pr.${input.number}`
+    let line = document.records.find((record): record is Line => record.id === id && record.kind === 'line')
+    if (!line) {
+      line = { id, kind: 'line', title: `Pull request #${input.number}`, type: 'pr', tool: 'github', ref: String(input.number), base: mainLineId(), head, status: 'open' }
+      document.records.push(line)
+    }
+    line.head = head
+    line.source = { tool: 'github', importer: 'civic-review', revision: head, path: `${remote} refs/pull/${input.number}/head` }
+    if (merged) {
+      line.status = 'merged'
+      line.mergedAs = head
+    }
+    // A hosted PR preview redeploys on every push, so each preview it has serves the new head.
+    const origins = [...(line.previews ?? []).map((preview) => preview.url), ...(input.preview ? [new URL(input.preview).origin] : [])]
+    if (origins.length) line.previews = [...new Set(origins)].map((url) => ({ url, revision: head }))
+    return structuredClone(line)
+  })
+}
+
+function isAncestor(root: string, revision: string, of: string): boolean {
+  try {
+    git(root, 'merge-base', '--is-ancestor', revision, of)
+    return true
+  } catch {
+    return false
+  }
 }
 
 /** The line whose preview serves this URL, if any (the latest registration wins). */
