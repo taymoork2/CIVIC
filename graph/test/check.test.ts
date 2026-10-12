@@ -133,3 +133,12 @@ test('the repository gate passes on its own config and baseline, and fails witho
   assert.equal(fail.status, 1)
   assert.match(fail.stdout, /New, undecided/)
 })
+
+test('a discovered screen is reported as awaiting confirmation and never blocks', () => {
+  const screen = (id: string, presence: 'expected' | 'discovered') => ({ id, kind: 'target' as const, title: id, scale: 'screen' as const, presence, owners: [{ role: 'engineering' as const, who: 'eng' }] })
+  const document: GraphDocument = { schema: 'civic.graph/0', records: [screen('target:app.found', 'discovered'), screen('target:app.known', 'expected')], links: [] }
+  const report = compareToBaseline([run('app', document)], undefined)
+  assert.equal(report.passed, true)
+  assert.deepEqual(report.advisory.map((item) => [item.kind, item.subjectId]), [['unconfirmed-target', 'target:app.found']])
+  assert.deepEqual(report.measures.find((measure) => measure.check === 'Screens awaiting confirmation'), { graph: 'app', check: 'Screens awaiting confirmation', found: 1, of: 2 })
+})
