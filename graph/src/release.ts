@@ -74,8 +74,8 @@ function impact(component: PlatformComponent, before: Graph | undefined, after: 
   for (const override of after.ofKind('override')) {
     const instance = after.get(override.instanceId)
     if (instance?.kind !== 'component-instance' || !implemented.has(instance.semanticId)) continue
-    const now = forecastOn(after, override.id, component.platform)
-    const then = before ? forecastOn(before, override.id, component.platform) : undefined
+    const now = forecastOn(after, override.id, component)
+    const then = before ? forecastOn(before, override.id, component) : undefined
     if (!now || !then || now.outcome === then.outcome) continue
     const entry: OverrideImpact = {
       overrideId: override.id,
@@ -104,11 +104,15 @@ function impact(component: PlatformComponent, before: Graph | undefined, after: 
   }
 }
 
-/** One platform's forecast, or undefined where the override isn't in that graph. */
-function forecastOn(graph: Graph, overrideId: string, platform: PlatformComponent['platform']) {
+/**
+ * The forecast for the component's own library: the answer that considered it, or on a
+ * graph where it doesn't implement the contract yet, the one for its framework.
+ */
+function forecastOn(graph: Graph, overrideId: string, component: PlatformComponent) {
   if (graph.get(overrideId)?.kind !== 'override') return undefined
   try {
-    return forecastOverride(graph, overrideId, [platform])[0]
+    const forecasts = forecastOverride(graph, overrideId, [component.platform])
+    return forecasts.find((forecast) => forecast.componentIds.includes(component.id)) ?? forecasts.find((forecast) => forecast.framework === component.framework)
   } catch {
     // The override's instance or component isn't in that revision, so nothing could be built then.
     return undefined

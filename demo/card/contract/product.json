@@ -1,5 +1,5 @@
 {
-  "note": "Declared by the product team: an illustrative Shop product that uses the design system's Card. The owners are the demo's placeholders. Its design files form a lineage (decision 0011): Shop's checkout file uses the Fluent kit and Shop's own patterns library, which is built on the kit.",
+  "note": "Declared by the product team: an illustrative Shop product that uses the design system's Card. The owners are the demo's placeholders. Its design files form a lineage (decision 0011): Shop's checkout file uses the Fluent kit and Shop's own patterns library, which is built on the kit. It builds web with two frameworks: React for the checkout and web components for the order summary it embeds in partner sites, so each gets its own forecast.",
   "product": "shop",
   "title": "Shop",
   "platforms": ["web", "ios", "android"],
@@ -7,6 +7,12 @@
     { "role": "design", "who": "shop-design" },
     { "role": "engineering", "who": "shop-engineering" },
     { "role": "qa", "who": "shop-qa" }
+  ],
+  "codeLibraries": [
+    { "platform": "web", "framework": "react", "package": "@fluentui/react-card", "version": "^9.7.0" },
+    { "platform": "web", "framework": "web-components", "package": "@fluentui/web-components", "version": "^2.6.0" },
+    { "platform": "ios", "framework": "uikit", "package": "microsoft/fluentui-apple" },
+    { "platform": "android", "framework": "compose", "package": "microsoft/fluentui-android" }
   ],
   "designFiles": [
     { "tool": "figma", "file": "shop-checkout", "title": "Shop checkout", "layers": ["product"], "consumes": ["fluent-2-web", "shop-patterns"] },

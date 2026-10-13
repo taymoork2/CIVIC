@@ -73,12 +73,15 @@ export function compareLibraryDefaults(
   const conflicts: ContractConflict[] = []
   for (const { component, extensionPoints, evidenceId } of platforms) {
     const points = extensionPoints.filter((point) => point.platformComponentId === component.id)
+    // Two frameworks on one platform get two answers (decision 0011), so the framework joins the ID.
+    const shared = component.framework && platforms.filter((other) => other.component.platform === component.platform).length > 1
+    const where = shared ? `${component.platform}.${slug(component.framework!)}` : component.platform
     for (const [property, label] of shown) {
       if (points.some((point) => point.expresses.some((pattern) => propertyCovers(pattern, property)))) continue
       conflicts.push({
-        id: `conflict:${semantic.id.slice('semantic:'.length)}.${component.platform}.default.${slug(property)}`,
+        id: `conflict:${semantic.id.slice('semantic:'.length)}.${where}.default.${slug(property)}`,
         kind: 'contract-conflict',
-        title: `Default ${property} in the ${semantic.title} on ${component.platform}`,
+        title: `Default ${property} in the ${semantic.title} on ${component.platform}${shared ? ` (${component.framework})` : ''}`,
         targetId: semantic.id,
         platform: component.platform,
         summary: `The library's ${mapping.componentSet} shows ${property} by default (${label}), and ${component.title} has no extension point that expresses it.`,

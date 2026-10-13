@@ -1,4 +1,4 @@
-import type { ComponentInstance, Evidence, Link, Override, OverrideChange, Owner, Platform, SourceRef, Target } from '../../graph/src/index.ts'
+import type { CodeLibrary, ComponentInstance, Evidence, Link, Override, OverrideChange, Owner, Platform, SourceRef, Target } from '../../graph/src/index.ts'
 import { fragment, slug, type Fragment } from './fragment.ts'
 
 // Reads a product team's design file, and the library file its components come from, out of
@@ -55,6 +55,8 @@ export interface ProductManifest {
   owners: Owner[]
   /** The design files the product is built from, as a lineage (decision 0011). */
   designFiles?: DesignFileDeclaration[]
+  /** The code libraries the product builds with, per platform and framework; the forecast answers once for each. */
+  codeLibraries?: CodeLibrary[]
 }
 
 /**
@@ -256,6 +258,7 @@ export function readFigmaProductFile(file: unknown, library: LibraryFacts, produ
   }
   const isMapped = (componentId: string) => (mapping.key ? keyOf(componentId)?.key === mapping.key : setNameOf(root, componentId) === mapping.componentSet)
   const designOwners = product.owners.filter((owner) => owner.role === 'design')
+  const builtWith = product.codeLibraries && product.codeLibraries.length > 0 ? { builtWith: product.codeLibraries } : {}
   const source = (path: string, anchor: string): SourceRef => ({ tool: 'figma', importer: 'figma-file', revision: root.version, path: `${root.name} / ${path}`, anchor })
   const records: (Target | ComponentInstance | Override | Evidence)[] = []
   const links: Link[] = []
@@ -328,7 +331,7 @@ export function readFigmaProductFile(file: unknown, library: LibraryFacts, produ
     })
   }
   for (const { node, targetId, path } of definitions.values()) {
-    records.push({ id: targetId, kind: 'target', title: `${path.split(' / ').slice(1).join(' / ')} (${product.title} component)`, scale: 'component', presence: 'expected', platforms: product.platforms, owners: designOwners, source: source(path, node.id) })
+    records.push({ id: targetId, kind: 'target', title: `${path.split(' / ').slice(1).join(' / ')} (${product.title} component)`, scale: 'component', presence: 'expected', platforms: product.platforms, ...builtWith, owners: designOwners, source: source(path, node.id) })
     readContents(node, targetId, path)
   }
 
@@ -349,7 +352,7 @@ export function readFigmaProductFile(file: unknown, library: LibraryFacts, produ
   for (const frame of frames.values()) {
     const { node, targetId, page, screenId, isState } = frame
     if (isState && !screenTargets.has(screenId)) throw new Error(`${root.name}: state frame "${node.name}" has no screen frame for ${screenId}.`)
-    records.push({ id: targetId, kind: 'target', title: node.name, scale: isState ? 'state' : 'screen', presence: 'expected', platforms: product.platforms, owners: designOwners, source: source(`${page} / ${node.name}`, node.id) })
+    records.push({ id: targetId, kind: 'target', title: node.name, scale: isState ? 'state' : 'screen', presence: 'expected', platforms: product.platforms, ...builtWith, owners: designOwners, source: source(`${page} / ${node.name}`, node.id) })
     links.push({ from: isState ? screenId : `target:${product.product}.${slug(page)}`, relation: 'contains', to: targetId, status: 'declared' })
 
     walk(node, (child) => {
@@ -377,7 +380,7 @@ export function readFigmaProductFile(file: unknown, library: LibraryFacts, produ
       if (!entry || entry.isState) throw new Error(`${root.name} / ${page.name}: flow "${start.name}" starts on ${start.nodeId}, which is not a screen frame.`)
       const journeyId = `target:${product.product}.${slug(page.name)}`
       if (records.some((record) => record.id === journeyId)) throw new Error(`${root.name} / ${page.name}: one journey per page; "${start.name}" is a second flow.`)
-      records.push({ id: journeyId, kind: 'target', title: start.name, scale: 'journey', presence: 'expected', platforms: product.platforms, owners: product.owners, entry: [entry.targetId], source: source(page.name, page.id) })
+      records.push({ id: journeyId, kind: 'target', title: start.name, scale: 'journey', presence: 'expected', platforms: product.platforms, ...builtWith, owners: product.owners, entry: [entry.targetId], source: source(page.name, page.id) })
     }
     if (pageScreens.length > 0 && !records.some((record) => record.id === `target:${product.product}.${slug(page.name)}`)) {
       throw new Error(`${root.name} / ${page.name}: the page has screens but no prototype flow starting point, so there is no journey to hold them.`)

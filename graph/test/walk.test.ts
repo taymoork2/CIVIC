@@ -21,9 +21,11 @@ test('the walk starts on the flow\'s start frame and follows prototype links bre
   const start = walk.frames[0]!
   assert.deepEqual(start.actions.map((action) => [action.label, action.to ?? action.leaves]), [['Apply promotion', 'target:shop.promo-applied'], ['Continue to payment', '/checkout/payment']])
   assert.deepEqual(start.components[0]!.overrides.find((override) => override.property === 'state.selected')!.forecasts, [
-    { platform: 'web', outcome: 'supported' },
-    { platform: 'ios', outcome: 'needs-library-change' },
-    { platform: 'android', outcome: 'needs-library-change' },
+    // Shop builds web with React and with web components, so web gets two answers (decision 0011).
+    { platform: 'web', framework: 'react', outcome: 'supported' },
+    { platform: 'web', framework: 'web-components', outcome: 'needs-library-change' },
+    { platform: 'ios', framework: 'uikit', outcome: 'needs-library-change' },
+    { platform: 'android', framework: 'compose', outcome: 'needs-library-change' },
   ])
   // The completeness check's findings show up where a person walking would hit them.
   assert.equal(walk.frames.find((frame) => frame.id === 'target:shop.promo-applied')!.deadEnd, true)

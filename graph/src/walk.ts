@@ -1,6 +1,6 @@
 import { completenessOf } from './completeness.ts'
 import type { Graph } from './graph.ts'
-import { forecastOverride } from './forecast.ts'
+import { forecastLabel, forecastOverride } from './forecast.ts'
 import type { Platform, SourceRef } from './schema.ts'
 
 // The frame walk (D33): a journey's design frames, joined by their prototype links, walked
@@ -27,7 +27,7 @@ export interface WalkComponent {
   variant?: string
   state?: string
   /** Each local change on the instance, with whether each platform can build it. */
-  overrides: { id: string; title: string; property: string; forecasts: { platform: Platform; outcome: string }[] }[]
+  overrides: { id: string; title: string; property: string; forecasts: { platform: Platform; framework?: string; outcome: string }[] }[]
 }
 
 export interface WalkFrame {
@@ -97,7 +97,7 @@ export function frameWalk(graph: Graph, journeyId: string): FrameWalk {
             id: override.id,
             title: override.title,
             property: override.property,
-            forecasts: platforms.length > 0 ? forecastOverride(graph, override.id, platforms).map((forecast) => ({ platform: forecast.platform, outcome: forecast.outcome })) : [],
+            forecasts: platforms.length > 0 ? forecastOverride(graph, override.id, platforms).map((forecast) => ({ platform: forecast.platform, ...(forecast.framework ? { framework: forecast.framework } : {}), outcome: forecast.outcome })) : [],
           })),
         },
       ]
@@ -157,7 +157,7 @@ export function renderWalk(walk: FrameWalk): string {
     lines.push(`## ${item.scale === 'state' ? 'State: ' : ''}${item.title}${item.unreachable ? ' (not reachable from the start)' : ''}`, '')
     for (const component of item.components) {
       lines.push(`- ${component.title}: ${component.semanticId}${component.variant ? `, ${component.variant}` : ''}${component.state ? `, ${component.state}` : ''}`)
-      for (const override of component.overrides) lines.push(`  - Override ${override.title} (\`${override.property}\`): ${override.forecasts.map((forecast) => `${forecast.platform} ${forecast.outcome}`).join(', ') || 'no platforms listed'}`)
+      for (const override of component.overrides) lines.push(`  - Override ${override.title} (\`${override.property}\`): ${override.forecasts.map((forecast) => `${forecastLabel(forecast)} ${forecast.outcome}`).join(', ') || 'no platforms listed'}`)
     }
     if (item.states.length > 0) lines.push(`- States drawn: ${item.states.map(titleOf).join(', ')}`)
     for (const action of item.actions) lines.push(`- **${action.label}** ${action.to ? `goes to ${titleOf(action.to)}` : `leaves the design for ${action.leaves}`}`)
@@ -229,7 +229,7 @@ function show() {
       const item = el('li', component.title + ': ' + component.semanticId + (component.variant ? ', ' + component.variant : '') + (component.state ? ', ' + component.state : ''))
       if (component.overrides.length > 0) {
         const sub = el('ul')
-        for (const override of component.overrides) sub.append(el('li', 'Override ' + override.title + ': ' + override.forecasts.map((f) => f.platform + ' ' + f.outcome).join(', ')))
+        for (const override of component.overrides) sub.append(el('li', 'Override ' + override.title + ': ' + override.forecasts.map((f) => (f.framework ? f.platform + ' (' + f.framework + ')' : f.platform) + ' ' + f.outcome).join(', ')))
         item.append(sub)
       }
       list.append(item)

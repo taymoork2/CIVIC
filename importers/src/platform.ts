@@ -11,6 +11,8 @@ export interface PlatformMapping {
   id: string
   title: string
   platform: Platform
+  /** The framework this implementation is for, such as `react` or `web-components` (decision 0011). */
+  framework?: string
   symbol: string
   owners?: Owner[]
   variantProperty: string
@@ -59,6 +61,7 @@ export function readPlatformComponent(semanticId: string, mapping: PlatformMappi
     kind: 'platform-component',
     title: mapping.title,
     platform: mapping.platform,
+    ...(mapping.framework ? { framework: mapping.framework } : {}),
     library,
     symbol: mapping.symbol,
     ...(mapping.owners ? { owners: mapping.owners } : {}),

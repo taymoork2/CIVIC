@@ -38,6 +38,30 @@
         "ios",
         "android"
       ],
+      "builtWith": [
+        {
+          "platform": "web",
+          "framework": "react",
+          "package": "@fluentui/react-card",
+          "version": "^9.7.0"
+        },
+        {
+          "platform": "web",
+          "framework": "web-components",
+          "package": "@fluentui/web-components",
+          "version": "^2.6.0"
+        },
+        {
+          "platform": "ios",
+          "framework": "uikit",
+          "package": "microsoft/fluentui-apple"
+        },
+        {
+          "platform": "android",
+          "framework": "compose",
+          "package": "microsoft/fluentui-android"
+        }
+      ],
       "owners": [
         {
           "role": "design",
@@ -74,6 +98,30 @@
         "ios",
         "android"
       ],
+      "builtWith": [
+        {
+          "platform": "web",
+          "framework": "react",
+          "package": "@fluentui/react-card",
+          "version": "^9.7.0"
+        },
+        {
+          "platform": "web",
+          "framework": "web-components",
+          "package": "@fluentui/web-components",
+          "version": "^2.6.0"
+        },
+        {
+          "platform": "ios",
+          "framework": "uikit",
+          "package": "microsoft/fluentui-apple"
+        },
+        {
+          "platform": "android",
+          "framework": "compose",
+          "package": "microsoft/fluentui-android"
+        }
+      ],
       "owners": [
         {
           "role": "design",
@@ -98,6 +146,30 @@
         "web",
         "ios",
         "android"
+      ],
+      "builtWith": [
+        {
+          "platform": "web",
+          "framework": "react",
+          "package": "@fluentui/react-card",
+          "version": "^9.7.0"
+        },
+        {
+          "platform": "web",
+          "framework": "web-components",
+          "package": "@fluentui/web-components",
+          "version": "^2.6.0"
+        },
+        {
+          "platform": "ios",
+          "framework": "uikit",
+          "package": "microsoft/fluentui-apple"
+        },
+        {
+          "platform": "android",
+          "framework": "compose",
+          "package": "microsoft/fluentui-android"
+        }
       ],
       "owners": [
         {
@@ -124,6 +196,30 @@
         "ios",
         "android"
       ],
+      "builtWith": [
+        {
+          "platform": "web",
+          "framework": "react",
+          "package": "@fluentui/react-card",
+          "version": "^9.7.0"
+        },
+        {
+          "platform": "web",
+          "framework": "web-components",
+          "package": "@fluentui/web-components",
+          "version": "^2.6.0"
+        },
+        {
+          "platform": "ios",
+          "framework": "uikit",
+          "package": "microsoft/fluentui-apple"
+        },
+        {
+          "platform": "android",
+          "framework": "compose",
+          "package": "microsoft/fluentui-android"
+        }
+      ],
       "owners": [
         {
           "role": "design",
@@ -149,6 +245,30 @@
         "ios",
         "android"
       ],
+      "builtWith": [
+        {
+          "platform": "web",
+          "framework": "react",
+          "package": "@fluentui/react-card",
+          "version": "^9.7.0"
+        },
+        {
+          "platform": "web",
+          "framework": "web-components",
+          "package": "@fluentui/web-components",
+          "version": "^2.6.0"
+        },
+        {
+          "platform": "ios",
+          "framework": "uikit",
+          "package": "microsoft/fluentui-apple"
+        },
+        {
+          "platform": "android",
+          "framework": "compose",
+          "package": "microsoft/fluentui-android"
+        }
+      ],
       "owners": [
         {
           "role": "design",
@@ -173,6 +293,30 @@
         "web",
         "ios",
         "android"
+      ],
+      "builtWith": [
+        {
+          "platform": "web",
+          "framework": "react",
+          "package": "@fluentui/react-card",
+          "version": "^9.7.0"
+        },
+        {
+          "platform": "web",
+          "framework": "web-components",
+          "package": "@fluentui/web-components",
+          "version": "^2.6.0"
+        },
+        {
+          "platform": "ios",
+          "framework": "uikit",
+          "package": "microsoft/fluentui-apple"
+        },
+        {
+          "platform": "android",
+          "framework": "compose",
+          "package": "microsoft/fluentui-android"
+        }
       ],
       "owners": [
         {
@@ -255,6 +399,7 @@
       "kind": "platform-component",
       "title": "Fluent Android Compose BasicCard",
       "platform": "android",
+      "framework": "compose",
       "library": {
         "package": "microsoft/fluentui-android",
         "version": "207ae6843eda"
@@ -294,6 +439,7 @@
       "kind": "platform-component",
       "title": "Fluent iOS CardView",
       "platform": "ios",
+      "framework": "uikit",
       "library": {
         "package": "microsoft/fluentui-apple",
         "version": "920ee25179c4"
@@ -341,6 +487,7 @@
       "kind": "platform-component",
       "title": "Fluent React v9 Card",
       "platform": "web",
+      "framework": "react",
       "library": {
         "package": "@fluentui/react-card",
         "version": "9.7.3"
@@ -380,6 +527,44 @@
         "revision": "@fluentui/react-card@9.7.3",
         "path": "@fluentui/react-card/dist/index.d.ts",
         "contentHash": "sha256:91d94abf72be0642e91160170c48fbe7b815d5091e5e67fcc06754e5c03e2818"
+      }
+    },
+    {
+      "id": "platform:fluent-web-components.card",
+      "kind": "platform-component",
+      "title": "Fluent Web Components fluent-card",
+      "platform": "web",
+      "framework": "web-components",
+      "library": {
+        "package": "@fluentui/web-components",
+        "version": "2.6.1"
+      },
+      "symbol": "fluent-card",
+      "owners": [
+        {
+          "role": "design-engineering",
+          "who": "fluent-web-components",
+          "platform": "web"
+        }
+      ],
+      "variants": [
+        {
+          "semanticVariant": "filled",
+          "mapping": "none",
+          "note": "fluent-card has no appearance attribute; it always draws a neutral fill layer with an elevation shadow."
+        },
+        {
+          "semanticVariant": "outline",
+          "mapping": "none",
+          "note": "fluent-card has no outline style."
+        }
+      ],
+      "source": {
+        "tool": "npm",
+        "importer": "custom-elements",
+        "revision": "@fluentui/web-components@2.6.1",
+        "path": "@fluentui/web-components/dist/esm/card/card.vscode.definition.json",
+        "contentHash": "sha256:4e5ef62eff1cff39a3fbc9f32692ba2612bdfcf79437aec41b70166d6282269d"
       }
     },
     {
@@ -731,6 +916,63 @@
       }
     },
     {
+      "id": "extension:fluent-web-components.card.card-fill-color",
+      "kind": "extension-point",
+      "title": "Fluent Web Components fluent-card card-fill-color",
+      "platformComponentId": "platform:fluent-web-components.card",
+      "mechanism": "prop",
+      "name": "card-fill-color",
+      "expresses": [
+        "background"
+      ],
+      "source": {
+        "tool": "npm",
+        "importer": "custom-elements",
+        "revision": "@fluentui/web-components@2.6.1",
+        "path": "@fluentui/web-components/dist/esm/card/card.vscode.definition.json",
+        "contentHash": "sha256:4e5ef62eff1cff39a3fbc9f32692ba2612bdfcf79437aec41b70166d6282269d"
+      }
+    },
+    {
+      "id": "extension:fluent-web-components.card.default",
+      "kind": "extension-point",
+      "title": "Fluent Web Components fluent-card default",
+      "platformComponentId": "platform:fluent-web-components.card",
+      "mechanism": "slot",
+      "name": "default",
+      "expresses": [
+        "media",
+        "header",
+        "body",
+        "actions"
+      ],
+      "source": {
+        "tool": "npm",
+        "importer": "custom-elements",
+        "revision": "@fluentui/web-components@2.6.1",
+        "path": "@fluentui/web-components/dist/esm/card/card.vscode.definition.json",
+        "contentHash": "sha256:4e5ef62eff1cff39a3fbc9f32692ba2612bdfcf79437aec41b70166d6282269d"
+      }
+    },
+    {
+      "id": "extension:fluent-web-components.card.neutral-palette-source",
+      "kind": "extension-point",
+      "title": "Fluent Web Components fluent-card neutral-palette-source",
+      "platformComponentId": "platform:fluent-web-components.card",
+      "mechanism": "prop",
+      "name": "neutral-palette-source",
+      "expresses": [
+        "background"
+      ],
+      "source": {
+        "tool": "npm",
+        "importer": "custom-elements",
+        "revision": "@fluentui/web-components@2.6.1",
+        "path": "@fluentui/web-components/dist/esm/card/card.vscode.definition.json",
+        "contentHash": "sha256:4e5ef62eff1cff39a3fbc9f32692ba2612bdfcf79437aec41b70166d6282269d"
+      }
+    },
+    {
       "id": "instance:shop.component.gift-option.card",
       "kind": "component-instance",
       "title": "Card on Gift option",
@@ -960,6 +1202,27 @@
         "revision": "@fluentui/react-card@9.7.3",
         "path": "@fluentui/react-card/dist/index.d.ts",
         "contentHash": "sha256:91d94abf72be0642e91160170c48fbe7b815d5091e5e67fcc06754e5c03e2818"
+      }
+    },
+    {
+      "id": "evidence:fluent-web-components.card.variants",
+      "kind": "evidence",
+      "title": "Fluent Web Components fluent-card variants read from source",
+      "subjectIds": [
+        "platform:fluent-web-components.card"
+      ],
+      "tier": "static-analysis",
+      "method": "source-analysis",
+      "platform": "web",
+      "outcome": "finding",
+      "finding": "appearance declares ; the default is .",
+      "capturedAt": "2026-10-11T00:00:00Z",
+      "source": {
+        "tool": "npm",
+        "importer": "custom-elements",
+        "revision": "@fluentui/web-components@2.6.1",
+        "path": "@fluentui/web-components/dist/esm/card/card.vscode.definition.json",
+        "contentHash": "sha256:4e5ef62eff1cff39a3fbc9f32692ba2612bdfcf79437aec41b70166d6282269d"
       }
     },
     {
@@ -1245,6 +1508,15 @@
       "status": "declared",
       "evidenceIds": [
         "evidence:fluent-react-v9.card.variants"
+      ]
+    },
+    {
+      "from": "platform:fluent-web-components.card",
+      "relation": "implements",
+      "to": "semantic:card",
+      "status": "declared",
+      "evidenceIds": [
+        "evidence:fluent-web-components.card.variants"
       ]
     },
     {
