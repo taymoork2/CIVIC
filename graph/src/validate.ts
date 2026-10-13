@@ -6,6 +6,7 @@ import {
   ALIGNMENT_STATES,
   ANCHOR_OUTCOMES,
   CLASSIFICATIONS,
+  CODE_LINE_TOOLS,
   COLLABORATION_TYPES,
   DECISION_OUTCOMES,
   EVIDENCE_TIERS,
@@ -147,7 +148,7 @@ export function validateGraph(input: unknown): Issue[] {
         }
         if (record.status === 'merged' && !record.mergedAs) error('line-merge', at, 'A merged line names the revision it merged as.')
         if (record.status !== 'merged' && record.mergedAs) error('line-merge', at, 'Only a merged line has `mergedAs`.')
-        if (record.frames && record.tool !== 'figma') error('line-frames', at, 'Only a design line records frames.')
+        if (record.frames && (CODE_LINE_TOOLS as readonly string[]).includes(record.tool)) error('line-frames', at, 'Only a design line records frames.')
         break
       case 'annotation':
         actorRef(at, 'writtenBy', record.writtenBy)
@@ -717,6 +718,9 @@ function checkReviewShape(kind: RecordKind, raw: Record<string, unknown>, at: st
         f.string('name')
         f.string('page')
         if (typeof frame.hash !== 'string' || !/^sha256:[0-9a-f]{64}$/.test(frame.hash)) error('shape', path, '`hash` must be sha256:<hex>.')
+        f.optionalList('designs', (target, at) => {
+          if (typeof target !== 'string' || !idMatchesKind(target, 'target')) error('shape', at, 'Must be a target: ID.')
+        })
       })
       break
     case 'annotation':

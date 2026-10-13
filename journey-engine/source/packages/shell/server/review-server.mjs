@@ -1,7 +1,7 @@
-import { randomBytes, timingSafeEqual } from 'node:crypto'
+import { createHash, randomBytes, timingSafeEqual } from 'node:crypto'
 import { mkdir, readFile, readdir, rename, stat, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
-import { checkedRecording } from './review-recording.mjs'
+import { checkedRecording, replayRecord } from './review-recording.mjs'
 
 const equal = (a, b) => typeof a === 'string' && Buffer.byteLength(a) === Buffer.byteLength(b) && timingSafeEqual(Buffer.from(a), Buffer.from(b))
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -238,6 +238,22 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
         await mkdir(directory, { recursive: true, mode: 0o700 })
         await writeFile(join(directory, id + '.json'), JSON.stringify(tape), { flag: 'wx', mode: 0o600 })
         json(201, { id, url: `/api/review/runs/${id}` }); return
+      }
+      if (url.pathname === '/api/review/replays' && req.method === 'POST') {
+        const input = await body(req)
+        const tapeText = JSON.stringify(input?.tape ?? null), sha = createHash('sha256').update(tapeText).digest('hex')
+        const replay = replayRecord(input, metadata.project, metadata.revision, new Date().toISOString(), sha)
+        const directory = join(dataDir, 'replays'), tapes = join(directory, 'tapes')
+        await mkdir(tapes, { recursive: true, mode: 0o700 })
+        await writeFile(join(tapes, sha + '.json'), tapeText, { mode: 0o600 })
+        const id = crypto.randomUUID()
+        await writeFile(join(directory, id + '.json'), JSON.stringify(replay), { flag: 'wx', mode: 0o600 })
+        json(201, { id, replay }); return
+      }
+      if (url.pathname === '/api/review/replays' && req.method === 'GET') {
+        const directory = join(dataDir, 'replays')
+        const files = (await readdir(directory).catch(() => [])).filter((file) => file.endsWith('.json')).sort()
+        json(200, (await Promise.all(files.map(async (file) => JSON.parse(await readFile(join(directory, file), 'utf8'))))).filter((replay) => replay.project === metadata.project?.key)); return
       }
       const recording = /^\/api\/review\/runs\/([0-9a-f-]+)$/.exec(url.pathname)
       if (recording && req.method === 'GET') {

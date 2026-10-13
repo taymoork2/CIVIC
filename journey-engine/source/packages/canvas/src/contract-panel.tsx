@@ -38,9 +38,11 @@ interface ScreenFacts {
   paths: { action?: string; toTitle?: string; unmapped?: string; status: string; counts: boolean }[]
   evidence: { id: string; title: string; outcome: 'pass' | 'fail' | 'finding'; finding?: string; source: { revision: string }; stale?: string }[]
   findings: { key: string; kind: string; summary: string; baselined: boolean; blocks: boolean }[]
+  /** Older CIVIC builds send no design frames. */
+  design?: { file: string; tool: string; name: string; version: string; frames: { node: string; name: string }[] }[]
 }
 
-/** What CIVIC's graph says about this screen: run evidence and the gate's findings (decision 0004). */
+/** What CIVIC's graph says about this screen: run evidence, the design frames beside it and the gate's findings (decision 0004). */
 function CivicGraph({ scenario }: { scenario: string }) {
   const [state, setState] = useState<{ scenario: string; facts?: ScreenFacts | null; error?: string } | null>(null)
   useEffect(() => {
@@ -61,8 +63,10 @@ function CivicGraph({ scenario }: { scenario: string }) {
   return <section aria-label="CIVIC graph"><h3>CIVIC graph</h3>
     <dl className="rh-fields">
       <div><dt>Run evidence</dt><dd>{facts.evidence.length === 0 ? <span className="rh-tone is-missing">Missing</span> : <><span className={`rh-tone ${failing.length ? 'is-failing' : 'is-proven'}`}>{failing.length ? 'Failing' : 'Passing'}</span>{passing.length} passed, {failing.length} failed{revisions.length ? ` at ${revisions.join(', ')}` : ''}{stale.length > 0 && <small>Stale: {stale.join('; ')}. Recapture before relying on it.</small>}</>}</dd></div>
+      <div><dt>Design</dt><dd>{!facts.design?.length ? 'No design frame names this screen' : facts.design.map((item) => `${item.frames.length} frame${item.frames.length === 1 ? '' : 's'} in ${item.name} (${item.tool}, ${item.version.slice(0, 10)})`).join('; ')}{facts.design?.length ? <small>Design intent, shown beside the runs and never counted as evidence.</small> : null}</dd></div>
       <div><dt>Paths on</dt><dd>{facts.paths.length === 0 ? 'None declared' : facts.paths.map((path) => `${path.action ?? 'Path'} → ${path.toTitle ?? path.unmapped}${path.counts ? '' : ` (${path.status})`}`).join('; ')}</dd></div>
     </dl>
+    {facts.design?.some((item) => item.frames.length > 0) && <ul className="rh-civic-list" aria-label="Design frames">{facts.design.flatMap((item) => item.frames.map((frame) => <li key={`${item.file}:${frame.node}`}>{frame.name}</li>))}</ul>}
     {failing.length > 0 && <ul className="rh-civic-list" aria-label="Failing tests">{failing.map((item) => <li key={item.id}>{item.title}{item.finding ? <small>{item.finding}</small> : null}</li>)}</ul>}
     {facts.findings.length > 0 && <ul className="rh-civic-list" aria-label="Gate findings">{facts.findings.map((item) => <li key={item.key}><strong>{item.kind}</strong> {item.summary}<small>{item.baselined ? 'Held by the baseline: known, not blocking.' : item.blocks ? 'New: blocks civic check.' : 'Advisory: reported, not blocking.'}</small></li>)}</ul>}
     <p className="rh-muted">From {facts.graph}.</p>

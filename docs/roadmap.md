@@ -6,20 +6,20 @@ Every step follows [decision 0006](decisions/0006-deterministic-civic-for-agenti
 
 ## Order of work
 
-Reprioritized on 2026-10-12. The 2026-10-11 order is done: the gate (step 8), step 3's decision loop (Proposal, Decision, Adoption, Verification), real inputs (step 9), a second app through the manifest and crawl (step 4), live runs for apps with sign-in and for TanStack Start server functions (step 4), Codex packaging and PR previews, step 6 and step 5 are built, apart from the pieces listed under "Waiting" below. Step numbers are stable names that other documents cite, so the order of work is listed here rather than by renumbering:
+Reprioritized on 2026-10-13. The 2026-10-12 order is built: step 10's checks in each role's tools, design drafts as review lines, step 3's collaboration records and alignment states, and the frame walk (D33) as `civic walk`. What it left is the canvas showing the walk. Step numbers are stable names that other documents cite, so the order of work is listed here rather than by renumbering:
 
-1. **[Step 10](#10-checks-where-each-role-works): checks where each role works.** Decision 0005 says most people meet CIVIC through checks in their own tools, and today that is one `civic` commit status. Route each finding to the side that moved, and put it on the pull request, the test run and the library release, together with the decided fix it turns into.
-2. **[Design drafts](#next-the-review-to-agent-loop)** as review lines (item 3) are built.
-3. **[Step 3](#3-typed-contract-and-change-records)'s collaboration records** (Ambiguity, Constraint, Coverage gap, Divergence, Risk and Exception) are built.
-4. **The frame walk (D33)** in [step 4](#4-the-journey-engine-as-a-graph-viewer), now that real design files exist to walk. *Built:* `civic walk` and the Card demo's walk page; the canvas showing it is still to come.
+1. **Finish the v11 port.** Live runs switch accounts, go offline and recover, and change viewport on one tape ([step 4](#4-the-journey-engine-as-a-graph-viewer)). Before it merges, Laundry's product end-to-end suite and `bin/signoff --browser` run on it, because v11's sheet shows its discard prompt as its own dialog, which may affect product specs.
+2. **A design input for Laundry.** Laundry's design system is kept in Claude Design and Open Design, not Figma, so design drafts, the design lens, the frame walk and the completeness check run only on the Fluent demos today. Read Laundry's reference (its tokens, components and React frame exports with their receipts) as design lines, so those checks run on the real product. Figma stays one design input among several ([onboarding and ingestion](onboarding-and-ingestion.md)). *Built:* any design tool's file can be a design line through a `civic.design/0` file, and Laundry's Open Design source-render reference is one: [`projects/laundry/out/design.json`](../projects/laundry/out/design.md), 134 frames designing 76 of Laundry's screens. Still to come: newer references and proposals from Claude Design as drafts, and Laundry's tokens.
+3. **The frame walk in the canvas** ([step 4](#4-the-journey-engine-as-a-graph-viewer)), beside a screen's runs, on Laundry's frames rather than the Card demo's. *Built for Laundry as frames beside runs:* Laundry's reference frames have no prototype links to walk, so `civic screen` and the Contract panel list the design frames that name the selected screen next to its run evidence. A walk for Laundry waits on a linked prototype.
+4. **Decide the recording record** ([step 6](#6-journey-completeness-and-replay)): whether the engine's recorder tape becomes CIVIC's recording record, now that account switches, offline steps and viewport changes live on it. *Decided:* [decision 0009](decisions/0009-recorded-runs-as-evidence.md) keeps the tape as the engine's recording and makes a replay of it run evidence. *Built:* the canvas keeps each finished replay as a `civic.replay/0` record, and `readReplays` turns it into `runtime` evidence about the screen the run starts from. `civic share-replays` keeps those replays and their tapes in the local store, and `civic sync` shares them with the team, so Laundry's capture counts replays others made at the same commit.
 5. **[Step 7](#7-repository-hygiene)** happens opportunistically.
 
 Waiting on something other than a build:
 
-- **A device.** The first native crawl and native captures (steps 4 and 6) need a device or simulator. The cloud has none, so the iOS crawl runs on the founder's Mac.
+- **A device.** The first native crawl and native captures (steps 4 and 6) need a device or simulator. The cloud has none, so the iOS crawl runs on the founder's Mac. A runtime and data adapter for native apps follows it.
 - **A hosted remote.** Presence, following and shared driving ([step 5](#5-identity-permissions-and-multiplayer)) need a live service; records sync through git today.
 
-Step 10 comes before the remaining record types because the gate's findings only reach people who run `bin/signoff`.
+The Figma plugin, and with it findings on a Figma frame, moved to [later](#later-not-scheduled) until a team that designs in Figma uses CIVIC. The design input for Laundry comes before the canvas walk because a walk of a demo's frames shows nothing about the product CIVIC is checking.
 
 ## 1. CIVIC graph schema
 
@@ -173,7 +173,7 @@ Part 2 of [decision 0005](decisions/0005-what-civic-is.md): raise each finding a
 - **Engineering:** a pull request check whose summary lists the new findings with their owners, through the same local signoff and no GitHub Actions. *Built:* `bin/signoff` puts that summary on the open pull request as one comment, edited in place, beside the `civic` status.
 - **QA:** a Playwright reporter that writes run evidence into the graph and prints the scenarios a run left uncovered. *Built:* `CivicReporter` in [`importers/`](../importers/README.md) writes a `civic.run/0` file and prints what now fails, what now passes and what was left uncovered, with QA owners; the Button demo's web suite runs it.
 - **Design Engineering:** a check on a library release that names the variants left without a mapping and the product overrides the release breaks. *Built:* `civic release --since <ref>`, printed by `bin/signoff`.
-- **Design:** findings on a Figma frame wait for the Figma plugin ([later](#later-not-scheduled)); until then they reach designers through the review loop.
+- **Design:** findings on a Figma frame wait for the Figma plugin ([later](#later-not-scheduled)); until then they reach designers through the review loop. Laundry's designers work in Claude Design and Open Design, so its design input (see [order of work](#order-of-work)) comes first.
 
 Acceptance: a change to one side of the Button or Card raises its finding on that change only, names who is asked and who is told, and makes no model calls.
 
@@ -184,6 +184,7 @@ These came out of [agentic development](agentic-development.md) and wait until t
 - **CIVIC launching agents.** Starting a coding agent on a new worktree from "Hand to agent". The agent interface itself moved to the next build ([decision 0007](decisions/0007-review-to-agent-loop.md)).
 - **A capture browser extension** for pages a preview build can't inject the overlay into, such as production.
 - **Prototypes.** If reviews need more than the frame walk (D33), the non-AI option is a preview assembled from the component mappings. CIVIC stays out of WYSIWYG and no-code.
+- **The Figma plugin.** Findings on a Figma frame (step 10's Design check), scheduled once a team that designs in Figma uses CIVIC.
 - **A return path to Figma.** Reference captures, frames rebuilt from library instances, and token proposals, all through a plugin into a page the designer merges from. This needs the Figma import and plugin first.
 - **A rebrand demo.** The Fluent Button and Card re-themed to a second brand, showing the blast radius, hidden overrides, and the migration table. A candidate third demo after Card.
 - **New device classes** such as TV and watches. They aren't modelled until they've been researched.

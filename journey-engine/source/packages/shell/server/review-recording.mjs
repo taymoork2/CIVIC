@@ -33,3 +33,32 @@ export function checkedRecording(input, project) {
   }
   return input
 }
+
+/**
+ * A replay of a recording as CIVIC run evidence (decision 0009): the tape it replayed, by
+ * content hash, the commit and source fingerprint it ran at, and whether every step verified
+ * or the step where it diverged. The tape stays the engine's format; CIVIC reads this record.
+ */
+export function replayRecord(input, project, revision, at, sha256) {
+  const tape = checkedRecording(input?.tape, project)
+  if (!/^[0-9a-f]{40}$/.test(revision?.head ?? '') || tape.source !== revision?.source) refuse('Replay the recording at the source revision it was made at')
+  const steps = tape.steps.length
+  const passed = input.outcome === 'pass'
+  if (!['pass', 'fail'].includes(input.outcome)) refuse('A replay passes or fails')
+  if (passed && input.verified !== steps) refuse('A passing replay verified every step')
+  if (!passed && (!Number.isSafeInteger(input.divergedAt) || input.divergedAt < 1 || input.divergedAt > steps)) refuse('A failing replay names the step it diverged at')
+  if (input.message !== undefined && (typeof input.message !== 'string' || input.message.length > 2000)) refuse('Invalid replay message')
+  return {
+    schema: 'civic.replay/0',
+    project: tape.project,
+    scenario: tape.seed.context.scenario,
+    head: revision.head,
+    source: tape.source,
+    tape: sha256,
+    steps,
+    outcome: input.outcome,
+    ...(passed ? {} : { divergedAt: input.divergedAt }),
+    ...(input.message ? { message: input.message } : {}),
+    replayedAt: at,
+  }
+}

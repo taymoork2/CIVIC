@@ -1,6 +1,6 @@
 # Laundry: run evidence by journey
 
-Built by `node projects/laundry/build.ts` from the journey engine's review index and a Playwright report of Laundry's own review specs, both captured at commit `03c31274673c`. 221 screens, 36 tests: 36 passed, 0 failed.
+Built by `node projects/laundry/build.ts` from the journey engine's review index and a Playwright report of Laundry's own review specs, both captured at commit `03c31274673c`. 221 screens, 36 tests and replayed runs: 36 passed, 0 failed. No recorded run has been replayed at this commit.
 
 A screen passes when every test that covers it passed, and fails when any did. The specs run against the review server's synthetic fixtures, not a household backend.
 

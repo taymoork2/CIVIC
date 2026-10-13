@@ -35,13 +35,14 @@ import {
   reviewQueue,
   type Context,
 } from './loop.ts'
-import { chooseDraft, designLens, linesChanging, registerDesignDraft, registerDesignFile, renderDesignLens, type DesignLens, type DesignLineResult, type FigmaFileExport } from './drafts.ts'
+import { chooseDraft, designLens, isDesignExport, linesChanging, registerDesignDraft, registerDesignFile, renderDesignLens, type DesignFile, type DesignLens, type DesignLineResult } from './drafts.ts'
 import { bearerFor, captureScenario, launchBrowser, recapture, reproductionUrl } from './recapture.ts'
 import { createOverlayServer } from './overlay/server.ts'
 import { renderList, renderRequest } from './render.ts'
 import { Store } from './store.ts'
 import { DEFAULT_REF, GitRefRemote } from './remote.ts'
 import { listConflicts, settleConflict, sync } from './sync.ts'
+import { shareReplays } from './replays.ts'
 
 const USAGE = `Usage (records are shared by every worktree of this repository):
   civic annotate "<comment>" [--image <file>] [--url <page>] [--target <id>]... [--edge <from>><to>[:<action>]]...
@@ -60,16 +61,20 @@ const USAGE = `Usage (records are shared by every worktree of this repository):
   civic overlay [--port 4777]                     serves the capture overlay for dev and preview pages
   civic preview <url> [--bearer-file <file>]      civic lines [--json] | annotations [--line <id>] [--json] | whoami
   civic pr <number> [--preview <url>] [--remote origin]   a pull request as its own line, with its hosted preview
-  civic design <figma export.json> --file <key>  a design file's main line, at the export's version
+  civic design <figma export.json> --file <key>  a design file's main line, at the export's version (a civic.design/0
+                 file from another design tool names its own key, so it needs no --file)
   civic draft <figma export.json> --file <key> --name "<draft>" [--branch <key>]   a designer's draft as its own line
   civic choose-draft <draft line> --why "<rationale>" [--merged-as <version>]   a person picks a draft; the others are abandoned
   civic lens <draft line> [--graph <file>]... [--json]   the design lens: what a draft changes from its base, read on this
                  checkout's code line (graphs default to those in civic.check.json)
   civic sync [--remote origin] [--ref refs/civic/records]   share records with the team through a git ref
+  civic share-replays [<review data dir>] [--head <sha>]   keeps the canvas's replays of recorded runs, with their
+                 tapes, for civic sync to share (the directory defaults to .review-data)
+  civic replays [--head <sha>] [--json]           the replays kept here or shared by others
   civic conflicts [--json]                        civic settle <record> --keep mine|theirs
   civic keygen [--out <file>]                     makes your signing key for civic sync
   annotate also takes --rect x,y,w,h [--rect-label <text>], --viewport <w>x<h>, --line <id> (a known line, such as a
-  design draft, at its latest revision), --figma-node <node id> (a draft's frame or layer) and --json; request takes --json.
+  design draft, at its latest revision), --figma-node <node id> (a design frame or layer, by its node ID in the design tool) and --json; request takes --json.
   A <request> may end in @<version>, as civic requests and civic queue print it: the write is refused if the
   request changed since. Who may read, write, approve and resolve comes from civic.access.json on the default branch.`
 
@@ -259,14 +264,14 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
     case 'draft': {
       need(1)
       const fileKey = one('--file')
-      if (!fileKey) throw new UsageError(`${command} needs --file <key>, the Figma file's key from its URL.`)
-      const file = JSON.parse(readFileSync(resolvePath(cwd, positional[0]!), 'utf8')) as FigmaFileExport
+      const file = JSON.parse(readFileSync(resolvePath(cwd, positional[0]!), 'utf8')) as DesignFile
+      if (!fileKey && !isDesignExport(file)) throw new UsageError(`${command} needs --file <key>, the Figma file's key from its URL.`)
       let result: DesignLineResult
-      if (command === 'design') result = registerDesignFile(context, { file, fileKey })
+      if (command === 'design') result = registerDesignFile(context, { file, ...(fileKey ? { fileKey } : {}) })
       else {
         const name = one('--name')
         if (!name) throw new UsageError('draft needs --name "<draft>", as the designer calls it.')
-        result = registerDesignDraft(context, { file, fileKey, name, ...(one('--branch') ? { branchKey: one('--branch')! } : {}) })
+        result = registerDesignDraft(context, { file, ...(fileKey ? { fileKey } : {}), name, ...(one('--branch') ? { branchKey: one('--branch')! } : {}) })
       }
       if (has('--json')) print(JSON.stringify(result, null, 2))
       else {
@@ -346,6 +351,18 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
       }
       print(result.revision ? `In sync with ${result.remote} at ${result.revision.slice(0, 12)}: ${result.pulled.length} record(s) from others, ${result.pushed.length} shared.` : `Nothing to share with ${result.remote} yet.`)
       for (const conflict of result.conflicts) print(`Conflict: ${conflict.id} changed here and on ${result.remote}. The shared version is kept; yours is set aside. civic settle ${conflict.id} --keep mine|theirs`)
+      return 0
+    }
+    case 'share-replays': {
+      const head = one('--head')
+      const result = shareReplays(context, resolvePath(cwd, positional[0] ?? '.review-data'), head ? { head } : {})
+      print(`Kept ${result.kept} replay(s) to share${result.already ? `; ${result.already} were already kept` : ''}. civic sync shares them.`)
+      return 0
+    }
+    case 'replays': {
+      const head = one('--head')
+      const replays = context.store.replays().filter((replay) => !head || replay.head === head)
+      print(has('--json') ? JSON.stringify(replays, null, 2) : replays.map((replay) => `${replay.replayedAt}  ${replay.head.slice(0, 12)}  ${replay.scenario}  ${replay.outcome === 'pass' ? `pass, ${replay.steps} steps` : `fail at step ${replay.divergedAt} of ${replay.steps}`}  tape ${replay.tape.slice(0, 12)}`).join('\n') || 'No replays kept.')
       return 0
     }
     case 'keygen': {

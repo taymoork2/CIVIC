@@ -42,3 +42,14 @@ test('an open collaboration record about a screen, such as a coverage gap, shows
   assert.deepEqual(screenFacts(graph, 'app.graph.json', 'target:app.done', { today: '2026-10-12' }).findings.map((item) => [item.kind, item.subjectId, item.blocks]), [['dead-end', 'target:app.done', true], ['open-collaboration', 'collab:coverage-gap.app.done', false]])
   assert.ok(!screenFacts(graph, 'app.graph.json', 'target:app.form', { today: '2026-10-12' }).findings.some((item) => item.kind === 'open-collaboration'))
 })
+
+test("a screen's design frames come from the design files that name it, and are shown as design intent", () => {
+  const frame = (node: string, designs: string[]) => ({ node, name: `Form ${node}`, page: 'form', hash: `sha256:${'0'.repeat(64)}`, designs })
+  const design = { schema: 'civic.design/0' as const, tool: 'open-design', key: 'app', name: 'App reference', version: '2026-10-07', frames: [frame('form-light', ['target:app.form']), frame('form-dark', ['target:app.form']), frame('done-light', ['target:app.done'])] }
+  const facts = screenFacts(indexGraph(document), 'app.graph.json', 'target:app.form', { today: '2026-10-12', designs: [{ file: 'app.design.json', design }] })
+  assert.deepEqual(facts.design, [{ file: 'app.design.json', tool: 'open-design', name: 'App reference', version: '2026-10-07', frames: [{ node: 'form-light', name: 'Form form-light', page: 'form' }, { node: 'form-dark', name: 'Form form-dark', page: 'form' }] }])
+  assert.match(renderScreen(facts), /## Design\n\nApp reference \(open-design, version 2026-10-07\), design intent:\n- Form form-light \(`form-light`\)/)
+  // A frame with the same page name but no claim on the screen designs nothing.
+  assert.deepEqual(screenFacts(indexGraph(document), 'app.graph.json', 'target:app.journey', { today: '2026-10-12', designs: [{ file: 'app.design.json', design }] }).design, [])
+  assert.match(renderScreen(screenFacts(indexGraph(document), 'app.graph.json', 'target:app.done', { today: '2026-10-12' })), /No design frame names this screen\./)
+})

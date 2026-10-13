@@ -29,6 +29,12 @@ test('a person choosing between design drafts is valid', () => {
   assert.deepEqual(errorCodes(edited('review-loop', withDrafts)), [])
 })
 
+test('a design line from a tool other than Figma records frames and the targets they design', () => {
+  assert.deepEqual(errorCodes(edited('review-loop', (d) => {
+    d.records.push({ id: 'line:open-design.laundry', kind: 'line', title: 'Laundry', type: 'main', tool: 'open-design', ref: 'laundry', head: '1', status: 'open', frames: [{ node: 'drying-phone-light', name: 'Drying', page: 'drying-home', hash: `sha256:${'0'.repeat(64)}`, designs: ['target:laundry.intake.pack'] }] } as Line)
+  })), [])
+})
+
 const cases: [string, (d: GraphDocument) => void, string][] = [
   ['an agent choosing between drafts', (d) => { record(withDrafts(d), 'choice:shop.gift-wrap').writtenBy = 'actor:agent.claude-code.taymoor' }, 'agent-decision'],
   ['a passed-over draft left open', (d) => { record<Line>(withDrafts(d), 'line:figma.shop.draft.b').status = 'open' }, 'draft-choice'],
@@ -40,6 +46,10 @@ const cases: [string, (d: GraphDocument) => void, string][] = [
   ['a person who claims a delegation', (d) => { record(d, 'actor:person.taymoor').delegatedBy = 'actor:person.laundry-design' }, 'agent-delegation'],
   ['a branch with no base line', (d) => { delete record(d, 'line:git.fix-intake-label').base }, 'line-base'],
   ['main with a base line', (d) => { record(d, 'line:git.main').base = 'line:git.fix-intake-label' }, 'line-base'],
+  ['frames on a code line', (d) => { record<Line>(d, 'line:git.main').frames = [{ node: 'a', name: 'A', page: 'P', hash: `sha256:${'0'.repeat(64)}` }] }, 'line-frames'],
+  ['a design frame that designs something other than a target', (d) => {
+    d.records.push({ id: 'line:open-design.laundry', kind: 'line', title: 'Laundry', type: 'main', tool: 'open-design', ref: 'laundry', head: '1', status: 'open', frames: [{ node: 'a', name: 'A', page: 'P', hash: `sha256:${'0'.repeat(64)}`, designs: ['line:git.main'] }] } as Line)
+  }, 'shape'],
   ['a merged line with no merge revision', (d) => { record(d, 'line:git.fix-intake-label').status = 'merged' }, 'line-merge'],
   ['an annotation on a line that is not in the graph', (d) => { record<Annotation>(d, 'annotation:intake.offline-branch').seenOn.line = 'line:git.gone' }, 'dangling-reference'],
   ['an annotation written by someone who is not an actor', (d) => { record(d, 'annotation:intake.offline-branch').writtenBy = 'line:git.main' }, 'reference-kind'],

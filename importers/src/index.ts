@@ -11,3 +11,5 @@ export { compareDesignKit, compareLibraryDefaults, raiseOverrideDrift } from './
 export { applyDecisions, settledConflicts, type SettledConflict } from './decisions.ts'
 export * from './source.ts'
 export { applyConfirmations, readCrawl, type ConfirmationFile, type CrawlImportOptions } from './crawl.ts'
+export { readRenderReceipt, type RenderReceipt, type RenderReferenceOptions } from './render-reference.ts'
+export { readReplays, type ReplayOptions, type ReplayRecord } from './replay.ts'

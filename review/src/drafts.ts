@@ -1,12 +1,14 @@
 import { createHash, randomUUID } from 'node:crypto'
-import { resolveAnchor, type AnchorOutcome, type Annotation, type DesignFrame, type DraftChoice, type Graph, type GraphDocument, type Line, type ObservedElement, type WorkRequest } from '../../graph/src/index.ts'
+import { resolveAnchor, type AnchorOutcome, type Annotation, type DesignExport, type DesignFrame, type DraftChoice, type Graph, type GraphDocument, type Line, type ObservedElement, type WorkRequest } from '../../graph/src/index.ts'
 import { idPath } from './git.ts'
 import { ensureActor } from './identity.ts'
 import { allow, find, type Context } from './loop.ts'
 
 // Design drafts as lines (D36). CIVIC reads a draft from its Figma file export, as it reads
-// the main file, so no new integration is needed: only the line label on import. Comments on
-// a draft stay on that draft, and choosing a draft is a person's DraftChoice record.
+// the main file, so no new integration is needed: only the line label on import. A design
+// tool with no such export, such as Open Design, is read the same way from a `civic.design/0`
+// file an importer writes. Comments on a draft stay on that draft, and choosing a draft is a
+// person's DraftChoice record.
 
 /** The parts of a Figma REST file export (GET /v1/files/:key) that lines need. */
 export interface FigmaFileExport {
@@ -44,41 +46,73 @@ export interface DesignLineResult {
   annotations: FollowedAnnotation[]
 }
 
-export function designLineId(fileKey: string): string {
-  return `line:figma.${idPath(fileKey)}`
+export function designLineId(fileKey: string, tool = 'figma'): string {
+  return `line:${idPath(tool)}.${idPath(fileKey)}`
 }
 
-export function draftLineId(fileKey: string, name: string): string {
-  return `${designLineId(fileKey)}.draft.${idPath(name.toLowerCase())}`
+export function draftLineId(fileKey: string, name: string, tool = 'figma'): string {
+  return `${designLineId(fileKey, tool)}.draft.${idPath(name.toLowerCase())}`
 }
 
 const figmaLink = (key: string) => `https://www.figma.com/design/${key}`
 
-function checkExport(file: FigmaFileExport) {
+/** A design file as CIVIC reads it: a Figma file export, or a `civic.design/0` file from another tool. */
+export type DesignFile = FigmaFileExport | DesignExport
+
+export function isDesignExport(file: DesignFile): file is DesignExport {
+  return (file as DesignExport)?.schema === 'civic.design/0'
+}
+
+/** What a line needs from either kind of design file. */
+interface ReadDesign {
+  tool: string
+  key: string
+  name: string
+  version: string
+  link?: string
+  frames: DesignFrame[]
+  /** Every node an annotation on this file can be found by. */
+  nodes: ObservedElement[]
+}
+
+function readDesign(file: DesignFile, fileKey?: string): ReadDesign {
+  if (isDesignExport(file)) {
+    if (typeof file.tool !== 'string' || typeof file.key !== 'string' || typeof file.name !== 'string' || typeof file.version !== 'string' || !Array.isArray(file.frames)) {
+      throw new Error('That civic.design/0 file needs its tool, key, name, version and frames.')
+    }
+    if (file.tool === 'figma') throw new Error('Read a Figma file from its own export, so its frames are fingerprinted from the file itself.')
+    if (fileKey && fileKey !== file.key) throw new Error(`That design file is ${file.key}, not ${fileKey}.`)
+    const frames = file.frames.map((frame) => ({ node: frame.node, name: frame.name, page: frame.page, hash: frame.hash, ...(Array.isArray(frame.designs) ? { designs: [...frame.designs] } : {}) }))
+    for (const frame of frames) {
+      if (!/^sha256:[0-9a-f]{64}$/.test(frame.hash)) throw new Error(`Frame ${frame.node} needs a sha256:<hex> fingerprint of its content.`)
+    }
+    return { tool: file.tool, key: file.key, name: file.name, version: file.version, ...(file.link ? { link: file.link } : {}), frames, nodes: frames.map((frame) => ({ civicIds: [], figmaNode: frame.node, name: frame.name })) }
+  }
   if (typeof file?.version !== 'string' || typeof file.name !== 'string' || typeof file.document !== 'object' || file.document === null) {
     throw new Error('That is not a Figma file export: it needs the name, version and document of GET /v1/files/:key.')
   }
+  if (!fileKey) throw new Error("A Figma export doesn't carry its file key: pass --file <key> from the file's URL.")
+  return { tool: 'figma', key: fileKey, name: file.name, version: file.version, link: figmaLink(fileKey), frames: fingerprints(file), nodes: nodesOf(file.document) }
 }
 
 /**
  * Records a design file's main line at the version its export carries. Drafts branch from
  * it, so register the main file before its drafts, and again when it moves.
  */
-export function registerDesignFile(context: Context, input: { file: FigmaFileExport; fileKey: string }): DesignLineResult {
+export function registerDesignFile(context: Context, input: { file: DesignFile; fileKey?: string }): DesignLineResult {
   allow(context, 'write', 'register a design file')
-  checkExport(input.file)
-  const { file, fileKey } = input
+  const design = readDesign(input.file, input.fileKey)
   return context.store.transact((document) => {
-    const id = designLineId(fileKey)
+    const id = designLineId(design.key, design.tool)
     let line = document.records.find((record): record is Line => record.id === id && record.kind === 'line')
     if (!line) {
-      line = { id, kind: 'line', title: file.name, type: 'main', tool: 'figma', ref: fileKey, head: file.version, status: 'open' }
+      line = { id, kind: 'line', title: design.name, type: 'main', tool: design.tool, ref: design.key, head: design.version, status: 'open' }
       document.records.push(line)
     }
-    line.head = file.version
-    line.frames = fingerprints(file)
-    line.source = { tool: 'figma', importer: 'civic-review', revision: file.version, path: figmaLink(fileKey) }
-    return { line: structuredClone(line), frames: framesOf(file), annotations: follow(document, id, file) }
+    line.head = design.version
+    line.frames = design.frames
+    line.source = { tool: design.tool, importer: 'civic-review', revision: design.version, ...(design.link ? { path: design.link } : {}) }
+    return { line: structuredClone(line), frames: framesOf(design), annotations: follow(document, id, design) }
   })
 }
 
@@ -88,29 +122,30 @@ export function registerDesignFile(context: Context, input: { file: FigmaFileExp
  * set inside the main file is named only. Registering it again moves the line to the new
  * version and reports which annotations on its frames are still found there.
  */
-export function registerDesignDraft(context: Context, input: { file: FigmaFileExport; fileKey: string; name: string; branchKey?: string }): DesignLineResult {
+export function registerDesignDraft(context: Context, input: { file: DesignFile; fileKey?: string; name: string; branchKey?: string }): DesignLineResult {
   allow(context, 'write', 'register a design draft')
-  checkExport(input.file)
-  const { file, fileKey, name } = input
+  const design = readDesign(input.file, input.fileKey)
+  const { name } = input
   if (!name.trim()) throw new Error('Name the draft, as the designer calls it.')
   return context.store.transact((document) => {
-    const base = designLineId(fileKey)
+    const base = designLineId(design.key, design.tool)
     if (!document.records.some((record) => record.id === base && record.kind === 'line')) {
-      throw new Error(`Register the main design file first: civic design <main export> --file ${fileKey}`)
+      throw new Error(`Register the main design file first: civic design <main export>${design.tool === 'figma' ? ` --file ${design.key}` : ''}`)
     }
-    const id = draftLineId(fileKey, name)
+    const id = draftLineId(design.key, name, design.tool)
     let line = document.records.find((record): record is Line => record.id === id && record.kind === 'line')
     if (line && line.status !== 'open') {
       throw new Error(`${id} is ${line.status}${line.status === 'abandoned' ? ' (another draft was chosen)' : ''}. Register further work under a new draft name.`)
     }
     if (!line) {
-      line = { id, kind: 'line', title: `Draft: ${name}`, type: 'design-draft', tool: 'figma', ref: input.branchKey ?? name, base, head: file.version, status: 'open' }
+      line = { id, kind: 'line', title: `Draft: ${name}`, type: 'design-draft', tool: design.tool, ref: input.branchKey ?? name, base, head: design.version, status: 'open' }
       document.records.push(line)
     }
-    line.head = file.version
-    line.frames = fingerprints(file)
-    line.source = { tool: 'figma', importer: 'civic-review', revision: file.version, path: figmaLink(input.branchKey ?? fileKey) }
-    return { line: structuredClone(line), frames: framesOf(file), annotations: follow(document, id, file) }
+    line.head = design.version
+    line.frames = design.frames
+    const link = design.tool === 'figma' ? figmaLink(input.branchKey ?? design.key) : design.link
+    line.source = { tool: design.tool, importer: 'civic-review', revision: design.version, ...(link ? { path: link } : {}) }
+    return { line: structuredClone(line), frames: framesOf(design), annotations: follow(document, id, design) }
   })
 }
 
@@ -156,8 +191,8 @@ function topFrames(file: FigmaFileExport): { page: string; node: FigmaNode }[] {
   return (file.document.children ?? []).flatMap((page) => (page.children ?? []).filter((node) => FRAME_TYPES.includes(node.type)).map((node) => ({ page: page.name, node })))
 }
 
-function framesOf(file: FigmaFileExport): DraftFrame[] {
-  return topFrames(file).map(({ page, node }) => ({ node: node.id, name: node.name, page }))
+function framesOf(design: ReadDesign): DraftFrame[] {
+  return design.frames.map((frame) => ({ node: frame.node, name: frame.name, page: frame.page }))
 }
 
 /** Each top-level frame with a fingerprint of everything in it, as the export has it. */
@@ -171,11 +206,11 @@ function nodesOf(node: FigmaNode, into: ObservedElement[] = []): ObservedElement
   return into
 }
 
-/** D37 on a design line: an annotation on a Figma node is found by that node ID, or not at all. */
-function follow(document: GraphDocument, lineId: string, file: FigmaFileExport): FollowedAnnotation[] {
+/** D37 on a design line: an annotation on a frame or layer is found by its node ID, or not at all. */
+function follow(document: GraphDocument, lineId: string, design: ReadDesign): FollowedAnnotation[] {
   const annotations = document.records.filter((record): record is Annotation => record.kind === 'annotation' && record.seenOn.line === lineId && record.anchor?.locator?.figmaNode !== undefined)
   if (annotations.length === 0) return []
-  const elements = nodesOf(file.document)
+  const elements = design.nodes
   return annotations.map((annotation) => ({
     annotationId: annotation.id,
     title: annotation.title,
@@ -240,8 +275,10 @@ export function designLens(document: GraphDocument, draftId: string, codeLine: s
   const after = new Map(draft.frames.map((frame) => [frame.node, frame]))
   const notes = document.records.filter((record): record is Annotation => record.kind === 'annotation')
   const onDraft = (node: string) => notes.filter((note) => note.seenOn.line === draft.id && note.anchor?.locator?.figmaNode === node).map((note) => ({ id: note.id, title: note.title }))
-  const targetsOf = (node: string): LensTarget[] => graphs.flatMap(({ label, graph }) =>
-    graph.ofKind('target').filter((target) => target.source?.tool === 'figma' && target.source.anchor === node).map((target) => {
+  // A Figma frame is designed for the targets a graph anchors to its node ID; a frame from
+  // another tool names the targets it designs itself.
+  const targetsOf = (frame: DesignFrame): LensTarget[] => graphs.flatMap(({ label, graph }) =>
+    graph.ofKind('target').filter((target) => (frame.designs ? frame.designs.includes(target.id) : target.source?.tool === 'figma' && target.source.anchor === frame.node)).map((target) => {
       const evidence = graph.ofKind('evidence').filter((item) => item.subjectIds.includes(target.id))
       return {
         graph: label,
@@ -252,7 +289,7 @@ export function designLens(document: GraphDocument, draftId: string, codeLine: s
         annotations: notes.filter((note) => note.seenOn.line === codeLine && note.anchor?.targetIds.includes(target.id)).length,
       }
     }))
-  const change = (kind: FrameChange['change'], frame: DesignFrame, was?: string): FrameChange => ({ change: kind, node: frame.node, name: frame.name, page: frame.page, ...(was ? { was } : {}), annotations: onDraft(frame.node), targets: targetsOf(frame.node) })
+  const change = (kind: FrameChange['change'], frame: DesignFrame, was?: string): FrameChange => ({ change: kind, node: frame.node, name: frame.name, page: frame.page, ...(was ? { was } : {}), annotations: onDraft(frame.node), targets: targetsOf(frame) })
 
   const changes: FrameChange[] = []
   let unchanged = 0

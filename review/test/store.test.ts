@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { execFile } from 'node:child_process'
+import { createHash } from 'node:crypto'
 import { mkdtempSync, readdirSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
@@ -33,6 +34,22 @@ test('captures are content-addressed and written once', () => {
   assert.deepEqual(first, second)
   assert.equal(readdirSync(join(store.dir, 'captures')).length, 1)
   assert.equal(readFileSync(store.capturePath(first), 'utf8'), 'same')
+})
+
+test('a replay is kept only with the tape it names, and a shared one must be a replay record', () => {
+  const store = new Store(mkdtempSync(join(tmpdir(), 'civic-store-')))
+  const tape = Buffer.from('{"steps":[]}')
+  const sha = createHash('sha256').update(tape).digest('hex')
+  const record = (fields: object = {}) => Buffer.from(JSON.stringify({ schema: 'civic.replay/0', project: 'p-1', scenario: 's', head: 'a'.repeat(40), source: 'b'.repeat(64), tape: sha, steps: 0, outcome: 'pass', replayedAt: '2026-10-13T06:00:00.000Z', ...fields }))
+  assert.throws(() => store.putReplay(record(), Buffer.from('another tape')), /doesn't match its SHA-256/)
+  assert.throws(() => store.putReplay(record({ outcome: 'maybe' }), tape), /not a civic\.replay\/0 record/)
+  assert.deepEqual(store.replays(), [])
+  assert.equal(store.putReplay(record(), tape), true)
+  assert.equal(store.putReplay(record(), tape), false)
+  assert.equal(store.replays().length, 1)
+  const notAReplay = Buffer.from('{"schema":"something else"}')
+  assert.throws(() => store.putCaptureNamed(`${createHash('sha256').update(notAReplay).digest('hex')}.replay.json`, notAReplay), /not a civic\.replay\/0 record/)
+  assert.throws(() => store.putCaptureNamed(`${'0'.repeat(64)}.tape.json`, tape), /doesn't match its SHA-256/)
 })
 
 // Decision 0006: CIVIC makes no model calls. The loop imports Node, the graph, and Playwright for capture, nothing else.

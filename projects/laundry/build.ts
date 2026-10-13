@@ -1,15 +1,16 @@
 #!/usr/bin/env node
 // Builds Laundry's CIVIC graph (roadmap step 9) from its real inputs, captured by
 // capture.ts: the journey engine's review index and coverage contract, and a Playwright report from the browser
-// specs the index names as its scenarios' checks. Deterministic: the same inputs always give
+// specs the index names as its scenarios' checks. It also reads Laundry's design reference
+// from Open Design as a design file CIVIC registers as a design line. Deterministic: the same inputs always give
 // byte-identical outputs, and nothing here makes a model call (D30).
 //
 //   node build.ts           write out/
 //   node build.ts --check   fail if out/ is not what the inputs produce
 
-import { readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { assertValid, indexGraph, type CollaborationRecord, type Evidence, type Owner } from '../../graph/src/index.ts'
-import { assemble, fragment, readCoverageContract, readJourneyIndex, readPlaywrightReport, type CoverageContract, type JourneyIndex } from '../../importers/src/index.ts'
+import { assemble, fragment, readCoverageContract, readJourneyIndex, readPlaywrightReport, readRenderReceipt, readReplays, type CoverageContract, type JourneyIndex, type RenderReceipt, type ReplayRecord } from '../../importers/src/index.ts'
 
 const here = (path: string) => new URL(path, import.meta.url)
 const text = (path: string) => readFileSync(here(path), 'utf8')
@@ -50,7 +51,11 @@ function subjectsFor(spec: { file: string; line: number }): string[] {
   const named = declared.filter((id) => new RegExp(`scenario=${scenarioOf(id).replaceAll('.', '\\.')}(?![\\w.-])`).test(body))
   return named.length > 0 ? named : declared
 }
-const evidence = readPlaywrightReport(report, 'web', { subjectsFor, pathFor: (file) => `${SOURCE_ROOT}/${TEST_DIR}/${file}` })
+const tests = readPlaywrightReport(report, 'web', { subjectsFor, pathFor: (file) => `${SOURCE_ROOT}/${TEST_DIR}/${file}` })
+// Recorded runs a person replayed in the canvas at the captured commit (decision 0009).
+const replays = existsSync(here('inputs/replays.json')) ? json<ReplayRecord[]>('inputs/replays.json') : []
+const replayed = readReplays(replays, { prefix: PREFIX, platform: 'web', path: 'projects/laundry/inputs/replays.json', targetIds: new Set(journeys.fragment.records.map((record) => record.id)) })
+const evidence = [...tests, ...replayed]
 
 // The coverage contract (roadmap step 3): each expectation the app can't yet show and prove
 // with a passing run is an open Coverage gap, owned like any other collaboration record.
@@ -70,6 +75,25 @@ const coverage = readCoverageContract(JSON.parse(coverageText) as CoverageContra
 const graph = assemble(journeys.fragment, fragment(evidence), coverage)
 assertValid(graph)
 
+// --- The design reference (roadmap order of work, item 2) ------------------------------------
+// Laundry's design system lives in Open Design, not Figma. Its source-render receipt lists
+// the screens designers review proposals beside, rendered from the app's own components by
+// the design-preview route. The review frame renders scenario `legacy.<screen>` as that same
+// design-preview screen (apps/web/src/review/laundry-frame.tsx), so each case designs that
+// scenario's target, when the index has it.
+const REFERENCE = 'journey-engine/design/laundry-reference/source-reference/receipt.json'
+const targetIds = new Set(journeys.fragment.records.map((record) => record.id))
+const design = readRenderReceipt(JSON.parse(readFileSync(new URL(`../../${REFERENCE}`, import.meta.url), 'utf8')) as RenderReceipt, {
+  tool: 'open-design',
+  // The Open Design source project the reference belongs to (its README's Source Context).
+  key: '1dee16e6-3eaa-46ef-a677-6376e4cdc75f',
+  name: 'Laundry design reference',
+  link: REFERENCE,
+  designs: (screen) => [`target:${PREFIX}.legacy.${screen}`].filter((id) => targetIds.has(id)),
+})
+const designed = new Set(design.frames.flatMap((frame) => frame.designs ?? []))
+const undesigned = [...new Set(design.frames.filter((frame) => frame.designs?.length === 0).map((frame) => frame.page))]
+
 // --- What a reader sees: run evidence per journey, then every failing test ---------------
 
 const indexed = indexGraph(graph)
@@ -87,7 +111,7 @@ const line = (item: Evidence) => `- **${item.title}** (\`${item.source.path}\`, 
 const screens = indexed.ofKind('target').filter((target) => target.scale === 'screen' && !expectation(target.id)).length
 const runs = `# Laundry: run evidence by journey
 
-Built by \`node projects/laundry/build.ts\` from the journey engine's review index and a Playwright report of Laundry's own review specs, both captured at commit \`${index.revision.head.slice(0, 12)}\`. ${screens} screens, ${evidence.length} tests: ${evidence.length - failed.length} passed, ${failed.length} failed.
+Built by \`node projects/laundry/build.ts\` from the journey engine's review index and a Playwright report of Laundry's own review specs, both captured at commit \`${index.revision.head.slice(0, 12)}\`. ${screens} screens, ${evidence.length} tests and replayed runs: ${evidence.length - failed.length} passed, ${failed.length} failed. ${replayed.length === 0 ? 'No recorded run has been replayed at this commit.' : `${replayed.length} of them are recorded runs replayed in the canvas.`}
 
 A screen passes when every test that covers it passed, and fails when any did. The specs run against the review server's synthetic fixtures, not a household backend.
 
@@ -111,12 +135,21 @@ Built by \`node projects/laundry/build.ts\` from the journey engine's coverage c
 ${gaps.map((gap) => `| ${gap.title.replace(/^Coverage gap: /, '')} | ${gap.summary} | \`${gap.id}\` |`).join('\n')}
 `
 
+const designReport = `# Laundry: design reference
+
+Built by \`node projects/laundry/build.ts\` from Open Design's source-render receipt, [\`${REFERENCE}\`](../../../${REFERENCE}), generated ${design.version}. [\`design.json\`](design.json) is that reference as a \`civic.design/0\` file: ${design.frames.length} frames on ${new Set(design.frames.map((frame) => frame.page)).size} screens, each one screen at one viewport, theme and text scale. They design ${designed.size} of Laundry's screens. ${undesigned.length === 0 ? 'Every screen in the reference is a screen in the graph.' : `${undesigned.length} reference screen(s) match no screen in the graph: ${undesigned.map((page) => `\`${page}\``).join(', ')}.`}
+
+Register it as Laundry's design line with \`bin/civic design projects/laundry/out/design.json\`, and a designer's proposal as a draft with \`bin/civic draft <its design.json> --name "<draft>"\`. \`bin/civic lens <draft line>\` then says which frames the proposal changes and reads each one on this code line.
+`
+
 const outputs: Record<string, string> = {
   'out/graph.json': `${JSON.stringify(graph, null, 2)}\n`,
+  'out/design.json': `${JSON.stringify(design, null, 2)}\n`,
+  'out/design.md': designReport,
   'out/runs.md': runs,
   'out/coverage.md': coverageReport,
 }
-const summary = `${graph.records.length} records, ${graph.links.length} links, ${evidence.length} test(s) with ${failed.length} failing`
+const summary = `${graph.records.length} records, ${graph.links.length} links, ${tests.length} test(s) and ${replayed.length} replayed run(s), ${failed.length} failing`
 if (process.argv.includes('--check')) {
   const stale = Object.entries(outputs).filter(([path, body]) => {
     try {

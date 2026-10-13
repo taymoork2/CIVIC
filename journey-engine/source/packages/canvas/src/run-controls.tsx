@@ -35,7 +35,19 @@ export function RunControls({ frame, onViewportChange, runSection = true }: { fr
     const bridge = runtime()
     if (!bridge?.recording || !bridge.replay) throw Error('Play a connected application first.')
     const tape = await bridge.recording()
-    if (action === 'replay') { const receipt = await bridge.replay(tape); setStatus(`Replay verified: ${receipt.verified} actions, routes and effect receipts.`) }
+    if (action === 'replay') {
+      // Each finished replay is kept as run evidence CIVIC can import (decision 0009); a replay
+      // refused before it starts, such as one for another source, proves nothing either way.
+      let receipt: { verified: number }
+      try { receipt = await bridge.replay(tape) }
+      catch (error) {
+        const diverged = bridge.replayMismatch?.()
+        if (diverged) await reviewApi('replays', { tape, outcome: 'fail', divergedAt: diverged.step, message: (error as Error).message }).catch(() => {})
+        throw error
+      }
+      await reviewApi('replays', { tape, outcome: 'pass', verified: receipt.verified })
+      setStatus(`Replay verified: ${receipt.verified} actions, routes and effect receipts. Kept as run evidence for CIVIC.`)
+    }
     else {
       const saved = await reviewApi<{ id: string; url: string }>('runs', tape)
       const link = document.createElement('a'); link.href = saved.url; link.download = `civic-run-${saved.id}.json`; link.click()

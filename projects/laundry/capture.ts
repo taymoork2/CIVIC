@@ -13,7 +13,8 @@
 import { execFileSync, spawnSync } from 'node:child_process'
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
+import { Store, type StoredReplay } from '../../review/src/index.ts'
 
 const base = process.argv[2] ?? 'http://127.0.0.1:3010'
 const root = new URL('../../', import.meta.url).pathname
@@ -45,6 +46,15 @@ writeFileSync(join(inputs, 'review-index.json'), JSON.stringify({
   scenarios: index.scenarios.map((scenario) => pick(scenario, ['id', 'label', 'journey', 'renderer', 'component', 'checks', 'edges'])),
   routeActions: (index.routeActions ?? []).map((action) => pick(action, ['from', 'action', 'destination', 'route', 'when', 'returnTo', 'source', 'anchor'])),
 }, null, 2) + '\n')
+
+// Recorded runs replayed at this commit (decision 0009): run evidence a person kept from the canvas.
+const replays = await fetch(`${base}/api/review/replays`, { headers: { cookie } })
+if (!replays.ok) throw new Error(`The review server answered ${replays.status} for replays: ${await replays.text()}`)
+// Replays others shared through civic sync count too; the same replay kept on both sides counts once.
+// Each checkout's project key is the manifest ID and a hash of where it is, so match the ID.
+const shared = Store.forCommonDir(resolve(root, git('rev-parse', '--git-common-dir'))).replays().filter((replay) => replay.project.startsWith(`${index.project.id}-`))
+const atHead = [...new Map([...((await replays.json()) as StoredReplay[]), ...shared].filter((replay) => replay.head === index.revision.head).map((replay) => [JSON.stringify(replay), replay])).values()]
+writeFileSync(join(inputs, 'replays.json'), JSON.stringify(atHead.sort((a, b) => a.tape.localeCompare(b.tape) || a.replayedAt.localeCompare(b.replayedAt)), null, 2) + '\n')
 
 // The coverage contract at the same commit: what Laundry declares must be shown and proven.
 writeFileSync(join(inputs, 'coverage.json'), readFileSync(join(root, COVERAGE), 'utf8'))
