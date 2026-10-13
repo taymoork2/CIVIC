@@ -499,7 +499,10 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
  * outside CIVIC's tree (bin/civic-laundry, decision 0010).
  */
 async function hostPlaywright() {
-  try { return await import(pathToFileURL(createRequire(join(process.cwd(), 'package.json')).resolve('@playwright/test')).href) }
+  try {
+    const playwright = await import(pathToFileURL(createRequire(join(process.cwd(), 'package.json')).resolve('@playwright/test')).href)
+    return playwright.chromium ? playwright : playwright.default
+  }
   catch { return import('@playwright/test') }
 }
 
