@@ -30,7 +30,7 @@ civicReview({
 })
 ```
 
-`review` returns the shell's options; `runtime` starts the isolated backend when the app declares one. An adapter kind other than `module` needs a connector. Laundry's (`apps/web/scripts/review-laundry-connector.mjs`) shows the whole interface: its own index and fixture fingerprint inputs, module substitutes for app boot, auth and server routes, a checked in-memory source overlay, the packages the app and review must share, the app's CSS for review frames, and a canvas extension (`canvasExtension`) with its flow layout and guided towel run. The connector itself names nothing from Laundry, and its checks enforce that it imports only Node, Vite and the shell.
+`review` returns the shell's options; `runtime` starts the isolated backend when the app declares one. An adapter kind other than `module` needs a connector. Laundry's (`apps/web/scripts/review-laundry-connector.mjs`) shows the whole interface: its own index and fixture fingerprint inputs, module substitutes for app boot, auth and server routes, a checked in-memory source overlay, the packages the app and review must share, the app's CSS for review frames, and a canvas extension (`canvasExtension`) with its flow layout and guided towel run. The connector itself names nothing from Laundry, and its checks enforce that it imports only Node, Vite and the shell. A module app can name its own canvas extension in its manifest (`adapter.extension`); a connector's `canvasExtension` takes its place.
 
 ## CIVIC's shared store
 

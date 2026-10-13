@@ -1,0 +1,4 @@
+{
+  "version": 1,
+  "targets": [{ "id": "pantry.stock", "kind": "journey", "title": "Stock the pantry", "component": "src/app.js", "scenarios": ["pantry.shelf", "pantry.add"], "acceptance": ["A saved item appears on the shelf.", "Using the last of an item puts it on the shopping list.", "A guest or a backend failure keeps the draft and says why."] }]
+}

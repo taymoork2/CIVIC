@@ -187,7 +187,7 @@ try {
         })
         run.transport.bind(bridge)
         window.addEventListener('pagehide', stop, { once: true })
-        return { bridge, close: stop, identity: identity && { id: identity.id, name: identity.name, email: identity.email, signedIn: identity.signedIn } }
+        return { bridge, close: stop, identity: identity && { id: identity.id, name: identity.name, email: identity.email, signedIn: identity.signedIn }, query: (name, args = {}) => run.transport.request('query', name, args), mutation: (name, args = {}) => run.transport.request('mutation', name, args) }
       } catch (error) { stop(); throw error }
     },
   }

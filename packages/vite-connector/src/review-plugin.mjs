@@ -26,7 +26,8 @@ import { projectPicker } from './review-projects.mjs'
  *   resolveId/load(id, project, importer)  extra modules, such as substitutes for app boot or auth files
  *   transform(path, code, project)         checked, in-memory edits of app source (never written back)
  *   shellStyle(project)                    CSS imports that style the review frame like the app
- *   canvasExtension(project)               a module whose default export extends the canvas (layout, a guided run)
+ *   canvasExtension(project)               a module whose default export extends the canvas (layout, a guided run);
+ *                                          without one, the manifest's own `adapter.extension`, if any
  *   serveSources                           false when the host already serves the app's sources
  * `review({ project, repo, dataDir })` returns the shell's options (adapter, coverage, agents, shared,
  * publicHost). `runtime(project, source, { dataDir })` starts the isolated backend for live runs, when the app has one.
@@ -51,9 +52,9 @@ export function civicReview({ host, canvas = host, repo = resolve(host, '../..')
   const roots = engineRoots ?? [join(canvas, 'src')]
   const inventoryOptions = { connector, engineRoots: roots }
   const watchPaths = () => [...project.sources, project.manifestPath, project.scenariosPath, project.coverageFile, ...(project.entry ? [dirname(project.entry)] : []), ...(project.publicDir ? [project.publicDir] : []), ...roots, dirname(fileURLToPath(import.meta.url)), join(repo, '.review-data/application.json'), join(repo, 'docs/design/review-validation.json'), ...[repo, appRepo].flatMap((root) => ['package.json', 'pnpm-lock.yaml', 'package-lock.json', 'yarn.lock', 'tsconfig.json'].map((file) => join(root, file)))]
-  const compilation = (value) => JSON.stringify([value.root, value.entry, value.runtimeEntry, value.aliases, value.publicDir, value.coverageFile, value.manifest.adapter.kind, value.key, env('PUBLIC_ORIGIN') ?? value.local.publicOrigin])
+  const compilation = (value) => JSON.stringify([value.root, value.entry, value.runtimeEntry, value.extension, value.aliases, value.publicDir, value.coverageFile, value.manifest.adapter.kind, value.key, env('PUBLIC_ORIGIN') ?? value.local.publicOrigin])
   const binding = compilation(project)
-  const modules = { 'virtual:civic-project': () => `export default ${JSON.stringify(publicProject(project))}`, 'virtual:civic-preview': () => project.entry ? `export { mount } from ${JSON.stringify('/@fs/' + project.entry)}` : 'export function mount() { throw Error("This project has no preview adapter. Connect a synthetic mount entry first.") }', 'virtual:civic-shell-style': () => connector?.shellStyle?.(project) ?? '', 'virtual:civic-canvas-extension': () => { const file = connector?.canvasExtension?.(project); return file ? `export { default } from ${JSON.stringify('/@fs' + file)}` : 'export default {}' } }
+  const modules = { 'virtual:civic-project': () => `export default ${JSON.stringify(publicProject(project))}`, 'virtual:civic-preview': () => project.entry ? `export { mount } from ${JSON.stringify('/@fs/' + project.entry)}` : 'export function mount() { throw Error("This project has no preview adapter. Connect a synthetic mount entry first.") }', 'virtual:civic-shell-style': () => connector?.shellStyle?.(project) ?? '', 'virtual:civic-canvas-extension': () => { const file = connector?.canvasExtension?.(project) ?? project.extension; return file ? `export { default } from ${JSON.stringify('/@fs' + file)}` : 'export default {}' } }
   return {
     name: 'isolated-product-review',
     enforce: 'pre',

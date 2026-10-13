@@ -108,6 +108,52 @@ test('an app calling its own HTTP API runs live against an isolated copy of that
   assert.deepEqual(errors, [])
 })
 
+test('an app on a function backend runs live against an isolated run of its functions, with its own canvas extension, then records and replays', async (t) => {
+  const store = await realpath(await mkdtemp(join(tmpdir(), 'civic-canvas-')))
+  const server = await startCanvas({ project: join(canvasRoot, 'examples/pantry/civic.project.json'), store, port: 0, logLevel: 'silent' })
+  t.after(() => server.close())
+  const origin = `http://127.0.0.1:${server.httpServer.address().port}`
+  let browser
+  try { browser = await moduleReviewAdapter.launchFixtureBrowser() } catch { return t.skip('No browser for Playwright') }
+  t.after(() => browser.close())
+  const tab = await browser.newPage({ viewport: { width: 1280, height: 900 } })
+  const errors = []
+  tab.on('pageerror', (error) => errors.push(error.message))
+  await tab.goto(origin + '/review')
+  // The app's extension files each flow under the manifest's navigation, and draws the shopping flow first.
+  await tab.locator('.app-nav-section').first().waitFor()
+  const sections = await tab.locator('.app-nav-section').evaluateAll((rows) => rows.map((row) => [row.querySelector('h3').textContent, [...row.querySelectorAll(':scope > ol > li > button')].map((button) => button.textContent.replace(/^\S+\s/, '').replace(/\d+$/, ''))]))
+  assert.deepEqual(sections, [['Pantry', ['Keep the pantry']], ['Shopping', ['Plan shopping']]])
+  const flows = await tab.locator('.app-flow h2').allTextContents()
+  assert.deepEqual(flows, ['Plan shopping', 'Keep the pantry'])
+  await tab.locator('.app-nav-section button', { hasText: 'Keep the pantry' }).click()
+  await tab.locator('.app-screen > button', { hasText: 'Shelf' }).click()
+  await tab.getByRole('button', { name: 'Play this screen' }).click()
+  const frame = tab.frameLocator('iframe[title="Live Shelf"]')
+  await frame.getByText('Rice × 2').waitFor({ timeout: 20000 })
+  await frame.getByRole('button', { name: 'Use Olive oil' }).click()
+  await frame.getByRole('button', { name: 'Use Olive oil' }).waitFor({ state: 'detached' })
+  await frame.getByRole('button', { name: 'Add item' }).click()
+  await frame.getByLabel('Item').fill('Flour')
+  await frame.getByLabel('Quantity').fill('2')
+  await frame.getByRole('button', { name: 'Save' }).click()
+  await frame.getByText('Flour × 2').waitFor()
+  await frame.getByRole('button', { name: 'Shopping list' }).click()
+  await frame.getByText('Olive oil').waitFor()
+  const live = tab.locator('iframe[title="Live Shelf"]')
+  const tape = await live.evaluate((element) => element.contentWindow.reviewPreview.recording())
+  const writes = tape.steps.flatMap((step) => step.operations)
+  assert.deepEqual(writes.map((operation) => [operation.name, operation.result.name, operation.result.quantity]), [['items:use', 'Olive oil', 0], ['items:add', 'Flour', 2]])
+  const replayed = await live.evaluate((element, recording) => element.contentWindow.reviewPreview.replay(recording), tape)
+  assert.equal(replayed.verified, tape.steps.length)
+  assert.deepEqual(await frame.locator('li').allTextContents(), ['Olive oil', 'Lentils'])
+  const cookie = (await tab.context().cookies()).map((row) => `${row.name}=${row.value}`).join('; ')
+  const snapshots = await (await fetch(origin + '/api/review/snapshots', { method: 'POST', headers: { cookie, origin, 'content-type': 'application/json', 'x-rehearsal-project': (await (await fetch(origin + '/api/review/index', { headers: { cookie } })).json()).project.key }, body: '{}' })).json()
+  assert.deepEqual(snapshots.errors, [])
+  assert.equal(snapshots.count, 3)
+  assert.deepEqual(errors, [])
+})
+
 test('a TanStack Start app\'s server functions run live against an isolated run, and server-only modules never reach the page', async (t) => {
   const store = await realpath(await mkdtemp(join(tmpdir(), 'civic-canvas-')))
   const books = join(canvasRoot, 'examples/reading-list')
