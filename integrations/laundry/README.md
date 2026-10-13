@@ -2,6 +2,8 @@
 
 [Decision 0010](../../docs/decisions/0010-laundry-depends-on-civic.md): Laundry depends on CIVIC, not the other way round. `bin/civic-laundry` runs CIVIC's journey canvas on any Laundry checkout, on any branch or worktree, so review works on the code you're actually changing instead of the copy of Laundry in `journey-engine/source`.
 
+Once [washcloset#57](https://github.com/taymoork2/washcloset/pull/57) merges, Laundry carries this itself: CIVIC's packages are devDependencies pinned to a CIVIC commit, and `pnpm --dir apps/web review` runs the canvas with no CIVIC checkout. To move the pin, change the commit in `apps/web/package.json` and run `pnpm install`. Until then, and for checkouts from before it, use `bin/civic-laundry` below.
+
 ## Once per CIVIC checkout
 
 You need Node.js 22 or newer, pnpm 12.5.1 and Google Chrome.
