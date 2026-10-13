@@ -18,7 +18,7 @@ import { projectPicker } from './review-projects.mjs'
  * `review-frame.html` and their `src/`, normally `@civic/canvas`) and defaults to `host`. `repo` is the workspace
  * that owns the review store (`.review-data`). A `module` project needs nothing else. Any other
  * adapter kind needs a connector in `connectors` (Laundry registers `laundry`), which may supply:
- *   inventory(repo, designRoot, appRoot)  its own review index
+ *   inventory(repo, designRoot, appRoot)  its own review index; without one, the scenario registry is indexed
  *   screens, fingerprint                  screens beyond the scenario registry, and fingerprint inputs
  *   designRoot(repo)                       where its design references live
  *   sharedStore(project)                   true to keep the store's top level rather than a per-project folder
