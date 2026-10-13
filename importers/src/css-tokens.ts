@@ -1,20 +1,33 @@
 import type { ContractConflict, Evidence, Owner, Token } from '../../graph/src/index.ts'
 
 /**
- * Reads the CSS custom properties a stylesheet sets for its default theme: the declarations in
- * top-level rules whose selector list includes `:root` and no dark theme. `var()` references
- * to other properties in the same set are resolved, so an alias compares by what it means.
- * The first declaration of a name wins, as the stylesheets put the base value first.
+ * Reads the CSS custom properties a stylesheet sets for one theme. The default theme is the
+ * declarations in top-level rules whose selector list includes `:root` and no dark theme;
+ * the first declaration of a name wins, as the stylesheets put the base value first. The
+ * dark theme is the default with the dark rules laid over it: rules whose selector names
+ * `data-theme` dark, and `:root` rules inside `@media (prefers-color-scheme: dark)`. Palettes
+ * and other media are ignored. `var()` references to other properties in the same set are
+ * resolved, so an alias compares by what it means.
  */
-export function readCssTokens(...stylesheets: string[]): Map<string, string> {
+export function readCssTokens(stylesheets: string | readonly string[], theme: 'default' | 'dark' = 'default'): Map<string, string> {
   const declared = new Map<string, string>()
-  for (const css of stylesheets) {
+  const dark = new Map<string, string>()
+  const declarations = (body: string) => [...body.matchAll(/--([\w-]+)\s*:\s*([^;]+);/g)].map((match) => [match[1]!, match[2]!.trim()] as const)
+  for (const css of typeof stylesheets === 'string' ? [stylesheets] : stylesheets) {
     for (const [selector, body] of topLevelRules(css.replace(/\/\*[\s\S]*?\*\//g, ''))) {
-      const selectors = selector.split(',').map((part) => part.trim())
-      if (!selectors.includes(':root') || /dark/.test(selector)) continue
-      for (const match of body.matchAll(/--([\w-]+)\s*:\s*([^;]+);/g)) if (!declared.has(match[1]!)) declared.set(match[1]!, match[2]!.trim())
+      if (/^@media\s*\(\s*prefers-color-scheme:\s*dark\s*\)/.test(selector)) {
+        for (const [inner, innerBody] of topLevelRules(body)) if (/:root/.test(inner) && !/palette/.test(inner)) for (const [name, value] of declarations(innerBody)) dark.set(name, value)
+        continue
+      }
+      if (/data-theme=["']?dark/.test(selector)) {
+        for (const [name, value] of declarations(body)) dark.set(name, value)
+        continue
+      }
+      if (!selector.split(',').map((part) => part.trim()).includes(':root')) continue
+      for (const [name, value] of declarations(body)) if (!declared.has(name)) declared.set(name, value)
     }
   }
+  if (theme === 'dark') for (const [name, value] of dark) declared.set(name, value)
   const resolve = (name: string, seen: Set<string>): string => {
     const value = declared.get(name)!
     if (seen.has(name)) return value
@@ -72,14 +85,19 @@ export interface TokenComparison {
  * share. A name both set to different values is one open, unclassified Contract Conflict on
  * that token: it may be the design that is out of date or the code that drifted, and only a
  * person can say which. A name the design sets and the code doesn't is a role the code
- * hasn't adopted, which is reported but not raised. Deterministic, with no model calls.
+ * hasn't adopted, which is reported but not raised. Each theme is compared on its own; a dark
+ * theme conflict's ID ends in `.dark`. `names` limits the comparison, such as to the names a
+ * dark theme sets itself. Deterministic, with no model calls.
  */
-export function compareCssTokens(design: TokenSide, code: TokenSide, options: { owners: Owner[] }): TokenComparison {
+export function compareCssTokens(design: TokenSide, code: TokenSide, options: { owners: Owner[]; theme?: 'default' | 'dark'; names?: ReadonlySet<string> }): TokenComparison {
+  const dark = options.theme === 'dark'
+  const where = dark ? ' in the dark theme' : ''
   const tokens: Token[] = []
   const conflicts: ContractConflict[] = []
   const agreed: string[] = []
   const designOnly: string[] = []
   for (const [name, value] of design.tokens) {
+    if (options.names && !options.names.has(name)) continue
     const built = code.tokens.get(name)
     if (built === undefined) {
       designOnly.push(name)
@@ -92,15 +110,15 @@ export function compareCssTokens(design: TokenSide, code: TokenSide, options: { 
       continue
     }
     conflicts.push({
-      id: `conflict:token.${name}`,
+      id: `conflict:token.${name}${dark ? '.dark' : ''}`,
       kind: 'contract-conflict',
-      title: `--${name} differs between design and code`,
+      title: `--${name} differs between design and code${where}`,
       targetId: id,
       platform: 'web',
-      summary: `${design.label} sets --${name} to ${value}; ${code.label} sets it to ${built}.`,
+      summary: `${design.label} sets --${name} to ${value}${where}; ${code.label} sets it to ${built}.`,
       sides: [
-        { claim: `${design.label} sets --${name} to ${value}.`, evidenceIds: [design.evidence.id] },
-        { claim: `${code.label} sets --${name} to ${built}.`, evidenceIds: [code.evidence.id] },
+        { claim: `${design.label} sets --${name} to ${value}${where}.`, evidenceIds: [design.evidence.id] },
+        { claim: `${code.label} sets --${name} to ${built}${where}.`, evidenceIds: [code.evidence.id] },
       ],
       classification: 'unclassified',
       owners: options.owners,

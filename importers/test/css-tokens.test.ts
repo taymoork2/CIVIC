@@ -47,3 +47,16 @@ test('a name design and code set differently is an open conflict on that token; 
   const graph = assemble(fragment([...result.tokens, { ...sides.design.evidence, subjectIds: ['token:accent'] }, { ...sides.code.evidence, subjectIds: ['token:accent'] }, ...result.conflicts]))
   assert.deepEqual(validateGraph(graph).filter((issue) => issue.severity === 'error'), [])
 })
+
+test('the dark theme lays its own rules over the default, from data-theme rules and the dark color-scheme media query', () => {
+  const css = `:root { --bg: #fff; --ink: #000; --accent: var(--ink); }
+:root[data-palette='cobalt'] { --bg: #00f; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme='light']) { --bg: #111; } }
+[data-theme="dark"] { --ink: #eee; }`
+  assert.deepEqual(Object.fromEntries(readCssTokens(css, 'dark')), { accent: '#eee', bg: '#111', ink: '#eee' })
+  assert.deepEqual(Object.fromEntries(readCssTokens([css], 'default')), { accent: '#000', bg: '#fff', ink: '#000' })
+  const side = (tokens: Map<string, string>, id: string) => ({ tokens, evidence: evidence(id), label: id })
+  const result = compareCssTokens(side(readCssTokens(css, 'dark'), 'design'), side(new Map([['accent', '#fff'], ['bg', '#111'], ['ink', '#fff']]), 'code'), { owners: [], theme: 'dark', names: new Set(['accent', 'bg']) })
+  assert.deepEqual(result.conflicts.map((conflict) => [conflict.id, conflict.summary]), [['conflict:token.accent.dark', 'design sets --accent to #eee in the dark theme; code sets it to #fff.']])
+  assert.deepEqual(result.agreed, ['bg'])
+})
