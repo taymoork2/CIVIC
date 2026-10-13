@@ -5,7 +5,7 @@ import { canvasRoot } from '@civic/canvas/root'
 import { laundryReviewAdapter } from './review-adapter.mjs'
 import { agentDestinations, dispatchReview, publicDestination } from './review-agents.mjs'
 import { coverageBridge } from '@civic/vite-connector/coverage'
-import { civicShared } from './review-civic.mjs'
+import { civicShared } from '@civic/vite-connector/civic'
 import { laundryConnector } from './review-laundry-connector.mjs'
 import { runtimeService } from './review-runtime.mjs'
 
@@ -28,7 +28,7 @@ export function reviewPlugin() {
       // Inside an Amp orb, PUBLIC_URL names the authenticated portal for this service.
       publicHost: process.env.AMP_ORB && process.env.PUBLIC_URL ? new URL(process.env.PUBLIC_URL).host : null,
       // Notes and hand-offs go to CIVIC's store in the git common directory, shared by every worktree (D39).
-      shared: process.env.CIVIC_SHARED === '0' ? null : civicShared({ repo }),
+      shared: process.env.CIVIC_SHARED === '0' ? null : civicShared({ repo, product: 'laundry' }),
     }),
   })
 }
