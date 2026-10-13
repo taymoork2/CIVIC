@@ -122,12 +122,13 @@ const families = readComponentFamilies(repoText(CONTRACT), {
   source: { tool: 'open-design', importer: 'component-contract', revision: index.revision.head, path: CONTRACT, contentHash: contentHash(repoText(CONTRACT)) },
 })
 // Each source file as its exported declarations, each on its own line, which is all the match reads.
-const exportsIn = Map.groupBy(source.exports, (declaration) => declaration.path)
-const webSources = [...exportsIn].map(([path, declarations]) => {
-  const lines: string[] = []
-  for (const declaration of declarations) lines[declaration.line - 1] = declaration.text
-  return { path, text: Array.from(lines, (text) => text ?? '').join('\n') }
-})
+const exportsIn = new Map<string, string[]>()
+for (const declaration of source.exports) {
+  const lines = exportsIn.get(declaration.path) ?? []
+  lines[declaration.line - 1] = declaration.text
+  exportsIn.set(declaration.path, lines)
+}
+const webSources = [...exportsIn].map(([path, lines]) => ({ path, text: Array.from(lines, (text) => text ?? '').join('\n') }))
 const web = findWebComponents(families, webSources, { prefix: PREFIX, package: '@washcloset/web', owners: componentOwners, revision: index.revision.head, evidenceId: 'evidence:source-analysis.laundry-components', capturedAt: at })
 
 // A person's calls on the conflicts (roadmap step 3), from decisions.json.
