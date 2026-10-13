@@ -71,3 +71,32 @@ test('a wrapper is read once, as a product component its screens contain, and jo
   assert.equal(joined.links.length, 1)
   assert.throws(() => readReactProductCode(files, { ...options({ 'src/Gifts.tsx': 'target:shop.elsewhere' }), alongside: design }), /name target:shop.elsewhere, which the graph does not have/)
 })
+
+test('a product file that exports a library component\'s name, imported from the product\'s own code, is an inferred fork wherever it renders', () => {
+  const copy = `// Copied from @ds/card to add an illustration.\nexport default function Card({ children }) { return <div>{children}</div> }`
+  const named = `export const Card = ({ children }) => <section>{children}</section>`
+  const screen = `import Card from '../vendor/card/Card'\nimport { Card as Plain } from '../../shared/card'\nexport function Promo() { return <><Card>One</Card><Card>Two</Card><Plain /></> }`
+  // A wrapper renders the library component itself, so it is no copy even under the same name.
+  const wrapper = `import { Card as Library } from '@ds/card'\nexport function Card() { return <Library /> }`
+  const files = [
+    { path: 'src/vendor/card/Card.tsx', text: copy },
+    { path: 'shared/card/index.tsx', text: named },
+    { path: 'src/pages/Promo.tsx', text: screen },
+    { path: 'src/Wrapped.tsx', text: wrapper },
+  ]
+  const { records, links } = readReactProductCode(files, options({ 'src/pages/Promo.tsx': 'target:shop.promo' }))
+  const forks = records.filter((record) => record.kind === 'component-instance' && record.fork)
+  assert.deepEqual(forks.map((record) => record.id), ['instance:shop.promo.web.card.fork', 'instance:shop.promo.web.card.fork.2', 'instance:shop.promo.web.card.fork.3'])
+  assert.deepEqual(forks.map((record) => record.kind === 'component-instance' && [record.fork!.status, record.library, record.source?.anchor]), [
+    ['inferred', { file: '@ds/card', key: 'Card', matchedBy: 'inferred' }, 'L3'],
+    ['inferred', { file: '@ds/card', key: 'Card', matchedBy: 'inferred' }, 'L3'],
+    ['inferred', { file: '@ds/card', key: 'Card', matchedBy: 'inferred' }, 'L3'],
+  ])
+  assert.equal(forks[0]!.kind === 'component-instance' && forks[0]!.fork!.basis, "renders src/vendor/card/Card.tsx, which exports Card, the name of @ds/card's component; mentions @ds/card; lives in a vendored folder")
+  assert.equal(forks[2]!.kind === 'component-instance' && forks[2]!.fork!.basis, "renders shared/card/index.tsx, which exports Card, the name of @ds/card's component")
+  assert.ok(forks.every((record) => record.kind === 'component-instance' && !record.uses && record.owners?.every((owner) => owner.role === 'engineering')))
+  assert.equal(links.filter((link) => link.from === 'target:shop.promo').length, 3)
+  // The wrapper is still a wrapper.
+  assert.ok(records.some((record) => record.id === 'target:shop.component.card'))
+  assert.match((records.find((record) => record.kind === 'evidence') as { finding: string }).finding, /2 copies of a library component \(src\/vendor\/card\/Card\.tsx, shared\/card\/index\.tsx\), rendered 3 time\(s\), inferred for a person to confirm/)
+})

@@ -1,0 +1,12 @@
+{
+  "schema": "civic.confirmations/0",
+  "note": "Shop design's call on the forks CIVIC inferred (decision 0011). The Card on Promo applied is a detached copy of the library Card, made to fit an illustration, so it is confirmed and goes to the Card's maintainers as drift. The code's copy of the Card on the same screen is left for Shop engineering to confirm. The confirmer is the demo's placeholder owner.",
+  "by": {
+    "role": "design",
+    "who": "shop-design"
+  },
+  "at": "2026-10-13T00:00:00Z",
+  "forks": [
+    "instance:shop.promo-applied.card.fork"
+  ]
+}

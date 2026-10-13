@@ -230,8 +230,17 @@ export function validateGraph(input: unknown): Issue[] {
           if (records.get(use.extensionPointId)?.kind !== 'extension-point') add('warning', 'unknown-extension-point', at, `The code uses ${use.extensionPointId}, which no library in the graph declares.`)
         }
         if (record.uses && record.origin !== 'code') error('instance-uses', at, 'Only an instance read from code lists the extension points it uses.')
-        if (record.library && (!record.library.file || !record.library.key || !['key', 'name'].includes(record.library.matchedBy))) {
-          error('instance-library', at, 'An instance\'s library names its file, the component\'s published key, and whether it was matched by key or by name.')
+        if (record.library && (!record.library.file || !record.library.key || !['key', 'name', 'inferred'].includes(record.library.matchedBy))) {
+          error('instance-library', at, 'An instance\'s library names its file, the component\'s published key, and whether it was matched by key, by name or inferred.')
+        }
+        if (record.fork) {
+          if (!['inferred', 'confirmed'].includes(record.fork.status) || typeof record.fork.basis !== 'string' || !record.fork.basis) {
+            error('instance-fork', at, 'A fork is inferred or confirmed, and says what the match rests on.')
+          }
+          if (record.fork.status === 'confirmed' && !record.fork.confirmedBy) error('instance-fork', at, 'A confirmed fork names who confirmed it.')
+        }
+        if ((record.library?.matchedBy === 'inferred') !== Boolean(record.fork)) {
+          error('instance-fork', at, 'Only a fork is matched to its library by inference, and a fork always is.')
         }
         if (semantic?.kind === 'semantic-component') {
           if (record.state && !semantic.states.includes(record.state)) error('unknown-state', at, `State ${record.state} is not defined by ${semantic.id}.`)

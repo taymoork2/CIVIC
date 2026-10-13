@@ -1,9 +1,10 @@
-18 gap(s)
+19 gap(s)
 
-## open-conflict (5)
+## open-conflict (6)
 
 - The product design changes the Card's corner-radius (local-style, 20) and no maintainer has reviewed it. Classification unclassified. Owners: design shop-design, design design-system-maintainers. (`conflict:shop.order-summary.card.corner-radius`)
 - The product design changes the Card's state.selected (set-property, true) and no maintainer has reviewed it. Classification unclassified. Owners: design shop-design, design design-system-maintainers. (`conflict:shop.order-summary.card.state-selected`)
+- The product design changes the Card's component (detach) and no maintainer has reviewed it. Classification unclassified. Owners: design shop-design, design design-system-maintainers. (`conflict:shop.promo-applied.card.fork.detach`)
 - [ios] The library's Card shows actions by default (Footer), and Fluent iOS CardView has no extension point that expresses it. Classification unclassified. Owners: design design-system-maintainers, design-engineering fluent-ios. (`conflict:card.ios.default.actions`)
 - [ios] The library's Card shows body by default (Body), and Fluent iOS CardView has no extension point that expresses it. Classification unclassified. Owners: design design-system-maintainers, design-engineering fluent-ios. (`conflict:card.ios.default.body`)
 - [ios] The library's Card shows header.action by default (.Card header / Header quick action), and Fluent iOS CardView has no extension point that expresses it. Classification unclassified. Owners: design design-system-maintainers, design-engineering fluent-ios. (`conflict:card.ios.default.header-action`)

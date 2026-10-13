@@ -1,6 +1,6 @@
 {
   "schema": "civic.decisions/0",
-  "note": "Decision records (roadmap step 3) by the Card's maintainers. The local corner radius is rejected. The selectable Card is left undecided on purpose, so the design stays not yet adoptable. The real Fluent 2 web kit draws the header quick action and the footer by default, so Shop's use of them is not an override and needs no decision. iOS CardView can't show the library's default body, footer or header quick action: the body gets a slot in CardView, and iOS products go without the footer and header action as an accepted limitation. The deciders are the demo's placeholder owners, not real Fluent teams. Add or change a call with `civic decide`.",
+  "note": "Decision records (roadmap step 3) by the Card's maintainers. The local corner radius is rejected. The selectable Card is left undecided on purpose, so the design stays not yet adoptable. The real Fluent 2 web kit draws the header quick action and the footer by default, so Shop's use of them is not an override and needs no decision. iOS CardView can't show the library's default body, footer or header quick action: the body gets a slot in CardView, and iOS products go without the footer and header action as an accepted limitation. The deciders are the demo's placeholder owners, not real Fluent teams. Shop's detached Card on Promo applied goes back to a library Card, with the illustration in its hero media. Add or change a call with `civic decide`.",
   "decisions": [
     {
       "id": "decision:shop.order-summary.card.corner-radius",
@@ -79,6 +79,25 @@
         "evidence:fluent-apple.card-view.variants"
       ],
       "revisitTrigger": "iOS CardView gains a header accessory slot."
+    },
+    {
+      "id": "decision:shop.promo-applied.card.fork.detach",
+      "kind": "decision",
+      "title": "Put Shop's promotion illustration in the Card's media slot",
+      "conflictId": "conflict:shop.promo-applied.card.fork.detach",
+      "outcome": "update-design",
+      "classification": "unapproved-divergence",
+      "alignment": "awaiting-adoption",
+      "decidedBy": {
+        "role": "design",
+        "who": "design-system-maintainers"
+      },
+      "at": "2026-10-13T00:00:00Z",
+      "rationale": "The library Card already draws hero media above its header, which is what the detached copy was made for. Shop design goes back to a library Card instance with the illustration as its hero media, so the copy stops drifting from the Card, and the Card reads Awaiting adoption until the file matches.",
+      "evidenceIds": [
+        "evidence:figma.shop.shop-checkout-civic-stand-in",
+        "evidence:figma.library.card"
+      ]
     }
   ]
 }

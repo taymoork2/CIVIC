@@ -1,6 +1,6 @@
 # Frame walk: Checkout
 
-Design intent: frames and prototype links from the design file, not behavior from running code. Read at design revision civic-stand-in-4.
+Design intent: frames and prototype links from the design file, not behavior from running code. Read at design revision civic-stand-in-5.
 
 Starts on: Order Summary.
 
@@ -20,6 +20,9 @@ Starts on: Order Summary.
 
 ## Promo applied
 
+- Card on Promo applied: semantic:card
+  - Override Card on Promo applied is a copy of the library component (`component`): web (react) needs-library-change, web (web-components) needs-library-change, ios (uikit) needs-library-change, android (compose) needs-library-change
+- Copy of Card in PromoApplied.tsx: semantic:card
 - No prototype link leads on, and the journey doesn't name this frame as an exit.
 
 ## Gift options (not reachable from the start)

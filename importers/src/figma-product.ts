@@ -1,4 +1,5 @@
 import type { CodeLibrary, ComponentInstance, Evidence, Link, Override, OverrideChange, Owner, Platform, SourceRef, Target } from '../../graph/src/index.ts'
+import { defaultVariantOf, OUTLINE_DEPTH, STRUCTURAL_LAYERS } from './figma-trim.ts'
 import { fragment, slug, type Fragment } from './fragment.ts'
 
 // Reads a product team's design file, and the library file its components come from, out of
@@ -9,6 +10,9 @@ import { fragment, slug, type Fragment } from './fragment.ts'
 // component property or local style means what are declared, and an undeclared name fails.
 // Instances are matched to the library by the component set's published key, not its name
 // (decision 0011), so two libraries with a Button, or a product's local copy, stay apart.
+// A local copy is looked for too: a frame or local component that isn't an instance but
+// carries the component's name or most of its layers is an inferred fork, which a person
+// confirms, because a REST export keeps no trace of where a detached frame came from.
 
 /**
  * What one component property means. For a property that changes the component, a value
@@ -93,6 +97,8 @@ export interface LibraryFacts {
   componentNames: Record<string, string>
   /** Everything the library file publishes, so a product's other instances can be traced to it. */
   published: PublishedLibrary
+  /** The layer names of the component's default variant, two levels deep, which a copy of it keeps. Empty when the export has no outline. */
+  layers: string[]
   evidence: Evidence
 }
 
@@ -185,11 +191,13 @@ export function readFigmaLibraryComponent(file: unknown, mapping: LibraryCompone
   ]
     .filter(([, value]) => !('content' in value))
     .map(([name]) => `${name} (default ${String(defaults[name])})`)
+  const variant = defaultVariantOf(set)
   return {
     mapping,
     defaults,
     componentNames,
     published: readPublishedComponents(root, mapping.file ?? root.name),
+    layers: variant ? layerNames(variant) : [],
     evidence: {
       id: `evidence:figma.library.${slug(mapping.componentSet)}`,
       kind: 'evidence',
@@ -275,7 +283,7 @@ export function readFigmaProductFile(file: unknown, library: LibraryFacts, produ
     walk(page, (node) => {
       if (node.type !== 'COMPONENT' || root.components?.[node.id]?.remote) return
       let holds = false
-      placements(node, (child) => {
+      placements(node, new Map(), (child) => {
         if (child.componentId && isMapped(child.componentId)) holds = true
       })
       if (!holds) return
@@ -285,13 +293,56 @@ export function readFigmaProductFile(file: unknown, library: LibraryFacts, produ
       definitions.set(node.id, { node, targetId: `target:${product.product}.component.${slug(name)}`, path: `${page.name} / ${name}` })
     })
   }
+  // Copies of the library component (decision 0011, point 5): a local component that doesn't
+  // hold it but looks like it is a product component that forks it, and so is a frame inside
+  // a screen. Both are inferred forks, read before anything else so their insides, which a
+  // detached frame keeps as the library's nested instances, belong to the fork.
+  const forks = new Map<string, string>()
+  const forkCandidates = (node: FigmaNode) => {
+    for (const child of node.children ?? []) {
+      if (child.type === 'INSTANCE' || definitions.has(child.id) || !STRUCTURAL_LAYERS.includes(child.type)) continue
+      const basis = forkBasis(child, library)
+      if (basis) forks.set(child.id, basis)
+      else forkCandidates(child)
+    }
+  }
+  for (const page of pages) {
+    walk(page, (node) => {
+      if (node.type !== 'COMPONENT' || root.components?.[node.id]?.remote || definitions.has(node.id)) return
+      const basis = forkBasis(node, library)
+      if (!basis) return
+      forks.set(node.id, basis)
+      definitions.set(node.id, { node, targetId: `target:${product.product}.component.${slug(node.name)}`, path: `${page.name} / ${node.name}` })
+    })
+    for (const node of page.children ?? []) if (node.type === 'FRAME' || (definitions.has(node.id) && !forks.has(node.id))) forkCandidates(node)
+  }
+  const forkInstance = (node: FigmaNode, targetId: string, frameName: string, path: string, id: string): ComponentInstance => ({
+    id,
+    kind: 'component-instance',
+    title: `${node.name} on ${frameName}`,
+    semanticId: mapping.semanticId,
+    placedOn: targetId,
+    product: product.product,
+    origin: 'design',
+    library: { file: libraryFile, key: mapping.key ?? mapping.componentSet, matchedBy: 'inferred' },
+    fork: { status: 'inferred', basis: forks.get(node.id)! },
+    owners: designOwners,
+    source: source(path, node.id),
+  })
   /** Where each product component is placed, by its target. */
   const placedAt = new Map<string, string[]>()
 
   /** The instances a frame or product component places: the library component, product components, and any other library's. */
   const readContents = (node: FigmaNode, targetId: string, path: string) => {
     const instanceIds = new Set<string>()
-    placements(node, (child) => {
+    walk(node, (child) => {
+      if (child === node || !forks.has(child.id) || definitions.has(child.id)) return
+      const id = `instance:${targetId.slice('target:'.length)}.${slug(child.name)}.fork`
+      if (records.some((record) => record.id === id)) throw new Error(`${root.name}: "${node.name}" has two copies of ${mapping.componentSet} named "${child.name}"; name them apart.`)
+      records.push(forkInstance(child, targetId, node.name, `${path} / ${child.name}`, id))
+      links.push({ from: targetId, relation: 'contains', to: id, status: 'declared' })
+    })
+    placements(node, forks, (child) => {
       if (!child.componentId) return
       const definition = definitions.get(child.componentId)
       if (definition) {
@@ -334,7 +385,11 @@ export function readFigmaProductFile(file: unknown, library: LibraryFacts, produ
   }
   for (const { node, targetId, path } of definitions.values()) {
     records.push({ id: targetId, kind: 'target', title: `${path.split(' / ').slice(1).join(' / ')} (${product.title} component)`, scale: 'component', presence: 'expected', platforms: product.platforms, ...builtWith, owners: designOwners, source: source(path, node.id) })
-    readContents(node, targetId, path)
+    if (forks.has(node.id)) {
+      const id = `instance:${targetId.slice('target:'.length)}.fork`
+      records.push(forkInstance(node, targetId, node.name, path, id))
+      links.push({ from: targetId, relation: 'contains', to: id, status: 'declared' })
+    } else readContents(node, targetId, path)
   }
 
   // Frames first, so paths can resolve their destinations.
@@ -390,6 +445,7 @@ export function readFigmaProductFile(file: unknown, library: LibraryFacts, produ
   }
 
   const instances = records.filter((record): record is ComponentInstance => record.kind === 'component-instance')
+  const used = instances.filter((instance) => !instance.fork)
   const overrides = records.filter((record): record is Override => record.kind === 'override')
   records.push({
     id: `evidence:figma.${product.product}.${slug(root.name)}`,
@@ -401,11 +457,14 @@ export function readFigmaProductFile(file: unknown, library: LibraryFacts, produ
     outcome: 'finding',
     finding:
       `${frames.size} frame(s): ${[...frames.values()].map((frame) => frame.node.name).join(', ')}. ` +
-      `${instances.length} ${mapping.componentSet} instance(s) showing ${instances.map((instance) => instance.state).join(', ')}; ` +
+      `${used.length} ${mapping.componentSet} instance(s) showing ${used.map((instance) => instance.state).join(', ')}; ` +
       `${overrides.length} override(s): ${overrides.map((override) => override.property).join(', ') || 'none'}. ` +
       (mapping.key ? `${mapping.componentSet} instances matched by published key ${mapping.key} from ${libraryFile}.` : `${mapping.componentSet} instances matched by name, a weaker match: the mapping declares no published key.`) +
       (definitions.size > 0
         ? ` ${definitions.size} product component(s) read once: ${[...definitions.values()].map(({ targetId, path }) => `${path.split(' / ').slice(1).join(' / ')} (${(placedAt.get(targetId) ?? []).length} placement(s) on ${[...new Set(placedAt.get(targetId) ?? [])].map((id) => id.slice('target:'.length)).join(', ') || 'nothing'})`).join('; ')}.`
+        : '') +
+      (forks.size > 0
+        ? ` ${forks.size} possible ${forks.size === 1 ? 'copy' : 'copies'} of ${mapping.componentSet}, inferred for a person to confirm: ${instances.filter((instance) => instance.fork).map((instance) => instance.title).join('; ')}.`
         : '') +
       (declared
         ? ` Consumes ${consumed.join(', ')}; other placements: ${[...placed].map(([from, names]) => `${names.length} from ${from} (${[...new Set(names)].join(', ')})`).join('; ') || 'none'}.`
@@ -416,12 +475,50 @@ export function readFigmaProductFile(file: unknown, library: LibraryFacts, produ
   return fragment(records, links)
 }
 
-/** The instances a frame places itself, not the ones inside another instance, which belong to that component. */
-function placements(node: FigmaNode, visit: (node: FigmaNode) => void) {
+/** The instances a frame places itself, not the ones inside another instance or inside a copy of the library component (`skip`), which belong to those. */
+function placements(node: FigmaNode, skip: ReadonlyMap<string, unknown>, visit: (node: FigmaNode) => void) {
   for (const child of node.children ?? []) {
+    if (skip.has(child.id)) continue
     if (child.type === 'INSTANCE') visit(child)
-    else placements(child, visit)
+    else placements(child, skip, visit)
   }
+}
+
+/** A layer's structural descendants, by name, as deep as the library's outline goes. */
+function layerNames(node: FigmaNode): string[] {
+  const names = new Set<string>()
+  const visit = (parent: FigmaNode, depth: number) => {
+    if (depth >= OUTLINE_DEPTH) return
+    for (const child of parent.children ?? []) {
+      if (!STRUCTURAL_LAYERS.includes(child.type)) continue
+      names.add(child.name.trim().toLowerCase())
+      visit(child, depth + 1)
+    }
+  }
+  visit(node, 0)
+  return [...names].sort()
+}
+
+/** Whether a layer's name is the component's, give or take Figma's copy suffixes, such as `Card copy 2`. */
+function namedAfter(name: string, component: string): boolean {
+  const bare = name.toLowerCase().replace(/\s*\(detached\)$/, '').replace(/\s+copy(\s+\d+)?$/, '').replace(/\s+\d+$/, '').split('/')[0]!.trim()
+  return bare === component.toLowerCase()
+}
+
+/**
+ * Why a frame or local component looks like a copy of the library component, or undefined when
+ * it doesn't: it keeps at least half of the default variant's layers, or carries the
+ * component's name and some of them. With no outline in the library export, the name alone.
+ */
+function forkBasis(node: FigmaNode, library: LibraryFacts): string | undefined {
+  const named = namedAfter(node.name, library.mapping.componentSet)
+  const kept = layerNames(node).filter((name) => library.layers.includes(name))
+  const share = library.layers.length > 0 ? kept.length / library.layers.length : 0
+  if (!(share >= 0.5 || (named && (library.layers.length === 0 || kept.length > 0)))) return undefined
+  return [
+    ...(named ? [`named "${node.name}"`] : []),
+    ...(library.layers.length > 0 ? [`keeps ${kept.length} of the library ${library.mapping.componentSet}'s ${library.layers.length} layers (${kept.join(', ')})`] : ['the library export has no layer outline to compare']),
+  ].join('; ')
 }
 
 function setNameOf(root: FigmaFile, componentId: string): string | undefined {

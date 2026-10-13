@@ -4,7 +4,8 @@
 // design system's Figma library and the product team's Figma file. A product designer
 // changed the Card; CIVIC forecasts each change per platform, raises it as unreviewed
 // drift, checks the design for missing states and journey dead ends (D32), and keeps the
-// maintainers' decisions. Deterministic, and nothing here makes a model call (D30).
+// maintainers' decisions. Copies of the Card in design and code are inferred as forks, and
+// the one Shop design confirmed is raised as drift too (decision 0011). Deterministic, and nothing here makes a model call (D30).
 //
 //   node build.ts           write out/
 //   node build.ts --check   fail if out/ is not what the inputs produce
@@ -35,6 +36,7 @@ import {
   type SourceRef,
 } from '../../graph/src/index.ts'
 import {
+  applyConfirmations,
   applyDecisions,
   assemble,
   compareLibraryDefaults,
@@ -56,6 +58,7 @@ import {
   tsExportedComponents,
   tsPropUnion,
   tsTypeKeys,
+  type ConfirmationFile,
   type LibraryComponentMapping,
   type PlatformMapping,
   type ProductManifest,
@@ -186,8 +189,6 @@ const productFile = json<{ lastModified: string }>('design/shop-checkout.figma.j
 const patterns = readPublishedComponents(json('design/shop-patterns.figma.json'), 'shop-patterns')
 const shop = readFigmaProductFile(productFile, library, product, productFile.lastModified, { file: 'shop-checkout', libraries: [patterns] })
 const designEvidence = shop.records.find((record) => record.kind === 'evidence')!.id
-const overrides = shop.records.filter((record): record is Override => record.kind === 'override')
-const drift = fragment(raiseOverrideDrift(semantic, overrides, { design: designEvidence, contract: library.evidence.id }))
 // What the library's Card shows by default, against what each platform's component can express.
 const libraryDefaults = fragment(
   compareLibraryDefaults(
@@ -206,7 +207,10 @@ const libraryDefaults = fragment(
 
 // --- Code: Shop's React code, read for its uses of the library (decision 0011) ---------
 
-const codeFiles = readdirSync(here('code/src')).filter((name) => name.endsWith('.tsx')).sort().map((name) => ({ path: `code/src/${name}`, text: text(`code/src/${name}`) }))
+const codeFiles = (readdirSync(here('code/src'), { recursive: true }) as string[])
+  .filter((name) => name.endsWith('.tsx'))
+  .sort()
+  .map((name) => ({ path: `code/src/${name}`, text: text(`code/src/${name}`) }))
 const libraryComponents = [web, webComponents].map((part) => ({
   component: part.records.find((record): record is PlatformComponent => record.kind === 'platform-component')!,
   extensionPoints: part.records.filter((record): record is ExtensionPoint => record.kind === 'extension-point'),
@@ -223,9 +227,16 @@ const shopCode = readReactProductCode(codeFiles, {
   capturedAt,
 })
 
+// --- Forks: a person's call on the copies CIVIC inferred, then every override as drift ---
+
+const confirmationsText = text('contract/confirmations.json')
+const shopProduct = applyConfirmations(fragment([...shop.records, ...shopCode.records], [...shop.links, ...shopCode.links]), JSON.parse(confirmationsText) as ConfirmationFile, 'demo/card/contract/confirmations.json', confirmationsText)
+const overrides = shopProduct.records.filter((record): record is Override => record.kind === 'override')
+const drift = fragment(raiseOverrideDrift(semantic, overrides, { design: designEvidence, contract: library.evidence.id }))
+
 // --- Assemble, decide, export ---------------------------------------------------------
 
-const raised = assemble(contract, web, webComponents, ios, android, fragment([library.evidence]), shop, shopCode, drift, libraryDefaults)
+const raised = assemble(contract, web, webComponents, ios, android, fragment([library.evidence]), shopProduct, drift, libraryDefaults)
 const resolved = applyDecisions(raised, json<DecisionFile>('contract/decisions.json'))
 assertValid(raised)
 assertValid(resolved)
@@ -249,7 +260,7 @@ const outputs: Record<string, string> = {
   'out/resolved.overrides.md': resolvedExport.review,
   'out/raised.gaps.md': raisedExport.gaps,
   'out/resolved.gaps.md': resolvedExport.gaps,
-  'out/design-and-code.md': `# Design and code\n\nWhat Shop's React code builds of each design change, screen by screen (decision 0011). Read from the stand-in code in \`code/src\` and the design file; static analysis, not behavior.\n\n${renderDesignAndCode(indexGraph(resolved), ['target:shop.order-summary', 'target:shop.gift-options'].flatMap((screen) => designAndCode(indexGraph(resolved), screen)))}\n`,
+  'out/design-and-code.md': `# Design and code\n\nWhat Shop's React code builds of each design change, screen by screen, and where either uses a copy of the Card (decision 0011). Read from the stand-in code in \`code/src\` and the design file; static analysis, not behavior.\n\n${renderDesignAndCode(indexGraph(resolved), ['target:shop.order-summary', 'target:shop.gift-options', 'target:shop.promo-applied'].flatMap((screen) => designAndCode(indexGraph(resolved), screen)))}\n`,
   'out/completeness.md': `${renderCompleteness(raisedGraph, completenessOf(raisedGraph, JOURNEY))}\n`,
   // The frame walk (D33): Shop's checkout frames along their prototype links, as design intent.
   'out/walk.md': `${renderWalk(frameWalk(indexGraph(resolved), JOURNEY))}\n`,

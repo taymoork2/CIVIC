@@ -277,3 +277,71 @@ test("a product's own component is read once at its definition, and every screen
   ])
   assert.deepEqual(reviewInstance(graph, 'instance:shop.component.order-card.card').shownOn.sort(), ['target:shop.checkout', 'target:shop.component.order-card', 'target:shop.gift-options', 'target:shop.order-summary'])
 })
+
+test('a frame or local component that looks like the library component is an inferred fork, never a silent one', () => {
+  // The library's default variant keeps its layer outline, which a detached copy still has.
+  const outlined = libraryFile()
+  const set = outlined.document.children[0]!.children[0]! as { children: unknown[] }
+  set.children = [{ id: '1:4', name: 'Appearance=Filled, State=Rest', type: 'COMPONENT', children: ['Media', 'Header', 'Body', 'Footer'].map((name, index) => ({ id: `1:${5 + index}`, name, type: 'FRAME' })) }]
+  const facts = readFigmaLibraryComponent(outlined, mapping, 'now')
+  assert.deepEqual(facts.layers, ['body', 'footer', 'header', 'media'])
+
+  const frame = (id: string, name: string, layers: string[]) => ({ id, name, type: 'FRAME', children: layers.map((layer, index) => ({ id: `${id}.${index}`, name: layer, type: 'FRAME' })) })
+  const file = productFile([
+    { id: '2:1', name: 'Order Summary', type: 'FRAME', children: [
+      instance('2:2', 'Rest'),
+      // Detached and renamed, but it keeps three of the four layers.
+      frame('2:3', 'Promo', ['Header', 'Body', 'Footer', 'Illustration']),
+      // Named Card, but nothing of the library's structure: a payment card drawing.
+      frame('2:4', 'Card', ['Chip', 'Number']),
+      // One shared layer name and a different name: not a copy.
+      { id: '2:5', name: 'Panel', type: 'GROUP', children: [frame('2:6', 'Header', [])] },
+      { id: '2:7', name: 'Thanks link', type: 'INSTANCE', componentId: '8:1', reactions: [{ trigger: { type: 'ON_CLICK' }, actions: [{ type: 'NODE', destinationId: '2:8', navigation: 'NAVIGATE' }] }] },
+    ] },
+    { id: '2:8', name: 'Thanks', type: 'FRAME', children: [{ id: '2:9', name: 'Offer', type: 'INSTANCE', componentId: '6:1', children: [] }] },
+  ])
+  // A local component copied from the Card, placed on Thanks.
+  file.document.children.push({ id: '6:0', name: 'Components', type: 'CANVAS', children: [frame('6:1', 'Card copy 2', ['Header', 'Body'])].map((node) => ({ ...node, type: 'COMPONENT' })) } as never)
+  Object.assign(file.components, { '6:1': { key: 'card-copy', name: 'Card copy 2' } })
+  const { records, links } = readFigmaProductFile(file, facts, product, 'now')
+
+  const forks = records.filter((record) => record.kind === 'component-instance' && record.fork)
+  assert.deepEqual(forks.map((record) => [record.id, record.kind === 'component-instance' && record.placedOn]), [
+    ['instance:shop.component.card-copy-2.fork', 'target:shop.component.card-copy-2'],
+    ['instance:shop.order-summary.promo.fork', 'target:shop.order-summary'],
+  ])
+  assert.ok(forks.every((record) => record.kind === 'component-instance' && record.fork!.status === 'inferred' && record.library!.matchedBy === 'inferred' && !record.state))
+  assert.deepEqual(forks.map((record) => record.kind === 'component-instance' && record.fork!.basis), [
+    'named "Card copy 2"; keeps 2 of the library Card\'s 4 layers (body, header)',
+    'keeps 3 of the library Card\'s 4 layers (body, footer, header)',
+  ])
+  assert.deepEqual(links.filter((link) => link.to === 'target:shop.component.card-copy-2').map((link) => link.from), ['target:shop.thanks'])
+  assert.match((records.find((record) => record.id === 'evidence:figma.shop.shop') as Evidence).finding!, /1 Card instance\(s\) showing rest; .* 2 possible copies of Card, inferred for a person to confirm/)
+
+  // An inferred fork is no override and shows no state: nothing counts until a person confirms it.
+  assert.deepEqual(records.filter((record) => record.kind === 'override'), [])
+  const card: SemanticComponent = { id: 'semantic:card', kind: 'semantic-component', title: 'Card', purpose: 'Group.', variants: [{ key: 'filled', title: 'Filled' }], states: ['rest', 'loading'], productStates: ['loading'], owners: [{ role: 'design', who: 'ds' }] }
+  const document = assemble(fragment([card, ...records], links))
+  assert.deepEqual(validateGraph(document).filter((issue) => issue.severity === 'error'), [])
+  assert.deepEqual(stateCoverageOn(indexGraph(document), 'target:shop.thanks'), [])
+
+  // Without an outline in the library export, the name alone is enough to ask.
+  const named = readFigmaProductFile(file, library(), product, 'now').records.filter((record) => record.kind === 'component-instance' && record.fork)
+  assert.deepEqual(named.map((record) => record.id), ['instance:shop.component.card-copy-2.fork', 'instance:shop.order-summary.card.fork'])
+})
+
+test('a trimmed export keeps the outline of each component set\'s default variant, and only that one', () => {
+  const full = libraryFile()
+  const set = full.document.children[0]!.children[0]! as { children: unknown[] }
+  const layer = (name: string, children: unknown[] = []) => ({ id: name, name, type: 'FRAME', children })
+  set.children = [
+    { id: '1:4', name: 'Appearance=Outline, State=Rest', type: 'COMPONENT', children: [layer('Header')] },
+    { id: '1:5', name: 'Appearance=Filled, State=Rest', type: 'COMPONENT', children: [layer('Header', [layer('Title', [layer('Too deep')]), { id: 't', name: 'Text', type: 'TEXT' }]), { id: 'v', name: 'Shape', type: 'VECTOR' }] },
+  ]
+  const trimmed = trimFigmaFile(full, [{ type: 'COMPONENT_SET', name: 'Card' }]) as ReturnType<typeof libraryFile>
+  const variants = (trimmed.document.children[0]!.children[0]! as { children: unknown[] }).children
+  assert.deepEqual(variants, [
+    { id: '1:4', name: 'Appearance=Outline, State=Rest', type: 'COMPONENT' },
+    { id: '1:5', name: 'Appearance=Filled, State=Rest', type: 'COMPONENT', children: [{ id: 'Header', name: 'Header', type: 'FRAME', children: [{ id: 'Title', name: 'Title', type: 'FRAME' }] }] },
+  ])
+})

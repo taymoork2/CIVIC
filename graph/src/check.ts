@@ -28,6 +28,7 @@ export const FINDING_KINDS = [
   'no-run-evidence',
   'unconfirmed-link',
   'unconfirmed-target',
+  'unconfirmed-fork',
   'approved-exception',
   'open-proposal',
   'awaiting-adoption',
@@ -182,7 +183,7 @@ export function checkGraph(label: string, graph: Graph, options: CheckOptions): 
   }
 
   // Product states each screen's design accounts for (D32), one finding per missing state.
-  const designScreens = new Set(graph.ofKind('component-instance').filter((instance) => instance.origin === 'design').flatMap((instance) => screensOf(graph, instance.placedOn)))
+  const designScreens = new Set(graph.ofKind('component-instance').filter((instance) => instance.origin === 'design' && !instance.fork).flatMap((instance) => screensOf(graph, instance.placedOn)))
   let productStates = 0
   let missingStates = 0
   for (const screenId of [...designScreens].sort()) {
@@ -218,6 +219,14 @@ export function checkGraph(label: string, graph: Graph, options: CheckOptions): 
   const discovered = targets.filter((target) => target.presence === 'discovered')
   for (const target of discovered) add('unconfirmed-target', target.id, `${target.title} was discovered${target.source ? ` by ${target.source.importer}` : ''}; a person confirms it before it counts.`, target.owners ?? [])
   measure('Screens awaiting confirmation', discovered.length, targets.length)
+
+  // Forks CIVIC inferred by name and structure, or by import (decision 0011), wait for a person too.
+  const forks = graph.ofKind('component-instance').filter((instance) => instance.fork)
+  const inferred = forks.filter((instance) => instance.fork!.status === 'inferred')
+  for (const instance of inferred) {
+    add('unconfirmed-fork', instance.id, `${instance.title} looks like a copy of the library's ${title(graph, instance.semanticId)} (${instance.fork!.basis}); a person confirms or dismisses it before it counts as drift.`, instance.owners ?? [], instance.platform)
+  }
+  measure('Forks awaiting confirmation', inferred.length, forks.length)
 
   // The contract export's gaps that the checks above don't already cover.
   const fromGaps = new Set<FindingKind>(['missing-variant', 'platform-only-variant', 'no-run-evidence', 'unconfirmed-link'])

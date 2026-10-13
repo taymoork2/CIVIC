@@ -33,8 +33,10 @@ test('the Button gate fails on each undecided conflict and passes once decisions
 test('counts come with their denominators', () => {
   const { measures } = run('card', demo('card/out/resolved'))
   const count = (check: string) => measures.find((item) => item.check === check)
-  assert.deepEqual(count('Contract conflicts open'), { graph: 'card', check: 'Contract conflicts open', found: 1, of: 5 })
-  assert.deepEqual(count('Overrides without a decision'), { graph: 'card', check: 'Overrides without a decision', found: 1, of: 2 })
+  assert.deepEqual(count('Contract conflicts open'), { graph: 'card', check: 'Contract conflicts open', found: 1, of: 6 })
+  assert.deepEqual(count('Overrides without a decision'), { graph: 'card', check: 'Overrides without a decision', found: 1, of: 3 })
+  // The detached Card is confirmed; the code's copy still waits for a person.
+  assert.deepEqual(count('Forks awaiting confirmation'), { graph: 'card', check: 'Forks awaiting confirmation', found: 1, of: 2 })
   assert.deepEqual(count('Product states missing from designs'), { graph: 'card', check: 'Product states missing from designs', found: 6, of: 6 })
   assert.deepEqual(count('Journey screens that are dead ends'), { graph: 'card', check: 'Journey screens that are dead ends', found: 1, of: 3 })
 })
@@ -42,18 +44,18 @@ test('counts come with their denominators', () => {
 test('the Card gate raises each undecided override, library default iOS can\'t build, missing state and journey gap, one finding each', () => {
   const report = compareToBaseline([run('card', demo('card/out/raised'))], undefined)
   assert.equal(report.passed, false)
-  assert.deepEqual(report.fresh.map((item) => item.kind), ['open-conflict', 'open-conflict', 'open-conflict', 'open-conflict', 'open-conflict', 'missing-state', 'missing-state', 'missing-state', 'missing-state', 'missing-state', 'missing-state', 'dead-end', 'unreachable-screen'])
+  assert.deepEqual(report.fresh.map((item) => item.kind), ['open-conflict', 'open-conflict', 'open-conflict', 'open-conflict', 'open-conflict', 'open-conflict', 'missing-state', 'missing-state', 'missing-state', 'missing-state', 'missing-state', 'missing-state', 'dead-end', 'unreachable-screen'])
 })
 
 test('baselined findings are ignored, a new one still fails, and a fixed one is reported', () => {
   const baseline = baselineFrom(compareToBaseline([run('card', demo('card/out/raised'))], undefined))
   assert.equal(compareToBaseline([run('card', demo('card/out/raised'))], baseline).passed, true)
 
-  // One of the two overrides and the three iOS library defaults are decided in the resolved graph, so they leave the baseline's findings.
+  // Two of the three overrides (one of them the confirmed fork) and the three iOS library defaults are decided in the resolved graph, so they leave the baseline's findings.
   const resolved = compareToBaseline([run('card', demo('card/out/resolved'))], baseline)
   assert.equal(resolved.passed, true)
   assert.equal(resolved.baselined.length, 9)
-  assert.equal(resolved.fixed.length, 4)
+  assert.equal(resolved.fixed.length, 5)
 
   // A new undecided override on the same graph is raised at the change that caused it.
   const changed = demo('card/out/resolved')
@@ -61,6 +63,19 @@ test('baselined findings are ignored, a new one still fails, and a fixed one is 
   const report = compareToBaseline([run('card', changed)], baselineFrom(resolved))
   assert.equal(report.passed, false)
   assert.deepEqual(report.fresh.map((item) => item.subjectId), ['conflict:shop.order-summary.card.corner-radius'])
+})
+
+test('an inferred fork is reported for a person to confirm and blocks nothing; once confirmed, its detach is an override like any other', () => {
+  const report = compareToBaseline([run('card', demo('card/out/resolved'))], undefined)
+  const fork = report.advisory.filter((item) => item.kind === 'unconfirmed-fork')
+  assert.deepEqual(fork.map((item) => item.subjectId), ['instance:shop.promo-applied.web.card.fork'])
+  assert.match(fork[0]!.summary, /vendor\/react-card\/Card\.tsx/)
+
+  // Without its conflict, the confirmed design fork's detach override is unreviewed and blocks.
+  const document = demo('card/out/resolved')
+  document.records = document.records.filter((item) => !item.id.endsWith('promo-applied.card.fork.detach') || item.kind === 'override')
+  const unreviewed = compareToBaseline([run('card', document)], undefined)
+  assert.deepEqual(unreviewed.fresh.filter((item) => item.kind === 'unreviewed-override').map((item) => item.subjectId), ['override:shop.promo-applied.card.fork.detach'])
 })
 
 test('an approved exception past its expiry blocks again', () => {

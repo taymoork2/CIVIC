@@ -230,15 +230,35 @@ export interface ComponentInstance extends RecordBase {
   /**
    * Where a design instance's component comes from: the library file, as the product's
    * manifest names it, and the component set's published key (decision 0011). `name` means
-   * the export had no key to match on, which is weaker evidence than `key`.
+   * the export had no key to match on, which is weaker evidence than `key`. `inferred` marks
+   * a fork that CIVIC matched by name and structure, or by import, and a person confirms.
    */
-  library?: { file: string; key: string; matchedBy: 'key' | 'name' }
+  library?: { file: string; key: string; matchedBy: 'key' | 'name' | 'inferred' }
   /**
    * A code instance only: the extension points it sets (decision 0011), each with the
    * contract property it expresses and the value when the code gives a literal one.
    */
   uses?: { extensionPointId: string; property: string; value?: string | number | boolean }[]
+  /**
+   * The product no longer uses the library component here but a copy of it (decision 0011,
+   * point 5): a detached instance or a local component copied from one in design, a copied or
+   * vendored component in code. CIVIC infers a fork by name and structure, or by import, so
+   * an `inferred` fork doesn't count until a person confirms it; a confirmed fork carries a
+   * `detach` override, which goes through the usual forecast, conflict and decision.
+   */
+  fork?: InstanceFork
 }
+
+export interface InstanceFork {
+  status: 'inferred' | 'confirmed'
+  /** What the match rests on, such as the name and the library layers the copy keeps. */
+  basis: string
+  /** Who confirmed it, once someone has. */
+  confirmedBy?: Owner
+}
+
+/** The property a fork's `detach` override changes: the whole component. */
+export const FORK_PROPERTY = 'component'
 
 export const OVERRIDE_CHANGES = ['add-content', 'set-property', 'local-style', 'detach'] as const
 export type OverrideChange = (typeof OVERRIDE_CHANGES)[number]

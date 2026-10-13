@@ -125,7 +125,7 @@ function gapsForComponent(graph: Graph, semantic: SemanticComponent): Gap[] {
   }
 
   // Product states a screen's design neither shows nor inherits (D32), owned by whoever owns the instances.
-  const instances = graph.ofKind('component-instance').filter((instance) => instance.semanticId === semantic.id && instance.origin === 'design')
+  const instances = graph.ofKind('component-instance').filter((instance) => instance.semanticId === semantic.id && instance.origin === 'design' && !instance.fork)
   const screens = new Set(instances.flatMap((instance) => screensOf(graph, instance.placedOn)))
   for (const screenId of [...screens].sort()) {
     for (const coverage of stateCoverageOn(graph, screenId).filter((item) => item.semanticId === semantic.id && item.missing.length > 0)) {

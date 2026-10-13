@@ -64,7 +64,70 @@
               {
                 "id": "9230:4879",
                 "name": "Custom header=False",
-                "type": "COMPONENT"
+                "type": "COMPONENT",
+                "children": [
+                  {
+                    "id": "9230:4880",
+                    "name": "Avatar/Avatar",
+                    "type": "INSTANCE",
+                    "children": [
+                      {
+                        "id": "I9230:4880;9278:11262",
+                        "name": "Badge icon",
+                        "type": "FRAME"
+                      },
+                      {
+                        "id": "I9230:4880;9278:11264",
+                        "name": "Presence Badge",
+                        "type": "INSTANCE"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "9230:4881",
+                    "name": "Image Circle",
+                    "type": "INSTANCE"
+                  },
+                  {
+                    "id": "9230:4882",
+                    "name": "Text container",
+                    "type": "FRAME"
+                  },
+                  {
+                    "id": "9230:4885",
+                    "name": "Checkbox",
+                    "type": "INSTANCE",
+                    "children": [
+                      {
+                        "id": "I9230:4885;9061:51595",
+                        "name": "Checkbox elements",
+                        "type": "FRAME"
+                      },
+                      {
+                        "id": "I9230:4885;9061:51597",
+                        "name": "Text wrapper for offset",
+                        "type": "FRAME"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "9230:4886",
+                    "name": "Quick action",
+                    "type": "INSTANCE",
+                    "children": [
+                      {
+                        "id": "I9230:4886;9026:1012",
+                        "name": "Container",
+                        "type": "FRAME"
+                      },
+                      {
+                        "id": "I9230:4886;9026:1015",
+                        "name": "Focus ring",
+                        "type": "FRAME"
+                      }
+                    ]
+                  }
+                ]
               },
               {
                 "id": "9230:4887",
@@ -121,7 +184,69 @@
               {
                 "id": "9230:4928",
                 "name": "Layout=Default, State=Rest, Style=Filled",
-                "type": "COMPONENT"
+                "type": "COMPONENT",
+                "children": [
+                  {
+                    "id": "9230:4929",
+                    "name": "Hero media",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "9230:4930",
+                        "name": "Media",
+                        "type": "INSTANCE"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "9230:4931",
+                    "name": "Header container",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "9230:4932",
+                        "name": "Header",
+                        "type": "INSTANCE"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "9230:4933",
+                    "name": "Body container",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "9230:4934",
+                        "name": "Body",
+                        "type": "INSTANCE"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "9230:4935",
+                    "name": "Preview media",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "9230:4936",
+                        "name": "Media",
+                        "type": "INSTANCE"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "9230:4937",
+                    "name": "Footer container",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "9230:4939",
+                        "name": "Footer",
+                        "type": "INSTANCE"
+                      }
+                    ]
+                  }
+                ]
               },
               {
                 "id": "9230:4940",

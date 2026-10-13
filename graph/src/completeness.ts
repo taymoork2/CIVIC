@@ -59,7 +59,8 @@ export function completenessOf(graph: Graph, journeyId: string): Completeness {
  */
 export function stateCoverageOn(graph: Graph, screenId: string): StateCoverage[] {
   const places = new Set(placesOn(graph, screenId))
-  const instances = graph.ofKind('component-instance').filter((instance) => instance.origin === 'design' && places.has(instance.placedOn))
+  // A fork shows no contract state: it is a copy, drift in its own right (decision 0011).
+  const instances = graph.ofKind('component-instance').filter((instance) => instance.origin === 'design' && !instance.fork && places.has(instance.placedOn))
   const bySemantic = new Map<string, ComponentInstance[]>()
   for (const instance of instances) bySemantic.set(instance.semanticId, [...(bySemantic.get(instance.semanticId) ?? []), instance])
 
