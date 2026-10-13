@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { validateGraph, type Evidence, type SemanticComponent } from '../../graph/src/index.ts'
+import { indexGraph, reviewInstance, screensOf, stateCoverageOn, validateGraph, type Evidence, type SemanticComponent } from '../../graph/src/index.ts'
 import { trimFigmaFile } from '../src/figma-trim.ts'
 import { assemble, compareLibraryDefaults, fragment, raiseOverrideDrift, readFigmaLibraryComponent, readFigmaProductFile, tsExportedComponents, type LibraryComponentMapping, type ProductManifest } from '../src/index.ts'
 
@@ -248,4 +248,32 @@ test('with a declared lineage, every placed component is traced to a consumed li
   const withoutKit = { ...lineage, designFiles: [{ tool: 'figma', file: 'shop', title: 'Shop', layers: ['product'], consumes: ['patterns'] }] }
   assert.throws(() => readFigmaProductFile(file, keyed('card'), withoutKit, 'now', { file: 'shop', libraries: [patterns] }), /shop does not declare that it consumes kit, the Card library/)
   assert.throws(() => readFigmaProductFile(file, keyed('card'), lineage, 'now', { file: 'checkout' }), /declares no design file checkout/)
+})
+
+test("a product's own component is read once at its definition, and every screen that places it shows its instances", () => {
+  const placement = (id: string, name: string) => ({ id, name, type: 'INSTANCE', componentId: '6:1', children: [instance(`I${id};6:2`, 'Rest')] })
+  const file = productFile([
+    { id: '2:1', name: 'Order Summary', type: 'FRAME', children: [placement('2:2', 'Summary'), { id: '2:3', name: 'Next', type: 'INSTANCE', componentId: '8:1', reactions: [{ trigger: { type: 'ON_CLICK' }, actions: [{ type: 'NODE', destinationId: '2:4', navigation: 'NAVIGATE' }] }] }] },
+    { id: '2:4', name: 'Gift options', type: 'FRAME', children: [placement('2:5', 'Wrap'), placement('2:6', 'Message')] },
+  ])
+  file.document.children.push({ id: '6:0', name: 'Components', type: 'CANVAS', children: [{ id: '6:1', name: 'Order card', type: 'COMPONENT', children: [instance('6:2', 'Rest', { cornerRadius: 12, overrides: [{ id: '6:2', overriddenFields: ['cornerRadius'] }] })] }] } as never)
+  Object.assign(file.components, { '6:1': { key: 'order-card', name: 'Order card' } })
+  const { records, links } = readFigmaProductFile(file, library(), product, 'now')
+  const instances = records.filter((record) => record.kind === 'component-instance')
+  assert.deepEqual(instances.map((record) => [record.id, record.placedOn]), [['instance:shop.component.order-card.card', 'target:shop.component.order-card']])
+  assert.deepEqual(records.filter((record) => record.kind === 'override').map((record) => record.id), ['override:shop.component.order-card.card.corner-radius'])
+  assert.deepEqual(records.find((record) => record.id === 'target:shop.component.order-card'), { ...records.find((record) => record.id === 'target:shop.component.order-card'), scale: 'component', title: 'Order card (Shop component)' })
+  assert.deepEqual(links.filter((link) => link.to === 'target:shop.component.order-card').map((link) => link.from), ['target:shop.order-summary', 'target:shop.gift-options'])
+  assert.match((records.find((record) => record.id === 'evidence:figma.shop.shop') as Evidence).finding!, /1 product component\(s\) read once: Order card \(3 placement\(s\) on shop\.order-summary, shop\.gift-options\)/)
+
+  const card: SemanticComponent = { id: 'semantic:card', kind: 'semantic-component', title: 'Card', purpose: 'Group.', variants: [{ key: 'filled', title: 'Filled' }], states: ['rest', 'loading'], productStates: ['loading'], owners: [{ role: 'design', who: 'ds' }] }
+  const graph = indexGraph(assemble(fragment([card, ...records], links)))
+  assert.deepEqual(validateGraph(assemble(fragment([card, ...records], links))).filter((issue) => issue.severity === 'error'), [])
+  assert.deepEqual(screensOf(graph, 'target:shop.component.order-card'), ['target:shop.gift-options', 'target:shop.order-summary'])
+  // Both screens see the one instance, so each is missing the loading state once.
+  assert.deepEqual(['target:shop.order-summary', 'target:shop.gift-options'].map((screen) => stateCoverageOn(graph, screen).map((coverage) => [coverage.instanceIds, coverage.missing])), [
+    [[['instance:shop.component.order-card.card'], ['loading']]],
+    [[['instance:shop.component.order-card.card'], ['loading']]],
+  ])
+  assert.deepEqual(reviewInstance(graph, 'instance:shop.component.order-card.card').shownOn.sort(), ['target:shop.checkout', 'target:shop.component.order-card', 'target:shop.gift-options', 'target:shop.order-summary'])
 })

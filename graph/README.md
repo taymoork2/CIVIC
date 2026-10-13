@@ -23,7 +23,7 @@ Every record has a stable ID, `<prefix>:<dot.separated.path>`, a title, and opti
 | Kind | ID prefix | What it holds |
 |---|---|---|
 | Intent | `intent:` | A requirement, business rule or accessibility rule that stays true on every platform |
-| Target | `target:` | A journey, screen, state or surface, either **expected** (declared) or only **discovered** in source or by a crawl. A journey can name its `entry` and `exits` screens. |
+| Target | `target:` | A journey, screen, state, surface or product **component**, either **expected** (declared) or only **discovered** in source or by a crawl. A journey can name its `entry` and `exits` screens. A product component is a product's own shared component (decision 0011): the library instances inside it are placed on it once, and each screen that places it `contains` it, so the completeness check and an instance's review count them on every such screen. |
 | Token | `token:` | A design token, identified by its DTCG path |
 | Semantic component | `semantic:` | The platform-independent contract: purpose, variants, states, slots and contract rules. `productStates` are the states whose content depends on the product's data, such as loading, empty and error. |
 | Platform component | `platform:` | One platform's implementation, with how each semantic variant maps (`exact`, `closest` or `none`), its default variant, and any variants no semantic variant covers |

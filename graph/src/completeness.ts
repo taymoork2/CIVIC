@@ -59,6 +59,8 @@ export function completenessOf(graph: Graph, journeyId: string): Completeness {
  */
 export function stateCoverageOn(graph: Graph, screenId: string): StateCoverage[] {
   const places = new Set([screenId, ...containedTargets(graph, screenId, 'state').map((state) => state.id)])
+  // A product component placed on the screen or its states brings its instances with it, nested ones too.
+  for (const place of [...places]) for (const component of placedComponents(graph, place)) places.add(component)
   const instances = graph.ofKind('component-instance').filter((instance) => instance.origin === 'design' && places.has(instance.placedOn))
   const bySemantic = new Map<string, ComponentInstance[]>()
   for (const instance of instances) bySemantic.set(instance.semanticId, [...(bySemantic.get(instance.semanticId) ?? []), instance])
@@ -102,6 +104,21 @@ function journeyShape(graph: Graph, journey: Target, screens: Target[]): Journey
   }
   const unreachable = entry.length === 0 ? [] : ids.filter((id) => !reached.has(id))
   return { journeyId: journey.id, screens: ids, entry, deadEnds, unreachable }
+}
+
+/** The product components (decision 0011) a target places, and the ones they place, transitively. */
+export function placedComponents(graph: Graph, targetId: string): string[] {
+  const found: string[] = []
+  const queue = [targetId]
+  while (queue.length > 0) {
+    for (const component of containedTargets(graph, queue.shift()!, 'component')) {
+      if (!found.includes(component.id)) {
+        found.push(component.id)
+        queue.push(component.id)
+      }
+    }
+  }
+  return found
 }
 
 /** Targets of one scale that `parentId` contains through a declared or observed link, in ID order. */

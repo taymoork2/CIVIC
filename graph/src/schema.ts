@@ -103,10 +103,13 @@ export interface Intent extends RecordBase {
  * A journey, screen, state or surface. Like the journey engine, a target is either
  * expected (declared by a person or manifest) or only discovered in source or by a
  * crawl. Discovered targets need a person to confirm them before they count (D34).
+ * A `component` is a product's own shared component (decision 0011): the library
+ * instances inside it are placed on it once, and each screen or state that places it
+ * `contains` it, so its overrides are counted once and shown on every screen.
  */
 export interface Target extends RecordBase {
   kind: 'target'
-  scale: 'journey' | 'screen' | 'state' | 'surface'
+  scale: 'journey' | 'screen' | 'state' | 'surface' | 'component'
   presence: 'expected' | 'discovered'
   platforms?: Platform[]
   /** A journey only: the screens it starts on, as `target:` IDs. The completeness check (D32) walks from these. */

@@ -1,4 +1,4 @@
-12 gap(s)
+13 gap(s)
 
 ## open-conflict (1)
 
@@ -8,8 +8,9 @@
 
 - [ios] No ios equivalent for Card outline: CardView has no style without a background. Owners: design-engineering fluent-ios. (`platform:fluent-apple.card-view`)
 
-## missing-state (1)
+## missing-state (2)
 
+- Gift options has no design for the Card's loading, empty, error state(s); show them or say the instance inherits the default. Owners: design shop-design. (`target:shop.gift-options`)
 - Order Summary has no design for the Card's loading, empty, error state(s); show them or say the instance inherits the default. Owners: design shop-design. (`target:shop.order-summary`)
 
 ## platform-only-variant (4)

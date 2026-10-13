@@ -1,7 +1,7 @@
 {
   "name": "Shop checkout (CIVIC stand-in)",
   "lastModified": "2026-10-13T00:00:00Z",
-  "version": "civic-stand-in-3",
+  "version": "civic-stand-in-4",
   "schemaVersion": 0,
   "document": {
     "id": "0:0",
@@ -275,6 +275,80 @@
             "type": "FRAME",
             "children": [
               {
+                "id": "40:22",
+                "name": "Gift wrap",
+                "type": "INSTANCE",
+                "componentId": "50:1",
+                "children": [
+                  {
+                    "id": "I40:22;50:2",
+                    "name": "Card",
+                    "type": "INSTANCE",
+                    "componentId": "30:1",
+                    "componentProperties": {
+                      "Layout": {
+                        "type": "VARIANT",
+                        "value": "Default"
+                      },
+                      "State": {
+                        "type": "VARIANT",
+                        "value": "Rest"
+                      },
+                      "Style": {
+                        "type": "VARIANT",
+                        "value": "Filled"
+                      },
+                      "Body#322781:15": {
+                        "type": "BOOLEAN",
+                        "value": true
+                      },
+                      "Footer#322781:16": {
+                        "type": "BOOLEAN",
+                        "value": true
+                      }
+                    },
+                    "children": []
+                  }
+                ]
+              },
+              {
+                "id": "40:23",
+                "name": "Gift message",
+                "type": "INSTANCE",
+                "componentId": "50:1",
+                "children": [
+                  {
+                    "id": "I40:23;50:2",
+                    "name": "Card",
+                    "type": "INSTANCE",
+                    "componentId": "30:1",
+                    "componentProperties": {
+                      "Layout": {
+                        "type": "VARIANT",
+                        "value": "Default"
+                      },
+                      "State": {
+                        "type": "VARIANT",
+                        "value": "Rest"
+                      },
+                      "Style": {
+                        "type": "VARIANT",
+                        "value": "Filled"
+                      },
+                      "Body#322781:15": {
+                        "type": "BOOLEAN",
+                        "value": true
+                      },
+                      "Footer#322781:16": {
+                        "type": "BOOLEAN",
+                        "value": true
+                      }
+                    },
+                    "children": []
+                  }
+                ]
+              },
+              {
                 "id": "40:21",
                 "name": "Back to order",
                 "type": "INSTANCE",
@@ -295,6 +369,49 @@
                     ]
                   }
                 ],
+                "children": []
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "id": "50:0",
+        "name": "Components",
+        "type": "CANVAS",
+        "children": [
+          {
+            "id": "50:1",
+            "name": "Gift option",
+            "type": "COMPONENT",
+            "children": [
+              {
+                "id": "50:2",
+                "name": "Card",
+                "type": "INSTANCE",
+                "componentId": "30:1",
+                "componentProperties": {
+                  "Layout": {
+                    "type": "VARIANT",
+                    "value": "Default"
+                  },
+                  "State": {
+                    "type": "VARIANT",
+                    "value": "Rest"
+                  },
+                  "Style": {
+                    "type": "VARIANT",
+                    "value": "Filled"
+                  },
+                  "Body#322781:15": {
+                    "type": "BOOLEAN",
+                    "value": true
+                  },
+                  "Footer#322781:16": {
+                    "type": "BOOLEAN",
+                    "value": true
+                  }
+                },
                 "children": []
               }
             ]
@@ -341,6 +458,13 @@
       "description": "",
       "componentSetId": "30:10",
       "remote": true,
+      "documentationLinks": []
+    },
+    "50:1": {
+      "key": "shop-gift-option",
+      "name": "Gift option",
+      "description": "",
+      "remote": false,
       "documentationLinks": []
     }
   },
