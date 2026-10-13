@@ -113,3 +113,18 @@ test('sensitive fields stay out of recordings and an ambiguous control stops rep
   await expect(replay(page, tape)).rejects.toThrow('ambiguous')
   expect(await page.evaluate(() => (window.reviewPreview!.data() as { textiles: { name: string; wearsSinceClean?: number }[] }).textiles.filter((item) => item.name === 'Cotton tee').map((item) => item.wearsSinceClean ?? 0))).toEqual([0, 0])
 })
+
+test('a finished replay is kept as CIVIC run evidence about the screen the run started from', async ({ page }) => {
+  await open(page, 'app.drying.empty')
+  await page.getByRole('button', { name: 'Back to Laundry' }).last().click()
+  await expect.poll(() => page.evaluate(() => (window.reviewPreview!.data() as { path: string }).path)).toBe('/laundry')
+  const tape = await recording(page)
+  const receipt = await replay(page, tape)
+  // The canvas's run controls post exactly this after a replay (decision 0009).
+  const kept = await page.request.post('/api/review/replays', { data: { tape, outcome: 'pass', verified: receipt.verified } })
+  expect(kept.status()).toBe(201)
+  const { replay: record } = await kept.json()
+  expect(record).toEqual(expect.objectContaining({ schema: 'civic.replay/0', scenario: 'app.drying.empty', outcome: 'pass', steps: tape.steps.length, source: tape.source }))
+  const listed = await (await page.request.get('/api/review/replays')).json() as { tape: string }[]
+  expect(listed.map((item) => item.tape)).toContain(record.tape)
+})
