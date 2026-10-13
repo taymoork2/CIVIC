@@ -188,5 +188,6 @@ These came out of [agentic development](agentic-development.md) and wait until t
 - **Prototypes.** If reviews need more than the frame walk (D33), the non-AI option is a preview assembled from the component mappings. CIVIC stays out of WYSIWYG and no-code.
 - **The Figma plugin.** Findings on a Figma frame (step 10's Design check), and exact detaches through its `detachedInfo` (decision 0011), scheduled once a team that designs in Figma uses CIVIC.
 - **A return path to Figma.** Reference captures, frames rebuilt from library instances, and token proposals, all through a plugin into a page the designer merges from. This needs the Figma import and plugin first.
+- **Agent-drafted libraries and products** (an exploration, [decision 0011](decisions/0011-layered-design-libraries.md)). Agents outside CIVIC drafting a component library implementation or product screens from the design and contract layers, always as proposals that the library's engineering owner verifies and signs off. CIVIC never presents designers as able to maintain a code library without engineering.
 - **A rebrand demo.** The Fluent Button and Card re-themed to a second brand, showing the blast radius, hidden overrides, and the migration table. A candidate third demo after Card.
 - **New device classes** such as TV and watches. They aren't modelled until they've been researched.
