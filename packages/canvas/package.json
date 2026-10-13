@@ -30,8 +30,6 @@
     "test:host": "node --test server/server-functions.check.mjs server/runtime-service.check.mjs server/canvas-host.check.mjs"
   },
   "dependencies": {
-    "@civic/shell": "workspace:*",
-    "@civic/vite-connector": "workspace:*",
     "@playwright/test": "1.63.0",
     "@vitejs/plugin-react": "6.1.1",
     "react": "19.3.0",
@@ -39,10 +37,16 @@
     "vite": "8.3.1"
   },
   "devDependencies": {
+    "@civic/shell": "workspace:*",
+    "@civic/vite-connector": "workspace:*",
     "@types/node": "26.6.3",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "typescript": "7.0.2",
     "vitest": "5.0.1"
+  },
+  "peerDependencies": {
+    "@civic/shell": "*",
+    "@civic/vite-connector": "*"
   }
 }

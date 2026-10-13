@@ -12,6 +12,20 @@ Then open `http://127.0.0.1:3020/review`. Five examples are included: `examples/
 
 Without a connector, the standalone host opens `module` apps: a manifest, a scenario registry, and a preview entry that exports `mount(container, context)` (see [`@civic/vite-connector`](../vite-connector) for `init` and `check`).
 
+## Installing it in an app
+
+The packages aren't published. An app installs all three from git, pinned to one CIVIC commit (`@civic/shell` and `@civic/vite-connector` are peers of the canvas):
+
+```json
+"dependencies": {
+  "@civic/canvas": "git+https://github.com/taymoork2/CIVIC.git#<commit>&path:/packages/canvas",
+  "@civic/shell": "git+https://github.com/taymoork2/CIVIC.git#<commit>&path:/packages/shell",
+  "@civic/vite-connector": "git+https://github.com/taymoork2/CIVIC.git#<commit>&path:/packages/vite-connector"
+}
+```
+
+Then `pnpm exec civic-canvas --project ./civic.project.json`. Signoff proves this on every commit with `packages/install.check.mjs`.
+
 ## Hosting it elsewhere
 
 `canvasPlugins({ store, connectors, runtime, review })` returns the Vite plugins for a host of your own: React, and `civicReview` from `@civic/vite-connector` pointed at this package. A host that already has its own Vite config, like Laundry's `apps/web`, passes `canvas: canvasRoot` (from `@civic/canvas/root`) to `civicReview` instead.

@@ -168,12 +168,6 @@ importers:
 
   ../../packages/canvas:
     dependencies:
-      '@civic/shell':
-        specifier: workspace:*
-        version: link:../shell
-      '@civic/vite-connector':
-        specifier: workspace:*
-        version: link:../vite-connector
       '@playwright/test':
         specifier: 1.63.0
         version: 1.63.0
@@ -190,6 +184,12 @@ importers:
         specifier: 8.3.1
         version: 8.3.1(@types/node@26.6.3)(esbuild@0.27.0)(jiti@2.7.0)
     devDependencies:
+      '@civic/shell':
+        specifier: workspace:*
+        version: link:../shell
+      '@civic/vite-connector':
+        specifier: workspace:*
+        version: link:../vite-connector
       '@types/node':
         specifier: 26.6.3
         version: 26.6.3
@@ -229,11 +229,10 @@ importers:
         version: 5.0.1(@edge-runtime/vm@5.0.0)(@types/node@26.6.3)(vite@8.3.1(@types/node@26.6.3)(esbuild@0.27.0)(jiti@2.7.0))
 
   ../../packages/vite-connector:
-    dependencies:
+    devDependencies:
       '@civic/shell':
         specifier: workspace:*
         version: link:../shell
-    devDependencies:
       '@types/node':
         specifier: 26.6.3
         version: 26.6.3

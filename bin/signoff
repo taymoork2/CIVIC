@@ -125,6 +125,9 @@ pnpm --dir "$packages_dir" install --frozen-lockfile
 pnpm --dir "$packages_dir" run check
 pnpm --dir "$packages_dir" test
 
+step "CIVIC packages installed from this commit into an empty app, opened in the standalone canvas"
+node "$packages_dir/install.check.mjs"
+
 step "Installing dependencies (the journey engine's copy of Laundry, which links CIVIC's packages)"
 pnpm --dir "$source_dir" install --frozen-lockfile
 step "Types and styles (planner, Convex, web)"
