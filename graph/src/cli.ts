@@ -52,7 +52,7 @@ import {
 } from './decisions.ts'
 import { contextFor, renderWorkOrder } from './context.ts'
 import { forecastLabel, forecastOverride } from './forecast.ts'
-import { staleEvidence, type FreshnessRule } from './freshness.ts'
+import { evidenceAge, freshnessRoot, staleEvidence, type FreshnessRule } from './freshness.ts'
 import { gapsIn, renderGaps } from './gaps.ts'
 import { renderInstanceReview, reviewInstance } from './overrides.ts'
 import { renderScreen, screenFacts } from './screen.ts'
@@ -479,7 +479,18 @@ interface CheckConfig {
 /** The stale evidence in one configured graph, or nothing when no freshness rule names it. */
 function staleIn(config: CheckConfig, root: string, file: string, document: GraphDocument): ReadonlyMap<string, string> | undefined {
   const rule = config.freshness?.find((candidate) => candidate.graph === file)
-  return rule ? staleEvidence(document, rule, root) : undefined
+  const where = rule && freshnessRoot(rule, resolve(root))
+  return rule && where ? staleEvidence(document, rule, where) : undefined
+}
+
+/** For each rule whose code is in a checkout the environment doesn't name: how old its evidence is, and how to compare it. */
+function uncompared(config: CheckConfig, root: string, documents: GraphDocument[]): string[] {
+  return (config.freshness ?? []).flatMap((rule) => {
+    if (!rule.checkout || freshnessRoot(rule, root)) return []
+    const age = evidenceAge(documents[config.graphs.indexOf(rule.graph)]!, rule)
+    if (!age) return []
+    return [`${rule.graph}: ${age.count} piece(s) of evidence from ${rule.checkout.repository} at ${age.revision.slice(0, 12)}, newest captured ${age.capturedAt.slice(0, 10)}. Not compared with its code: set ${rule.checkout.env} to a checkout of ${rule.checkout.repository}.`]
+  })
 }
 
 /** What the graphs know about one screen: the first graph, given or configured, that has it. */
@@ -571,7 +582,10 @@ async function check(): Promise<number> {
   }
   const changeText = change ? renderChange(change, { ...report, graphs: checks.length }) : undefined
   if (args.includes('--json')) console.log(JSON.stringify(change ? { ...report, change } : report, null, 2))
-  else console.log(changeText ? `${renderCheck(report)}\n\n${changeText}` : renderCheck(report))
+  else {
+    console.log(changeText ? `${renderCheck(report)}\n\n${changeText}` : renderCheck(report))
+    for (const note of uncompared(config, root, documents)) console.log(`\n${note}`)
+  }
   if (args.includes('--post')) postStatus(root, report.passed ? 'success' : 'failure', statusLine(report, change))
   if (comment && changeText) postComment(root, comment, changeText)
   return report.passed ? 0 : 1

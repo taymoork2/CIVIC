@@ -1,7 +1,7 @@
 {
   "revision": {
-    "head": "03c31274673cd3b1111db95de7e44bc19f50e005",
-    "source": "8f2943dabe6b99bf15dd1495817a56bd22cddcb8be723fe5752b66a423ff4658"
+    "head": "783e0742dc07ab01d420acbbddca7fddd4c85e73",
+    "source": "fc7a31c20b7c2f74ac8656e205f9b3fa777fb7660ea5008d057c2127d6a9306c"
   },
   "project": {
     "id": "laundry-app",
@@ -1716,6 +1716,36 @@
       ]
     },
     {
+      "id": "legacy.household-details",
+      "label": "household-details",
+      "journey": "Existing specimens",
+      "renderer": "legacy",
+      "component": "apps/web/src/routes/design-preview.tsx",
+      "checks": [
+        "apps/web/src/dev/design-preview.test.ts"
+      ]
+    },
+    {
+      "id": "legacy.household-details-long",
+      "label": "household-details-long",
+      "journey": "Existing specimens",
+      "renderer": "legacy",
+      "component": "apps/web/src/routes/design-preview.tsx",
+      "checks": [
+        "apps/web/src/dev/design-preview.test.ts"
+      ]
+    },
+    {
+      "id": "legacy.household-details-multiple",
+      "label": "household-details-multiple",
+      "journey": "Existing specimens",
+      "renderer": "legacy",
+      "component": "apps/web/src/routes/design-preview.tsx",
+      "checks": [
+        "apps/web/src/dev/design-preview.test.ts"
+      ]
+    },
+    {
       "id": "legacy.household-index",
       "label": "household-index",
       "journey": "Existing specimens",
@@ -1748,6 +1778,56 @@
     {
       "id": "legacy.household-laundry-day",
       "label": "household-laundry-day",
+      "journey": "Existing specimens",
+      "renderer": "legacy",
+      "component": "apps/web/src/routes/design-preview.tsx",
+      "checks": [
+        "apps/web/src/dev/design-preview.test.ts"
+      ]
+    },
+    {
+      "id": "legacy.household-location-empty",
+      "label": "household-location-empty",
+      "journey": "Existing specimens",
+      "renderer": "legacy",
+      "component": "apps/web/src/routes/design-preview.tsx",
+      "checks": [
+        "apps/web/src/dev/design-preview.test.ts"
+      ]
+    },
+    {
+      "id": "legacy.household-location-error",
+      "label": "household-location-error",
+      "journey": "Existing specimens",
+      "renderer": "legacy",
+      "component": "apps/web/src/routes/design-preview.tsx",
+      "checks": [
+        "apps/web/src/dev/design-preview.test.ts"
+      ]
+    },
+    {
+      "id": "legacy.household-location-offline",
+      "label": "household-location-offline",
+      "journey": "Existing specimens",
+      "renderer": "legacy",
+      "component": "apps/web/src/routes/design-preview.tsx",
+      "checks": [
+        "apps/web/src/dev/design-preview.test.ts"
+      ]
+    },
+    {
+      "id": "legacy.household-location-picker",
+      "label": "household-location-picker",
+      "journey": "Existing specimens",
+      "renderer": "legacy",
+      "component": "apps/web/src/routes/design-preview.tsx",
+      "checks": [
+        "apps/web/src/dev/design-preview.test.ts"
+      ]
+    },
+    {
+      "id": "legacy.household-locations",
+      "label": "household-locations",
       "journey": "Existing specimens",
       "renderer": "legacy",
       "component": "apps/web/src/routes/design-preview.tsx",

@@ -8,7 +8,7 @@ Roadmap [step 9](../../docs/roadmap.md#9-real-inputs-replace-the-stand-ins): rea
 |---|---|
 | Which journeys and screens have run evidence, and which fail? | [`out/runs.md`](out/runs.md): one row per journey, then every failing test with the screens it covers. |
 | What does one screen look like in the graph? | `bin/civic screen target:laundry.<scenario>`, or the Contract panel on the journey canvas, which shows the same facts for the selected screen. |
-| What has Laundry declared but can't yet show and prove? | [`out/coverage.md`](out/coverage.md): one open Coverage gap record per expectation in the journey engine's coverage contract that no passing run covers yet. |
+| What has Laundry declared but can't yet show and prove? | [`out/coverage.md`](out/coverage.md): one open Coverage gap record per expectation in Laundry's coverage contract that no passing run covers yet. |
 | What does Laundry's design reference cover? | [`out/design.md`](out/design.md): Open Design's reference renders as a design file, [`out/design.json`](out/design.json), which `bin/civic design` registers as Laundry's design line. |
 | Do Laundry's design tokens match its code? | [`out/tokens.md`](out/tokens.md): the design reference's custom properties against the web tokens Laundry's token build generates. Each name set differently is an open Contract Conflict. |
 | Which of the reference's component families does the web app build? | [`out/components.md`](out/components.md): the contract's 14 families, and the 6 with a web component exported under the family's name. |
@@ -23,9 +23,10 @@ On the first capture, at commit `ea0d4e83a6b0`, 24 of Laundry's 27 review tests 
 
 | File | What it is | How it's read |
 |---|---|---|
-| [`inputs/review-index.json`](inputs/review-index.json) | The journey engine's review index for Laundry (`GET /api/review/index`): 204 scenarios in 12 groups, their declared paths, the cross-route actions found in source, and each scenario's checks | `readJourneyIndex` |
-| [`inputs/coverage.json`](inputs/coverage.json) | The journey engine's coverage contract at the same commit: the screens, interactions and journeys Laundry declares, with their expected scenarios and acceptance requirements | `readCoverageContract` |
-| [`inputs/playwright-report.json`](inputs/playwright-report.json) | Playwright's JSON report from the four browser specs the scenarios name as their checks, run against a review server, with attachments and machine paths removed | `readPlaywrightReport` |
+| [`inputs/review-index.json`](inputs/review-index.json) | Laundry's review index (`GET /api/review/index` on its review server): its scenarios in journeys, their declared paths, the cross-route actions found in source, and each scenario's checks | `readJourneyIndex` |
+| [`inputs/coverage.json`](inputs/coverage.json) | Laundry's coverage contract at the same commit: the screens, interactions and journeys Laundry declares, with their expected scenarios and acceptance requirements | `readCoverageContract` |
+| [`inputs/playwright-report.json`](inputs/playwright-report.json) | Playwright's JSON report from the browser specs the scenarios name as their checks, run against a review server, with attachments and machine paths removed | `readPlaywrightReport` |
+| [`inputs/source.json`](inputs/source.json) | What the build reads from Laundry's source at the same commit: those spec files, the generated web tokens, and the exported declarations in `apps/web/src`, so the graph builds without a Laundry checkout | `build.ts` |
 
 Laundry's design reference comes from the vendored Open Design package, [`journey-engine/design/laundry-reference/source-reference/receipt.json`](../../journey-engine/design/laundry-reference/source-reference/receipt.json), read by `readRenderReceipt`. It isn't captured: a newer reference or a designer's proposal comes from Open Design or Claude Design with a receipt of the same shape.
 
@@ -45,13 +46,18 @@ All three are read at the commit they were captured at, and every record carries
 
 ## Recapturing
 
+Laundry's evidence comes from Laundry's own repository, [taymoork2/washcloset](https://github.com/taymoork2/washcloset), which depends on CIVIC ([decision 0010](../../docs/decisions/0010-laundry-depends-on-civic.md), step 5):
+
 ```sh
-cd journey-engine/source && pnpm --dir apps/web run review     # a review server on port 3010
-node projects/laundry/capture.ts                           # from the repository root, on a clean journey-engine/source
+export LAUNDRY_CHECKOUT=~/code/washcloset                  # a clean checkout, at the commit to capture
+(cd "$LAUNDRY_CHECKOUT" && pnpm --dir apps/web review)     # Laundry's review server on port 3010
+node projects/laundry/capture.ts                           # from this repository's root
 node projects/laundry/build.ts                             # rebuild out/
 bin/civic check                                            # new findings block; fixed ones are listed
 ```
 
-Or let the signoff decide: `bin/signoff --capture` recaptures only when the gate finds the evidence stale, meaning `journey-engine/source` changed since the commit it was captured at ([`civic.check.json`](../../civic.check.json)'s freshness rule). A recapture stops the signoff so the new evidence is reviewed and committed first. The recapture at `c694591b9b25`, after the Contract panel change, gave the same 24 passes and 3 failures. On 2026-10-12, after the v7 import and the move to `journey-engine/`, five stale review tests were brought up to date (renamed headings and controls, whole-screen renderers that aren't drawers, and the towel now saving through the app). The recapture at `e8cb256b31d3` runs 39 tests across 6 spec files, and all pass. The v7 index adds a Live application journey whose 14 screens have no declared paths yet, so they're dead ends, held by the baseline.
+Or let the signoff decide: `bin/signoff --capture` recaptures only when the gate finds the evidence stale, meaning Laundry's `apps/web`, `convex` or `packages` changed in the checkout since the commit it was captured at ([`civic.check.json`](../../civic.check.json)'s freshness rule). Without `LAUNDRY_CHECKOUT` the gate doesn't compare the evidence with Laundry's code and says how old it is instead. A recapture stops the signoff so the new evidence is reviewed and committed first. The recapture at `c694591b9b25`, after the Contract panel change, gave the same 24 passes and 3 failures. On 2026-10-12, after the v7 import and the move to `journey-engine/`, five stale review tests were brought up to date (renamed headings and controls, whole-screen renderers that aren't drawers, and the towel now saving through the app). The recapture at `e8cb256b31d3` runs 39 tests across 6 spec files, and all pass. The v7 index adds a Live application journey whose 14 screens have no declared paths yet, so they're dead ends, held by the baseline.
 
-The capture refuses a dirty `journey-engine/source`, and it refuses a review server that read a different commit, because the evidence would describe code no commit holds. Laundry's Playwright config uses installed Chrome. `bin/signoff` fails when `out/` doesn't match the inputs. Because the build reads the spec files to see which scenarios each test opens, an edited spec can also change `out/`, which is a sign to recapture.
+The first capture from washcloset, at `783e0742dc07` on 2026-10-13, ran 37 tests across 6 spec files, and all passed (one on a retry). The index there has 229 scenarios.
+
+The capture refuses a dirty checkout, and it refuses a review server that read a different commit, because the evidence would describe code no commit holds. Laundry's Playwright config uses installed Chrome; `CIVIC_BROWSER_PATH` names another Chromium. `bin/signoff` fails when `out/` doesn't match the inputs. Because the build reads the spec files to see which scenarios each test opens, an edited spec can also change `out/`, which is a sign to recapture.

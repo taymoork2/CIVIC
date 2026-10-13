@@ -15,7 +15,7 @@ export { attribute, changeBetween, renderChange, type ChangeReport, type GraphAt
 export { renderCoverage, runCoverage, type CoverageSubject, type OutcomeChange, type RunCoverage } from './coverage.ts'
 export { releaseBreaks, releasesBetween, renderReleases, type OverrideImpact, type ReleaseImpact, type UnmappedVariant } from './release.ts'
 export { DESIGN_INTENT, frameWalk, renderWalk, renderWalkPage, walkPath, type FrameWalk, type WalkAction, type WalkComponent, type WalkFrame } from './walk.ts'
-export { staleEvidence, type FreshnessRule } from './freshness.ts'
+export { evidenceAge, freshnessRoot, staleEvidence, type FreshnessRule } from './freshness.ts'
 export { baselineFrom, checkDocument, checkGraph, compareToBaseline, DEFAULT_BLOCKING, FINDING_KINDS, renderCheck, statusLine, type Baseline, type BaselineEntry, type CheckOptions, type CheckReport, type Finding, type FindingKind, type GraphCheck, type Measure } from './check.ts'
 export {
   adoptionsOf,

@@ -16,8 +16,14 @@
         "playwright"
       ],
       "watch": [
-        "journey-engine/source"
-      ]
+        "apps/web",
+        "convex",
+        "packages"
+      ],
+      "checkout": {
+        "repository": "taymoork2/washcloset",
+        "env": "LAUNDRY_CHECKOUT"
+      }
     }
   ]
 }
