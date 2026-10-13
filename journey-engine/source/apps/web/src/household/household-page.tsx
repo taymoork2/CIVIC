@@ -10,7 +10,7 @@ import { RequireHousehold, type CurrentHousehold } from '@/account/account'
 import type { Id } from '../../../../convex/_generated/dataModel'
 import { api } from '../api'
 import { BottleSheet } from '@/products/bottle-sheet'
-import { countWord, householdText } from '../copy'
+import { householdText } from '../copy'
 import { householdListCopy } from '../copy-household'
 import { MachineTile, ProductTile, productGroup } from '@/household/household-tiles'
 import { RowSection } from '@/household/household-blocks'
@@ -75,7 +75,7 @@ function HouseholdPage({ household }: { household: CurrentHousehold }) {
   }
   const closeItem = () => dismissItem(router, () => void navigate({ to: '/household', search: { section }, replace: true, resetScroll: false }))
   return (
-    <HouseholdView name={household.name} section={section} onSection={pick} detail={inventory === undefined ? undefined : `${countWord(inventory.wearers.length, 'clothing profile')} · ${countWord(inventory.machines.filter(machine => !machine.archived).length, 'appliance')} · ${countWord(inventory.supplies.filter(supply => !supply.archived).length, 'product')}`}>
+    <HouseholdView name={household.name} section={section} onSection={pick} counts={inventory === undefined ? undefined : { profiles: inventory.wearers.length, appliances: inventory.machines.filter(machine => !machine.archived).length, products: inventory.supplies.filter(supply => !supply.archived).length }}>
       {section === 'people' ? <Members household={household} wearers={inventory?.wearers ?? null} supplies={inventory?.supplies ?? []} /> : inventory === undefined ? <Loading what={section === 'machines' ? householdText.loadingMachines : householdText.loadingProducts} /> : section === 'machines' ? (
         <Machines householdId={household.householdId} savedPlace={household.washPlace} machines={inventory.machines} currency={inventory.planning.currency ?? 'USD'} water={inventory.planning.water} day={inventory.planning.day} selected={search.machine}
           onOpen={(machine) => void navigate({ to: '/household', search: { section: 'machines', machine }, state: { itemReturnTo: router.state.location.href }, resetScroll: false })} onClose={closeItem} />
@@ -88,9 +88,9 @@ function HouseholdPage({ household }: { household: CurrentHousehold }) {
 }
 
 /** The connected page and visual fixtures share the same title, tabs and content layout. */
-export function HouseholdView({ name, section, onSection, detail, children }: { name: string; section: HouseholdSection; onSection: (section: HouseholdSection) => void; detail?: ReactNode; children: ReactNode }) {
+export function HouseholdView({ name, section, onSection, counts, children }: { name: string; section: HouseholdSection; onSection: (section: HouseholdSection) => void; counts?: { profiles: number; appliances: number; products: number }; children: ReactNode }) {
   return <div className={cn(pageClassName, householdPageClassName)}>
-    <CareHero variant="feature" photo title={name} detail={detail} art={<CategoryPhoto src={section === 'machines' ? '/design/laundry-setup.webp' : section === 'people' ? '/welcome-household.webp' : '/design/detergent-pods-photo.webp'} fallback={null} loading="eager" />} />
+    <CareHero variant="feature" photo title={name} detail={counts === undefined ? undefined : <dl className="m-0 grid grid-cols-3 rounded-field bg-surface-2 py-3 text-center shadow-[inset_0_1px_0_color-mix(in_srgb,var(--ink)_6%,transparent)] [&_>_div+div]:border-s [&_>_div+div]:border-border [&_>_div]:min-w-0 [&_>_div]:px-2 [&_>_div]:grid [&_>_div]:grid-rows-[auto_1fr] [&_dt]:row-start-2 [&_dd]:row-start-1"><div><dt>Profiles</dt><dd className="m-0 mt-1 text-[length:var(--step-2)] font-semibold tabular-nums text-ink">{counts.profiles}</dd></div><div><dt>Appliances</dt><dd className="m-0 mt-1 text-[length:var(--step-2)] font-semibold tabular-nums text-ink">{counts.appliances}</dd></div><div><dt>Products</dt><dd className="m-0 mt-1 text-[length:var(--step-2)] font-semibold tabular-nums text-ink">{counts.products}</dd></div></dl>} art={<CategoryPhoto src={section === 'machines' ? '/design/laundry-setup.webp' : section === 'people' ? '/welcome-household.webp' : '/design/detergent-pods-photo.webp'} fallback={null} loading="eager" />} />
     <SectionNav label={householdText.show} value={section} onChange={onSection} items={sections.map(([value, label]) => ({ value, label }))} />
     {children}
   </div>

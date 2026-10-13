@@ -1,19 +1,19 @@
 {
   "config": {
     "metadata": {
-      "civic.revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+      "civic.revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
       "civic.tool": "playwright"
     }
   },
   "suites": [
     {
-      "title": "review-family.spec.ts",
-      "file": "review-family.spec.ts",
+      "title": "review-family-runtime.spec.ts",
+      "file": "review-family-runtime.spec.ts",
       "specs": [
         {
-          "title": "family size and stage changes require reset; 1000-item selection survives paging and partial put-away",
-          "file": "review-family.spec.ts",
-          "line": 9,
+          "title": "native saved steps survive actual disconnection, same-run switching and reopening without automatic resend",
+          "file": "review-family-runtime.spec.ts",
+          "line": 6,
           "tests": [
             {
               "annotations": [],
@@ -21,8 +21,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:39:53.576Z",
-                  "duration": 2921,
+                  "startTime": "2026-10-13T00:00:59.977Z",
+                  "duration": 67559,
                   "retry": 0
                 }
               ]
@@ -30,9 +30,9 @@
           ]
         },
         {
-          "title": "each preset renders the real presenter at 100, 500 and 1000 items without contacting a backend",
-          "file": "review-family.spec.ts",
-          "line": 37,
+          "title": "one load goes from washing through drying to a partial and then full put-away in the same run",
+          "file": "review-family-runtime.spec.ts",
+          "line": 68,
           "tests": [
             {
               "annotations": [],
@@ -40,8 +40,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:39:56.680Z",
-                  "duration": 13966,
+                  "startTime": "2026-10-13T00:02:07.734Z",
+                  "duration": 87208,
                   "retry": 0
                 }
               ]
@@ -49,9 +49,9 @@
           ]
         },
         {
-          "title": "a completed load transfers only its original twenty items into drying",
-          "file": "review-family.spec.ts",
-          "line": 52,
+          "title": "family day starts with a private 1000-piece run and exposes same-run account and connection controls",
+          "file": "review-family-runtime.spec.ts",
+          "line": 133,
           "tests": [
             {
               "annotations": [],
@@ -59,8 +59,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:40:10.656Z",
-                  "duration": 2008,
+                  "startTime": "2026-10-13T00:03:34.962Z",
+                  "duration": 29332,
                   "retry": 0
                 }
               ]
@@ -68,9 +68,9 @@
           ]
         },
         {
-          "title": "canvas reviews retain the family preset and an agent can retrieve its brief",
-          "file": "review-family.spec.ts",
-          "line": 67,
+          "title": "device, fold and orientation changes resize the real iframe and keep the same run and selection",
+          "file": "review-family-runtime.spec.ts",
+          "line": 154,
           "tests": [
             {
               "annotations": [],
@@ -78,65 +78,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:40:12.679Z",
-                  "duration": 4771,
-                  "retry": 0
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "all five loads retain their items through washing, partial drying and put-away",
-          "file": "review-family.spec.ts",
-          "line": 87,
-          "tests": [
-            {
-              "annotations": [],
-              "status": "expected",
-              "results": [
-                {
-                  "status": "passed",
-                  "startTime": "2026-10-12T07:40:17.465Z",
-                  "duration": 4611,
-                  "retry": 0
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "failed wash or drying actions preserve the current items and selected inputs",
-          "file": "review-family.spec.ts",
-          "line": 115,
-          "tests": [
-            {
-              "annotations": [],
-              "status": "expected",
-              "results": [
-                {
-                  "status": "passed",
-                  "startTime": "2026-10-12T07:40:22.088Z",
-                  "duration": 2282,
-                  "retry": 0
-                }
-              ]
-            }
-          ]
-        },
-        {
-          "title": "returning to the family plan retains a completed wash and an unfinished drying selection",
-          "file": "review-family.spec.ts",
-          "line": 128,
-          "tests": [
-            {
-              "annotations": [],
-              "status": "expected",
-              "results": [
-                {
-                  "status": "passed",
-                  "startTime": "2026-10-12T07:40:24.390Z",
-                  "duration": 1883,
+                  "startTime": "2026-10-13T00:04:04.312Z",
+                  "duration": 38275,
                   "retry": 0
                 }
               ]
@@ -160,8 +103,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:40:26.296Z",
-                  "duration": 1958,
+                  "startTime": "2026-10-13T00:06:21.863Z",
+                  "duration": 2419,
                   "retry": 0
                 }
               ]
@@ -179,8 +122,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:40:28.272Z",
-                  "duration": 1715,
+                  "startTime": "2026-10-13T00:06:24.479Z",
+                  "duration": 1907,
                   "retry": 0
                 }
               ]
@@ -204,8 +147,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:40:30.008Z",
-                  "duration": 1789,
+                  "startTime": "2026-10-13T00:06:26.415Z",
+                  "duration": 1806,
                   "retry": 0
                 }
               ]
@@ -223,8 +166,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:40:31.810Z",
-                  "duration": 2140,
+                  "startTime": "2026-10-13T00:06:28.233Z",
+                  "duration": 2132,
                   "retry": 0
                 }
               ]
@@ -242,8 +185,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:40:33.963Z",
-                  "duration": 2282,
+                  "startTime": "2026-10-13T00:06:30.380Z",
+                  "duration": 2206,
                   "retry": 0
                 }
               ]
@@ -261,8 +204,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:40:36.260Z",
-                  "duration": 1401,
+                  "startTime": "2026-10-13T00:06:32.602Z",
+                  "duration": 1424,
                   "retry": 0
                 }
               ]
@@ -280,8 +223,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:40:37.677Z",
-                  "duration": 3283,
+                  "startTime": "2026-10-13T00:06:34.042Z",
+                  "duration": 3679,
                   "retry": 0
                 }
               ]
@@ -299,8 +242,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:40:40.978Z",
-                  "duration": 2401,
+                  "startTime": "2026-10-13T00:06:37.738Z",
+                  "duration": 1867,
                   "retry": 0
                 }
               ]
@@ -324,8 +267,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:42:16.877Z",
-                  "duration": 3821,
+                  "startTime": "2026-10-13T00:04:42.623Z",
+                  "duration": 4504,
                   "retry": 0
                 }
               ]
@@ -343,8 +286,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:42:20.891Z",
-                  "duration": 3551,
+                  "startTime": "2026-10-13T00:04:47.142Z",
+                  "duration": 4057,
                   "retry": 0
                 }
               ]
@@ -362,8 +305,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:42:24.454Z",
-                  "duration": 4669,
+                  "startTime": "2026-10-13T00:04:51.213Z",
+                  "duration": 5216,
                   "retry": 0
                 }
               ]
@@ -381,8 +324,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:42:29.135Z",
-                  "duration": 6017,
+                  "startTime": "2026-10-13T00:04:56.448Z",
+                  "duration": 6780,
                   "retry": 0
                 }
               ]
@@ -400,8 +343,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:42:35.163Z",
-                  "duration": 5095,
+                  "startTime": "2026-10-13T00:05:03.247Z",
+                  "duration": 6192,
                   "retry": 0
                 }
               ]
@@ -419,8 +362,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:42:40.272Z",
-                  "duration": 7202,
+                  "startTime": "2026-10-13T00:05:09.452Z",
+                  "duration": 8726,
                   "retry": 0
                 }
               ]
@@ -438,8 +381,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:42:47.491Z",
-                  "duration": 5579,
+                  "startTime": "2026-10-13T00:05:18.189Z",
+                  "duration": 7143,
                   "retry": 0
                 }
               ]
@@ -457,8 +400,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:42:53.085Z",
-                  "duration": 3145,
+                  "startTime": "2026-10-13T00:05:25.345Z",
+                  "duration": 4134,
                   "retry": 0
                 }
               ]
@@ -482,8 +425,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:42:56.259Z",
-                  "duration": 9202,
+                  "startTime": "2026-10-13T00:05:29.527Z",
+                  "duration": 10872,
                   "retry": 0
                 }
               ]
@@ -501,8 +444,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:43:05.476Z",
-                  "duration": 9072,
+                  "startTime": "2026-10-13T00:05:40.420Z",
+                  "duration": 9918,
                   "retry": 0
                 }
               ]
@@ -520,8 +463,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:43:14.563Z",
-                  "duration": 7799,
+                  "startTime": "2026-10-13T00:05:50.352Z",
+                  "duration": 9822,
                   "retry": 0
                 }
               ]
@@ -531,7 +474,7 @@
         {
           "title": "a failed towel save keeps its draft, records recovery and replays the successful retry",
           "file": "review-towel-runtime.spec.ts",
-          "line": 58,
+          "line": 67,
           "tests": [
             {
               "annotations": [],
@@ -539,8 +482,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:43:22.377Z",
-                  "duration": 3721,
+                  "startTime": "2026-10-13T00:06:00.188Z",
+                  "duration": 4361,
                   "retry": 0
                 }
               ]
@@ -550,7 +493,7 @@
         {
           "title": "portalled towel screens and the saved outcome produce real snapshots",
           "file": "review-towel-runtime.spec.ts",
-          "line": 70,
+          "line": 79,
           "tests": [
             {
               "annotations": [],
@@ -558,8 +501,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:43:26.120Z",
-                  "duration": 707,
+                  "startTime": "2026-10-13T00:06:04.559Z",
+                  "duration": 15854,
                   "retry": 0
                 }
               ]
@@ -583,8 +526,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:40:43.405Z",
-                  "duration": 3367,
+                  "startTime": "2026-10-13T00:06:39.642Z",
+                  "duration": 3338,
                   "retry": 0
                 }
               ]
@@ -602,8 +545,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:40:46.783Z",
-                  "duration": 3334,
+                  "startTime": "2026-10-13T00:06:42.994Z",
+                  "duration": 3520,
                   "retry": 0
                 }
               ]
@@ -621,8 +564,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:40:50.129Z",
-                  "duration": 4233,
+                  "startTime": "2026-10-13T00:06:46.530Z",
+                  "duration": 5206,
                   "retry": 0
                 }
               ]
@@ -640,8 +583,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:40:54.374Z",
-                  "duration": 49615,
+                  "startTime": "2026-10-13T00:06:51.752Z",
+                  "duration": 59009,
                   "retry": 0
                 }
               ]
@@ -659,8 +602,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:41:44.007Z",
-                  "duration": 6640,
+                  "startTime": "2026-10-13T00:07:50.780Z",
+                  "duration": 6953,
                   "retry": 0
                 }
               ]
@@ -678,8 +621,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:41:50.667Z",
-                  "duration": 5468,
+                  "startTime": "2026-10-13T00:07:57.746Z",
+                  "duration": 5565,
                   "retry": 0
                 }
               ]
@@ -697,8 +640,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:41:56.151Z",
-                  "duration": 4478,
+                  "startTime": "2026-10-13T00:08:03.324Z",
+                  "duration": 5053,
                   "retry": 0
                 }
               ]
@@ -716,8 +659,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:42:00.643Z",
-                  "duration": 2713,
+                  "startTime": "2026-10-13T00:08:08.391Z",
+                  "duration": 3314,
                   "retry": 0
                 }
               ]
@@ -727,7 +670,7 @@
         {
           "title": "pointer pins capture an element and a region; unsent feedback survives reload",
           "file": "review-workspace.spec.ts",
-          "line": 214,
+          "line": 216,
           "tests": [
             {
               "annotations": [],
@@ -735,8 +678,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:42:03.372Z",
-                  "duration": 5316,
+                  "startTime": "2026-10-13T00:08:11.718Z",
+                  "duration": 5835,
                   "retry": 0
                 }
               ]
@@ -746,7 +689,7 @@
         {
           "title": "student, member and missing-care presets affect a desktop preview; offline retains its draft",
           "file": "review-workspace.spec.ts",
-          "line": 248,
+          "line": 250,
           "tests": [
             {
               "annotations": [],
@@ -754,8 +697,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:42:08.705Z",
-                  "duration": 3525,
+                  "startTime": "2026-10-13T00:08:17.571Z",
+                  "duration": 4235,
                   "retry": 0
                 }
               ]
@@ -765,7 +708,7 @@
         {
           "title": "the direct product Contents editor saves through the real form and local adapter",
           "file": "review-workspace.spec.ts",
-          "line": 269,
+          "line": 271,
           "tests": [
             {
               "annotations": [],
@@ -773,8 +716,8 @@
               "results": [
                 {
                   "status": "passed",
-                  "startTime": "2026-10-12T07:42:12.244Z",
-                  "duration": 3743,
+                  "startTime": "2026-10-13T00:08:21.840Z",
+                  "duration": 3585,
                   "retry": 0
                 }
               ]
@@ -785,9 +728,9 @@
     }
   ],
   "stats": {
-    "startTime": "2026-10-12T07:39:52.829Z",
-    "duration": 214193.687,
-    "expected": 39,
+    "startTime": "2026-10-13T00:00:59.250Z",
+    "duration": 446294.765,
+    "expected": 36,
     "skipped": 0,
     "unexpected": 0,
     "flaky": 0

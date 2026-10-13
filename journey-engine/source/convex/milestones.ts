@@ -2,7 +2,7 @@ import { v } from 'convex/values'
 
 import type { Doc, Id } from './_generated/dataModel'
 import { query } from './_generated/server'
-import { authorize } from './access'
+import { authorize, visible } from './access'
 
 /**
  * Closet milestones, read from what happened and nothing else: the first garment saved and the first
@@ -36,8 +36,8 @@ export function careKnown(care: MilestoneCare): number {
 export const earned = query({
   args: { householdId: v.id('households') },
   handler: async (ctx, args): Promise<EarnedMilestones> => {
-    await authorize(ctx, 'household.read', { householdId: args.householdId })
-    const textiles = (await ctx.db.query('textiles').withIndex('by_household', (q) => q.eq('householdId', args.householdId)).collect())
+    const { actor } = await authorize(ctx, 'household.read', { householdId: args.householdId })
+    const textiles = (await visible(ctx, actor, await ctx.db.query('textiles').withIndex('by_household', (q) => q.eq('householdId', args.householdId)).collect()))
       .filter((textile) => textile.guest !== true && textile.trashedAt === undefined)
 
     // First garment saved: the earliest piece, with the pieces saved in the same batch.

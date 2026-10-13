@@ -17,7 +17,7 @@ export async function ensurePrincipal(ctx: MutationCtx, displayName?: string): P
   }
   const identity = await ctx.auth.getUserIdentity()
   if (identity === null) fail('unauthenticated', 'Unauthenticated')
-  const actor = await principalFromAuth(ctx.auth)
+  const actor = await principalFromAuth(ctx)
   const now = Date.now()
   const principal = await ctx.db
     .query('principals')

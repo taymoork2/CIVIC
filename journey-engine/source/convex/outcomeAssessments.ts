@@ -19,7 +19,7 @@ async function authorizedRecord(ctx: ReadCtx, action: Action, recordId: Id<'wash
   if (record === null) fail('not_found', 'Wash record not found')
   const textile = (await authorize(ctx, action, { textileId: record.textileId })).textile
   if (record.householdId !== textile.householdId) fail('forbidden', 'Forbidden')
-  return { record, actor: await principalFromAuth(ctx.auth) }
+  return { record, actor: await principalFromAuth(ctx) }
 }
 
 /** Only the current person's slots are returned; there are at most six dimensions × three stages. */

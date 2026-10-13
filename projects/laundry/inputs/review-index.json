@@ -1,7 +1,7 @@
 {
   "revision": {
-    "head": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
-    "source": "f85058d5f5316b771ecf835d14e01b6e2c6d83a496744252105f51e602109bc8"
+    "head": "03c31274673cd3b1111db95de7e44bc19f50e005",
+    "source": "8f2943dabe6b99bf15dd1495817a56bd22cddcb8be723fe5752b66a423ff4658"
   },
   "project": {
     "id": "laundry-app",
@@ -755,97 +755,95 @@
     },
     {
       "id": "family.planning",
-      "label": "Family · declared load plan",
-      "journey": "Family simulation",
-      "renderer": "family",
-      "component": "apps/web/src/review/family-preview.tsx",
+      "label": "Family · plan the laundry day",
+      "journey": "Family laundry day",
+      "renderer": "runtime",
+      "component": "apps/web/src/laundry/laundry-view.tsx",
       "checks": [
-        "apps/web/e2e/review-family.spec.ts"
+        "apps/web/e2e/review-family-runtime.spec.ts",
+        "apps/web/scripts/review-runtime.check.mjs"
       ],
       "edges": [
         {
-          "action": "Open next fixture load",
+          "action": "Review load and start preparation",
           "destination": "family.washing",
-          "when": "An untransferred 20-item load remains in the declared synthetic plan",
-          "effect": "Retain the original item IDs and any completed wash"
+          "when": "The real planner includes selected dirty pieces and the washer recipe is confirmed",
+          "effect": "Start a real isolated session for the original selected IDs"
         }
       ]
     },
     {
       "id": "family.washing",
-      "label": "Family · wash load",
-      "journey": "Family simulation",
-      "renderer": "family",
-      "component": "apps/web/src/review/family-preview.tsx",
+      "label": "Family · prepare and wash",
+      "journey": "Family laundry day",
+      "renderer": "runtime",
+      "component": "apps/web/src/laundry/session-view.tsx",
       "checks": [
-        "apps/web/e2e/review-family.spec.ts"
+        "apps/web/e2e/review-family-runtime.spec.ts",
+        "apps/web/scripts/review-runtime.check.mjs"
       ],
       "edges": [
         {
-          "action": "Move to drying queue",
+          "action": "Transfer washed pieces",
           "destination": "family.drying",
-          "when": "This load has finished washing and the synthetic condition permits writes",
-          "effect": "Transfer this load's original 20 items once; retain every other load"
+          "when": "The preparation checklist and wash have been confirmed with sufficient synthetic time elapsed",
+          "effect": "Transfer only the original pieces in this session"
         },
         {
-          "action": "Back to Laundry",
+          "action": "Back to laundry day",
           "destination": "family.planning",
-          "when": "Leave the wash screen without resetting the family run",
-          "effect": "Retain this load's completed wash and the existing drying queue"
+          "when": "Leave this session without resetting the run",
+          "effect": "Retain session progress and queued drying pieces"
         }
       ]
     },
     {
       "id": "family.drying",
       "label": "Family · drying check",
-      "journey": "Family simulation",
-      "renderer": "family",
-      "component": "apps/web/src/review/family-preview.tsx",
+      "journey": "Family laundry day",
+      "renderer": "runtime",
+      "component": "apps/web/src/drying/drying-view.tsx",
       "checks": [
-        "apps/web/e2e/review-family.spec.ts"
+        "apps/web/e2e/review-family-runtime.spec.ts",
+        "apps/web/scripts/review-runtime.check.mjs"
       ],
       "edges": [
         {
-          "action": "Confirm dry pieces",
+          "action": "Confirm selected pieces dry",
           "destination": "family.putaway",
-          "when": "Selected pieces belong to a retained drying run and writes are available",
-          "effect": "Mark only selected pieces dry; keep the damp remainder drying"
-        },
-        {
-          "action": "Wash next load",
-          "destination": "family.washing",
-          "when": "An untransferred family load remains",
-          "effect": "Keep drying runs and unsaved selections while opening the next load"
+          "when": "Selected pieces belong to this drying run",
+          "effect": "Keep damp unselected pieces drying"
         },
         {
           "action": "Back to Laundry",
           "destination": "family.planning",
-          "when": "Leave drying without resetting the family run",
-          "effect": "Keep the same items, runs and put-away history"
+          "when": "Leave drying without resetting the run",
+          "effect": "Keep the same pieces and drying history"
         }
       ]
     },
     {
       "id": "family.putaway",
       "label": "Family · put away",
-      "journey": "Family simulation",
-      "renderer": "family",
-      "component": "apps/web/src/review/family-preview.tsx",
+      "journey": "Family laundry day",
+      "renderer": "runtime",
+      "component": "apps/web/src/drying/drying-view.tsx",
       "checks": [
-        "apps/web/e2e/review-family.spec.ts"
+        "apps/web/e2e/review-family-runtime.spec.ts",
+        "apps/web/scripts/review-runtime.check.mjs"
       ],
       "edges": [
         {
-          "action": "Put away selected pieces",
+          "action": "Put away selected dry pieces",
           "destination": "family.drying",
-          "when": "All selected IDs are currently dry and writes are available",
-          "effect": "Mark those original textiles clean; keep unselected and damp pieces"
+          "when": "All selected IDs are dry and this account may modify them",
+          "effect": "Mark those original pieces clean; retain damp pieces"
         },
         {
-          "action": "Wash next load",
-          "destination": "family.washing",
-          "when": "An untransferred family load remains",
-          "effect": "Retain the put-away selection and all drying state"
+          "action": "Back to Laundry",
+          "destination": "family.planning",
+          "when": "Leave put-away without resetting the run",
+          "effect": "Retain completed put-away history"
         }
       ]
     },
@@ -1800,6 +1798,16 @@
     {
       "id": "legacy.household-people-member",
       "label": "household-people-member",
+      "journey": "Existing specimens",
+      "renderer": "legacy",
+      "component": "apps/web/src/routes/design-preview.tsx",
+      "checks": [
+        "apps/web/src/dev/design-preview.test.ts"
+      ]
+    },
+    {
+      "id": "legacy.household-people-removed",
+      "label": "household-people-removed",
       "journey": "Existing specimens",
       "renderer": "legacy",
       "component": "apps/web/src/routes/design-preview.tsx",

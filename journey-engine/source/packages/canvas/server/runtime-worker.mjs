@@ -16,18 +16,22 @@ const entry = await server.ssrLoadModule(workerData.entry)
 if (!['createRuntime', 'createFetchRuntime', 'createServerFnRuntime'].some((name) => typeof entry[name] === 'function')) throw Error('Runtime entry must export createRuntime(seed), createFetchRuntime(seed) or createServerFnRuntime(seed).')
 // These workers execute trusted application code; they never reach a network endpoint.
 globalThis.fetch = async () => { throw Error('External requests are disabled in isolated review.') }
+// The run's clock: fixed at its start, and moved only by an explicit, journaled `time` step.
 const RealDate = Date
+let clock = workerData.now
 globalThis.Date = new Proxy(RealDate, {
-  construct: (target, args) => Reflect.construct(target, args.length ? args : [workerData.now]),
-  apply: () => new RealDate(workerData.now).toString(),
-  get: (target, key) => key === 'now' ? () => workerData.now : Reflect.get(target, key),
+  construct: (target, args) => Reflect.construct(target, args.length ? args : [clock]),
+  apply: () => new RealDate(clock).toString(),
+  get: (target, key) => key === 'now' ? () => clock : Reflect.get(target, key),
 })
 
 // The page sends this in place of the run's review credential, so recordings never hold it and replay across runs.
 const credentialPlaceholder = '[review credential]'
-const identity = workerData.identity
-const reveal = (text) => identity ? text.replaceAll(credentialPlaceholder, identity.credential) : text
-const conceal = (text) => identity ? text.replaceAll(identity.credential, credentialPlaceholder) : text
+// Every persona with an identity is an account of this run; `active` is the one acting now.
+const identities = workerData.identities ?? []
+let active = workerData.identity ?? null
+const reveal = (text) => active ? text.replaceAll(credentialPlaceholder, active.credential) : text
+const conceal = (text) => identities.reduce((value, row) => value.replaceAll(row.credential, credentialPlaceholder), text)
 
 /** The run's signed-in session: cookies the app sets and headers its sign-in hands back. The page never holds it. */
 function sessionJar() {
@@ -59,8 +63,8 @@ async function send(app, jar, path, init) {
   return response
 }
 
-/** Starts the run signed in as its persona's review identity: the app's own `signIn(identity)`, or the manifest's sign-in request. */
-async function signIn(app, jar) {
+/** Signs a jar in as one review identity: the app's own `signIn(identity)`, or the manifest's sign-in request. */
+async function signIn(app, jar, identity) {
   if (!identity?.signedIn) return
   const who = { id: identity.id, name: identity.name, email: identity.email, credential: identity.credential }
   if (typeof app.signIn === 'function') {
@@ -83,12 +87,26 @@ async function signIn(app, jar) {
 
 /** A fetch-handler backend behind the function protocol: `METHOD:/path` names, `{ query, body }` arguments, `{ status, type, body }` results. */
 async function fetchRuntime(app, seed) {
-  const jar = sessionJar()
-  await signIn(app, jar)
+  // One session per account, so switching back finds the same session the app issued earlier in this run.
+  const jars = new Map()
+  const jarOf = async (identity) => {
+    const key = `${identity?.persona ?? ''}:${Boolean(identity?.signedIn)}`
+    if (!jars.has(key)) { const jar = sessionJar(); jars.set(key, jar); await signIn(app, jar, identity) }
+    return jars.get(key)
+  }
+  let jar = await jarOf(active)
   return {
     seed: app.seed ?? { scenario: seed.scenario },
     state: async () => await app.state?.() ?? null,
     recover: async () => await app.recover?.() ?? null,
+    inspect: () => ({ account: active?.persona ?? null, subject: active?.id ?? null, accounts: identities.map((row) => row.persona) }),
+    async identity(account) {
+      const next = identities.find((row) => row.persona === account)
+      if (!next) throw Error('Unknown synthetic account')
+      active = { ...next, signedIn: true }
+      jar = await jarOf(active)
+      return { account: active.persona, subject: active.id }
+    },
     async execute(kind, name, args) {
       const split = name.indexOf(':'), method = name.slice(0, split), path = name.slice(split + 1)
       if (!/^(?:GET|HEAD|POST|PUT|PATCH|DELETE)$/.test(method) || !path.startsWith('/')) throw Error('Invalid request name')
@@ -110,6 +128,8 @@ async function serverFnRuntime(app, seed) {
     seed: app.seed ?? { scenario: seed.scenario },
     state: async () => await app.state?.() ?? null,
     recover: async () => await app.recover?.() ?? null,
+    inspect: () => http?.inspect() ?? { account: null, subject: null, accounts: [] },
+    identity: (account) => { if (!http) throw Error('Unknown synthetic account'); return http.identity(account) },
     async execute(kind, name, args) {
       if (!name.startsWith('serverFn:')) { if (http) return http.execute(kind, name, args); throw Error('Unknown server function') }
       const key = name.slice('serverFn:'.length), file = key.slice(0, key.lastIndexOf(':'))
@@ -121,13 +141,26 @@ async function serverFnRuntime(app, seed) {
 }
 
 let runtime
+/** Who is acting: the account, its subject and the run's other accounts. A function backend may report its own. */
+const who = () => runtime.inspect?.() ?? { account: null, subject: null, accounts: [] }
+/** A page that still shows another account must not act as this one. */
+const expect = (actor) => { const { subject } = who(); if (actor !== undefined && actor !== subject) throw Error('The synthetic account changed in another pane. Reopen before acting.') }
 parentPort.on('message', async (message) => {
   try {
+    if (message.action === 'time') { clock += message.args.minutes * 60_000; parentPort.postMessage({ id: message.id, result: { now: clock } }); return }
     if (message.action === 'start' || message.action === 'reset') {
-      const seed = { scenario: workerData.scenario, persona: workerData.persona, identity, role: workerData.role, condition: workerData.condition, now: workerData.now, timeZone: workerData.timeZone, namespace: workerData.namespace }
+      clock = workerData.now
+      active = workerData.identity ?? null
+      const seed = { scenario: workerData.scenario, persona: workerData.persona, identity: active, identities, role: workerData.role, condition: workerData.condition, now: workerData.now, timeZone: workerData.timeZone, namespace: workerData.namespace, options: workerData.options ?? {} }
       runtime = entry.createRuntime ? await entry.createRuntime(seed) : entry.createServerFnRuntime ? await serverFnRuntime(await entry.createServerFnRuntime(seed), seed) : await fetchRuntime(await entry.createFetchRuntime(seed), seed)
     }
-    const result = message.action === 'start' || message.action === 'reset' ? runtime.seed : message.action === 'state' ? await runtime.state() : message.action === 'recover' ? await runtime.recover() : await runtime.execute(message.action, message.name, message.args ?? {})
+    const native = Boolean(entry.createRuntime)
+    const result = message.action === 'start' || message.action === 'reset' ? runtime.seed
+      : message.action === 'inspect' ? { ...who(), now: clock }
+      : message.action === 'identity' ? (runtime.identity ? await runtime.identity(message.args.account) : (() => { throw Error('This app has one synthetic account per run.') })())
+      : message.action === 'state' ? (native ? await runtime.state(message.actor) : (expect(message.actor), await runtime.state()))
+      : message.action === 'recover' ? await runtime.recover()
+      : native ? await runtime.execute(message.action, message.name, message.args ?? {}, message.actor) : (expect(message.actor), await runtime.execute(message.action, message.name, message.args ?? {}))
     parentPort.postMessage({ id: message.id, result })
   } catch (error) { parentPort.postMessage({ id: message.id, error: error.message, ...(error.data === undefined ? {} : { data: error.data }) }) }
 })

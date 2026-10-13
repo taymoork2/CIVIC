@@ -13,7 +13,8 @@
 import { execFileSync, spawnSync } from 'node:child_process'
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { join, resolve } from 'node:path'
+import { Store, type StoredReplay } from '../../review/src/index.ts'
 
 const base = process.argv[2] ?? 'http://127.0.0.1:3010'
 const root = new URL('../../', import.meta.url).pathname
@@ -46,6 +47,15 @@ writeFileSync(join(inputs, 'review-index.json'), JSON.stringify({
   routeActions: (index.routeActions ?? []).map((action) => pick(action, ['from', 'action', 'destination', 'route', 'when', 'returnTo', 'source', 'anchor'])),
 }, null, 2) + '\n')
 
+// Recorded runs replayed at this commit (decision 0009): run evidence a person kept from the canvas.
+const replays = await fetch(`${base}/api/review/replays`, { headers: { cookie } })
+if (!replays.ok) throw new Error(`The review server answered ${replays.status} for replays: ${await replays.text()}`)
+// Replays others shared through civic sync count too; the same replay kept on both sides counts once.
+// Each checkout's project key is the manifest ID and a hash of where it is, so match the ID.
+const shared = Store.forCommonDir(resolve(root, git('rev-parse', '--git-common-dir'))).replays().filter((replay) => replay.project.startsWith(`${index.project.id}-`))
+const atHead = [...new Map([...((await replays.json()) as StoredReplay[]), ...shared].filter((replay) => replay.head === index.revision.head).map((replay) => [JSON.stringify(replay), replay])).values()]
+writeFileSync(join(inputs, 'replays.json'), JSON.stringify(atHead.sort((a, b) => a.tape.localeCompare(b.tape) || a.replayedAt.localeCompare(b.replayedAt)), null, 2) + '\n')
+
 // The coverage contract at the same commit: what Laundry declares must be shown and proven.
 writeFileSync(join(inputs, 'coverage.json'), readFileSync(join(root, COVERAGE), 'utf8'))
 
@@ -54,11 +64,15 @@ const specs = [...new Set(index.scenarios.flatMap((scenario) => scenario.checks 
 const scratch = mkdtempSync(join(tmpdir(), 'civic-laundry-'))
 try {
   const report = join(scratch, 'report.json')
-  const run = spawnSync(join(web, 'node_modules/.bin/playwright'), ['test', ...specs.map((spec) => spec.replace(/^apps\/web\//, '')), '--project=isolated', '--workers=1', '--reporter=json'], {
+  // Each test's progress prints as it runs; the JSON report goes to its file. Bounded: Playwright stops the run
+  // after 25 minutes, and the process is killed a minute after that if it has not exited.
+  const run = spawnSync(join(web, 'node_modules/.bin/playwright'), ['test', ...specs.map((spec) => spec.replace(/^apps\/web\//, '')), '--project=isolated', '--workers=1', '--reporter=line,json', '--global-timeout=1500000'], {
     cwd: web,
-    stdio: ['ignore', 'ignore', 'inherit'],
+    stdio: ['ignore', 'inherit', 'inherit'],
+    timeout: 1_560_000,
     env: { ...process.env, WASHCLOSET_REVIEW_E2E: '1', WASHCLOSET_E2E_BASE_URL: base, PLAYWRIGHT_JSON_OUTPUT_FILE: report },
   })
+  if (run.error || run.signal) throw new Error(`Playwright did not finish: ${run.error?.message ?? `stopped by ${run.signal}`}`)
   const raw = JSON.parse(readFileSync(report, 'utf8')) as { suites: Suite[]; stats: Record<string, unknown> }
   // Keep results and errors; drop attachments, output and absolute paths, which are about this machine.
   const clean = (suite: Suite): Suite => ({

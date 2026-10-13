@@ -11,6 +11,7 @@
 import type * as access from "../access.js";
 import type * as actions from "../actions.js";
 import type * as auth from "../auth.js";
+import type * as authLimits from "../authLimits.js";
 import type * as authOrigin from "../authOrigin.js";
 import type * as careInstructions from "../careInstructions.js";
 import type * as catalog from "../catalog.js";
@@ -75,6 +76,7 @@ declare const fullApi: ApiFromModules<{
   access: typeof access;
   actions: typeof actions;
   auth: typeof auth;
+  authLimits: typeof authLimits;
   authOrigin: typeof authOrigin;
   careInstructions: typeof careInstructions;
   catalog: typeof catalog;

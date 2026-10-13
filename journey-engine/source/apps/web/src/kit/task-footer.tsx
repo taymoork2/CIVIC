@@ -5,10 +5,11 @@ import { DesignIcon } from '@/kit/design-icons'
 
 const taskFooterClassName = cn(
   "task-footer",
-  "fixed z-20 mx-auto grid w-full max-w-[45rem] gap-2 px-4 pt-3 pb-[max(32px,env(safe-area-inset-bottom))] order-last",
+  "fixed z-20 mx-auto grid w-full max-w-[45rem] max-h-[50dvh] gap-2 overflow-y-auto overscroll-y-contain px-[16px] pt-3 pb-[max(32px,env(safe-area-inset-bottom))] order-last",
   "inset-x-0 bottom-0 rounded-none",
   // On a root page the floating dock stays; the footer rides just above it instead of under it.
   "[.app-shell:has(.tabs):not(.is-focus)_&]:[inset-block-end:calc(var(--bar-bottom)_+_var(--bar-h)_+_var(--space-2))]",
+  "[.app-shell:has(.tabs):not(.is-focus)_&]:max-h-[min(50dvh,calc(100dvh_-_var(--bar-bottom)_-_var(--bar-h)_-_var(--space-2)_-_8px))]",
   "[.app-shell:has(.tabs):not(.is-focus)_&]:inset-x-4 [.app-shell:has(.tabs):not(.is-focus)_&]:w-auto [.app-shell:has(.tabs):not(.is-focus)_&]:max-w-[calc(45rem_-_2rem)] [.app-shell:has(.tabs):not(.is-focus)_&]:rounded-card [.app-shell:has(.tabs):not(.is-focus)_&]:py-3",
   "[background:var(--glass)]",
   // Task text scrolls behind this fixed action area; keep it from ghosting through the labels.
@@ -69,13 +70,19 @@ export function TaskFooter({ placement = 'overlay', note, previous, secondary, c
       apply()
     }
     measure()
-    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(measure)
+    let frame = 0
+    // The shell updates the dock offset during resize; read bounds after that update.
+    const observer = typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(() => {
+      cancelAnimationFrame(frame)
+      frame = requestAnimationFrame(measure)
+    })
     observer?.observe(footer)
     const tabs = main.closest('.app-shell')?.querySelector('.tabs')
     if (tabs) observer?.observe(tabs)
     window.addEventListener('resize', measure)
     return () => {
       observer?.disconnect()
+      cancelAnimationFrame(frame)
       window.removeEventListener('resize', measure)
       if (main.style.getPropertyValue('--task-footer-clearance') === clearance) main.style.removeProperty('--task-footer-clearance')
       if (root.style.scrollPaddingBottom === clearance) root.style.removeProperty('scroll-padding-bottom')

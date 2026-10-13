@@ -69,7 +69,7 @@ export function Members({ household, wearers, supplies = [] }: { household: Curr
         if (await remove.run({ membershipId: removing.membershipId }) !== undefined) setRemoving(null)
       }}>{removing.isYou ? 'Leave household' : 'Remove access'}</Button></>}>
         <p className="rounded-control bg-warn-bg p-4 text-warn-ink">{removing.isYou ? 'You will lose access to this household.' : 'They will lose access to this household immediately.'}</p>
-        <p className="text-ink-2">Clothing profiles, clothes and laundry history stay here. An owner can invite them back later.</p>
+        <p className="text-ink-2">Clothing profiles, clothes and laundry history stay here. Private clothes stay protected. An owner can invite them back later.</p>
         <ErrorNotice error={remove.error} />
       </Sheet>}
     </MembersView>
@@ -100,7 +100,7 @@ export function MembersView({ role, members, wearers, invites = [], onInvite, on
       </PeopleList>
       {profiles?.length === 0 ? null : <PeopleList heading={peopleCopy.profilesTitle} what={householdText.loadingPeople} ready={profiles !== null}>
         {profiles?.map((wearer) => {
-          const fact = wearerKindWords[wearer.kind]
+          const fact = wearer.principalKey !== null && members !== null ? 'Access removed · private clothes stay protected' : wearerKindWords[wearer.kind]
           return <RecordRow key={wearer.wearerId} media={<DesignIcon name="people" strokeWidth={1.6} />}
             title={wearer.name} fact={fact} onOpen={() => onEdit(wearer)} label={`Open ${wearer.name}. ${fact}`} />
         })}

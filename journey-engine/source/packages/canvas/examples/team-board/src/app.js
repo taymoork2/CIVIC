@@ -8,10 +8,12 @@ export function startApp(container, { screen = 'board.home', navigated = () => {
   const read = async (path) => { const response = await fetch(path); return { ok: response.ok, body: await response.json() } }
   // Opening the app: whoever the session belongs to sees the board; anyone else lands on sign in.
   const load = async () => {
+    if (!navigator.onLine) { state.error = 'You\'re offline.'; render(); return }
     const me = await read('/api/me')
     state.user = me.ok ? me.body : null
     if (state.user) state.posts = (await read('/api/posts')).body
     state.screen = state.user ? 'board.home' : 'board.sign-in'
+    state.error = ''
     render()
   }
   const signIn = async () => {
@@ -26,7 +28,9 @@ export function startApp(container, { screen = 'board.home', navigated = () => {
   }
   const post = async () => {
     state.busy = true; render()
-    const response = await fetch('/api/posts', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text: state.message }) })
+    let response
+    try { response = await fetch('/api/posts', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ text: state.message }) }) }
+    catch { state.busy = false; state.error = 'You\'re offline. Your post wasn\'t sent; post it again when you\'re back online.'; render(); return }
     const body = await response.json()
     state.busy = false
     if (!response.ok) { state.error = body.error; render(); return }

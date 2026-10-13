@@ -79,6 +79,7 @@ test('the garment-safety specimens reach the states the reference captures', () 
     'drying-stain': ['Stain gone?', 'air dry until you check it'],
     'household-water': ['EBMUD, Oakland'],
     'household-water-sheet': ['Edit water details', 'EBMUD, Oakland', '94610'],
+    'household-people-removed': ['Sam', 'Access removed · private clothes stay protected'],
     'laundry-completed': ['White cotton tee ×2', 'Low heat, 40 min'],
   }
   for (const [name, texts] of Object.entries(expected)) {

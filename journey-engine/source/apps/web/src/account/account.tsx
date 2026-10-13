@@ -11,7 +11,7 @@ import { api } from '@/api'
 import { authClient } from '@/auth-client'
 import { accountText } from '@/copy'
 import { useOnline } from '@/connectivity'
-import { purgePrivateState } from '@/private-state'
+import { purgePrivateState, rememberPrivateAccount } from '@/private-state'
 import { Loading, errorMessage } from '@/kit/ui'
 import { endOnboarding, useOnboardingActive } from '@/account/onboarding-state'
 import { safeRedirect } from '@/account/safe-redirect'
@@ -92,7 +92,9 @@ function HouseholdAccess({ sessionId, children }: { sessionId?: string; children
     if (unreachable || authError) return
     if (!isPending && session === null) purgePrivateState()
     if (status !== undefined && household === undefined) purgePrivateState()
-  }, [unreachable, authError, isPending, session, status, household])
+    // First-run cleanup precedes household creation; restore the offline binding once access is established.
+    if (isAuthenticated && household !== undefined && session !== null) rememberPrivateAccount(session.user.id)
+  }, [unreachable, authError, isPending, session, status, household, isAuthenticated])
 
   if (unreachable && (session === null || !isAuthenticated || status === undefined)) return <OfflineNotice sessionId={sessionId} />
   if (authError) {

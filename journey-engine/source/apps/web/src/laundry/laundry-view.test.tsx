@@ -350,7 +350,7 @@ test('Laundry shows counted garment controls and preserves hand-wash and dry-cle
   expect(words).toContain('Washed by hand')
   expect(words).toContain('Needs to go (1)')
   expect(words).toContain('At the cleaner (1)')
-  expect(markup).toMatch(/<button[^>]*>Sort 3 pieces into loads<\/button>/)
+  expect(markup).toMatch(/<button[^>]*aria-label="Sort 3 pieces into loads"[^>]*>Sort into loads<\/button>/)
   expect(words).not.toContain('Wash now')
   assertPlainCopy(markup)
 })

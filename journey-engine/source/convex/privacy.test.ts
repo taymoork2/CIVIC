@@ -18,6 +18,14 @@ async function privateHome() {
   return { t, owner, member, memberKey, wearerId, ...home }
 }
 
+test('Home milestones only summarize garments visible to the current viewer', async () => {
+  const { owner, member, t, householdId, shirt } = await privateHome()
+  await t.run(ctx => ctx.db.patch(shirt, { createdAt: 1 }))
+  await member.mutation(api.inventory.setPrivacy, { textileIds: [shirt], private: true })
+  expect((await member.query(api.milestones.earned, { householdId })).firstGarment?.name).toBe('Secret garment')
+  expect(JSON.stringify(await owner.query(api.milestones.earned, { householdId }))).not.toContain('Secret garment')
+})
+
 test('only the linked closet owner changes privacy; owners manage people without accounts', async () => {
   const h = await privateHome()
   const { t, owner, member, householdId, shirt, towel } = h
@@ -69,9 +77,10 @@ test('another member cannot expose a private closet by unlinking or removing its
   await expect(owner.mutation(api.inventory.updateWearer, { wearerId, principalKey: null })).rejects.toThrow('Forbidden')
   await expect(owner.mutation(api.inventory.updateWearer, { wearerId, principalKey: await keyOf(owner) })).rejects.toThrow('Forbidden')
   await expect(owner.mutation(api.inventory.removeWearer, { wearerId })).rejects.toThrow('Forbidden')
-  await expect(owner.mutation(api.households.removeMember, { membershipId: membership!._id })).rejects.toThrow('Forbidden')
+  await expect(owner.mutation(api.households.removeMember, { membershipId: membership!._id })).resolves.toBeNull()
   expect((await t.run((ctx) => ctx.db.get(wearerId)))!.principalKey).toBe(memberKey)
-  expect((await member.query(api.inventory.list, { householdId })).textiles.map((piece) => piece.textileId)).toContain(shirt)
+  await expect(member.query(api.inventory.list, { householdId })).rejects.toThrow('Forbidden')
+  expect((await owner.query(api.inventory.list, { householdId })).textiles.map(piece => piece.textileId)).not.toContain(shirt)
 })
 
 test('already delivered urgent alerts stop showing a garment made private afterwards', async () => {
@@ -151,7 +160,7 @@ test('a photo link issued before privacy was set is denied on delivery afterward
   try {
     const { t, owner, member, householdId, shirt } = await privateHome()
     const storageId = await t.run((ctx) => ctx.storage.store(new Blob(['photo'])))
-    const photoId = await t.mutation(internal.photos.insertPhoto, { householdId, textileId: shirt, storageId, contentType: 'image/jpeg', size: 5, uploadedBy: await keyOf(member) })
+    const photoId = await member.mutation(internal.photos.insertPhoto, { textileId: shirt, storageId, contentType: 'image/jpeg', size: 5 })
     await owner.mutation(api.photos.issueViewUrl, { photoId })
     await member.mutation(api.inventory.setPrivacy, { textileIds: [shirt], private: true })
     expect(await t.query(internal.photos.deliverable, { photoId, principalKey: await keyOf(owner) })).toBeNull()

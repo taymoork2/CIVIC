@@ -99,8 +99,8 @@ export async function buildStartup(pathname: string): Promise<StartupData> {
     )
     // This token was accepted by the authorized queries above. Seed only its session ID,
     // so Better Auth's pending → resolved handoff doesn't reset Convex authentication.
-    const { sessionId } = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString()) as { sessionId?: string }
-    return { account: 'signed-in', token, sessionId, onboarding, brand, homeSummary, snapshot }
+    const { sessionId, sub: accountId } = JSON.parse(Buffer.from(token.split('.')[1], 'base64url').toString()) as { sessionId?: string; sub?: string }
+    return { account: 'signed-in', token, sessionId, accountId, onboarding, brand, homeSummary, snapshot }
   } catch {
     // An unreachable auth service or rejected membership is not evidence of a sign-out.
     return { ...base, account: 'unknown' }

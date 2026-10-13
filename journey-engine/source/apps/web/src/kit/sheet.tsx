@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useId, useLayoutEffe
 import { FeedbackContext } from '@/kit/feedback-context'
 import { sheetText } from '@/copy'
 import { Button } from '@/components/ui/button'
+import { AlertDialog } from '@base-ui/react/alert-dialog'
 import { SheetBackdrop, SheetContent, SheetPopup, SheetPortal, SheetRoot, SheetTitle } from '@/components/ui/sheet'
 import { DesignIcon } from '@/kit/design-icons'
 import { FormProgress } from '@/kit/form-progress'
@@ -115,8 +116,7 @@ const sheetCloseIconClassName = cn(
 
 const sheetDiscardClassName = cn(
   "sheet-discard",
-  "grid w-full min-w-0 gap-2 p-[var(--space-3)_var(--space-4)] rounded-[1rem] bg-conflict-bg text-conflict-ink",
-  "[&_button:focus-visible]:[outline-color:var(--conflict-ink)]",
+  "fixed start-1/2 top-1/2 z-[60] grid w-[calc(100dvw-2rem)] max-w-[24rem] max-h-[calc(100dvh-2rem)] -translate-x-1/2 -translate-y-1/2 min-w-0 gap-4 overflow-y-auto rounded-card bg-surface p-5 text-ink shadow-[var(--shadow-lg)] outline-none [container-type:inline-size]",
   "motion-safe:[animation:fade-in_var(--dur-step)_var(--ease-out)]",
 )
 
@@ -257,7 +257,7 @@ export function Sheet({ title, kicker, subtitle, progress, headerArt, media, med
   step?: string
   /**
    * The sheet holds an unsaved draft. Close, Escape, the back gesture and a backdrop tap then ask
-   * "Discard your changes?" in the footer instead of closing; nothing is saved either way.
+   * in a confirmation modal instead of closing; nothing is saved either way.
    */
   dirty?: boolean
   /** A submitted write is still pending; dismissal cannot cancel or discard that operation. */
@@ -298,6 +298,10 @@ export function Sheet({ title, kicker, subtitle, progress, headerArt, media, med
   keepDraftRef.current = onKeepDraft
   // Every dismissal goes through here so an unsaved draft is never dropped without asking.
   const attemptClose = (): 'closed' | 'asked' => {
+    if (confirmingDiscard && dirtyRef.current && !busyRef.current) {
+      setConfirmingDiscard(false)
+      return 'asked'
+    }
     if (busyRef.current || dismissalFor(dirtyRef.current) === 'confirm-discard') {
       setConfirmingDiscard(true)
       return 'asked'
@@ -333,19 +337,6 @@ export function Sheet({ title, kicker, subtitle, progress, headerArt, media, med
   }, [])
 
   useLayoutEffect(() => {
-    if (showDiscard) keepEditing.current?.focus({ preventScroll: true })
-  }, [showDiscard])
-
-  useEffect(() => {
-    if (!showDiscard || busy || closing) return
-    const timer = window.setTimeout(() => {
-      setConfirmingDiscard(false)
-      heading.current?.focus({ preventScroll: true })
-    }, 5000)
-    return () => window.clearTimeout(timer)
-  }, [showDiscard, busy, closing])
-
-  useLayoutEffect(() => {
     const before = document.activeElement instanceof HTMLElement ? document.activeElement : null
     const Watcher = closeWatcherConstructor()
     const stop = Watcher === null ? () => undefined : watchSystemBack(Watcher, () => attemptRef.current())
@@ -374,14 +365,19 @@ export function Sheet({ title, kicker, subtitle, progress, headerArt, media, med
   const closeRow = compactActions ? closeButton : <div className={sheetFootRowClassName}>{closeButton}</div>
 
   const discardPrompt = (
-    <div className={cn(sheetDiscardClassName, onKeepDraft === undefined ? undefined : 'bg-surface-2 text-ink [&_button:focus-visible]:[outline-color:var(--focus)]')} role="alert">
-      <p className={cn("font-semibold")}>{onKeepDraft === undefined ? sheetText.discardTitle : 'Keep this draft for later?'}</p>
+    <AlertDialog.Root open={showDiscard && !busy && !closing} onOpenChange={setConfirmingDiscard}>
+      <AlertDialog.Portal>
+      <AlertDialog.Backdrop className="fixed inset-0 z-[60] [background:var(--sheet-scrim,var(--scrim))]" />
+      <AlertDialog.Popup className={sheetDiscardClassName} initialFocus={keepEditing} finalFocus={heading}>
+      <AlertDialog.Title className="m-0 text-[length:var(--step-2)] font-semibold leading-snug">{onKeepDraft === undefined ? sheetText.discardTitle : 'Keep this draft for later?'}</AlertDialog.Title>
+      {onKeepDraft === undefined ? null : <Button type="button" className="h-auto min-h-12 w-full whitespace-normal" onClick={() => { keepingDraft.current = true; setClosing(true) }}>Keep draft and close</Button>}
       <div className="grid min-w-0 grid-cols-2 gap-2 [@container_(width_<_16rem)]:grid-cols-1">
-        <Button ref={keepEditing} type="button" variant={onKeepDraft === undefined ? 'alert' : 'outline'} className="h-auto min-h-12 min-w-0 whitespace-normal px-2 py-2 leading-snug" onClick={() => { setConfirmingDiscard(false); heading.current?.focus({ preventScroll: true }) }}>{sheetText.keepEditing}</Button>
+        <Button ref={keepEditing} type="button" variant="outline" className="h-auto min-h-12 min-w-0 whitespace-normal px-2 py-2 leading-snug" onClick={() => setConfirmingDiscard(false)}>{sheetText.keepEditing}</Button>
         <Button type="button" variant="destructive" className="h-auto min-h-12 min-w-0 whitespace-normal px-2 py-2 leading-snug" onClick={() => setClosing(true)}>{sheetText.discard}</Button>
       </div>
-      {onKeepDraft === undefined ? null : <Button type="button" variant="outline" className="h-auto min-h-12 w-full whitespace-normal" onClick={() => { keepingDraft.current = true; setClosing(true) }}>Keep draft and close</Button>}
-    </div>
+      </AlertDialog.Popup>
+      </AlertDialog.Portal>
+    </AlertDialog.Root>
   )
 
   return (
@@ -440,12 +436,13 @@ export function Sheet({ title, kicker, subtitle, progress, headerArt, media, med
           </SheetContent>
           </div>
           <footer className={sheetFootClassName} data-base-ui-swipe-ignore>
-            {showDiscard ? busy ? <p role="status">Saving changes…</p> : discardPrompt : <>
+            {showDiscard && busy ? <p role="status">Saving changes…</p> : <>
               {compactActions && footerClose ? closeRow : null}
               {footer}
               {compactActions || !footerClose ? null : closeRow}
             </>}
           </footer>
+          {discardPrompt}
         </SheetPopup>
       </SheetPortal>
     </SheetRoot>

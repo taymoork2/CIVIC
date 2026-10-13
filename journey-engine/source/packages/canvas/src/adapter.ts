@@ -1,6 +1,8 @@
 import type { RuntimeBridge, RuntimePorts, RuntimeRecording } from './runtime-bridge'
+import type { OpenRuntimeSession, PendingIntent } from './runtime-session'
+import type { PreviewViewport } from './viewport-presets'
 
-export type ReviewConfig = { scenario: string; persona: string; role: string; condition: string; theme: 'light' | 'dark'; textScale: 1 | 2; width: number; simulation?: { pieces: 100 | 500 | 1000; stage: 'planning' | 'washing' | 'drying' | 'putaway' } }
+export type ReviewConfig = { scenario: string; persona: string; role: string; condition: string; theme: 'light' | 'dark'; textScale: 1 | 2; width: number; height?: number; preset?: string; simulation?: { pieces: 100 | 500 | 1000; stage: 'planning' | 'washing' | 'drying' | 'putaway' } }
 export type ReviewSnapshot = { revision: { head: string; source: string; capturedAt: string }; design: { project: string; hashes: Record<string, string | null> } }
 export type ProjectChoice = { id: string; label: string; description?: string; seed?: unknown }
 export type ProjectProfile = { id: string; key: string; name: string; adapter: string; preview: boolean; runtime?: boolean; personas: ProjectChoice[]; roles: ProjectChoice[]; conditions: ProjectChoice[]; navigation: string[] }
@@ -12,7 +14,12 @@ export type AdapterContext = {
   recording?: RuntimeRecording
   publish: (state: { screen: string; dirty?: boolean; pending?: boolean }) => void
   transition: (destination: string, action: string, origin?: 'app' | 'synthetic') => void
-  connectRuntime: (ports: Omit<RuntimePorts, 'project' | 'source' | 'fields' | 'view' | 'interact'> & { screen: () => string; data: () => unknown; captureInputs: 'synthetic' | string[]; interact?: RuntimePorts['interact']; status?: () => { dirty: boolean; pending: boolean } }) => RuntimeBridge
+  /**
+   * Connects the app's runtime to the recorder. With `run`, the frame also offers the run's own steps (switching
+   * synthetic account, the connection, the clock and saved steps) as recorded commands; `changed` lets the app
+   * catch up after one, such as reloading what the new account may see.
+   */
+  connectRuntime: (ports: Omit<RuntimePorts, 'project' | 'source' | 'fields' | 'view' | 'interact'> & { screen: () => string; data: () => unknown; captureInputs: 'synthetic' | string[]; interact?: RuntimePorts['interact']; status?: () => { dirty: boolean; pending: boolean }; run?: OpenRuntimeSession; changed?: RunChange }) => RuntimeBridge
   /**
    * Starts an isolated run of the project's runtime entry and connects it: the clock, IDs and storage
    * are pinned, and the page's `fetch` calls under `routes` (default `/api/`) go to the run's backend.
@@ -32,10 +39,17 @@ export type RuntimeOptions = {
   reset: () => Promise<void> | void
   /** Reads the app needs before its first screen is known, such as whether anyone is signed in. Runs after routing, before recording starts. */
   load?: () => Promise<void> | void
+  /** Called after a run step: another synthetic account is acting, the connection changed, time moved or a saved step was sent. */
+  changed?: RunChange
 }
+export type RunChange = (step: string) => Promise<void> | void
+/** The run behind a live preview, as the canvas sees it: who is acting, the connection and this account's saved steps. */
+export type RunStatus = { run: string; account: string | null; subject: string | null; accounts: string[]; connected: boolean; now: number; pending: PendingIntent[]; path: string }
 /** The persona's synthetic review identity for this run. The credential stays out of the app's preview code. */
 export type RuntimeIdentity = { id: string; name: string; email: string; signedIn: boolean }
 export type MountAdapter = (container: HTMLElement, context: AdapterContext) => void | (() => void) | Promise<void | (() => void)>
 declare global {
-  interface Window { reviewPreview?: { retryWrites: () => void; restart: () => void; data: () => unknown; config: ReviewConfig; snapshot: ReviewSnapshot; state?: () => AdapterState | null; recording?: RuntimeBridge['recording']; replay?: RuntimeBridge['replay']; replayMismatch?: RuntimeBridge['mismatch'] } }
+  interface Window { reviewPreview?: { retryWrites: () => void; restart: () => void; data: () => unknown; config: ReviewConfig; snapshot: ReviewSnapshot; setViewport?: (value: PreviewViewport) => Promise<void>; state?: () => AdapterState | null; recording?: RuntimeBridge['recording']; replay?: RuntimeBridge['replay']; replayMismatch?: RuntimeBridge['mismatch'] } }
+  /** The live preview's run: its status, its recorded steps, and the frame address that reopens it. */
+  interface Window { reviewRuntime?: { status: () => RunStatus; command: (name: string, value: unknown) => Promise<void>; reopen: () => string } }
 }

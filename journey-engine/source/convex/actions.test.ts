@@ -41,7 +41,7 @@ test('records actual use, skipped, and missed steps without hiding them from the
   await expect(as.mutation(api.actions.recordAction, { sessionId, actionId: boost.id, status: 'confirmed' })).rejects.toThrow()
   await expect(as.mutation(api.actions.recordAction, { sessionId, actionId: 'no-such-step', status: 'skipped' })).rejects.toThrow('Action not found')
 
-  const actor = await t.withIdentity({ issuer: 'http://localhost:3211', subject: 'action-test-user' }).run((ctx) => principalFromAuth(ctx.auth))
+  const actor = await as.run((ctx) => principalFromAuth(ctx))
   const { usage, history } = await t.run(async (ctx) => ({ usage: await ctx.db.query('usage').collect(), history: await ctx.db.query('history').collect() }))
   expect(usage).toEqual([expect.objectContaining({ actionId: tide.id, amount: 30, confirmedBy: actor.key })])
   expect(history.map((event) => [event.actionId, event.event])).toEqual([[tide.id, 'action_confirmed'], [boost.id, 'action_skipped'], [rinse.id, 'action_missed']])

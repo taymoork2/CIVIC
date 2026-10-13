@@ -50,7 +50,7 @@ test('the product form grid keeps marks only for forms that take them', async ({
   await expect(mark('1')).toHaveAttribute('aria-pressed', 'false')
   await expect(mark('3')).toHaveAttribute('aria-pressed', 'false')
   await bottle.getByRole('button', { name: 'Close', exact: true }).click()
-  await bottle.getByRole('button', { name: 'Discard', exact: true }).click()
+  await page.getByRole('alertdialog', { name: 'Discard your changes?', exact: true }).getByRole('button', { name: 'Discard', exact: true }).click()
   await expect(bottle).toHaveCount(0)
 })
 

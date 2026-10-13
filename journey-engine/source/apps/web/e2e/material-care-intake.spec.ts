@@ -64,9 +64,9 @@ test('wool intake protects care choices, exposes label extras and keeps Details 
   await expect(sheet().getByLabel('Tumble heat limit', { exact: true })).toHaveValue('low')
   await expect(sheet().getByLabel('Tumble heat limit').getByRole('option', { name: 'Medium heat', exact: true })).toBeDisabled()
   await sheet().getByRole('button', { name: 'Close', exact: true }).click()
-  await sheet().getByRole('button', { name: 'Keep editing', exact: true }).click()
+  await page.getByRole('alertdialog', { name: 'Discard your changes?', exact: true }).getByRole('button', { name: 'Keep editing', exact: true }).click()
   await sheet().getByRole('button', { name: 'Close', exact: true }).click()
-  await sheet().getByRole('button', { name: 'Discard', exact: true }).click()
+  await page.getByRole('alertdialog', { name: 'Discard your changes?', exact: true }).getByRole('button', { name: 'Discard', exact: true }).click()
   await sheet().getByRole('button', { name: 'Done', exact: true }).click()
   const { client, householdId } = await convexAs(page)
   const garment = (await client.query(api.inventory.list, { householdId })).textiles[0]!

@@ -1,7 +1,6 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 import { api } from './_generated/api'
 import type { Id } from './_generated/dataModel'
-import { plan } from '@washcloset/planner'
 import { finishSteps, intakeHousehold, joinHousehold, keyOf, newBackend, planFor, signedIn, startLoad, type Caller } from './harness.testing'
 import { removePrincipalData } from './identity'
 
@@ -38,6 +37,27 @@ async function upcoming(as: Caller, home: Home) {
 const request = (planned: Awaited<ReturnType<typeof upcoming>>, supplyIds: Id<'supplies'>[]) => ({ planId: planned.planId, loadId: planned.result.loads[0]!.id,
   supplyIds, dimension: 'odor' as const, checkedWhen: 'after_wash' as const })
 
+test('live and saved guidance contain only the authorized load, never another private garment’s inputs', async () => {
+  const t = newBackend(), owner = signedIn(t, 'preview-owner'), home = await homeFor(owner)
+  const member = await joinHousehold(t, owner, home.householdId, 'preview-private', 'Sam')
+  const wearerId = await member.mutation(api.inventory.createWearer, { householdId: home.householdId, name: 'Sam', kind: 'adult', self: true })
+  await owner.mutation(api.inventory.updateTextile, { textileId: home.towel, wearerId, color: 'Private violet proof', colorGroup: 'dark', soilLevel: 'normal' })
+  const planned = await planFor(owner, home.householdId, [home.shirt, home.towel], { washGoals: ['odor'] })
+  const load = planned.result.loads.find(row => row.textileIds.includes(home.shirt))!
+  expect(load.textileIds).not.toContain(home.towel)
+  await member.mutation(api.inventory.setPrivacy, { textileIds: [home.towel], private: true })
+  const args = { ...request(planned, [home.addition]), loadId: load.id }
+  const preview = await owner.query(api.personalSuggestions.plannerPreview, args)
+  expect(preview.result.loads.map((row: { id: string }) => row.id)).toEqual([load.id])
+  expect(Object.keys(preview.result.inputSnapshot)).toEqual(['personalSuggestions'])
+  expect(JSON.stringify(preview)).not.toContain('Private violet proof')
+  expect(JSON.stringify(preview)).not.toContain(home.towel)
+  await owner.mutation(api.personalSuggestions.savePreview, { ...args, previewInputHash: preview.result.inputHash, expectedRevision: 0 })
+  const saved = await owner.query(api.personalSuggestions.savedForPlan, { planId: planned.planId, loadId: load.id })
+  expect(saved).toMatchObject({ status: 'current', result: preview.result })
+  expect(JSON.stringify(saved)).not.toContain(home.towel)
+})
+
 test('upcoming unselected choices compare three actual washes privately without changing a shared plan', async () => {
   const t = newBackend(), as = signedIn(t, 'prospective-private'), home = await homeFor(as)
   const records = [await wash(as, home), await wash(as, home), await wash(as, home)]
@@ -56,7 +76,7 @@ test('upcoming unselected choices compare three actual washes privately without 
   expect((await as.query(api.plans.get, { planId: planned.planId }))!.pass.optionalSupplyIds).toEqual([])
   const preview = await as.query(api.personalSuggestions.plannerPreview, args)
   expect(preview.comparison).toEqual(compared)
-  expect(plan(preview.result.inputSnapshot)).toEqual(preview.result)
+  expect(Object.keys(preview.result.inputSnapshot)).toEqual(['personalSuggestions'])
   expect(preview.result.inputSnapshot.personalSuggestions).toMatchObject({ evidenceInputHash: planned.inputHash, comparisonInputHash: compared.inputHash })
   expect(preview.result.loads[0]!.treatments).toEqual(planned.result.loads[0]!.treatments)
   expect(preview.result.loads[0]!.personalSuggestions!.choices.find((choice) => choice.supplyId === home.addition)).toMatchObject({ selected: false, suppressed: false, guidance: { direction: 'reported_improvement' } })
@@ -147,7 +167,7 @@ test('reviewed private guidance saves once, replays its input and becomes stale 
   expect(restored?.status).toBe('current')
   if (restored?.status !== 'current') throw new Error('Expected current private guidance')
   expect(restored.result).toEqual(preview.result)
-  expect(plan(restored.result.inputSnapshot)).toEqual(preview.result)
+  expect(Object.keys(restored.result.inputSnapshot)).toEqual(['personalSuggestions'])
   expect(await t.run((ctx) => ctx.db.get(planned.planId))).toEqual(shared)
   expect(await t.run((ctx) => ctx.db.query('personalPlanGuidanceEntries').collect())).toHaveLength(1)
   await as.mutation(api.outcomeAssessments.save, { recordId: records[0]!, dimension: 'odor', checkedWhen: 'after_wash', result: null, expectedRevision: 1, receiptId: 'saved-guidance-clear-report' })

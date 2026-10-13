@@ -607,7 +607,7 @@ export const updateTextile = mutation({
       .some((field) => textile.identity?.[field] !== identity?.[field])
     const colorChanged = args.color !== undefined && planned.color !== textile.color
     const decorationInvalidated = (identityChanged || colorChanged) && textile.decoration !== undefined
-    const actor = decorationInvalidated ? await principalFromAuth(ctx.auth) : null
+    const actor = decorationInvalidated ? await principalFromAuth(ctx) : null
     const described = {
       ...(args.occasions === undefined ? {} : { occasions: occasionsFrom(args.occasions) }),
       ...(args.tags === undefined ? {} : { tags: tagsFrom(args.tags) }),

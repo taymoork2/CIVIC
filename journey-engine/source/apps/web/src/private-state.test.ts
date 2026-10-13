@@ -17,10 +17,10 @@ let storage: MemoryStorage
 test('a thousand-piece planning draft preserves off-page exclusions and the entire seen set', () => {
   const seen = Array.from({ length: 1000 }, (_, i) => `piece-${i}`)
   const selected = seen.slice(1, -1)
-  saveDraft({ householdId: 'family', selectedTextileIds: selected, seenTextileIds: seen, planId: null, inputHash: null })
-  expect(loadDraft('family')?.selectedTextileIds).toEqual(selected)
-  expect(loadDraft('family')?.seenTextileIds).toEqual(seen)
-  expect(loadDraft('another-household')).toBeNull()
+  saveDraft('auth-a', { householdId: 'family', selectedTextileIds: selected, seenTextileIds: seen, planId: null, inputHash: null })
+  expect(loadDraft('auth-a', 'family')?.selectedTextileIds).toEqual(selected)
+  expect(loadDraft('auth-a', 'family')?.seenTextileIds).toEqual(seen)
+  expect(loadDraft('auth-a', 'another-household')).toBeNull()
 })
 beforeEach(() => {
   storage = new MemoryStorage()
@@ -46,8 +46,8 @@ const detail = (status: string) => ({
 })
 
 test('the active-session projection is bounded and holds no identities or tokens', () => {
-  saveSessionProjection(detail('running'))
-  const projection = loadSessionProjection('s1')!
+  saveSessionProjection('auth-a', detail('running'))
+  const projection = loadSessionProjection('auth-a', 's1')!
   expect(projection.actions).toHaveLength(30)
   expect(projection.textiles).toHaveLength(60)
   expect(projection.revision).toBe(7)
@@ -56,54 +56,54 @@ test('the active-session projection is bounded and holds no identities or tokens
   expect(projection.actions[3]).toMatchObject({ order: 3, kind: 'treatment' })
   expect(JSON.stringify(projection)).not.toContain('principal:v1')
   expect(JSON.stringify(projection)).not.toContain('never-stored')
-  expect(loadSessionProjection('another-session')).toBeNull()
+  expect(loadSessionProjection('auth-a', 'another-session')).toBeNull()
 })
 
 test('a finished session removes its projection', () => {
-  saveSessionProjection(detail('running'))
-  saveSessionProjection(detail('completed'))
-  expect(loadSessionProjection()).toBeNull()
+  saveSessionProjection('auth-a', detail('running'))
+  saveSessionProjection('auth-a', detail('completed'))
+  expect(loadSessionProjection('auth-a')).toBeNull()
 })
 
 test('a private piece retains its care offline but never its name, colour or other fields', () => {
   const care = { washMethod: 'machine' as const, cycle: 'delicate', maxTemperatureC: 30, dryMethod: 'do_not_tumble_dry' as const, dryHeat: null, bleach: 'none' as const, restrictions: ['No wringing'], lines: ['Wash inside out'] }
-  saveSessionProjection({ ...detail('running'), textiles: [{ textileId: 'private', name: 'Secret garment', color: 'Secret colour', private: true, privateCare: care }] })
-  expect(loadSessionProjection('s1')!.textiles).toEqual([{ textileId: 'private', name: null, color: null, private: true, privateCare: care }])
-  expect(JSON.stringify(loadSessionProjection('s1'))).not.toContain('Secret')
-  saveSessionProjection({ ...detail('running'), textiles: [{ textileId: 'private', name: 'Secret garment', private: true, privateCare: { ...care, lines: null } as never }] })
-  expect(loadSessionProjection('s1')!.textiles[0]!.privateCare).toBeNull()
+  saveSessionProjection('auth-a', { ...detail('running'), textiles: [{ textileId: 'private', name: 'Secret garment', color: 'Secret colour', private: true, privateCare: care }] })
+  expect(loadSessionProjection('auth-a', 's1')!.textiles).toEqual([{ textileId: 'private', name: null, color: null, private: true, privateCare: care }])
+  expect(JSON.stringify(loadSessionProjection('auth-a', 's1'))).not.toContain('Secret')
+  saveSessionProjection('auth-a', { ...detail('running'), textiles: [{ textileId: 'private', name: 'Secret garment', private: true, privateCare: { ...care, lines: null } as never }] })
+  expect(loadSessionProjection('auth-a', 's1')!.textiles[0]!.privateCare).toBeNull()
 })
 
 test('offline pretreatment keeps the garment, temperature and label directions', () => {
-  saveSessionProjection({ ...detail('running'), actions: [{ id: 'pretreat', kind: 'treatment', phase: 'drum', textileId: 't1', textileName: 'Cotton shirt', temperatureC: 20, supplyName: 'Test product', dose: { amount: 10, unit: 'ml' }, placement: 'manual', stage: 'prewash', timing: 'Test label directions', status: 'pending' }] })
-  expect(loadSessionProjection('s1')?.actions[0]).toMatchObject({ textileId: 't1', textileName: 'Cotton shirt', temperatureC: 20, timing: 'Test label directions', phase: 'drum' })
+  saveSessionProjection('auth-a', { ...detail('running'), actions: [{ id: 'pretreat', kind: 'treatment', phase: 'drum', textileId: 't1', textileName: 'Cotton shirt', temperatureC: 20, supplyName: 'Test product', dose: { amount: 10, unit: 'ml' }, placement: 'manual', stage: 'prewash', timing: 'Test label directions', status: 'pending' }] })
+  expect(loadSessionProjection('auth-a', 's1')?.actions[0]).toMatchObject({ textileId: 't1', textileName: 'Cotton shirt', temperatureC: 20, timing: 'Test label directions', phase: 'drum' })
 })
 
 test('offline optional advice preserves its source, scope and matching pieces without author identity', () => {
   const advice = { tipId: 'inside_out', scope: 'general_graphic', reason: 'Optional general handling', source: 'Synthetic source', policyVersion: '1', recordedBy: 'principal:v1:private' }
-  saveSessionProjection({ ...detail('running'), actions: [{ id: 'advice', kind: 'task', task: 'garment_advice', title: 'Inside out (optional)', detail: advice.reason, advice, garments: [{ textileId: 't1' }, { textileId: 't2' }], status: 'pending' }] })
-  const action = loadSessionProjection('s1')!.actions[0]!
+  saveSessionProjection('auth-a', { ...detail('running'), actions: [{ id: 'advice', kind: 'task', task: 'garment_advice', title: 'Inside out (optional)', detail: advice.reason, advice, garments: [{ textileId: 't1' }, { textileId: 't2' }], status: 'pending' }] })
+  const action = loadSessionProjection('auth-a', 's1')!.actions[0]!
   expect(action.advice).toEqual({ tipId: 'inside_out', scope: 'general_graphic', reason: advice.reason, source: advice.source, policyVersion: '1' })
   expect(action.garments.map((piece) => piece.textileId)).toEqual(['t1', 't2'])
   expect(JSON.stringify(action)).not.toContain('principal:v1')
 })
 
 test('each running load keeps its own copy, so two loads both show offline', () => {
-  saveSessionProjection({ ...detail('running'), sessionId: 's1', machineName: 'Washer 1' })
-  saveSessionProjection({ ...detail('running'), sessionId: 's2', machineName: 'Washer 2' })
-  expect(loadSessionProjection('s1')?.machineName).toBe('Washer 1')
-  expect(loadSessionProjection('s2')?.machineName).toBe('Washer 2')
+  saveSessionProjection('auth-a', { ...detail('running'), sessionId: 's1', machineName: 'Washer 1' })
+  saveSessionProjection('auth-a', { ...detail('running'), sessionId: 's2', machineName: 'Washer 2' })
+  expect(loadSessionProjection('auth-a', 's1')?.machineName).toBe('Washer 1')
+  expect(loadSessionProjection('auth-a', 's2')?.machineName).toBe('Washer 2')
   // Saving one again replaces only its own copy.
-  saveSessionProjection({ ...detail('running'), sessionId: 's1', machineName: 'Washer 1', revision: 8 })
-  expect(loadSessionProjection('s1')?.revision).toBe(8)
-  expect(loadSessionProjection('s2')?.machineName).toBe('Washer 2')
+  saveSessionProjection('auth-a', { ...detail('running'), sessionId: 's1', machineName: 'Washer 1', revision: 8 })
+  expect(loadSessionProjection('auth-a', 's1')?.revision).toBe(8)
+  expect(loadSessionProjection('auth-a', 's2')?.machineName).toBe('Washer 2')
   // A finished load drops only its own copy.
-  saveSessionProjection({ ...detail('completed'), sessionId: 's2' })
-  expect(loadSessionProjection('s2')).toBeNull()
-  expect(loadSessionProjection('s1')?.machineName).toBe('Washer 1')
-  saveSessionProjection({ ...detail('cancelled'), sessionId: 's1' })
-  expect(loadSessionProjection()).toBeNull()
-  expect(storage.getItem('washcloset:private:sessions')).toBeNull()
+  saveSessionProjection('auth-a', { ...detail('completed'), sessionId: 's2' })
+  expect(loadSessionProjection('auth-a', 's2')).toBeNull()
+  expect(loadSessionProjection('auth-a', 's1')?.machineName).toBe('Washer 1')
+  saveSessionProjection('auth-a', { ...detail('cancelled'), sessionId: 's1' })
+  expect(loadSessionProjection('auth-a')).toBeNull()
+  expect(storage.getItem('washcloset:private:signed-in:["auth-a","sessions"]')).toBeNull()
 })
 
 test('only the most recently saved running loads are kept', () => {
@@ -111,16 +111,16 @@ test('only the most recently saved running loads are kept', () => {
   const realNow = Date.now
   Date.now = () => now++
   try {
-    for (let index = 0; index < 10; index++) saveSessionProjection({ ...detail('running'), sessionId: `s${index}` })
+    for (let index = 0; index < 10; index++) saveSessionProjection('auth-a', { ...detail('running'), sessionId: `s${index}` })
   } finally {
     Date.now = realNow
   }
-  expect(JSON.parse(storage.getItem('washcloset:private:sessions')!)).toHaveLength(8)
-  expect(loadSessionProjection('s0')).toBeNull()
-  expect(loadSessionProjection('s1')).toBeNull()
-  expect(loadSessionProjection('s2')).not.toBeNull()
+  expect(JSON.parse(storage.getItem('washcloset:private:signed-in:["auth-a","sessions"]')!)).toHaveLength(8)
+  expect(loadSessionProjection('auth-a', 's0')).toBeNull()
+  expect(loadSessionProjection('auth-a', 's1')).toBeNull()
+  expect(loadSessionProjection('auth-a', 's2')).not.toBeNull()
   // With no load named, the offline notice shows the newest one.
-  expect(loadSessionProjection()?.sessionId).toBe('s9')
+  expect(loadSessionProjection('auth-a')?.sessionId).toBe('s9')
 })
 
 test('offline on a load\'s page shows that load\'s own copy, never the newest one, and lists the others', () => {
@@ -128,75 +128,72 @@ test('offline on a load\'s page shows that load\'s own copy, never the newest on
   const realNow = Date.now
   Date.now = () => now++
   try {
-    saveSessionProjection({ ...detail('running'), sessionId: 'b', machineName: 'Dryer' })
+    saveSessionProjection('auth-a', { ...detail('running'), sessionId: 'b', machineName: 'Dryer' })
     // Load A was viewed last, so it is the newest copy.
-    saveSessionProjection({ ...detail('running'), sessionId: 'a', machineName: 'Washer' })
+    saveSessionProjection('auth-a', { ...detail('running'), sessionId: 'a', machineName: 'Washer' })
   } finally {
     Date.now = realNow
   }
-  const onB = offlineSessionCopies('b')
+  const onB = offlineSessionCopies('auth-a', 'b')
   expect(onB.projection?.sessionId).toBe('b')
   expect(onB.others.map((saved) => saved.sessionId)).toEqual(['a'])
   // A load with no copy on this phone shows none of the others' steps, only links to them.
-  const unknown = offlineSessionCopies('c')
+  const unknown = offlineSessionCopies('auth-a', 'c')
   expect(unknown.projection).toBeNull()
   expect(unknown.others.map((saved) => saved.sessionId)).toEqual(['a', 'b'])
   // Off a load's page, the newest copy.
-  expect(offlineSessionCopies().projection?.sessionId).toBe('a')
-  expect(offlineSessionCopies().others.map((saved) => saved.sessionId)).toEqual(['b'])
+  expect(offlineSessionCopies('auth-a').projection?.sessionId).toBe('a')
+  expect(offlineSessionCopies('auth-a').others.map((saved) => saved.sessionId)).toEqual(['b'])
 })
 
-test('the single copy an older version kept is folded in alongside newer loads', () => {
+test('an older unbound copy is retained without importing it into this account', () => {
   storage.setItem('washcloset:private:session', JSON.stringify({ ...detail('running'), sessionId: 'old', textiles: [], actions: [], savedAt: 1 }))
-  saveSessionProjection({ ...detail('running'), sessionId: 's2' })
-  expect(storage.getItem('washcloset:private:session')).toBeNull()
-  expect(loadSessionProjection('old')?.sessionId).toBe('old')
-  expect(loadSessionProjection('s2')?.sessionId).toBe('s2')
-  // A finished copy left by the old version is ignored.
-  storage.setItem('washcloset:private:session', JSON.stringify({ ...detail('completed'), sessionId: 'done', textiles: [], actions: [], savedAt: 2 }))
-  expect(loadSessionProjection('done')).toBeNull()
+  saveSessionProjection('auth-a', { ...detail('running'), sessionId: 's2' })
+  expect(storage.getItem('washcloset:private:session')).not.toBeNull()
+  expect(loadSessionProjection('auth-a', 'old')).toBeNull()
+  expect(loadSessionProjection('auth-a', 's2')?.sessionId).toBe('s2')
 })
 
 test('drafts are scoped to one household and everything private is purged together', () => {
-  saveDraft({ householdId: 'h1', selectedTextileIds: ['t1'], seenTextileIds: ['t1', 't2'], planId: null, inputHash: null })
-  saveSessionProjection(detail('running'))
+  saveDraft('auth-a', { householdId: 'h1', selectedTextileIds: ['t1'], seenTextileIds: ['t1', 't2'], planId: null, inputHash: null })
+  saveSessionProjection('auth-a', detail('running'))
   storage.setItem('unrelated-app-key', 'kept')
-  expect(loadDraft('h1')?.selectedTextileIds).toEqual(['t1'])
-  expect(loadDraft('h2')).toBeNull()
+  expect(loadDraft('auth-a', 'h1')?.selectedTextileIds).toEqual(['t1'])
+  expect(loadDraft('auth-a', 'h2')).toBeNull()
 
   purgePrivateState()
-  expect(loadDraft('h1')).toBeNull()
-  expect(loadSessionProjection()).toBeNull()
+  expect(loadDraft('auth-a', 'h1')).toBeNull()
+  expect(loadSessionProjection('auth-a')).toBeNull()
   expect(storage.getItem('unrelated-app-key')).toBe('kept')
-  clearSessionProjection('s1')
+  clearSessionProjection('auth-a', 's1')
 })
 
 test('corrupt or blocked storage reads as empty instead of failing', () => {
-  storage.setItem('washcloset:private:session', '{not json')
-  expect(loadSessionProjection()).toBeNull()
-  storage.setItem('washcloset:private:sessions', '{not json')
-  expect(loadSessionProjection()).toBeNull()
-  storage.setItem('washcloset:private:sessions', JSON.stringify([{ sessionId: 's1' }, 'junk']))
-  expect(loadSessionProjection('s1')).toBeNull()
+  storage.setItem('washcloset:private:signed-in:["auth-a","session"]', '{not json')
+  expect(loadSessionProjection('auth-a')).toBeNull()
+  storage.setItem('washcloset:private:signed-in:["auth-a","sessions"]', '{not json')
+  expect(loadSessionProjection('auth-a')).toBeNull()
+  storage.setItem('washcloset:private:signed-in:["auth-a","sessions"]', JSON.stringify([{ sessionId: 's1' }, 'junk']))
+  expect(loadSessionProjection('auth-a', 's1')).toBeNull()
   ;(globalThis as any).window = { get localStorage() { throw new Error('blocked') } }
-  expect(loadDraft('h1')).toBeNull()
+  expect(loadDraft('auth-a', 'h1')).toBeNull()
   expect(() => purgePrivateState()).not.toThrow()
 })
 
 test('a copy saved before drying existed still loads, reading the new fields as none', () => {
-  storage.setItem('washcloset:private:session', JSON.stringify({
+  storage.setItem('washcloset:private:signed-in:["auth-a","sessions"]', JSON.stringify([{
     sessionId: 's1', householdId: 'h1', status: 'running', revision: 3, machineName: 'Washer', startedAt: 1, machineStartedAt: 2,
     cycleMinutes: 35, doorLocks: true, estimatedFinishAt: 99, finishConfidence: 'verified', savedAt: 5,
     textiles: [{ textileId: 't1', name: 'Tee' }],
     actions: [{ id: 'a1', kind: 'task', task: 'start', phase: 'start', order: 0, title: 'Start', detail: null, supplyName: null, dose: null, placement: null, stage: null, timing: null, dueAt: null, status: 'pending' }],
-  }))
-  const projection = loadSessionProjection('s1')!
+  }]))
+  const projection = loadSessionProjection('auth-a', 's1')!
   expect(projection).toMatchObject({ washFinishedAt: null, drying: null, textiles: [{ textileId: 't1', name: 'Tee', color: null }] })
   expect(projection.actions[0]).toMatchObject({ basis: null, reusable: false, garments: [] })
 })
 
 test('a drying load keeps its cap marks and who stays out of the dryer', () => {
-  saveSessionProjection({
+  saveSessionProjection('auth-a', {
     ...detail('running'),
     textiles: [{ textileId: 't1', name: 'Tee', color: 'White' }, { textileId: 't2', name: 'Sweater', color: 'Navy' }],
     washFinishedAt: 40,
@@ -212,7 +209,7 @@ test('a drying load keeps its cap marks and who stays out of the dryer', () => {
       { id: 'a3', kind: 'treatment', phase: 'dryer_with_load', order: 2, supplyName: 'Wool balls', placement: 'dryer_drum', stage: 'dry', timing: null, status: 'pending', reusable: true, dose: { amount: 3, unit: 'ball' } },
     ],
   })
-  const projection = loadSessionProjection('s1')!
+  const projection = loadSessionProjection('auth-a', 's1')!
   expect(projection.washFinishedAt).toBe(40)
   expect(projection.drying).toMatchObject({ dryerName: 'Dryer 2', heatLabel: 'Low temp', minutes: 45, heldOut: [{ name: 'Sweater', color: 'Navy', method: 'dry_flat' }] })
   expect(projection.textiles[1]).toEqual({ textileId: 't2', name: 'Sweater', color: 'Navy' })
@@ -225,23 +222,23 @@ test('a drying load keeps its cap marks and who stays out of the dryer', () => {
 test('offline projection preserves partial marks and refuses malformed fractions', () => {
   const action = { id: 'a1', kind: 'treatment', phase: 'dispenser', order: 0, supplyName: 'Tide', placement: 'detergent_compartment', stage: 'wash', timing: null, status: 'pending',
     dose: { amount: 1, unit: 'cap', mark: 'Bar 1', fractionOfMark: 0.8, marks: ['Bar 1'], equivalent: { amount: 39, unit: 'ml' } } }
-  saveSessionProjection({ ...detail('running'), actions: [action] })
-  expect(loadSessionProjection('s1')?.actions[0]?.dose).toMatchObject({ mark: 'Bar 1', fractionOfMark: 0.8 })
-  expect(loadSessionProjection('s1')?.actions[0]?.dose?.equivalent).toBeUndefined()
-  saveSessionProjection({ ...detail('running'), actions: [{ ...action, dose: { ...action.dose, fractionOfMark: 1.2 } }] })
-  expect(loadSessionProjection('s1')?.actions[0]?.dose).toBeNull()
+  saveSessionProjection('auth-a', { ...detail('running'), actions: [action] })
+  expect(loadSessionProjection('auth-a', 's1')?.actions[0]?.dose).toMatchObject({ mark: 'Bar 1', fractionOfMark: 0.8 })
+  expect(loadSessionProjection('auth-a', 's1')?.actions[0]?.dose?.equivalent).toBeUndefined()
+  saveSessionProjection('auth-a', { ...detail('running'), actions: [{ ...action, dose: { ...action.dose, fractionOfMark: 1.2 } }] })
+  expect(loadSessionProjection('auth-a', 's1')?.actions[0]?.dose).toBeNull()
 })
 
 test('offline projection keeps qualitative and approximate native doses without invented equivalents', () => {
   const action = { id: 'a1', kind: 'treatment', phase: 'drum', order: 0, supplyName: 'Synthetic source product', placement: 'direct_to_drum', stage: 'wash', timing: 'before clothes', status: 'pending' }
   for (const dose of [{ amount: 1, unit: 'cap', mark: 'Bar 2', target: 'below', equivalent: { amount: 50, unit: 'ml' } }, { amount: 0.25, unit: 'US_cup', approximate: true, equivalent: { amount: 60, unit: 'ml' } }]) {
-    saveSessionProjection({ ...detail('running'), actions: [{ ...action, dose }] })
+    saveSessionProjection('auth-a', { ...detail('running'), actions: [{ ...action, dose }] })
     const { equivalent: _equivalent, ...native } = dose
-    expect(loadSessionProjection('s1')?.actions[0]?.dose).toMatchObject(native)
-    expect(loadSessionProjection('s1')?.actions[0]?.dose?.equivalent).toBeUndefined()
+    expect(loadSessionProjection('auth-a', 's1')?.actions[0]?.dose).toMatchObject(native)
+    expect(loadSessionProjection('auth-a', 's1')?.actions[0]?.dose?.equivalent).toBeUndefined()
   }
-  saveSessionProjection({ ...detail('running'), actions: [{ ...action, dose: { amount: 1, unit: 'cap', mark: 'Bar 2', target: 'below', fractionOfMark: 0.8 } }] })
-  expect(loadSessionProjection('s1')?.actions[0]?.dose).toBeNull()
+  saveSessionProjection('auth-a', { ...detail('running'), actions: [{ ...action, dose: { amount: 1, unit: 'cap', mark: 'Bar 2', target: 'below', fractionOfMark: 0.8 } }] })
+  expect(loadSessionProjection('auth-a', 's1')?.actions[0]?.dose).toBeNull()
 })
 
 test('the closet chips survive a reload for their own household only', () => {
@@ -305,4 +302,20 @@ test('purging private state also removes the retired Household section preferenc
   storage.setItem('washcloset:private:household-section', JSON.stringify('bottles'))
   purgePrivateState()
   expect(storage.getItem('washcloset:private:household-section')).toBeNull()
+})
+
+test('account switches and late writes cannot expose another sign-in’s draft or offline steps', () => {
+  const draft = { householdId: 'h1', selectedTextileIds: ['private-a'], seenTextileIds: ['private-a'], planId: null, inputHash: null }
+  saveDraft('auth-a', draft)
+  saveSessionProjection('auth-a', { ...detail('running'), textiles: [{ textileId: 'private-a', name: 'Private A garment' }] })
+  expect(loadDraft('auth-b', 'h1')).toBeNull()
+  expect(offlineSessionCopies('auth-b')).toEqual({ projection: null, others: [] })
+  saveSessionProjection('auth-b', { ...detail('running'), textiles: [{ textileId: 'private-b', name: 'Private B garment' }] })
+  saveSessionProjection('auth-a', { ...detail('running'), textiles: [{ textileId: 'private-a', name: 'Late A write' }] })
+  expect(loadSessionProjection('auth-b', 's1')!.textiles[0]!.name).toBe('Private B garment')
+  expect(loadSessionProjection('auth-a', 's1')!.textiles[0]!.name).toBe('Late A write')
+  expect(loadSessionProjection(null)).toBeNull()
+  storage.setItem('washcloset:private:sessions', JSON.stringify([{ ...detail('running'), savedAt: 1 }]))
+  expect(offlineSessionCopies('auth-c')).toEqual({ projection: null, others: [] })
+  expect(storage.getItem('washcloset:private:sessions')).not.toBeNull()
 })

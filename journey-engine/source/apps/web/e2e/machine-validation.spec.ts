@@ -51,7 +51,7 @@ test('optional machine evidence blocks Save and can be cleared without recording
   await sheet.getByRole('button', { name: 'Center agitator', exact: true }).click()
   await expect(save).toBeDisabled()
   await sheet.getByRole('button', { name: 'Cancel', exact: true }).click()
-  await sheet.getByRole('button', { name: 'Discard', exact: true }).click()
+  await page.getByRole('alertdialog', { name: 'Discard your changes?', exact: true }).getByRole('button', { name: 'Discard', exact: true }).click()
   await sheet.getByRole('button', { name: 'Close', exact: true }).click()
   await expect(sheet).toHaveCount(0)
   expect((await client.query(api.inventory.list, { householdId })).machines).toHaveLength(5)

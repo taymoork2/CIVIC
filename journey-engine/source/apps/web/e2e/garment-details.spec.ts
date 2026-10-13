@@ -112,7 +112,7 @@ test('garment details accept typed quantity, visible identity and filtered or ne
   }
 })
 
-test('an unanswered discard warning keeps the draft after five seconds and explicit choices still work', async ({ page }) => {
+test('an unanswered discard warning waits for a choice, keeps the draft, and explicit choices still work', async ({ page }) => {
   await signUp(page, 'discard-timeout', 'Draft Test')
   await createHousehold(page)
   await page.getByRole('navigation').getByRole('link', { name: 'Closet', exact: true }).click()
@@ -124,19 +124,19 @@ test('an unanswered discard warning keeps the draft after five seconds and expli
   await page.clock.install()
   await page.clock.pauseAt(new Date(Date.now() + 1000))
   await sheet.getByRole('button', { name: 'Close', exact: true }).click()
-  await expect(sheet.getByRole('button', { name: 'Keep editing', exact: true })).toBeVisible()
-  await page.clock.runFor(4999)
-  await expect(sheet.getByRole('button', { name: 'Keep editing', exact: true })).toBeVisible()
-  await page.clock.runFor(1)
-  await expect(sheet.getByRole('button', { name: 'Keep editing', exact: true })).toHaveCount(0)
+  // v11 asks in a modal confirmation that stays until a choice is made; nothing closes it on a timer.
+  const ask = page.getByRole('alertdialog', { name: 'Discard your changes?', exact: true })
+  await expect(ask.getByRole('button', { name: 'Keep editing', exact: true })).toBeFocused()
+  await page.clock.runFor(10000)
+  await expect(ask.getByRole('button', { name: 'Keep editing', exact: true })).toBeVisible()
+  await ask.getByRole('button', { name: 'Keep editing', exact: true }).click()
+  await expect(ask).toHaveCount(0)
   await expect(sheet.getByLabel('Name', { exact: true })).toHaveValue('Keep this draft')
   await expect(sheet.getByRole('heading')).toBeFocused()
-  await sheet.getByRole('button', { name: 'Close', exact: true }).click()
-  await sheet.getByRole('button', { name: 'Keep editing', exact: true }).click()
   await page.clock.runFor(5000)
   await expect(sheet.getByLabel('Name', { exact: true })).toHaveValue('Keep this draft')
   await sheet.getByRole('button', { name: 'Close', exact: true }).click()
-  await sheet.getByRole('button', { name: 'Discard', exact: true }).click()
+  await ask.getByRole('button', { name: 'Discard', exact: true }).click()
   await page.clock.runFor(300)
   await expect(sheet).toHaveCount(0)
 })

@@ -20,6 +20,8 @@
     "./runtime-dom": "./src/runtime-dom.ts",
     "./runtime-session": "./src/runtime-session.ts",
     "./review-api": "./src/review-api.ts",
+    "./run-controls": "./src/run-controls.tsx",
+    "./viewport-presets": "./src/viewport-presets.ts",
     "./styles/*.css": "./src/*.css"
   },
   "scripts": {

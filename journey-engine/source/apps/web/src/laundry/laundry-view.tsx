@@ -8,6 +8,7 @@ import { useEffect, useMemo, useRef, useState, type ComponentProps, type Dispatc
 import { useSteady } from '@/kit/use-steady'
 import { machineTileClassName, machineTilesClassName } from '@/laundry/machine-step'
 import { useClientRender } from '@/kit/client-render'
+import { usePrivateAccount } from '@/kit/device-state'
 
 import type { Id } from '@convex/_generated/dataModel'
 import type { CurrentHousehold } from '@/account/account'
@@ -1727,7 +1728,7 @@ function HamperScreens(props: HamperScreensProps) {
     </TaskFooter>
   ) : nextLoad !== null ? null : hamperIds.length > 0 ? (
     <TaskFooter>
-      <Button type="button" size="lg" className="w-full" disabled={pending || selection.length === 0} onClick={props.onMakeLoads}>{selection.length === 0 ? hubScreenText.selectToSort : hubScreenText.sortIntoLoads(selection.length)}</Button>
+      <Button type="button" size="lg" className="w-full" aria-label={selection.length === 0 ? undefined : hubScreenText.sortIntoLoads(selection.length)} disabled={pending || selection.length === 0} onClick={props.onMakeLoads}>{selection.length === 0 ? hubScreenText.selectToSort : hubScreenText.sort}</Button>
     </TaskFooter>
   ) : null
 
@@ -2009,6 +2010,7 @@ export function Laundry({ household, planId, loadId, onOpenLoad, onPlan, onSessi
   renderLink: LaundryLink
 }) {
   const householdId = household.householdId
+  const accountId = usePrivateAccount()
   const shared = useHouseholdData(householdId)
   const now = useNow(30_000)
   const minute = Math.floor(now / 60_000) * 60_000
@@ -2024,7 +2026,7 @@ export function Laundry({ household, planId, loadId, onOpenLoad, onPlan, onSessi
   const questions = useQuery(api.plans.questions, planArgs)
   // Device-only choices must not differ from the server's first render; after hydration they are read at once.
   const client = useClientRender()
-  const draft = useMemo<PlanningDraft | null | undefined>(() => client ? loadDraft(householdId) : undefined, [client, householdId])
+  const draft = useMemo<PlanningDraft | null | undefined>(() => client ? loadDraft(accountId, householdId) : undefined, [client, householdId, accountId])
   const calls: LaundryCalls = {
     recompute: useMutation(api.plans.recompute),
     start: useMutation(api.execution.start),
@@ -2052,8 +2054,8 @@ export function Laundry({ household, planId, loadId, onOpenLoad, onPlan, onSessi
   const hub = useLaundryDay(householdId, now)
   const recent = useRecentMachines(householdId)
   const saved = (selection: readonly string[], seen: readonly string[], opened: { planId: string | null; inputHash: string | null } | null = null) => {
-    const previous = loadDraft(householdId)
-    saveDraft({ householdId, selectedTextileIds: selection, seenTextileIds: seen, planId: opened?.planId ?? previous?.planId ?? null, inputHash: opened?.inputHash ?? previous?.inputHash ?? null })
+    const previous = loadDraft(accountId, householdId)
+    saveDraft(accountId, { householdId, selectedTextileIds: selection, seenTextileIds: seen, planId: opened?.planId ?? previous?.planId ?? null, inputHash: opened?.inputHash ?? previous?.inputHash ?? null })
   }
 
   if (draft === undefined || inventory === undefined || inventorySummary === undefined || attention === undefined || hub === undefined) {

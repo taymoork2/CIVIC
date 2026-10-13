@@ -29,7 +29,7 @@ import { projectPicker } from './review-projects.mjs'
  *   canvasExtension(project)               a module whose default export extends the canvas (layout, a guided run)
  *   serveSources                           false when the host already serves the app's sources
  * `review({ project, repo, dataDir })` returns the shell's options (adapter, coverage, agents, shared,
- * publicHost). `runtime(project, source)` starts the isolated backend for live runs, when the app has one.
+ * publicHost). `runtime(project, source, { dataDir })` starts the isolated backend for live runs, when the app has one.
  * Routine indexing, refresh and serving make no model calls.
  */
 // CIVIC_* settings, with the engine's older REHEARSAL_* names still read.
@@ -118,7 +118,8 @@ export function civicReview({ host, canvas = host, repo = resolve(host, '../..')
       server.watcher.on('change', refresh).on('add', refresh).on('unlink', refresh)
       const projects = await projectPicker(repo, project, { discoveredAdapter: join(canvas, 'src/discovered-adapter.tsx'), starterTemplate: join(canvas, 'examples/notebook'), ...picker, kinds: ['module', ...Object.keys(connectors)] })
       const source = () => { if (pendingRefreshes) throw Object.assign(Error('Source is updating. Wait for refresh before starting a new run.'), { status: 409 }); if (metadata.refreshError) throw Error(metadata.refreshError); return metadata.revision.source }
-      const runs = runtime?.(project, source)
+      // Runs keep their journals beside the project's reviews, so a closed run can be reopened on the same source.
+      const runs = runtime?.(project, source, { dataDir })
       const options = await review({ project, repo, dataDir })
       const auth = await reviewMiddleware({ dataDir, metadata, evidence, capture: captureReview, publicOrigin, projects, ...options, ...(runs ? { runtime: runs } : {}), restart: () => server.restart().catch((error) => server.config.logger.error(`Project restart failed: ${error.message}`)) })
       server.httpServer?.once('listening', () => {
