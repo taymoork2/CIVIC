@@ -1,5 +1,7 @@
 # Rehearsal v7
 
+> **Removed from CIVIC (decision 0010, step 6, 2026-10-13).** This folder keeps the v7 handoff's records only. Its `source/` (CIVIC's copy of Laundry) and `fixtures/` were removed: the engine's packages live in [`packages/`](../packages), and Laundry runs review from its own repository ([integrations/laundry](../integrations/laundry)). The commands below describe the handoff as delivered; git history keeps the files.
+
 Start with [HANDOFF.md](HANDOFF.md), [CHANGES-SINCE-V6.md](CHANGES-SINCE-V6.md), [PACKAGE-VERIFICATION.md](PACKAGE-VERIFICATION.md) and [EXTRACTING-REHEARSAL.md](EXTRACTING-REHEARSAL.md). Rehearsal is its own product; Laundry is the reference integration. Standalone extraction is unfinished.
 
 ## Run on a receiving host

@@ -3,13 +3,11 @@
 # record a green "signoff" commit status on GitHub for the exact commit that passed.
 #
 #   bin/signoff            graph, review loop, crawl, importer, Fluent Button, Card, Laundry and discovery example checks, the
-#                          civic check gate, CIVIC's packages, then the journey engine's checks, tests and
-#                          review-server tests. Posts the "signoff" and "civic" statuses, and on
-#                          an open pull request a comment listing the findings this change
-#                          introduced, with who is asked and who is told (step 10).
-#   bin/signoff --browser  also the Fluent Button web evidence and the Playwright
-#                          review-canvas journey (needs Chrome and a review server:
-#                          pnpm --dir apps/web run review)
+#                          civic check gate, and CIVIC's packages with their install check. Laundry's own
+#                          checks run in Laundry's repository (decision 0010). Posts the "signoff" and
+#                          "civic" statuses, and on an open pull request a comment listing the findings
+#                          this change introduced, with who is asked and who is told (step 10).
+#   bin/signoff --browser  also the Fluent Button web evidence (needs Chrome)
 #   bin/signoff --capture  first recapture Laundry's evidence if the gate finds it stale (needs
 #                          LAUNDRY_CHECKOUT, a clean Laundry checkout, Chrome, and Laundry's review
 #                          server started there at its HEAD); a recapture stops the signoff so
@@ -28,7 +26,6 @@ for arg in "$@"; do
 done
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-source_dir="$repo_root/journey-engine/source"
 packages_dir="$repo_root/packages"
 graph_dir="$repo_root/graph"
 importers_dir="$repo_root/importers"
@@ -134,30 +131,14 @@ pnpm --dir "$packages_dir" test
 step "CIVIC packages installed from this commit into an empty app, opened in the standalone canvas"
 node "$packages_dir/install.check.mjs"
 
-step "Installing dependencies (the journey engine's copy of Laundry, which links CIVIC's packages)"
-pnpm --dir "$source_dir" install --frozen-lockfile
-step "Types and styles (planner, Convex, web)"
-pnpm --dir "$source_dir" run check
-step "Unit and node tests"
-pnpm --dir "$source_dir" test
-step "Review inventory, adapter and server checks"
-pnpm --dir "$source_dir/apps/web" run test:review
-step "Attaching CIVIC to a Laundry checkout of its own (bin/civic-laundry)"
-node --test "$repo_root/integrations/laundry/civic-laundry.check.mjs"
-if [ "$browser" = 1 ]; then
-  step "Playwright review-canvas journey"
-  WASHCLOSET_REVIEW_E2E=1 WASHCLOSET_E2E_BASE_URL="${WASHCLOSET_E2E_BASE_URL:-http://127.0.0.1:3010}" \
-    pnpm --dir "$source_dir/apps/web" exec playwright test e2e/review-canvas.spec.ts --project=isolated --workers=1
-fi
-
 # Checks may not touch tracked files; if they did, the result no longer describes HEAD.
 if [ -n "$(git -C "$repo_root" status --porcelain)" ] || [ "$(git -C "$repo_root" rev-parse HEAD)" != "$sha" ]; then
   echo "The working tree changed while checks ran; not signing off." >&2
   exit 1
 fi
 
-scope="graph, review loop, importers, Button and Card demos, civic gate, CIVIC packages, checks, tests and review-server tests"
-[ "$browser" = 1 ] && scope="$scope + Button web evidence and review-canvas journey"
+scope="graph, review loop, importers, Button and Card demos, Laundry and discovery graphs, civic gate, CIVIC packages and their install check"
+[ "$browser" = 1 ] && scope="$scope + Button web evidence"
 if [ "$post" = 0 ]; then step "Passed for $sha ($scope); status not posted"; exit 0; fi
 if ! command -v gh >/dev/null; then step "Passed for $sha ($scope). Install the GitHub CLI (gh) to post the signoff status."; exit 0; fi
 

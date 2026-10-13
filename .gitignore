@@ -1,2 +1,3 @@
 .amp/*
 !.amp/services.yaml
+.civic-canvas/

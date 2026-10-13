@@ -1,8 +1,7 @@
 # CIVIC's engine packages (decision 0010): the canvas, the shell and the Vite connector, with
 # the canvas examples. The workspace sits here rather than at the repository root so CIVIC's
-# other projects (graph, importers, review, crawl, demos) keep their own installs. The journey
-# engine's workspace under journey-engine/source links these packages too, so its Laundry copy
-# runs on them until it moves to Laundry's repository.
+# other projects (graph, importers, review, crawl, demos) keep their own installs. Laundry
+# installs them from git (decision 0010).
 packages:
   - '*'
 allowBuilds:
