@@ -10,7 +10,7 @@ export { GAP_KINDS, gapsIn, renderGaps, type Gap, type GapKind, type GapOptions 
 export { checkCounts, isAnchored, laneFor, resolveAnchor, type AnchorResolution, type ObservedElement } from './work.ts'
 export { completenessOf, renderCompleteness, stateCoverageOn, type Completeness, type JourneyShape, type StateCoverage } from './completeness.ts'
 export { renderInstanceReview, reviewInstance, type OverrideReview, type OverrideReviewItem } from './overrides.ts'
-export { renderScreen, screenFacts, type ScreenFacts } from './screen.ts'
+export { renderScreen, screenFacts, type ScreenDesign, type ScreenFacts } from './screen.ts'
 export { attribute, changeBetween, renderChange, type ChangeReport, type GraphAtRevisions, type IntroducedFinding, type SideChange } from './change.ts'
 export { renderCoverage, runCoverage, type CoverageSubject, type OutcomeChange, type RunCoverage } from './coverage.ts'
 export { releaseBreaks, releasesBetween, renderReleases, type OverrideImpact, type ReleaseImpact, type UnmappedVariant } from './release.ts'
