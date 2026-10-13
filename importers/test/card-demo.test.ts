@@ -18,11 +18,34 @@ test('each override gets its own answer per platform and framework: flexible Rea
   const graph = indexGraph(load('raised'))
   // The real Fluent 2 web kit draws the header quick action and the footer by default, so
   // Shop using them is not an override. Turning on the header's checkbox is.
-  assert.deepEqual(graph.ofKind('override').map((override) => override.id).sort(), ['override:shop.order-summary.card.corner-radius', 'override:shop.order-summary.card.state-selected'])
+  // The third is the detached Card on Promo applied, once Shop design confirmed it as a fork.
+  assert.deepEqual(graph.ofKind('override').map((override) => override.id).sort(), ['override:shop.order-summary.card.corner-radius', 'override:shop.order-summary.card.state-selected', 'override:shop.promo-applied.card.fork.detach'])
   // Shop builds web with React and web components (decision 0011): React's selected prop doesn't help <fluent-card>.
   assert.deepEqual(outcomes(graph, 'override:shop.order-summary.card.state-selected'), { 'web (react)': 'supported', 'web (web-components)': 'needs-library-change', 'ios (uikit)': 'needs-library-change', 'android (compose)': 'needs-library-change' })
   // Android's basicCardTokens can set a radius, but the contract forbids a local one everywhere.
   assert.deepEqual(outcomes(graph, 'override:shop.order-summary.card.corner-radius'), { 'web (react)': 'forbidden', 'web (web-components)': 'forbidden', 'ios (uikit)': 'forbidden', 'android (compose)': 'forbidden' })
+  // No extension point ever expresses a fork.
+  assert.deepEqual(new Set(Object.values(outcomes(graph, 'override:shop.promo-applied.card.fork.detach'))), new Set(['needs-library-change']))
+})
+
+test('copies of the Card are inferred as forks in design and code, and only the one a person confirmed is drift', () => {
+  const graph = indexGraph(load('resolved'))
+  const forks = graph.ofKind('component-instance').filter((instance) => instance.fork)
+  assert.deepEqual(forks.map((instance) => [instance.id, instance.origin, instance.fork!.status, instance.library?.matchedBy]), [
+    ['instance:shop.promo-applied.card.fork', 'design', 'confirmed', 'inferred'],
+    ['instance:shop.promo-applied.web.card.fork', 'code', 'inferred', 'inferred'],
+  ])
+  // The detached frame keeps the library Card's header, body and footer layers; the copied code is found by import.
+  assert.match(forks[0]!.fork!.basis, /keeps 6 of the library Card's 9 layers/)
+  assert.match(forks[1]!.fork!.basis, /renders code\/src\/vendor\/react-card\/Card\.tsx, which exports Card/)
+  // The confirmed fork goes through the usual flow: a conflict, then the maintainers' decision.
+  const conflict = graph.get('conflict:shop.promo-applied.card.fork.detach')
+  assert.equal(conflict?.kind, 'contract-conflict')
+  assert.equal(graph.get('decision:shop.promo-applied.card.fork.detach')?.kind, 'decision')
+  // A fork shows no contract state, so Promo applied gets no missing-state findings from it.
+  assert.ok(!completenessOf(graph, 'target:shop.checkout').states.some((item) => item.screenId === 'target:shop.promo-applied'))
+  const [promo] = designAndCode(graph, 'target:shop.promo-applied')
+  assert.deepEqual([promo!.design, promo!.code, promo!.forks.map((fork) => [fork.origin, fork.status, fork.decision ?? 'open'])], [[], [], [['design', 'confirmed', 'update-design'], ['code', 'inferred', 'open']]])
 })
 
 test('every override is unreviewed drift until the maintainers decide, and the design is not yet adoptable', () => {

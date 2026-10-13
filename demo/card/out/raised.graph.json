@@ -82,7 +82,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-4",
+        "revision": "civic-stand-in-5",
         "path": "Shop checkout (CIVIC stand-in) / Checkout",
         "anchor": "40:0"
       }
@@ -131,7 +131,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-4",
+        "revision": "civic-stand-in-5",
         "path": "Shop checkout (CIVIC stand-in) / Components / Gift option",
         "anchor": "50:1"
       }
@@ -180,7 +180,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-4",
+        "revision": "civic-stand-in-5",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Gift options",
         "anchor": "40:20"
       }
@@ -229,7 +229,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-4",
+        "revision": "civic-stand-in-5",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary",
         "anchor": "40:1"
       }
@@ -278,7 +278,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-4",
+        "revision": "civic-stand-in-5",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Loading",
         "anchor": "40:5"
       }
@@ -327,7 +327,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-4",
+        "revision": "civic-stand-in-5",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Promo applied",
         "anchor": "40:10"
       }
@@ -996,7 +996,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-4",
+        "revision": "civic-stand-in-5",
         "path": "Shop checkout (CIVIC stand-in) / Components / Gift option / Card",
         "anchor": "50:2"
       }
@@ -1035,7 +1035,7 @@
       "source": {
         "tool": "civic",
         "importer": "react-code",
-        "revision": "sha256:596d0228574c5d86e0fd91f87d358230728944fafdb34a71eac76cb177ac5787",
+        "revision": "sha256:118f546c28540bea43ead98ed385bbf5ddc1f43bfddd4b11a33cc3ba2298007c",
         "path": "code/src/GiftOption.tsx",
         "anchor": "L5"
       }
@@ -1064,7 +1064,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-4",
+        "revision": "civic-stand-in-5",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Card",
         "anchor": "40:2"
       }
@@ -1093,7 +1093,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-4",
+        "revision": "civic-stand-in-5",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Loading / Card",
         "anchor": "40:6"
       }
@@ -1144,9 +1144,76 @@
       "source": {
         "tool": "civic",
         "importer": "react-code",
-        "revision": "sha256:596d0228574c5d86e0fd91f87d358230728944fafdb34a71eac76cb177ac5787",
+        "revision": "sha256:118f546c28540bea43ead98ed385bbf5ddc1f43bfddd4b11a33cc3ba2298007c",
         "path": "code/src/OrderSummary.tsx",
         "anchor": "L8"
+      }
+    },
+    {
+      "id": "instance:shop.promo-applied.card.fork",
+      "kind": "component-instance",
+      "title": "Card on Promo applied",
+      "semanticId": "semantic:card",
+      "placedOn": "target:shop.promo-applied",
+      "product": "shop",
+      "origin": "design",
+      "library": {
+        "file": "fluent-2-web",
+        "key": "0d1e1017597a223f89c25613fae3225cb1f34e41",
+        "matchedBy": "inferred"
+      },
+      "fork": {
+        "status": "confirmed",
+        "basis": "named \"Card\"; keeps 6 of the library Card's 9 layers (body, body container, footer, footer container, header, header container)",
+        "confirmedBy": {
+          "role": "design",
+          "who": "shop-design"
+        }
+      },
+      "owners": [
+        {
+          "role": "design",
+          "who": "shop-design"
+        }
+      ],
+      "source": {
+        "tool": "figma",
+        "importer": "figma-file",
+        "revision": "civic-stand-in-5",
+        "path": "Shop checkout (CIVIC stand-in) / Checkout / Promo applied / Card",
+        "anchor": "40:13"
+      }
+    },
+    {
+      "id": "instance:shop.promo-applied.web.card.fork",
+      "kind": "component-instance",
+      "title": "Copy of Card in PromoApplied.tsx",
+      "semanticId": "semantic:card",
+      "placedOn": "target:shop.promo-applied",
+      "product": "shop",
+      "origin": "code",
+      "platform": "web",
+      "library": {
+        "file": "@fluentui/react-card",
+        "key": "Card",
+        "matchedBy": "inferred"
+      },
+      "fork": {
+        "status": "inferred",
+        "basis": "renders code/src/vendor/react-card/Card.tsx, which exports Card, the name of @fluentui/react-card's component; mentions @fluentui/react-card; lives in a vendored folder"
+      },
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "shop-engineering"
+        }
+      ],
+      "source": {
+        "tool": "civic",
+        "importer": "react-code",
+        "revision": "sha256:118f546c28540bea43ead98ed385bbf5ddc1f43bfddd4b11a33cc3ba2298007c",
+        "path": "code/src/PromoApplied.tsx",
+        "anchor": "L7"
       }
     },
     {
@@ -1164,7 +1231,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-4",
+        "revision": "civic-stand-in-5",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Card",
         "anchor": "40:2"
       }
@@ -1184,9 +1251,28 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-4",
+        "revision": "civic-stand-in-5",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Card",
         "anchor": "40:2"
+      }
+    },
+    {
+      "id": "override:shop.promo-applied.card.fork.detach",
+      "kind": "override",
+      "title": "Card on Promo applied is a copy of the library component",
+      "instanceId": "instance:shop.promo-applied.card.fork",
+      "property": "component",
+      "change": "detach",
+      "madeBy": {
+        "role": "design",
+        "who": "shop-design"
+      },
+      "source": {
+        "tool": "civic",
+        "importer": "confirmations",
+        "revision": "sha256:06f4bca5a84b91a8809db5e29fbb14c3699a7c03a5bad27fdb94a17c6d0a5ae0",
+        "path": "demo/card/contract/confirmations.json",
+        "anchor": "design shop-design 2026-10-13T00:00:00Z"
       }
     },
     {
@@ -1217,17 +1303,18 @@
         "semantic:card",
         "instance:shop.component.gift-option.card",
         "instance:shop.order-summary.card",
-        "instance:shop.order-summary.loading.card"
+        "instance:shop.order-summary.loading.card",
+        "instance:shop.promo-applied.card.fork"
       ],
       "tier": "static-analysis",
       "method": "design-export",
       "outcome": "finding",
-      "finding": "4 frame(s): Order Summary, Order Summary / Loading, Promo applied, Gift options. 3 Card instance(s) showing rest, rest, rest; 2 override(s): state.selected, corner-radius. Card instances matched by published key 0d1e1017597a223f89c25613fae3225cb1f34e41 from fluent-2-web. 1 product component(s) read once: Gift option (2 placement(s) on shop.gift-options). Consumes fluent-2-web, shop-patterns; other placements: 3 from fluent-2-web (Button); 1 from shop-patterns (Promo banner).",
+      "finding": "4 frame(s): Order Summary, Order Summary / Loading, Promo applied, Gift options. 3 Card instance(s) showing rest, rest, rest; 2 override(s): state.selected, corner-radius. Card instances matched by published key 0d1e1017597a223f89c25613fae3225cb1f34e41 from fluent-2-web. 1 product component(s) read once: Gift option (2 placement(s) on shop.gift-options). 1 possible copy of Card, inferred for a person to confirm: Card on Promo applied. Consumes fluent-2-web, shop-patterns; other placements: 3 from fluent-2-web (Button); 1 from shop-patterns (Promo banner).",
       "capturedAt": "2026-10-13T00:00:00Z",
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-4",
+        "revision": "civic-stand-in-5",
         "path": "Shop checkout (CIVIC stand-in)"
       }
     },
@@ -1321,17 +1408,18 @@
       "title": "Library components the product code renders",
       "subjectIds": [
         "instance:shop.component.gift-option.web.card",
-        "instance:shop.order-summary.web.card"
+        "instance:shop.order-summary.web.card",
+        "instance:shop.promo-applied.web.card.fork"
       ],
       "tier": "static-analysis",
       "method": "source-analysis",
       "outcome": "finding",
-      "finding": "2 use(s) of Card in 3 file(s), found by import; 1 wrapper(s): GiftOption.",
+      "finding": "2 use(s) of Card in 5 file(s), found by import; 1 wrapper(s): GiftOption. 1 copy of a library component (code/src/vendor/react-card/Card.tsx), rendered 1 time(s), inferred for a person to confirm.",
       "capturedAt": "2026-10-11T00:00:00Z",
       "source": {
         "tool": "civic",
         "importer": "react-code",
-        "revision": "sha256:596d0228574c5d86e0fd91f87d358230728944fafdb34a71eac76cb177ac5787"
+        "revision": "sha256:118f546c28540bea43ead98ed385bbf5ddc1f43bfddd4b11a33cc3ba2298007c"
       }
     },
     {
@@ -1511,6 +1599,41 @@
         }
       ],
       "alignment": "unreviewed-drift"
+    },
+    {
+      "id": "conflict:shop.promo-applied.card.fork.detach",
+      "kind": "contract-conflict",
+      "title": "Card on Promo applied is a copy of the library component (Card override)",
+      "targetId": "semantic:card",
+      "summary": "The product design changes the Card's component (detach) and no maintainer has reviewed it.",
+      "sides": [
+        {
+          "claim": "Card on Promo applied is a copy of the library component on instance:shop.promo-applied.card.fork.",
+          "recordId": "override:shop.promo-applied.card.fork.detach",
+          "evidenceIds": [
+            "evidence:figma.shop.shop-checkout-civic-stand-in"
+          ]
+        },
+        {
+          "claim": "The Card contract and library do not include this change.",
+          "recordId": "semantic:card",
+          "evidenceIds": [
+            "evidence:figma.library.card"
+          ]
+        }
+      ],
+      "classification": "unclassified",
+      "owners": [
+        {
+          "role": "design",
+          "who": "shop-design"
+        },
+        {
+          "role": "design",
+          "who": "design-system-maintainers"
+        }
+      ],
+      "alignment": "unreviewed-drift"
     }
   ],
   "links": [
@@ -1600,7 +1723,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-4",
+        "revision": "civic-stand-in-5",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Gift options / Gift wrap",
         "anchor": "40:22"
       }
@@ -1613,7 +1736,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-4",
+        "revision": "civic-stand-in-5",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Gift options / Back to order",
         "anchor": "40:21"
       },
@@ -1651,7 +1774,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-4",
+        "revision": "civic-stand-in-5",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Continue to payment",
         "anchor": "40:4"
       },
@@ -1666,11 +1789,23 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-4",
+        "revision": "civic-stand-in-5",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Apply promotion",
         "anchor": "40:3"
       },
       "to": "target:shop.promo-applied"
+    },
+    {
+      "from": "target:shop.promo-applied",
+      "relation": "contains",
+      "to": "instance:shop.promo-applied.card.fork",
+      "status": "declared"
+    },
+    {
+      "from": "target:shop.promo-applied",
+      "relation": "contains",
+      "to": "instance:shop.promo-applied.web.card.fork",
+      "status": "declared"
     }
   ]
 }

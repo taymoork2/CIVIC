@@ -1,7 +1,7 @@
 {
   "name": "Shop checkout (CIVIC stand-in)",
   "lastModified": "2026-10-13T00:00:00Z",
-  "version": "civic-stand-in-4",
+  "version": "civic-stand-in-5",
   "schemaVersion": 0,
   "document": {
     "id": "0:0",
@@ -259,6 +259,66 @@
                 "name": "Message",
                 "type": "TEXT",
                 "characters": "Promotion applied"
+              },
+              {
+                "id": "40:13",
+                "name": "Card",
+                "type": "FRAME",
+                "children": [
+                  {
+                    "id": "40:14",
+                    "name": "Illustration",
+                    "type": "FRAME",
+                    "children": []
+                  },
+                  {
+                    "id": "40:15",
+                    "name": "Header container",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "40:16",
+                        "name": "Header",
+                        "type": "INSTANCE",
+                        "componentId": "30:3",
+                        "children": []
+                      }
+                    ]
+                  },
+                  {
+                    "id": "40:17",
+                    "name": "Body container",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "40:18",
+                        "name": "Body",
+                        "type": "FRAME",
+                        "children": [
+                          {
+                            "id": "40:19",
+                            "name": "Text",
+                            "type": "TEXT",
+                            "characters": "Your 10% discount is on the order total."
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "40:30",
+                    "name": "Footer container",
+                    "type": "FRAME",
+                    "children": [
+                      {
+                        "id": "40:31",
+                        "name": "Footer",
+                        "type": "FRAME",
+                        "children": []
+                      }
+                    ]
+                  }
+                ]
               },
               {
                 "id": "40:12",

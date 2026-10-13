@@ -2,7 +2,9 @@
 // identity and the path down to each named component set or frame, with only the node fields
 // the importers use. The result keeps Figma's REST shape, so the importers read the trimmed and
 // the full export the same way. A full kit is well over 100 MB of artwork a demo never looks at,
-// and the kits' CC BY 4.0 licence asks for credit, not a copy of all of it.
+// and the kits' CC BY 4.0 licence asks for credit, not a copy of all of it. A component set's
+// default variant keeps the outline of its layers (names only, two levels deep), which is what
+// a product's copy of the component is compared with (decision 0011).
 
 export interface TrimTarget {
   type: 'COMPONENT_SET' | 'FRAME'
@@ -29,10 +31,35 @@ interface FigmaFile {
 
 const bare = (node: FigmaNode): FigmaNode => ({ id: node.id, name: node.name, type: node.type })
 
-/** A target's own node, keeping only its component descendants and the frames that hold them. */
-function keepComponents(node: FigmaNode): FigmaNode | undefined {
-  if (node.type === 'COMPONENT') return bare(node)
-  const children = (node.children ?? []).flatMap((child) => keepComponents(child) ?? [])
+/** Layer types that give a component its structure; shapes, text and vectors are its artwork. */
+export const STRUCTURAL_LAYERS = ['FRAME', 'GROUP', 'INSTANCE', 'COMPONENT', 'SECTION']
+
+/** How deep a component's layer outline goes: its containers and the components inside them. */
+export const OUTLINE_DEPTH = 2
+
+/**
+ * The variant a component set shows by default: the one whose `Property=Option` name matches
+ * every variant property's default. Undefined when the set declares no defaults.
+ */
+export function defaultVariantOf<T extends FigmaNode>(set: T): T | undefined {
+  const defaults = Object.entries(set.componentPropertyDefinitions ?? {}).filter(([, definition]) => definition.type === 'VARIANT' && typeof definition.defaultValue === 'string')
+  if (defaults.length === 0) return undefined
+  return (set.children ?? []).find((child) => {
+    const options = new Map(child.name.split(',').map((part) => part.split('=').map((side) => side.trim()) as [string, string]))
+    return defaults.every(([name, definition]) => options.get(name) === definition.defaultValue)
+  }) as T | undefined
+}
+
+function outline(node: FigmaNode, depth: number): FigmaNode {
+  const children = depth < OUTLINE_DEPTH ? (node.children ?? []).filter((child) => STRUCTURAL_LAYERS.includes(child.type)).map((child) => outline(child, depth + 1)) : []
+  return { ...bare(node), ...(children.length > 0 ? { children } : {}) }
+}
+
+/** A target's own node, keeping only its component descendants and the frames that hold them; the default variant keeps its outline. */
+function keepComponents(node: FigmaNode, keepOutline?: FigmaNode): FigmaNode | undefined {
+  if (node.type === 'COMPONENT') return node === keepOutline ? outline(node, 0) : bare(node)
+  const variant = node.type === 'COMPONENT_SET' ? defaultVariantOf(node) : keepOutline
+  const children = (node.children ?? []).flatMap((child) => keepComponents(child, variant) ?? [])
   if (children.length === 0) return undefined
   return { ...bare(node), ...(node.componentPropertyDefinitions ? { componentPropertyDefinitions: node.componentPropertyDefinitions } : {}), children }
 }
