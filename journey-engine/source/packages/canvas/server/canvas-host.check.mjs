@@ -221,7 +221,7 @@ test('a live run switches account, goes offline and back, and changes viewport o
   await tab.getByRole('button', { name: 'Inspect', exact: true }).click()
   const run = tab.getByRole('region', { name: 'Isolated run' })
   // Input is held while the account changes, as it is for a person; act once the app is ready again.
-  const ready = () => tab.waitForFunction(() => { const doc = document.querySelector('iframe[title="Live Team board"]')?.contentDocument; return doc && !doc.body.inert && doc.getElementById('review-root')?.dataset.rehearsalReady === 'true' })
+  const ready = () => tab.waitForFunction(() => { const doc = document.querySelector('iframe[title="Live Team board"]')?.contentDocument; return Boolean(doc?.body) && !doc.body.inert && doc.getElementById('review-root')?.dataset.rehearsalReady === 'true' })
   await run.getByLabel('Synthetic account').selectOption('newcomer')
   await frame.getByText('Signed in as Sam Lee').waitFor()
   await ready()
