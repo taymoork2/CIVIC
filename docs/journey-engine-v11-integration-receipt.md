@@ -56,7 +56,8 @@ Commits on `claude/project-thread-9en6l5`, in order:
 | `211b0c6` | Laundry evidence recaptured at `03c3127`, with this table |
 | `ca589d6` | Snapshot and canvas specs rerun on `211b0c6`, after the frame fix |
 | `0f93f8d` | Laundry's product specs fitted to v11's modal discard prompt |
-| the commit after `0f93f8d` | Product suite and browser signoff results |
+| `3d5a5d3` | Product suite and browser signoff results |
+| `4fb7fc5` | `main` merged in (replays as run evidence, decision 0009); the canvas's run controls keep both the run section and saving each replay as evidence |
 
 ## Fixes found during acceptance
 
@@ -93,7 +94,8 @@ Every result below is from this branch. The commit named is the one the checked 
 | `playwright test e2e/review-snapshots.spec.ts e2e/review-canvas.spec.ts --project=isolated --workers=1 --retries=0` (with `WASHCLOSET_REVIEW_E2E=1`, against the review server serving `211b0c6`, source fingerprint `8f2943dabe6b99bf15dd1495817a56bd22cddcb8be723fe5752b66a423ff4658`) | `211b0c6` (same code as `03c3127`) | 8/8, 0 skipped, 0 flaky, 49 seconds |
 | `node projects/laundry/build.ts` | `03c3127` | 294 records, 36 tests, 0 failing; 11 of 13 expectations are coverage gaps |
 | Laundry product specs that need no backend (13 files that open design specimens), `--project=isolated --workers=2 --retries=0`, against `vite dev` with no backend | `0f93f8d` | 63 passed, 15 failed, 2 skipped. The same 15 fail on `main` (`cc5e90c`) in the same run, because they sign in and need a Convex backend. Before the spec fixes, 8 more failed, only on this branch |
-| `bin/signoff --browser --no-post` | see the PR | recorded in the PR |
+| `bin/signoff --browser --no-post` | `3d5a5d3` | Passed, review-canvas journey 5/5 |
+| Canvas `tsc`, vitest and host checks, then `bin/signoff --browser --no-post`, after merging `main` | `4fb7fc5` | Types clean, vitest 17/17, host checks 17/17. Signoff passed, review-canvas journey 6/6 (one test came from `main`) |
 
 What these cover:
 
@@ -135,6 +137,7 @@ What these cover:
   - **Run:** the 13 spec files that open design specimens. They are listed in the results table, with `main` run the same way for comparison.
   - **Fixed:** v11 moved the sheet's "Discard your changes?" question into its own modal dialog and dropped its five-second auto-dismissal. Eight specs on this branch failed only for that reason, or, in one case, because a spec focused a footer before the reloaded page was ready. They now pass.
   - **Changed but not run:** 12 backend-dependent spec files looked for Keep editing or Discard inside the sheet. They now use the dialog in the same way: `catalog-identifier`, `garment-details` (its timeout test now checks that the prompt waits for a choice), `guided-intake`, `ingredient-tags`, `inventory-records`, `journey-report`, `machine-validation`, `material-care-intake`, `outcome-assessments`, `product-record`, `record-editor-sections` and `unified-intake`. These, and every other backend-dependent product spec, still need a run with a local backend.
+- **Follow-up after merge:** run the 12 changed backend-dependent spec files, and the rest of Laundry's backend-dependent product suite, against a local Convex backend. Fix any that fail on this dialog; do not skip or baseline them.
 - **Web only.** Every check here is web evidence in a synthetic browser run. Device presets are CSS viewports, not physical-device, native, Safari or installed-PWA evidence.
 - **The supplement's verification.** Its Claude Design verification (completed with limits, failures `[]`) is static web reference evidence.
 - **Separate acceptance stages.** App-owner mobile and PWA acceptance and physical-phone acceptance are their own stages and are not covered.
