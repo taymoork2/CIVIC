@@ -9,8 +9,8 @@
 //   node build.ts --check   fail if out/ is not what the inputs produce
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { assertValid, indexGraph, type CollaborationRecord, type Evidence, type Owner } from '../../graph/src/index.ts'
-import { applyDecisions, assemble, compareCssTokens, contentHash, fragment, readCoverageContract, readCssTokens, readJourneyIndex, readPlaywrightReport, readRenderReceipt, readReplays, type CoverageContract, type DecisionFile, type JourneyIndex, type RenderReceipt, type ReplayRecord } from '../../importers/src/index.ts'
+import { assertValid, indexGraph, type CollaborationRecord, type DecisionFile, type Evidence, type Owner } from '../../graph/src/index.ts'
+import { applyDecisions, assemble, compareCssTokens, contentHash, fragment, readCoverageContract, readCssTokens, readJourneyIndex, readPlaywrightReport, readRenderReceipt, readReplays, type CoverageContract, type JourneyIndex, type RenderReceipt, type ReplayRecord } from '../../importers/src/index.ts'
 
 const here = (path: string) => new URL(path, import.meta.url)
 const text = (path: string) => readFileSync(here(path), 'utf8')
