@@ -127,6 +127,8 @@ step "Unit and node tests"
 pnpm --dir "$source_dir" test
 step "Review inventory, adapter and server checks"
 pnpm --dir "$source_dir/apps/web" run test:review
+step "Attaching CIVIC to a Laundry checkout of its own (bin/civic-laundry)"
+node --test "$repo_root/integrations/laundry/civic-laundry.check.mjs"
 if [ "$browser" = 1 ]; then
   step "Playwright review-canvas journey"
   WASHCLOSET_REVIEW_E2E=1 WASHCLOSET_E2E_BASE_URL="${WASHCLOSET_E2E_BASE_URL:-http://127.0.0.1:3010}" \

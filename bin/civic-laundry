@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# civic-laundry: run CIVIC's review on a Laundry checkout of its own (decision 0010). See integrations/laundry.
+set -euo pipefail
+repo_root="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
+exec node "$repo_root/integrations/laundry/civic-laundry.mjs" "$@"
