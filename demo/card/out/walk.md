@@ -9,6 +9,7 @@ Starts on: Order Summary.
 - Card on Order Summary: semantic:card, filled, rest
   - Override Local cornerRadius 20 (`corner-radius`): web (react) forbidden, web (web-components) forbidden, ios (uikit) forbidden, android (compose) forbidden
   - Override .Card header / Checkbox set to true (`state.selected`): web (react) supported, web (web-components) needs-library-change, ios (uikit) needs-library-change, android (compose) needs-library-change
+- Card in OrderSummary.tsx: semantic:card, filled
 - States drawn: Order Summary / Loading
 - **Apply promotion** goes to Promo applied
 - **Continue to payment** leaves the design for /checkout/payment

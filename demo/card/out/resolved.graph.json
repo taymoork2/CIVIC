@@ -1002,6 +1002,45 @@
       }
     },
     {
+      "id": "instance:shop.component.gift-option.web.card",
+      "kind": "component-instance",
+      "title": "Card in GiftOption.tsx",
+      "semanticId": "semantic:card",
+      "variant": "filled",
+      "placedOn": "target:shop.component.gift-option",
+      "product": "shop",
+      "origin": "code",
+      "platform": "web",
+      "library": {
+        "file": "@fluentui/react-card",
+        "key": "Card",
+        "matchedBy": "key"
+      },
+      "uses": [
+        {
+          "extensionPointId": "extension:fluent-react-v9.card.CardHeader.header",
+          "property": "header.title"
+        },
+        {
+          "extensionPointId": "extension:fluent-react-v9.card.CardHeader.description",
+          "property": "header.description"
+        }
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "shop-engineering"
+        }
+      ],
+      "source": {
+        "tool": "civic",
+        "importer": "react-code",
+        "revision": "sha256:596d0228574c5d86e0fd91f87d358230728944fafdb34a71eac76cb177ac5787",
+        "path": "code/src/GiftOption.tsx",
+        "anchor": "L5"
+      }
+    },
+    {
       "id": "instance:shop.order-summary.card",
       "kind": "component-instance",
       "title": "Card on Order Summary",
@@ -1057,6 +1096,57 @@
         "revision": "civic-stand-in-4",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Loading / Card",
         "anchor": "40:6"
+      }
+    },
+    {
+      "id": "instance:shop.order-summary.web.card",
+      "kind": "component-instance",
+      "title": "Card in OrderSummary.tsx",
+      "semanticId": "semantic:card",
+      "variant": "filled",
+      "placedOn": "target:shop.order-summary",
+      "product": "shop",
+      "origin": "code",
+      "platform": "web",
+      "library": {
+        "file": "@fluentui/react-card",
+        "key": "Card",
+        "matchedBy": "key"
+      },
+      "uses": [
+        {
+          "extensionPointId": "extension:fluent-react-v9.card.selected",
+          "property": "state.selected"
+        },
+        {
+          "extensionPointId": "extension:fluent-react-v9.card.CardFooter",
+          "property": "actions"
+        },
+        {
+          "extensionPointId": "extension:fluent-react-v9.card.CardHeader.header",
+          "property": "header.title"
+        },
+        {
+          "extensionPointId": "extension:fluent-react-v9.card.CardHeader.description",
+          "property": "header.description"
+        },
+        {
+          "extensionPointId": "extension:fluent-react-v9.card.CardHeader.action",
+          "property": "header.action"
+        }
+      ],
+      "owners": [
+        {
+          "role": "engineering",
+          "who": "shop-engineering"
+        }
+      ],
+      "source": {
+        "tool": "civic",
+        "importer": "react-code",
+        "revision": "sha256:596d0228574c5d86e0fd91f87d358230728944fafdb34a71eac76cb177ac5787",
+        "path": "code/src/OrderSummary.tsx",
+        "anchor": "L8"
       }
     },
     {
@@ -1223,6 +1313,25 @@
         "revision": "@fluentui/web-components@2.6.1",
         "path": "@fluentui/web-components/dist/esm/card/card.vscode.definition.json",
         "contentHash": "sha256:4e5ef62eff1cff39a3fbc9f32692ba2612bdfcf79437aec41b70166d6282269d"
+      }
+    },
+    {
+      "id": "evidence:shop.web.code",
+      "kind": "evidence",
+      "title": "Library components the product code renders",
+      "subjectIds": [
+        "instance:shop.component.gift-option.web.card",
+        "instance:shop.order-summary.web.card"
+      ],
+      "tier": "static-analysis",
+      "method": "source-analysis",
+      "outcome": "finding",
+      "finding": "2 use(s) of Card in 3 file(s), found by import; 1 wrapper(s): GiftOption.",
+      "capturedAt": "2026-10-11T00:00:00Z",
+      "source": {
+        "tool": "civic",
+        "importer": "react-code",
+        "revision": "sha256:596d0228574c5d86e0fd91f87d358230728944fafdb34a71eac76cb177ac5787"
       }
     },
     {
@@ -1556,6 +1665,12 @@
       "status": "declared"
     },
     {
+      "from": "target:shop.component.gift-option",
+      "relation": "contains",
+      "to": "instance:shop.component.gift-option.web.card",
+      "status": "declared"
+    },
+    {
       "from": "target:shop.gift-options",
       "relation": "contains",
       "to": "target:shop.component.gift-option",
@@ -1592,6 +1707,12 @@
       "from": "target:shop.order-summary",
       "relation": "contains",
       "to": "instance:shop.order-summary.card",
+      "status": "declared"
+    },
+    {
+      "from": "target:shop.order-summary",
+      "relation": "contains",
+      "to": "instance:shop.order-summary.web.card",
       "status": "declared"
     },
     {

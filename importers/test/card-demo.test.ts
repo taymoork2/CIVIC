@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
-import { completenessOf, forecastLabel, forecastOverride, indexGraph, reviewInstance, validateGraph, type GraphDocument } from '../../graph/src/index.ts'
+import { completenessOf, designAndCode, forecastLabel, forecastOverride, indexGraph, reviewInstance, validateGraph, type GraphDocument } from '../../graph/src/index.ts'
 
 // The committed Card demo outputs: `node demo/card/build.ts --check` proves they are what
 // the inputs produce; these tests pin what the demo must show (roadmap step 2, D29, D32).
@@ -54,7 +54,7 @@ test('the completeness check finds the missing loading, empty and error states, 
 test('platform evidence is static analysis read from Fluent source; design evidence is the Figma export', () => {
   const evidence = indexGraph(load('raised')).ofKind('evidence')
   assert.ok(evidence.every((item) => item.tier === 'static-analysis'))
-  assert.deepEqual(evidence.map((item) => item.source.importer).sort(), ['custom-elements', 'figma-file', 'figma-file', 'kotlin-source', 'react-types', 'swift-source'])
+  assert.deepEqual(evidence.map((item) => item.source.importer).sort(), ['custom-elements', 'figma-file', 'figma-file', 'kotlin-source', 'react-code', 'react-types', 'swift-source'])
 })
 
 test('the library Card\'s default footer, body and header action are raised where iOS CardView can\'t build them', () => {
@@ -62,4 +62,17 @@ test('the library Card\'s default footer, body and header action are raised wher
   const defaults = graph.ofKind('contract-conflict').filter((conflict) => conflict.id.includes('.default.'))
   assert.deepEqual(defaults.map((conflict) => conflict.id).sort(), ['conflict:card.ios.default.actions', 'conflict:card.ios.default.body', 'conflict:card.ios.default.header-action'])
   assert.ok(defaults.every((conflict) => conflict.platform === 'ios' && conflict.alignment === 'unreviewed-drift'))
+})
+
+test("Shop's React code builds the selectable Card the design asks for, and leaves out the rejected radius", () => {
+  const graph = indexGraph(load('resolved'))
+  const [summary] = designAndCode(graph, 'target:shop.order-summary')
+  assert.deepEqual(summary!.code, ['instance:shop.order-summary.web.card'])
+  assert.deepEqual(summary!.changes.map((change) => [change.override.property, change.decision ?? 'open', change.code.map((use) => use.extensionPointId)]), [
+    ['corner-radius', 'update-design', []],
+    ['state.selected', 'open', ['extension:fluent-react-v9.card.selected']],
+  ])
+  // Shop's GiftOption wrapper is read once, on the same product component the design file defines.
+  const [gifts] = designAndCode(graph, 'target:shop.gift-options')
+  assert.deepEqual([gifts!.design, gifts!.code], [['instance:shop.component.gift-option.card'], ['instance:shop.component.gift-option.web.card']])
 })

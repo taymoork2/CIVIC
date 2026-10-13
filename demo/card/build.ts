@@ -9,7 +9,7 @@
 //   node build.ts           write out/
 //   node build.ts --check   fail if out/ is not what the inputs produce
 
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import {
   assertValid,
   completenessOf,
@@ -18,6 +18,8 @@ import {
   indexGraph,
   renderCompleteness,
   renderGaps,
+  designAndCode,
+  renderDesignAndCode,
   renderInstanceReview,
   renderWalk,
   renderWalkPage,
@@ -44,6 +46,7 @@ import {
   raiseOverrideDrift,
   readFigmaLibraryComponent,
   readFigmaProductFile,
+  readReactProductCode,
   customElementMembers,
   readPublishedComponents,
   readPlatformComponent,
@@ -201,9 +204,28 @@ const libraryDefaults = fragment(
   ),
 )
 
+// --- Code: Shop's React code, read for its uses of the library (decision 0011) ---------
+
+const codeFiles = readdirSync(here('code/src')).filter((name) => name.endsWith('.tsx')).sort().map((name) => ({ path: `code/src/${name}`, text: text(`code/src/${name}`) }))
+const libraryComponents = [web, webComponents].map((part) => ({
+  component: part.records.find((record): record is PlatformComponent => record.kind === 'platform-component')!,
+  extensionPoints: part.records.filter((record): record is ExtensionPoint => record.kind === 'extension-point'),
+  semanticId: semantic.id,
+}))
+const shopCode = readReactProductCode(codeFiles, {
+  product: product.product,
+  owners: product.owners,
+  components: libraryComponents,
+  screens: Object.fromEntries((product.codeScreens ?? []).filter((screen) => screen.platform === 'web').map((screen) => [screen.path, screen.target])),
+  alongside: shop,
+  source: { tool: 'civic', importer: 'react-code', revision: contentHash(codeFiles.map((file) => file.text).join('\n')) },
+  evidenceId: `evidence:${product.product}.web.code`,
+  capturedAt,
+})
+
 // --- Assemble, decide, export ---------------------------------------------------------
 
-const raised = assemble(contract, web, webComponents, ios, android, fragment([library.evidence]), shop, drift, libraryDefaults)
+const raised = assemble(contract, web, webComponents, ios, android, fragment([library.evidence]), shop, shopCode, drift, libraryDefaults)
 const resolved = applyDecisions(raised, json<DecisionFile>('contract/decisions.json'))
 assertValid(raised)
 assertValid(resolved)
@@ -227,6 +249,7 @@ const outputs: Record<string, string> = {
   'out/resolved.overrides.md': resolvedExport.review,
   'out/raised.gaps.md': raisedExport.gaps,
   'out/resolved.gaps.md': resolvedExport.gaps,
+  'out/design-and-code.md': `# Design and code\n\nWhat Shop's React code builds of each design change, screen by screen (decision 0011). Read from the stand-in code in \`code/src\` and the design file; static analysis, not behavior.\n\n${renderDesignAndCode(indexGraph(resolved), ['target:shop.order-summary', 'target:shop.gift-options'].flatMap((screen) => designAndCode(indexGraph(resolved), screen)))}\n`,
   'out/completeness.md': `${renderCompleteness(raisedGraph, completenessOf(raisedGraph, JOURNEY))}\n`,
   // The frame walk (D33): Shop's checkout frames along their prototype links, as design intent.
   'out/walk.md': `${renderWalk(frameWalk(indexGraph(resolved), JOURNEY))}\n`,

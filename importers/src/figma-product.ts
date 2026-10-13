@@ -57,6 +57,8 @@ export interface ProductManifest {
   designFiles?: DesignFileDeclaration[]
   /** The code libraries the product builds with, per platform and framework; the forecast answers once for each. */
   codeLibraries?: CodeLibrary[]
+  /** Which source file renders which screen, per platform, so code instances land on the screens the design draws. */
+  codeScreens?: { platform: Platform; path: string; target: string }[]
 }
 
 /**

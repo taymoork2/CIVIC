@@ -225,6 +225,11 @@ export function validateGraph(input: unknown): Issue[] {
           error('unknown-variant', at, `Variant ${record.variant} is not defined by ${semantic.id}.`)
         }
         if (record.origin === 'code' && !record.platform) error('instance-platform', at, 'An instance read from code names its platform.')
+        // A library release can remove an extension point the code still uses: that's a finding to fix, not a broken graph.
+        for (const use of record.uses ?? []) {
+          if (records.get(use.extensionPointId)?.kind !== 'extension-point') add('warning', 'unknown-extension-point', at, `The code uses ${use.extensionPointId}, which no library in the graph declares.`)
+        }
+        if (record.uses && record.origin !== 'code') error('instance-uses', at, 'Only an instance read from code lists the extension points it uses.')
         if (record.library && (!record.library.file || !record.library.key || !['key', 'name'].includes(record.library.matchedBy))) {
           error('instance-library', at, 'An instance\'s library names its file, the component\'s published key, and whether it was matched by key or by name.')
         }
