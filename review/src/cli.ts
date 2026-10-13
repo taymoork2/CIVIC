@@ -42,6 +42,7 @@ import { renderList, renderRequest } from './render.ts'
 import { Store } from './store.ts'
 import { DEFAULT_REF, GitRefRemote } from './remote.ts'
 import { listConflicts, settleConflict, sync } from './sync.ts'
+import { shareReplays } from './replays.ts'
 
 const USAGE = `Usage (records are shared by every worktree of this repository):
   civic annotate "<comment>" [--image <file>] [--url <page>] [--target <id>]... [--edge <from>><to>[:<action>]]...
@@ -67,6 +68,9 @@ const USAGE = `Usage (records are shared by every worktree of this repository):
   civic lens <draft line> [--graph <file>]... [--json]   the design lens: what a draft changes from its base, read on this
                  checkout's code line (graphs default to those in civic.check.json)
   civic sync [--remote origin] [--ref refs/civic/records]   share records with the team through a git ref
+  civic share-replays [<review data dir>] [--head <sha>]   keeps the canvas's replays of recorded runs, with their
+                 tapes, for civic sync to share (the directory defaults to .review-data)
+  civic replays [--head <sha>] [--json]           the replays kept here or shared by others
   civic conflicts [--json]                        civic settle <record> --keep mine|theirs
   civic keygen [--out <file>]                     makes your signing key for civic sync
   annotate also takes --rect x,y,w,h [--rect-label <text>], --viewport <w>x<h>, --line <id> (a known line, such as a
@@ -347,6 +351,18 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
       }
       print(result.revision ? `In sync with ${result.remote} at ${result.revision.slice(0, 12)}: ${result.pulled.length} record(s) from others, ${result.pushed.length} shared.` : `Nothing to share with ${result.remote} yet.`)
       for (const conflict of result.conflicts) print(`Conflict: ${conflict.id} changed here and on ${result.remote}. The shared version is kept; yours is set aside. civic settle ${conflict.id} --keep mine|theirs`)
+      return 0
+    }
+    case 'share-replays': {
+      const head = one('--head')
+      const result = shareReplays(context, resolvePath(cwd, positional[0] ?? '.review-data'), head ? { head } : {})
+      print(`Kept ${result.kept} replay(s) to share${result.already ? `; ${result.already} were already kept` : ''}. civic sync shares them.`)
+      return 0
+    }
+    case 'replays': {
+      const head = one('--head')
+      const replays = context.store.replays().filter((replay) => !head || replay.head === head)
+      print(has('--json') ? JSON.stringify(replays, null, 2) : replays.map((replay) => `${replay.replayedAt}  ${replay.head.slice(0, 12)}  ${replay.scenario}  ${replay.outcome === 'pass' ? `pass, ${replay.steps} steps` : `fail at step ${replay.divergedAt} of ${replay.steps}`}  tape ${replay.tape.slice(0, 12)}`).join('\n') || 'No replays kept.')
       return 0
     }
     case 'keygen': {
