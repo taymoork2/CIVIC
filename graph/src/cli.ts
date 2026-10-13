@@ -68,6 +68,7 @@ import {
   type Classification,
   type CollaborationType,
   type DecisionOutcome,
+  type DesignExport,
   type GraphDocument,
   type Owner,
   type Platform,
@@ -471,6 +472,8 @@ interface CheckConfig {
   blocking?: FindingKind[]
   /** Which graphs' evidence proves code in this repository, and where that code is (step 6). */
   freshness?: FreshnessRule[]
+  /** Design files (`civic.design/0`) whose frames name the screens they design. */
+  designs?: string[]
 }
 
 /** The stale evidence in one configured graph, or nothing when no freshness rule names it. */
@@ -504,7 +507,9 @@ async function screen(): Promise<number> {
       return 1
     }
     const stale = staleIn(config, root, file, document)
-    const facts = screenFacts(indexGraph(document), file, targetId, { today, ...(baseline ? { baseline } : {}), ...(stale ? { stale } : {}), ...(config.blocking ? { blocking: config.blocking } : {}) })
+    const designs = (config.designs ?? []).map((path) => ({ file: path, design: JSON.parse(readFileSync(resolve(root, path), 'utf8')) as DesignExport }))
+    for (const { file: path, design } of designs) if (design.schema !== 'civic.design/0') return usage(`${path} is not a civic.design/0 file.`)
+    const facts = screenFacts(indexGraph(document), file, targetId, { today, designs, ...(baseline ? { baseline } : {}), ...(stale ? { stale } : {}), ...(config.blocking ? { blocking: config.blocking } : {}) })
     console.log(args.includes('--json') ? JSON.stringify(facts, null, 2) : renderScreen(facts))
     return 0
   }

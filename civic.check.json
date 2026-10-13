@@ -6,6 +6,9 @@
     "projects/discovery-app/out/graph.json"
   ],
   "baseline": "civic.baseline.json",
+  "designs": [
+    "projects/laundry/out/design.json"
+  ],
   "freshness": [
     {
       "graph": "projects/laundry/out/graph.json",

@@ -165,3 +165,14 @@ test('the Contract panel shows what the CIVIC graph knows about the selected scr
   for (const finding of facts.findings) await expect(graph.getByRole('list', { name: 'Gate findings' })).toContainText(finding.summary)
   await expect(graph).toContainText(`From ${facts.graph}.`)
 })
+
+test('the Contract panel shows the design frames beside a screen\'s runs', async ({ page }) => {
+  await page.goto('/review?scenario=legacy.drying-home')
+  const { facts } = await (await page.request.get('/api/review/civic-screen?scenario=legacy.drying-home')).json()
+  test.skip(!facts?.design?.length, 'This review server is not connected to a CIVIC design file that names the screen.')
+  await page.getByRole('button', { name: 'Contract', exact: true }).click()
+  const graph = page.getByRole('region', { name: 'CIVIC graph' })
+  const frames = facts.design.flatMap((item: { frames: { name: string }[] }) => item.frames)
+  await expect(graph).toContainText(`${frames.length} frame${frames.length === 1 ? '' : 's'} in ${facts.design[0].name}`)
+  for (const frame of frames) await expect(graph.getByRole('list', { name: 'Design frames' })).toContainText(frame.name)
+})
