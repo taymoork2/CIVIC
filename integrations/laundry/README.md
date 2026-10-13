@@ -1,54 +1,30 @@
-# CIVIC on your own Laundry checkout
+# CIVIC review in Laundry
 
-[Decision 0010](../../docs/decisions/0010-laundry-depends-on-civic.md): Laundry depends on CIVIC, not the other way round. `bin/civic-laundry` runs CIVIC's journey canvas on any Laundry checkout, on any branch or worktree, so review works on the code you're actually changing instead of the copy of Laundry in `journey-engine/source`.
+[Decision 0010](../../docs/decisions/0010-laundry-depends-on-civic.md): Laundry depends on CIVIC, not the other way round. Laundry's repository, [taymoork2/washcloset](https://github.com/taymoork2/washcloset), carries its own review adapter and installs CIVIC's packages from git, pinned to a CIVIC commit ([washcloset#57](https://github.com/taymoork2/washcloset/pull/57)). CIVIC keeps no copy of Laundry. The copy that lived in `journey-engine/source`, and `bin/civic-laundry` that attached it to a checkout, were removed in step 6.
 
-Once [washcloset#57](https://github.com/taymoork2/washcloset/pull/57) merges, Laundry carries this itself: CIVIC's packages are devDependencies pinned to a CIVIC commit, and `pnpm --dir apps/web review` runs the canvas with no CIVIC checkout. To move the pin, change the commit in `apps/web/package.json` and run `pnpm install`. Until then, and for checkouts from before it, use `bin/civic-laundry` below.
+## Running review on a Laundry checkout
 
-## Once per CIVIC checkout
-
-You need Node.js 22 or newer, pnpm 12.5.1 and Google Chrome.
+You need Node.js 22 or newer, pnpm 12.5.1 and Google Chrome. CIVIC is private, so `pnpm install` needs GitHub credentials that can read it.
 
 ```sh
-git clone https://github.com/taymoork2/CIVIC.git && cd CIVIC     # or: git pull
-(cd packages && pnpm install --frozen-lockfile)        # CIVIC's packages and their dependencies
+cd ~/code/washcloset && pnpm install
+pnpm --dir apps/web review                                  # http://127.0.0.1:3010/review
+PORT=3011 pnpm --dir apps/web review                        # another worktree, side by side
 ```
 
-## Once per Laundry checkout or worktree
+Each worktree gets its own review store (`.review-data/`). Notes and work requests go to CIVIC's shared store in Laundry's git common directory (D39), so every worktree of the same clone sees them. Sharing them with `civic` commands needs `CIVIC_ROOT` set to a CIVIC checkout, because a git install doesn't carry CIVIC's CLI.
+
+To move to a newer CIVIC, change the commit in the `@civic/*` entries of `apps/web/package.json` and run `pnpm install`.
+
+## Laundry's review checks and tests
+
+From the Laundry checkout:
 
 ```sh
-(cd ~/code/washcloset && pnpm install)                  # Laundry's own dependencies, if not already installed
-bin/civic-laundry attach ~/code/washcloset              # from the CIVIC checkout
-```
-
-`attach` does three things:
-
-- **Copies Laundry's adapter in.** That's `civic.project.json`, `apps/web/src/review/`, `apps/web/scripts/review-*.mjs`, the `apps/web/e2e/review-*.spec.ts` specs, `docs/design/review-product/`, and `apps/web/vite.review.config.ts`, which starts from Laundry's own `vite.config.ts`. They're new files on the branch, Laundry's to commit or leave untracked. It never touches a file with uncommitted changes. If the branch already tracks an older review adapter, it stops and lists those files, and `--replace` takes CIVIC's versions (git keeps the old ones).
-- **Links CIVIC's packages.** `@civic/canvas`, `@civic/shell` and `@civic/vite-connector` are linked from this CIVIC checkout into `apps/web/node_modules/@civic`. Laundry's `package.json`, lockfile and `vite.config.ts` aren't changed, and production builds never load CIVIC.
-- **Prepares review data.** It keeps review's working data (`.review-data/`) out of `git status`, and copies the fixture snapshots there.
-
-Review notes are written as the checkout's git `user.email`, so set one if the checkout has none.
-
-## Running review
-
-```sh
-bin/civic-laundry review ~/code/washcloset                       # http://127.0.0.1:3010/review
-bin/civic-laundry review ~/code/washcloset-main --port 3011      # a second worktree, side by side
-```
-
-Each worktree gets its own server, review store (`.review-data/`) and fixtures. Notes and work requests go to CIVIC's shared store in Laundry's git common directory (D39), so every worktree of the same Laundry clone sees them. `pnpm install` in Laundry removes the links, and `review` puts them back each time it starts.
-
-To pick up a newer CIVIC, run `git pull` in CIVIC, then `attach` again to refresh the adapter.
-
-## Laundry's review tests
-
-From the Laundry checkout, while its review server runs:
-
-```sh
+pnpm --dir apps/web test:review                             # adapter, inventory and server checks
 cd apps/web && WASHCLOSET_REVIEW_E2E=1 WASHCLOSET_E2E_BASE_URL=http://127.0.0.1:3010 npx playwright test e2e/review-*.spec.ts --project=isolated --workers=1
 ```
 
-## Not yet
+## Laundry's graph in CIVIC
 
-- The adapter's source of truth is still CIVIC's copy in `journey-engine/source/apps/web`. Once Laundry commits it, Laundry owns it and the copy goes (decision 0010, steps 4 and 6).
-- `projects/laundry/capture.ts` still captures Laundry's graph evidence from CIVIC's copy, not from your checkout.
-- The packages are linked from a local CIVIC checkout, not installed from git.
+[`projects/laundry`](../../projects/laundry) builds Laundry's CIVIC graph from inputs captured in a Laundry checkout: `LAUNDRY_CHECKOUT=<path> node projects/laundry/capture.ts` while Laundry's review server runs, then `node projects/laundry/build.ts`. With `LAUNDRY_CHECKOUT` set, `bin/civic check` also says whether Laundry's code has changed since the evidence was captured.

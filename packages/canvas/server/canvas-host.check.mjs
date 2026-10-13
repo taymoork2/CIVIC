@@ -341,6 +341,8 @@ test('a live run switches account, goes offline and back, and changes viewport o
 
   const viewport = tab.getByRole('region', { name: 'Responsive preview' })
   await viewport.getByLabel('Preview device').selectOption('small-phone')
+  // Rotate the device once it is shown, so the rotation isn't lost to the device change.
+  await viewport.getByText('320 × 658 CSS pixels').waitFor()
   await viewport.getByRole('button', { name: 'Rotate viewport' }).click()
   await viewport.getByLabel('Preview appearance').selectOption('dark')
   await viewport.getByLabel('Preview text size').selectOption('2')

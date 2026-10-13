@@ -1,9 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <title>A Laundered Closet</title>
-  <rect width="512" height="512" fill="#f7f5ee"/>
-  <g fill="none" stroke="#164be0" stroke-linecap="round" stroke-linejoin="round">
-    <rect x="144" y="104" width="224" height="304" rx="40" stroke-width="20"/>
-    <path d="M238 188c0-26 36-26 36-6 0 12-18 14-18 26v12m0 0-72 44q-10 10 4 10h136q14 0 4-10z" stroke-width="14"/>
-    <path d="M184 328h144" stroke-width="16"/>
-  </g>
-</svg>

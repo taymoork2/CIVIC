@@ -1,8 +1,0 @@
-packages:
-  - apps/*
-  - packages/*
-  - convex
-  # CIVIC's packages, at the repository root since decision 0010; linked so this copy uses them.
-  - ../../packages/*
-allowBuilds:
-  esbuild: true

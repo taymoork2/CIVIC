@@ -1,9 +1,9 @@
 services:
-  journey-engine:
-    command: pnpm --dir apps/web run review
-    cwd: journey-engine/source
+  canvas:
+    command: node bin/civic-canvas.mjs --project examples/notebook/civic.project.json --store ../../.civic-canvas --port 3020
+    cwd: packages/canvas
     health: /review
     portal:
       url: /review
-      title: CIVIC journey engine
-      description: Laundry App journey canvas with synthetic data. Thread collaborators sign in automatically.
+      title: CIVIC journey canvas
+      description: CIVIC's standalone journey canvas on the Notebook example app. Thread collaborators sign in automatically.
