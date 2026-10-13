@@ -3,7 +3,7 @@
 # record a green "signoff" commit status on GitHub for the exact commit that passed.
 #
 #   bin/signoff            graph, review loop, crawl, importer, Fluent Button, Card, Laundry and discovery example checks, the
-#                          civic check gate, then the journey engine's checks, tests and
+#                          civic check gate, CIVIC's packages, then the journey engine's checks, tests and
 #                          review-server tests. Posts the "signoff" and "civic" statuses, and on
 #                          an open pull request a comment listing the findings this change
 #                          introduced, with who is asked and who is told (step 10).
@@ -28,6 +28,7 @@ done
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 source_dir="$repo_root/journey-engine/source"
+packages_dir="$repo_root/packages"
 graph_dir="$repo_root/graph"
 importers_dir="$repo_root/importers"
 demo_dir="$repo_root/demo/fluent-button"
@@ -119,9 +120,14 @@ if [ "$browser" = 1 ]; then
   pnpm --dir "$demo_dir/web" run evidence
 fi
 
-step "Installing dependencies"
+step "CIVIC packages: canvas, shell and Vite connector, with the canvas examples"
+pnpm --dir "$packages_dir" install --frozen-lockfile
+pnpm --dir "$packages_dir" run check
+pnpm --dir "$packages_dir" test
+
+step "Installing dependencies (the journey engine's copy of Laundry, which links CIVIC's packages)"
 pnpm --dir "$source_dir" install --frozen-lockfile
-step "Types and styles (shell, planner, Convex, web)"
+step "Types and styles (planner, Convex, web)"
 pnpm --dir "$source_dir" run check
 step "Unit and node tests"
 pnpm --dir "$source_dir" test
@@ -141,7 +147,7 @@ if [ -n "$(git -C "$repo_root" status --porcelain)" ] || [ "$(git -C "$repo_root
   exit 1
 fi
 
-scope="graph, review loop, importers, Button and Card demos, civic gate, checks, tests and review-server tests"
+scope="graph, review loop, importers, Button and Card demos, civic gate, CIVIC packages, checks, tests and review-server tests"
 [ "$browser" = 1 ] && scope="$scope + Button web evidence and review-canvas journey"
 if [ "$post" = 0 ]; then step "Passed for $sha ($scope); status not posted"; exit 0; fi
 if ! command -v gh >/dev/null; then step "Passed for $sha ($scope). Install the GitHub CLI (gh) to post the signoff status."; exit 0; fi

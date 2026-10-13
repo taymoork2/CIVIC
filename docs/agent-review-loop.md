@@ -17,7 +17,7 @@ Taymoor wants to use the journey canvas to select, comment on and annotate the u
 
 ## What exists today
 
-The journey engine's review already does most of the capture side (spec, [contextual review](product-spec.md#contextual-review); code in `journey-engine/source/packages/shell/server/review-server.mjs`):
+The journey engine's review already does most of the capture side (spec, [contextual review](product-spec.md#contextual-review); code in `packages/shell/server/review-server.mjs`):
 
 - A feedback item freezes its capture before it's written: a screenshot rendered from the page's HTML, a highlight rectangle (normalized x, y, width, height) with a label, the visible state (dialogs, tabs, fields), the scenario and presentation inputs, and an exact-scenario link.
 - It records the git commit (`head`) and a hash of the source (`source`) it was rendered from, plus design file hashes. A row is marked `sourceStale` when the server is now on a different revision.

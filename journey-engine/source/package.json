@@ -14,9 +14,9 @@
     }
   },
   "scripts": {
-    "build": "pnpm --recursive run build",
-    "check": "pnpm --recursive run check",
-    "test": "pnpm --recursive run test",
+    "build": "pnpm --recursive --filter '!@civic/*' run build",
+    "check": "pnpm --recursive --filter '!@civic/*' run check",
+    "test": "pnpm --recursive --filter '!@civic/*' run test",
     "start:local": "sh apps/web/scripts/serve-local.sh"
   }
 }
