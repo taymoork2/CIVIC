@@ -160,26 +160,6 @@
       "graph": "projects/laundry/out/graph.json",
       "key": "dead-end target:laundry.records.water target:laundry.journey.saved-records",
       "summary": "Saved water result is a dead end in Saved records: no path leads on and it isn't a declared exit."
-    },
-    {
-      "graph": "projects/laundry/out/graph.json",
-      "key": "open-conflict conflict:token.accent web",
-      "summary": "Laundry's design reference sets --accent to #164be0; Laundry's generated tokens.css sets it to #1f45ff. Nobody has decided it yet."
-    },
-    {
-      "graph": "projects/laundry/out/graph.json",
-      "key": "open-conflict conflict:token.space-2 web",
-      "summary": "Laundry's design reference sets --space-2 to 2px; Laundry's generated tokens.css sets it to 0.5rem. Nobody has decided it yet."
-    },
-    {
-      "graph": "projects/laundry/out/graph.json",
-      "key": "open-conflict conflict:token.space-4 web",
-      "summary": "Laundry's design reference sets --space-4 to 4px; Laundry's generated tokens.css sets it to 1rem. Nobody has decided it yet."
-    },
-    {
-      "graph": "projects/laundry/out/graph.json",
-      "key": "open-conflict conflict:token.space-6 web",
-      "summary": "Laundry's design reference sets --space-6 to 6px; Laundry's generated tokens.css sets it to 2rem. Nobody has decided it yet."
     }
   ]
 }

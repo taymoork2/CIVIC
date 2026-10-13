@@ -4,14 +4,14 @@ Built by `node projects/laundry/build.ts` from the design reference's stylesheet
 
 ## Set differently: 4
 
-Each is an open Contract Conflict in [`graph.json`](graph.json) until a person decides whether the design or the code changes.
+Each is a Contract Conflict in [`graph.json`](graph.json), decided in [`decisions.json`](../decisions.json) when someone has said whether the design or the code changes.
 
-| Token | Design reference | Code |
-|---|---|---|
-| `--accent` | #164be0 | #1f45ff |
-| `--space-2` | 2px | 0.5rem |
-| `--space-4` | 4px | 1rem |
-| `--space-6` | 6px | 2rem |
+| Token | Design reference | Code | Decision |
+|---|---|---|---|
+| `--accent` | #164be0 | #1f45ff | update-design: Laundry's accent is the shipped #1f45ff |
+| `--space-2` | 2px | 0.5rem | update-design: --space-2 keeps the code's rem scale |
+| `--space-4` | 4px | 1rem | update-design: --space-4 keeps the code's rem scale |
+| `--space-6` | 6px | 2rem | update-design: --space-6 keeps the code's rem scale |
 
 ## Set the same: 14
 

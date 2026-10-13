@@ -6692,7 +6692,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--accent"
@@ -6707,7 +6707,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--bg"
@@ -6722,7 +6722,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--conflict-bg"
@@ -6737,7 +6737,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--e1"
@@ -6752,7 +6752,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--e2"
@@ -6767,7 +6767,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--font-mono"
@@ -6782,7 +6782,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--glass"
@@ -6797,7 +6797,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--ink"
@@ -6812,7 +6812,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--radius-card"
@@ -6827,7 +6827,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--radius-control"
@@ -6842,7 +6842,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--radius-mark"
@@ -6857,7 +6857,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--ready-bg"
@@ -6872,7 +6872,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--selection"
@@ -6887,7 +6887,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--space-2"
@@ -6902,7 +6902,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--space-4"
@@ -6917,7 +6917,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--space-6"
@@ -6932,7 +6932,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--surface"
@@ -6947,7 +6947,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--washing-bg"
@@ -6982,11 +6982,11 @@
       "platform": "web",
       "outcome": "finding",
       "finding": "120 custom properties in the default theme.",
-      "capturedAt": "2026-10-12T07:43:26.120Z",
+      "capturedAt": "2026-10-13T00:08:21.840Z",
       "source": {
         "tool": "open-design",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/design/laundry-reference/colors_and_type.css journey-engine/design/laundry-reference/tokens.css",
         "contentHash": "sha256:e607bd8e6f4c203222916287277c56b320bd42e506d7a34a72ae0b8593f0f938"
       }
@@ -7952,11 +7952,11 @@
       "platform": "web",
       "outcome": "finding",
       "finding": "129 custom properties in the default theme.",
-      "capturedAt": "2026-10-12T07:43:26.120Z",
+      "capturedAt": "2026-10-13T00:08:21.840Z",
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f"
       }
@@ -8533,6 +8533,78 @@
         "anchor": "screen.machine-problem",
         "contentHash": "sha256:9da21081283d6ae160f8745a1fb79c2e6542cd96cda4b31414f0de49df593d33"
       }
+    },
+    {
+      "id": "decision:token.accent",
+      "kind": "decision",
+      "title": "Laundry's accent is the shipped #1f45ff",
+      "conflictId": "conflict:token.accent",
+      "outcome": "update-design",
+      "classification": "outdated-design-source",
+      "alignment": "awaiting-adoption",
+      "decidedBy": {
+        "role": "design",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-13T06:50:00.000Z",
+      "rationale": "The shipped app's --accent is #1f45ff, which is the reference's own --ac. The reference aliases --accent to its --pr (#164be0), a stale mapping, so the reference's alias changes to --ac. Decided by Claude on Taymoor's standing instruction; he can revise it.",
+      "evidenceIds": [
+        "evidence:token-analysis.laundry-tokens"
+      ]
+    },
+    {
+      "id": "decision:token.space-2",
+      "kind": "decision",
+      "title": "--space-2 keeps the code's rem scale",
+      "conflictId": "conflict:token.space-2",
+      "outcome": "update-design",
+      "classification": "unapproved-divergence",
+      "alignment": "awaiting-adoption",
+      "decidedBy": {
+        "role": "design",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-13T06:50:00.000Z",
+      "rationale": "The code's --space-N is a spacing scale (--space-2 0.5rem, --space-4 1rem, --space-6 2rem) used across the shipped app. The reference reuses the same names for literal pixel layout roles, so the names clash. The reference's px roles get a name of their own, and --space-N keeps the code's meaning. Decided by Claude on Taymoor's standing instruction; he can revise it.",
+      "evidenceIds": [
+        "evidence:token-analysis.laundry-tokens"
+      ]
+    },
+    {
+      "id": "decision:token.space-4",
+      "kind": "decision",
+      "title": "--space-4 keeps the code's rem scale",
+      "conflictId": "conflict:token.space-4",
+      "outcome": "update-design",
+      "classification": "unapproved-divergence",
+      "alignment": "awaiting-adoption",
+      "decidedBy": {
+        "role": "design",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-13T06:50:00.000Z",
+      "rationale": "The code's --space-N is a spacing scale (--space-2 0.5rem, --space-4 1rem, --space-6 2rem) used across the shipped app. The reference reuses the same names for literal pixel layout roles, so the names clash. The reference's px roles get a name of their own, and --space-N keeps the code's meaning. Decided by Claude on Taymoor's standing instruction; he can revise it.",
+      "evidenceIds": [
+        "evidence:token-analysis.laundry-tokens"
+      ]
+    },
+    {
+      "id": "decision:token.space-6",
+      "kind": "decision",
+      "title": "--space-6 keeps the code's rem scale",
+      "conflictId": "conflict:token.space-6",
+      "outcome": "update-design",
+      "classification": "unapproved-divergence",
+      "alignment": "awaiting-adoption",
+      "decidedBy": {
+        "role": "design",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-13T06:50:00.000Z",
+      "rationale": "The code's --space-N is a spacing scale (--space-2 0.5rem, --space-4 1rem, --space-6 2rem) used across the shipped app. The reference reuses the same names for literal pixel layout roles, so the names clash. The reference's px roles get a name of their own, and --space-N keeps the code's meaning. Decided by Claude on Taymoor's standing instruction; he can revise it.",
+      "evidenceIds": [
+        "evidence:token-analysis.laundry-tokens"
+      ]
     }
   ],
   "links": [
