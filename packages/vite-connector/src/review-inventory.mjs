@@ -22,8 +22,10 @@ async function files(root) {
 export async function reviewInventory(repo, designRoot, appRepo, connection, { connector = null, engineRoots = [join(repo, 'apps/web/src/review'), join(repo, 'apps/web/scripts')] } = {}) {
   const project = connection ?? loadProject(repo, { ...(appRepo ? { applicationRoot: appRepo } : {}) })
   const profile = publicProject(project)
-  if (project.manifest.adapter.kind !== 'module') {
-    if (project.manifest.adapter.kind !== connector?.kind) throw Error(`No connector is registered for adapter kind ${project.manifest.adapter.kind}`)
+  const kind = project.manifest.adapter.kind
+  if (kind !== 'module' && (!connector || connector.kind !== undefined && connector.kind !== kind)) throw Error(`No connector is registered for adapter kind ${kind}`)
+  // A connector with its own index (Laundry's) supplies it; one without is indexed from the scenario registry, like a module app.
+  if (kind !== 'module' && connector.inventory) {
     const result = await connector.inventory(repo, designRoot, project.root)
     result.metadata.project = profile
     result.metadata.revision.source = sha(result.metadata.revision.source + JSON.stringify(project.manifest))

@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict'
-import { mkdtemp, readdir, readFile, realpath } from 'node:fs/promises'
+import { cp, mkdtemp, readdir, readFile, realpath, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test } from 'node:test'
 import { canvasRoot } from './canvas-root.mjs'
-import { startCanvas } from './canvas-host.mjs'
+import { canvasPlugins, startCanvas } from './canvas-host.mjs'
 import { moduleReviewAdapter } from './module-adapter.mjs'
 
 const notebook = join(canvasRoot, 'examples/notebook')
@@ -151,6 +151,46 @@ test('an app on a function backend runs live against an isolated run of its func
   const snapshots = await (await fetch(origin + '/api/review/snapshots', { method: 'POST', headers: { cookie, origin, 'content-type': 'application/json', 'x-rehearsal-project': (await (await fetch(origin + '/api/review/index', { headers: { cookie } })).json()).project.key }, body: '{}' })).json()
   assert.deepEqual(snapshots.errors, [])
   assert.equal(snapshots.count, 3)
+  assert.deepEqual(errors, [])
+})
+
+test('a connector\'s canvas extension drives a guided run: one frame plays the flow and the canvas follows it', async (t) => {
+  const store = await realpath(await mkdtemp(join(tmpdir(), 'civic-canvas-')))
+  // The Pantry app under a connector's adapter kind, whose extension (a check fixture) supplies the guided run.
+  const app = join(store, 'pantry')
+  await cp(join(canvasRoot, 'examples/pantry'), app, { recursive: true })
+  const manifest = JSON.parse(await readFile(join(app, 'civic.project.json'), 'utf8'))
+  delete manifest.adapter.extension
+  await writeFile(join(app, 'civic.project.json'), JSON.stringify({ ...manifest, adapter: { ...manifest.adapter, kind: 'guided-pantry' } }))
+  const saved = process.env.CIVIC_PROJECT
+  process.env.CIVIC_PROJECT = join(app, 'civic.project.json')
+  t.after(() => { if (saved === undefined) delete process.env.CIVIC_PROJECT; else process.env.CIVIC_PROJECT = saved })
+  const { createServer } = await import('vite')
+  const connector = { canvasExtension: () => join(canvasRoot, 'src/check-fixtures/guided-extension.tsx') }
+  const server = await createServer({ configFile: false, root: canvasRoot, cacheDir: join(store, '.vite'), logLevel: 'silent', server: { host: '127.0.0.1', port: 0 }, plugins: canvasPlugins({ store, connectors: { 'guided-pantry': connector } }) })
+  await server.listen()
+  t.after(() => server.close())
+  const origin = `http://127.0.0.1:${server.httpServer.address().port}`
+  let browser
+  try { browser = await moduleReviewAdapter.launchFixtureBrowser() } catch { return t.skip('No browser for Playwright') }
+  t.after(() => browser.close())
+  const tab = await browser.newPage({ viewport: { width: 1280, height: 900 } })
+  const errors = []
+  tab.on('pageerror', (error) => errors.push(error.message))
+  await tab.goto(origin + '/review')
+  const flow = tab.locator('section.app-flow', { has: tab.locator('h2', { hasText: 'Keep the pantry' }) })
+  await flow.locator('header p', { hasText: 'Shelf and adding, played continuously' }).waitFor({ timeout: 20000 })
+  await tab.locator('.app-nav-section button', { hasText: 'Keep the pantry' }).click()
+  await flow.getByRole('button', { name: 'Play pantry run' }).click()
+  const live = tab.frameLocator('iframe[title="Live pantry run"]')
+  await live.getByText('Rice × 2').waitFor({ timeout: 20000 })
+  await live.getByRole('button', { name: 'Add item' }).click()
+  await tab.locator('article[aria-label="Live pantry run"] strong', { hasText: 'Add an item' }).waitFor()
+  await live.getByLabel('Item').fill('Flour')
+  await live.getByRole('button', { name: 'Save' }).click()
+  await live.getByText('Flour × 1').waitFor()
+  await tab.locator('article[aria-label="Live pantry run"] strong', { hasText: 'Shelf' }).waitFor()
+  await tab.getByText('2 captured visits').waitFor()
   assert.deepEqual(errors, [])
 })
 
