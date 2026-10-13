@@ -52,7 +52,7 @@ test('identifier lookup validates saved candidates and requires deliberate marke
   await catalog.getByRole('button', { name: 'Find details', exact: true }).click()
   await expect(catalog).toContainText('Enter the label manually')
   await catalog.getByRole('button', { name: 'Close', exact: true }).click()
-  await catalog.getByRole('button', { name: 'Discard', exact: true }).click()
+  await page.getByRole('alertdialog', { name: 'Discard your changes?', exact: true }).getByRole('button', { name: 'Discard', exact: true }).click()
   await expect(catalog).toHaveCount(0)
   await page.reload()
   await page.getByRole('button', { name: 'Edit details', exact: true }).click()

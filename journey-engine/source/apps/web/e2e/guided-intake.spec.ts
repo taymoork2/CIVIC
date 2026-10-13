@@ -111,10 +111,10 @@ test('guided basics preserve Back, skip irrelevant questions and save unknown fa
   await next.click()
   await expect(sheet.getByRole('heading', { name: 'Check your product' })).toBeVisible()
   await sheet.getByRole('button', { name: 'Close', exact: true }).click()
-  await sheet.getByRole('button', { name: 'Keep editing', exact: true }).click()
+  await page.getByRole('alertdialog', { name: 'Discard your changes?', exact: true }).getByRole('button', { name: 'Keep editing', exact: true }).click()
   await expect(sheet.getByRole('button', { name: 'Save', exact: true })).toBeEnabled()
   await sheet.getByRole('button', { name: 'Close', exact: true }).click()
-  await sheet.getByRole('button', { name: 'Discard', exact: true }).click()
+  await page.getByRole('alertdialog', { name: 'Discard your changes?', exact: true }).getByRole('button', { name: 'Discard', exact: true }).click()
   expect((await client.query(api.inventory.list, { householdId })).supplies).toHaveLength(1)
 })
 

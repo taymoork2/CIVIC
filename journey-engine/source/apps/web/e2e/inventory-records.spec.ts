@@ -71,7 +71,7 @@ test('product Edit follows the visible tab, and removal confirms without losing 
   await sheet.getByRole('tab', { name: 'More', exact: true }).click()
   await sheet.getByRole('button', { name: 'Remove product', exact: true }).click()
   await sheet.getByRole('button', { name: 'Close', exact: true }).click()
-  await sheet.getByRole('button', { name: 'Keep editing', exact: true }).click()
+  await page.getByRole('alertdialog', { name: 'Discard your changes?', exact: true }).getByRole('button', { name: 'Keep editing', exact: true }).click()
   await sheet.getByRole('button', { name: 'Back', exact: true }).click()
   await sheet.getByRole('tab', { name: 'Facts', exact: true }).click()
   await expect(sheet.getByLabel('Product name')).toHaveValue('Unsaved name')

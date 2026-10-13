@@ -62,7 +62,7 @@ test('record editors group fields, retain drafts across tabs and keep configurat
       await page.screenshot({ path: test.info().outputPath(`${kind}-editor-${width}-${theme}.png`), animations: 'disabled' })
     }
     await sheet.getByRole('button', { name: 'Cancel', exact: true }).click()
-    await sheet.getByRole('button', { name: 'Keep editing', exact: true }).click()
+    await page.getByRole('alertdialog', { name: 'Discard your changes?', exact: true }).getByRole('button', { name: 'Keep editing', exact: true }).click()
     await expect(field).toHaveValue(kind === 'water' ? '10001' : `${original} draft`)
     await field.fill(original)
     await sheet.getByRole('button', { name: 'Cancel', exact: true }).click()
@@ -88,7 +88,7 @@ test('item visibility is staged, guarded on discard and saved only for its permi
   await sheet.getByRole('switch', { name: 'Private', exact: true }).click()
   expect(await privateValues()).toEqual(original)
   await sheet.getByRole('button', { name: 'Cancel', exact: true }).click()
-  await sheet.getByRole('button', { name: 'Discard', exact: true }).click()
+  await page.getByRole('alertdialog', { name: 'Discard your changes?', exact: true }).getByRole('button', { name: 'Discard', exact: true }).click()
   await expect(sheet.getByRole('button', { name: 'Edit item details', exact: true })).toBeVisible()
   expect(await privateValues()).toEqual(original)
   await sheet.getByRole('button', { name: 'Edit item details', exact: true }).click()
