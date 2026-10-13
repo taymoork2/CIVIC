@@ -53,7 +53,8 @@ Commits on `claude/project-thread-9en6l5`, in order:
 | `dd967b8` | Laundry evidence recaptured at `4984688` |
 | `96aadce` | This receipt |
 | `03c3127` | The frame's transition race fixed with a rapid-navigation check; a family browser check through drying and put-away; this receipt corrected; the capture bounded with per-test progress |
-| the commit after `03c3127` | Laundry evidence recaptured at `03c3127`, with this table |
+| `211b0c6` | Laundry evidence recaptured at `03c3127`, with this table |
+| the commit after `211b0c6` | Snapshot and canvas specs rerun on `211b0c6`, after the frame fix |
 
 ## Fixes found during acceptance
 
@@ -87,7 +88,7 @@ Every result below is from this branch. The commit named is the one the checked 
 | `pnpm --dir apps/web exec vitest run` | `03c3127` | 97 files, 845/845 |
 | `pnpm --dir convex exec vitest run` | `dd967b8` | 51 files, 479/479 (Convex is unchanged since) |
 | `node projects/laundry/capture.ts http://127.0.0.1:3010` (Playwright with `WASHCLOSET_REVIEW_E2E=1`: family runtime, reminder, route states, runtime, towel runtime, workspace; line progress per test, 25-minute global timeout) | `03c3127` | 36/36, 0 skipped, 0 flaky, 7.4 minutes |
-| `playwright test e2e/review-snapshots.spec.ts e2e/review-canvas.spec.ts --project=isolated --workers=1 --retries=0` | `dd967b8` | 8/8 |
+| `playwright test e2e/review-snapshots.spec.ts e2e/review-canvas.spec.ts --project=isolated --workers=1 --retries=0` (with `WASHCLOSET_REVIEW_E2E=1`, against the review server serving `211b0c6`, source fingerprint `8f2943dabe6b99bf15dd1495817a56bd22cddcb8be723fe5752b66a423ff4658`) | `211b0c6` (same code as `03c3127`) | 8/8, 0 skipped, 0 flaky, 49 seconds |
 | `node projects/laundry/build.ts` | `03c3127` | 294 records, 36 tests, 0 failing; 11 of 13 expectations are coverage gaps |
 | `bin/signoff --no-post` | see the PR | recorded in the PR |
 
