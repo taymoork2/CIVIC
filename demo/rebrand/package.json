@@ -1,0 +1,6 @@
+{
+  "name": "@civic/demo-rebrand",
+  "private": true,
+  "type": "module",
+  "description": "The rebrand demo: a stand-in second brand over Fluent 2 web light, read as a token release for its blast radius and the overrides that won't follow (decision 0012). Built by node build.ts from the inputs in this folder and the Button and Card demos' graphs."
+}
