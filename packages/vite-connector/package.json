@@ -9,10 +9,11 @@
     "./discovery": "./src/review-discovery.mjs",
     "./coverage": "./src/review-coverage.mjs",
     "./inventory": "./src/review-inventory.mjs",
-    "./fixture-hashes": "./src/review-fixture-hashes.mjs"
+    "./fixture-hashes": "./src/review-fixture-hashes.mjs",
+    "./civic": "./src/review-civic.mjs"
   },
   "scripts": {
-    "test": "node --test src/review-plugin.check.mjs src/review-coverage.check.mjs src/review-discovery.check.mjs"
+    "test": "node --test src/review-plugin.check.mjs src/review-coverage.check.mjs src/review-discovery.check.mjs src/review-civic.check.mjs"
   },
   "peerDependencies": {
     "vite": "8.3.1"

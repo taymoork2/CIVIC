@@ -43,7 +43,7 @@ There were three options:
 
 0. *Built:* `bin/civic-laundry attach` and `review` run CIVIC's canvas on a Laundry checkout outside CIVIC's tree, reading that checkout's source and commit, with CIVIC's CLI found through `CIVIC_ROOT`.
 1. *Built:* Move the three packages and their examples to the root workspace. `journey-engine/source` links them, so Laundry's copy still runs while the rest moves. Signoff stays green. The workspace file and lockfile sit in [`packages/`](../../packages) rather than at the repository root, so CIVIC's other projects (graph, importers, review, crawl, demos) keep their own installs; the journey engine's workspace lists `../../packages/*`, so both share one copy of each dependency.
-2. Move the CLI bridge into `@civic/vite-connector`, and add the function-backend example with a canvas extension.
+2. *Built in part:* The CLI bridge is `@civic/vite-connector/civic` (`civicShared({ repo, product })`). It finds the CLI through `CIVIC_ROOT` or the CIVIC checkout the package came from, and takes the product ID its graph targets use. Still to add: the function-backend example with a canvas extension.
 3. Prove the git install: an empty app outside CIVIC installs the three packages from a CIVIC commit and opens in `civic-canvas`.
 4. In Laundry's repository: add the dependency, bring in the adapter and manifest from CIVIC's copy, and import review behind its flag. Laundry's review tests run there.
 5. Point `capture.ts` and the freshness rule at a Laundry checkout, and recapture.

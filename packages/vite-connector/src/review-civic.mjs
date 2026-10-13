@@ -2,21 +2,27 @@ import { execFile } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import { mkdtemp, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
-import { join, resolve } from 'node:path'
+import { dirname, join, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { promisify } from 'node:util'
 
 const run = promisify(execFile)
 
+// This package sits at packages/vite-connector/src in a CIVIC checkout, so the checkout is three folders up.
+const packaged = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
+
 /**
- * Connects Laundry's review to CIVIC's shared store (decision 0007). Each saved note becomes
- * a CIVIC annotation in the git common directory, which every worktree and local agent
- * reads, and selected annotations become work requests. It runs CIVIC's own `civic` CLI
- * (review/ at the CIVIC repository root), so the journey engine imports nothing from CIVIC
- * and CIVIC imports nothing from Laundry. CIVIC_ROOT names the CIVIC checkout when Laundry is its
- * own checkout (`bin/civic-laundry`); otherwise it is the copy's place in CIVIC's tree. Returns
- * null when the CLI isn't there, for example in the standalone handoff, and review works as before.
+ * Connects a host's review to CIVIC's shared store (decision 0007). Each saved note becomes
+ * a CIVIC annotation in the reviewed repository's git common directory, which every worktree
+ * and local agent reads, and selected annotations become work requests. It runs CIVIC's own
+ * `civic` CLI (review/ at the CIVIC repository root), so the app imports nothing from CIVIC and
+ * CIVIC imports nothing from the app (decision 0010). The CLI is found through CIVIC_ROOT, or
+ * else in the CIVIC checkout this package came from. `product` is the app's product ID in
+ * CIVIC's graphs: a scenario's target is `target:<product>.<scenario>`. Returns null when the
+ * CLI isn't there, and review works without the shared store.
  */
-export function civicShared({ repo, civicRoot = process.env.CIVIC_ROOT ?? resolve(repo, '../..') }) {
+export function civicShared({ repo, product, civicRoot = process.env.CIVIC_ROOT || packaged }) {
+  if (!/^[a-z0-9-]+$/.test(product ?? '')) throw new Error('civicShared needs the product ID its graph targets use, like "laundry"')
   const cli = join(civicRoot, 'review', 'src', 'cli.ts')
   if (!existsSync(cli)) return null
   // A person makes every canvas note, even when an agent started this server.
@@ -40,7 +46,7 @@ export function civicShared({ repo, civicRoot = process.env.CIVIC_ROOT ?? resolv
         const { anchor } = feedback
         const args = ['annotate', feedback.message, '--image', image, '--url', `${origin}/review-frame.html?${scenario}`, '--viewport', `${c.viewport.width}x${c.viewport.height}`, '--rect', [anchor.x, anchor.y, Math.min(anchor.width, 1 - anchor.x), Math.min(anchor.height, 1 - anchor.y)].map((n) => Math.max(0, n).toFixed(4)).join(','), '--rect-label', anchor.label]
         // A whole-screen note anchors to the scenario's target, which the frame carries as data-civic-id.
-        if (anchor.label === 'Whole screen') args.push('--target', `target:laundry.${c.scenario}`)
+        if (anchor.label === 'Whole screen') args.push('--target', `target:${product}.${c.scenario}`)
         if (anchor.locator) args.push('--role', anchor.locator.role, '--name', anchor.locator.name)
         // Re-register first, so the annotation names the revision this server is serving now.
         await civic('preview', origin)
@@ -68,7 +74,7 @@ export function civicShared({ repo, civicRoot = process.env.CIVIC_ROOT ?? resolv
      */
     async screen(scenario) {
       if (!/^[A-Za-z0-9_-]+(?:\.[A-Za-z0-9_-]+)*$/.test(scenario)) throw Object.assign(new Error('Not a scenario ID'), { status: 400 })
-      const targetId = `target:laundry.${scenario}`
+      const targetId = `target:${product}.${scenario}`
       try {
         const out = await run(process.execPath, [join(civicRoot, 'graph', 'src', 'cli.ts'), 'screen', targetId, '--config', join(civicRoot, 'civic.check.json'), '--json'], { cwd: civicRoot, env, maxBuffer: 4 * 1024 * 1024 })
         return JSON.parse(out.stdout)
