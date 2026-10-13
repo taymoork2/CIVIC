@@ -518,12 +518,39 @@ export interface Line extends RecordBase {
 
 /** A top-level frame of a design file at one version, as a design line records it. */
 export interface DesignFrame {
-  /** The Figma node ID, which also anchors annotations on the frame. */
+  /** The frame's ID in its design tool (a Figma node ID), which also anchors annotations on the frame. */
   node: string
   name: string
   page: string
   /** `sha256:<hex>` of the frame's content in the export, so an edit anywhere inside it shows. */
   hash: string
+  /**
+   * Graph targets this frame designs, when the design tool's export declares them. A Figma
+   * frame names none: graphs anchor their targets to its node ID instead.
+   */
+  designs?: string[]
+}
+
+/** The tools whose lines are code, not design: only a design line records frames. */
+export const CODE_LINE_TOOLS = ['git', 'github'] as const
+
+/**
+ * A design file from a tool with no Figma-style file export (`civic.design/0`): its frames,
+ * already fingerprinted by an importer, and the targets each one designs. CIVIC reads it as
+ * a design line or draft, as it reads a Figma export, so design tools stay pluggable.
+ */
+export interface DesignExport {
+  schema: 'civic.design/0'
+  /** The design tool, such as `open-design`. Free text, like a source's tool. */
+  tool: string
+  /** The file's key in that tool. With the tool it names the design line. */
+  key: string
+  name: string
+  /** The file version this export carries. */
+  version: string
+  /** Where the file or its source can be opened. */
+  link?: string
+  frames: DesignFrame[]
 }
 
 export interface Preview {

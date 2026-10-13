@@ -35,7 +35,7 @@ import {
   reviewQueue,
   type Context,
 } from './loop.ts'
-import { chooseDraft, designLens, linesChanging, registerDesignDraft, registerDesignFile, renderDesignLens, type DesignLens, type DesignLineResult, type FigmaFileExport } from './drafts.ts'
+import { chooseDraft, designLens, isDesignExport, linesChanging, registerDesignDraft, registerDesignFile, renderDesignLens, type DesignFile, type DesignLens, type DesignLineResult } from './drafts.ts'
 import { bearerFor, captureScenario, launchBrowser, recapture, reproductionUrl } from './recapture.ts'
 import { createOverlayServer } from './overlay/server.ts'
 import { renderList, renderRequest } from './render.ts'
@@ -60,7 +60,8 @@ const USAGE = `Usage (records are shared by every worktree of this repository):
   civic overlay [--port 4777]                     serves the capture overlay for dev and preview pages
   civic preview <url> [--bearer-file <file>]      civic lines [--json] | annotations [--line <id>] [--json] | whoami
   civic pr <number> [--preview <url>] [--remote origin]   a pull request as its own line, with its hosted preview
-  civic design <figma export.json> --file <key>  a design file's main line, at the export's version
+  civic design <figma export.json> --file <key>  a design file's main line, at the export's version (a civic.design/0
+                 file from another design tool names its own key, so it needs no --file)
   civic draft <figma export.json> --file <key> --name "<draft>" [--branch <key>]   a designer's draft as its own line
   civic choose-draft <draft line> --why "<rationale>" [--merged-as <version>]   a person picks a draft; the others are abandoned
   civic lens <draft line> [--graph <file>]... [--json]   the design lens: what a draft changes from its base, read on this
@@ -69,7 +70,7 @@ const USAGE = `Usage (records are shared by every worktree of this repository):
   civic conflicts [--json]                        civic settle <record> --keep mine|theirs
   civic keygen [--out <file>]                     makes your signing key for civic sync
   annotate also takes --rect x,y,w,h [--rect-label <text>], --viewport <w>x<h>, --line <id> (a known line, such as a
-  design draft, at its latest revision), --figma-node <node id> (a draft's frame or layer) and --json; request takes --json.
+  design draft, at its latest revision), --figma-node <node id> (a design frame or layer, by its node ID in the design tool) and --json; request takes --json.
   A <request> may end in @<version>, as civic requests and civic queue print it: the write is refused if the
   request changed since. Who may read, write, approve and resolve comes from civic.access.json on the default branch.`
 
@@ -259,14 +260,14 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
     case 'draft': {
       need(1)
       const fileKey = one('--file')
-      if (!fileKey) throw new UsageError(`${command} needs --file <key>, the Figma file's key from its URL.`)
-      const file = JSON.parse(readFileSync(resolvePath(cwd, positional[0]!), 'utf8')) as FigmaFileExport
+      const file = JSON.parse(readFileSync(resolvePath(cwd, positional[0]!), 'utf8')) as DesignFile
+      if (!fileKey && !isDesignExport(file)) throw new UsageError(`${command} needs --file <key>, the Figma file's key from its URL.`)
       let result: DesignLineResult
-      if (command === 'design') result = registerDesignFile(context, { file, fileKey })
+      if (command === 'design') result = registerDesignFile(context, { file, ...(fileKey ? { fileKey } : {}) })
       else {
         const name = one('--name')
         if (!name) throw new UsageError('draft needs --name "<draft>", as the designer calls it.')
-        result = registerDesignDraft(context, { file, fileKey, name, ...(one('--branch') ? { branchKey: one('--branch')! } : {}) })
+        result = registerDesignDraft(context, { file, ...(fileKey ? { fileKey } : {}), name, ...(one('--branch') ? { branchKey: one('--branch')! } : {}) })
       }
       if (has('--json')) print(JSON.stringify(result, null, 2))
       else {
