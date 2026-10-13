@@ -1,0 +1,15 @@
+{
+  "note": "Upstream files vendored for static analysis, pinned to the exact revision read. CIVIC reads Fluent; it does not fork or redistribute it beyond these MIT-licensed files (decision 0001). The Card's default size comes from useCard.js, which the Card demo already vendors at the same revision.",
+  "retrievedAt": "2026-10-13T00:00:00Z",
+  "inputs": {
+    "react-card": {
+      "tool": "npm",
+      "package": "@fluentui/react-card",
+      "revision": "@fluentui/react-card@9.7.3",
+      "url": "https://registry.npmjs.org/@fluentui/react-card/-/react-card-9.7.3.tgz",
+      "files": {
+        "useCardStyles.styles.raw.js": "lib/components/Card/useCardStyles.styles.raw.js"
+      }
+    }
+  }
+}

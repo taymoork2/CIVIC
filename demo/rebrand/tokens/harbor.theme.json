@@ -1,0 +1,32 @@
+{
+  "$description": "Harbor, a made-up second brand for the rebrand demo (decision 0012). It is not a real company's theme. Harbor swaps Fluent 2 web light's brand ramp for a teal one, slot by slot, and doubles the corner radius scale. build.ts applies it to the Fluent web light tokens and writes the result to out/harbor.tokens.json as a DTCG file.",
+  "brandRamp": {
+    "10": ["#061724", "#031a1c"],
+    "20": ["#082338", "#05282b"],
+    "30": ["#0a2e4a", "#07353a"],
+    "40": ["#0c3b5e", "#09434a"],
+    "50": ["#0e4775", "#0b515a"],
+    "60": ["#0f548c", "#0d5f6a"],
+    "70": ["#115ea3", "#0f6d79"],
+    "80": ["#0f6cbd", "#117b88"],
+    "90": ["#2886de", "#2a8d99"],
+    "100": ["#479ef5", "#449faa"],
+    "110": ["#62abf5", "#5eb0ba"],
+    "120": ["#77b7f7", "#78c0c9"],
+    "130": ["#96c6fa", "#93cfd6"],
+    "140": ["#b4d6fa", "#aedde3"],
+    "150": ["#cfe4fa", "#c9eaee"],
+    "160": ["#ebf3fc", "#e4f5f7"]
+  },
+  "tokens": {
+    "borderRadiusSmall": "4px",
+    "borderRadiusMedium": "8px",
+    "borderRadiusLarge": "12px",
+    "borderRadiusXLarge": "16px",
+    "borderRadius2XLarge": "20px",
+    "borderRadius3XLarge": "24px",
+    "borderRadius4XLarge": "32px",
+    "borderRadius5XLarge": "40px",
+    "borderRadius6XLarge": "48px"
+  }
+}
