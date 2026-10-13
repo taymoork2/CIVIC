@@ -1,7 +1,7 @@
 {
   "revision": {
-    "head": "4984688f2e17182254e576d52f7697ffede3b644",
-    "source": "97526cbaf97bc2586e6b6c659163da904fa18684b4f1c29634e5a3af5a2bef77"
+    "head": "03c31274673cd3b1111db95de7e44bc19f50e005",
+    "source": "8f2943dabe6b99bf15dd1495817a56bd22cddcb8be723fe5752b66a423ff4658"
   },
   "project": {
     "id": "laundry-app",
@@ -804,6 +804,7 @@
       "renderer": "runtime",
       "component": "apps/web/src/drying/drying-view.tsx",
       "checks": [
+        "apps/web/e2e/review-family-runtime.spec.ts",
         "apps/web/scripts/review-runtime.check.mjs"
       ],
       "edges": [
@@ -828,6 +829,7 @@
       "renderer": "runtime",
       "component": "apps/web/src/drying/drying-view.tsx",
       "checks": [
+        "apps/web/e2e/review-family-runtime.spec.ts",
         "apps/web/scripts/review-runtime.check.mjs"
       ],
       "edges": [

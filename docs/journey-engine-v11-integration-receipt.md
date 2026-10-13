@@ -51,6 +51,9 @@ Commits on `claude/project-thread-9en6l5`, in order:
 | `a0b1acb` | Write identity, so a lost-answer resend runs once (the Local Codex finding), with the team board regression |
 | `4984688` | Workspace checks fitted to live family screens and v11's discard prompt |
 | `dd967b8` | Laundry evidence recaptured at `4984688` |
+| `96aadce` | This receipt |
+| `03c3127` | The frame's transition race fixed with a rapid-navigation check; a family browser check through drying and put-away; this receipt corrected; the capture bounded with per-test progress |
+| the commit after `03c3127` | Laundry evidence recaptured at `03c3127`, with this table |
 
 ## Fixes found during acceptance
 
@@ -64,6 +67,7 @@ Commits on `claude/project-thread-9en6l5`, in order:
 - **Large-run replay.** Replaying the 1,000-piece run took 48 seconds for two steps, because every settle re-read the whole run state, about 1.3 seconds a read. Settles now re-read only after a write, an account change, a clock change or a reset; waiting flushes coalesce; and the source check uses `inspect`. The same replay takes about 12 seconds.
 - **Account switch snapshots.** Switching account blocked input before the previous step was sealed, so that step was recorded with an empty screen and replay diverged. The step is now recorded first.
 - **Journey map.** Runtime screens without a route kept no flow of their own. They now keep their journey ("Family laundry day").
+- **Transitions checked from the wrong screen.** The frame checked each transition the app reported against the screen it last published, which follows only after the app settles. Two navigations before that publish, such as a fast Save straight after Add task, were refused as unregistered edges. This failed the Tasks browser check once. The frame now keeps the screen the app reported, updated by each publish and by each accepted transition. The Tasks host check now makes two navigations in one task (Add task, then Cancel, before any publish) and expects both transitions. It failed before the fix with only the first transition, and passes after it.
 - **Workspace checks.** Two failed after the v11 sync:
   - the drawer check opened the family screens, which are now live screens, not drawers;
   - v11's sheet shows its discard prompt as its own alert dialog.
@@ -72,19 +76,19 @@ Commits on `claude/project-thread-9en6l5`, in order:
 
 ## Results
 
-Every result below is from this branch. The commit named is the one the checked code was at. `dd967b8` adds only evidence files to `4984688`.
+Every result below is from this branch. The commit named is the one the checked code was at. Rows at `dd967b8` cover code that `03c3127` does not change.
 
 | Command | Commit | Result |
 |---|---|---|
-| `pnpm --dir packages/canvas exec tsc --noEmit` | `dd967b8` | clean |
-| `pnpm --dir packages/canvas test` (vitest, then the run service, server function and canvas host checks) | `dd967b8` | vitest 17/17; host 17/17 |
-| `pnpm --dir apps/web exec tsc --noEmit` | `dd967b8` | clean |
-| `pnpm --dir apps/web run test:review` | `dd967b8` | 28/28, shell server 12/12, vite connector 11/11 |
-| `pnpm --dir apps/web exec vitest run` | `dd967b8` | 97 files, 845/845 |
-| `pnpm --dir convex exec vitest run` | `dd967b8` | 51 files, 479/479 |
-| `WASHCLOSET_REVIEW_E2E=1 node projects/laundry/capture.ts http://127.0.0.1:3010` (Playwright: family runtime, reminder, route states, runtime, towel runtime, workspace) | `4984688` | 35/35, 0 skipped, 0 flaky |
+| `pnpm --dir packages/canvas exec tsc --noEmit` | `03c3127` | clean |
+| `pnpm --dir packages/canvas test` (vitest, then the run service, server function and canvas host checks) | `03c3127` | vitest 17/17; host 17/17 |
+| `pnpm --dir apps/web exec tsc --noEmit` | `03c3127` | clean |
+| `pnpm --dir apps/web run test:review` | `03c3127` | 28/28, shell server 12/12, vite connector 11/11 |
+| `pnpm --dir apps/web exec vitest run` | `03c3127` | 97 files, 845/845 |
+| `pnpm --dir convex exec vitest run` | `dd967b8` | 51 files, 479/479 (Convex is unchanged since) |
+| `node projects/laundry/capture.ts http://127.0.0.1:3010` (Playwright with `WASHCLOSET_REVIEW_E2E=1`: family runtime, reminder, route states, runtime, towel runtime, workspace; line progress per test, 25-minute global timeout) | `03c3127` | 36/36, 0 skipped, 0 flaky, 7.4 minutes |
 | `playwright test e2e/review-snapshots.spec.ts e2e/review-canvas.spec.ts --project=isolated --workers=1 --retries=0` | `dd967b8` | 8/8 |
-| `node projects/laundry/build.ts` | `dd967b8` | 294 records, 35 tests, 0 failing |
+| `node projects/laundry/build.ts` | `03c3127` | 294 records, 36 tests, 0 failing; 11 of 13 expectations are coverage gaps |
 | `bin/signoff --no-post` | see the PR | recorded in the PR |
 
 What these cover:
@@ -97,7 +101,8 @@ What these cover:
   - reopening keeps the run offline until a person reconnects, and nothing is resent by itself;
   - the app's own resend settles the saved step, and the write's effect is confirmed in the run;
   - seven device presets, rotation, fold, unfold, dark theme and enlarged text resize the real frame without leaving the run or losing the selection;
-  - replay verifies, and reopening restores the viewport.
+  - replay verifies, and reopening restores the viewport;
+  - one load goes from washing through drying to put-away in the same run (added at `03c3127`, not from v11). It runs preparation, enters the washer minutes, advances synthetic time 40 minutes, hangs the load and moves it to the drying queue, hangs 20 pieces and checks them. One piece is marked not dry, so 19 are put away while it keeps drying. The last piece is then checked and put away, and the drying list is empty. Reading the run as the owner, the clean count rises by 19 and then by 20. The 1,000 original piece ids are unchanged, and the run is the same one throughout.
 - **Laundry family runtime** (`scripts/review-runtime.check.mjs`):
   - the 1,000-piece seed keeps its original ids across accounts;
   - private pieces are hidden from the member, and the other account has no access;
@@ -113,8 +118,15 @@ What these cover:
 ## Skips, failures and limits
 
 - **No failing check is baselined or skipped.** `review-family.spec.ts` was replaced by v11's `review-family-runtime.spec.ts`, because the family scenarios no longer use the simulated preview it tested.
-- **Open coverage gap (advisory, not baselined).** `family.drying` and `family.putaway` have no browser run. v11's family browser spec walks planning and washing. Drying and put-away are proven only by the runtime check above, which is not a Playwright run, so the Laundry graph now reports 12 of 13 declared expectations as gaps, up from 11.
-- **A race in the canvas frame (still exists, fixed nowhere).** The frame checks a screen change against state it publishes a moment later, so a very fast click can fail. It failed the Tasks example's browser check once during a full canvas run and passed 5 of 5 reruns. The same code path is on main, and this port did not change it.
+- **Scope of the drying and put-away browser check.** It covers one load of 20 pieces in one group, so the not-dry piece is set with a quantity stepper ("Fewer dry"). It does not cover:
+  - a grouped ×2 sequence or singleton checkboxes;
+  - label instructions to acknowledge (none appeared for this load);
+  - a put-away selection that leaves some dry pieces unselected, as opposed to a piece that is still damp;
+  - search or paging;
+  - extra minutes asked for a damp check after the end;
+  - asserting that the wash session completes only after the last piece, or `inLoad` and `washCount` per piece.
+
+  The 50-load, 1,000-piece day is still proven by the runtime check alone, not by a browser. The coverage contract's family expectation ("100, 500 and 1000 items") is no longer reported as a gap, because each of its scenarios now has a passing run. That is per scenario; the 100- and 500-item sizes have no run of their own.
 - **Not run here:** Laundry's own product end-to-end suite outside the review specs, including `a8-preview`, `garment-details` and the other product specs, and `bin/signoff --browser`. The v11 sheet change (the discard prompt as its own dialog) may affect product specs that look inside the sheet.
 - **Web only.** Every check here is web evidence in a synthetic browser run. Device presets are CSS viewports, not physical-device, native, Safari or installed-PWA evidence.
 - **The supplement's verification.** Its Claude Design verification (completed with limits, failures `[]`) is static web reference evidence.
