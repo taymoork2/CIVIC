@@ -34,6 +34,28 @@ test('a fetch-handler backend runs per run with its persona, role and condition,
   await assert.rejects(service.handle({ action: 'query', run: a.id, name: 'CONNECT:/api/tasks', args: {} }), /Invalid request name/)
 })
 
+test('a function backend runs per run: named queries and mutations over its persona\'s data, its role and condition', async (t) => {
+  const pantry = loadProject(canvasRoot, { manifest: `${canvasRoot}/examples/pantry/civic.project.json` })
+  assert.match(pantry.extension, /examples\/pantry\/src\/canvas-extension\.js$/)
+  const service = runtimeService(pantry, () => 'source-one')
+  t.after(() => service.close())
+  const start = (fields = {}) => service.handle({ action: 'start', scenario: 'pantry.shelf', persona: 'stocked', role: 'cook', condition: 'normal', now, ...fields })
+  const call = (run, action, name, args = {}) => service.handle({ action, run, name, args })
+  const a = await start(), b = await start()
+  assert.deepEqual(a.seed, { items: 3 })
+  assert.deepEqual((await call(a.id, 'query', 'items:list')).map((item) => item.name), ['Rice', 'Olive oil'])
+  await call(a.id, 'mutation', 'items:use', { id: '2' })
+  await call(a.id, 'mutation', 'items:add', { name: 'Flour', quantity: 2 })
+  assert.deepEqual((await call(a.id, 'query', 'items:shopping')).map((item) => item.name), ['Olive oil', 'Lentils'])
+  assert.deepEqual((await call(b.id, 'query', 'items:list')).map((item) => item.name), ['Rice', 'Olive oil'], 'runs never share data')
+  assert.equal((await service.handle({ action: 'state', run: a.id })).items.length, 4)
+  const guest = await start({ role: 'guest' })
+  await assert.rejects(call(guest.id, 'mutation', 'items:add', { name: 'Salt' }), /Guests can look/)
+  const down = await start({ condition: 'backend-down' })
+  await assert.rejects(call(down.id, 'query', 'items:list'), /unavailable/)
+  await assert.rejects(call(a.id, 'query', 'items:drop'), /Unknown query/)
+})
+
 test('an app with sign-in runs signed in as its persona\'s synthetic identity, or signed out, and never sees a written secret', async (t) => {
   const board = loadProject(canvasRoot, { manifest: `${canvasRoot}/examples/team-board/civic.project.json` })
   const service = runtimeService(board, () => 'source-one')

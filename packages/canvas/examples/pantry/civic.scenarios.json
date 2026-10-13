@@ -1,0 +1,5 @@
+[
+  { "id": "pantry.shelf", "label": "Shelf", "journey": "Keep the pantry", "component": "src/app.js", "edges": [{ "action": "Add item", "destination": "pantry.add" }, { "action": "Shopping list", "destination": "pantry.shopping" }] },
+  { "id": "pantry.add", "label": "Add an item", "journey": "Keep the pantry", "component": "src/app.js", "captureFields": ["Item", "Quantity"], "edges": [{ "action": "Save", "destination": "pantry.shelf", "when": "A cook, the backend up and an item name" }, { "action": "Cancel", "destination": "pantry.shelf", "returnTo": "Shelf" }] },
+  { "id": "pantry.shopping", "label": "Shopping list", "journey": "Plan shopping", "component": "src/app.js", "edges": [{ "action": "Back to shelf", "destination": "pantry.shelf", "returnTo": "Shelf" }] }
+]

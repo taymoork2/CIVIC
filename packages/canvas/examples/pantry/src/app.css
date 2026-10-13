@@ -1,0 +1,6 @@
+.pantry-screen { font: 16px/1.5 system-ui, sans-serif; padding: 24px; color: #1d2733; }
+.pantry-screen h1 { font-size: 24px; margin: 0 0 16px; }
+.pantry-screen ul { list-style: none; padding: 0; }
+.pantry-screen li { display: flex; gap: 12px; align-items: center; padding: 6px 0; }
+.pantry-screen button { margin-right: 8px; }
+.pantry-screen label { display: block; margin-bottom: 12px; }

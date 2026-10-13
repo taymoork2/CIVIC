@@ -30,6 +30,7 @@ export function checkedProject(input) {
   // `module` is the portable preview contract. Any other kind names a connector the host registers (Laundry's is `laundry`).
   if (!id(input.adapter?.kind) || input.adapter.entry !== undefined && !words(input.adapter.entry)) fail('unsupported adapter or entry')
   if (input.adapter.runtime !== undefined && !words(input.adapter.runtime, 500)) fail('invalid isolated runtime entry')
+  if (input.adapter.extension !== undefined && !words(input.adapter.extension, 500)) fail('invalid canvas extension')
   for (const field of ['sources', 'navigation']) if (!Array.isArray(input[field]) || !input[field].length || input[field].length > 50 || new Set(input[field]).size !== input[field].length || input[field].some((s) => !words(s))) fail(`invalid ${field}`)
   for (const field of ['personas', 'roles', 'conditions']) {
     const rows = input[field]
@@ -78,10 +79,13 @@ export function loadProject(repo, options = {}) {
   const runtimeEntry = manifest.adapter.runtime ? projectPath(manifestRoot, manifest.adapter.runtime) : null
   if (runtimeEntry && !/\.(?:[cm]?js|ts)$/.test(runtimeEntry)) fail('runtime entry must be JavaScript or TypeScript')
   if (entry && !/\.(?:[cm]?js|tsx?)$/.test(entry)) fail('preview entry must be JavaScript or TypeScript')
+  // The app's own canvas extension (layout, a guided run), for apps without a connector that supplies one.
+  const extension = manifest.adapter.extension ? projectPath(manifestRoot, manifest.adapter.extension, true, strict) : null
+  if (extension && !/\.(?:[cm]?js|tsx?)$/.test(extension)) fail('canvas extension must be JavaScript or TypeScript')
   const publicDir = manifest.publicDir ? projectPath(root, manifest.publicDir, true, strict) : false
   const aliases = Object.fromEntries(Object.entries(manifest.aliases ?? {}).map(([name, path]) => [name, projectPath(root, path, true, strict)]))
   const key = `${manifest.id}-${createHash('sha256').update(JSON.stringify([manifestPath, root])).digest('hex').slice(0, 12)}`
-  return { manifest, manifestPath, manifestRoot, root, sources, scenariosPath, coverageFile, entry, runtimeEntry, publicDir, aliases, key, local }
+  return { manifest, manifestPath, manifestRoot, root, sources, scenariosPath, coverageFile, entry, runtimeEntry, extension, publicDir, aliases, key, local }
 }
 export function publicProject(project) {
   const { manifest: m, key } = project

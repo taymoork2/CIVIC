@@ -26,8 +26,10 @@ export type AdapterContext = {
    * Call `reset` to put the app back on its first screen with fresh data when a replay starts.
    * A persona with a review identity starts signed in (or out, for the manifest's `identity.signedOut` conditions);
    * the run holds the session, and password fields are filled with the run's credential.
+   * A function backend (`createRuntime`) is called through the returned `query` and `mutation`, by function name;
+   * mutations are recorded and checked on replay like any other write.
    */
-  startRuntime: (options: RuntimeOptions) => Promise<{ bridge: RuntimeBridge; close: () => void; identity: RuntimeIdentity | null }>
+  startRuntime: (options: RuntimeOptions) => Promise<{ bridge: RuntimeBridge; close: () => void; identity: RuntimeIdentity | null; query: RuntimeCall; mutation: RuntimeCall }>
 }
 export type RuntimeOptions = {
   routes?: string[]
@@ -43,6 +45,8 @@ export type RuntimeOptions = {
   changed?: RunChange
 }
 export type RunChange = (step: string) => Promise<void> | void
+/** Calls one function of the run's backend by name, such as `items:list`. */
+export type RuntimeCall = <T = unknown>(name: string, args?: Record<string, unknown>) => Promise<T>
 /** The run behind a live preview, as the canvas sees it: who is acting, the connection and this account's saved steps. */
 export type RunStatus = { run: string; account: string | null; subject: string | null; accounts: string[]; connected: boolean; now: number; pending: PendingIntent[]; path: string }
 /** The persona's synthetic review identity for this run. The credential stays out of the app's preview code. */
