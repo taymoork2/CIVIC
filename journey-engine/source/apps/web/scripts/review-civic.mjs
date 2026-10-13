@@ -12,10 +12,11 @@ const run = promisify(execFile)
  * a CIVIC annotation in the git common directory, which every worktree and local agent
  * reads, and selected annotations become work requests. It runs CIVIC's own `civic` CLI
  * (review/ at the CIVIC repository root), so the journey engine imports nothing from CIVIC
- * and CIVIC imports nothing from Laundry. Returns null when the CLI isn't there, for
- * example in the standalone handoff, and review works as before.
+ * and CIVIC imports nothing from Laundry. CIVIC_ROOT names the CIVIC checkout when Laundry is its
+ * own checkout (`bin/civic-laundry`); otherwise it is the copy's place in CIVIC's tree. Returns
+ * null when the CLI isn't there, for example in the standalone handoff, and review works as before.
  */
-export function civicShared({ repo, civicRoot = resolve(repo, '../..') }) {
+export function civicShared({ repo, civicRoot = process.env.CIVIC_ROOT ?? resolve(repo, '../..') }) {
   const cli = join(civicRoot, 'review', 'src', 'cli.ts')
   if (!existsSync(cli)) return null
   // A person makes every canvas note, even when an agent started this server.
