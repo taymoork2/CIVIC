@@ -6657,6 +6657,314 @@
       }
     },
     {
+      "id": "token:accent",
+      "kind": "token",
+      "title": "--accent",
+      "path": "accent",
+      "type": "color",
+      "source": {
+        "tool": "style-dictionary",
+        "importer": "css-tokens",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/apps/web/src/generated/tokens.css",
+        "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
+        "anchor": "--accent"
+      }
+    },
+    {
+      "id": "token:bg",
+      "kind": "token",
+      "title": "--bg",
+      "path": "bg",
+      "type": "color",
+      "source": {
+        "tool": "style-dictionary",
+        "importer": "css-tokens",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/apps/web/src/generated/tokens.css",
+        "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
+        "anchor": "--bg"
+      }
+    },
+    {
+      "id": "token:conflict-bg",
+      "kind": "token",
+      "title": "--conflict-bg",
+      "path": "conflict-bg",
+      "type": "color",
+      "source": {
+        "tool": "style-dictionary",
+        "importer": "css-tokens",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/apps/web/src/generated/tokens.css",
+        "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
+        "anchor": "--conflict-bg"
+      }
+    },
+    {
+      "id": "token:e1",
+      "kind": "token",
+      "title": "--e1",
+      "path": "e1",
+      "type": "other",
+      "source": {
+        "tool": "style-dictionary",
+        "importer": "css-tokens",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/apps/web/src/generated/tokens.css",
+        "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
+        "anchor": "--e1"
+      }
+    },
+    {
+      "id": "token:e2",
+      "kind": "token",
+      "title": "--e2",
+      "path": "e2",
+      "type": "other",
+      "source": {
+        "tool": "style-dictionary",
+        "importer": "css-tokens",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/apps/web/src/generated/tokens.css",
+        "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
+        "anchor": "--e2"
+      }
+    },
+    {
+      "id": "token:font-mono",
+      "kind": "token",
+      "title": "--font-mono",
+      "path": "font-mono",
+      "type": "other",
+      "source": {
+        "tool": "style-dictionary",
+        "importer": "css-tokens",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/apps/web/src/generated/tokens.css",
+        "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
+        "anchor": "--font-mono"
+      }
+    },
+    {
+      "id": "token:glass",
+      "kind": "token",
+      "title": "--glass",
+      "path": "glass",
+      "type": "color",
+      "source": {
+        "tool": "style-dictionary",
+        "importer": "css-tokens",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/apps/web/src/generated/tokens.css",
+        "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
+        "anchor": "--glass"
+      }
+    },
+    {
+      "id": "token:ink",
+      "kind": "token",
+      "title": "--ink",
+      "path": "ink",
+      "type": "color",
+      "source": {
+        "tool": "style-dictionary",
+        "importer": "css-tokens",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/apps/web/src/generated/tokens.css",
+        "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
+        "anchor": "--ink"
+      }
+    },
+    {
+      "id": "token:radius-card",
+      "kind": "token",
+      "title": "--radius-card",
+      "path": "radius-card",
+      "type": "dimension",
+      "source": {
+        "tool": "style-dictionary",
+        "importer": "css-tokens",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/apps/web/src/generated/tokens.css",
+        "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
+        "anchor": "--radius-card"
+      }
+    },
+    {
+      "id": "token:radius-control",
+      "kind": "token",
+      "title": "--radius-control",
+      "path": "radius-control",
+      "type": "dimension",
+      "source": {
+        "tool": "style-dictionary",
+        "importer": "css-tokens",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/apps/web/src/generated/tokens.css",
+        "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
+        "anchor": "--radius-control"
+      }
+    },
+    {
+      "id": "token:radius-mark",
+      "kind": "token",
+      "title": "--radius-mark",
+      "path": "radius-mark",
+      "type": "dimension",
+      "source": {
+        "tool": "style-dictionary",
+        "importer": "css-tokens",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/apps/web/src/generated/tokens.css",
+        "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
+        "anchor": "--radius-mark"
+      }
+    },
+    {
+      "id": "token:ready-bg",
+      "kind": "token",
+      "title": "--ready-bg",
+      "path": "ready-bg",
+      "type": "color",
+      "source": {
+        "tool": "style-dictionary",
+        "importer": "css-tokens",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/apps/web/src/generated/tokens.css",
+        "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
+        "anchor": "--ready-bg"
+      }
+    },
+    {
+      "id": "token:selection",
+      "kind": "token",
+      "title": "--selection",
+      "path": "selection",
+      "type": "color",
+      "source": {
+        "tool": "style-dictionary",
+        "importer": "css-tokens",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/apps/web/src/generated/tokens.css",
+        "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
+        "anchor": "--selection"
+      }
+    },
+    {
+      "id": "token:space-2",
+      "kind": "token",
+      "title": "--space-2",
+      "path": "space-2",
+      "type": "dimension",
+      "source": {
+        "tool": "style-dictionary",
+        "importer": "css-tokens",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/apps/web/src/generated/tokens.css",
+        "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
+        "anchor": "--space-2"
+      }
+    },
+    {
+      "id": "token:space-4",
+      "kind": "token",
+      "title": "--space-4",
+      "path": "space-4",
+      "type": "dimension",
+      "source": {
+        "tool": "style-dictionary",
+        "importer": "css-tokens",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/apps/web/src/generated/tokens.css",
+        "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
+        "anchor": "--space-4"
+      }
+    },
+    {
+      "id": "token:space-6",
+      "kind": "token",
+      "title": "--space-6",
+      "path": "space-6",
+      "type": "dimension",
+      "source": {
+        "tool": "style-dictionary",
+        "importer": "css-tokens",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/apps/web/src/generated/tokens.css",
+        "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
+        "anchor": "--space-6"
+      }
+    },
+    {
+      "id": "token:surface",
+      "kind": "token",
+      "title": "--surface",
+      "path": "surface",
+      "type": "color",
+      "source": {
+        "tool": "style-dictionary",
+        "importer": "css-tokens",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/apps/web/src/generated/tokens.css",
+        "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
+        "anchor": "--surface"
+      }
+    },
+    {
+      "id": "token:washing-bg",
+      "kind": "token",
+      "title": "--washing-bg",
+      "path": "washing-bg",
+      "type": "color",
+      "source": {
+        "tool": "style-dictionary",
+        "importer": "css-tokens",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/apps/web/src/generated/tokens.css",
+        "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
+        "anchor": "--washing-bg"
+      }
+    },
+    {
+      "id": "evidence:design-export.laundry-tokens",
+      "kind": "evidence",
+      "title": "Design reference tokens",
+      "subjectIds": [
+        "token:accent",
+        "token:bg",
+        "token:conflict-bg",
+        "token:e1",
+        "token:e2",
+        "token:font-mono",
+        "token:glass",
+        "token:ink",
+        "token:radius-card",
+        "token:radius-control",
+        "token:radius-mark",
+        "token:ready-bg",
+        "token:selection",
+        "token:space-2",
+        "token:space-4",
+        "token:space-6",
+        "token:surface",
+        "token:washing-bg"
+      ],
+      "tier": "static-analysis",
+      "method": "design-export",
+      "platform": "web",
+      "outcome": "finding",
+      "finding": "120 custom properties in the default theme.",
+      "capturedAt": "2026-10-12T07:43:26.120Z",
+      "source": {
+        "tool": "open-design",
+        "importer": "css-tokens",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/design/laundry-reference/colors_and_type.css journey-engine/design/laundry-reference/tokens.css",
+        "contentHash": "sha256:e607bd8e6f4c203222916287277c56b320bd42e506d7a34a72ae0b8593f0f938"
+      }
+    },
+    {
       "id": "evidence:playwright.a-changed-run-count-reappears-after-dismissal-and-opens-that-run-without-recording-dryness",
       "kind": "evidence",
       "title": "a changed run/count reappears after dismissal and opens that run without recording dryness",
@@ -7639,6 +7947,180 @@
         "path": "journey-engine/source/apps/web/e2e/review-route-states.spec.ts",
         "anchor": "line 57"
       }
+    },
+    {
+      "id": "evidence:token-analysis.laundry-tokens",
+      "kind": "evidence",
+      "title": "Generated web tokens",
+      "subjectIds": [
+        "token:accent",
+        "token:bg",
+        "token:conflict-bg",
+        "token:e1",
+        "token:e2",
+        "token:font-mono",
+        "token:glass",
+        "token:ink",
+        "token:radius-card",
+        "token:radius-control",
+        "token:radius-mark",
+        "token:ready-bg",
+        "token:selection",
+        "token:space-2",
+        "token:space-4",
+        "token:space-6",
+        "token:surface",
+        "token:washing-bg"
+      ],
+      "tier": "static-analysis",
+      "method": "token-analysis",
+      "platform": "web",
+      "outcome": "finding",
+      "finding": "129 custom properties in the default theme.",
+      "capturedAt": "2026-10-12T07:43:26.120Z",
+      "source": {
+        "tool": "style-dictionary",
+        "importer": "css-tokens",
+        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "path": "journey-engine/source/apps/web/src/generated/tokens.css",
+        "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f"
+      }
+    },
+    {
+      "id": "conflict:token.accent",
+      "kind": "contract-conflict",
+      "title": "--accent differs between design and code",
+      "targetId": "token:accent",
+      "platform": "web",
+      "summary": "Laundry's design reference sets --accent to #164be0; Laundry's generated tokens.css sets it to #1f45ff.",
+      "sides": [
+        {
+          "claim": "Laundry's design reference sets --accent to #164be0.",
+          "evidenceIds": [
+            "evidence:design-export.laundry-tokens"
+          ]
+        },
+        {
+          "claim": "Laundry's generated tokens.css sets --accent to #1f45ff.",
+          "evidenceIds": [
+            "evidence:token-analysis.laundry-tokens"
+          ]
+        }
+      ],
+      "classification": "unclassified",
+      "owners": [
+        {
+          "role": "design",
+          "who": "taymoork2"
+        },
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "alignment": "unreviewed-drift"
+    },
+    {
+      "id": "conflict:token.space-2",
+      "kind": "contract-conflict",
+      "title": "--space-2 differs between design and code",
+      "targetId": "token:space-2",
+      "platform": "web",
+      "summary": "Laundry's design reference sets --space-2 to 2px; Laundry's generated tokens.css sets it to 0.5rem.",
+      "sides": [
+        {
+          "claim": "Laundry's design reference sets --space-2 to 2px.",
+          "evidenceIds": [
+            "evidence:design-export.laundry-tokens"
+          ]
+        },
+        {
+          "claim": "Laundry's generated tokens.css sets --space-2 to 0.5rem.",
+          "evidenceIds": [
+            "evidence:token-analysis.laundry-tokens"
+          ]
+        }
+      ],
+      "classification": "unclassified",
+      "owners": [
+        {
+          "role": "design",
+          "who": "taymoork2"
+        },
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "alignment": "unreviewed-drift"
+    },
+    {
+      "id": "conflict:token.space-4",
+      "kind": "contract-conflict",
+      "title": "--space-4 differs between design and code",
+      "targetId": "token:space-4",
+      "platform": "web",
+      "summary": "Laundry's design reference sets --space-4 to 4px; Laundry's generated tokens.css sets it to 1rem.",
+      "sides": [
+        {
+          "claim": "Laundry's design reference sets --space-4 to 4px.",
+          "evidenceIds": [
+            "evidence:design-export.laundry-tokens"
+          ]
+        },
+        {
+          "claim": "Laundry's generated tokens.css sets --space-4 to 1rem.",
+          "evidenceIds": [
+            "evidence:token-analysis.laundry-tokens"
+          ]
+        }
+      ],
+      "classification": "unclassified",
+      "owners": [
+        {
+          "role": "design",
+          "who": "taymoork2"
+        },
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "alignment": "unreviewed-drift"
+    },
+    {
+      "id": "conflict:token.space-6",
+      "kind": "contract-conflict",
+      "title": "--space-6 differs between design and code",
+      "targetId": "token:space-6",
+      "platform": "web",
+      "summary": "Laundry's design reference sets --space-6 to 6px; Laundry's generated tokens.css sets it to 2rem.",
+      "sides": [
+        {
+          "claim": "Laundry's design reference sets --space-6 to 6px.",
+          "evidenceIds": [
+            "evidence:design-export.laundry-tokens"
+          ]
+        },
+        {
+          "claim": "Laundry's generated tokens.css sets --space-6 to 2rem.",
+          "evidenceIds": [
+            "evidence:token-analysis.laundry-tokens"
+          ]
+        }
+      ],
+      "classification": "unclassified",
+      "owners": [
+        {
+          "role": "design",
+          "who": "taymoork2"
+        },
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "alignment": "unreviewed-drift"
     },
     {
       "id": "collab:coverage-gap.laundry.interaction-garment-routine",

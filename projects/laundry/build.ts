@@ -10,7 +10,7 @@
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { assertValid, indexGraph, type CollaborationRecord, type Evidence, type Owner } from '../../graph/src/index.ts'
-import { assemble, fragment, readCoverageContract, readJourneyIndex, readPlaywrightReport, readRenderReceipt, readReplays, type CoverageContract, type JourneyIndex, type RenderReceipt, type ReplayRecord } from '../../importers/src/index.ts'
+import { assemble, compareCssTokens, contentHash, fragment, readCoverageContract, readCssTokens, readJourneyIndex, readPlaywrightReport, readRenderReceipt, readReplays, type CoverageContract, type JourneyIndex, type RenderReceipt, type ReplayRecord } from '../../importers/src/index.ts'
 
 const here = (path: string) => new URL(path, import.meta.url)
 const text = (path: string) => readFileSync(here(path), 'utf8')
@@ -72,7 +72,26 @@ const coverage = readCoverageContract(JSON.parse(coverageText) as CoverageContra
   evidence,
 })
 
-const graph = assemble(journeys.fragment, fragment(evidence), coverage)
+// --- Tokens (roadmap order of work, item 2) --------------------------------------------------
+// The design reference's custom properties against the ones Laundry's token build generates,
+// by name. A name both set differently is an open conflict a person decides; the reference's
+// roles the code has no token for are listed in out/tokens.md.
+const DESIGN_TOKENS = ['journey-engine/design/laundry-reference/colors_and_type.css', 'journey-engine/design/laundry-reference/tokens.css']
+const CODE_TOKENS = `${SOURCE_ROOT}/apps/web/src/generated/tokens.css`
+const repoText = (path: string) => readFileSync(new URL(`../../${path}`, import.meta.url), 'utf8')
+const at = evidence.map((item) => item.capturedAt).sort().at(-1) ?? index.revision.head
+const tokenEvidence = (id: string, title: string, paths: string[], method: Evidence['method'], finding: string): Evidence => ({
+  id, kind: 'evidence', title, subjectIds: [], tier: 'static-analysis', method, platform: 'web', outcome: 'finding', finding, capturedAt: at,
+  source: { tool: method === 'design-export' ? 'open-design' : 'style-dictionary', importer: 'css-tokens', revision: index.revision.head, path: paths.join(' '), contentHash: contentHash(paths.map(repoText).join('')) },
+})
+const designTokens = readCssTokens(...DESIGN_TOKENS.map(repoText))
+const codeTokens = readCssTokens(repoText(CODE_TOKENS))
+const designSide = { tokens: designTokens, label: "Laundry's design reference", evidence: tokenEvidence('evidence:design-export.laundry-tokens', 'Design reference tokens', DESIGN_TOKENS, 'design-export', `${designTokens.size} custom properties in the default theme.`) }
+const codeSide = { tokens: codeTokens, label: "Laundry's generated tokens.css", evidence: tokenEvidence('evidence:token-analysis.laundry-tokens', 'Generated web tokens', [CODE_TOKENS], 'token-analysis', `${codeTokens.size} custom properties in the default theme.`) }
+const tokens = compareCssTokens(designSide, codeSide, { owners: [{ role: 'design', who: 'taymoork2' }, ...OWNERS.filter((owner) => owner.role === 'engineering')] })
+for (const side of [designSide, codeSide]) side.evidence.subjectIds = tokens.tokens.map((token) => token.id)
+
+const graph = assemble(journeys.fragment, fragment(evidence), coverage, fragment([...tokens.tokens, designSide.evidence, codeSide.evidence, ...tokens.conflicts]))
 assertValid(graph)
 
 // --- The design reference (roadmap order of work, item 2) ------------------------------------
@@ -142,14 +161,36 @@ Built by \`node projects/laundry/build.ts\` from Open Design's source-render rec
 Register it as Laundry's design line with \`bin/civic design projects/laundry/out/design.json\`, and a designer's proposal as a draft with \`bin/civic draft <its design.json> --name "<draft>"\`. \`bin/civic lens <draft line>\` then says which frames the proposal changes and reads each one on this code line.
 `
 
+const tokenReport = `# Laundry: tokens
+
+Built by \`node projects/laundry/build.ts\` from the design reference's stylesheets (${DESIGN_TOKENS.map((path) => `\`${path.split('/').pop()}\``).join(', ')}) and the web tokens Laundry's token build generates (\`${CODE_TOKENS}\`), comparing the custom properties each sets for the default theme by name, with \`var()\` aliases resolved. The design reference sets ${designTokens.size} and the code ${codeTokens.size}; ${tokens.tokens.length} names are set by both.
+
+## Set differently: ${tokens.conflicts.length}
+
+Each is an open Contract Conflict in [\`graph.json\`](graph.json) until a person decides whether the design or the code changes.
+
+${tokens.conflicts.length > 0 ? `| Token | Design reference | Code |\n|---|---|---|\n${tokens.conflicts.map((conflict) => `| \`--${conflict.targetId.slice('token:'.length)}\` | ${designTokens.get(conflict.targetId.slice('token:'.length))} | ${codeTokens.get(conflict.targetId.slice('token:'.length))} |`).join('\n')}` : 'None.'}
+
+## Set the same: ${tokens.agreed.length}
+
+${tokens.agreed.map((name) => `\`--${name}\``).join(', ') || 'None.'}
+
+## Only in the design reference: ${tokens.designOnly.length}
+
+Roles the reference names that the generated tokens don't. Some are the reference's own short names for the same colors, and some are layout and motion roles the code writes as literals. Neither is raised as a conflict.
+
+${tokens.designOnly.map((name) => `\`--${name}\``).join(', ') || 'None.'}
+`
+
 const outputs: Record<string, string> = {
   'out/graph.json': `${JSON.stringify(graph, null, 2)}\n`,
   'out/design.json': `${JSON.stringify(design, null, 2)}\n`,
   'out/design.md': designReport,
   'out/runs.md': runs,
   'out/coverage.md': coverageReport,
+  'out/tokens.md': tokenReport,
 }
-const summary = `${graph.records.length} records, ${graph.links.length} links, ${tests.length} test(s) and ${replayed.length} replayed run(s), ${failed.length} failing`
+const summary = `${graph.records.length} records, ${graph.links.length} links, ${tests.length} test(s) and ${replayed.length} replayed run(s), ${failed.length} failing, ${tokens.conflicts.length} token conflict(s)`
 if (process.argv.includes('--check')) {
   const stale = Object.entries(outputs).filter(([path, body]) => {
     try {
