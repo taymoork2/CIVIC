@@ -6692,7 +6692,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--accent"
@@ -6707,7 +6707,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--bg"
@@ -6722,7 +6722,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--conflict-bg"
@@ -6737,7 +6737,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--e1"
@@ -6752,7 +6752,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--e2"
@@ -6767,7 +6767,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--font-mono"
@@ -6782,7 +6782,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--glass"
@@ -6797,7 +6797,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--ink"
@@ -6812,7 +6812,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--radius-card"
@@ -6827,7 +6827,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--radius-control"
@@ -6842,7 +6842,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--radius-mark"
@@ -6857,7 +6857,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--ready-bg"
@@ -6872,7 +6872,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--selection"
@@ -6887,7 +6887,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--space-2"
@@ -6902,7 +6902,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--space-4"
@@ -6917,7 +6917,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--space-6"
@@ -6932,7 +6932,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--surface"
@@ -6947,7 +6947,7 @@
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
         "anchor": "--washing-bg"
@@ -6982,11 +6982,11 @@
       "platform": "web",
       "outcome": "finding",
       "finding": "120 custom properties in the default theme.",
-      "capturedAt": "2026-10-12T07:43:26.120Z",
+      "capturedAt": "2026-10-13T00:08:21.840Z",
       "source": {
         "tool": "open-design",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/design/laundry-reference/colors_and_type.css journey-engine/design/laundry-reference/tokens.css",
         "contentHash": "sha256:e607bd8e6f4c203222916287277c56b320bd42e506d7a34a72ae0b8593f0f938"
       }
@@ -7952,11 +7952,11 @@
       "platform": "web",
       "outcome": "finding",
       "finding": "129 custom properties in the default theme.",
-      "capturedAt": "2026-10-12T07:43:26.120Z",
+      "capturedAt": "2026-10-13T00:08:21.840Z",
       "source": {
         "tool": "style-dictionary",
         "importer": "css-tokens",
-        "revision": "e8cb256b31d3e018d2450ea0d4ef82c65c1c55bc",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
         "path": "journey-engine/source/apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f"
       }
