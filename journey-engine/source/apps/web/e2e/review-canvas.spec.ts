@@ -11,6 +11,8 @@ test('one canvas retains the live draft through navigation, review and proposal 
   await expect(page.getByRole('navigation', { name: 'Canvas location' })).toContainText('Fabric')
   await page.getByRole('button', { name: 'Play', exact: true }).click()
   const frame = page.frameLocator('iframe[title="Live towel journey"]')
+  // The live app takes input once its run is ready; a fill before then would be lost.
+  await expect(frame.locator('#review-root')).toHaveAttribute('data-rehearsal-ready', 'true')
   await frame.getByLabel('Other material 1', { exact: true }).fill('Retained cotton')
   const live = page.locator('iframe[title="Live towel journey"]')
   const initialUrl = await live.getAttribute('src')

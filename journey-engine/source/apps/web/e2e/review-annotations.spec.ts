@@ -167,6 +167,8 @@ test('live element annotations freeze inputs and survive navigation and reload',
   await page.goto('/review?scenario=intake.towel.fabric')
   await page.getByRole('button', { name: 'Play', exact: true }).click()
   const frame = page.frameLocator('iframe[title="Live towel journey"]')
+  // The live app takes input once its run is ready; a fill before then would be lost.
+  await expect(frame.locator('#review-root')).toHaveAttribute('data-rehearsal-ready', 'true')
   await frame.getByLabel('Other material 1', { exact: true }).fill('QA retained cotton')
   await page.getByRole('button', { name: 'Review', exact: true }).click()
   await page.getByRole('button', { name: 'Comment on selection' }).click()

@@ -22,6 +22,8 @@ test('a stale thumbnail never blocks Play or replaces the open linked draft', as
   await page.goto('/review?scenario=intake.towel.fabric')
   await page.getByRole('button', { name: 'Play', exact: true }).click()
   const frame = page.frameLocator('iframe[title="Live towel journey"]')
+  // The live app takes input once its run is ready; a fill before then would be lost.
+  await expect(frame.locator('#review-root')).toHaveAttribute('data-rehearsal-ready', 'true')
   await frame.getByLabel('Other material 1', { exact: true }).fill('Keep this linked draft')
   expect(attempts).toBeGreaterThanOrEqual(1)
   await expect(frame.getByLabel('Other material 1', { exact: true })).toHaveValue('Keep this linked draft')
