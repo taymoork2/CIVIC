@@ -1,6 +1,7 @@
 export { assemble, contentHash, fragment, slug, type Fragment } from './fragment.ts'
 export { readPlatformComponent, type PlatformMapping, type SourceFacts } from './platform.ts'
 export { readDtcgTokens } from './dtcg.ts'
+export { findWebComponents, readComponentFamilies, type ComponentFamilyOptions, type WebComponentOptions } from './component-contract.ts'
 export { compareCssTokens, readCssTokens, sameCssValue, type TokenComparison, type TokenSide } from './css-tokens.ts'
 export { readFigmaComponentSet, type DesignKitFacts, type DesignKitMapping } from './figma.ts'
 export { readFigmaLibraryComponent, readFigmaProductFile, type LibraryComponentMapping, type LibraryFacts, type ProductManifest } from './figma-product.ts'
