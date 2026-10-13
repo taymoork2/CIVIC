@@ -1,0 +1,78 @@
+{
+  "schema": "civic.decisions/0",
+  "note": "Decision records for Laundry's graph (roadmap step 3). The four token conflicts were decided by Claude under Taymoor's standing instruction to decide and record design calls himself rather than wait (2026-10-13): the shipped code wins, and the design reference is what changes. Taymoor can revise any of them with `civic decide`.",
+  "decisions": [
+    {
+      "id": "decision:token.accent",
+      "kind": "decision",
+      "title": "Laundry's accent is the shipped #1f45ff",
+      "conflictId": "conflict:token.accent",
+      "outcome": "update-design",
+      "classification": "outdated-design-source",
+      "alignment": "awaiting-adoption",
+      "decidedBy": {
+        "role": "design",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-13T06:50:00.000Z",
+      "rationale": "The shipped app's --accent is #1f45ff, which is the reference's own --ac. The reference aliases --accent to its --pr (#164be0), a stale mapping, so the reference's alias changes to --ac. Decided by Claude on Taymoor's standing instruction; he can revise it.",
+      "evidenceIds": [
+        "evidence:token-analysis.laundry-tokens"
+      ]
+    },
+    {
+      "id": "decision:token.space-2",
+      "kind": "decision",
+      "title": "--space-2 keeps the code's rem scale",
+      "conflictId": "conflict:token.space-2",
+      "outcome": "update-design",
+      "classification": "unapproved-divergence",
+      "alignment": "awaiting-adoption",
+      "decidedBy": {
+        "role": "design",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-13T06:50:00.000Z",
+      "rationale": "The code's --space-N is a spacing scale (--space-2 0.5rem, --space-4 1rem, --space-6 2rem) used across the shipped app. The reference reuses the same names for literal pixel layout roles, so the names clash. The reference's px roles get a name of their own, and --space-N keeps the code's meaning. Decided by Claude on Taymoor's standing instruction; he can revise it.",
+      "evidenceIds": [
+        "evidence:token-analysis.laundry-tokens"
+      ]
+    },
+    {
+      "id": "decision:token.space-4",
+      "kind": "decision",
+      "title": "--space-4 keeps the code's rem scale",
+      "conflictId": "conflict:token.space-4",
+      "outcome": "update-design",
+      "classification": "unapproved-divergence",
+      "alignment": "awaiting-adoption",
+      "decidedBy": {
+        "role": "design",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-13T06:50:00.000Z",
+      "rationale": "The code's --space-N is a spacing scale (--space-2 0.5rem, --space-4 1rem, --space-6 2rem) used across the shipped app. The reference reuses the same names for literal pixel layout roles, so the names clash. The reference's px roles get a name of their own, and --space-N keeps the code's meaning. Decided by Claude on Taymoor's standing instruction; he can revise it.",
+      "evidenceIds": [
+        "evidence:token-analysis.laundry-tokens"
+      ]
+    },
+    {
+      "id": "decision:token.space-6",
+      "kind": "decision",
+      "title": "--space-6 keeps the code's rem scale",
+      "conflictId": "conflict:token.space-6",
+      "outcome": "update-design",
+      "classification": "unapproved-divergence",
+      "alignment": "awaiting-adoption",
+      "decidedBy": {
+        "role": "design",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-13T06:50:00.000Z",
+      "rationale": "The code's --space-N is a spacing scale (--space-2 0.5rem, --space-4 1rem, --space-6 2rem) used across the shipped app. The reference reuses the same names for literal pixel layout roles, so the names clash. The reference's px roles get a name of their own, and --space-N keeps the code's meaning. Decided by Claude on Taymoor's standing instruction; he can revise it.",
+      "evidenceIds": [
+        "evidence:token-analysis.laundry-tokens"
+      ]
+    }
+  ]
+}

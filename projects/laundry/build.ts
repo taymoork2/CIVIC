@@ -9,8 +9,8 @@
 //   node build.ts --check   fail if out/ is not what the inputs produce
 
 import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { assertValid, indexGraph, type CollaborationRecord, type Evidence, type Owner } from '../../graph/src/index.ts'
-import { assemble, compareCssTokens, contentHash, fragment, readCoverageContract, readCssTokens, readJourneyIndex, readPlaywrightReport, readRenderReceipt, readReplays, type CoverageContract, type JourneyIndex, type RenderReceipt, type ReplayRecord } from '../../importers/src/index.ts'
+import { assertValid, indexGraph, type CollaborationRecord, type DecisionFile, type Evidence, type Owner } from '../../graph/src/index.ts'
+import { applyDecisions, assemble, compareCssTokens, contentHash, fragment, readCoverageContract, readCssTokens, readJourneyIndex, readPlaywrightReport, readRenderReceipt, readReplays, type CoverageContract, type JourneyIndex, type RenderReceipt, type ReplayRecord } from '../../importers/src/index.ts'
 
 const here = (path: string) => new URL(path, import.meta.url)
 const text = (path: string) => readFileSync(here(path), 'utf8')
@@ -91,7 +91,9 @@ const codeSide = { tokens: codeTokens, label: "Laundry's generated tokens.css", 
 const tokens = compareCssTokens(designSide, codeSide, { owners: [{ role: 'design', who: 'taymoork2' }, ...OWNERS.filter((owner) => owner.role === 'engineering')] })
 for (const side of [designSide, codeSide]) side.evidence.subjectIds = tokens.tokens.map((token) => token.id)
 
-const graph = assemble(journeys.fragment, fragment(evidence), coverage, fragment([...tokens.tokens, designSide.evidence, codeSide.evidence, ...tokens.conflicts]))
+// A person's calls on the conflicts (roadmap step 3), from decisions.json.
+const decisions = json<DecisionFile>('decisions.json')
+const graph = applyDecisions(assemble(journeys.fragment, fragment(evidence), coverage, fragment([...tokens.tokens, designSide.evidence, codeSide.evidence, ...tokens.conflicts])), decisions)
 assertValid(graph)
 
 // --- The design reference (roadmap order of work, item 2) ------------------------------------
@@ -167,9 +169,9 @@ Built by \`node projects/laundry/build.ts\` from the design reference's styleshe
 
 ## Set differently: ${tokens.conflicts.length}
 
-Each is an open Contract Conflict in [\`graph.json\`](graph.json) until a person decides whether the design or the code changes.
+Each is a Contract Conflict in [\`graph.json\`](graph.json), decided in [\`decisions.json\`](../decisions.json) when someone has said whether the design or the code changes.
 
-${tokens.conflicts.length > 0 ? `| Token | Design reference | Code |\n|---|---|---|\n${tokens.conflicts.map((conflict) => `| \`--${conflict.targetId.slice('token:'.length)}\` | ${designTokens.get(conflict.targetId.slice('token:'.length))} | ${codeTokens.get(conflict.targetId.slice('token:'.length))} |`).join('\n')}` : 'None.'}
+${tokens.conflicts.length > 0 ? `| Token | Design reference | Code | Decision |\n|---|---|---|---|\n${tokens.conflicts.map((conflict) => { const name = conflict.targetId.slice('token:'.length); const call = decisions.decisions.find((decision) => decision.conflictId === conflict.id); return `| \`--${name}\` | ${designTokens.get(name)} | ${codeTokens.get(name)} | ${call ? `${call.outcome}: ${call.title}` : 'Undecided'} |` }).join('\n')}` : 'None.'}
 
 ## Set the same: ${tokens.agreed.length}
 
