@@ -1,6 +1,8 @@
 import { randomBytes, timingSafeEqual } from 'node:crypto'
 import { mkdir, readFile, readdir, rename, stat, writeFile } from 'node:fs/promises'
+import { createRequire } from 'node:module'
 import { join } from 'node:path'
+import { pathToFileURL } from 'node:url'
 import { checkedRecording } from './review-recording.mjs'
 
 const equal = (a, b) => typeof a === 'string' && Buffer.byteLength(a) === Buffer.byteLength(b) && timingSafeEqual(Buffer.from(a), Buffer.from(b))
@@ -491,9 +493,19 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
   return Object.assign(middleware, { refreshCoverage: () => bridge?.get() })
 }
 
+/**
+ * The host app's own Playwright when it has one. Playwright refuses to load twice in a process, and a
+ * host's review adapter already loads its copy; that's a different copy when the host is a checkout
+ * outside CIVIC's tree (bin/civic-laundry, decision 0010).
+ */
+async function hostPlaywright() {
+  try { return await import(pathToFileURL(createRequire(join(process.cwd(), 'package.json')).resolve('@playwright/test')).href) }
+  catch { return import('@playwright/test') }
+}
+
 /** Rasterizes the submitted synthetic DOM with scripts disabled and all external requests blocked. */
 export async function captureReview(html, viewport, { origin, cookie }) {
-  const { chromium } = await import('@playwright/test')
+  const { chromium } = await hostPlaywright()
   const browser = await chromium.launch({ channel: 'chrome', headless: true })
   try {
     const context = await browser.newContext({ viewport, javaScriptEnabled: false })
