@@ -233,6 +233,11 @@ export interface ComponentInstance extends RecordBase {
    * the export had no key to match on, which is weaker evidence than `key`.
    */
   library?: { file: string; key: string; matchedBy: 'key' | 'name' }
+  /**
+   * A code instance only: the extension points it sets (decision 0011), each with the
+   * contract property it expresses and the value when the code gives a literal one.
+   */
+  uses?: { extensionPointId: string; property: string; value?: string | number | boolean }[]
 }
 
 export const OVERRIDE_CHANGES = ['add-content', 'set-property', 'local-style', 'detach'] as const

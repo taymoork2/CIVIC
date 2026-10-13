@@ -11,6 +11,7 @@ Everything in [`out/`](out) is built by `node build.ts` from the inputs below. T
 | Can each change be built, and on which platforms? | [`out/raised.overrides.md`](out/raised.overrides.md): one row per change, one column per platform. |
 | Who is asked, and who is told? | The same file. The product designer and the Card's maintainers are asked to decide. Design engineering for each platform that needs a library change is told, and so are Shop's engineers and QA. |
 | What did the design forget? | [`out/completeness.md`](out/completeness.md): the Card's loading, empty and error states, a dead-end screen, and a screen nothing links to. |
+| What does the code build of the design? | [`out/design-and-code.md`](out/design-and-code.md): Shop's React code sets `selected`, the change the design asks for, and leaves out the rejected corner radius. Its `GiftOption` wrapper is read once, on the same product component as the design's Gift option. |
 | What does the checkout look like when you click through it? | [`out/walk.html`](out/walk.html), the frame walk (D33): Shop's frames along their prototype links, labelled as design intent. Open it from disk; [`out/walk.md`](out/walk.md) is the same walk as text. |
 | How are the decisions kept? | [`out/resolved.overrides.md`](out/resolved.overrides.md) and [`out/resolved.graph.json`](out/resolved.graph.json). |
 | What does every product inherit that a platform can't build? | The `[ios]` open conflicts in [`out/raised.gaps.md`](out/raised.gaps.md): the library Card's default body, footer and header action. |
@@ -73,6 +74,7 @@ bin/civic gaps demo/card/out/resolved.graph.json --scope semantic:card
 | [`design/library.figma.json`](design/library.figma.json) | The real Microsoft Fluent 2 Web Community kit's Card and `.Card header` component sets, from a Figma REST file export (`GET /v1/files/:key`) trimmed by [`design/trim.ts`](design/trim.ts) | `readFigmaLibraryComponent` |
 | [`design/shop-checkout.figma.json`](design/shop-checkout.figma.json) | A stand-in for Shop's Checkout page: four frames, a prototype flow, two instances of the real kit's Card, three of its Button, one of Shop's Promo banner, and Shop's own Gift option component (a Card), defined once and placed twice on Gift options | `readFigmaProductFile` ([`importers/src/figma-product.ts`](../../importers/src/figma-product.ts)) |
 | [`design/shop-patterns.figma.json`](design/shop-patterns.figma.json) | A stand-in for Shop's own patterns library, the product-level layer: it publishes a Promo banner | `readPublishedComponents` |
+| [`code/src`](code) | A stand-in for Shop's React code: the Order Summary and Gift options screens and a `GiftOption` wrapper, never compiled or run. `codeScreens` in `contract/product.json` says which file renders which screen | `readReactProductCode` ([`importers/src/react-code.ts`](../../importers/src/react-code.ts)) |
 
 ### The Figma exports
 

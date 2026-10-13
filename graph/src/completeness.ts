@@ -58,9 +58,7 @@ export function completenessOf(graph: Graph, journeyId: string): Completeness {
  * the component's default. Only design instances count: the check runs before code exists.
  */
 export function stateCoverageOn(graph: Graph, screenId: string): StateCoverage[] {
-  const places = new Set([screenId, ...containedTargets(graph, screenId, 'state').map((state) => state.id)])
-  // A product component placed on the screen or its states brings its instances with it, nested ones too.
-  for (const place of [...places]) for (const component of placedComponents(graph, place)) places.add(component)
+  const places = new Set(placesOn(graph, screenId))
   const instances = graph.ofKind('component-instance').filter((instance) => instance.origin === 'design' && places.has(instance.placedOn))
   const bySemantic = new Map<string, ComponentInstance[]>()
   for (const instance of instances) bySemantic.set(instance.semanticId, [...(bySemantic.get(instance.semanticId) ?? []), instance])
@@ -104,6 +102,16 @@ function journeyShape(graph: Graph, journey: Target, screens: Target[]): Journey
   }
   const unreachable = entry.length === 0 ? [] : ids.filter((id) => !reached.has(id))
   return { journeyId: journey.id, screens: ids, entry, deadEnds, unreachable }
+}
+
+/**
+ * Where a screen's instances can be placed: the screen, its state frames, and the product
+ * components (decision 0011) any of them places, nested ones too.
+ */
+export function placesOn(graph: Graph, screenId: string): string[] {
+  const places = new Set([screenId, ...containedTargets(graph, screenId, 'state').map((state) => state.id)])
+  for (const place of [...places]) for (const component of placedComponents(graph, place)) places.add(component)
+  return [...places]
 }
 
 /** The product components (decision 0011) a target places, and the ones they place, transitively. */

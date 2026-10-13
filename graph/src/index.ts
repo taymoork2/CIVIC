@@ -8,7 +8,7 @@ export { contextFor, implementationsOf, renderWorkOrder, type ContextOptions, ty
 export { alignmentsIn, renderAlignments, type Alignment, type AlignmentOptions } from './alignment.ts'
 export { GAP_KINDS, gapsIn, renderGaps, screensOf, type Gap, type GapKind, type GapOptions } from './gaps.ts'
 export { checkCounts, isAnchored, laneFor, resolveAnchor, type AnchorResolution, type ObservedElement } from './work.ts'
-export { completenessOf, placedComponents, renderCompleteness, stateCoverageOn, type Completeness, type JourneyShape, type StateCoverage } from './completeness.ts'
+export { completenessOf, placedComponents, placesOn, renderCompleteness, stateCoverageOn, type Completeness, type JourneyShape, type StateCoverage } from './completeness.ts'
 export { renderInstanceReview, reviewInstance, type OverrideReview, type OverrideReviewItem } from './overrides.ts'
 export { renderScreen, screenFacts, type ScreenDesign, type ScreenFacts } from './screen.ts'
 export { attribute, changeBetween, renderChange, type ChangeReport, type GraphAtRevisions, type IntroducedFinding, type SideChange } from './change.ts'
@@ -45,3 +45,4 @@ export {
   type FixStage,
   type FixState,
 } from './decisions.ts'
+export { designAndCode, renderDesignAndCode, type DesignChangeInCode, type ScreenImplementation } from './implementation.ts'

@@ -14,6 +14,10 @@
     { "platform": "ios", "framework": "uikit", "package": "microsoft/fluentui-apple" },
     { "platform": "android", "framework": "compose", "package": "microsoft/fluentui-android" }
   ],
+  "codeScreens": [
+    { "platform": "web", "path": "code/src/OrderSummary.tsx", "target": "target:shop.order-summary" },
+    { "platform": "web", "path": "code/src/GiftOptions.tsx", "target": "target:shop.gift-options" }
+  ],
   "designFiles": [
     { "tool": "figma", "file": "shop-checkout", "title": "Shop checkout", "layers": ["product"], "consumes": ["fluent-2-web", "shop-patterns"] },
     { "tool": "figma", "file": "shop-patterns", "title": "Shop patterns", "layers": ["product-library"], "consumes": ["fluent-2-web"] },
