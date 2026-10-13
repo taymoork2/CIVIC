@@ -1,6 +1,6 @@
 # 0009: The engine's tape stays the recording; a replay of it is CIVIC evidence
 
-- **Status:** Proposed
+- **Status:** Accepted
 - **Date:** 2026-10-13
 - **Decider:** Founder
 - **Builds on:** [0006](0006-deterministic-civic-for-agentic-teams.md) (D30), [0007](0007-review-to-agent-loop.md) (D35)
