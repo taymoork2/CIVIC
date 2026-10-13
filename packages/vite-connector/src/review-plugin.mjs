@@ -66,7 +66,10 @@ export function civicReview({ host, canvas = host, repo = resolve(host, '../..')
       config.resolve.alias = { ...config.resolve.alias, ...project.aliases }
       config.resolve.dedupe = [...new Set(['react', 'react-dom', ...(connector?.dedupe ?? [])])]
       config.server.fs = { ...config.server.fs, allow: [...new Set([repo, appRepo, project.manifestRoot, ...canvasRoots, viteClientEnv])] }
-      config.optimizeDeps = { ...config.optimizeDeps, entries: [join(canvas, 'src/main.tsx'), join(canvas, 'src/frame.tsx')] }
+      // CIVIC's packages are served as source, never pre-bundled: an app installed from git would otherwise get a
+      // second copy of the canvas's modules (such as the project binding) inside each pre-bundled import.
+      const exclude = [...new Set([...(config.optimizeDeps?.exclude ?? []), '@civic/canvas', '@civic/shell', '@civic/vite-connector'])]
+      config.optimizeDeps = { ...config.optimizeDeps, entries: [join(canvas, 'src/main.tsx'), join(canvas, 'src/frame.tsx')], exclude }
     },
     resolveId(id, importer) {
       if (id in modules) return '\0' + id

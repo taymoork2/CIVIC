@@ -52,6 +52,8 @@ test('a plain module app connects through the connector alone, with no app conne
     assert.equal((await fetch(origin + '/@fs' + join(app, 'src/preview.js'), { headers })).status, 200)
     assert.equal((await fetch(origin + '/api/auth/session', { headers })).status, 404)
     assert.equal((await fetch(origin + '/@fs' + join(repo, '.review-data/application.json'), { headers })).status, 404)
+    // CIVIC's packages stay source, so an app's imports of them share the canvas's modules.
+    for (const name of ['@civic/canvas', '@civic/shell', '@civic/vite-connector']) assert.ok(server.config.optimizeDeps.exclude.includes(name), `${name} is not pre-bundled`)
   } finally { await server.close() }
 })
 
