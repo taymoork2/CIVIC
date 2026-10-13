@@ -25,5 +25,6 @@ export { applyDecisions, settledConflicts, type SettledConflict } from './decisi
 export * from './source.ts'
 export { applyConfirmations, readCrawl, type ConfirmationFile, type CrawlImportOptions } from './crawl.ts'
 export { applyForkConfirmations, type ForkConfirmations } from './forks.ts'
+export { designLibraryRelease, designReleaseBreaks, renderDesignRelease, type DesignLibraryVersion, type DesignRelease, type DesignReleaseConsumer, type DesignReleaseOptions, type ProductImpact } from './design-release.ts'
 export { readRenderReceipt, type RenderReceipt, type RenderReferenceOptions } from './render-reference.ts'
 export { readReplays, type ReplayOptions, type ReplayRecord } from './replay.ts'

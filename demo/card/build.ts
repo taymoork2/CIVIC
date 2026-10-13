@@ -38,6 +38,8 @@ import {
 import {
   applyConfirmations,
   applyDecisions,
+  designLibraryRelease,
+  renderDesignRelease,
   assemble,
   compareLibraryDefaults,
   contentHash,
@@ -190,20 +192,41 @@ const patterns = readPublishedComponents(json('design/shop-patterns.figma.json')
 const shop = readFigmaProductFile(productFile, library, product, productFile.lastModified, { file: 'shop-checkout', libraries: [patterns] })
 const designEvidence = shop.records.find((record) => record.kind === 'evidence')!.id
 // What the library's Card shows by default, against what each platform's component can express.
-const libraryDefaults = fragment(
-  compareLibraryDefaults(
-    semantic,
-    library,
-    [web, webComponents, ios, android].map((part) => {
-      const component = part.records.find((record): record is PlatformComponent => record.kind === 'platform-component')!
-      return {
-        component,
-        extensionPoints: part.records.filter((record): record is ExtensionPoint => record.kind === 'extension-point'),
-        evidenceId: `evidence:${component.id.slice('platform:'.length)}.variants`,
-      }
-    }),
-  ),
-)
+const implementations = [web, webComponents, ios, android].map((part) => {
+  const component = part.records.find((record): record is PlatformComponent => record.kind === 'platform-component')!
+  return {
+    component,
+    extensionPoints: part.records.filter((record): record is ExtensionPoint => record.kind === 'extension-point'),
+    evidenceId: `evidence:${component.id.slice('platform:'.length)}.variants`,
+  }
+})
+const libraryDefaults = fragment(compareLibraryDefaults(semantic, library, implementations))
+
+// --- A design library release (decision 0011): the kit's next version, read against Shop --
+// A stand-in, derived here from the real kit so the change is plain: the Card's footer is off
+// by default, and the kit stops publishing its Button set.
+
+const nextLibrary = structuredClone(json<{ version: string; componentSets: Record<string, { key: string; name: string }>; document: unknown }>('design/library.figma.json'))
+nextLibrary.version = `${nextLibrary.version} + civic-stand-in-next`
+walkNodes(nextLibrary.document, (node) => {
+  const footer = Object.keys(node.componentPropertyDefinitions ?? {}).find((name) => name.startsWith('Footer#'))
+  if (node.type === 'COMPONENT_SET' && node.name === mappings.library.componentSet && footer) node.componentPropertyDefinitions![footer]!.defaultValue = false
+})
+for (const [id, set] of Object.entries(nextLibrary.componentSets)) if (set.name === 'Button') delete nextLibrary.componentSets[id]
+const release = designLibraryRelease({ export: libraryFile }, { export: nextLibrary }, [{ product, file: 'shop-checkout', export: productFile, libraries: [patterns] }], {
+  file: mappings.library.file!,
+  mapping: mappings.library,
+  semantic,
+  platforms: implementations,
+  context: [contract, web, webComponents, ios, android],
+  capturedAt,
+})
+
+function walkNodes(node: unknown, visit: (node: { type: string; name: string; componentPropertyDefinitions?: Record<string, { defaultValue?: unknown }>; children?: unknown[] }) => void) {
+  const current = node as { type: string; name: string; children?: unknown[] }
+  visit(current)
+  for (const child of current.children ?? []) walkNodes(child, visit)
+}
 
 // --- Code: Shop's React code, read for its uses of the library (decision 0011) ---------
 
@@ -261,6 +284,7 @@ const outputs: Record<string, string> = {
   'out/raised.gaps.md': raisedExport.gaps,
   'out/resolved.gaps.md': resolvedExport.gaps,
   'out/design-and-code.md': `# Design and code\n\nWhat Shop's React code builds of each design change, screen by screen, and where either uses a copy of the Card (decision 0011). Read from the stand-in code in \`code/src\` and the design file; static analysis, not behavior.\n\n${renderDesignAndCode(indexGraph(resolved), ['target:shop.order-summary', 'target:shop.gift-options', 'target:shop.promo-applied'].flatMap((screen) => designAndCode(indexGraph(resolved), screen)))}\n`,
+  'out/library-release.md': `${renderDesignRelease(release)}\n`,
   'out/completeness.md': `${renderCompleteness(raisedGraph, completenessOf(raisedGraph, JOURNEY))}\n`,
   // The frame walk (D33): Shop's checkout frames along their prototype links, as design intent.
   'out/walk.md': `${renderWalk(frameWalk(indexGraph(resolved), JOURNEY))}\n`,
