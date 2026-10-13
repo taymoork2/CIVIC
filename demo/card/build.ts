@@ -44,6 +44,7 @@ import {
   raiseOverrideDrift,
   readFigmaLibraryComponent,
   readFigmaProductFile,
+  customElementMembers,
   readPublishedComponents,
   readPlatformComponent,
   swiftEnumCases,
@@ -85,9 +86,9 @@ function localSource(path: string, importer: string): SourceRef {
   return { tool: 'civic', importer, revision: contentHash(text(path)), path: `demo/card/${path}` }
 }
 
-function platformMapping(platform: string): PlatformMapping {
-  const found = mappings.platforms.find((candidate) => candidate.platform === platform)
-  if (!found) throw new Error(`mappings.json has no ${platform} platform.`)
+function platformMapping(platform: string, framework?: string): PlatformMapping {
+  const found = mappings.platforms.find((candidate) => candidate.platform === platform && (!framework || candidate.framework === framework))
+  if (!found) throw new Error(`mappings.json has no ${platform}${framework ? ` ${framework}` : ''} platform.`)
   return found
 }
 
@@ -108,7 +109,7 @@ const dts = vendored('react-card', 'index.d.ts', 'react-types')
 const useCard = vendored('react-card', 'useCard.js', 'react-types')
 const web = readPlatformComponent(
   semantic.id,
-  platformMapping('web'),
+  platformMapping('web', 'react'),
   {
     variants: tsPropUnion(dts.text, 'CardProps', 'appearance').map((name) => ({ name, deprecated: false })),
     defaultVariant: jsDestructuredDefault(useCard.text, 'appearance'),
@@ -123,6 +124,18 @@ const web = readPlatformComponent(
     capturedAt,
   },
   { package: '@fluentui/react-card', version: '9.7.3' },
+)
+
+// --- Web, second framework: Fluent Web Components <fluent-card> (decision 0011) -------
+// One content slot and a fill color: a product building with web components gets its own
+// forecast on web, never React's slots.
+
+const cardDefinition = vendored('web-components', 'card.vscode.definition.json', 'custom-elements')
+const webComponents = readPlatformComponent(
+  semantic.id,
+  platformMapping('web', 'web-components'),
+  { variants: [], defaultVariant: '', members: customElementMembers(cardDefinition.text, 'fluent-card'), source: cardDefinition.source, capturedAt },
+  { package: '@fluentui/web-components', version: '2.6.1' },
 )
 
 // --- iOS: fluentui-apple CardView (a UIKit widget with fixed parts: a brittle library) --
@@ -177,7 +190,7 @@ const libraryDefaults = fragment(
   compareLibraryDefaults(
     semantic,
     library,
-    [web, ios, android].map((part) => {
+    [web, webComponents, ios, android].map((part) => {
       const component = part.records.find((record): record is PlatformComponent => record.kind === 'platform-component')!
       return {
         component,
@@ -190,7 +203,7 @@ const libraryDefaults = fragment(
 
 // --- Assemble, decide, export ---------------------------------------------------------
 
-const raised = assemble(contract, web, ios, android, fragment([library.evidence]), shop, drift, libraryDefaults)
+const raised = assemble(contract, web, webComponents, ios, android, fragment([library.evidence]), shop, drift, libraryDefaults)
 const resolved = applyDecisions(raised, json<DecisionFile>('contract/decisions.json'))
 assertValid(raised)
 assertValid(resolved)

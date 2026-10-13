@@ -6,6 +6,7 @@
       "id": "platform:fluent-react-v9.card",
       "title": "Fluent React v9 Card",
       "platform": "web",
+      "framework": "react",
       "symbol": "Card",
       "owners": [{ "role": "design-engineering", "who": "fluent-web", "platform": "web" }],
       "variantProperty": "appearance",
@@ -27,9 +28,28 @@
       ]
     },
     {
+      "id": "platform:fluent-web-components.card",
+      "title": "Fluent Web Components fluent-card",
+      "platform": "web",
+      "framework": "web-components",
+      "symbol": "fluent-card",
+      "owners": [{ "role": "design-engineering", "who": "fluent-web-components", "platform": "web" }],
+      "variantProperty": "appearance",
+      "variants": {
+        "filled": { "mapping": "none", "note": "fluent-card has no appearance attribute; it always draws a neutral fill layer with an elevation shadow." },
+        "outline": { "mapping": "none", "note": "fluent-card has no outline style." }
+      },
+      "extensionPoints": [
+        { "name": "default", "mechanism": "slot", "expresses": ["media", "header", "body", "actions"] },
+        { "name": "card-fill-color", "mechanism": "prop", "expresses": ["background"] },
+        { "name": "neutral-palette-source", "mechanism": "prop", "expresses": ["background"] }
+      ]
+    },
+    {
       "id": "platform:fluent-apple.card-view",
       "title": "Fluent iOS CardView",
       "platform": "ios",
+      "framework": "uikit",
       "symbol": "CardView",
       "owners": [{ "role": "design-engineering", "who": "fluent-ios", "platform": "ios" }],
       "variantProperty": "CardColorStyle",
@@ -50,6 +70,7 @@
       "id": "platform:fluent-android.basic-card",
       "title": "Fluent Android Compose BasicCard",
       "platform": "android",
+      "framework": "compose",
       "symbol": "BasicCard",
       "owners": [{ "role": "design-engineering", "who": "fluent-android", "platform": "android" }],
       "variantProperty": "CardType",

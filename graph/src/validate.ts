@@ -514,6 +514,14 @@ function checkRecordShape(raw: unknown, at: string, error: Report) {
       field.optionalList('platforms', (value, path) => checkEnum(value, PLATFORMS, path, error))
       field.optionalList('entry', (value, path) => checkString(value, path, error))
       field.optionalList('exits', (value, path) => checkString(value, path, error))
+      field.optionalList('builtWith', (library, path) => {
+        if (!isObject(library)) return error('shape', path, 'Must be an object.')
+        const l = fieldChecker(library, path, error)
+        l.oneOf('platform', PLATFORMS)
+        l.string('framework')
+        l.string('package')
+        l.optional('version', (value, at) => checkString(value, at, error))
+      })
       break
     case 'token':
       field.string('path')
@@ -556,6 +564,7 @@ function checkRecordShape(raw: unknown, at: string, error: Report) {
         if (mapping.mapping !== 'none' && typeof mapping.expression !== 'string') error('shape', path, 'An exact or closest mapping names its `expression`.')
       })
       field.optional('defaultVariant', (value, path) => checkString(value, path, error))
+      field.optional('framework', (value, path) => checkString(value, path, error))
       field.optionalList('extraVariants', (extra, path) => {
         if (!isObject(extra)) return error('shape', path, 'Must be an object.')
         fieldChecker(extra, path, error).string('expression')

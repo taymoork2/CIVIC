@@ -1,5 +1,5 @@
 {
-  "note": "Upstream files vendored for static analysis, pinned to the exact revision read. CIVIC reads Fluent; it does not fork or redistribute it beyond these MIT-licensed files (decision 0001). Each folder keeps its upstream LICENSE. The iOS and Android revisions are the ones the Fluent Button demo reads.",
+  "note": "Upstream files vendored for static analysis, pinned to the exact revision read. CIVIC reads Fluent; it does not fork or redistribute it beyond these MIT-licensed files (decision 0001). Each folder keeps its upstream LICENSE. The iOS and Android revisions are the ones the Fluent Button demo reads. The web components Card (`<fluent-card>`) was added on 2026-10-13 as a second web framework (decision 0011); its package is MIT-licensed, and the LICENSE beside it is the Fluent UI repository's.",
   "retrievedAt": "2026-10-11T00:00:00Z",
   "inputs": {
     "react-card": {
@@ -29,6 +29,15 @@
       "files": {
         "BasicCard.kt": "fluentui_controls/src/main/java/com/microsoft/fluentui/tokenized/controls/BasicCard.kt",
         "BasicCardTokens.kt": "fluentui_core/src/main/java/com/microsoft/fluentui/theme/token/controlTokens/BasicCardTokens.kt"
+      }
+    },
+    "web-components": {
+      "tool": "npm",
+      "package": "@fluentui/web-components",
+      "revision": "@fluentui/web-components@2.6.1",
+      "url": "https://registry.npmjs.org/@fluentui/web-components/-/web-components-2.6.1.tgz",
+      "files": {
+        "card.vscode.definition.json": "dist/esm/card/card.vscode.definition.json"
       }
     }
   }

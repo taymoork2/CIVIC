@@ -18,12 +18,14 @@ Everything in [`out/`](out) is built by `node build.ts` from the inputs below. T
 
 ### The forecasts
 
-The three Fluent Card libraries show the two cases from the change flow. React's `Card` is a flexible library with slots and props. iOS's `CardView` is a brittle, widget-style library: a UIKit view with a title, a subtitle, an icon and a color style. Android's `BasicCard` sits between them: an empty container with one `content` slot and a token class.
+The Fluent Card libraries show the two cases from the change flow. React's `Card` is a flexible library with slots and props. iOS's `CardView` is a brittle, widget-style library: a UIKit view with a title, a subtitle, an icon and a color style. Android's `BasicCard` sits between them: an empty container with one `content` slot and a token class.
 
-| Change in the Shop file | Web | iOS | Android |
-|---|---|---|---|
-| The header's checkbox turned on, making the Card selectable | Supported (`selected` prop) | Needs a library change | Needs a library change |
-| A local corner radius of 20 | Forbidden by contract | Forbidden by contract | Forbidden by contract |
+Shop builds web with two frameworks (decision 0011): React for the checkout, and Fluent's web components for an order summary it embeds in partner sites. `<fluent-card>` has one default slot and a fill color, so web gets two answers, never merged. Each answer comes from the components in the package Shop declares for that framework in [`contract/product.json`](contract/product.json).
+
+| Change in the Shop file | Web (React) | Web (web components) | iOS (UIKit) | Android (Compose) |
+|---|---|---|---|---|
+| The header's checkbox turned on, making the Card selectable | Supported (`selected` prop) | Needs a library change | Needs a library change | Needs a library change |
+| A local corner radius of 20 | Forbidden by contract | Forbidden by contract | Forbidden by contract | Forbidden by contract |
 
 Shop's Card also shows the header's quick action and the footer. The real Fluent 2 web kit draws both by default, so they aren't changes and aren't forecast. iOS `CardView` can't build either one. That's a gap between the library's default Card and iOS, not something Shop did, so the override forecast can't see it.
 
@@ -66,8 +68,8 @@ bin/civic gaps demo/card/out/resolved.graph.json --scope semantic:card
 |---|---|---|
 | [`contract/card.json`](contract/card.json) | The semantic Card: its variants, states, product states, slots and the `shape-from-token` rule, declared by the design system maintainers | contract |
 | [`contract/mappings.json`](contract/mappings.json) | How each platform's Fluent Card expresses the semantic variants, and which public APIs are extension points. Also how the library's Figma Card names its variants, states and properties. Declared by Design Engineering and the maintainers. | every importer checks its names against what it reads |
-| [`contract/product.json`](contract/product.json) | Shop: its platforms, owners and design files as a lineage (decision 0011): the checkout file consumes the Fluent kit and Shop's patterns library | product file importer |
-| [`sources/`](sources) | Fluent's own files, vendored at pinned revisions with their MIT licences ([`sources.json`](sources/sources.json)): `@fluentui/react-card@9.7.3` types and `useCard`, iOS `CardView.swift`, Android `BasicCard.kt` and `BasicCardTokens.kt` | static source readers ([`importers/src/source.ts`](../../importers/src/source.ts)) |
+| [`contract/product.json`](contract/product.json) | Shop: its platforms, owners, the code libraries it builds with per framework, and design files as a lineage (decision 0011): the checkout file consumes the Fluent kit and Shop's patterns library | product file importer |
+| [`sources/`](sources) | Fluent's own files, vendored at pinned revisions with their MIT licences ([`sources.json`](sources/sources.json)): `@fluentui/react-card@9.7.3` types and `useCard`, `@fluentui/web-components@2.6.1`'s `<fluent-card>` custom element definition, iOS `CardView.swift`, Android `BasicCard.kt` and `BasicCardTokens.kt` | static source readers ([`importers/src/source.ts`](../../importers/src/source.ts)) |
 | [`design/library.figma.json`](design/library.figma.json) | The real Microsoft Fluent 2 Web Community kit's Card and `.Card header` component sets, from a Figma REST file export (`GET /v1/files/:key`) trimmed by [`design/trim.ts`](design/trim.ts) | `readFigmaLibraryComponent` |
 | [`design/shop-checkout.figma.json`](design/shop-checkout.figma.json) | A stand-in for Shop's Checkout page: four frames, a prototype flow, two instances of the real kit's Card, three of its Button, one of Shop's Promo banner, and Shop's own Gift option component (a Card), defined once and placed twice on Gift options | `readFigmaProductFile` ([`importers/src/figma-product.ts`](../../importers/src/figma-product.ts)) |
 | [`design/shop-patterns.figma.json`](design/shop-patterns.figma.json) | A stand-in for Shop's own patterns library, the product-level layer: it publishes a Promo banner | `readPublishedComponents` |

@@ -116,6 +116,20 @@ export interface Target extends RecordBase {
   entry?: string[]
   /** A journey only: screens where it may legitimately end, so they are not reported as dead ends. */
   exits?: string[]
+  /**
+   * The code libraries the product builds this target with, per platform (decision 0011).
+   * The forecast answers once for each, from the platform components in its package.
+   */
+  builtWith?: CodeLibrary[]
+}
+
+/** A code library a product builds with: its platform, framework and package, with an optional version range. */
+export interface CodeLibrary {
+  platform: Platform
+  /** Free text, such as `react`, `angular`, `web-components`, `swiftui`, `uikit` or `compose`. */
+  framework: string
+  package: string
+  version?: string
 }
 
 /** A design token, identified by its DTCG path so design and code link on the same string. */
@@ -165,6 +179,8 @@ export interface SemanticComponent extends RecordBase {
 export interface PlatformComponent extends RecordBase {
   kind: 'platform-component'
   platform: Platform
+  /** The framework this implementation is for, such as `react` or `angular` (decision 0011). Free text. */
+  framework?: string
   library: { package: string; version?: string }
   symbol: string
   /** How each semantic variant is expressed here. `none` is a gap CIVIC must show, not hide. */

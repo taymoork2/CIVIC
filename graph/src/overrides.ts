@@ -1,5 +1,5 @@
 import { implementationsOf } from './context.ts'
-import { forecastOverride, type Forecast } from './forecast.ts'
+import { forecastLabel, forecastOverride, type Forecast } from './forecast.ts'
 import { countsForReadiness, type Graph } from './graph.ts'
 import { decisionFor } from './decisions.ts'
 import type { ContractConflict, Decision, Override, Owner } from './schema.ts'
@@ -47,9 +47,10 @@ export function reviewInstance(graph: Graph, instanceId: string): OverrideReview
   })
 
   const shownOn = containers(graph, instanceId)
-  const needsLibrary = new Set(items.flatMap((item) => item.forecasts.filter((forecast) => forecast.outcome === 'needs-library-change').map((forecast) => forecast.platform)))
+  // The engineering owners of each library that would have to change, per platform and framework (decision 0011).
+  const needsLibrary = items.flatMap((item) => item.forecasts.filter((forecast) => forecast.outcome === 'needs-library-change'))
   const libraryOwners = implementationsOf(graph, semantic)
-    .filter((component) => needsLibrary.has(component.platform))
+    .filter((component) => needsLibrary.some((forecast) => forecast.platform === component.platform && (forecast.componentIds.length === 0 || forecast.componentIds.includes(component.id))))
     .flatMap((component) => (component.owners ?? []).filter((owner) => owner.role === 'design-engineering'))
   const productOwners = shownOn.flatMap((id) => graph.get(id)?.owners ?? []).filter((owner) => owner.role === 'engineering' || owner.role === 'qa')
 
@@ -103,12 +104,12 @@ export function renderInstanceReview(graph: Graph, review: OverrideReview): stri
   const lines = [`# Changes to ${title(review.instanceId)}`, '']
   if (review.items.length === 0) return [...lines, 'No overrides: the instance uses the library component as it is.'].join('\n')
 
-  const platforms = [...new Set(review.items.flatMap((item) => item.forecasts.map((forecast) => forecast.platform)))]
-  lines.push('Forecasts are computed from the libraries\' extension points and the contract\'s rules as they are in this graph. Each platform gets its own answer.', '')
+  const platforms = [...new Set(review.items.flatMap((item) => item.forecasts.map(forecastLabel)))]
+  lines.push('Forecasts are computed from the libraries\' extension points and the contract\'s rules as they are in this graph. Each platform gets its own answer, and so does each framework on it.', '')
   lines.push(`| Override | ${platforms.join(' | ')} | Record |`, `|---|${platforms.map(() => '---').join('|')}|---|`)
   for (const item of review.items) {
     const cells = platforms.map((platform) => {
-      const forecast = item.forecasts.find((candidate) => candidate.platform === platform)
+      const forecast = item.forecasts.find((candidate) => forecastLabel(candidate) === platform)
       return forecast ? OUTCOME_LABEL[forecast.outcome] : 'not shipped'
     })
     lines.push(`| ${item.override.title} (\`${item.override.property}\`) | ${cells.join(' | ')} | ${recordState(item)} |`)
@@ -116,7 +117,7 @@ export function renderInstanceReview(graph: Graph, review: OverrideReview): stri
   lines.push('', '## Why', '')
   for (const item of review.items) {
     lines.push(`- **${item.override.title}** (\`${item.override.id}\`)`)
-    for (const forecast of item.forecasts) lines.push(`  - ${forecast.platform}: ${forecast.reason}`)
+    for (const forecast of item.forecasts) lines.push(`  - ${forecastLabel(forecast)}: ${forecast.reason}`)
     const decision = item.decision
     if (decision) {
       lines.push(`  - Decided by ${decision.decidedBy.role} ${decision.decidedBy.who}: ${decision.rationale}${decision.revisitTrigger ? ` Revisit when: ${decision.revisitTrigger}` : ''}${decision.expires ? ` Expires ${decision.expires}.` : ''}`)

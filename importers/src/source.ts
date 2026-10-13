@@ -184,6 +184,17 @@ export function tsExportedComponents(dts: string): string[] {
   return [...new Set([...dts.matchAll(/^export declare const ([A-Z]\w*): ForwardRefComponent</gm)].map((m) => m[1]!))].sort()
 }
 
+/**
+ * A custom element's public attributes and slots, from its custom data definition (the
+ * `*.vscode.definition.json` a web components package ships). The unnamed slot is `default`.
+ */
+export function customElementMembers(definition: string, tagName: string): string[] {
+  const tags = (JSON.parse(definition) as { tags?: { name: string; attributes?: { name: string }[]; slots?: { name: string }[] }[] }).tags ?? []
+  const tag = tags.find((candidate) => candidate.name === tagName)
+  if (!tag) throw new Error(`The definition has no <${tagName}>.`)
+  return [...(tag.attributes ?? []).map((attribute) => attribute.name), ...(tag.slots ?? []).map((slot) => slot.name || 'default')].sort()
+}
+
 /** A destructured default in compiled JS: `const { appearance = 'secondary' } = props`. */
 export function jsDestructuredDefault(js: string, prop: string): string {
   return find(js, new RegExp(`\\b${escape(prop)}\\s*=\\s*'([^']*)'`), `a default for ${prop}`)[1]!

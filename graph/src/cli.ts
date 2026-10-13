@@ -51,7 +51,7 @@ import {
   type DecisionFile,
 } from './decisions.ts'
 import { contextFor, renderWorkOrder } from './context.ts'
-import { forecastOverride } from './forecast.ts'
+import { forecastLabel, forecastOverride } from './forecast.ts'
 import { staleEvidence, type FreshnessRule } from './freshness.ts'
 import { gapsIn, renderGaps } from './gaps.ts'
 import { renderInstanceReview, reviewInstance } from './overrides.ts'
@@ -99,7 +99,7 @@ async function main(): Promise<number> {
     const unknown = (platforms ?? []).filter((platform) => !PLATFORMS.includes(platform))
     if (unknown.length > 0) return usage(`Unknown platform: ${unknown.join(', ')}`)
     for (const forecast of forecastOverride(await loadGraph(file), overrideId, platforms)) {
-      console.log(`${forecast.platform.padEnd(8)} ${forecast.outcome.padEnd(21)} ${forecast.reason}`)
+      console.log(`${forecastLabel(forecast).padEnd(8)} ${forecast.outcome.padEnd(21)} ${forecast.reason}`)
     }
     return 0
   }

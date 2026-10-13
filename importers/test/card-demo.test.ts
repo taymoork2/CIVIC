@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
-import { completenessOf, forecastOverride, indexGraph, reviewInstance, validateGraph, type GraphDocument } from '../../graph/src/index.ts'
+import { completenessOf, forecastLabel, forecastOverride, indexGraph, reviewInstance, validateGraph, type GraphDocument } from '../../graph/src/index.ts'
 
 // The committed Card demo outputs: `node demo/card/build.ts --check` proves they are what
 // the inputs produce; these tests pin what the demo must show (roadmap step 2, D29, D32).
 const load = (name: string) => JSON.parse(readFileSync(new URL(`../../demo/card/out/${name}.graph.json`, import.meta.url), 'utf8')) as GraphDocument
-const outcomes = (graph: ReturnType<typeof indexGraph>, id: string) => Object.fromEntries(forecastOverride(graph, id).map((forecast) => [forecast.platform, forecast.outcome]))
+const outcomes = (graph: ReturnType<typeof indexGraph>, id: string) => Object.fromEntries(forecastOverride(graph, id).map((forecast) => [forecastLabel(forecast), forecast.outcome]))
 const INSTANCE = 'instance:shop.order-summary.card'
 
 test('both Card graphs are valid with no warnings', () => {
@@ -14,14 +14,15 @@ test('both Card graphs are valid with no warnings', () => {
   assert.deepEqual(validateGraph(load('resolved')), [])
 })
 
-test('each override gets its own answer per platform: flexible web, brittle iOS', () => {
+test('each override gets its own answer per platform and framework: flexible React, brittle iOS', () => {
   const graph = indexGraph(load('raised'))
   // The real Fluent 2 web kit draws the header quick action and the footer by default, so
   // Shop using them is not an override. Turning on the header's checkbox is.
   assert.deepEqual(graph.ofKind('override').map((override) => override.id).sort(), ['override:shop.order-summary.card.corner-radius', 'override:shop.order-summary.card.state-selected'])
-  assert.deepEqual(outcomes(graph, 'override:shop.order-summary.card.state-selected'), { web: 'supported', ios: 'needs-library-change', android: 'needs-library-change' })
+  // Shop builds web with React and web components (decision 0011): React's selected prop doesn't help <fluent-card>.
+  assert.deepEqual(outcomes(graph, 'override:shop.order-summary.card.state-selected'), { 'web (react)': 'supported', 'web (web-components)': 'needs-library-change', 'ios (uikit)': 'needs-library-change', 'android (compose)': 'needs-library-change' })
   // Android's basicCardTokens can set a radius, but the contract forbids a local one everywhere.
-  assert.deepEqual(outcomes(graph, 'override:shop.order-summary.card.corner-radius'), { web: 'forbidden', ios: 'forbidden', android: 'forbidden' })
+  assert.deepEqual(outcomes(graph, 'override:shop.order-summary.card.corner-radius'), { 'web (react)': 'forbidden', 'web (web-components)': 'forbidden', 'ios (uikit)': 'forbidden', 'android (compose)': 'forbidden' })
 })
 
 test('every override is unreviewed drift until the maintainers decide, and the design is not yet adoptable', () => {
@@ -30,7 +31,7 @@ test('every override is unreviewed drift until the maintainers decide, and the d
   assert.ok(raised.items.every((item) => item.conflict?.alignment === 'unreviewed-drift' && !item.decision))
   assert.equal(raised.readiness, 'not-yet-adoptable')
   assert.deepEqual(raised.asked.map((owner) => owner.who), ['shop-design', 'design-system-maintainers'])
-  assert.deepEqual(raised.told.map((owner) => owner.who), ['fluent-android', 'fluent-ios', 'shop-engineering', 'shop-qa'])
+  assert.deepEqual(raised.told.map((owner) => owner.who), ['fluent-android', 'fluent-ios', 'fluent-web-components', 'shop-engineering', 'shop-qa'])
 })
 
 test('the resolved graph keeps the rejection and leaves the selectable Card undecided', () => {
@@ -53,7 +54,7 @@ test('the completeness check finds the missing loading, empty and error states, 
 test('platform evidence is static analysis read from Fluent source; design evidence is the Figma export', () => {
   const evidence = indexGraph(load('raised')).ofKind('evidence')
   assert.ok(evidence.every((item) => item.tier === 'static-analysis'))
-  assert.deepEqual(evidence.map((item) => item.source.importer).sort(), ['figma-file', 'figma-file', 'kotlin-source', 'react-types', 'swift-source'])
+  assert.deepEqual(evidence.map((item) => item.source.importer).sort(), ['custom-elements', 'figma-file', 'figma-file', 'kotlin-source', 'react-types', 'swift-source'])
 })
 
 test('the library Card\'s default footer, body and header action are raised where iOS CardView can\'t build them', () => {
