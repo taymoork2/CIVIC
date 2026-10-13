@@ -9,14 +9,16 @@ import { loadProject, checkedProject, checkedScenarios, projectPath } from '@civ
 import { reviewInventory } from './review-inventory.mjs'
 
 const repo = fileURLToPath(new URL('../../../', import.meta.url)).replace(/\/$/, '')
-const example = join(repo, 'packages/canvas/examples/notebook')
+// CIVIC's packages sit at the repository root (decision 0010), above the journey engine's source.
+const civic = fileURLToPath(new URL('../../../../../', import.meta.url)).replace(/\/$/, '')
+const example = join(civic, 'packages/canvas/examples/notebook')
 const clone = async () => { const root = await realpath(await mkdtemp(join(tmpdir(), 'rehearsal-project-check-'))); await cp(example, root, { recursive: true }); return root }
 const load = (root) => loadProject(repo, { manifest: join(root, 'civic.project.json') })
 
 test('portable init is explicit, non-overwriting and works outside a Laundry checkout', async () => {
   const root = await realpath(await mkdtemp(join(tmpdir(), 'rehearsal-init-check-')))
   await mkdir(join(root, 'src'))
-  const command = (args) => spawnSync(process.execPath, [join(repo, 'packages/vite-connector/src/review-project.mjs'), ...args], { cwd: repo, encoding: 'utf8' })
+  const command = (args) => spawnSync(process.execPath, [join(civic, 'packages/vite-connector/src/review-project.mjs'), ...args], { cwd: repo, encoding: 'utf8' })
   const args = ['init', '--root', root, '--name', 'Second app', '--id', 'second-app', '--source', 'src']
   const dry = command(args); assert.equal(dry.status, 0, dry.stderr); assert.equal(JSON.parse(dry.stdout).written, false)
   await assert.rejects(readFile(join(root, 'civic.project.json')), { code: 'ENOENT' })

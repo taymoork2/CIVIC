@@ -1,0 +1,9 @@
+node_modules/
+dist/
+coverage/
+.vite/
+.vite-runtime-*/
+.review-data/
+test-results/
+playwright-report/
+node_modules/

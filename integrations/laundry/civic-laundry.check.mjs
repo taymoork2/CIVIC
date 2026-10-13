@@ -24,12 +24,12 @@ function checkout() {
   return { app, git }
 }
 
-test('attach copies the adapter and links CIVIC packages without touching tracked files', { skip: !existsSync(join(civic, 'journey-engine/source/node_modules')) && 'CIVIC packages are not installed' }, () => {
+test('attach copies the adapter and links CIVIC packages without touching tracked files', { skip: !existsSync(join(civic, 'packages/node_modules')) && 'CIVIC packages are not installed' }, () => {
   const { app, git } = checkout()
   const run = attach(app)
   assert.equal(run.status, 0, run.stderr)
   for (const file of ['civic.project.json', 'apps/web/src/review/canvas-extension.ts', 'apps/web/scripts/review-plugin.mjs', 'apps/web/vite.review.config.ts', 'docs/design/review-product/coverage.json']) assert.ok(existsSync(join(app, file)), file)
-  for (const name of ['canvas', 'shell', 'vite-connector']) assert.equal(realpathSync(join(app, 'apps/web/node_modules/@civic', name)), realpathSync(join(civic, 'journey-engine/source/packages', name)))
+  for (const name of ['canvas', 'shell', 'vite-connector']) assert.equal(realpathSync(join(app, 'apps/web/node_modules/@civic', name)), realpathSync(join(civic, 'packages', name)))
   assert.equal(git('status', '--porcelain', '--untracked-files=no').toString(), '', 'no tracked file changes')
   assert.match(readFileSync(join(app, '.git/info/exclude'), 'utf8'), /\.review-data\//)
   assert.equal(git('status', '--porcelain', '--', '.review-data').toString(), '', 'review data stays out of git status')

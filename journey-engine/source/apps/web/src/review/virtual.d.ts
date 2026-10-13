@@ -1,4 +1,4 @@
-/// <reference path="../../../../packages/canvas/src/virtual.d.ts" />
+/// <reference path="../../../../../../packages/canvas/src/virtual.d.ts" />
 declare module 'virtual:rehearsal-laundry-routes' {
   export const routeTree: typeof import('../routeTree.gen').routeTree
 }

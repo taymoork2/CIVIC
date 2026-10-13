@@ -9,7 +9,8 @@ import { loadProject } from '@civic/vite-connector/project'
 import { reviewMiddleware } from '@civic/shell/server'
 import { laundryReviewAdapter } from './review-adapter.mjs'
 
-const template = resolve('../../packages/canvas/examples/notebook')
+// CIVIC's packages sit at the repository root (decision 0010).
+const template = resolve('../../../../packages/canvas/examples/notebook')
 test('picker connects without app writes, creates a playable starter, validates paths and retains host settings', async () => {
   const repo = await realpath(await mkdtemp(join(await realpath(tmpdir()), 'rehearsal-picker-')))
   await mkdir(join(repo, 'apps/web/examples'), { recursive: true })

@@ -8,7 +8,7 @@ You need Node.js 22 or newer, pnpm 12.5.1 and Google Chrome.
 
 ```sh
 git clone https://github.com/taymoork2/CIVIC.git && cd CIVIC     # or: git pull
-(cd journey-engine/source && pnpm install --frozen-lockfile)        # CIVIC's packages and their dependencies
+(cd packages && pnpm install --frozen-lockfile)        # CIVIC's packages and their dependencies
 ```
 
 ## Once per Laundry checkout or worktree

@@ -1,0 +1,20 @@
+{
+  "name": "civic-packages",
+  "private": true,
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "26.10.0",
+      "onFail": "ignore"
+    },
+    "packageManager": {
+      "name": "pnpm",
+      "version": "12.5.1",
+      "onFail": "ignore"
+    }
+  },
+  "scripts": {
+    "check": "pnpm --recursive run check",
+    "test": "pnpm --recursive run test"
+  }
+}

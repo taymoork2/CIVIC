@@ -47,12 +47,12 @@ const filesUnder = (root, path) => {
 
 /** Points app/apps/web/node_modules/@civic/<name> at this CIVIC checkout's package. pnpm install in Laundry removes the links, so review re-links. */
 function link() {
-  if (!existsSync(join(copy, 'node_modules'))) fail(`CIVIC's packages aren't installed. Run: (cd ${relative(process.cwd(), copy) || '.'} && pnpm install --frozen-lockfile)`)
+  if (!existsSync(join(civic, 'packages/node_modules'))) fail(`CIVIC's packages aren't installed. Run: (cd ${relative(process.cwd(), join(civic, 'packages')) || '.'} && pnpm install --frozen-lockfile)`)
   if (!existsSync(join(web, 'node_modules'))) fail(`Laundry's dependencies aren't installed. Run: (cd ${app} && pnpm install)`)
   const scope = join(web, 'node_modules/@civic')
   mkdirSync(scope, { recursive: true })
   for (const name of packages) {
-    const to = join(copy, 'packages', name)
+    const to = join(civic, 'packages', name)
     const at = join(scope, name)
     if (existsSync(at) || isLink(at)) {
       if (isLink(at) && resolve(scope, readlinkSync(at)) === to) continue
