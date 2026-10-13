@@ -48,14 +48,14 @@ Commits on `claude/project-thread-9en6l5`, in order:
 | `099b0db` | Shared run behaviour: accounts, offline recovery, viewport steps, team board proof |
 | `78658cf` | Laundry app and Convex synced to v11 for the family day |
 | `aec5859` | v11 family browser spec; offline writes kept as saved steps; faster settles for large runs; account switch seals the previous step first |
-| `a0b1acb` | Write identity, so a lost-answer resend runs once (Taymoor's finding), with the team board regression |
+| `a0b1acb` | Write identity, so a lost-answer resend runs once (the Local Codex finding), with the team board regression |
 | `4984688` | Workspace checks fitted to live family screens and v11's discard prompt |
 | `dd967b8` | Laundry evidence recaptured at `4984688` |
 
 ## Fixes found during acceptance
 
 - **Preview startup.** Restarting the review server killed only its `sh -c` wrapper. The `vite.js` child kept port 3010, so the new server failed with the port already in use, and the readiness probe was answered by the old server at an older commit. Restarts now stop the real listener. The server counts as ready only when its review index names HEAD, checked with 5-second request timeouts and a 90-second deadline.
-- **Lost answer, resent write** (Taymoor, reviewing `099b0db`):
+- **Lost answer, resent write.** Local Codex found this in its own independent inspection of `099b0db`, as part of the task Taymoor authorized. It was not a code review by a person. The fix:
   - Every write now carries its own identity, and a saved step keeps it when resent and when the run reopens.
   - The run journals the identity with the write's name, arguments and account. A resend with the same identity gets the recorded receipt back, and nothing executes again, across a reopen too.
   - Reusing an identity for a different write or account is refused, and so is a page acting as an account that is no longer active.
@@ -137,4 +137,12 @@ Taymoor relayed these as additive, separately attributed application and referen
 
   Seven exact React exports and 22 Local Codex writes. Claude Design imported 18 files at `closet-compact-reference-2026-10-12/`, with 17/17 listed hashes and 7/7 HTML and metrics pairs. The Claude renderer cannot reproduce its own 320px frame viewport, so that visual preview limit is separate from the source metrics.
 - **Owner-reported checks.** 22 unit tests and 3 focused browser cases pass. Mobile WebKit and installed Chrome Dev PWA checks pass at enlarged text, including offline relaunch and reconnect, on isolated QA 3011 (backend 3230/3231). These are the owner's, not CIVIC's acceptance.
-- **Release status.** The prepared build `phone-e841e19-1791844039133111000` is not released. The real frontend, backend and inventory are unchanged. Physical iPhone acceptance, including the sign-in error and Home Screen, is unresolved.
+- **Release status, first report.** The prepared build `phone-e841e19-1791844039133111000` was not released. The real frontend, backend and inventory were unchanged. Physical iPhone acceptance, including the sign-in error and Home Screen, was unresolved.
+- **Release status, later report (supersedes the first).** The app owner reports these results:
+  - a frontend-only cutover to `e841e19`, authorized by a person, with 96 matching assets;
+  - the existing backend and its state kept;
+  - zero mutations to real inventory;
+  - sign-in on the main installed PWA with the usual account passed, once an earlier mismatch between the QA origin and the main origin was clarified;
+  - Native Design's release card and `release-status.json` updated and inspected by the owner.
+
+  Physical installed-PWA navigation, search and rotation are still pending. These are application results the owner reported. They are not CIVIC acceptance, and the frozen v11 and its supplement are unchanged.

@@ -78,6 +78,17 @@ test('an app calling its own HTTP API runs live against an isolated copy of that
   await tab.getByRole('button', { name: 'Play this screen' }).click()
   const frame = tab.frameLocator('iframe[title="Live Task list"]')
   await frame.getByText('Water the plants').waitFor({ timeout: 20000 })
+  // Two navigations in one task, before the frame publishes the first: each is checked from the screen it left.
+  const rapid = await tab.locator('iframe[title="Live Task list"]').evaluate((element) => {
+    const win = element.contentWindow, doc = element.contentDocument, seen = []
+    const note = (event) => seen.push([event.detail.from, event.detail.to, event.detail.action])
+    win.addEventListener('rehearsal-transition', note)
+    const button = (name) => [...doc.querySelectorAll('button')].find((candidate) => candidate.textContent === name)
+    button('Add task').click(); button('Cancel').click()
+    win.removeEventListener('rehearsal-transition', note)
+    return seen
+  })
+  assert.deepEqual(rapid, [['tasks.list', 'tasks.add', 'Add task'], ['tasks.add', 'tasks.list', 'Cancel']])
   await frame.getByRole('button', { name: 'Add task' }).click()
   await frame.getByLabel('Title').fill('Call the plumber')
   await frame.getByRole('button', { name: 'Save' }).click()

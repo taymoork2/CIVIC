@@ -65,6 +65,71 @@ test('native saved steps survive actual disconnection, same-run switching and re
   await expect(app.getByText('Step 2 of 4', { exact: true })).toBeVisible()
 })
 
+test('one load goes from washing through drying to a partial and then full put-away in the same run', async ({ page }) => {
+  test.setTimeout(240000)
+  await page.setViewportSize({ width: 1280, height: 1000 })
+  await page.goto('/review?familyDay=1')
+  await page.getByRole('button', { name: 'Start 1,000-item run' }).click()
+  await expect(page.getByRole('button', { name: 'Disconnect app' })).toBeEnabled()
+  const app = page.frameLocator('iframe[title="Synthetic Laundry App"]')
+  await expect(app.getByRole('heading', { name: 'Laundry', exact: true })).toBeVisible()
+  const status = () => app.locator('body').evaluate(() => window.reviewRuntime!.status())
+  const screen = () => app.locator('body').evaluate(() => window.reviewPreview!.state()?.screen)
+  const { run, subject } = await status()
+  const project = await app.locator('body').evaluate(async () => (await window.reviewPreview!.recording!()).project)
+  // The run's own records, read as the acting account through the run service.
+  const query = async (name: string, args: unknown) => {
+    const response = await page.request.post('/api/review/runtime', { headers: { 'x-rehearsal-project': project }, data: { action: 'query', run, actor: subject, name, args } })
+    expect(response.ok()).toBe(true)
+    return response.json()
+  }
+  const householdId = (await query('households:onboardingStatus', {})).households[0].householdId as string
+  const pieces = async () => (await query('inventory:list', { householdId })).textiles as { textileId: string; status: string }[]
+  const before = await pieces()
+  const clean = (rows: { status: string }[]) => rows.filter((row) => row.status === 'clean').length
+  // The frame sits in a scrolling workspace; bring the app's controls into view before each tap.
+  const tap = async (name: string | RegExp) => { await page.mouse.move(1200, 800); await page.mouse.wheel(0, 900); await app.getByRole('button', { name, exact: typeof name === 'string' }).click() }
+  await tap('Sort 1000 pieces into loads')
+  await tap('Review next load')
+  await tap('I’m at the laundry room')
+  await tap(/^Confirm recipe for/)
+  await tap('See what goes in')
+  await tap(/^(Start|Continue) preparation$/)
+  for (const step of [1, 2, 3]) {
+    await expect(app.getByText(`Step ${step} of 4`, { exact: true })).toBeVisible()
+    await tap('Done · next step')
+  }
+  await expect(app.getByText('Step 4 of 4', { exact: true })).toBeVisible()
+  await app.getByLabel(/^Minutes shown on/).fill('40')
+  await tap(/^I’ve started/)
+  await expect.poll(screen).toBe('family.washing')
+  await page.getByRole('button', { name: 'Advance synthetic time 40 min' }).click()
+  await expect(app.getByRole('heading', { name: 'Take it out and hang it' })).toBeVisible()
+  await tap('It’s hanging')
+  await tap('Move to drying queue')
+  await expect.poll(screen, { timeout: 30000 }).toBe('family.drying')
+  await tap('Hang 20 pieces to dry')
+  await tap(/20 pieces · .*Check when dry$/)
+  await expect(app.getByRole('heading', { name: 'Is it dry?' })).toBeVisible()
+  // Partial: one piece stays damp and keeps drying; the other 19 are put away.
+  await tap(/^Fewer dry /)
+  await tap('Put away 19 · keep 1 drying')
+  await expect(app.getByRole('heading', { name: 'Not dry yet' })).toBeVisible()
+  await tap('Put away 19 pieces')
+  await expect.poll(async () => clean(await pieces()) - clean(before), { timeout: 30000 }).toBe(19)
+  await tap(/1 piece · .*Check when dry$/)
+  await tap('Put away 1 dry piece')
+  await tap('Put away 1 piece')
+  await expect(app.getByRole('heading', { name: 'No clothes to dry right now' })).toBeVisible()
+  await expect.poll(async () => clean(await pieces()) - clean(before), { timeout: 30000 }).toBe(20)
+  // Same run and the same original pieces throughout: nothing was replaced or reset.
+  const after = await pieces()
+  expect(after.map((row) => row.textileId)).toEqual(before.map((row) => row.textileId))
+  expect(after).toHaveLength(1000)
+  expect((await status()).run).toBe(run)
+  expect(await app.locator('#review-root').getAttribute('data-rehearsal-run-error')).toBeNull()
+})
+
 test('family day starts with a private 1000-piece run and exposes same-run account and connection controls', async ({ page }) => {
   await page.goto('/review?familyDay=1')
   await expect(page.getByRole('heading', { name: 'Synthetic laundry day' })).toBeVisible()

@@ -63,6 +63,9 @@ try {
   const { mount } = await import('virtual:civic-preview')
   if (typeof mount !== 'function') throw Error('The project preview entry must export mount(container, context).')
   let state: AdapterState | null = null
+  // The screen the app is on as far as it has told the frame: each publish, and each transition the moment it is reported.
+  // A transition is checked from here, not from the last published state, which follows only after the app settles.
+  let at: string | null = null
   let runtimeBridge: RuntimeBridge | undefined
   let mounted = false
   let stopRuntime: (() => void) | undefined
@@ -79,16 +82,18 @@ try {
     publish(next) {
       if (!index.scenarios.some((s) => s.id === next.screen)) throw Error(`Unmapped adapter screen: ${next.screen}`)
       state = { screen: next.screen, dirty: Boolean(next.dirty), pending: Boolean(next.pending), title: index.scenarios.find((s) => s.id === next.screen)!.label, fields: fields(next.screen) }
+      at = state.screen
       if (mounted && !restoring) root.dataset.rehearsalReady = 'true'
       window.dispatchEvent(new CustomEvent('rehearsal-state', { detail: state }))
     },
     transition(destination, action, origin = 'app') {
       if (runtimeBridge?.isReplaying()) return
-      if (!state) throw Error('Publish the current state before reporting a transition.')
-      const from = index.scenarios.find((s) => s.id === state!.screen)
+      if (!state || !at) throw Error('Publish the current state before reporting a transition.')
+      const from = index.scenarios.find((s) => s.id === at)
       if (!from?.edges?.some((edge) => edge.destination === destination && edge.action === action) || !index.scenarios.some((s) => s.id === destination)) throw Error('Transition is not a registered project edge.')
-      const current = { ...state, fields: fields(state.screen) }
-      window.dispatchEvent(new CustomEvent('rehearsal-transition', { detail: { from: state.screen, to: destination, action, origin, state: current } }))
+      const current = from.id === state.screen ? { ...state, fields: fields(state.screen) } : { screen: from.id, dirty: false, pending: false, title: from.label, fields: fields(from.id) }
+      at = destination
+      window.dispatchEvent(new CustomEvent('rehearsal-transition', { detail: { from: from.id, to: destination, action, origin, state: current } }))
     },
     connectRuntime(ports) {
       if (stopRuntime) throw Error('This frame already has an application runtime.')
@@ -124,8 +129,9 @@ try {
       runtimeBridge = bridge
       const publish = () => {
         const screen = ports.screen(), entry = index.scenarios.find((scenario) => scenario.id === screen)
-        if (!entry) { state = { screen, dirty: false, pending: false, title: `Unmapped route: ${screen}`, fields: captured() }; delete root.dataset.rehearsalReady; window.dispatchEvent(new CustomEvent('rehearsal-state', { detail: state })); throw Error(`Unmapped application route: ${screen}`) }
+        if (!entry) { state = { screen, dirty: false, pending: false, title: `Unmapped route: ${screen}`, fields: captured() }; at = screen; delete root.dataset.rehearsalReady; window.dispatchEvent(new CustomEvent('rehearsal-state', { detail: state })); throw Error(`Unmapped application route: ${screen}`) }
         state = { screen, dirty: false, pending: false, ...ports.status?.(), title: entry.label, fields: captured() }
+        at = screen
         if (window.reviewPreview) window.reviewPreview.config = { ...config, scenario: screen }
         if (mounted && !restoring && !bridge.isReplaying()) root.dataset.rehearsalReady = 'true'
         window.dispatchEvent(new CustomEvent('rehearsal-state', { detail: state }))
