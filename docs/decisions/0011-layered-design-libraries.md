@@ -1,4 +1,4 @@
-# 0011: Design files are layered, and components are matched by published key
+# 0011: Design and code libraries are layered, and components are matched by published identity
 
 - **Status:** Accepted
 - **Date:** 2026-10-13
@@ -25,6 +25,9 @@ What it doesn't do:
 - **Only one library per product read.** A product that uses the component library and its own shared library can't say which instance came from which.
 - **No product-level components.** A product's shared `Order summary card` that wraps a library Card is read only where it is placed, so the same overrides are counted once per placement and nobody sees it is one component.
 - **Detaches and forks are invisible.** The schema has `change: 'detach'` and the forecast treats it as a fork, but no importer emits it. A detached instance is a plain frame in a REST export, with no trace of where it came from.
+- **No framework.** A platform component names its platform (`web`, `ios`, `android`, `desktop`) and package, but not its framework. A React and an Angular implementation of Card are both `web`, and the forecast (`graph/src/forecast.ts`) looks for an extension point among all of a platform's components, so a slot that only React has makes the override Supported for an Angular product too.
+- **Products don't declare which code libraries they use.** The product manifest lists platforms, not the packages and versions it builds with, so the forecast and `civic release` can't say which implementation a product's code depends on.
+- **Code instances aren't read.** The schema allows `origin: 'code'` instances, but no importer reads a product's code for uses of a library component, its props and slots, or wrappers and copies of it.
 - **No design library versions.** The library file's version is recorded on its evidence, but nothing says which version a product file uses or what a library publish changes for each product.
 
 ## Decision
@@ -37,18 +40,22 @@ What it doesn't do:
    - With the Figma plugin ([later](../roadmap.md#later-not-scheduled)), a detach is read directly and recorded as an override with `change: 'detach'` on an instance of the component it came from.
    - Without it, CIVIC compares local components and frames with the consumed libraries' components by name and structure, and records a match as an **inferred** fork that a person confirms, the same way crawled states are confirmed (D34).
    - A confirmed fork goes through the existing D29 flow: forecast (a fork is never expressed by an extension point), owners asked and told, and a decision. Promoting it into the library is the usual way out.
-6. **A library publish is a design release.** When a consumed library file gets a new version, CIVIC re-reads every product file that consumes it against the new keys and defaults, as `civic release` does for code: removed keys orphan instances, changed defaults re-run the forecast and the library-default check, and each affected product's owners are told.
+6. **Code follows the same lineage.** Each code library is one implementation of the semantic contract, named by platform and **framework** (React, Angular, Vue, Web Components, SwiftUI, UIKit, Compose, Android Views and so on; free text). A platform component records its framework, and a product declares the code libraries it builds with, by package and version range, per platform. The forecast answers per platform and framework the product ships with, so an Angular product never borrows React's slots. Two frameworks on one platform get two answers, never merged, as platforms are today.
+7. **Product code is read like the product file.** A code importer reads a product's uses of a library component (package and symbol, from imports, not names), the props and slots it sets, and the product's own wrappers and copies. Each use is a `code` instance on the screen it renders on, so design and code instances of the same screen can be compared. A wrapper is the code twin of a product shared component (read once, placements as instances). A copied or vendored component is a code fork: drift with an owner, found by import provenance, with a person confirming any inferred match.
+8. **A library publish is a design release.** When a consumed library file gets a new version, CIVIC re-reads every product file that consumes it against the new keys and defaults, as `civic release` does for code: removed keys orphan instances, changed defaults re-run the forecast and the library-default check, and each affected product's owners are told.
 
 ## Consequences
 
 - The Card demo keeps working with no new files: its stand-in product file already carries `key` and `remote` for each component, and the Fluent kit is one file in both the design system and component library roles.
 - Two libraries with the same component names, and a product's local copy of a library component, no longer get confused.
 - Forks are visible as drift with an owner instead of disappearing into plain frames, which is the composability warning sign the spec asks CIVIC to measure.
+- A team with React and Angular libraries sees which one blocks an override, and a library release names the products that build with it.
 - Detecting a detach exactly needs the Figma plugin. Until a team that designs in Figma uses CIVIC, forks are found by an inferred match and a person's confirmation.
 
 ## Order of building
 
-1. Match by published key and record each instance's library provenance; declare layers and consumed files in the product manifest. Add a second, product-level library to the Card demo's stand-in file.
+1. Match design instances by published key and record each instance's library provenance; declare layers and consumed files in the product manifest. Add a second, product-level library to the Card demo's stand-in file.
 2. Product shared components read once, placements as instances.
-3. Inferred forks with confirmations, then design library releases.
-4. Exact detaches through the Figma plugin, when it is scheduled.
+3. Framework on platform components, the product's declared code libraries, and the forecast per framework. A second web framework for the Card demo shows two answers on one platform.
+4. A product code importer for React first (imports, props, slots, wrappers), then inferred forks in design and code with confirmations, then design library releases.
+5. Exact detaches through the Figma plugin, when it is scheduled.
