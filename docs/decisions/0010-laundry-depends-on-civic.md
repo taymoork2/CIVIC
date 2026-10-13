@@ -26,8 +26,8 @@ There were three options:
 
 1. **The dependency runs one way: Laundry depends on CIVIC.** CIVIC never imports, vendors or tests Laundry's source. Laundry's repository owns its adapter, its `civic.project.json`, its canvas extension and its review data.
 2. **CIVIC's engine packages move to a CIVIC workspace at the repository root** (`packages/canvas`, `packages/shell`, `packages/vite-connector`, with the canvas examples). The engine's handoff documents stay under `journey-engine/` as history.
-3. **Laundry installs them from git, pinned to a CIVIC commit**, as dev dependencies with all three on the same commit. For working on both at once, Laundry points them at a local CIVIC checkout with a `pnpm` override that isn't committed. CIVIC doesn't publish to a registry until a team outside this one needs it.
-4. **Laundry loads CIVIC only in review.** Its Vite config imports the review plugin only when `WASHCLOSET_REVIEW=1`, so production builds and deploys never need CIVIC installed.
+3. **First, a local link; later, a git install.** `bin/civic-laundry attach <checkout>` ([integrations/laundry](../../integrations/laundry)) copies the adapter into any Laundry checkout or worktree and links the three packages from a local CIVIC checkout into its `node_modules`, changing none of Laundry's tracked files; `bin/civic-laundry review <checkout>` runs review there. Once Laundry commits the adapter, it installs the packages from git as dev dependencies, all three pinned to the same CIVIC commit, and keeps the local link for working on both at once. CIVIC doesn't publish to a registry until a team outside this one needs it.
+4. **Laundry loads CIVIC only in review.** Review runs from its own Vite config, `apps/web/vite.review.config.ts`, which extends Laundry's `vite.config.ts`, so production builds and deploys never need CIVIC installed.
 5. **The bridge to CIVIC's CLI is CIVIC's, not Laundry's.** What `review-civic.mjs` does moves into `@civic/vite-connector`, which finds the CLI through the installed package or `CIVIC_ROOT`, not a relative path. Review records stay in the reviewed repository's git common directory (D39), so Laundry's notes live in Laundry's repository and reach a team through `civic sync`.
 6. **Laundry's evidence comes from Laundry's checkout.** `projects/laundry/capture.ts` takes the path to a Laundry checkout, runs Laundry's specs there, and stamps inputs with Laundry's commit. The freshness rule compares that commit with the checkout's when one is given, and otherwise reports the evidence's age without failing. Laundry's design references come in the same way, as `civic.design/0` files or render receipts read from Laundry's checkout rather than handed over.
 7. **CIVIC proves its seams without Laundry.** Before the copy is removed, CIVIC adds a small function-backend example with a canvas extension and a guided run, beside Notebook, Tasks, Team board and Reading list. Those examples are CIVIC's contract tests; Laundry's suite is Laundry's.
@@ -41,6 +41,7 @@ There were three options:
 
 ## Order
 
+0. *Built:* `bin/civic-laundry attach` and `review` run CIVIC's canvas on a Laundry checkout outside CIVIC's tree, reading that checkout's source and commit, with CIVIC's CLI found through `CIVIC_ROOT`.
 1. Move the three packages and their examples to the root workspace. `journey-engine/source` links them, so Laundry's copy still runs while the rest moves. Signoff stays green.
 2. Move the CLI bridge into `@civic/vite-connector`, and add the function-backend example with a canvas extension.
 3. Prove the git install: an empty app outside CIVIC installs the three packages from a CIVIC commit and opens in `civic-canvas`.
