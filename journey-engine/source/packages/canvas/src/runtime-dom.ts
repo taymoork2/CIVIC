@@ -63,7 +63,9 @@ export async function replayGesture(root: HTMLElement, gesture: RuntimeGesture) 
 }
 export function observeRuntime(root: HTMLElement, bridge: RuntimeBridge, changed: () => void, failed: (error: Error) => void, inputAllowed: (name: string) => boolean) {
   const record = (event: Event) => {
-    if (!event.isTrusted || bridge.isReplaying()) return
+    if (!event.isTrusted) return
+    // A replay drives the app itself; a person's input must not interleave with it.
+    if (bridge.isReplaying() || root.ownerDocument.getElementById('review-root')?.dataset.rehearsalReplaying === 'true') { event.preventDefault(); event.stopImmediatePropagation(); return }
     if (event.type === 'pointerdown') { bridge.prepare(); return }
     if (event.type === 'beforeinput') { const element = (event.target as Element).closest<HTMLElement>(selector); if (element) bridge.prepare(targetOf(root, element)); return }
     if (event instanceof KeyboardEvent) {

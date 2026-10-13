@@ -35,8 +35,17 @@ for (const branch of ['new', 'pre-owned']) test(`towel ${branch} branch captures
 })
 
 test('proposal commands are part of the shared tape and replay without discarding the towel draft', async ({ page }) => {
+  // The screen can render before the first backend state has settled.
+  let delayState = true
+  await page.route('**/api/review/runtime', async (route) => {
+    const input = route.request().postDataJSON()
+    if (input?.action === 'state' && delayState) { delayState = false; await new Promise(resolve => setTimeout(resolve, 700)) }
+    await route.continue()
+  })
   await page.goto('/review-frame.html?scenario=intake.towel.fabric&journey=towel')
   await expect(page.getByLabel('Other material 1', { exact: true })).toBeVisible()
+  await expect(page.locator('#review-root')).toHaveAttribute('data-rehearsal-ready', 'true')
+  await expect(page.locator('body')).not.toHaveAttribute('inert', '')
   await page.getByLabel('Other material 1', { exact: true }).fill('Proposal cotton')
   await page.evaluate(() => window.guidedJourney!.setPresentation({ fabric: { title: 'Your towel fibers', action: 'Try this composition', color: '#123456' } }, 7))
   await expect(page.getByRole('heading', { name: 'Your towel fibers' })).toBeVisible()

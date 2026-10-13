@@ -27,7 +27,7 @@ export const beginSoak = mutation({
     if (!Number.isFinite(args.waterLitres) || args.waterLitres < 0.1 || args.waterLitres > 50 || !Number.isFinite(args.temperatureC) || args.temperatureC < 0 || args.temperatureC > action.soak.maximumTemperatureC) fail('invalid', 'Check measured water volume and the recorded temperature limit')
     if (timeline.actions.some((candidate) => candidate.order < action.order && candidate.status === 'pending')) fail('conflict', 'Finish the earlier preparation step first')
     const [supply] = (await related(ctx, session.householdId, { supplyIds: [action.supplyId] })).supplies as [Doc<'supplies'>]
-    const actor = await principalFromAuth(ctx.auth)
+    const actor = await principalFromAuth(ctx)
     const at = Date.now()
     const amount = action.dose.amount * args.waterLitres / action.soak.waterLitres
     if (!Number.isFinite(amount) || amount <= 0) fail('invalid', 'A measured label dose is required')
@@ -101,7 +101,7 @@ export const recordAction = mutation({
     }
 
     const session = (await authorize(ctx, 'session.run', { sessionId: args.sessionId })).session
-    const actor = await principalFromAuth(ctx.auth)
+    const actor = await principalFromAuth(ctx)
     if (args.receiptId !== undefined && !/^[a-zA-Z0-9-]{16,100}$/.test(args.receiptId)) fail('invalid', 'Invalid step receipt')
     const receiptPayload = JSON.stringify([args.status, args.at ?? null, args.minutes ?? null, args.usage === undefined ? null : [args.usage.supplyId, args.usage.amount, args.usage.unit, mark ?? null, args.usage.placement, ...(args.usage.fractionOfMark === undefined ? [] : [args.usage.fractionOfMark]), ...(args.usage.target === undefined && args.usage.approximate === undefined ? [] : [args.usage.target ?? null, args.usage.approximate ?? null])]])
     const timeline = await ctx.db.query('timelines').withIndex('by_session', (q) => q.eq('sessionId', session._id)).unique()
@@ -231,7 +231,7 @@ export const skipDrying = mutation({
     const timeline = await runningTimeline(ctx, session)
     const pending = timeline.actions.filter((action) => isDryerPhase(action.phase) && action.status === 'pending')
     if (pending.length === 0) return { sessionId: session._id, skipped: 0 }
-    const actor = await principalFromAuth(ctx.auth)
+    const actor = await principalFromAuth(ctx)
     const occurredAt = Date.now()
     const skipped = new Set(pending.map((action) => action.id))
     const actions = timeline.actions.map((action) => (skipped.has(action.id) ? { ...action, status: 'skipped' as const, recordedAt: occurredAt, recordedBy: actor.key } : action))

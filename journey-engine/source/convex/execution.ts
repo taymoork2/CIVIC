@@ -574,7 +574,7 @@ export const recordDrumFullness = mutation({
 
     const now = Date.now()
     if (fullness.status === 'pending') {
-      const actor = await principalFromAuth(ctx.auth)
+      const actor = await principalFromAuth(ctx)
       actions[actions.findIndex((action) => action.id === fullness.id)] = { ...fullness, status: 'confirmed', recordedAt: now, recordedBy: actor.key }
       await recordHistory(ctx, session, fullness.id, 'confirmed', actor.key, now)
     }

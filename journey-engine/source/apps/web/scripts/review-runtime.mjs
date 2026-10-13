@@ -11,8 +11,9 @@ async function moduleFiles(root) {
 }
 
 /** Laundry's isolated runs: CIVIC's run service with its Convex functions indexed for convex-test. */
-export function runtimeService(project, source) {
+export function runtimeService(project, source, { dataDir } = {}) {
   return civicRuntime(project, source, {
+    dataDir,
     root: web,
     aliases: { 'convex-test': join(web, '../../convex/node_modules/convex-test/dist/index.js') },
     async modules() {

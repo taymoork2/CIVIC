@@ -166,6 +166,7 @@ export const hubScreenText = {
   loadOf: (number: number, count: number) => `Load ${number} of ${count}`,
   selectToSort: 'Select pieces to sort',
   sortIntoLoads: (count: number) => `Sort ${count} ${count === 1 ? 'piece' : 'pieces'} into loads`,
+  sort: 'Sort into loads',
 } as const
 
 export const runningScreenText = {

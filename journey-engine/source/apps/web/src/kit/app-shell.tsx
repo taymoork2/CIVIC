@@ -79,15 +79,17 @@ const appMainClassName = cn(
   "[.app-shell:has(.account-page)_&]:p-0",
 )
 
-/** The floating frosted dock: 64px tall, five equal tabs, centred in the same column as the page. */
+/** Five tabs; enlarged labels reflow without hiding destinations or shrinking text. */
 const tabsClassName = cn(
   "tabs",
-  "fixed min-w-0 mx-auto h-[var(--bar-h)] max-w-[calc(45rem_-_2_*_var(--gutter))] px-1.5 rounded-card",
+  "@container/navigation fixed flex min-w-0 items-center mx-auto min-h-16 max-w-[calc(45rem_-_2_*_var(--gutter))] px-[6px] rounded-card",
   "min-[45rem]:max-w-[32.5rem]",
   "[inset-block-end:var(--bar-bottom)]",
   "[inset-inline:var(--gutter)]",
   "[z-index:30]",
-  "[&_ul]:flex [&_ul]:h-full [&_ul]:items-center [&_ul]:overflow-x-auto [&_ul]:overscroll-x-contain [&_li]:flex-1 [&_li]:min-w-max",
+  "[&_ul]:flex [&_ul]:h-full [&_ul]:w-full [&_ul]:items-center [&_ul]:overflow-x-auto [&_ul]:overscroll-x-contain [&_li]:flex-1 [&_li]:min-w-max",
+  "@max-[16em]/navigation:[&_ul]:grid @max-[16em]/navigation:[&_ul]:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.4fr)] @max-[16em]/navigation:[&_ul]:gap-y-1 @max-[16em]/navigation:[&_ul]:py-1",
+  "@max-[16em]/navigation:[&_li]:min-w-0 @max-[16em]/navigation:[&_li:nth-child(4)]:col-span-2 @max-[16em]/navigation:[&_a]:px-0",
   "max-[360px]:[&_li:nth-child(4)]:flex-[1.3]",
   "[&_a]:flex [&_a]:flex-col [&_a]:items-center [&_a]:justify-center [&_a]:gap-[3px] [&_a]:w-full [&_a]:min-h-12 [&_a]:rounded-control [&_a]:text-ink-2 [&_a]:no-underline [&_a]:font-semibold [&_a]:select-none",
   "[&_a]:text-[length:var(--type-dock)]",
@@ -218,10 +220,15 @@ export function AppShell({ brand, navigation, status, dock, focus = false, child
   const navRef = useRef<HTMLElement>(null)
   useEffect(() => setHydrated(true), [])
   useEffect(() => {
-    const list = navRef.current?.querySelector('ul')
+    const nav = navRef.current
+    const shell = nav?.closest<HTMLElement>('.app-shell')
+    const list = nav?.querySelector('ul')
     const current = list?.querySelector<HTMLElement>('[aria-current="page"]')
-    if (!list || !current) return
+    if (!nav || !shell || !list) return
     const revealCurrent = () => {
+      // Every fixed surface above the dock reserves its actual reflowed height.
+      shell.style.setProperty('--bar-h', `${Math.ceil(nav.getBoundingClientRect().height)}px`)
+      if (!current) return
       const bounds = list.getBoundingClientRect()
       const tab = current.getBoundingClientRect()
       if (tab.left < bounds.left) list.scrollLeft += tab.left - bounds.left
@@ -230,9 +237,9 @@ export function AppShell({ brand, navigation, status, dock, focus = false, child
     revealCurrent()
     if (typeof ResizeObserver === 'undefined') return
     const resize = new ResizeObserver(revealCurrent)
-    resize.observe(list)
-    return () => resize.disconnect()
-  }, [navigation])
+    resize.observe(nav)
+    return () => { resize.disconnect(); shell.style.removeProperty('--bar-h') }
+  }, [navigation, focus])
   return (
     // Keep server-rendered controls visible but inert until their handlers are attached.
     <div inert={!hydrated} className={cn(appShellClassName, focus ? 'is-focus' : '', navigation === undefined ? '' : 'has-navigation')}>

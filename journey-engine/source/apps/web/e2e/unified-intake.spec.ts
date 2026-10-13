@@ -64,11 +64,11 @@ test('empty Laundry keeps one intake through the first save, repeats, keeps answ
   await sheet.getByRole('button', { name: /^Add something else/ }).click()
   await sheet.getByRole('button', { name: 'Socks', exact: true }).click()
   await sheet.getByRole('button', { name: 'Close', exact: true }).click()
-  await expect(sheet.getByRole('button', { name: 'Keep editing', exact: true })).toBeVisible()
-  await sheet.getByRole('button', { name: 'Keep editing', exact: true }).click()
+  await expect(page.getByRole('alertdialog', { name: 'Discard your changes?', exact: true }).getByRole('button', { name: 'Keep editing', exact: true })).toBeVisible()
+  await page.getByRole('alertdialog', { name: 'Discard your changes?', exact: true }).getByRole('button', { name: 'Keep editing', exact: true }).click()
   await expect(sheet.getByRole('heading', { name: 'Whose is it?' })).toBeVisible()
   await sheet.getByRole('button', { name: 'Close', exact: true }).click()
-  await sheet.getByRole('button', { name: 'Discard', exact: true }).click()
+  await page.getByRole('alertdialog', { name: 'Discard your changes?', exact: true }).getByRole('button', { name: 'Discard', exact: true }).click()
   await expect(page.getByRole('dialog')).toHaveCount(0)
 
   // Stored facts: four pieces in the hamper; "new" only where it was said, unknown stays unknown.

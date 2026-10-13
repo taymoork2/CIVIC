@@ -29,6 +29,20 @@ test('photos still carrying camera metadata are detected', () => {
   expect(hasEmbeddedMetadata(bytes([0xff, 0xd8, ...jfif, ...exif, ...startOfScan]), 'image/jpeg')).toBe(true)
 })
 
+test('malformed chunk lengths fail closed and never stall', () => {
+  const webp = new Uint8Array(20)
+  webp.set(new TextEncoder().encode('RIFF\0\0\0\0WEBPJUNK'))
+  webp.set([0xf8, 0xff, 0xff, 0xff], 16)
+  expect(hasEmbeddedMetadata(webp, 'image/webp')).toBe(true)
+  webp.set([0xff, 0xff, 0xff, 0x7f], 16)
+  expect(hasEmbeddedMetadata(webp, 'image/webp')).toBe(true)
+  expect(hasEmbeddedMetadata(bytes([0xff, 0xd8, 0xff, 0xe0, 0, 0]), 'image/jpeg')).toBe(true)
+  expect(hasEmbeddedMetadata(bytes([0xff, 0xd8, 0xff, 0xe0, 0xff, 0xff]), 'image/jpeg')).toBe(true)
+  expect(hasEmbeddedMetadata(bytes([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0xff, 0xff, 0xff, 0xff, 0x49, 0x44, 0x41, 0x54]), 'image/png')).toBe(true)
+  webp.set([0, 0, 0, 0], 16)
+  expect(hasEmbeddedMetadata(webp, 'image/webp')).toBe(false)
+})
+
 test('view links expire, cannot be altered, and name their viewer', async () => {
   const now = 1_000_000
   const token = await signViewToken({ photoId: 'photo-1', principalKey: 'principal:v1:viewer', expiresAt: now + 60_000 })
@@ -48,7 +62,7 @@ const cleanJpeg = () => new Blob([bytes([0xff, 0xd8, ...jfif, ...startOfScan])],
 async function householdWithPhoto(t: Backend) {
   const owner = signedIn(t, 'photo-owner')
   const home = await intakeHousehold(owner)
-  const ownerKey = await owner.run((ctx) => principalFromAuth(ctx.auth).then((principal) => principal.key as string))
+  const ownerKey = await owner.run((ctx) => principalFromAuth(ctx).then((principal) => principal.key as string))
   const storageId = await t.run((ctx) => ctx.storage.store(cleanJpeg()))
   const photoId = await owner.action(api.photos.attach, { textileId: home.shirt, storageId })
   return { owner, home, photoId, storageId, ownerKey }
@@ -75,6 +89,33 @@ test('an upload that fails validation after authorization is deleted', async () 
   const withExif = await t.run((ctx) => ctx.storage.store(new Blob([bytes([0xff, 0xd8, ...jfif, ...exif, ...startOfScan])])))
   await expect(owner.action(api.photos.attach, { textileId: home.shirt, storageId: withExif })).rejects.toThrow('camera metadata')
   expect(await stored(t, withExif)).toBe(false)
+})
+
+test('photo retries return the original reference and rejected cleanup never deletes attached bytes', async () => {
+  const t = newBackend(), { owner, home, photoId, storageId } = await householdWithPhoto(t)
+  expect(await owner.action(api.photos.attach, { textileId: home.shirt, storageId })).toBe(photoId)
+  await owner.mutation(internal.photos.discardRejected, { textileId: home.towel, storageId })
+  expect(await stored(t, storageId)).toBe(true)
+  expect(await owner.query(api.photos.list, { textileId: home.shirt })).toHaveLength(1)
+})
+
+test('the photo commit rechecks current permission and attachment limits', async () => {
+  const t = newBackend(), owner = signedIn(t, 'photo-commit'), home = await intakeHousehold(owner)
+  const storageId = await t.run(ctx => ctx.storage.store(cleanJpeg()))
+  await owner.query(internal.photos.uploadContext, { textileId: home.shirt, storageId })
+  const args = { textileId: home.shirt, storageId, contentType: 'image/jpeg', size: cleanJpeg().size }
+  const photoId = await owner.mutation(internal.photos.insertPhoto, args)
+  expect(await owner.mutation(internal.photos.insertPhoto, args)).toBe(photoId)
+  await expect(owner.mutation(internal.photos.insertPhoto, { ...args, textileId: home.towel })).rejects.toThrow('already attached')
+  for (let i = 0; i < 2; i++) {
+    const next = await t.run(ctx => ctx.storage.store(cleanJpeg()))
+    await owner.mutation(internal.photos.insertPhoto, { ...args, storageId: next })
+  }
+  const next = await t.run(ctx => ctx.storage.store(cleanJpeg()))
+  await expect(owner.mutation(internal.photos.insertPhoto, { ...args, storageId: next })).rejects.toThrow('at most 3')
+  await t.run(async ctx => { for (const membership of await ctx.db.query('memberships').collect()) await ctx.db.delete(membership._id) })
+  await expect(owner.mutation(internal.photos.insertPhoto, { ...args, storageId: next, textileId: home.towel })).rejects.toThrow('Forbidden')
+  expect(await t.run(ctx => ctx.db.query('carePhotos').collect())).toHaveLength(3)
 })
 
 test('delivery requires current membership, so removal ends photo access', async () => {

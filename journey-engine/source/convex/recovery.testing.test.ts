@@ -11,12 +11,12 @@ test('relocated accounts keep their captured identity while other issuers and ou
   const before = await keyOf(owner)
   vi.stubEnv('CONVEX_SITE_URL', 'http://localhost:3231')
   vi.stubEnv('WASHCLOSET_PRINCIPAL_ISSUER', issuer)
-  const restored = t.withIdentity({ issuer: 'http://localhost:3231', subject: 'restored-owner' })
+  const restored = signedIn(t, 'restored-owner', { issuer: 'http://localhost:3231' })
   expect(await restored.query(api.principal.current, {})).toBe(before)
   expect((await restored.query(api.inventory.list, { householdId: home.householdId })).textiles.length).toBeGreaterThan(0)
-  await expect(t.withIdentity({ issuer: 'http://localhost:3231', subject: 'outsider' }).query(api.inventory.list, { householdId: home.householdId })).rejects.toThrow('Forbidden')
+  await expect(signedIn(t, 'outsider', { issuer: 'http://localhost:3231' }).query(api.inventory.list, { householdId: home.householdId })).rejects.toThrow('Forbidden')
   await expect(t.query(api.inventory.list, { householdId: home.householdId })).rejects.toThrow('Unauthenticated')
-  expect(await t.withIdentity({ issuer: 'http://other-provider', subject: 'restored-owner' }).query(api.principal.current, {})).not.toBe(before)
+  expect(await signedIn(t, 'restored-owner', { issuer: 'http://other-provider' }).query(api.principal.current, {})).not.toBe(before)
 })
 
 test('restore reconstruction is gated, idempotent and preserves cancelled/sent reminders and revoked access', async () => {

@@ -58,7 +58,7 @@ export type { DryingHoldOut, DryingLoadInput, DryingNote, DryingOmission, Drying
 export { compileDirections, directionsCoverage, doseProblem, measureProblem, rowTextFor } from './directions.ts'
 export type { CompiledRule, CompileResult, DirectionsCell, DirectionsRow, DirectionsTable, SupplyMeasure } from './directions.ts'
 
-export const plannerVersion = 'planner-v2.22' as const
+export const plannerVersion = 'planner-v2.23' as const
 
 
 
@@ -1312,6 +1312,7 @@ export function plan(request: PlannerInput): PlanResult {
 
     // The rule each product's step follows, for the combination checks below.
     const chosenRules = new Map<string, ApplicationRule>()
+    const doseContexts = new Map<string, DoseContext>()
     const stainRules = new Map<string, ApplicationRule>()
     // Steps that stand in for a dose the label does not give; they have no placement to check.
     const placeholders = new Set<TreatmentStep>()
@@ -1396,6 +1397,7 @@ export function plan(request: PlannerInput): PlanResult {
         }
       }
       const ctx = { ...doseContext(load, machine), ...(productCheck?.sourceLoadCategory === undefined ? {} : { sourceLoadCategory: productCheck.sourceLoadCategory }) }
+      doseContexts.set(supply.id, ctx)
       const sourceRules = rules.filter((rule) => rule.conditions?.sourceLoadCategories === undefined || productCheck?.sourceLoadCategory !== undefined && rule.conditions.sourceLoadCategories.includes(productCheck.sourceLoadCategory))
       const sized = doseBySize(sourceRules, ctx, supply.measurement)
       const context = { soilLevel: sized.soilLevel, washerClass: washerClass(machine) }
@@ -1482,7 +1484,15 @@ export function plan(request: PlannerInput): PlanResult {
       }
       const placement = direction.placement!
       if (!placementSupported(machine, placement)) {
-        const alternative = usableMachines.find((candidate) => candidate.id !== machine.id && placementSupported(candidate, placement) && packingCapacity(candidate) >= load.items.reduce((total, item) => total + item.bulkUnits, 0))
+        // Substitution must preserve every dose already read, including size-dependent rows.
+        const alternative = usableMachines.find((candidate) => candidate.id !== machine.id
+          && loadCycle({ ...load, machine: candidate }) === cycle && placementSupported(candidate, placement) && packingCapacity(candidate) >= load.items.reduce((total, item) => total + item.bulkUnits, 0)
+          && [...doseContexts].every(([supplyId, context]) => {
+            const product = supplies.find(entry => entry.id === supplyId)!
+            const rows = rulesForSupply(product, input).filter(row => !pretreatmentRule(row, product))
+            const next = { ...context, applianceType: candidate.applianceType ?? null, machineClasses: machineClasses(candidate), washerClassKnown: washerClass(candidate) !== null }
+            return stableJson(doseBySize(rows, context, product.measurement)) === stableJson(doseBySize(rows, next, product.measurement))
+          }))
         if (alternative) {
           machine = alternative
           load.machine = alternative

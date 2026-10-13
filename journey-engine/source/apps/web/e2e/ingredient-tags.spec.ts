@@ -46,7 +46,7 @@ test('ingredient chips save separate names, preserve punctuation, and retain an 
     await input.fill('lanolin')
     await expect(save).toBeDisabled()
     await sheet.getByRole('button', { name: 'Close', exact: true }).click()
-    await sheet.getByRole('button', { name: 'Keep editing', exact: true }).click()
+    await page.getByRole('alertdialog', { name: 'Discard your changes?', exact: true }).getByRole('button', { name: 'Keep editing', exact: true }).click()
     await expect(pencil).toBeDisabled()
     await expect(input).toHaveValue('lanolin')
     await sheet.getByRole('tab', { name: 'Access', exact: true }).click()

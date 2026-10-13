@@ -98,7 +98,7 @@ const result: PlanResult = plan(fixture)
 const repeated: PlanResult = plan(fixture)
 
 equal(JSON.stringify(result), JSON.stringify(repeated), 'identical input is byte-stable')
-equal(result.plannerVersion, 'planner-v2.22', 'version is recorded')
+equal(result.plannerVersion, 'planner-v2.23', 'version is recorded')
 equal(result.mode, 'normal', 'an unset mode plans normally')
 ok(/^[0-9a-f]{64}$/.test(result.inputHash), 'input hash is SHA-256-shaped')
 equal(plan({}).inputHash, '44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a', 'input hash is SHA-256')

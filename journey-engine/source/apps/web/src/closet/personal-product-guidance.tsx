@@ -1,7 +1,7 @@
 import { useConvex, useQueries } from 'convex/react'
 import { getFunctionName, makeFunctionReference, type FunctionArgs, type FunctionReference, type FunctionReturnType } from 'convex/server'
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
-import type { PersonalPlannerGuidance, PersonalPlannerInput, PersonalPlannerSummary, PersonalSuggestionGuidance, PlanResult } from '@washcloset/planner'
+import type { PersonalPlannerGuidance, PersonalPlannerInput, PersonalPlannerSummary, PersonalSuggestionGuidance } from '@washcloset/planner'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, FieldLabel } from '@/components/ui/field'
@@ -81,7 +81,7 @@ export function savedRecommendationView(saved: Saved | Error | undefined, loadId
   if (saved === undefined) return fallback('Loading private suggestions. Showing recorded product evidence.')
   if (saved === null) return fallback('No private guidance saved. Showing recorded product evidence.')
   if (saved.status === 'stale') return fallback(`Saved private suggestions are stale. ${saved.reason} Showing recorded product evidence.`)
-  const result = saved.result as PlanResult | undefined
+  const result = saved.result
   const input = result?.inputSnapshot?.personalSuggestions
   const load = Array.isArray(result?.loads) ? result.loads.find((entry) => entry.id === loadId) : undefined
   if (result?.inputHash !== saved.inputHash || input?.evidenceInputHash !== inputHash || input.loadId !== loadId

@@ -39,7 +39,7 @@ export const onboardingStatus = query({
     households: v.array(v.object({ householdId: v.id('households'), name: v.string(), role, washPlace: v.union(washPlace, v.null()), firstHamperNotePending: v.boolean(), guidance: v.optional(guidanceState) })),
   }),
   handler: async (ctx: QueryCtx) => {
-    const actor = await principalFromAuth(ctx.auth)
+    const actor = await principalFromAuth(ctx)
     const person = await ctx.db
       .query('people')
       .withIndex('by_principal_key', (q) => q.eq('principalKey', actor.key))
@@ -306,7 +306,7 @@ export const invitePreview = query({
   args: { code: v.string() },
   returns: invitePreviewResult,
   handler: async (ctx, args) => {
-    await principalFromAuth(ctx.auth)
+    await principalFromAuth(ctx)
     const invite = await findInvite(ctx, args.code)
     const problem = inviteProblem(invite, Date.now())
     if (problem === 'unknown' || invite === null || invite.expiresAt === undefined) return { status: 'unknown' as const }
@@ -395,12 +395,11 @@ export const removeMember = mutation({
     const { target } = await authorize(ctx, 'people.remove', { membershipId: args.membershipId })
     const outfits = await ctx.db.query('dailyOutfits').withIndex('by_household_principal', (q) => q.eq('householdId', target.householdId).eq('principalKey', target.principalKey)).collect()
     for (const outfit of outfits) await ctx.db.delete(outfit._id)
-    // Their closet stays with the household, unlinked, so they can be invited back to it.
+    // Revocation must not unlink private clothes and transfer their visibility to an owner.
     const person = await ctx.db.query('wearers').withIndex('by_household_principal', (q) => q.eq('householdId', target.householdId).eq('principalKey', target.principalKey)).unique()
     if (person !== null) {
       const textiles = await ctx.db.query('textiles').withIndex('by_household', (q) => q.eq('householdId', target.householdId)).collect()
-      await authorize(ctx, 'textile.edit', { householdId: target.householdId, uses: { textileIds: textiles.filter((piece) => piece.wearerId === person._id && piece.private).map((piece) => piece._id) } })
-      await ctx.db.patch(person._id, { principalKey: undefined })
+      if (!textiles.some(piece => piece.wearerId === person._id && piece.private)) await ctx.db.patch(person._id, { principalKey: undefined })
     }
     await ctx.db.delete(target._id)
     return null

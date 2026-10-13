@@ -61,6 +61,8 @@ export type CanvasExtension = {
   draftKey?: string
   /** An older workspace opened with `?legacy=1`. */
   legacy?: () => Promise<unknown>
+  /** Host pages opened with `?<name>=1` in place of the canvas, such as Laundry's synthetic laundry day. */
+  pages?: Record<string, () => Promise<unknown>>
 }
 
 export const extension: CanvasExtension = hostExtension

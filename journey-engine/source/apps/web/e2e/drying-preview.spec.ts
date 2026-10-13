@@ -81,7 +81,10 @@ test('a wide touch drawer keeps its draft, focused choice and scroll across fold
     await touch.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ ...point, y: point.y + delta }] })
   }
   await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })
-  await expect(page.getByText('Discard your changes?', { exact: true })).toBeVisible()
+  const ask = page.getByRole('alertdialog', { name: 'Discard your changes?', exact: true })
+  await expect(ask).toBeVisible()
+  // The confirmation is modal; keeping the draft returns to the drawer with the choice intact.
+  await ask.getByRole('button', { name: 'Keep editing', exact: true }).click()
   await expect(rack).toBeChecked()
   await context.close()
 })

@@ -42,7 +42,7 @@ export const setDecoration = mutation({
     if (facts.kind === 'unknown' && facts.confidence !== 'unknown') fail('invalid', 'Unclear decoration must remain unknown')
     if (facts.guidanceSource !== undefined && (facts.guidanceSource !== printfulCareSource || facts.confidence !== 'verified'
       || facts.manufacturer.toLowerCase() !== 'printful' || facts.kind !== 'embroidered')) fail('invalid', 'A checked embroidery care source needs verified Printful embroidery facts')
-    const actor = await principalFromAuth(ctx.auth)
+    const actor = await principalFromAuth(ctx)
     for (const textile of textiles) await ctx.db.patch(textile._id, { decoration: {
       ...(textile.decoration?.construction === undefined ? {} : { construction: textile.decoration.construction }),
       ...facts, revision: (textile.decoration?.revision ?? 0) + 1, recordedAt: Date.now(), recordedBy: actor.key,
@@ -61,7 +61,7 @@ export const setConstruction = mutation({
     const expected = new Map(args.expectedRevisions.map((entry) => [entry.textileId, entry.revision]))
     if (expected.size !== textiles.length || args.expectedRevisions.length !== textiles.length || textiles.some((entry) => expected.get(entry._id) !== (entry.decoration?.revision ?? 0))) fail('stale', 'Garment details changed; reopen them before saving')
     const construction = checkedConstruction(args.facts)
-    const actor = await principalFromAuth(ctx.auth)
+    const actor = await principalFromAuth(ctx)
     for (const textile of textiles) await ctx.db.patch(textile._id, { decoration: {
       ...(textile.decoration ?? { kind: 'unknown' as const, method: 'unknown' as const, manufacturer: '', source: '', confidence: 'unknown' as const }),
       construction, revision: (textile.decoration?.revision ?? 0) + 1, recordedAt: Date.now(), recordedBy: actor.key,
@@ -77,7 +77,7 @@ export const setReminder = mutation({
   returns: v.null(),
   handler: async (ctx, args) => {
     const textiles = await selected(ctx, args.textileIds)
-    const actor = await principalFromAuth(ctx.auth)
+    const actor = await principalFromAuth(ctx)
     for (const textile of textiles) await ctx.db.patch(textile._id, { adviceReminder: args.enabled === null ? undefined : { enabled: args.enabled, recordedAt: Date.now(), recordedBy: actor.key } })
     await invalidatePlans(ctx, textiles[0]!.householdId)
     return null

@@ -118,7 +118,8 @@ test('review omits empty optional label facts but retains the action to add them
   const empty = render(draft(), closet, 'final')
   expect(empty).not.toContain('Iron heat not recorded')
   expect(empty).not.toContain('More on the label')
-  expect(empty).toContain('>Add label details</button>')
+  expect(empty).toContain('Ironing, steam &amp; label photo')
+  expect(empty).toContain('Optional · copy from your care label')
   for (const [tag, words] of [
     [{ ...machine, iron: 'low' }, 'Iron, low heat'],
     [{ ...machine, iron: 'allowed' }, 'Ironing allowed'],
@@ -127,7 +128,7 @@ test('review omits empty optional label facts but retains the action to add them
     const recorded = render(draft({ tag }), closet, 'final')
     expect(recorded).toContain(words)
     expect(recorded).not.toContain('Iron heat not recorded')
-    expect(recorded).not.toContain('>Add label details</button>')
+    expect(recorded).not.toContain('Optional · copy from your care label')
   }
 })
 

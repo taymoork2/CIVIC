@@ -106,8 +106,14 @@ async function previewForPlan(ctx: ReadCtx, action: Action, args: import('convex
     return { householdId, principalKey, comparison, result: plan({ ...input, personalSuggestions }) }
 }
 const previewView = v.object({ comparison: comparisonView, result: v.any() })
+/** Other loads and raw household inputs stay server-side, including in saved previews. */
+function previewResult(result: ReturnType<typeof plan>) {
+  const personalSuggestions = result.inputSnapshot.personalSuggestions!
+  return { plannerVersion: result.plannerVersion, inputHash: result.inputHash,
+    inputSnapshot: { personalSuggestions }, loads: result.loads.filter(load => load.id === personalSuggestions.loadId) }
+}
 export const plannerPreview = query({ args: comparisonArgs, returns: previewView,
-  handler: async (ctx, args) => { const { comparison, result } = await previewForPlan(ctx, 'plan.read', args); return { comparison, result } },
+  handler: async (ctx, args) => { const { comparison, result } = await previewForPlan(ctx, 'plan.read', args); return { comparison, result: previewResult(result) } },
 })
 
 /** Save only reviewed server-derived influence. The shared evidence input stays on its existing plan. */
@@ -158,7 +164,7 @@ export const savedForPlan = query({ args: { planId: v.id('plans'), loadId: v.str
       const result = plan({ ...stored.inputSnapshot as import('@washcloset/planner').PlannerInput,
         personalSuggestions: saved.personalInput as import('@washcloset/planner').PersonalPlannerInput })
       if (result.inputHash !== saved.inputHash) fail('conflict', 'The saved private input needs reconciliation')
-      return { ...metadata, status: 'current' as const, result }
+      return { ...metadata, status: 'current' as const, result: previewResult(result) }
     } catch (error) {
       if (error instanceof ConvexError && typeof error.data === 'object' && error.data !== null && 'code' in error.data
         && ['stale', 'conflict', 'not_found'].includes(String(error.data.code))) {

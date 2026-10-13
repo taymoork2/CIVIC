@@ -15,6 +15,8 @@ export async function mount(container, context) {
     captureInputs: ['Email', 'Message'],
     load: () => app.load(),
     reset: () => app.restart(),
+    // Another synthetic account, the connection or the clock changed in this run: show what the app now sees.
+    changed: () => app.load(),
   })
   return () => { run.close(); container.replaceChildren() }
 }

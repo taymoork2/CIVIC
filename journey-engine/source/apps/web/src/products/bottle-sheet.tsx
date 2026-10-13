@@ -764,7 +764,7 @@ export function BottleSheet({ householdId, supply = null, supplies = [], title, 
       ]} /> : null}
       {needsCheck ? <div ref={confirmation} className="grid gap-2"><ConfirmRow checked={checked} onCheckedChange={setChecked}>{contentsCopy.checked}</ConfirmRow><SheetText>{contentsCopy.checkedHint}</SheetText></div> : null}
       <ErrorNotice error={create.error ?? update.error} />
-      {(stepProblem ?? checkProblem) === null ? null : <div className="grid w-full gap-1" role="status"><p className="m-0 text-[length:var(--step--1)] text-ink-2">{stepProblem ?? checkProblem}</p><Button variant="ghost" className="justify-self-start" disabled={pending} onClick={fixProblem}>Fix</Button></div>}
+      {(stepProblem ?? checkProblem) === null ? null : <div className="flex min-w-0 flex-wrap items-center justify-between gap-2 rounded-field bg-surface-2 px-3 py-2" role="status"><p className="m-0 min-w-0 flex-1 text-[length:var(--step--1)] text-ink-2">{stepProblem ?? checkProblem}</p>{supply !== null || step === 'review' ? <Button variant="ghost" disabled={pending} onClick={fixProblem}>Review details<DesignIcon name="chevronRight" size="1em" aria-hidden="true" /></Button> : null}</div>}
       </fieldset> : supply === null ? null : <ProductOverview supply={supply} tab={view.tab} onTab={(tab) => dispatch({ kind: 'view', tab })} onEdit={startEdit} />}
     </Sheet>
   )

@@ -297,9 +297,9 @@ test('consolidated journey report', async ({ page }) => {
   await snap(page, 'intake-same-again', 'Add clothes', 'Same again, another color', '“Same again, another color” reopens at Color with a note that the care answers are the same as last time; Gray is spelled the US way.', ['E01', 'E10'])
   await add.getByRole('button', { name: 'Close', exact: true }).click()
   await maybe('dirty close', async () => {
-    await expect(add.getByRole('button', { name: 'Keep editing', exact: true })).toBeVisible()
+    await expect(page.getByRole('alertdialog', { name: 'Discard your changes?', exact: true }).getByRole('button', { name: 'Keep editing', exact: true })).toBeVisible()
     await snap(page, 'intake-discard', 'Add clothes', 'Discard your changes?', 'Closing with unsaved answers asks first instead of silently dropping them.', ['E01'])
-    await add.getByRole('button', { name: 'Discard', exact: true }).click()
+    await page.getByRole('alertdialog', { name: 'Discard your changes?', exact: true }).getByRole('button', { name: 'Discard', exact: true }).click()
   })
   await expect(page.getByRole('dialog')).toHaveCount(0)
   await snap(page, 'closet-after-intake', 'Add clothes', 'Closet with the new pieces', 'The two matching tees show as one counted row, White tee ×2, with the line T-shirt icon and an In the hamper chip.', ['E04'])

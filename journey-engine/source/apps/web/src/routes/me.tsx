@@ -111,7 +111,7 @@ export function Profile({ name, email, householdName, role, history = [], loadin
     <div ref={pageRef} className={mePageClassName}>
       <CareHero variant="feature" photo title={meText.title} art={<img src={history.length === 0 ? '/welcome-household.webp' : '/design/care-complete.webp'} alt="" width={960} height={640} />}
         detail={<><p className="m-0 text-[length:var(--step-2)] font-semibold text-ink">{name ?? householdName}</p><p className="m-0">{householdName}{role === null ? '' : ` · ${meText.roles[role]}`}</p>{!loading && history.length === 0 ? <p className="m-0">Completed care appears here, with the items and settings you used.</p> : null}</>}
-        action={loading ? undefined : history.length === 0 ? <Link to="/laundry" className={cn(buttonVariants({ variant: 'outline' }), 'min-w-0 max-w-full whitespace-normal')}>Go to Laundry</Link> : onOpenWash === undefined ? undefined : <Button type="button" variant="outline" className="min-w-0 max-w-full whitespace-normal" onClick={() => onOpenWash(history[0]!.sessionId)}>Review latest load</Button>} />
+        action={loading ? undefined : history.length === 0 ? <Link to="/laundry" className={buttonVariants({ variant: 'ghost' })}>Go to Laundry<DesignIcon name="chevronRight" size="1em" aria-hidden="true" /></Link> : onOpenWash === undefined ? undefined : <Button type="button" variant="ghost" onClick={() => onOpenWash(history[0]!.sessionId)}>Review latest load<DesignIcon name="chevronRight" size="1em" aria-hidden="true" /></Button>} />
       {loading ? <Loading what={meText.loadingHistory} /> : history.length === 0
         ? <p className="m-0 text-ink-2">{meText.noWashes}</p>
         : <RecordList heading={meText.washes}>

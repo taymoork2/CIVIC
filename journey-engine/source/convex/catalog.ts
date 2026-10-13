@@ -113,7 +113,7 @@ export const review = internalMutation({
 export const find = query({
   args: { kind: catalogKind, brand: v.string() },
   handler: async (ctx, args) => {
-    await principalFromAuth(ctx.auth)
+    await principalFromAuth(ctx)
     const products = await ctx.db.query('catalogProducts').withIndex('by_kind_brand', (q) => q.eq('kind', args.kind).eq('brand', args.brand.trim())).take(20)
     return Promise.all(products.map(async (product) => ({ product, variants: await ctx.db.query('catalogVariants').withIndex('by_product', (q) => q.eq('productId', product._id)).take(50) })))
   },
@@ -123,7 +123,7 @@ export const find = query({
 export const findIdentifier = query({
   args: { identifier: v.string() },
   handler: async (ctx, args) => {
-    await principalFromAuth(ctx.auth)
+    await principalFromAuth(ctx)
     const gtin14 = normalizeGtin(args.identifier)
     if (gtin14 === null) fail('invalid', 'Enter a UPC-A, EAN-8, EAN-13 or GTIN-14 with a valid check digit.')
     // ponytail: bounded scan of 200 saved variants; add a normalized identifier index before catalog growth.
@@ -151,7 +151,7 @@ export const findIdentifier = query({
 export const detail = query({
   args: { variantId: v.id('catalogVariants'), revisionId: v.optional(v.id('catalogRevisions')), reviewId: v.optional(v.id('catalogReviews')) },
   handler: async (ctx, args) => {
-    await principalFromAuth(ctx.auth)
+    await principalFromAuth(ctx)
     const variant = await ctx.db.get(args.variantId)
     if (variant === null) fail('not_found', 'Variant not found')
     const product = await ctx.db.get(variant.productId)

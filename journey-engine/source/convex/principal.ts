@@ -1,7 +1,9 @@
-import type { Auth } from 'convex/server'
+import type { GenericCtx } from '@convex-dev/better-auth'
 import { v } from 'convex/values'
 
 import { query } from './_generated/server'
+import type { DataModel } from './_generated/dataModel'
+import { authComponent } from './auth'
 import { fail } from './errors'
 
 declare const process: { readonly env: Readonly<Record<string, string | undefined>> }
@@ -44,14 +46,22 @@ export async function principalKeyFor(issuer: string, subject: string): Promise<
   return principalKey(`principal:v1:${encoded}`)
 }
 
-export async function principalFromAuth(auth: Auth): Promise<AuthenticatedPrincipal> {
-  const identity = await auth.getUserIdentity()
-  if (identity === null) fail('unauthenticated', 'Unauthenticated')
+// Cache only within one invocation; bulk checks must not repeat the same component reads.
+const principals = new WeakMap<GenericCtx<DataModel>, Promise<AuthenticatedPrincipal>>()
 
-  return Object.freeze({
-    key: await principalKeyFor(principalIssuer(identity.issuer), identity.subject),
-    [authenticatedPrincipalBrand]: true as const,
-  })
+export function principalFromAuth(ctx: GenericCtx<DataModel>): Promise<AuthenticatedPrincipal> {
+  const cached = principals.get(ctx)
+  if (cached !== undefined) return cached
+  const principal = (async () => {
+    const identity = await ctx.auth.getUserIdentity()
+    if (identity === null || typeof identity.sessionId !== 'string' || await authComponent.safeGetAuthUser(ctx) === undefined) fail('unauthenticated', 'Unauthenticated')
+    return Object.freeze({
+      key: await principalKeyFor(principalIssuer(identity.issuer), identity.subject),
+      [authenticatedPrincipalBrand]: true as const,
+    })
+  })()
+  principals.set(ctx, principal)
+  return principal
 }
 
 export function requirePrincipal(actor: AuthenticatedPrincipal, owner: PrincipalKey): void {
@@ -64,5 +74,5 @@ export function requirePrincipal(actor: AuthenticatedPrincipal, owner: Principal
 export const current = query({
   args: {},
   returns: v.string(),
-  handler: async (ctx): Promise<PrincipalKey> => (await principalFromAuth(ctx.auth)).key,
+  handler: async (ctx): Promise<PrincipalKey> => (await principalFromAuth(ctx)).key,
 })

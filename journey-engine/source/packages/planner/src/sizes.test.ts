@@ -70,7 +70,7 @@ const blocking = (result: PlanResult) => result.reasons.filter((reason) => reaso
 const leftOut = (result: PlanResult) => result.reasons.filter((reason) => reason.code === 'product_left_out')
 const candidates = (result: PlanResult) => step(result)?.atMachine?.candidates.map((candidate) => [candidate.size, candidate.dose.mark ?? candidate.dose.amount])
 
-assert.equal(plannerVersion, 'planner-v2.22', 'the planner version changed, so older plans are replaced')
+assert.equal(plannerVersion, 'planner-v2.23', 'the planner version changed, so older plans are replaced')
 
 // Evidence: a person's taps on the label count as read; memory, estimates and sample data do not.
 const observedPlan = plan(input([capRule('any', undefined, '3')], tees(4, 'normal')))

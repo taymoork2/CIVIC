@@ -476,7 +476,7 @@ export function ClosetView({ now, attention, today, inventory, sessions, meWeare
   const selectedProfile = profiles.find((profile) => wearerChipValue(profile.value) === wearerChipValue(wearerChip)) ?? profiles.at(-1)!
   const counts = pagination?.summary?.counts ?? glanceCounts(scopedGarments)
   const closetTitle = closetText.title
-  const addAction = unlinkedMe ? <Button type="button" variant="outline" onClick={onSetupMyCloset} disabled={onSetupMyCloset === undefined}>Set up my closet</Button> : addClothes === undefined ? null : <Button type="button" variant="outline" className="[.care-feature_&]:min-h-11 [.care-feature_&]:px-3 [.care-feature_&]:py-2" aria-label={closetText.addClothes} onClick={(event) => { event.currentTarget.focus(); setSheet({ kind: 'add' }) }}><DesignIcon name="plus" size="1em" aria-hidden="true" /><span className="hidden [.care-feature_&]:inline">Add</span><span className="[.care-feature_&]:hidden">{closetText.addClothes}</span></Button>
+  const addAction = unlinkedMe ? <Button type="button" variant="outline" onClick={onSetupMyCloset} disabled={onSetupMyCloset === undefined}>Set up my closet</Button> : addClothes === undefined ? null : <Button type="button" variant="ghost" className="text-[var(--accent)] [.closet-toolbar_&]:size-11 [.closet-toolbar_&]:p-0 [.closet-toolbar_&]:rounded-control [.closet-toolbar_&]:bg-surface-2 [.closet-toolbar_&]:shadow-[var(--e1)]" aria-label={closetText.addClothes} onClick={(event) => { event.currentTarget.focus(); setSheet({ kind: 'add' }) }}><DesignIcon name="plus" size="1em" aria-hidden="true" /><span className="[.closet-toolbar_&]:hidden">{closetText.addClothes}</span></Button>
   const management = <div className={closetManagementClassName}>
     <Popover open={managementOpen} onOpenChange={setManagementOpen}>
       <PopoverTrigger render={<Button variant="ghost" size="icon" type="button" className={closetManagementTriggerClassName} aria-label={closetText.manage} />}><DesignIcon name="funnel" size="1em" aria-hidden="true"  /></PopoverTrigger>
@@ -543,13 +543,16 @@ export function ClosetView({ now, attention, today, inventory, sessions, meWeare
   return <>
     <div className={cn(pageClassName, closetClassName)}>
       <CareHero variant="feature" photo title={closetTitle} art={<img src="/design/care-complete.webp" alt="" width={960} height={640} />}
-        detail={<ClosetGlance counts={counts} people={[]} selected="" onPerson={() => undefined} />} action={addAction} />
+        detail={<ClosetGlance counts={counts} people={[]} selected="" onPerson={() => undefined} />} />
+      <div className="closet-toolbar min-w-0 rounded-field bg-surface p-2 shadow-[var(--e1)]">
       <BrowseSearch label={closetText.searchLabel} value={search} placeholder={closetListText.searchPlaceholder} onChange={setSearch}
-        summary={<div className="flex min-w-[min(100%,10rem)] flex-1 flex-wrap items-center gap-2">
-          <div className="min-w-28 max-w-[10rem] flex-1"><NativeSelect size="sm" aria-label="Whose clothes" value={wearerChipValue(selectedProfile.value)} onChange={(event) => { onWearerChip(wearerChipFrom(event.target.value)); setSearch(''); setSection('all') }}>{profiles.map((profile) => <option key={wearerChipValue(profile.value)} value={wearerChipValue(profile.value)}>{profile.label}</option>)}</NativeSelect></div>
-          <p className="m-0 text-[length:var(--step--1)] text-ink-2" role="status">{loading ? 'Finding clothes…' : closetListText.pieces(unlinkedMe ? 0 : pagination?.summary?.matched ?? visible.reduce((total, { tile }) => total + tile.members.length, 0))}<span className="sr-only"> · by {closetListText.groups[groupBy].toLowerCase()}</span></p>
+        summary={<div className="flex min-w-[min(100%,7rem)] flex-1 flex-wrap items-center gap-x-1">
+          <div className="w-[7rem] max-w-full">
+          <NativeSelect size="sm" className="border-0 bg-transparent font-semibold shadow-none" aria-label="Whose clothes" value={wearerChipValue(selectedProfile.value)} onChange={(event) => { onWearerChip(wearerChipFrom(event.target.value)); setSearch(''); setSection('all') }}>{profiles.map((profile) => <option key={wearerChipValue(profile.value)} value={wearerChipValue(profile.value)}>{profile.label}</option>)}</NativeSelect></div>
+          <p className="m-0 px-1 text-[length:var(--step--1)] text-ink-2" role="status">{loading ? 'Finding clothes…' : closetListText.pieces(unlinkedMe ? 0 : pagination?.summary?.matched ?? visible.reduce((total, { tile }) => total + tile.members.length, 0))}<span className="sr-only"> · by {closetListText.groups[groupBy].toLowerCase()}</span></p>
         </div>}
-        actions={management} />
+        actions={<>{addAction}{management}</>} />
+      </div>
       {filtered || section !== 'all' ? <div className="flex flex-wrap items-center gap-2">
         <span className="text-[length:var(--step--1)] text-ink-2">{[...browseFilters.tags, ...(section === 'all' ? [] : [section === 'ready' ? closetText.ready : closetText.needsCare])].join(' · ')}</span>
         <Button type="button" variant="outline" onClick={() => { chooseFilters({ kinds: [], tags: [] }); setSection('all') }}>Reset filters</Button>

@@ -99,7 +99,7 @@ test('like-color checkbox fits narrow enlarged text and stays off until chosen',
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await page.screenshot({ path: test.info().outputPath('cold-like-colors-320-large.png'), animations: 'disabled' })
   await sheet.getByRole('button', { name: 'Close', exact: true }).click()
-  await sheet.getByRole('button', { name: 'Keep editing', exact: true }).click()
+  await page.getByRole('alertdialog', { name: 'Discard your changes?', exact: true }).getByRole('button', { name: 'Keep editing', exact: true }).click()
   await sheet.getByRole('button', { name: 'Warm', exact: true }).click()
   await like.focus()
   await page.keyboard.press('Space')

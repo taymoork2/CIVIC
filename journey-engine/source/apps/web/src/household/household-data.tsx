@@ -24,9 +24,10 @@ export function HouseholdDataProvider({ children }: { children: ReactNode }) {
   const { data: session, isPending } = authClient.useSession()
   const { isAuthenticated, isLoading } = useConvexAuth()
   const status = useQuery(api.households.onboardingStatus, isAuthenticated ? {} : 'skip')
-  const seed = startup?.seedActive && (isPending || (session != null && (isLoading || isAuthenticated))) ? startup.data.snapshot : null
+  const sessionId = session?.session.id ?? (isPending ? startup?.data.sessionId : undefined)
+  const seed = startup?.seedActive && sessionId === startup.data.sessionId && (isPending || (session != null && (isLoading || isAuthenticated))) ? startup.data.snapshot : null
   const householdId = isAuthenticated ? (status === undefined ? seed?.householdId : status.households[0]?.householdId) : seed?.householdId
-  return <Subscriptions key={householdId ?? 'signed-out'} householdId={householdId} authenticated={isAuthenticated} seed={seed}>{children}</Subscriptions>
+  return <Subscriptions key={`${sessionId ?? 'signed-out'}/${householdId ?? 'none'}`} householdId={householdId} authenticated={isAuthenticated} seed={seed}>{children}</Subscriptions>
 }
 
 function Subscriptions({ householdId, authenticated, seed, children }: {

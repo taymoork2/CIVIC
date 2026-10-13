@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-test('discard confirmation fills compact and regular footers without losing the draft', async ({ page }) => {
+test('discard confirmation fits phone, enlarged and wide viewports without losing the draft', async ({ page }) => {
   test.skip(process.env.WASHCLOSET_E2E_BUILD === 'production', 'Memory-only design specimens')
   for (const [width, scale] of [[393, 1], [320, 2], [1280, 1]]) {
     await page.setViewportSize({ width, height: 852 })
@@ -12,15 +12,17 @@ test('discard confirmation fills compact and regular footers without losing the 
         const name = sheet.getByLabel('Name', { exact: true })
         await name.fill('Keep this draft')
         await sheet.getByRole('button', { name: 'Close', exact: true }).click()
-        const prompt = sheet.getByRole('alert')
-        await expect(prompt).toContainText('Discard your changes?')
+        // v11 asks in its own modal confirmation, centred over the sheet, instead of in the footer.
+        const prompt = page.getByRole('alertdialog', { name: 'Discard your changes?', exact: true })
+        await expect(prompt).toBeVisible()
+        await expect(prompt.getByRole('button', { name: 'Keep editing', exact: true })).toBeFocused()
         const box = (await prompt.boundingBox())!
-        const foot = await sheet.locator('.sheet-foot').evaluate(node => {
-          const box = node.getBoundingClientRect(), style = getComputedStyle(node)
-          return { left: box.left + parseFloat(style.paddingLeft), right: box.right - parseFloat(style.paddingRight) }
-        })
-        expect(Math.abs(box.x - foot.left)).toBeLessThan(1)
-        expect(Math.abs(box.x + box.width - foot.right)).toBeLessThan(1)
+        expect(box.x).toBeGreaterThanOrEqual(0)
+        expect(box.x + box.width).toBeLessThanOrEqual(width + 1)
+        // Centred in the page's content box, which leaves out the page's stable scrollbar gutter.
+        const content = await page.evaluate(() => document.body.clientWidth)
+        expect(Math.abs(box.x + box.width / 2 - content / 2)).toBeLessThan(1)
+        expect(box.y + box.height).toBeLessThanOrEqual(852)
         for (const label of ['Keep editing', 'Discard']) {
           const button = (await prompt.getByRole('button', { name: label, exact: true }).boundingBox())!
           expect(button.height).toBeGreaterThanOrEqual(44)
@@ -33,7 +35,7 @@ test('discard confirmation fills compact and regular footers without losing the 
         await expect(name).toHaveValue('Keep this draft')
         await expect(prompt).toHaveCount(0)
         await sheet.getByRole('button', { name: 'Close', exact: true }).click()
-        await sheet.getByRole('button', { name: 'Discard', exact: true }).click()
+        await prompt.getByRole('button', { name: 'Discard', exact: true }).click()
         await expect(sheet).toHaveCount(0)
       }
     }

@@ -271,7 +271,10 @@ test('unmatched drying settings block every method, including a once-only altern
   const instructions = { ...words, drying: ['Dry flat in shade away from heat'] }
   await as.mutation(api.inventory.setCareInstructions, { textileId: home.shirt, instructions, expectedInstructions: null })
   const { sessionId, piece } = await queueWash(as, home.householdId, home.shirt)
-  await expect(as.mutation(api.dryingQueue.startDryer, { householdId: home.householdId, pieceIds: [piece.pieceId], dryerId, minutes: 20, labelInstructionsAcknowledged: true })).rejects.toThrow('not yet matched')
+  expect(piece.label).toBe('unknown')
+  expect(piece.method).toBeNull()
+  await as.mutation(api.dryingQueue.setPiece, { pieceId: piece.pieceId, method: 'tumble' })
+  await expect(as.mutation(api.dryingQueue.startDryer, { householdId: home.householdId, pieceIds: [piece.pieceId], dryerId, minutes: 20, heat: 'low', labelInstructionsAcknowledged: true })).rejects.toThrow('not yet matched')
   await as.mutation(api.dryingQueue.setPiece, { pieceId: piece.pieceId, method: 'flat' })
   await expect(as.mutation(api.dryingQueue.startAirDry, { householdId: home.householdId, pieceIds: [piece.pieceId], method: 'flat', labelInstructionsAcknowledged: true })).rejects.toThrow('not yet matched')
   expect((await as.query(api.dryingQueue.queue, { householdId: home.householdId })).pieces[0]?.instructions?.drying).toEqual(instructions.drying)

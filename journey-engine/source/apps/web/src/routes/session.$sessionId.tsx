@@ -11,6 +11,7 @@ import { loadSessionProjection, saveSessionProjection } from '../private-state'
 import { OfflineSessionView, SessionView, sessionModel, type SessionFrom } from '@/laundry/session-view'
 import { useNow } from '@/kit/use-now'
 import { Loading } from '@/kit/ui'
+import { usePrivateAccount } from '@/kit/device-state'
 
 export const Route = createFileRoute('/session/$sessionId')({
   errorComponent: RouteError,
@@ -25,6 +26,7 @@ function SessionRoute() {
 }
 
 function SessionPage({ sessionId }: { sessionId: string }) {
+  const accountId = usePrivateAccount()
   const { from } = Route.useSearch()
   // The route parameter is validated as a session id by the backend.
   const served = useQuery(api.execution.sessionDetail, { sessionId: sessionId as Id<'sessions'> })
@@ -36,11 +38,11 @@ function SessionPage({ sessionId }: { sessionId: string }) {
   useEffect(() => {
     // A step not yet confirmed shows as done only on screen; the saved copy waits for the server,
     // so a closed app never comes back claiming a step the server never got.
-    if (detail !== undefined && !unconfirmed) saveSessionProjection(detail)
-  }, [served, unconfirmed])
+    if (detail !== undefined && !unconfirmed) saveSessionProjection(accountId, detail)
+  }, [served, unconfirmed, accountId])
 
   if (detail === undefined) {
-    const projection = online ? null : loadSessionProjection(sessionId)
+    const projection = online ? null : loadSessionProjection(accountId, sessionId)
     return projection === null ? <Loading what="this load" /> : <OfflineSessionView projection={projection} />
   }
   return <SessionView detail={detail} now={now} online={online} from={from} />

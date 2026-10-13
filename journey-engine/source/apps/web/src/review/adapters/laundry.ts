@@ -6,7 +6,7 @@ export const mount: MountAdapter = async (container, context) => {
     const { mountTowelRuntime } = await import('./laundry-towel')
     return mountTowelRuntime(container, context)
   }
-  if (context.scenario.renderer === 'runtime') {
+  if (context.scenario.renderer === 'runtime' || context.scenario.id.startsWith('family.')) {
     const { mountLaundryRuntime } = await import('./laundry-runtime')
     return mountLaundryRuntime(container, context)
   }

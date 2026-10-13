@@ -26,8 +26,9 @@ import { addTimeText, chemRunText, timerText } from '@/copy-run'
 import { AddTimeSheet } from '@/kit/add-time-sheet'
 import type { Machine, Textile } from '@/household/inventory-types'
 import { DoseBody, DoseWhy, FullnessBlock, GarmentList, StepBlock, WhichDryer, dryerChoices, machineProduct, secondaryButtonClassName, stepOptionsTriggerId, stepView, type FullnessOutcome, type MachineFacts, type StepChoice } from '@/laundry/machine-step'
-import type { SessionProjection } from '@/private-state'
+import { hasUnboundRecovery, type SessionProjection } from '@/private-state'
 import { clearPendingStep, pendingSteps, savePendingStep } from '@/pending-step'
+import { usePrivateAccount } from '@/kit/device-state'
 import { washerGroupIds } from '@/laundry/question-card'
 import { Sheet } from '@/kit/sheet'
 import { MachineProblemSheet } from '@/laundry/machine-problem'
@@ -157,12 +158,15 @@ export type Detail = Omit<SessionDetail, 'actions' | 'timelineRevision'> & { act
 type StepReceipt = Pick<FunctionArgs<typeof api.actions.recordAction>, 'sessionId' | 'actionId' | 'status'> & { receiptId: string }
 
 function useStepRecord(detail: Detail, onAccepted?: (receipt: StepReceipt) => void) {
+  const accountId = usePrivateAccount()
   const call = useConvexCall(api.actions.recordAction, recordLocally)
   const [storageError, setStorageError] = useState<string | null>(null)
   const [pendingActions, setPendingActions] = useState<readonly string[]>([])
   const run = async (args: FunctionArgs<typeof api.actions.recordAction>) => {
     const action = detail.actions.find((entry) => entry.id === args.actionId)
-    const saved = savePendingStep(detail.householdId, action?.title ?? action?.supplyName ?? 'Load step', { ...args, expectedTimelineRevision: detail.timelineRevision })
+    // Synthetic previews have no sign-in; their simulated taps stay in memory.
+    const saved = accountId === null ? { args: { ...args, receiptId: args.receiptId ?? crypto.randomUUID(), expectedTimelineRevision: detail.timelineRevision } }
+      : savePendingStep(accountId, detail.householdId, action?.title ?? action?.supplyName ?? 'Load step', { ...args, expectedTimelineRevision: detail.timelineRevision })
     if (saved === null) {
       setStorageError('This phone could not save the step. Free storage or allow site storage, then try again.')
       return undefined
@@ -172,7 +176,7 @@ function useStepRecord(detail: Detail, onAccepted?: (receipt: StepReceipt) => vo
     const result = await call.run(saved.args)
     setPendingActions((ids) => ids.filter((id) => id !== saved.args.actionId))
     if (result !== undefined) {
-      clearPendingStep(saved.args.receiptId)
+      clearPendingStep(accountId, saved.args.receiptId)
       onAccepted?.(saved.args)
     }
     return result
@@ -181,14 +185,15 @@ function useStepRecord(detail: Detail, onAccepted?: (receipt: StepReceipt) => vo
 }
 
 function RecoveredSteps({ detail, online, onAccepted }: { detail: Detail; online: boolean; onAccepted: (receipt: StepReceipt) => void }) {
-  const [entries, setEntries] = useState(() => pendingSteps(detail.householdId, detail.sessionId))
+  const accountId = usePrivateAccount()
+  const [entries, setEntries] = useState(() => pendingSteps(accountId, detail.householdId, detail.sessionId))
   const retry = useConvexCall(api.actions.recordAction)
-  useEffect(() => { setEntries(pendingSteps(detail.householdId, detail.sessionId)) }, [detail.sessionId, detail.householdId])
+  useEffect(() => { setEntries(pendingSteps(accountId, detail.householdId, detail.sessionId)) }, [detail.sessionId, detail.householdId, accountId])
   const remove = (receiptId: string) => {
-    clearPendingStep(receiptId)
-    setEntries(pendingSteps(detail.householdId, detail.sessionId))
+    clearPendingStep(accountId, receiptId)
+    setEntries(pendingSteps(accountId, detail.householdId, detail.sessionId))
   }
-  if (entries.length === 0) return null
+  if (entries.length === 0) return hasUnboundRecovery() ? <Callout>Older saved steps cannot be matched to this sign-in. They are kept on this device. Check this load’s current checklist and what you actually did before recording unfinished steps.</Callout> : null
   return <Section heading="Saved steps need a check" caption="Check what you actually did before resending saved steps. Nothing is sent automatically.">
     {entries.map((entry) => <div key={entry.args.receiptId} className="grid gap-2">
       <strong>{entry.title}</strong>

@@ -11,13 +11,31 @@ import type { PrivateCare } from '@convex/access'
 type ProjectedTextile = { readonly textileId: string; readonly name: string | null; readonly color?: string | null; readonly private?: boolean; readonly privateCare?: PrivateCare | null }
 
 const prefix = 'washcloset:private:'
-const draftKey = `${prefix}draft`
-/** Older versions kept a single projection here; it is read once and folded into the per-load copies. */
-const legacySessionKey = `${prefix}session`
-const sessionsKey = `${prefix}sessions`
 const chipsKey = `${prefix}closet-chips`
 const landingKey = `${prefix}landing`
 const washPlaceKey = `${prefix}wash-place`
+const lastSessionKey = `${prefix}last-account`
+
+export function privateAccountKey(name: string, accountId: string | null): string | null {
+  return accountId === null ? null : `${prefix}signed-in:${JSON.stringify([accountId, name])}`
+}
+
+/** A credential-free offline shell can resume this device's last known account. */
+export function rememberedPrivateAccount(): string | null {
+  return read<string>(lastSessionKey, value => typeof value === 'string' && value.length > 0 && value.length <= 200)
+}
+
+export function rememberPrivateAccount(accountId: string): void { write(lastSessionKey, accountId) }
+
+/** Older copies have no author binding. Preserve them without displaying or resending them. */
+export function hasUnboundRecovery(): boolean {
+  try {
+    return ['draft', 'session', 'sessions', 'pending-steps'].some(name => {
+      const raw = storage()?.getItem(prefix + name)
+      return raw !== null && raw !== undefined && raw !== '[]'
+    })
+  } catch { return false }
+}
 const maxActions = 30
 const maxTextiles = 60
 const maxMarks = 12
@@ -119,7 +137,8 @@ function storage(): Storage | null {
   }
 }
 
-function read<Value>(key: string, valid: (value: any) => boolean): Value | null {
+function read<Value>(key: string | null, valid: (value: any) => boolean): Value | null {
+  if (key === null) return null
   try {
     const raw = storage()?.getItem(key)
     if (raw === null || raw === undefined) return null
@@ -130,7 +149,8 @@ function read<Value>(key: string, valid: (value: any) => boolean): Value | null 
   }
 }
 
-function write(key: string, value: unknown): void {
+function write(key: string | null, value: unknown): void {
+  if (key === null) return
   try {
     storage()?.setItem(key, JSON.stringify(value))
   } catch {
@@ -138,13 +158,13 @@ function write(key: string, value: unknown): void {
   }
 }
 
-export function saveDraft(draft: Omit<PlanningDraft, 'savedAt'>): void {
+export function saveDraft(accountId: string | null, draft: Omit<PlanningDraft, 'savedAt'>): void {
   // Truncating either ID list reselects excluded pieces after a large hamper reloads.
-  write(draftKey, { ...draft, savedAt: Date.now() })
+  write(privateAccountKey('draft', accountId), { ...draft, savedAt: Date.now() })
 }
 
-export function loadDraft(householdId: string): PlanningDraft | null {
-  const draft = read<PlanningDraft>(draftKey, (value) => typeof value?.householdId === 'string' && Array.isArray(value.selectedTextileIds) && Array.isArray(value.seenTextileIds))
+export function loadDraft(accountId: string | null, householdId: string): PlanningDraft | null {
+  const draft = read<PlanningDraft>(privateAccountKey('draft', accountId), (value) => typeof value?.householdId === 'string' && Array.isArray(value.selectedTextileIds) && Array.isArray(value.seenTextileIds))
   return draft?.householdId === householdId ? draft : null
 }
 
@@ -223,7 +243,7 @@ function projectedDrying(drying: any): ProjectedDrying | null {
   }
 }
 
-export function saveSessionProjection(detail: {
+export function saveSessionProjection(accountId: string | null, detail: {
   sessionId: string
   householdId: string
   status: string
@@ -241,7 +261,7 @@ export function saveSessionProjection(detail: {
   actions: ReadonlyArray<Record<string, any>>
 }): void {
   if (detail.status !== 'running') {
-    clearSessionProjection(detail.sessionId)
+    clearSessionProjection(accountId, detail.sessionId)
     return
   }
   const projection = {
@@ -283,7 +303,7 @@ export function saveSessionProjection(detail: {
     })),
     savedAt: Date.now(),
   } satisfies SessionProjection
-  writeProjections([projection, ...loadProjections().filter((saved) => saved.sessionId !== projection.sessionId)])
+  writeProjections(accountId, [projection, ...loadProjections(accountId).filter((saved) => saved.sessionId !== projection.sessionId)])
 }
 
 /** Copies saved by an older version of the app lack the drying fields; they read as none. */
@@ -299,31 +319,31 @@ function withDefaults(projection: SessionProjection): SessionProjection {
 
 const validProjection = (value: any) => typeof value?.sessionId === 'string' && typeof value.revision === 'number' && Array.isArray(value.actions) && Array.isArray(value.textiles)
 
-/** Every running load's saved copy, newest first, including one left by an older version of the app. */
-function loadProjections(): SessionProjection[] {
-  const saved = read<unknown[]>(sessionsKey, Array.isArray) ?? []
-  const legacy = read<SessionProjection>(legacySessionKey, validProjection)
-  const projections = [...saved.filter(validProjection), ...(legacy === null ? [] : [legacy])] as SessionProjection[]
+/** Every running load's account-bound saved copy, newest first. */
+function loadProjections(accountId: string | null): SessionProjection[] {
+  const saved = read<unknown[]>(privateAccountKey('sessions', accountId), Array.isArray) ?? []
+  const projections = saved.filter(validProjection) as SessionProjection[]
   return projections
     .filter((projection, index) => projection.status === 'running' && projections.findIndex((other) => other.sessionId === projection.sessionId) === index)
     .sort((a, b) => (b.savedAt ?? 0) - (a.savedAt ?? 0))
 }
 
-/** Keeps the newest few running loads and retires the older single-copy key. */
-function writeProjections(projections: readonly SessionProjection[]): void {
+/** Keeps the newest few running loads for this account. */
+function writeProjections(accountId: string | null, projections: readonly SessionProjection[]): void {
+  const key = privateAccountKey('sessions', accountId)
+  if (key === null) return
   const kept = projections.filter((projection) => projection.status === 'running').slice(0, maxSessions)
   try {
-    if (kept.length === 0) storage()?.removeItem(sessionsKey)
-    else storage()?.setItem(sessionsKey, JSON.stringify(kept))
-    storage()?.removeItem(legacySessionKey)
+    if (kept.length === 0) storage()?.removeItem(key)
+    else storage()?.setItem(key, JSON.stringify(kept))
   } catch {
     // Storage may be full or blocked; the server remains the source of truth.
   }
 }
 
 /** This load's saved copy, or with no id the most recently saved running load. */
-export function loadSessionProjection(sessionId?: string): SessionProjection | null {
-  const projections = loadProjections()
+export function loadSessionProjection(accountId: string | null, sessionId?: string): SessionProjection | null {
+  const projections = loadProjections(accountId)
   const projection = sessionId === undefined ? projections[0] : projections.find((saved) => saved.sessionId === sessionId)
   return projection === undefined ? null : withDefaults(projection)
 }
@@ -332,17 +352,17 @@ export function loadSessionProjection(sessionId?: string): SessionProjection | n
  * What the offline screen shows: on a load's own page only that load's copy (never another load's
  * steps under its address), elsewhere the newest; and every other saved load, to open instead.
  */
-export function offlineSessionCopies(sessionId?: string): { projection: SessionProjection | null; others: SessionProjection[] } {
-  const projections = loadProjections().map(withDefaults)
+export function offlineSessionCopies(accountId: string | null, sessionId?: string): { projection: SessionProjection | null; others: SessionProjection[] } {
+  const projections = loadProjections(accountId).map(withDefaults)
   const projection = (sessionId === undefined ? projections[0] : projections.find((saved) => saved.sessionId === sessionId)) ?? null
   return { projection, others: projections.filter((saved) => saved !== projection) }
 }
 
 /** Forgets one load's copy, or with no id every load's. */
-export function clearSessionProjection(sessionId?: string): void {
-  const projections = loadProjections()
+export function clearSessionProjection(accountId: string | null, sessionId?: string): void {
+  const projections = loadProjections(accountId)
   if (sessionId !== undefined && !projections.some((saved) => saved.sessionId === sessionId)) return
-  writeProjections(sessionId === undefined ? [] : projections.filter((saved) => saved.sessionId !== sessionId))
+  writeProjections(accountId, sessionId === undefined ? [] : projections.filter((saved) => saved.sessionId !== sessionId))
 }
 
 /** Who and what the Closet shows: everyone, the signed-in person's own clothes, or one wearer's. */

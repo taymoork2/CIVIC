@@ -134,6 +134,13 @@ test('pending invite rows open invite management; plain and linked profiles rema
   expect(linked).not.toContain('>Remove person</button>')
 })
 
+test('a retained linked profile clearly shows removed access while its private clothes stay protected', () => {
+  const retained = { ...wearers[0]!, principalKey: 'removed-account' }
+  const markup = renderToStaticMarkup(<MembersView role="owner" members={[]} wearers={[retained]} onInvite={() => {}} onEdit={() => {}} onEditMember={() => {}} />)
+  expect(markup).toContain('Access removed · private clothes stay protected')
+  expect(markup).toContain('Invite someone')
+})
+
 test('profile drawer contains account actions and freezes them during a save', () => {
   const render = (pending: boolean) => renderToStaticMarkup(<WearerEditorView wearer={wearers[0]!} supplies={[]} pending={pending} onLinkAccount={() => {}} onAccessAction={() => {}} onClose={() => {}} onSave={async () => false} />)
   for (const label of ['Link account', 'Remove access']) {

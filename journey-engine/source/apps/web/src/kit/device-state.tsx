@@ -4,6 +4,9 @@ import { Sheet } from '@/kit/sheet'
 
 /** Account and household together; synthetic previews do not write device state. */
 export const DeviceScope = createContext<string | null>(null)
+/** Durable copies and taps belong to their account, including after session renewal. */
+export const PrivateAccount = createContext<string | null>(null)
+export const usePrivateAccount = () => useContext(PrivateAccount)
 const prefix = 'washcloset:private:convenience:'
 const lifetime = 24 * 60 * 60 * 1000
 const changed = 'washcloset:device-state'

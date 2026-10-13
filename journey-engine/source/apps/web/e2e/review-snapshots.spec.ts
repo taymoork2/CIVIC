@@ -78,7 +78,7 @@ test('only visible snapshots load; blocked images never block navigation or Play
     await page.getByRole('button', { name: 'Play', exact: true }).click()
     await expect(page.frameLocator('iframe[title="Live towel journey"]').getByLabel('Other material 1', { exact: true })).toBeVisible()
     const outline = page.getByRole('complementary', { name: 'App flow navigator' })
-    await outline.getByRole('button', { name: /Family simulation/ }).click()
+    await outline.getByRole('button', { name: /Family laundry day/ }).click()
     await expect.poll(() => requested.some((id) => id.startsWith('family.'))).toBe(true)
     await page.getByRole('navigation', { name: 'Canvas location' }).getByRole('button', { name: 'App', exact: true }).click()
     await page.getByRole('button', { name: 'Review', exact: true }).click()

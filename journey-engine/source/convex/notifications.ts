@@ -12,7 +12,7 @@ export const pushConfiguration = query({
   args: {},
   returns: v.union(v.null(), v.object({ publicKey: v.string() })),
   handler: async (ctx) => {
-    await principalFromAuth(ctx.auth)
+    await principalFromAuth(ctx)
     const publicKey = process.env.WEB_PUSH_PUBLIC_KEY
     return publicKey && process.env.WEB_PUSH_PRIVATE_KEY && process.env.WEB_PUSH_SUBJECT ? { publicKey } : null
   },
@@ -22,7 +22,7 @@ export const deviceSubscription = query({
   args: { deviceId: v.string() },
   returns: v.boolean(),
   handler: async (ctx, args) => {
-    const actor = await principalFromAuth(ctx.auth)
+    const actor = await principalFromAuth(ctx)
     const subscriptions = await ctx.db.query('notificationSubscriptions').withIndex('by_device', (q) => q.eq('principalKey', actor.key).eq('deviceId', args.deviceId)).collect()
     return subscriptions.some((entry) => entry.revokedAt === undefined && entry.endpoint !== undefined && entry.keys !== undefined)
   },
@@ -34,7 +34,7 @@ export const subscribe = mutation({
   handler: async (ctx, args) => {
     nonEmpty(args.deviceId, 'deviceId')
     nonEmpty(args.endpointHash, 'endpointHash')
-    const actor = await principalFromAuth(ctx.auth)
+    const actor = await principalFromAuth(ctx)
     if (args.deviceId.length > 120 || args.endpointHash.length > 120) fail('invalid', 'Invalid device subscription')
     if ((args.endpoint === undefined) !== (args.keys === undefined) || (args.endpoint !== undefined && (!validPushEndpoint(args.endpoint) || !validPushKeys(args.keys!)))) fail('invalid', 'Invalid push subscription')
     const existing = await ctx.db
@@ -70,7 +70,7 @@ export const revoke = mutation({
   returns: v.object({ deviceId: v.string(), revoked: v.number() }),
   handler: async (ctx, args) => {
     nonEmpty(args.deviceId, 'deviceId')
-    const actor = await principalFromAuth(ctx.auth)
+    const actor = await principalFromAuth(ctx)
     const subscriptions = await ctx.db
       .query('notificationSubscriptions')
       .withIndex('by_device', (q) => q.eq('principalKey', actor.key).eq('deviceId', args.deviceId))
@@ -91,7 +91,7 @@ export const revokeAll = mutation({
   args: {},
   returns: v.object({ revoked: v.number() }),
   handler: async (ctx) => {
-    const actor = await principalFromAuth(ctx.auth)
+    const actor = await principalFromAuth(ctx)
     const subscriptions = await ctx.db
       .query('notificationSubscriptions')
       .withIndex('by_principal', (q) => q.eq('principalKey', actor.key))
@@ -146,7 +146,7 @@ export const markAlertShown = mutation({
   args: { reminderId: v.id('reminders') },
   returns: v.null(),
   handler: async (ctx, args) => {
-    await principalFromAuth(ctx.auth)
+    await principalFromAuth(ctx)
     const reminder = await ctx.db.get(args.reminderId)
     if (reminder === null) fail('not_found', 'Not found')
     if (reminder.kind !== 'urgent_flag') fail('forbidden', 'Forbidden')

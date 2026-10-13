@@ -64,11 +64,15 @@ const specs = [...new Set(index.scenarios.flatMap((scenario) => scenario.checks 
 const scratch = mkdtempSync(join(tmpdir(), 'civic-laundry-'))
 try {
   const report = join(scratch, 'report.json')
-  const run = spawnSync(join(web, 'node_modules/.bin/playwright'), ['test', ...specs.map((spec) => spec.replace(/^apps\/web\//, '')), '--project=isolated', '--workers=1', '--reporter=json'], {
+  // Each test's progress prints as it runs; the JSON report goes to its file. Bounded: Playwright stops the run
+  // after 25 minutes, and the process is killed a minute after that if it has not exited.
+  const run = spawnSync(join(web, 'node_modules/.bin/playwright'), ['test', ...specs.map((spec) => spec.replace(/^apps\/web\//, '')), '--project=isolated', '--workers=1', '--reporter=line,json', '--global-timeout=1500000'], {
     cwd: web,
-    stdio: ['ignore', 'ignore', 'inherit'],
+    stdio: ['ignore', 'inherit', 'inherit'],
+    timeout: 1_560_000,
     env: { ...process.env, WASHCLOSET_REVIEW_E2E: '1', WASHCLOSET_E2E_BASE_URL: base, PLAYWRIGHT_JSON_OUTPUT_FILE: report },
   })
+  if (run.error || run.signal) throw new Error(`Playwright did not finish: ${run.error?.message ?? `stopped by ${run.signal}`}`)
   const raw = JSON.parse(readFileSync(report, 'utf8')) as { suites: Suite[]; stats: Record<string, unknown> }
   // Keep results and errors; drop attachments, output and absolute paths, which are about this machine.
   const clean = (suite: Suite): Suite => ({

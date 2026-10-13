@@ -9,5 +9,8 @@ import { extension } from './extension'
 
 bindProjectRequests(project.key)
 document.title = `${project.name} · CIVIC`
-if (extension.legacy && new URLSearchParams(location.search).get('legacy') === '1') await extension.legacy()
+const params = new URLSearchParams(location.search)
+const page = Object.entries(extension.pages ?? {}).find(([name]) => params.get(name) === '1')
+if (page) await page[1]()
+else if (extension.legacy && params.get('legacy') === '1') await extension.legacy()
 else createRoot(document.getElementById('review-root')!).render(<AppCanvas />)

@@ -11,6 +11,7 @@ export type StartupData = {
   account: 'signed-out' | 'signed-in' | 'unknown'
   token: string | undefined
   sessionId?: string
+  accountId?: string
   onboarding: FunctionReturnType<typeof api.households.onboardingStatus> | null
   brand: RenderableServerComponent<JSX.Element>
   homeSummary: RenderableServerComponent<JSX.Element> | null
@@ -29,7 +30,8 @@ export function StartupProvider({ data, children }: { data?: StartupData; childr
     if (!isPending && (session === null || (!isLoading && onboarding !== undefined))) setSeedActive(false)
   }, [isPending, session, isLoading, onboarding])
   // The document shell also renders during router errors and hot updates without loader data.
-  return <StartupContext.Provider value={data === undefined ? null : { data, seedActive }}>{children}</StartupContext.Provider>
+  const matchesSession = session?.session.id === data?.sessionId || (isPending && session === null)
+  return <StartupContext.Provider value={data === undefined || !matchesSession ? null : { data, seedActive }}>{children}</StartupContext.Provider>
 }
 
 export function useStartup() {

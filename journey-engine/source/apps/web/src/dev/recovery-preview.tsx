@@ -14,7 +14,7 @@ import { DraftChanged, DraftNotice, DraftRecovery, ForgetIntake } from '@/kit/de
 import { Sheet } from '@/kit/sheet'
 import { Button } from '@/components/ui/button'
 
-export const recoveryScreens = ['auth-pending', 'auth-expired', 'auth-failed', 'offline-first-visit', 'offline-signed-out', 'offline-running', 'task-loading', 'page-loading', 'page-failed', 'page-end', 'me-empty-history', 'outfit-action', 'draft-garment', 'draft-appliance', 'draft-product', 'draft-unavailable', 'draft-retry-garment', 'draft-retry-appliance', 'draft-retry-product', 'draft-changed', 'draft-removed', 'draft-forget'] as const
+export const recoveryScreens = ['auth-pending', 'auth-expired', 'auth-failed', 'offline-first-visit', 'offline-signed-out', 'offline-running', 'offline-older-copy', 'task-loading', 'page-loading', 'page-failed', 'page-end', 'me-empty-history', 'outfit-action', 'draft-garment', 'draft-appliance', 'draft-product', 'draft-unavailable', 'draft-retry-garment', 'draft-retry-appliance', 'draft-retry-product', 'draft-changed', 'draft-removed', 'draft-forget'] as const
 
 /** Real recovery presenters; synthetic data never enters the device's private store. */
 export function RecoveryPreview({ screen }: { screen: typeof recoveryScreens[number] }) {
@@ -34,7 +34,8 @@ function RecoveryState({ screen }: { screen: typeof recoveryScreens[number] }) {
   // Confirmed expiry follows the ordinary sign-in route, retaining its safe return address.
   if (screen === 'auth-expired') return <AccountForm mode="sign-in" redirect="/closet" visualPreview />
   if (screen === 'auth-failed') return <SignInUnavailable />
-  if (screen === 'offline-first-visit' || screen === 'offline-signed-out') return <OfflineUnavailable />
+  if (screen === 'offline-older-copy') return <OfflineUnavailable unbound />
+  if (screen === 'offline-first-visit' || screen === 'offline-signed-out') return <OfflineUnavailable unbound={false} />
   if (screen === 'offline-running') return <FixtureConvex data={{}}><OfflineSessionView projection={projection} /></FixtureConvex>
   if (screen === 'me-empty-history') return <MePreview />
   if (screen === 'page-failed') return retried ? <div className="page"><PageStatus shown={45} total={45} more={false} loading={false} onMore={() => {}} label="Show more clothes" /></div> : <RouteErrorView error={new Error('We couldn’t load your clothes. Your saved records are unchanged.')} onRetry={() => setRetried(true)} />

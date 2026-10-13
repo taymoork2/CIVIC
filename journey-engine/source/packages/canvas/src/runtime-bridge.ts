@@ -1,5 +1,6 @@
 export type RuntimeGesture = { kind: string; value?: string; target?: { tag: string; name: string; index: number; count: number }; checked?: boolean }
-export type RuntimeOperation = { kind: 'mutation' | 'action'; name: string; args: unknown; result?: unknown; error?: string }
+/** `actor` names the synthetic account that made a write after the run switched accounts; a run that never switched records none. */
+export type RuntimeOperation = { kind: 'mutation' | 'action'; name: string; args: unknown; actor?: string; result?: unknown; error?: string }
 export type RuntimeStep = { gesture: RuntimeGesture; route: string; fields: { label: string; value: string }[]; view: string; operations: RuntimeOperation[] }
 export type RuntimeRecording = { version: 1; project: string; source: string; seed: unknown; now: number; initialRoute: string; steps: RuntimeStep[] }
 export type RuntimePorts = {
@@ -21,14 +22,21 @@ export function createRuntimeBridge(ports: RuntimePorts) {
   const snapshot = (step: RuntimeStep) => Object.assign(step, { route: ports.route(), fields: structuredClone(ports.fields()), view: ports.view() })
   const seal = () => { if (current && !sealed.has(current)) { snapshot(current); sealed.add(current) } }
   let finalizing = Promise.resolve()
+  // A settle that has not started yet serves every flush asked for the same step meanwhile, so frequent callers
+  // (a panel counting steps on each run event) never queue a settle each; each flush still settles after its call.
+  let waiting: { step: RuntimeStep | null; done: Promise<void> } | null = null
   const flush = () => {
     const step = current
-    finalizing = finalizing.then(async () => {
+    if (waiting && waiting.step === step) return waiting.done
+    const entry: { step: RuntimeStep | null; done: Promise<void> } = { step, done: Promise.resolve() }
+    entry.done = finalizing = finalizing.then(async () => {
+      if (waiting === entry) waiting = null
       while (pending.size) await Promise.allSettled([...pending])
       await ports.settle()
       if (step && !sealed.has(step)) snapshot(step)
     })
-    return finalizing
+    waiting = entry
+    return entry.done
   }
   const bridge = {
     prepare(target?: RuntimeGesture['target']) {
@@ -42,9 +50,9 @@ export function createRuntimeBridge(ports: RuntimePorts) {
       current = { gesture: structuredClone(gesture), route: ports.route(), fields: [], view: '', operations: [] }
       tape.steps.push(current)
     },
-    operation<T>(kind: RuntimeOperation['kind'], name: string, args: unknown, execute: () => Promise<T>): Promise<T> {
+    operation<T>(kind: RuntimeOperation['kind'], name: string, args: unknown, execute: () => Promise<T>, actor?: string): Promise<T> {
       const step = current
-      const receipt: RuntimeOperation = { kind, name, args: structuredClone(args) }
+      const receipt: RuntimeOperation = { kind, name, args: structuredClone(args), ...(actor ? { actor } : {}) }
       step?.operations.push(receipt)
       const work = Promise.resolve().then(execute).then((result) => { if (result !== undefined) receipt.result = structuredClone(result); return result }, (error) => { receipt.error = (error as Error).message; throw error })
       pending.add(work)
