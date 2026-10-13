@@ -16,6 +16,8 @@ Every work request has a version, which counts its changes from 1, and names its
 
 `civic sync` shares this store with everyone else's through `refs/civic/records` on the repository's remote (`--remote`, default `origin`; `--ref` to change it), as [decision 0008](../docs/decisions/0008-team-records-on-a-git-ref.md) says. Each sync is one commit holding the records and their captures, with the person who synced in a `Civic-Actor:` trailer. Only people who can push to the repository can share records. A push that isn't a fast-forward is refused, so the sync fetches, merges again, and retries.
 
+Replays of recorded runs travel the same way ([decision 0009](../docs/decisions/0009-recorded-runs-as-evidence.md)). `civic share-replays [<review data dir>]` keeps the replays the journey canvas wrote (in `.review-data/replays/` by default; `--head <sha>` keeps only one commit's) in the store, each with its tape, both by content hash. The next `civic sync` shares them, and `civic replays [--head <sha>] [--json]` lists what's kept here or shared by others. Sharing is a choice a person makes; nothing is shared on its own.
+
 The merge goes record by record against the last snapshot this store shared:
 
 - A record changed on one side takes that side.

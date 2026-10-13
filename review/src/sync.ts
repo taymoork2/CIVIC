@@ -94,7 +94,7 @@ export function sync(context: Context, remote: RecordsRemote, options: SyncOptio
       writeState(store.dir, remote.label, { revision: shared.revision, document: theirs })
       return { remote: remote.label, revision: shared.revision, pulled, pushed, conflicts }
     }
-    if (!shared && merged.records.length === 0) return { remote: remote.label, revision: undefined, pulled, pushed, conflicts }
+    if (!shared && merged.records.length === 0 && outgoing.size === 0) return { remote: remote.label, revision: undefined, pulled, pushed, conflicts }
     const signature = options.signingKey ? signPayload(options.signingKey, signedPayload(shared?.revision, merged, me)) : undefined
     const published = remote.publish({ document: merged, captures: outgoing, actor: me, summary: `CIVIC records: ${pushed.length} changed`, ...(signature ? { signature } : {}) }, shared?.revision)
     if (published === 'moved') continue

@@ -1,6 +1,7 @@
 export * from './loop.ts'
 export * from './drafts.ts'
-export { Store, RefusedError } from './store.ts'
+export { Store, RefusedError, type StoredReplay } from './store.ts'
+export { shareReplays } from './replays.ts'
 export { readCheckout, worktreeFor, type Checkout } from './git.ts'
 export { identityFromEnv, actorId, personId, CIVIC_ACTOR_ID, type Identity } from './identity.ts'
 export { captureScenario, launchBrowser, recapture, reproductionUrl, type Browser, type RecaptureResult } from './recapture.ts'
