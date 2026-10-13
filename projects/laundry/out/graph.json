@@ -6969,6 +6969,542 @@
       }
     },
     {
+      "id": "semantic:laundry.action-feedback",
+      "kind": "semantic-component",
+      "title": "action-feedback",
+      "purpose": "A success is a brief toast. A failure is an inline `role=\"alert\"` banner (conflict tone) next to the section that acted, with a “Try again” action.",
+      "variants": [],
+      "states": [],
+      "rules": [
+        {
+          "key": "states-and-behavior",
+          "statement": "The banner holds until the next attempt or an edit; it never auto-dismisses. Try again repeats the same work and is omitted when repeating could duplicate a record (adding an appliance). Pending disables Try again. No error toast."
+        }
+      ],
+      "owners": [
+        {
+          "role": "design-engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "open-design",
+        "importer": "component-contract",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
+        "path": "journey-engine/design/laundry-reference/COMPONENTS.md",
+        "contentHash": "sha256:ab25b2daa3b64d7e6ef5f54ff5fe555de1fe582fb79c027d988d918b9b0076d6",
+        "anchor": "action-feedback"
+      }
+    },
+    {
+      "id": "semantic:laundry.action-list",
+      "kind": "semantic-component",
+      "title": "action-list",
+      "purpose": "Three or more actions, phrase answers or a menu as one grouped card of divider rows: title, optional hint, optional end caret.",
+      "variants": [],
+      "states": [],
+      "rules": [
+        {
+          "key": "states-and-behavior",
+          "statement": "Recommended action first; rare or final actions last and quiet (“Retire it”). A caret marks a row that opens something. Two actions use `answer-row` instead. Never a column of separate outline buttons."
+        }
+      ],
+      "owners": [
+        {
+          "role": "design-engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "open-design",
+        "importer": "component-contract",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
+        "path": "journey-engine/design/laundry-reference/COMPONENTS.md",
+        "contentHash": "sha256:ab25b2daa3b64d7e6ef5f54ff5fe555de1fe582fb79c027d988d918b9b0076d6",
+        "anchor": "action-list"
+      }
+    },
+    {
+      "id": "semantic:laundry.action-row",
+      "kind": "semantic-component",
+      "title": "action-row",
+      "purpose": "Flexible title/facts plus compact action. 12–16px gap. Existing loading specimen uses a 9rem action column; it wraps below the facts when necessary. Button height is a minimum, never a fixed text-clipping height.",
+      "variants": [],
+      "states": [],
+      "rules": [
+        {
+          "key": "states-and-behavior",
+          "statement": "Default, pressed, disabled with adjacent reason, focus, hover where available. Text receives spare space; action never stretches because its parent is flex/grid. A full-width primary requires an intentional task-footer or narrow task-layout role."
+        }
+      ],
+      "owners": [
+        {
+          "role": "design-engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "open-design",
+        "importer": "component-contract",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
+        "path": "journey-engine/design/laundry-reference/COMPONENTS.md",
+        "contentHash": "sha256:ab25b2daa3b64d7e6ef5f54ff5fe555de1fe582fb79c027d988d918b9b0076d6",
+        "anchor": "action-row"
+      }
+    },
+    {
+      "id": "semantic:laundry.adaptive-task",
+      "kind": "semantic-component",
+      "title": "adaptive-task",
+      "purpose": "Records/equipment before settings/steps/action in reading order. One or two purposeful columns, never three.",
+      "variants": [],
+      "states": [],
+      "rules": [
+        {
+          "key": "states-and-behavior",
+          "statement": "Narrow, wide, enlarged text, keyboard visible, orientation/posture change. Reflow never remounts drafts or restarts timers. Physical starts require an explicit record after the user starts equipment."
+        }
+      ],
+      "owners": [
+        {
+          "role": "design-engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "open-design",
+        "importer": "component-contract",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
+        "path": "journey-engine/design/laundry-reference/COMPONENTS.md",
+        "contentHash": "sha256:ab25b2daa3b64d7e6ef5f54ff5fe555de1fe582fb79c027d988d918b9b0076d6",
+        "anchor": "adaptive-task"
+      }
+    },
+    {
+      "id": "semantic:laundry.answer-row",
+      "kind": "semantic-component",
+      "title": "answer-row",
+      "purpose": "Two or three short answers to one question in one row of equal-width buttons, under a visible question. 44px minimum height (48px in a task footer), 8px gap, content-sized text that wraps.",
+      "variants": [],
+      "states": [],
+      "rules": [
+        {
+          "key": "states-and-behavior",
+          "statement": "Wraps onto a second row (columns of at least 5.5rem) at large text, never a stack of full-width bars. Chosen answer is filled and `aria-pressed`; a plain action is outline; at most one filled primary. Group named for assistive technology. Use for “Gone · Lighter · Still there”, “Put them together · Keep apart”, “Hang them · Wait for one”."
+        }
+      ],
+      "owners": [
+        {
+          "role": "design-engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "open-design",
+        "importer": "component-contract",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
+        "path": "journey-engine/design/laundry-reference/COMPONENTS.md",
+        "contentHash": "sha256:ab25b2daa3b64d7e6ef5f54ff5fe555de1fe582fb79c027d988d918b9b0076d6",
+        "anchor": "answer-row"
+      }
+    },
+    {
+      "id": "semantic:laundry.choice-chip",
+      "kind": "semantic-component",
+      "title": "choice-chip",
+      "purpose": "Three variants of one control: text chip (44px, 16px corner, inline), answer chip (full-width 56px row) and care-symbol tile (art above words, check in the corner). Rows sit under a visible label in a labeled group.",
+      "variants": [],
+      "states": [],
+      "rules": [
+        {
+          "key": "states-and-behavior",
+          "statement": "Toggle semantics (`aria-pressed`). One selected treatment for every variant: accent (selection) fill + selected ring + a check mark, never color alone. Pressed scales to .97 with motion allowed; disabled dims."
+        }
+      ],
+      "owners": [
+        {
+          "role": "design-engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "open-design",
+        "importer": "component-contract",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
+        "path": "journey-engine/design/laundry-reference/COMPONENTS.md",
+        "contentHash": "sha256:ab25b2daa3b64d7e6ef5f54ff5fe555de1fe582fb79c027d988d918b9b0076d6",
+        "anchor": "choice-chip"
+      }
+    },
+    {
+      "id": "semantic:laundry.choice-tile",
+      "kind": "semantic-component",
+      "title": "choice-tile",
+      "purpose": "Art above a short visible label inside a labeled group (`role=\"group\"` named by a visible legend or the step heading). Up to N columns with a 4.5rem tile floor, so enlarged text drops columns instead of squeezing labels. 76px minimum height, 14px corner, 32px art.",
+      "variants": [],
+      "states": [],
+      "rules": [
+        {
+          "key": "states-and-behavior",
+          "statement": "Toggle semantics (`aria-pressed`); accessible name = visible label. Selected = selection fill + accent ring + check badge, never color alone. Only for recognizable categories: clothing type (4 columns) and product form (3 × 2). Short answers stay chips; sentence answers stay radio cards."
+        }
+      ],
+      "owners": [
+        {
+          "role": "design-engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "open-design",
+        "importer": "component-contract",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
+        "path": "journey-engine/design/laundry-reference/COMPONENTS.md",
+        "contentHash": "sha256:ab25b2daa3b64d7e6ef5f54ff5fe555de1fe582fb79c027d988d918b9b0076d6",
+        "anchor": "choice-tile"
+      }
+    },
+    {
+      "id": "semantic:laundry.draft-sheet",
+      "kind": "semantic-component",
+      "title": "draft-sheet",
+      "purpose": "Identity/header, scrolling form, separate actions. Narrow bottom sheet; wide modal. Minimum hit targets and stable input identity.",
+      "variants": [],
+      "states": [],
+      "rules": [
+        {
+          "key": "states-and-behavior",
+          "statement": "Clean, edited, validation failure, discard confirmation, pending, error with inline retry, saved. Close/back/Escape/swipe do not save. Keep editing retains values. Reverted drafts are clean. Multi-step drafts keep answers on Back. A fact row opens the editor at its section/field; Save and Cancel return to the same record tab (existing records stay open after Save, new records close). Pending freezes controls; an error keeps the draft and points at the field; success stays visible across parent re-renders. A kept task draft (an unsaved dryness check) is named on its row and removed only by an explicit, confirmed discard. Drafts are page-lifetime; no reload durability is claimed. Restore opener focus and preserve underlying scroll."
+        }
+      ],
+      "owners": [
+        {
+          "role": "design-engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "open-design",
+        "importer": "component-contract",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
+        "path": "journey-engine/design/laundry-reference/COMPONENTS.md",
+        "contentHash": "sha256:ab25b2daa3b64d7e6ef5f54ff5fe555de1fe582fb79c027d988d918b9b0076d6",
+        "anchor": "draft-sheet"
+      }
+    },
+    {
+      "id": "semantic:laundry.garment-icon",
+      "kind": "semantic-component",
+      "title": "garment-icon",
+      "purpose": "One line icon per clothing type from the canonical 17-glyph set in `DESIGN.md` (Garment icons): 24-unit grid, no fill, 1.6 stroke, round caps; 24px in a row, 36px in a sheet header; an optional colour dot at the bottom corner (44% of the icon).",
+      "variants": [],
+      "states": [],
+      "rules": [
+        {
+          "key": "states-and-behavior",
+          "statement": "Decorative (`aria-hidden`); the row or tile names the garment. Unknown type draws Other (a plain hanger outline). No shading, no photograph. The dot appears only where a colour is meant (never on type tiles) and never carries meaning alone."
+        }
+      ],
+      "owners": [
+        {
+          "role": "design-engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "open-design",
+        "importer": "component-contract",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
+        "path": "journey-engine/design/laundry-reference/COMPONENTS.md",
+        "contentHash": "sha256:ab25b2daa3b64d7e6ef5f54ff5fe555de1fe582fb79c027d988d918b9b0076d6",
+        "anchor": "garment-icon"
+      }
+    },
+    {
+      "id": "semantic:laundry.grouped-secondary-actions",
+      "kind": "semantic-component",
+      "title": "grouped-secondary-actions",
+      "purpose": "Under a task instruction, in order: an explanation disclosure with a quiet, semibold, never-underlined link-weight trigger named by what it explains (“Why here?” / “Why now?”); a “Step options” disclosure for departures from the instruction (Used a different amount, Skip, I missed it); a labeled recovery group “Something wrong?” of compact full-width rows (Ran out? Switch product, Machine problem?).",
+      "variants": [],
+      "states": [],
+      "rules": [
+        {
+          "key": "states-and-behavior",
+          "statement": "Each group is omitted when empty. Options and recovery rows are outline, never filled; the step keeps one filled primary per viewport in its task footer. The options disclosure can stay open when the user returns from a sub-step."
+        }
+      ],
+      "owners": [
+        {
+          "role": "design-engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "open-design",
+        "importer": "component-contract",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
+        "path": "journey-engine/design/laundry-reference/COMPONENTS.md",
+        "contentHash": "sha256:ab25b2daa3b64d7e6ef5f54ff5fe555de1fe582fb79c027d988d918b9b0076d6",
+        "anchor": "grouped-secondary-actions"
+      }
+    },
+    {
+      "id": "semantic:laundry.load-summary",
+      "kind": "semantic-component",
+      "title": "load-summary",
+      "purpose": "One compact card: a line with the stage mark (dot + words), “From {washers}” naming every wash a dryer run combines, and the piece count; then the contents with matching pieces grouped (“White cotton tee ×2”, guests marked), ending in at most one next-action link with a 44px target.",
+      "variants": [],
+      "states": [],
+      "rules": [
+        {
+          "key": "states-and-behavior",
+          "statement": "Same anatomy at every stage (session page, running-load sheet, dryness check and put-away headers). The step and running page heading carries only the title and, once started, the start time; the summary carries the stage and origin, so the page never shows two status marks. A load is as far along as its least advanced piece. The link appears only where the screen has no other primary. Presentation only: it never records anything, and a stage word never says dry or put away unless someone recorded it."
+        }
+      ],
+      "owners": [
+        {
+          "role": "design-engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "open-design",
+        "importer": "component-contract",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
+        "path": "journey-engine/design/laundry-reference/COMPONENTS.md",
+        "contentHash": "sha256:ab25b2daa3b64d7e6ef5f54ff5fe555de1fe582fb79c027d988d918b9b0076d6",
+        "anchor": "load-summary"
+      }
+    },
+    {
+      "id": "semantic:laundry.segment-choice",
+      "kind": "semantic-component",
+      "title": "segment-choice",
+      "purpose": "One choice out of a few kept as a setting: the shared segment control, equal segments with a 4.5rem floor.",
+      "variants": [],
+      "states": [],
+      "rules": [
+        {
+          "key": "states-and-behavior",
+          "statement": "Radio-group semantics, wraps under large text, answers or saves on tap, disabled while saving. Use for loads a day, rack size, “Washers free” and “Dryers free” (1 · 2 · 3+), and a piece's Dry · Hang it · Not yet."
+        }
+      ],
+      "owners": [
+        {
+          "role": "design-engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "open-design",
+        "importer": "component-contract",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
+        "path": "journey-engine/design/laundry-reference/COMPONENTS.md",
+        "contentHash": "sha256:ab25b2daa3b64d7e6ef5f54ff5fe555de1fe582fb79c027d988d918b9b0076d6",
+        "anchor": "segment-choice"
+      }
+    },
+    {
+      "id": "semantic:laundry.source-row",
+      "kind": "semantic-component",
+      "title": "source-row",
+      "purpose": "44px media tile, title and one concise fact, upper-right dot+text status and lower-right disclosure (centered without status). 12px gap and 12px 16px grouped-row insets. Source-specific issues beneath that row.",
+      "variants": [],
+      "states": [],
+      "rules": [
+        {
+          "key": "states-and-behavior",
+          "statement": "Ready, missing fact, recorded conflict, washing, drying. Whole-row disclosure and issue actions remain separate targets. Names wrap. Red conflict is never relabeled as yellow missing information."
+        }
+      ],
+      "owners": [
+        {
+          "role": "design-engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "open-design",
+        "importer": "component-contract",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
+        "path": "journey-engine/design/laundry-reference/COMPONENTS.md",
+        "contentHash": "sha256:ab25b2daa3b64d7e6ef5f54ff5fe555de1fe582fb79c027d988d918b9b0076d6",
+        "anchor": "source-row"
+      }
+    },
+    {
+      "id": "semantic:laundry.type-picker",
+      "kind": "semantic-component",
+      "title": "type-picker",
+      "purpose": "The clothing type step for intake and Edit: “Search clothing” field (placeholder “e.g. hoodie or leggings”) above a 4-column `choice-tile` grid of the 16 care types (Bodysuit only with a baby wearer). Typing replaces the grid with up to 8 article rows: type art, article name, muted type word.",
+      "variants": [],
+      "states": [],
+      "rules": [
+        {
+          "key": "states-and-behavior",
+          "statement": "Empty search shows every tile, no pagination. Each row is named “{Article}, {Type}”; a polite, visually hidden count reports matches; no match offers one Add “{words}” as Other row; Enter picks the first row. In intake an article names an untouched garment “{Color} {article}”; in Edit it changes only the type and never renames."
+        }
+      ],
+      "owners": [
+        {
+          "role": "design-engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "open-design",
+        "importer": "component-contract",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
+        "path": "journey-engine/design/laundry-reference/COMPONENTS.md",
+        "contentHash": "sha256:ab25b2daa3b64d7e6ef5f54ff5fe555de1fe582fb79c027d988d918b9b0076d6",
+        "anchor": "type-picker"
+      }
+    },
+    {
+      "id": "platform:laundry.web.action-list",
+      "kind": "platform-component",
+      "title": "ActionList (web)",
+      "platform": "web",
+      "library": {
+        "package": "@washcloset/web"
+      },
+      "symbol": "ActionList",
+      "variants": [],
+      "owners": [
+        {
+          "role": "design-engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "git",
+        "importer": "component-contract",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
+        "path": "journey-engine/source/apps/web/src/laundry/laundry-ui.tsx",
+        "anchor": "L185"
+      }
+    },
+    {
+      "id": "platform:laundry.web.action-row",
+      "kind": "platform-component",
+      "title": "ActionRow (web)",
+      "platform": "web",
+      "library": {
+        "package": "@washcloset/web"
+      },
+      "symbol": "ActionRow",
+      "variants": [],
+      "owners": [
+        {
+          "role": "design-engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "git",
+        "importer": "component-contract",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
+        "path": "journey-engine/source/apps/web/src/household/household-blocks.tsx",
+        "anchor": "L63"
+      }
+    },
+    {
+      "id": "platform:laundry.web.answer-row",
+      "kind": "platform-component",
+      "title": "AnswerRow (web)",
+      "platform": "web",
+      "library": {
+        "package": "@washcloset/web"
+      },
+      "symbol": "AnswerRow",
+      "variants": [],
+      "owners": [
+        {
+          "role": "design-engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "git",
+        "importer": "component-contract",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
+        "path": "journey-engine/source/apps/web/src/laundry/laundry-ui.tsx",
+        "anchor": "L146"
+      }
+    },
+    {
+      "id": "platform:laundry.web.garment-icon",
+      "kind": "platform-component",
+      "title": "GarmentIcon (web)",
+      "platform": "web",
+      "library": {
+        "package": "@washcloset/web"
+      },
+      "symbol": "GarmentIcon",
+      "variants": [],
+      "owners": [
+        {
+          "role": "design-engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "git",
+        "importer": "component-contract",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
+        "path": "journey-engine/source/apps/web/src/kit/garment-icon.tsx",
+        "anchor": "L28"
+      }
+    },
+    {
+      "id": "platform:laundry.web.load-summary",
+      "kind": "platform-component",
+      "title": "LoadSummary (web)",
+      "platform": "web",
+      "library": {
+        "package": "@washcloset/web"
+      },
+      "symbol": "LoadSummary",
+      "variants": [],
+      "owners": [
+        {
+          "role": "design-engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "git",
+        "importer": "component-contract",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
+        "path": "journey-engine/source/apps/web/src/laundry/load-summary.tsx",
+        "anchor": "L102"
+      }
+    },
+    {
+      "id": "platform:laundry.web.segment-choice",
+      "kind": "platform-component",
+      "title": "SegmentChoice (web)",
+      "platform": "web",
+      "library": {
+        "package": "@washcloset/web"
+      },
+      "symbol": "SegmentChoice",
+      "variants": [],
+      "owners": [
+        {
+          "role": "design-engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "source": {
+        "tool": "git",
+        "importer": "component-contract",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
+        "path": "journey-engine/source/apps/web/src/laundry/laundry-ui.tsx",
+        "anchor": "L164"
+      }
+    },
+    {
       "id": "evidence:design-export.laundry-tokens",
       "kind": "evidence",
       "title": "Design reference tokens",
@@ -7940,6 +8476,30 @@
       }
     },
     {
+      "id": "evidence:source-analysis.laundry-components",
+      "kind": "evidence",
+      "title": "Web components named after the contract families",
+      "subjectIds": [
+        "platform:laundry.web.action-row",
+        "platform:laundry.web.answer-row",
+        "platform:laundry.web.segment-choice",
+        "platform:laundry.web.action-list",
+        "platform:laundry.web.garment-icon",
+        "platform:laundry.web.load-summary"
+      ],
+      "tier": "static-analysis",
+      "method": "source-analysis",
+      "platform": "web",
+      "outcome": "finding",
+      "finding": "6 of 14 families have an exported web component of the same name, in 258 source files.",
+      "capturedAt": "2026-10-13T00:08:21.840Z",
+      "source": {
+        "tool": "git",
+        "importer": "component-contract",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005"
+      }
+    },
+    {
       "id": "evidence:token-analysis.laundry-tokens",
       "kind": "evidence",
       "title": "Generated web tokens",
@@ -8677,6 +9237,60 @@
     }
   ],
   "links": [
+    {
+      "from": "platform:laundry.web.action-list",
+      "relation": "implements",
+      "to": "semantic:laundry.action-list",
+      "status": "inferred",
+      "evidenceIds": [
+        "evidence:source-analysis.laundry-components"
+      ]
+    },
+    {
+      "from": "platform:laundry.web.action-row",
+      "relation": "implements",
+      "to": "semantic:laundry.action-row",
+      "status": "inferred",
+      "evidenceIds": [
+        "evidence:source-analysis.laundry-components"
+      ]
+    },
+    {
+      "from": "platform:laundry.web.answer-row",
+      "relation": "implements",
+      "to": "semantic:laundry.answer-row",
+      "status": "inferred",
+      "evidenceIds": [
+        "evidence:source-analysis.laundry-components"
+      ]
+    },
+    {
+      "from": "platform:laundry.web.garment-icon",
+      "relation": "implements",
+      "to": "semantic:laundry.garment-icon",
+      "status": "inferred",
+      "evidenceIds": [
+        "evidence:source-analysis.laundry-components"
+      ]
+    },
+    {
+      "from": "platform:laundry.web.load-summary",
+      "relation": "implements",
+      "to": "semantic:laundry.load-summary",
+      "status": "inferred",
+      "evidenceIds": [
+        "evidence:source-analysis.laundry-components"
+      ]
+    },
+    {
+      "from": "platform:laundry.web.segment-choice",
+      "relation": "implements",
+      "to": "semantic:laundry.segment-choice",
+      "status": "inferred",
+      "evidenceIds": [
+        "evidence:source-analysis.laundry-components"
+      ]
+    },
     {
       "from": "target:laundry.catalog.existing-specimens",
       "relation": "contains",

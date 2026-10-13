@@ -8,9 +8,9 @@
 //   node build.ts           write out/
 //   node build.ts --check   fail if out/ is not what the inputs produce
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { assertValid, indexGraph, type CollaborationRecord, type DecisionFile, type Evidence, type Owner } from '../../graph/src/index.ts'
-import { applyDecisions, assemble, compareCssTokens, contentHash, fragment, readCoverageContract, readCssTokens, readJourneyIndex, readPlaywrightReport, readRenderReceipt, readReplays, type CoverageContract, type JourneyIndex, type RenderReceipt, type ReplayRecord } from '../../importers/src/index.ts'
+import { applyDecisions, assemble, compareCssTokens, contentHash, findWebComponents, fragment, readComponentFamilies, readCoverageContract, readCssTokens, readJourneyIndex, readPlaywrightReport, readRenderReceipt, readReplays, type CoverageContract, type JourneyIndex, type RenderReceipt, type ReplayRecord } from '../../importers/src/index.ts'
 
 const here = (path: string) => new URL(path, import.meta.url)
 const text = (path: string) => readFileSync(here(path), 'utf8')
@@ -106,9 +106,27 @@ const tokenRecords = [...new Map(themes.flatMap((compared) => compared.tokens).m
 const tokenConflicts = themes.flatMap((compared) => compared.conflicts)
 for (const side of [designEvidence, codeEvidence]) side.subjectIds = tokenRecords.map((token) => token.id)
 
+// --- Components (roadmap order of work, item 2) ----------------------------------------------
+// The reference's component contract names Laundry's component families. Each is a Semantic
+// component, and a web component exported under the same name implements it, inferred until
+// someone confirms it. Families with no such export are listed in out/components.md.
+const CONTRACT = 'journey-engine/design/laundry-reference/COMPONENTS.md'
+const WEB_SOURCE = `${SOURCE_ROOT}/apps/web/src`
+const componentOwners: Owner[] = [{ role: 'design-engineering', who: 'taymoork2' }]
+const families = readComponentFamilies(repoText(CONTRACT), {
+  prefix: PREFIX,
+  owners: componentOwners,
+  source: { tool: 'open-design', importer: 'component-contract', revision: index.revision.head, path: CONTRACT, contentHash: contentHash(repoText(CONTRACT)) },
+})
+const webSources = (readdirSync(new URL(`../../${WEB_SOURCE}`, import.meta.url), { recursive: true }) as string[])
+  .filter((file) => /\.tsx?$/.test(file) && !/\.test\.tsx?$/.test(file))
+  .sort()
+  .map((file) => ({ path: `${WEB_SOURCE}/${file}`, text: repoText(`${WEB_SOURCE}/${file}`) }))
+const web = findWebComponents(families, webSources, { prefix: PREFIX, package: '@washcloset/web', owners: componentOwners, revision: index.revision.head, evidenceId: 'evidence:source-analysis.laundry-components', capturedAt: at })
+
 // A person's calls on the conflicts (roadmap step 3), from decisions.json.
 const decisions = json<DecisionFile>('decisions.json')
-const graph = applyDecisions(assemble(journeys.fragment, fragment(evidence), coverage, fragment([...tokenRecords, designEvidence, codeEvidence, ...tokenConflicts])), decisions)
+const graph = applyDecisions(assemble(journeys.fragment, fragment(evidence), coverage, fragment([...tokenRecords, designEvidence, codeEvidence, ...tokenConflicts]), fragment([...families, ...web.components, web.evidence], web.links)), decisions)
 assertValid(graph)
 
 // --- The design reference (roadmap order of work, item 2) ------------------------------------
@@ -195,6 +213,23 @@ Built by \`node projects/laundry/build.ts\` from the design reference's styleshe
 
 ${themes.map(themeSection).join('\n')}`
 
+const componentReport = `# Laundry: components
+
+Built by \`node projects/laundry/build.ts\` from the design reference's component contract, [\`${CONTRACT}\`](../../../${CONTRACT}), and Laundry's web source (\`${WEB_SOURCE}\`). Each of the contract's ${families.length} component families is a Semantic component in [\`graph.json\`](graph.json). A web component exported under the family's name in PascalCase implements it. That link is inferred until someone confirms it, because a shared name is a guess.
+
+## Found on web: ${web.components.length} of ${families.length}
+
+| Family | Web component | Where |
+|---|---|---|
+${web.components.map((component) => `| \`${component.id.split('.').pop()}\` | \`${component.symbol}\` | \`${component.source!.path!.slice(WEB_SOURCE.length + 1)}\` ${component.source!.anchor} |`).join('\n')}
+
+## No web component by that name: ${web.missing.length}
+
+${web.missing.map((family) => `\`${family}\``).join(', ') || 'None.'}
+
+These may be built under another name or as plain markup, such as a CSS class. They are listed, not raised. Naming a component after its family, or recording which component builds it, lets CIVIC follow it.
+`
+
 const outputs: Record<string, string> = {
   'out/graph.json': `${JSON.stringify(graph, null, 2)}\n`,
   'out/design.json': `${JSON.stringify(design, null, 2)}\n`,
@@ -202,8 +237,9 @@ const outputs: Record<string, string> = {
   'out/runs.md': runs,
   'out/coverage.md': coverageReport,
   'out/tokens.md': tokenReport,
+  'out/components.md': componentReport,
 }
-const summary = `${graph.records.length} records, ${graph.links.length} links, ${tests.length} test(s) and ${replayed.length} replayed run(s), ${failed.length} failing, ${tokenConflicts.length} token conflict(s)`
+const summary = `${graph.records.length} records, ${graph.links.length} links, ${tests.length} test(s) and ${replayed.length} replayed run(s), ${failed.length} failing, ${tokenConflicts.length} token conflict(s), ${web.components.length} of ${families.length} component families found on web`
 if (process.argv.includes('--check')) {
   const stale = Object.entries(outputs).filter(([path, body]) => {
     try {
