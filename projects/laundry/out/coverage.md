@@ -1,6 +1,6 @@
 # Laundry: coverage gaps
 
-Built by `node projects/laundry/build.ts` from the journey engine's coverage contract and the same run evidence, at commit `03c31274673c`. 11 of 13 declared expectations can't yet be shown and proven with a passing run. Each is an open Coverage gap record in [`graph.json`](graph.json), and the gate reports it as advisory.
+Built by `node projects/laundry/build.ts` from Laundry's coverage contract and the same run evidence, at taymoork2/washcloset commit `783e0742dc07`. 11 of 13 declared expectations can't yet be shown and proven with a passing run. Each is an open Coverage gap record in [`graph.json`](graph.json), and the gate reports it as advisory.
 
 | Expectation | Gap | Record |
 |---|---|---|

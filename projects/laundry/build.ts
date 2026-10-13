@@ -8,7 +8,7 @@
 //   node build.ts           write out/
 //   node build.ts --check   fail if out/ is not what the inputs produce
 
-import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { assertValid, indexGraph, type CollaborationRecord, type DecisionFile, type Evidence, type Owner } from '../../graph/src/index.ts'
 import { applyDecisions, assemble, compareCssTokens, contentHash, findWebComponents, fragment, readComponentFamilies, readCoverageContract, readCssTokens, readJourneyIndex, readPlaywrightReport, readRenderReceipt, readReplays, type CoverageContract, type JourneyIndex, type RenderReceipt, type ReplayRecord } from '../../importers/src/index.ts'
 
@@ -22,19 +22,21 @@ const OWNERS: Owner[] = [
   { role: 'engineering', who: 'taymoork2' },
   { role: 'qa', who: 'taymoork2' },
 ]
-// Spec paths in the index are relative to the journey engine's source root; test files in
-// the report are relative to Laundry's Playwright test directory.
-const SOURCE_ROOT = 'journey-engine/source'
+// Paths are relative to Laundry's own repository (decision 0010): spec paths in the index from its root, test
+// files in the report from its Playwright test directory. What the graph reads from Laundry's source was captured
+// with the rest, at the same commit, into inputs/source.json, so the graph builds without a Laundry checkout.
 const TEST_DIR = 'apps/web/e2e'
+const source = json<{ repository: string; revision: string; specs: Record<string, string>; tokens: { path: string; text: string }; exports: { path: string; line: number; text: string }[] }>('inputs/source.json')
 
 const index = json<JourneyIndex>('inputs/review-index.json')
+if (source.revision !== index.revision.head) throw new Error(`inputs/source.json is from ${source.revision}, the review index from ${index.revision.head}. Capture them together.`)
 const journeys = readJourneyIndex(index, {
   prefix: PREFIX,
   platform: 'web',
   owners: OWNERS,
   // Older design-preview specimens: a catalog, not a journey anyone walks.
   catalogs: ['Existing specimens'],
-  path: `${SOURCE_ROOT}/apps/web/src/review/scenarios.json`,
+  path: 'apps/web/src/review/scenarios.json',
 })
 
 // A test covers the scenarios its spec file is declared to check. When the test's own body
@@ -45,13 +47,13 @@ const testLines = new Map(report.suites.map((suite) => [suite.file, (suite.specs
 const scenarioOf = (targetId: string) => targetId.slice(`target:${PREFIX}.`.length)
 function subjectsFor(spec: { file: string; line: number }): string[] {
   const declared = journeys.checks.get(`${TEST_DIR}/${spec.file}`) ?? []
-  const lines = readFileSync(new URL(`../../${SOURCE_ROOT}/${TEST_DIR}/${spec.file}`, import.meta.url), 'utf8').split('\n')
+  const lines = (source.specs[spec.file] ?? '').split('\n')
   const next = (testLines.get(spec.file) ?? []).find((line) => line > spec.line) ?? lines.length + 1
   const body = lines.slice(spec.line - 1, next - 1).join('\n')
   const named = declared.filter((id) => new RegExp(`scenario=${scenarioOf(id).replaceAll('.', '\\.')}(?![\\w.-])`).test(body))
   return named.length > 0 ? named : declared
 }
-const tests = readPlaywrightReport(report, 'web', { subjectsFor, pathFor: (file) => `${SOURCE_ROOT}/${TEST_DIR}/${file}` })
+const tests = readPlaywrightReport(report, 'web', { subjectsFor, pathFor: (file) => `${TEST_DIR}/${file}` })
 // Recorded runs a person replayed in the canvas at the captured commit (decision 0009).
 const replays = existsSync(here('inputs/replays.json')) ? json<ReplayRecord[]>('inputs/replays.json') : []
 const replayed = readReplays(replays, { prefix: PREFIX, platform: 'web', path: 'projects/laundry/inputs/replays.json', targetIds: new Set(journeys.fragment.records.map((record) => record.id)) })
@@ -66,7 +68,7 @@ const coverage = readCoverageContract(JSON.parse(coverageText) as CoverageContra
   owners: OWNERS,
   raisedBy: { role: 'qa', who: 'taymoork2' },
   at: evidence.map((item) => item.capturedAt).sort().at(-1) ?? index.revision.head,
-  path: `${SOURCE_ROOT}/docs/design/review-product/coverage.json`,
+  path: 'docs/design/review-product/coverage.json',
   revision: index.revision.head,
   targetIds: new Set(journeys.fragment.records.map((record) => record.id)),
   evidence,
@@ -77,8 +79,9 @@ const coverage = readCoverageContract(JSON.parse(coverageText) as CoverageContra
 // by name. A name both set differently is an open conflict a person decides; the reference's
 // roles the code has no token for are listed in out/tokens.md.
 const DESIGN_TOKENS = ['journey-engine/design/laundry-reference/colors_and_type.css', 'journey-engine/design/laundry-reference/tokens.css']
-const CODE_TOKENS = `${SOURCE_ROOT}/apps/web/src/generated/tokens.css`
-const repoText = (path: string) => readFileSync(new URL(`../../${path}`, import.meta.url), 'utf8')
+const CODE_TOKENS = source.tokens.path
+// CIVIC's own files, and the one Laundry file captured whole.
+const repoText = (path: string) => (path === CODE_TOKENS ? source.tokens.text : readFileSync(new URL(`../../${path}`, import.meta.url), 'utf8'))
 const at = evidence.map((item) => item.capturedAt).sort().at(-1) ?? index.revision.head
 const tokenEvidence = (id: string, title: string, paths: string[], method: Evidence['method'], finding: string): Evidence => ({
   id, kind: 'evidence', title, subjectIds: [], tier: 'static-analysis', method, platform: 'web', outcome: 'finding', finding, capturedAt: at,
@@ -111,17 +114,20 @@ for (const side of [designEvidence, codeEvidence]) side.subjectIds = tokenRecord
 // component, and a web component exported under the same name implements it, inferred until
 // someone confirms it. Families with no such export are listed in out/components.md.
 const CONTRACT = 'journey-engine/design/laundry-reference/COMPONENTS.md'
-const WEB_SOURCE = `${SOURCE_ROOT}/apps/web/src`
+const WEB_SOURCE = 'apps/web/src'
 const componentOwners: Owner[] = [{ role: 'design-engineering', who: 'taymoork2' }]
 const families = readComponentFamilies(repoText(CONTRACT), {
   prefix: PREFIX,
   owners: componentOwners,
   source: { tool: 'open-design', importer: 'component-contract', revision: index.revision.head, path: CONTRACT, contentHash: contentHash(repoText(CONTRACT)) },
 })
-const webSources = (readdirSync(new URL(`../../${WEB_SOURCE}`, import.meta.url), { recursive: true }) as string[])
-  .filter((file) => /\.tsx?$/.test(file) && !/\.test\.tsx?$/.test(file))
-  .sort()
-  .map((file) => ({ path: `${WEB_SOURCE}/${file}`, text: repoText(`${WEB_SOURCE}/${file}`) }))
+// Each source file as its exported declarations, each on its own line, which is all the match reads.
+const exportsIn = Map.groupBy(source.exports, (declaration) => declaration.path)
+const webSources = [...exportsIn].map(([path, declarations]) => {
+  const lines: string[] = []
+  for (const declaration of declarations) lines[declaration.line - 1] = declaration.text
+  return { path, text: Array.from(lines, (text) => text ?? '').join('\n') }
+})
 const web = findWebComponents(families, webSources, { prefix: PREFIX, package: '@washcloset/web', owners: componentOwners, revision: index.revision.head, evidenceId: 'evidence:source-analysis.laundry-components', capturedAt: at })
 
 // A person's calls on the conflicts (roadmap step 3), from decisions.json.
@@ -165,7 +171,7 @@ const line = (item: Evidence) => `- **${item.title}** (\`${item.source.path}\`, 
 const screens = indexed.ofKind('target').filter((target) => target.scale === 'screen' && !expectation(target.id)).length
 const runs = `# Laundry: run evidence by journey
 
-Built by \`node projects/laundry/build.ts\` from the journey engine's review index and a Playwright report of Laundry's own review specs, both captured at commit \`${index.revision.head.slice(0, 12)}\`. ${screens} screens, ${evidence.length} tests and replayed runs: ${evidence.length - failed.length} passed, ${failed.length} failed. ${replayed.length === 0 ? 'No recorded run has been replayed at this commit.' : `${replayed.length} of them are recorded runs replayed in the canvas.`}
+Built by \`node projects/laundry/build.ts\` from Laundry's review index and a Playwright report of its own review specs, both captured from a Laundry checkout at ${source.repository} commit \`${index.revision.head.slice(0, 12)}\`. ${screens} screens, ${evidence.length} tests and replayed runs: ${evidence.length - failed.length} passed, ${failed.length} failed. ${replayed.length === 0 ? 'No recorded run has been replayed at this commit.' : `${replayed.length} of them are recorded runs replayed in the canvas.`}
 
 A screen passes when every test that covers it passed, and fails when any did. The specs run against the review server's synthetic fixtures, not a household backend.
 
@@ -182,7 +188,7 @@ const gaps = coverage.records.filter((record): record is CollaborationRecord => 
 const expectations = coverage.records.filter((record) => record.kind === 'target').length
 const coverageReport = `# Laundry: coverage gaps
 
-Built by \`node projects/laundry/build.ts\` from the journey engine's coverage contract and the same run evidence, at commit \`${index.revision.head.slice(0, 12)}\`. ${gaps.length} of ${expectations} declared expectations can't yet be shown and proven with a passing run. Each is an open Coverage gap record in [\`graph.json\`](graph.json), and the gate reports it as advisory.
+Built by \`node projects/laundry/build.ts\` from Laundry's coverage contract and the same run evidence, at ${source.repository} commit \`${index.revision.head.slice(0, 12)}\`. ${gaps.length} of ${expectations} declared expectations can't yet be shown and proven with a passing run. Each is an open Coverage gap record in [\`graph.json\`](graph.json), and the gate reports it as advisory.
 
 | Expectation | Gap | Record |
 |---|---|---|
@@ -209,13 +215,13 @@ Only in the design reference: ${designOnly.map((name) => `\`--${name}\``).join('
 `
 const tokenReport = `# Laundry: tokens
 
-Built by \`node projects/laundry/build.ts\` from the design reference's stylesheets (${DESIGN_TOKENS.map((path) => `\`${path.split('/').pop()}\``).join(', ')}) and the web tokens Laundry's token build generates (\`${CODE_TOKENS}\`). It compares the custom properties each sets by name, with \`var()\` aliases resolved, for the default theme and for the dark theme laid over it. A name set differently is a Contract Conflict in [\`graph.json\`](graph.json), decided in [\`decisions.json\`](../decisions.json) once someone has said whether the design or the code changes. Names only the reference sets are its own short color names and the layout and motion roles the code writes as literals; they are listed, not raised.
+Built by \`node projects/laundry/build.ts\` from the design reference's stylesheets (${DESIGN_TOKENS.map((path) => `\`${path.split('/').pop()}\``).join(', ')}) and the web tokens Laundry's token build generates (\`${CODE_TOKENS}\` in ${source.repository}, captured at \`${source.revision.slice(0, 12)}\`). It compares the custom properties each sets by name, with \`var()\` aliases resolved, for the default theme and for the dark theme laid over it. A name set differently is a Contract Conflict in [\`graph.json\`](graph.json), decided in [\`decisions.json\`](../decisions.json) once someone has said whether the design or the code changes. Names only the reference sets are its own short color names and the layout and motion roles the code writes as literals; they are listed, not raised.
 
 ${themes.map(themeSection).join('\n')}`
 
 const componentReport = `# Laundry: components
 
-Built by \`node projects/laundry/build.ts\` from the design reference's component contract, [\`${CONTRACT}\`](../../../${CONTRACT}), and Laundry's web source (\`${WEB_SOURCE}\`). Each of the contract's ${families.length} component families is a Semantic component in [\`graph.json\`](graph.json). A web component exported under the family's name in PascalCase implements it. That link is inferred until someone confirms it, because a shared name is a guess.
+Built by \`node projects/laundry/build.ts\` from the design reference's component contract, [\`${CONTRACT}\`](../../../${CONTRACT}), and the exported declarations in Laundry's web source (\`${WEB_SOURCE}\` in ${source.repository}, captured at \`${source.revision.slice(0, 12)}\`). Each of the contract's ${families.length} component families is a Semantic component in [\`graph.json\`](graph.json). A web component exported under the family's name in PascalCase implements it. That link is inferred until someone confirms it, because a shared name is a guess.
 
 ## Found on web: ${web.components.length} of ${families.length}
 

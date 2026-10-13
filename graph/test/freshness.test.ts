@@ -4,7 +4,7 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test } from 'node:test'
-import { checkGraph, indexGraph, screenFacts, staleEvidence, type GraphDocument } from '../src/index.ts'
+import { checkGraph, evidenceAge, freshnessRoot, indexGraph, screenFacts, staleEvidence, type GraphDocument } from '../src/index.ts'
 
 // Roadmap step 6: evidence becomes visibly stale when the code it proves changes.
 
@@ -70,4 +70,23 @@ test('the gate reports stale evidence as advisory with a count, and the screen s
   const facts = screenFacts(graph, 'app.graph.json', 'target:app.form', { today: '2026-10-12', stale })
   assert.deepEqual(facts.findings.map((item) => [item.kind, item.blocks]), [['stale-evidence', false]], 'advisory, so it never blocks')
   assert.deepEqual(facts.evidence.map((item) => [item.title, item.stale]), [['saves', '1 file under app changed since abc123def456'], ['reads the form source', undefined]])
+})
+
+test('code in another repository is compared in the checkout a variable names, and otherwise only aged', () => {
+  const app = repository()
+  try {
+    const captured = app.commit('app/form.ts', 'export const form = 1\n')
+    const elsewhere = { ...rule, checkout: { repository: 'acme/app', env: 'APP_CHECKOUT' } }
+    // Without the variable there is nothing to compare with, so nothing is stale.
+    assert.equal(freshnessRoot(elsewhere, '/civic', {}), undefined)
+    assert.equal(freshnessRoot(rule, '/civic', {}), '/civic', 'a rule without a checkout reads this repository')
+    const root = freshnessRoot(elsewhere, '/civic', { APP_CHECKOUT: app.root })!
+    assert.equal(root, app.root)
+    assert.deepEqual([...staleEvidence(graphAt(captured), elsewhere, root)], [])
+    app.commit('app/form.ts', 'export const form = 2\n')
+    assert.deepEqual([...staleEvidence(graphAt(captured), elsewhere, root).keys()], ['evidence:playwright.saves'])
+    assert.deepEqual(evidenceAge(graphAt(captured), elsewhere), { capturedAt: '2026-10-12T00:00:00Z', revision: captured, count: 1 })
+  } finally {
+    app.done()
+  }
 })

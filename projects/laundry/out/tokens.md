@@ -1,6 +1,6 @@
 # Laundry: tokens
 
-Built by `node projects/laundry/build.ts` from the design reference's stylesheets (`colors_and_type.css`, `tokens.css`) and the web tokens Laundry's token build generates (`journey-engine/source/apps/web/src/generated/tokens.css`). It compares the custom properties each sets by name, with `var()` aliases resolved, for the default theme and for the dark theme laid over it. A name set differently is a Contract Conflict in [`graph.json`](graph.json), decided in [`decisions.json`](../decisions.json) once someone has said whether the design or the code changes. Names only the reference sets are its own short color names and the layout and motion roles the code writes as literals; they are listed, not raised.
+Built by `node projects/laundry/build.ts` from the design reference's stylesheets (`colors_and_type.css`, `tokens.css`) and the web tokens Laundry's token build generates (`apps/web/src/generated/tokens.css` in taymoork2/washcloset, captured at `783e0742dc07`). It compares the custom properties each sets by name, with `var()` aliases resolved, for the default theme and for the dark theme laid over it. A name set differently is a Contract Conflict in [`graph.json`](graph.json), decided in [`decisions.json`](../decisions.json) once someone has said whether the design or the code changes. Names only the reference sets are its own short color names and the layout and motion roles the code writes as literals; they are listed, not raised.
 
 ## Default theme
 
