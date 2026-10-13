@@ -126,7 +126,7 @@ function gapsForComponent(graph: Graph, semantic: SemanticComponent): Gap[] {
 
   // Product states a screen's design neither shows nor inherits (D32), owned by whoever owns the instances.
   const instances = graph.ofKind('component-instance').filter((instance) => instance.semanticId === semantic.id && instance.origin === 'design')
-  const screens = new Set(instances.map((instance) => screenOf(graph, instance.placedOn)))
+  const screens = new Set(instances.flatMap((instance) => screensOf(graph, instance.placedOn)))
   for (const screenId of [...screens].sort()) {
     for (const coverage of stateCoverageOn(graph, screenId).filter((item) => item.semanticId === semantic.id && item.missing.length > 0)) {
       const instanceOwners = instances.filter((instance) => coverage.instanceIds.includes(instance.id)).flatMap((instance) => instance.owners ?? [])
@@ -154,6 +154,19 @@ function gapsForComponent(graph: Graph, semantic: SemanticComponent): Gap[] {
 }
 
 /** The screen an instance belongs to: its own target, or the screen that contains its state target. */
+/**
+ * The screens a target is shown on: a state's screen, or for a product component (decision
+ * 0011), every screen that places it, directly or inside another component.
+ */
+export function screensOf(graph: Graph, targetId: string, seen = new Set<string>()): string[] {
+  const target = graph.get(targetId)
+  if (target?.kind !== 'target' || target.scale !== 'component') return [screenOf(graph, targetId)]
+  if (seen.has(targetId)) return []
+  seen.add(targetId)
+  const placers = graph.linksTo(targetId).filter((link) => link.relation === 'contains' && countsForReadiness(link) && graph.get(link.from)?.kind === 'target')
+  return [...new Set(placers.flatMap((link) => screensOf(graph, link.from, seen)))].sort()
+}
+
 export function screenOf(graph: Graph, targetId: string): string {
   const target = graph.get(targetId)
   if (target?.kind !== 'target' || target.scale !== 'state') return targetId

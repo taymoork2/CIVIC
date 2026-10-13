@@ -8,6 +8,21 @@
     },
     {
       "graph": "demo/card/out/resolved.graph.json",
+      "key": "missing-state target:shop.gift-options semantic:card empty",
+      "summary": "Gift options has no design for the Card's empty state; show it or say the instance inherits the default."
+    },
+    {
+      "graph": "demo/card/out/resolved.graph.json",
+      "key": "missing-state target:shop.gift-options semantic:card error",
+      "summary": "Gift options has no design for the Card's error state; show it or say the instance inherits the default."
+    },
+    {
+      "graph": "demo/card/out/resolved.graph.json",
+      "key": "missing-state target:shop.gift-options semantic:card loading",
+      "summary": "Gift options has no design for the Card's loading state; show it or say the instance inherits the default."
+    },
+    {
+      "graph": "demo/card/out/resolved.graph.json",
       "key": "missing-state target:shop.order-summary semantic:card empty",
       "summary": "Order Summary has no design for the Card's empty state; show it or say the instance inherits the default."
     },

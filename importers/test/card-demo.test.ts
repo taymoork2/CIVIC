@@ -42,7 +42,11 @@ test('the resolved graph keeps the rejection and leaves the selectable Card unde
 
 test('the completeness check finds the missing loading, empty and error states, a dead end and an unreachable screen', () => {
   const result = completenessOf(indexGraph(load('raised')), 'target:shop.checkout')
-  assert.deepEqual(result.states.map((item) => [item.screenId, item.shown, item.missing, item.total]), [['target:shop.order-summary', ['rest'], ['loading', 'empty', 'error'], 7]])
+  // Gift options shows the Card through Shop's own Gift option component, read once at its definition.
+  assert.deepEqual(result.states.map((item) => [item.screenId, item.instanceIds, item.shown, item.missing, item.total]), [
+    ['target:shop.gift-options', ['instance:shop.component.gift-option.card'], ['rest'], ['loading', 'empty', 'error'], 7],
+    ['target:shop.order-summary', ['instance:shop.order-summary.card', 'instance:shop.order-summary.loading.card'], ['rest'], ['loading', 'empty', 'error'], 7],
+  ])
   assert.deepEqual([result.journey.deadEnds, result.journey.unreachable, result.journey.screens.length], [['target:shop.promo-applied'], ['target:shop.gift-options'], 3])
 })
 

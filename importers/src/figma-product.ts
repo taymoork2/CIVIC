@@ -263,6 +263,75 @@ export function readFigmaProductFile(file: unknown, library: LibraryFacts, produ
   const placed = new Map<string, string[]>()
   const pages = (root.document.children ?? []).filter((node) => node.type === 'CANVAS')
 
+  // A product's own components (decision 0011): a local component that holds the library
+  // component is read once, at its definition, and each screen that places it contains it.
+  const definitions = new Map<string, { node: FigmaNode; targetId: string; path: string }>()
+  for (const page of pages) {
+    walk(page, (node) => {
+      if (node.type !== 'COMPONENT' || root.components?.[node.id]?.remote) return
+      let holds = false
+      placements(node, (child) => {
+        if (child.componentId && isMapped(child.componentId)) holds = true
+      })
+      if (!holds) return
+      const entry = root.components?.[node.id]
+      const set = entry?.componentSetId ? root.componentSets?.[entry.componentSetId] : undefined
+      const name = set ? `${set.name} / ${node.name}` : node.name
+      definitions.set(node.id, { node, targetId: `target:${product.product}.component.${slug(name)}`, path: `${page.name} / ${name}` })
+    })
+  }
+  /** Where each product component is placed, by its target. */
+  const placedAt = new Map<string, string[]>()
+
+  /** The instances a frame or product component places: the library component, product components, and any other library's. */
+  const readContents = (node: FigmaNode, targetId: string, path: string) => {
+    const instanceIds = new Set<string>()
+    placements(node, (child) => {
+      if (!child.componentId) return
+      const definition = definitions.get(child.componentId)
+      if (definition) {
+        placedAt.set(definition.targetId, [...(placedAt.get(definition.targetId) ?? []), targetId])
+        if (!links.some((link) => link.from === targetId && link.relation === 'contains' && link.to === definition.targetId)) {
+          links.push({ from: targetId, relation: 'contains', to: definition.targetId, status: 'declared', source: source(`${path} / ${child.name}`, child.id) })
+        }
+        return
+      }
+      if (isMapped(child.componentId)) {
+        const instanceId = `instance:${targetId.slice('target:'.length)}.${slug(child.name)}`
+        if (instanceIds.has(instanceId)) throw new Error(`${root.name}: "${node.name}" has two ${mapping.componentSet} instances named "${child.name}"; name them apart.`)
+        instanceIds.add(instanceId)
+        const provenance = { file: libraryFile, key: keyOf(child.componentId)?.key ?? mapping.componentSet, matchedBy: mapping.key ? ('key' as const) : ('name' as const) }
+        records.push(...readInstance(root, child, instanceId, targetId, node.name, library, product, designOwners, source(`${path} / ${child.name}`, child.id), provenance))
+        links.push({ from: targetId, relation: 'contains', to: instanceId, status: 'declared' })
+        return
+      }
+      // Every other component the product places, traced to the consumed library that publishes it.
+      const used = keyOf(child.componentId)
+      if (!declared || !used?.remote) return
+      const from = consumed.find((entry) => libraries.get(entry)!.keys[used.key] !== undefined)
+      if (from) {
+        placed.set(from, [...(placed.get(from) ?? []), used.name])
+        return
+      }
+      records.push({
+        id: `evidence:figma.${targetId.slice('target:'.length)}.unknown-component.${slug(child.name)}`,
+        kind: 'evidence',
+        title: `"${child.name}" on ${node.name} comes from no consumed library`,
+        subjectIds: [targetId],
+        tier: 'static-analysis',
+        method: 'design-export',
+        outcome: 'fail',
+        finding: `"${child.name}" is an instance of ${used.name} (key ${used.key}), which none of ${consumed.join(', ')} publishes. Declare the library it comes from, or swap it for a component one of them publishes.`,
+        capturedAt,
+        source: source(`${path} / ${child.name}`, child.id),
+      })
+    })
+  }
+  for (const { node, targetId, path } of definitions.values()) {
+    records.push({ id: targetId, kind: 'target', title: `${path.split(' / ').slice(1).join(' / ')} (${product.title} component)`, scale: 'component', presence: 'expected', platforms: product.platforms, owners: designOwners, source: source(path, node.id) })
+    readContents(node, targetId, path)
+  }
+
   // Frames first, so paths can resolve their destinations.
   const frames = new Map<string, { node: FigmaNode; targetId: string; page: string; screenId: string; isState: boolean }>()
   for (const page of pages) {
@@ -298,41 +367,7 @@ export function readFigmaProductFile(file: unknown, library: LibraryFacts, produ
       }
     })
 
-    const instanceIds = new Set<string>()
-    walk(node, (child) => {
-      if (child.type !== 'INSTANCE' || !child.componentId || !isMapped(child.componentId)) return
-      const instanceId = `instance:${targetId.slice('target:'.length)}.${slug(child.name)}`
-      if (instanceIds.has(instanceId)) throw new Error(`${root.name}: "${node.name}" has two ${mapping.componentSet} instances named "${child.name}"; name them apart.`)
-      instanceIds.add(instanceId)
-      const provenance = { file: libraryFile, key: keyOf(child.componentId)?.key ?? mapping.componentSet, matchedBy: mapping.key ? ('key' as const) : ('name' as const) }
-      records.push(...readInstance(root, child, instanceId, targetId, node.name, library, product, designOwners, source(`${page} / ${node.name} / ${child.name}`, child.id), provenance))
-      links.push({ from: targetId, relation: 'contains', to: instanceId, status: 'declared' })
-    })
-
-    // Every other component the product places, traced to the consumed library that publishes it.
-    if (declared) {
-      placements(node, (child) => {
-        const used = child.componentId ? keyOf(child.componentId) : undefined
-        if (!used || !used.remote || isMapped(child.componentId!)) return
-        const from = consumed.find((entry) => libraries.get(entry)!.keys[used.key] !== undefined)
-        if (from) {
-          placed.set(from, [...(placed.get(from) ?? []), used.name])
-          return
-        }
-        records.push({
-          id: `evidence:figma.${targetId.slice('target:'.length)}.unknown-component.${slug(child.name)}`,
-          kind: 'evidence',
-          title: `"${child.name}" on ${node.name} comes from no consumed library`,
-          subjectIds: [targetId],
-          tier: 'static-analysis',
-          method: 'design-export',
-          outcome: 'fail',
-          finding: `"${child.name}" is an instance of ${used.name} (key ${used.key}), which none of ${consumed.join(', ')} publishes. Declare the library it comes from, or swap it for a component one of them publishes.`,
-          capturedAt,
-          source: source(`${page} / ${node.name} / ${child.name}`, child.id),
-        })
-      })
-    }
+    readContents(node, targetId, `${page} / ${node.name}`)
   }
 
   for (const page of pages) {
@@ -364,6 +399,9 @@ export function readFigmaProductFile(file: unknown, library: LibraryFacts, produ
       `${instances.length} ${mapping.componentSet} instance(s) showing ${instances.map((instance) => instance.state).join(', ')}; ` +
       `${overrides.length} override(s): ${overrides.map((override) => override.property).join(', ') || 'none'}. ` +
       (mapping.key ? `${mapping.componentSet} instances matched by published key ${mapping.key} from ${libraryFile}.` : `${mapping.componentSet} instances matched by name, a weaker match: the mapping declares no published key.`) +
+      (definitions.size > 0
+        ? ` ${definitions.size} product component(s) read once: ${[...definitions.values()].map(({ targetId, path }) => `${path.split(' / ').slice(1).join(' / ')} (${(placedAt.get(targetId) ?? []).length} placement(s) on ${[...new Set(placedAt.get(targetId) ?? [])].map((id) => id.slice('target:'.length)).join(', ') || 'nothing'})`).join('; ')}.`
+        : '') +
       (declared
         ? ` Consumes ${consumed.join(', ')}; other placements: ${[...placed].map(([from, names]) => `${names.length} from ${from} (${[...new Set(names)].join(', ')})`).join('; ') || 'none'}.`
         : ''),

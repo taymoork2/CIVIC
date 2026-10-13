@@ -11,7 +11,7 @@ const card = () => indexGraph(JSON.parse(readFileSync(new URL('../../demo/card/o
 test('the walk starts on the flow\'s start frame and follows prototype links breadth first', () => {
   const walk = frameWalk(card(), 'target:shop.checkout')
   assert.equal(walk.label, DESIGN_INTENT)
-  assert.deepEqual(walk.revisions, ['civic-stand-in-3'])
+  assert.deepEqual(walk.revisions, ['civic-stand-in-4'])
   assert.deepEqual(walk.frames.map((frame) => [frame.id, frame.scale]), [
     ['target:shop.order-summary', 'screen'],
     ['target:shop.order-summary.loading', 'state'],

@@ -1,7 +1,7 @@
 import type { ChangeReport } from './change.ts'
 import { completenessOf, stateCoverageOn } from './completeness.ts'
 import { conflictStates, describeFix, openProposals, type FixStage } from './decisions.ts'
-import { gapsIn, screenOf } from './gaps.ts'
+import { gapsIn, screensOf } from './gaps.ts'
 import { indexGraph, type Graph } from './graph.ts'
 import type { GraphDocument, Owner, Platform } from './schema.ts'
 import { validateGraph } from './validate.ts'
@@ -182,7 +182,7 @@ export function checkGraph(label: string, graph: Graph, options: CheckOptions): 
   }
 
   // Product states each screen's design accounts for (D32), one finding per missing state.
-  const designScreens = new Set(graph.ofKind('component-instance').filter((instance) => instance.origin === 'design').map((instance) => screenOf(graph, instance.placedOn)))
+  const designScreens = new Set(graph.ofKind('component-instance').filter((instance) => instance.origin === 'design').flatMap((instance) => screensOf(graph, instance.placedOn)))
   let productStates = 0
   let missingStates = 0
   for (const screenId of [...designScreens].sort()) {
@@ -214,7 +214,7 @@ export function checkGraph(label: string, graph: Graph, options: CheckOptions): 
   measure('Journey screens unreachable', unreachable, screens)
 
   // Discovered screens (D34) wait for a person to confirm them; until then they don't count.
-  const targets = graph.ofKind('target').filter((target) => target.scale !== 'journey')
+  const targets = graph.ofKind('target').filter((target) => target.scale !== 'journey' && target.scale !== 'component')
   const discovered = targets.filter((target) => target.presence === 'discovered')
   for (const target of discovered) add('unconfirmed-target', target.id, `${target.title} was discovered${target.source ? ` by ${target.source.importer}` : ''}; a person confirms it before it counts.`, target.owners ?? [])
   measure('Screens awaiting confirmation', discovered.length, targets.length)

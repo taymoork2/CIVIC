@@ -509,7 +509,7 @@ function checkRecordShape(raw: unknown, at: string, error: Report) {
       field.string('statement')
       break
     case 'target':
-      field.oneOf('scale', ['journey', 'screen', 'state', 'surface'])
+      field.oneOf('scale', ['journey', 'screen', 'state', 'surface', 'component'])
       field.oneOf('presence', ['expected', 'discovered'])
       field.optionalList('platforms', (value, path) => checkEnum(value, PLATFORMS, path, error))
       field.optionalList('entry', (value, path) => checkString(value, path, error))
