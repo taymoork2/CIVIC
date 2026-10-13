@@ -84,16 +84,31 @@ const tokenEvidence = (id: string, title: string, paths: string[], method: Evide
   id, kind: 'evidence', title, subjectIds: [], tier: 'static-analysis', method, platform: 'web', outcome: 'finding', finding, capturedAt: at,
   source: { tool: method === 'design-export' ? 'open-design' : 'style-dictionary', importer: 'css-tokens', revision: index.revision.head, path: paths.join(' '), contentHash: contentHash(paths.map(repoText).join('')) },
 })
-const designTokens = readCssTokens(...DESIGN_TOKENS.map(repoText))
-const codeTokens = readCssTokens(repoText(CODE_TOKENS))
-const designSide = { tokens: designTokens, label: "Laundry's design reference", evidence: tokenEvidence('evidence:design-export.laundry-tokens', 'Design reference tokens', DESIGN_TOKENS, 'design-export', `${designTokens.size} custom properties in the default theme.`) }
-const codeSide = { tokens: codeTokens, label: "Laundry's generated tokens.css", evidence: tokenEvidence('evidence:token-analysis.laundry-tokens', 'Generated web tokens', [CODE_TOKENS], 'token-analysis', `${codeTokens.size} custom properties in the default theme.`) }
-const tokens = compareCssTokens(designSide, codeSide, { owners: [{ role: 'design', who: 'taymoork2' }, ...OWNERS.filter((owner) => owner.role === 'engineering')] })
-for (const side of [designSide, codeSide]) side.evidence.subjectIds = tokens.tokens.map((token) => token.id)
+// Each theme is compared on its own: the default, then the dark theme laid over it.
+const THEMES = ['default', 'dark'] as const
+const designTokens = Object.fromEntries(THEMES.map((theme) => [theme, readCssTokens(DESIGN_TOKENS.map(repoText), theme)])) as Record<(typeof THEMES)[number], Map<string, string>>
+const codeTokens = Object.fromEntries(THEMES.map((theme) => [theme, readCssTokens(repoText(CODE_TOKENS), theme)])) as Record<(typeof THEMES)[number], Map<string, string>>
+const designEvidence = tokenEvidence('evidence:design-export.laundry-tokens', 'Design reference tokens', DESIGN_TOKENS, 'design-export', `${designTokens.default.size} custom properties in the default theme, ${designTokens.dark.size} in the dark theme.`)
+const codeEvidence = tokenEvidence('evidence:token-analysis.laundry-tokens', 'Generated web tokens', [CODE_TOKENS], 'token-analysis', `${codeTokens.default.size} custom properties in the default theme, ${codeTokens.dark.size} in the dark theme.`)
+const darkOwn = new Set([designTokens, codeTokens].flatMap((side) => [...side.dark].filter(([name, value]) => side.default.get(name) !== value).map(([name]) => name)))
+const tokenOwners: Owner[] = [{ role: 'design', who: 'taymoork2' }, ...OWNERS.filter((owner) => owner.role === 'engineering')]
+const themes = THEMES.map((theme) => ({
+  theme,
+  ...compareCssTokens(
+    { tokens: designTokens[theme], label: "Laundry's design reference", evidence: designEvidence },
+    { tokens: codeTokens[theme], label: "Laundry's generated tokens.css", evidence: codeEvidence },
+    // The dark theme is compared only where it sets something itself, on either side, so a
+    // name it inherits isn't raised twice.
+    { owners: tokenOwners, theme, ...(theme === 'dark' ? { names: darkOwn } : {}) },
+  ),
+}))
+const tokenRecords = [...new Map(themes.flatMap((compared) => compared.tokens).map((token) => [token.id, token])).values()]
+const tokenConflicts = themes.flatMap((compared) => compared.conflicts)
+for (const side of [designEvidence, codeEvidence]) side.subjectIds = tokenRecords.map((token) => token.id)
 
 // A person's calls on the conflicts (roadmap step 3), from decisions.json.
 const decisions = json<DecisionFile>('decisions.json')
-const graph = applyDecisions(assemble(journeys.fragment, fragment(evidence), coverage, fragment([...tokens.tokens, designSide.evidence, codeSide.evidence, ...tokens.conflicts])), decisions)
+const graph = applyDecisions(assemble(journeys.fragment, fragment(evidence), coverage, fragment([...tokenRecords, designEvidence, codeEvidence, ...tokenConflicts])), decisions)
 assertValid(graph)
 
 // --- The design reference (roadmap order of work, item 2) ------------------------------------
@@ -163,26 +178,22 @@ Built by \`node projects/laundry/build.ts\` from Open Design's source-render rec
 Register it as Laundry's design line with \`bin/civic design projects/laundry/out/design.json\`, and a designer's proposal as a draft with \`bin/civic draft <its design.json> --name "<draft>"\`. \`bin/civic lens <draft line>\` then says which frames the proposal changes and reads each one on this code line.
 `
 
+const decisionFor = (conflictId: string) => decisions.decisions.find((decision) => decision.conflictId === conflictId)
+const themeSection = ({ theme, tokens: shared, conflicts, agreed, designOnly }: (typeof themes)[number]) => `## ${theme === 'default' ? 'Default theme' : 'Dark theme'}
+
+${theme === 'default' ? `The design reference sets ${designTokens[theme].size} and the code ${codeTokens[theme].size}; ${shared.length} names are set by both.` : `Only the names the dark theme sets itself, on either side, are compared again: ${shared.length} of them are set by both.`} ${conflicts.length} ${conflicts.length === 1 ? 'is' : 'are'} set differently, ${agreed.length} the same, and ${designOnly.length} only in the reference.
+
+${conflicts.length > 0 ? `| Token | Design reference | Code | Decision |\n|---|---|---|---|\n${conflicts.map((conflict) => { const name = conflict.targetId.slice('token:'.length); const call = decisionFor(conflict.id); return `| \`--${name}\` | ${designTokens[theme].get(name)} | ${codeTokens[theme].get(name)} | ${call ? `${call.outcome}: ${call.title}` : 'Undecided'} |` }).join('\n')}` : 'Nothing is set differently.'}
+
+Set the same: ${agreed.map((name) => `\`--${name}\``).join(', ') || 'none'}.
+
+Only in the design reference: ${designOnly.map((name) => `\`--${name}\``).join(', ') || 'none'}.
+`
 const tokenReport = `# Laundry: tokens
 
-Built by \`node projects/laundry/build.ts\` from the design reference's stylesheets (${DESIGN_TOKENS.map((path) => `\`${path.split('/').pop()}\``).join(', ')}) and the web tokens Laundry's token build generates (\`${CODE_TOKENS}\`), comparing the custom properties each sets for the default theme by name, with \`var()\` aliases resolved. The design reference sets ${designTokens.size} and the code ${codeTokens.size}; ${tokens.tokens.length} names are set by both.
+Built by \`node projects/laundry/build.ts\` from the design reference's stylesheets (${DESIGN_TOKENS.map((path) => `\`${path.split('/').pop()}\``).join(', ')}) and the web tokens Laundry's token build generates (\`${CODE_TOKENS}\`). It compares the custom properties each sets by name, with \`var()\` aliases resolved, for the default theme and for the dark theme laid over it. A name set differently is a Contract Conflict in [\`graph.json\`](graph.json), decided in [\`decisions.json\`](../decisions.json) once someone has said whether the design or the code changes. Names only the reference sets are its own short color names and the layout and motion roles the code writes as literals; they are listed, not raised.
 
-## Set differently: ${tokens.conflicts.length}
-
-Each is a Contract Conflict in [\`graph.json\`](graph.json), decided in [\`decisions.json\`](../decisions.json) when someone has said whether the design or the code changes.
-
-${tokens.conflicts.length > 0 ? `| Token | Design reference | Code | Decision |\n|---|---|---|---|\n${tokens.conflicts.map((conflict) => { const name = conflict.targetId.slice('token:'.length); const call = decisions.decisions.find((decision) => decision.conflictId === conflict.id); return `| \`--${name}\` | ${designTokens.get(name)} | ${codeTokens.get(name)} | ${call ? `${call.outcome}: ${call.title}` : 'Undecided'} |` }).join('\n')}` : 'None.'}
-
-## Set the same: ${tokens.agreed.length}
-
-${tokens.agreed.map((name) => `\`--${name}\``).join(', ') || 'None.'}
-
-## Only in the design reference: ${tokens.designOnly.length}
-
-Roles the reference names that the generated tokens don't. Some are the reference's own short names for the same colors, and some are layout and motion roles the code writes as literals. Neither is raised as a conflict.
-
-${tokens.designOnly.map((name) => `\`--${name}\``).join(', ') || 'None.'}
-`
+${themes.map(themeSection).join('\n')}`
 
 const outputs: Record<string, string> = {
   'out/graph.json': `${JSON.stringify(graph, null, 2)}\n`,
@@ -192,7 +203,7 @@ const outputs: Record<string, string> = {
   'out/coverage.md': coverageReport,
   'out/tokens.md': tokenReport,
 }
-const summary = `${graph.records.length} records, ${graph.links.length} links, ${tests.length} test(s) and ${replayed.length} replayed run(s), ${failed.length} failing, ${tokens.conflicts.length} token conflict(s)`
+const summary = `${graph.records.length} records, ${graph.links.length} links, ${tests.length} test(s) and ${replayed.length} replayed run(s), ${failed.length} failing, ${tokenConflicts.length} token conflict(s)`
 if (process.argv.includes('--check')) {
   const stale = Object.entries(outputs).filter(([path, body]) => {
     try {

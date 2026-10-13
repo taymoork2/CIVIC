@@ -6939,6 +6939,21 @@
       }
     },
     {
+      "id": "token:text-tracking",
+      "kind": "token",
+      "title": "--text-tracking",
+      "path": "text-tracking",
+      "type": "dimension",
+      "source": {
+        "tool": "style-dictionary",
+        "importer": "css-tokens",
+        "revision": "03c31274673cd3b1111db95de7e44bc19f50e005",
+        "path": "journey-engine/source/apps/web/src/generated/tokens.css",
+        "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
+        "anchor": "--text-tracking"
+      }
+    },
+    {
       "id": "token:washing-bg",
       "kind": "token",
       "title": "--washing-bg",
@@ -6975,13 +6990,14 @@
         "token:space-4",
         "token:space-6",
         "token:surface",
-        "token:washing-bg"
+        "token:washing-bg",
+        "token:text-tracking"
       ],
       "tier": "static-analysis",
       "method": "design-export",
       "platform": "web",
       "outcome": "finding",
-      "finding": "120 custom properties in the default theme.",
+      "finding": "120 custom properties in the default theme, 121 in the dark theme.",
       "capturedAt": "2026-10-13T00:08:21.840Z",
       "source": {
         "tool": "open-design",
@@ -7945,13 +7961,14 @@
         "token:space-4",
         "token:space-6",
         "token:surface",
-        "token:washing-bg"
+        "token:washing-bg",
+        "token:text-tracking"
       ],
       "tier": "static-analysis",
       "method": "token-analysis",
       "platform": "web",
       "outcome": "finding",
-      "finding": "129 custom properties in the default theme.",
+      "finding": "129 custom properties in the default theme, 129 in the dark theme.",
       "capturedAt": "2026-10-13T00:08:21.840Z",
       "source": {
         "tool": "style-dictionary",
@@ -7977,6 +7994,40 @@
         },
         {
           "claim": "Laundry's generated tokens.css sets --accent to #1f45ff.",
+          "evidenceIds": [
+            "evidence:token-analysis.laundry-tokens"
+          ]
+        }
+      ],
+      "classification": "unclassified",
+      "owners": [
+        {
+          "role": "design",
+          "who": "taymoork2"
+        },
+        {
+          "role": "engineering",
+          "who": "taymoork2"
+        }
+      ],
+      "alignment": "unreviewed-drift"
+    },
+    {
+      "id": "conflict:token.accent.dark",
+      "kind": "contract-conflict",
+      "title": "--accent differs between design and code in the dark theme",
+      "targetId": "token:accent",
+      "platform": "web",
+      "summary": "Laundry's design reference sets --accent to #2f4cf0 in the dark theme; Laundry's generated tokens.css sets it to #9db4ff.",
+      "sides": [
+        {
+          "claim": "Laundry's design reference sets --accent to #2f4cf0 in the dark theme.",
+          "evidenceIds": [
+            "evidence:design-export.laundry-tokens"
+          ]
+        },
+        {
+          "claim": "Laundry's generated tokens.css sets --accent to #9db4ff in the dark theme.",
           "evidenceIds": [
             "evidence:token-analysis.laundry-tokens"
           ]
@@ -8602,6 +8653,24 @@
       },
       "at": "2026-10-13T06:50:00.000Z",
       "rationale": "The code's --space-N is a spacing scale (--space-2 0.5rem, --space-4 1rem, --space-6 2rem) used across the shipped app. The reference reuses the same names for literal pixel layout roles, so the names clash. The reference's px roles get a name of their own, and --space-N keeps the code's meaning. Decided by Claude on Taymoor's standing instruction; he can revise it.",
+      "evidenceIds": [
+        "evidence:token-analysis.laundry-tokens"
+      ]
+    },
+    {
+      "id": "decision:token.accent.dark",
+      "kind": "decision",
+      "title": "Laundry's dark accent is the shipped #9db4ff",
+      "conflictId": "conflict:token.accent.dark",
+      "outcome": "update-design",
+      "classification": "outdated-design-source",
+      "alignment": "awaiting-adoption",
+      "decidedBy": {
+        "role": "design",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-13T07:20:00.000Z",
+      "rationale": "In the dark theme the shipped --accent is #9db4ff, which is the reference's own dark --ac. The reference aliases --accent to its --pr (#2f4cf0), the same stale mapping as the light theme, so the alias changes to --ac in both. Decided by Claude on Taymoor's standing instruction; he can revise it.",
       "evidenceIds": [
         "evidence:token-analysis.laundry-tokens"
       ]
