@@ -66,14 +66,15 @@ bin/civic gaps demo/card/out/resolved.graph.json --scope semantic:card
 |---|---|---|
 | [`contract/card.json`](contract/card.json) | The semantic Card: its variants, states, product states, slots and the `shape-from-token` rule, declared by the design system maintainers | contract |
 | [`contract/mappings.json`](contract/mappings.json) | How each platform's Fluent Card expresses the semantic variants, and which public APIs are extension points. Also how the library's Figma Card names its variants, states and properties. Declared by Design Engineering and the maintainers. | every importer checks its names against what it reads |
-| [`contract/product.json`](contract/product.json) | Shop: its platforms and owners | product file importer |
+| [`contract/product.json`](contract/product.json) | Shop: its platforms, owners and design files as a lineage (decision 0011): the checkout file consumes the Fluent kit and Shop's patterns library | product file importer |
 | [`sources/`](sources) | Fluent's own files, vendored at pinned revisions with their MIT licences ([`sources.json`](sources/sources.json)): `@fluentui/react-card@9.7.3` types and `useCard`, iOS `CardView.swift`, Android `BasicCard.kt` and `BasicCardTokens.kt` | static source readers ([`importers/src/source.ts`](../../importers/src/source.ts)) |
 | [`design/library.figma.json`](design/library.figma.json) | The real Microsoft Fluent 2 Web Community kit's Card and `.Card header` component sets, from a Figma REST file export (`GET /v1/files/:key`) trimmed by [`design/trim.ts`](design/trim.ts) | `readFigmaLibraryComponent` |
-| [`design/shop-checkout.figma.json`](design/shop-checkout.figma.json) | A stand-in for Shop's Checkout page: four frames, a prototype flow, and two instances of the real kit's Card | `readFigmaProductFile` ([`importers/src/figma-product.ts`](../../importers/src/figma-product.ts)) |
+| [`design/shop-checkout.figma.json`](design/shop-checkout.figma.json) | A stand-in for Shop's Checkout page: four frames, a prototype flow, two instances of the real kit's Card, three of its Button, and one of Shop's Promo banner | `readFigmaProductFile` ([`importers/src/figma-product.ts`](../../importers/src/figma-product.ts)) |
+| [`design/shop-patterns.figma.json`](design/shop-patterns.figma.json) | A stand-in for Shop's own patterns library, the product-level layer: it publishes a Promo banner | `readPublishedComponents` |
 
 ### The Figma exports
 
-`design/library.figma.json` comes from the Microsoft Fluent 2 Web Community file, exported on 2026-10-12 (Figma version 2409330757852496286). The full export is about 147 MB, so [`design/trim.ts`](design/trim.ts) keeps only the file's identity, the Card and `.Card header` component sets with their property definitions, and the icon component the header's swap defaults to. The importer reads the trimmed file and the full export the same way.
+`design/library.figma.json` comes from the Microsoft Fluent 2 Web Community file, exported on 2026-10-12 (Figma version 2409330757852496286). The full export is about 147 MB, so [`design/trim.ts`](design/trim.ts) keeps only the file's identity, the Card and `.Card header` component sets with their property definitions, the icon component the header's swap defaults to, and the key and name of every component set and standalone component the file publishes. The mapping finds the Card by its published key, and the product's instances are matched to it by that key, not by name (decision 0011). The kit has three sets named Button, two of them used from other libraries, which is why a name isn't enough. The importer reads the trimmed file and the full export the same way.
 
 The real Card differs from the stand-in it replaced:
 
@@ -82,7 +83,7 @@ The real Card differs from the stand-in it replaced:
 - **Body** and **Footer** are on by default, and **Layout** is Default or Custom.
 - The header is its own nested component set, `.Card header`, with a quick action (on by default), a checkbox, an avatar, a product icon and subtext. `parts` in [`contract/mappings.json`](contract/mappings.json) declares its properties, and the importer reads them from the nested header instance.
 
-`design/shop-checkout.figma.json` is still a stand-in, because Shop is an illustrative product. Its name and `version` (`civic-stand-in-2`) say so. It's written in the shape Figma's REST API returns and uses the real kit's component and property names, so a real product file built on the kit reads the same way.
+`design/shop-checkout.figma.json` is still a stand-in, because Shop is an illustrative product. Its name and `version` (`civic-stand-in-3`) say so. It's written in the shape Figma's REST API returns and uses the real kit's component names, property names and published keys, so a real product file built on the kit reads the same way. Shop's patterns library is a stand-in too, with made-up keys. Every component the checkout file places comes from a library it consumes; one that didn't would be a failing finding on its screen.
 
 To refresh the library, export your own duplicate and trim it:
 

@@ -272,6 +272,504 @@
       "remote": true,
       "componentSetId": "9240:8980",
       "documentationLinks": []
+    },
+    "9091:2711": {
+      "key": "8168a43401be97df6622ce5534002492408637d5",
+      "name": "Content placeholder"
+    },
+    "9380:3542": {
+      "key": "84ad5ac1053383ee52a1b31ace726a5c06be002c",
+      "name": ".Image Preview nav"
+    },
+    "9380:3532": {
+      "key": "a268b9605d3a00a4253b9b12078a9d3a25306b34",
+      "name": ".Title + BodyCopy"
+    },
+    "9170:8121": {
+      "key": "615a3c904602d5b5f09673afb8b31ee306988b04",
+      "name": ".Drawer footer"
+    },
+    "9064:11893": {
+      "key": "0a4ebd8e78970abe7dfe96d34f748b307d576a13",
+      "name": ".Resize handler"
+    },
+    "9328:24862": {
+      "key": "57efa88aee0f2fc521a2cc7f6be09c8fac3d0c43",
+      "name": ".Button Slot"
+    },
+    "9328:25154": {
+      "key": "81e81412c07ecf87f10481c0a03b62ee54f35a57",
+      "name": ".Content Left (Small)"
+    },
+    "9328:25164": {
+      "key": "effff5f29e614fc084f6cd565280d13ba820eb74",
+      "name": ".Persona Text Ramp/Default"
+    },
+    "9328:25159": {
+      "key": "522287d8fcee55f081a67c671ce53a899b9c37a5",
+      "name": ".Content Left (Medium)"
+    },
+    "9121:6365": {
+      "key": "8736562a3ef81a16a5f671e5577c11d2553ce228",
+      "name": ".Custom menu example"
+    },
+    "9291:3757": {
+      "key": "0c28302bb04d1ade53522f71c531afd470d631be",
+      "name": ".Hamburger"
+    },
+    "9291:3760": {
+      "key": "f390b12bbdaaecf6984ae6a1b06168de49692f0c",
+      "name": ".Divider"
+    },
+    "9291:4389": {
+      "key": "9245c25cfa7126269c253e6f16e903aa1cc60191",
+      "name": "Nav"
+    },
+    "9291:4392": {
+      "key": "48daed3baff4c86e722d305580b671e297c4bd52",
+      "name": "NavBody - Small"
+    },
+    "9291:4423": {
+      "key": "625e0d4e77c3c3415c3ab114e91409ab9a17c5cb",
+      "name": "Flex space"
+    },
+    "9291:4408": {
+      "key": "a0a61013773ac4455bd554c7714fd5b23cb78374",
+      "name": "NavBody - Medium"
+    },
+    "9322:1091": {
+      "key": "e11d19b8e24cf4ad905725d392deb046555d2374",
+      "name": ".TeachingPopover Content"
+    },
+    "9322:1109": {
+      "key": "e161d1d6b0be6f3ef4f352db6770058c59c40170",
+      "name": ".TeachingPopover Content - On Brand"
+    },
+    "9116:16062": {
+      "key": "3dac62b108d3177f7809a39ae0243b51a94d9ccb",
+      "name": "Toast"
+    },
+    "9158:1199": {
+      "key": "4f9d14e578604bbc19902cc3af6eb1905c40912e",
+      "name": ".Placeholderimage"
+    }
+  },
+  "componentSets": {
+    "9116:20025": {
+      "key": "803ce692bd11ade216b969f0db9c68b5874925c2",
+      "name": "Switch"
+    },
+    "9116:19992": {
+      "key": "080ac774c546d60903a3de8687c121a748768ec2",
+      "name": ".SwitchBase"
+    },
+    "9121:4005": {
+      "key": "e7df443bbcc272228500d6d704dd2db2e3e06ae4",
+      "name": "Radio"
+    },
+    "9121:3982": {
+      "key": "656ce795e508ebe8a656742d3da9363f821acf4e",
+      "name": ".RadioBase"
+    },
+    "9061:50805": {
+      "key": "1aa00364f05d92f3d405a02c598942ec73d54e10",
+      "name": "Label"
+    },
+    "9061:51474": {
+      "key": "befb54b2de8a53ecaf6809d261ccfec683d62e40",
+      "name": "Checkbox"
+    },
+    "9121:2771": {
+      "key": "dff2268ccc418c3321d71744716955465e38b309",
+      "name": "Slider"
+    },
+    "9116:17888": {
+      "key": "180b701014711f9d6f1339c49aba517292f308bb",
+      "name": "Horizontal TabList"
+    },
+    "9116:18470": {
+      "key": "6c90223f50d0c2e671440c6becf71615c3b20901",
+      "name": "Horizontal Tab"
+    },
+    "9026:430": {
+      "key": "3ed418e09baacd9f725e0dda0a225630a628cf29",
+      "name": "Button"
+    },
+    "9398:17774": {
+      "key": "0ba4c7de8376fc89b0978359f8340995767ba426",
+      "name": "Persona"
+    },
+    "9278:11242": {
+      "key": "f82c1e68eae78d777b9eab7716df3250f2cf3368",
+      "name": "Avatar/Avatar"
+    },
+    "9074:913": {
+      "key": "2d6288bb22ea1386dbac9948956a3caa5ad50fbd",
+      "name": "Accordion"
+    },
+    "9278:11479": {
+      "key": "19fedfa14d38ae3dc114fc97914bf3dce46582d2",
+      "name": "Avatar/Avatar group"
+    },
+    "9278:11492": {
+      "key": "4212ee61aa963b683fa858793e68062435c3ff5a",
+      "name": "Avatar/Avatar pie"
+    },
+    "9202:9907": {
+      "key": "9a2bf59321d8f82899c83365736484efac9c2ec5",
+      "name": "Presence Badge"
+    },
+    "9202:10100": {
+      "key": "92cc3b5f45316499ab76c6972ea5c2c2f95cebfd",
+      "name": "Badge"
+    },
+    "9077:5740": {
+      "key": "22626fad39dc769c5005f229c67b8105e1a71161",
+      "name": ".Breadcrumb Item"
+    },
+    "9077:5931": {
+      "key": "cc563115bbfd1622c1e74f7723ff6bb5b51b65e4",
+      "name": "Breadcrumb"
+    },
+    "9026:1241": {
+      "key": "7ba56f369360824d53736cece7a0e3599cf890a1",
+      "name": ".Secondary action"
+    },
+    "9026:1317": {
+      "key": "41da808871f9ba9dffc06e9d0bb4e11479875d7f",
+      "name": "Split button"
+    },
+    "9026:2278": {
+      "key": "fd2be4b1584412f72aacc6334828d23cec6c5e90",
+      "name": "Compound button"
+    },
+    "9230:4878": {
+      "key": "3edf54e4d94dec620cd2a4a274726fdd9302a63e",
+      "name": ".Card header"
+    },
+    "9230:4889": {
+      "key": "8e1f2b3f6538b38584d8fdad450ee57cca80ce1e",
+      "name": ".Card footer"
+    },
+    "9230:4897": {
+      "key": "ba47040960112ca006588489037b6b74d8643f0a",
+      "name": ".Card body"
+    },
+    "9230:4902": {
+      "key": "14dd5ef216c4aeafad336d7e51b2217da645e64f",
+      "name": ".Card media"
+    },
+    "9230:4927": {
+      "key": "0d1e1017597a223f89c25613fae3225cb1f34e41",
+      "name": "Card"
+    },
+    "9380:3505": {
+      "key": "368e02fc21837960b35dd67f8943642d39a4e9af",
+      "name": ".CarouselNav"
+    },
+    "9380:3610": {
+      "key": "23359b9df0575900b917111096624179900a395a",
+      "name": ".Carousel play control"
+    },
+    "9380:3548": {
+      "key": "a019b4d8cfc0b0e3c187320dd01728bd7cc5fc66",
+      "name": ".Carousel steps"
+    },
+    "9380:3589": {
+      "key": "7c28b64819519b496c02e8e049380f915409cd54",
+      "name": ".Carousel step"
+    },
+    "9380:3537": {
+      "key": "c62273f88edf1ee6b6691d042087bc3286ce3010",
+      "name": ".Images Preview Step"
+    },
+    "9380:3615": {
+      "key": "814757fe1382f830f622612eb1d226b739d83536",
+      "name": "Carousel"
+    },
+    "9158:623": {
+      "key": "3310582eb72d5dc774586560624d2e83570e43c8",
+      "name": "Placeholder"
+    },
+    "9249:10060": {
+      "key": "9a880fbd4f76bc632a1d795b58dea0c7f35887f8",
+      "name": "DataGrid cell - Medium"
+    },
+    "9249:10106": {
+      "key": "9cb952e8fb26279a41062cc1628816aa22302167",
+      "name": "DataGrid cell - Smaller"
+    },
+    "9067:568": {
+      "key": "f1d12f7ccb82dca8350af896e710afa37f4e4f16",
+      "name": "Link"
+    },
+    "9249:10152": {
+      "key": "15b534d564b1c153b847095e492fdb2147c2797f",
+      "name": "DataGrid cell - Large"
+    },
+    "9249:10209": {
+      "key": "f2612abeb1b1e8d2501b5302ea20642341a5c529",
+      "name": "DataGrid cell - Small"
+    },
+    "9249:10255": {
+      "key": "47b353f1833af0c0ce803cff6512671edc6d5222",
+      "name": ".Content header"
+    },
+    "9249:10273": {
+      "key": "9e0a5d452ebcaea6070e71158b2b9b1535686e49",
+      "name": ".Cell action header"
+    },
+    "9202:9382": {
+      "key": "934b55e809cb1b962c54a32b3f743ad1b329040a",
+      "name": "Dialog"
+    },
+    "9000:6131": {
+      "key": "c8d7abe7a3f478673e8b9492c275a548e69a3596",
+      "name": "Divider"
+    },
+    "9170:8030": {
+      "key": "a63bb17c7e7d9ad2db4a6c4cf6ca831138bcf7ca",
+      "name": ".Overlay drawer"
+    },
+    "9170:8098": {
+      "key": "61d5f2e31c0921751e9770e35d51bd4a3f3122e4",
+      "name": ".Drawer header"
+    },
+    "9170:8046": {
+      "key": "d65fc77f63f8e551c427df756df1978b5b85d1ef",
+      "name": ".Inline drawer"
+    },
+    "9170:8127": {
+      "key": "5e027ed041adbe2244b489473125ace5373d601d",
+      "name": "Drawer"
+    },
+    "9159:2361": {
+      "key": "c54b964f8a25cb64917e0778f34cc7b2bdc17e9a",
+      "name": ".ListItem"
+    },
+    "9159:2470": {
+      "key": "0f8dfcc2031af25966c49355d17edfd4835f79b1",
+      "name": "Dropdown"
+    },
+    "9064:12167": {
+      "key": "4ab247cfd4b4ee7f6c92dbaa03b0e0e350fae686",
+      "name": ".Text"
+    },
+    "9159:2641": {
+      "key": "e488e9b1ea3f2abcc2e968868bfb34c288e9f2a6",
+      "name": "List content"
+    },
+    "9122:703": {
+      "key": "462b9b9372a12daa9a44eb3275b4b2b584cc06a9",
+      "name": "Field"
+    },
+    "9066:866": {
+      "key": "1847d2280208742f037c794c34f3ddb0f00caf96",
+      "name": ".Info button"
+    },
+    "9115:8452": {
+      "key": "5fedc99664c48865cc211faeee4280c2b89f9fcf",
+      "name": "Input"
+    },
+    "9064:11896": {
+      "key": "3eb550397565e9e78756a7cbc49a24d819a51085",
+      "name": "Textarea"
+    },
+    "9066:900": {
+      "key": "a32fc0e232cd6050fd9de1b86535bdfa349f2ae2",
+      "name": "InfoLabel"
+    },
+    "9328:24846": {
+      "key": "6f4e9260f605410759f0abfc642ccf878f12565c",
+      "name": ".Selection"
+    },
+    "9328:24853": {
+      "key": "51cf0abe140fee82d652b2b049e2ed3026210e7a",
+      "name": ".Selection (Small)"
+    },
+    "9328:24865": {
+      "key": "fa06af8b8f3a8025c08fc9203ba0c3ab5ce72f5c",
+      "name": "ListItem"
+    },
+    "9114:811": {
+      "key": "bf04c742d46c6f90723cfb4b3f15409f82f2f470",
+      "name": "Material acrylic"
+    },
+    "9121:6483": {
+      "key": "55f41ef9f75cfd8987af9c32df4bc10d0d7175cc",
+      "name": "Menu item"
+    },
+    "9121:6394": {
+      "key": "4ef897398fca0b588684f08e121bf2068d6b5eb7",
+      "name": "Menu section"
+    },
+    "9121:6401": {
+      "key": "60386374d25728ae07c48636fbeebf07c51992c9",
+      "name": "Menu split item"
+    },
+    "9121:6376": {
+      "key": "dadf22fef51415b5f48c81ef57c78d84e42125d6",
+      "name": ".Item split button"
+    },
+    "9121:6579": {
+      "key": "37241b94d6f81f77e25375841d74f1f64992e2a6",
+      "name": "Menu/Menu"
+    },
+    "9121:5944": {
+      "key": "e42ad295cd8f507717240c34b5c0f96e5c8654be",
+      "name": "Message bar"
+    },
+    "9291:3752": {
+      "key": "25a405f2a93fa3edb36b5d7e8dc9cfc76ec18136",
+      "name": ".Chevron"
+    },
+    "9291:3763": {
+      "key": "4370d5056e050e48049d1b5f33b81a910772d33c",
+      "name": "NavNode - medium"
+    },
+    "9291:4111": {
+      "key": "ebd034d0185e34186afff1902d4f4a23d24dcca5",
+      "name": "NavSubItem"
+    },
+    "9291:3942": {
+      "key": "40350cba9f953862f0a7c683c0f2d1a1c3fe13c8",
+      "name": "NavNode - small"
+    },
+    "9291:4164": {
+      "key": "e9dd5e34f0d4ab1adcddf6f7bee250ebb8307142",
+      "name": "App item - medium"
+    },
+    "9291:4177": {
+      "key": "50a0f9f94b9aadf8ce7be85ace0598a5faa5f1c7",
+      "name": "App item - small"
+    },
+    "9087:453": {
+      "key": "a7b7c67dbab4110dd39c1729785374f932c267ce",
+      "name": "Popover"
+    },
+    "9121:5771": {
+      "key": "bbe5d7a39600245d4c9403ccb47efc76e4ee9e3f",
+      "name": "Static_ProgressBar"
+    },
+    "9121:5796": {
+      "key": "13aefc643bab5d8227db93458eb458de9fc76d91",
+      "name": "Animated_ProgressBar"
+    },
+    "9121:4066": {
+      "key": "68b2618ceb64e0fb4230252d08c4d1958801c410",
+      "name": "RadioGroup"
+    },
+    "9151:6563": {
+      "key": "b2a3295ea9b5eb9505af7b7d7609b6fe056f4be7",
+      "name": "Rating"
+    },
+    "9315:3026": {
+      "key": "07a1ade3f5c4ae0fc8af2349bc183deaa370a7bc",
+      "name": "SearchBox"
+    },
+    "8994:43060": {
+      "key": "49576aaacad7faebd078c3af36d087967b1c3b65",
+      "name": "Skeleton"
+    },
+    "9116:28330": {
+      "key": "e19e52f213f5bc0db8d362f2ddfad82e6fb2221b",
+      "name": ".Spin button stepper"
+    },
+    "9116:28347": {
+      "key": "4eddde8f34b3ec4b7d5ac8db3f13c66646383c07",
+      "name": "Spin button"
+    },
+    "9116:27769": {
+      "key": "57df8acaf4847456709c78f7c06bf947e4d4a7f9",
+      "name": ".SpinnerBase"
+    },
+    "9116:27866": {
+      "key": "a24e779b0e95aeedf6bc66c5dac67a3c03293fb4",
+      "name": "Spinner"
+    },
+    "9116:27465": {
+      "key": "5642de20ac8642b58c3b6d92157fa1d5f879ee48",
+      "name": ".StatusIndicator"
+    },
+    "9116:20586": {
+      "key": "4eb2bc7ea554a81c87fb986fef36432cf07ae927",
+      "name": "Swatch"
+    },
+    "9116:20807": {
+      "key": "19360679b53800468ce0d5686c5bb51bc86078ea",
+      "name": "SwatchPicker"
+    },
+    "9116:17815": {
+      "key": "45cab16dc93bd88cafa5fd6fef47d1692119c353",
+      "name": "Vertical TabList"
+    },
+    "9116:17973": {
+      "key": "70d20e3775c3cedc8f60b12e828a52c2dab18c89",
+      "name": "Vertical Tab"
+    },
+    "9112:9115": {
+      "key": "a2adaa16062d28456ab4023c6ed7579fb24b23c3",
+      "name": "Tag"
+    },
+    "9112:9659": {
+      "key": "2546cd91ea30a4d5b5f360f8bc01ab4699e59b4a",
+      "name": "Interaction tag"
+    },
+    "9112:11184": {
+      "key": "f132942898192c3d6ee85ed6963dfdf1b53c2514",
+      "name": ".Secondary action (Interaction tag - Brand)"
+    },
+    "9112:11161": {
+      "key": "80e1b9b977480d685a7475b9d3aaf697e74e3fc3",
+      "name": ".Secondary action (Interaction tag - Outline)"
+    },
+    "9112:11142": {
+      "key": "e9e26ce416f1dcdc637429fdd5f3c10d987a4aef",
+      "name": ".Secondary action (Interaction tag - Filled)"
+    },
+    "9064:14049": {
+      "key": "b20ab73ceff2d530e850df1491a805edacdbdf31",
+      "name": "Tag picker/TagPicker"
+    },
+    "9064:15390": {
+      "key": "7c12371cebcecc217bce7c4d48c92e94caa7aec2",
+      "name": "TagPicker/Secondary action"
+    },
+    "9064:15397": {
+      "key": "fb8d5598f3a0e960cea6ec86918b210ff6898234",
+      "name": "TagPicker/Dropdown"
+    },
+    "9064:15304": {
+      "key": "0a76d334910c417e1e40f6548eeaba9e9d840da9",
+      "name": "TagPicker/Item"
+    },
+    "9322:1071": {
+      "key": "039f787f47a178d26e6989618a6048bb16a31705",
+      "name": ".TeachingPopover - Footer"
+    },
+    "9322:1081": {
+      "key": "f20c08551f412cd79e408d59e3fb95064ea3e8a7",
+      "name": ".TeachingPopover - Footer - On Brand"
+    },
+    "9322:1127": {
+      "key": "353db563f77a99c48a5df833aa396bb155dd0c60",
+      "name": "Teaching Popover"
+    },
+    "9383:24495": {
+      "key": "826126aebbe7434c561c3af07b7e57dafdc05179",
+      "name": "Toolbar"
+    },
+    "9014:2661": {
+      "key": "b300fd74ba25a6b0398ade76ebc6fd680327b993",
+      "name": "Tooltip"
+    },
+    "9064:1572": {
+      "key": "8bbb7e770561099a79f5779bebeb3a39897e9a84",
+      "name": "Tree item"
+    },
+    "9064:2395": {
+      "key": "ce7814bffb79cad5ca5f9a39f716652a6490cfc0",
+      "name": ".Tree item chevron"
     }
   }
 }

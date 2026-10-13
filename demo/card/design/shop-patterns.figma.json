@@ -1,0 +1,45 @@
+{
+  "name": "Shop patterns (CIVIC stand-in)",
+  "lastModified": "2026-10-13T00:00:00Z",
+  "version": "civic-stand-in-1",
+  "schemaVersion": 0,
+  "document": {
+    "id": "0:0",
+    "name": "Document",
+    "type": "DOCUMENT",
+    "children": [
+      {
+        "id": "1:0",
+        "name": "Patterns",
+        "type": "CANVAS",
+        "children": [
+          {
+            "id": "1:1",
+            "name": "Promo banner",
+            "type": "COMPONENT_SET",
+            "children": [
+              {
+                "id": "1:2",
+                "name": "Tone=Success",
+                "type": "COMPONENT"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "components": {
+    "1:2": {
+      "key": "shop-promo-banner-success",
+      "name": "Tone=Success",
+      "componentSetId": "1:1"
+    }
+  },
+  "componentSets": {
+    "1:1": {
+      "key": "shop-promo-banner",
+      "name": "Promo banner"
+    }
+  }
+}

@@ -1,6 +1,6 @@
 # Frame walk: Checkout
 
-Design intent: frames and prototype links from the design file, not behavior from running code. Read at design revision civic-stand-in-2.
+Design intent: frames and prototype links from the design file, not behavior from running code. Read at design revision civic-stand-in-3.
 
 Starts on: Order Summary.
 

@@ -1,7 +1,7 @@
 {
   "name": "Shop checkout (CIVIC stand-in)",
-  "lastModified": "2026-10-12T00:00:00Z",
-  "version": "civic-stand-in-2",
+  "lastModified": "2026-10-13T00:00:00Z",
+  "version": "civic-stand-in-3",
   "schemaVersion": 0,
   "document": {
     "id": "0:0",
@@ -259,6 +259,13 @@
                 "name": "Message",
                 "type": "TEXT",
                 "characters": "Promotion applied"
+              },
+              {
+                "id": "40:12",
+                "name": "Promo banner",
+                "type": "INSTANCE",
+                "componentId": "30:9",
+                "children": []
               }
             ]
           },
@@ -298,7 +305,7 @@
   },
   "components": {
     "30:1": {
-      "key": "card-filled-rest",
+      "key": "643377b69e2fa0c3bbefdc08cdfcd6514b8512c8",
       "name": "Layout=Default, State=Rest, Style=Filled",
       "description": "",
       "componentSetId": "30:0",
@@ -306,7 +313,7 @@
       "documentationLinks": []
     },
     "30:3": {
-      "key": "card-header-default",
+      "key": "dd862e475c7682fa57c683ea19f831dc3254358c",
       "name": "Custom header=False",
       "description": "",
       "componentSetId": "30:2",
@@ -314,11 +321,12 @@
       "documentationLinks": []
     },
     "30:6": {
-      "key": "button-primary",
-      "name": "Button",
+      "key": "dc809b60924ce576a686f5260728693457a0371c",
+      "name": "Style=Primary, State=Rest, Size=Medium (Default), Layout=Icon and label (Default)",
       "description": "",
       "remote": true,
-      "documentationLinks": []
+      "documentationLinks": [],
+      "componentSetId": "30:8"
     },
     "30:7": {
       "key": "b798d8587995f7e3ab1bad36c26bcb567ddeebc6",
@@ -326,18 +334,38 @@
       "description": "",
       "remote": true,
       "documentationLinks": []
+    },
+    "30:9": {
+      "key": "shop-promo-banner-success",
+      "name": "Tone=Success",
+      "description": "",
+      "componentSetId": "30:10",
+      "remote": true,
+      "documentationLinks": []
     }
   },
   "componentSets": {
     "30:0": {
-      "key": "card",
+      "key": "0d1e1017597a223f89c25613fae3225cb1f34e41",
       "name": "Card",
       "description": "",
       "remote": true
     },
     "30:2": {
-      "key": "card-header",
+      "key": "3edf54e4d94dec620cd2a4a274726fdd9302a63e",
       "name": ".Card header",
+      "description": "",
+      "remote": true
+    },
+    "30:8": {
+      "key": "3ed418e09baacd9f725e0dda0a225630a628cf29",
+      "name": "Button",
+      "description": "",
+      "remote": true
+    },
+    "30:10": {
+      "key": "shop-promo-banner",
+      "name": "Promo banner",
       "description": "",
       "remote": true
     }

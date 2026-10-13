@@ -4,7 +4,17 @@ export { readDtcgTokens } from './dtcg.ts'
 export { findWebComponents, readComponentFamilies, type ComponentFamilyOptions, type WebComponentOptions } from './component-contract.ts'
 export { compareCssTokens, readCssTokens, sameCssValue, type TokenComparison, type TokenSide } from './css-tokens.ts'
 export { readFigmaComponentSet, type DesignKitFacts, type DesignKitMapping } from './figma.ts'
-export { readFigmaLibraryComponent, readFigmaProductFile, type LibraryComponentMapping, type LibraryFacts, type ProductManifest } from './figma-product.ts'
+export {
+  readFigmaLibraryComponent,
+  readFigmaProductFile,
+  readPublishedComponents,
+  type DesignFileDeclaration,
+  type LibraryComponentMapping,
+  type LibraryFacts,
+  type ProductFileOptions,
+  type ProductManifest,
+  type PublishedLibrary,
+} from './figma-product.ts'
 export { readPlaywrightReport, type PlaywrightReportOptions } from './playwright.ts'
 export { default as CivicReporter, readCivicRun, type CivicReporterOptions, type CivicRun } from './playwright-reporter.ts'
 export { expectationTarget, readCoverageContract, type CoverageContract, type CoverageContractOptions } from './coverage.ts'

@@ -225,6 +225,9 @@ export function validateGraph(input: unknown): Issue[] {
           error('unknown-variant', at, `Variant ${record.variant} is not defined by ${semantic.id}.`)
         }
         if (record.origin === 'code' && !record.platform) error('instance-platform', at, 'An instance read from code names its platform.')
+        if (record.library && (!record.library.file || !record.library.key || !['key', 'name'].includes(record.library.matchedBy))) {
+          error('instance-library', at, 'An instance\'s library names its file, the component\'s published key, and whether it was matched by key or by name.')
+        }
         if (semantic?.kind === 'semantic-component') {
           if (record.state && !semantic.states.includes(record.state)) error('unknown-state', at, `State ${record.state} is not defined by ${semantic.id}.`)
           for (const state of record.inheritsStates ?? []) {

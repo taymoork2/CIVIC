@@ -7,6 +7,8 @@ import { fragment, slug, type Fragment } from './fragment.ts'
 // contract state it shows, and every way the product changed that instance (D29). Nothing
 // is matched by guesswork: the component set, its variant and state options, and which
 // component property or local style means what are declared, and an undeclared name fails.
+// Instances are matched to the library by the component set's published key, not its name
+// (decision 0011), so two libraries with a Button, or a product's local copy, stay apart.
 
 /**
  * What one component property means. For a property that changes the component, a value
@@ -18,8 +20,15 @@ export type PropertyMapping = { property: string; change: OverrideChange } | { c
 /** How a design system library draws one semantic component, declared by its maintainers. */
 export interface LibraryComponentMapping {
   semanticId: string
-  /** The component set's name in the library file and in files that use it. */
+  /** The component set's name in the library file, for people to read. */
   componentSet: string
+  /**
+   * The component set's published key, which is how files that use it are matched to it.
+   * Without one, instances are matched by name, a fallback that is reported as weaker evidence.
+   */
+  key?: string
+  /** The library file, as the product manifest's `designFiles` names it. */
+  file?: string
   variantProperty: string
   /** Figma variant option to semantic variant key. */
   variants: Record<string, string>
@@ -44,6 +53,32 @@ export interface ProductManifest {
   title: string
   platforms: Platform[]
   owners: Owner[]
+  /** The design files the product is built from, as a lineage (decision 0011). */
+  designFiles?: DesignFileDeclaration[]
+}
+
+/**
+ * One design file in a product's lineage: its role and the files it consumes. A layer is a
+ * role, such as `design-system`, `component-library` or `product`, and free text, so a team
+ * can add its own, such as a product's shared library. One file can hold several roles.
+ */
+export interface DesignFileDeclaration {
+  tool: string
+  /** The tool's key for the file, or a stable name for it when the key isn't known. */
+  file: string
+  title: string
+  layers: string[]
+  /** Files this one uses components from, by `file`. */
+  consumes?: string[]
+}
+
+/** What one library file publishes: the key and name of each component set and standalone component it defines. */
+export interface PublishedLibrary {
+  file: string
+  title: string
+  revision: string
+  /** Component name by published key. */
+  keys: Record<string, string>
 }
 
 export interface LibraryFacts {
@@ -52,6 +87,8 @@ export interface LibraryFacts {
   defaults: Record<string, unknown>
   /** Component names by key, so an instance swap can be compared across files. */
   componentNames: Record<string, string>
+  /** Everything the library file publishes, so a product's other instances can be traced to it. */
+  published: PublishedLibrary
   evidence: Evidence
 }
 
@@ -103,8 +140,17 @@ export function readFigmaLibraryComponent(file: unknown, mapping: LibraryCompone
     if (!found) throw new Error(`${root.name}: no component set named ${name}.`)
     return found
   }
+  const setKeyed = (key: string) => {
+    const id = Object.entries(root.componentSets ?? {}).find(([, set]) => set.key === key && !set.remote)?.[0]
+    let found: FigmaNode | undefined
+    if (id) walk(root.document, (node) => {
+      if (node.type === 'COMPONENT_SET' && node.id === id) found ??= node
+    })
+    if (!found) throw new Error(`${root.name}: publishes no component set with key ${key} (${mapping.componentSet}).`)
+    return found
+  }
   const definitionsOf = (node: FigmaNode) => Object.fromEntries(Object.entries(node.componentPropertyDefinitions ?? {}).map(([name, value]) => [bareName(name), value]))
-  const set = setNamed(mapping.componentSet)
+  const set = mapping.key ? setKeyed(mapping.key) : setNamed(mapping.componentSet)
   const definitions = definitionsOf(set)
   const problems: string[] = []
   for (const [property, options] of [[mapping.variantProperty, mapping.variants], [mapping.stateProperty, mapping.states]] as const) {
@@ -139,6 +185,7 @@ export function readFigmaLibraryComponent(file: unknown, mapping: LibraryCompone
     mapping,
     defaults,
     componentNames,
+    published: readPublishedComponents(root, mapping.file ?? root.name),
     evidence: {
       id: `evidence:figma.library.${slug(mapping.componentSet)}`,
       kind: 'evidence',
@@ -149,7 +196,8 @@ export function readFigmaLibraryComponent(file: unknown, mapping: LibraryCompone
       outcome: 'finding',
       finding:
         `${mapping.componentSet} draws ${mapping.variantProperty}: ${definitions[mapping.variantProperty]!.variantOptions!.join(', ')}; ` +
-        `${mapping.stateProperty}: ${definitions[mapping.stateProperty]!.variantOptions!.join(', ')}; product-settable properties: ${declared.join(', ')}.`,
+        `${mapping.stateProperty}: ${definitions[mapping.stateProperty]!.variantOptions!.join(', ')}; product-settable properties: ${declared.join(', ')}. ` +
+        (mapping.key ? `Found by its published key ${mapping.key}.` : 'Found by name: the mapping declares no published key.'),
       capturedAt,
       source: { tool: 'figma', importer: 'figma-file', revision: root.version, path: `${root.name} / ${mapping.componentSet}`, anchor: set.id },
     },
@@ -157,19 +205,62 @@ export function readFigmaLibraryComponent(file: unknown, mapping: LibraryCompone
 }
 
 /**
+ * Reads what a library file publishes from its export's `componentSets` and `components`:
+ * every component set and standalone component the file defines itself. Ones it uses from
+ * other libraries (`remote`) are theirs, not its own.
+ */
+export function readPublishedComponents(file: unknown, fileKey: string): PublishedLibrary {
+  const root = asFile(file)
+  const keys: Record<string, string> = {}
+  for (const set of Object.values(root.componentSets ?? {})) if (!set.remote) keys[set.key] = set.name
+  for (const component of Object.values(root.components ?? {})) if (!component.remote && !component.componentSetId) keys[component.key] = component.name
+  return { file: fileKey, title: root.name, revision: root.version, keys }
+}
+
+export interface ProductFileOptions {
+  /** This file, as the manifest's `designFiles` names it; its `consumes` says which libraries to expect. */
+  file?: string
+  /** What each consumed library publishes. The mapped component's library is included already. */
+  libraries?: readonly PublishedLibrary[]
+}
+
+/**
  * Reads a product's design file: every top-level frame on each page is a screen, or a
  * state of a screen when it is named `<Screen> / <State>`. Each prototype flow starting
  * point is a journey that contains the page's screens and enters at that frame. Prototype
  * clicks become declared `navigates` links (a URL action stays unmapped), and each instance
- * of the library component becomes a component instance with its overrides.
+ * of the library component becomes a component instance with its overrides and where it
+ * came from: the library file and the component set's key.
+ *
+ * With `options.file`, the manifest's lineage is checked too: every instance the product
+ * places from another file must have a key one of its consumed libraries publishes. One that
+ * doesn't is a failing finding on its screen, because CIVIC can't tell which library it is.
  */
-export function readFigmaProductFile(file: unknown, library: LibraryFacts, product: ProductManifest, capturedAt: string): Fragment {
+export function readFigmaProductFile(file: unknown, library: LibraryFacts, product: ProductManifest, capturedAt: string, options: ProductFileOptions = {}): Fragment {
   const root = asFile(file)
   const { mapping } = library
+  const libraryFile = mapping.file ?? library.published.file
+  const declared = options.file ? product.designFiles?.find((entry) => entry.file === options.file) : undefined
+  if (options.file && !declared) throw new Error(`${product.title}: the manifest declares no design file ${options.file}.`)
+  const consumed = declared ? (declared.consumes ?? []) : []
+  const libraries = new Map([library.published, ...(options.libraries ?? [])].map((entry) => [entry.file, entry]))
+  if (declared) {
+    if (!consumed.includes(libraryFile)) throw new Error(`${product.title}: ${declared.file} does not declare that it consumes ${libraryFile}, the ${mapping.componentSet} library.`)
+    const unread = consumed.filter((entry) => !libraries.has(entry))
+    if (unread.length > 0) throw new Error(`${product.title}: ${declared.file} consumes ${unread.join(', ')}, which was not read.`)
+  }
+  const keyOf = (componentId: string) => {
+    const component = root.components?.[componentId]
+    const set = component?.componentSetId ? root.componentSets?.[component.componentSetId] : undefined
+    return set ? { key: set.key, name: set.name, remote: Boolean(set.remote) } : component ? { key: component.key, name: component.name, remote: Boolean(component.remote) } : undefined
+  }
+  const isMapped = (componentId: string) => (mapping.key ? keyOf(componentId)?.key === mapping.key : setNameOf(root, componentId) === mapping.componentSet)
   const designOwners = product.owners.filter((owner) => owner.role === 'design')
   const source = (path: string, anchor: string): SourceRef => ({ tool: 'figma', importer: 'figma-file', revision: root.version, path: `${root.name} / ${path}`, anchor })
   const records: (Target | ComponentInstance | Override | Evidence)[] = []
   const links: Link[] = []
+  /** Component names placed from each consumed library other than the mapped component. */
+  const placed = new Map<string, string[]>()
   const pages = (root.document.children ?? []).filter((node) => node.type === 'CANVAS')
 
   // Frames first, so paths can resolve their destinations.
@@ -209,13 +300,39 @@ export function readFigmaProductFile(file: unknown, library: LibraryFacts, produ
 
     const instanceIds = new Set<string>()
     walk(node, (child) => {
-      if (child.type !== 'INSTANCE' || !child.componentId || setNameOf(root, child.componentId) !== mapping.componentSet) return
+      if (child.type !== 'INSTANCE' || !child.componentId || !isMapped(child.componentId)) return
       const instanceId = `instance:${targetId.slice('target:'.length)}.${slug(child.name)}`
       if (instanceIds.has(instanceId)) throw new Error(`${root.name}: "${node.name}" has two ${mapping.componentSet} instances named "${child.name}"; name them apart.`)
       instanceIds.add(instanceId)
-      records.push(...readInstance(root, child, instanceId, targetId, node.name, library, product, designOwners, source(`${page} / ${node.name} / ${child.name}`, child.id)))
+      const provenance = { file: libraryFile, key: keyOf(child.componentId)?.key ?? mapping.componentSet, matchedBy: mapping.key ? ('key' as const) : ('name' as const) }
+      records.push(...readInstance(root, child, instanceId, targetId, node.name, library, product, designOwners, source(`${page} / ${node.name} / ${child.name}`, child.id), provenance))
       links.push({ from: targetId, relation: 'contains', to: instanceId, status: 'declared' })
     })
+
+    // Every other component the product places, traced to the consumed library that publishes it.
+    if (declared) {
+      placements(node, (child) => {
+        const used = child.componentId ? keyOf(child.componentId) : undefined
+        if (!used || !used.remote || isMapped(child.componentId!)) return
+        const from = consumed.find((entry) => libraries.get(entry)!.keys[used.key] !== undefined)
+        if (from) {
+          placed.set(from, [...(placed.get(from) ?? []), used.name])
+          return
+        }
+        records.push({
+          id: `evidence:figma.${targetId.slice('target:'.length)}.unknown-component.${slug(child.name)}`,
+          kind: 'evidence',
+          title: `"${child.name}" on ${node.name} comes from no consumed library`,
+          subjectIds: [targetId],
+          tier: 'static-analysis',
+          method: 'design-export',
+          outcome: 'fail',
+          finding: `"${child.name}" is an instance of ${used.name} (key ${used.key}), which none of ${consumed.join(', ')} publishes. Declare the library it comes from, or swap it for a component one of them publishes.`,
+          capturedAt,
+          source: source(`${page} / ${node.name} / ${child.name}`, child.id),
+        })
+      })
+    }
   }
 
   for (const page of pages) {
@@ -245,11 +362,23 @@ export function readFigmaProductFile(file: unknown, library: LibraryFacts, produ
     finding:
       `${frames.size} frame(s): ${[...frames.values()].map((frame) => frame.node.name).join(', ')}. ` +
       `${instances.length} ${mapping.componentSet} instance(s) showing ${instances.map((instance) => instance.state).join(', ')}; ` +
-      `${overrides.length} override(s): ${overrides.map((override) => override.property).join(', ') || 'none'}.`,
+      `${overrides.length} override(s): ${overrides.map((override) => override.property).join(', ') || 'none'}. ` +
+      (mapping.key ? `${mapping.componentSet} instances matched by published key ${mapping.key} from ${libraryFile}.` : `${mapping.componentSet} instances matched by name, a weaker match: the mapping declares no published key.`) +
+      (declared
+        ? ` Consumes ${consumed.join(', ')}; other placements: ${[...placed].map(([from, names]) => `${names.length} from ${from} (${[...new Set(names)].join(', ')})`).join('; ') || 'none'}.`
+        : ''),
     capturedAt,
     source: { tool: 'figma', importer: 'figma-file', revision: root.version, path: root.name },
   })
   return fragment(records, links)
+}
+
+/** The instances a frame places itself, not the ones inside another instance, which belong to that component. */
+function placements(node: FigmaNode, visit: (node: FigmaNode) => void) {
+  for (const child of node.children ?? []) {
+    if (child.type === 'INSTANCE') visit(child)
+    else placements(child, visit)
+  }
 }
 
 function setNameOf(root: FigmaFile, componentId: string): string | undefined {
@@ -267,6 +396,7 @@ function readInstance(
   product: ProductManifest,
   owners: Owner[],
   source: SourceRef,
+  provenance: NonNullable<ComponentInstance['library']>,
 ): (ComponentInstance | Override)[] {
   const { mapping } = library
   const properties = Object.fromEntries(Object.entries(node.componentProperties ?? {}).map(([name, value]) => [bareName(name), value]))
@@ -285,6 +415,7 @@ function readInstance(
     placedOn: targetId,
     product: product.product,
     origin: 'design',
+    library: provenance,
     owners,
     source,
   }
