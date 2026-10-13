@@ -46,6 +46,12 @@ writeFileSync(join(inputs, 'review-index.json'), JSON.stringify({
   routeActions: (index.routeActions ?? []).map((action) => pick(action, ['from', 'action', 'destination', 'route', 'when', 'returnTo', 'source', 'anchor'])),
 }, null, 2) + '\n')
 
+// Recorded runs replayed at this commit (decision 0009): run evidence a person kept from the canvas.
+const replays = await fetch(`${base}/api/review/replays`, { headers: { cookie } })
+if (!replays.ok) throw new Error(`The review server answered ${replays.status} for replays: ${await replays.text()}`)
+const atHead = ((await replays.json()) as { head: string; tape: string; replayedAt: string }[]).filter((replay) => replay.head === index.revision.head)
+writeFileSync(join(inputs, 'replays.json'), JSON.stringify(atHead.sort((a, b) => a.tape.localeCompare(b.tape) || a.replayedAt.localeCompare(b.replayedAt)), null, 2) + '\n')
+
 // The coverage contract at the same commit: what Laundry declares must be shown and proven.
 writeFileSync(join(inputs, 'coverage.json'), readFileSync(join(root, COVERAGE), 'utf8'))
 

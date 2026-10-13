@@ -8,9 +8,9 @@
 //   node build.ts           write out/
 //   node build.ts --check   fail if out/ is not what the inputs produce
 
-import { readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { assertValid, indexGraph, type CollaborationRecord, type Evidence, type Owner } from '../../graph/src/index.ts'
-import { assemble, fragment, readCoverageContract, readJourneyIndex, readPlaywrightReport, readRenderReceipt, type CoverageContract, type JourneyIndex, type RenderReceipt } from '../../importers/src/index.ts'
+import { assemble, fragment, readCoverageContract, readJourneyIndex, readPlaywrightReport, readRenderReceipt, readReplays, type CoverageContract, type JourneyIndex, type RenderReceipt, type ReplayRecord } from '../../importers/src/index.ts'
 
 const here = (path: string) => new URL(path, import.meta.url)
 const text = (path: string) => readFileSync(here(path), 'utf8')
@@ -51,7 +51,11 @@ function subjectsFor(spec: { file: string; line: number }): string[] {
   const named = declared.filter((id) => new RegExp(`scenario=${scenarioOf(id).replaceAll('.', '\\.')}(?![\\w.-])`).test(body))
   return named.length > 0 ? named : declared
 }
-const evidence = readPlaywrightReport(report, 'web', { subjectsFor, pathFor: (file) => `${SOURCE_ROOT}/${TEST_DIR}/${file}` })
+const tests = readPlaywrightReport(report, 'web', { subjectsFor, pathFor: (file) => `${SOURCE_ROOT}/${TEST_DIR}/${file}` })
+// Recorded runs a person replayed in the canvas at the captured commit (decision 0009).
+const replays = existsSync(here('inputs/replays.json')) ? json<ReplayRecord[]>('inputs/replays.json') : []
+const replayed = readReplays(replays, { prefix: PREFIX, platform: 'web', path: 'projects/laundry/inputs/replays.json', targetIds: new Set(journeys.fragment.records.map((record) => record.id)) })
+const evidence = [...tests, ...replayed]
 
 // The coverage contract (roadmap step 3): each expectation the app can't yet show and prove
 // with a passing run is an open Coverage gap, owned like any other collaboration record.
@@ -107,7 +111,7 @@ const line = (item: Evidence) => `- **${item.title}** (\`${item.source.path}\`, 
 const screens = indexed.ofKind('target').filter((target) => target.scale === 'screen' && !expectation(target.id)).length
 const runs = `# Laundry: run evidence by journey
 
-Built by \`node projects/laundry/build.ts\` from the journey engine's review index and a Playwright report of Laundry's own review specs, both captured at commit \`${index.revision.head.slice(0, 12)}\`. ${screens} screens, ${evidence.length} tests: ${evidence.length - failed.length} passed, ${failed.length} failed.
+Built by \`node projects/laundry/build.ts\` from the journey engine's review index and a Playwright report of Laundry's own review specs, both captured at commit \`${index.revision.head.slice(0, 12)}\`. ${screens} screens, ${evidence.length} tests and replayed runs: ${evidence.length - failed.length} passed, ${failed.length} failed. ${replayed.length === 0 ? 'No recorded run has been replayed at this commit.' : `${replayed.length} of them are recorded runs replayed in the canvas.`}
 
 A screen passes when every test that covers it passed, and fails when any did. The specs run against the review server's synthetic fixtures, not a household backend.
 
@@ -145,7 +149,7 @@ const outputs: Record<string, string> = {
   'out/runs.md': runs,
   'out/coverage.md': coverageReport,
 }
-const summary = `${graph.records.length} records, ${graph.links.length} links, ${evidence.length} test(s) with ${failed.length} failing`
+const summary = `${graph.records.length} records, ${graph.links.length} links, ${tests.length} test(s) and ${replayed.length} replayed run(s), ${failed.length} failing`
 if (process.argv.includes('--check')) {
   const stale = Object.entries(outputs).filter(([path, body]) => {
     try {
