@@ -192,8 +192,9 @@ try {
     },
   }
   const dispose = await mount(root, context)
-  mounted = true
   if (window.frameElement) await resize(initialViewport)
+  // Ready is only announced once input is allowed, so nothing typed before then is lost to the inert page.
+  mounted = true
   if (window.reviewPreview && !window.reviewPreview.setViewport) window.reviewPreview.setViewport = resize
   if (!restoring) document.body.inert = false
   if (!restoring && state) root.dataset.rehearsalReady = 'true'

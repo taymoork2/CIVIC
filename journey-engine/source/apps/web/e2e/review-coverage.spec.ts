@@ -10,6 +10,8 @@ test('coverage prototypes preserve the app draft and persist independently', asy
   await page.getByRole('button', { name: 'Play', exact: true }).click()
   const live = page.locator('iframe[title="Live towel journey"]')
   const frame = page.frameLocator('iframe[title="Live towel journey"]')
+  // The live app takes input once its run is ready; a fill before then would be lost.
+  await expect(frame.locator('#review-root')).toHaveAttribute('data-rehearsal-ready', 'true')
   await frame.getByLabel('Other material 1', { exact: true }).fill('Coverage retained draft')
   const initialUrl = await live.getAttribute('src')
   await page.locator('.rh-brand').getByRole('button', { name: /^Coverage/ }).click()
