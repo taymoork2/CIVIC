@@ -414,3 +414,30 @@ test('saved notes become shared CIVIC annotations with their locator, and annota
     assert.ok((await (await fetch(`${base}/api/review/feedback`, { headers })).json()).some((entry) => entry.id === row.id))
   } finally { await new Promise((resolve) => server.close(resolve)) }
 })
+
+test('a finished replay is kept as CIVIC run evidence, with its tape by content hash', async () => {
+  const dataDir = await mkdtemp(join(tmpdir(), 'rehearsal-replays-'))
+  const project = { key: 'example-checkout', personas: [{ id: 'reviewer' }], roles: [{ id: 'author' }], conditions: [{ id: 'normal' }] }
+  const metadata = { scenarios: [{ id: 'note.edit' }], ...snapshot, project }
+  const middleware = await reviewMiddleware({ dataDir, metadata, capture: async () => Buffer.from(''), adapter: adapter() })
+  const server = createServer((req, res) => middleware(req, res, () => { res.writeHead(200); res.end() }))
+  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve))
+  const base = `http://127.0.0.1:${server.address().port}`
+  const headers = await localHeaders(base)
+  const post = (data) => fetch(`${base}/api/review/replays`, { method: 'POST', headers, body: JSON.stringify(data) })
+  const tape = { version: 1, project: project.key, source: snapshot.revision.source, now: 1, initialRoute: '/', seed: { context: { scenario: 'note.edit', persona: 'reviewer', role: 'author', condition: 'normal', theme: 'light', textScale: 1, width: 393 } }, steps: [{ gesture: { kind: 'click', target: { tag: 'button', name: 'Save', index: 0, count: 1 } }, route: '/', view: 'Saved', fields: [], operations: [] }] }
+  try {
+    const passed = await post({ tape, outcome: 'pass', verified: 1 })
+    assert.equal(passed.status, 201)
+    const { replay } = await passed.json()
+    assert.deepEqual({ ...replay, replayedAt: undefined }, { schema: 'civic.replay/0', project: project.key, scenario: 'note.edit', head: snapshot.revision.head, source: snapshot.revision.source, tape: replay.tape, steps: 1, outcome: 'pass', replayedAt: undefined })
+    assert.equal(await readFile(join(dataDir, 'replays', 'tapes', `${replay.tape}.json`), 'utf8'), JSON.stringify(tape))
+    assert.equal((await post({ tape, outcome: 'fail', divergedAt: 1, message: 'Replay diverged at step 1.' })).status, 201)
+    // A pass that skipped steps, a failure with no step, and a tape from another source are refused.
+    assert.equal((await post({ tape, outcome: 'pass', verified: 0 })).status, 400)
+    assert.equal((await post({ tape, outcome: 'fail' })).status, 400)
+    assert.equal((await post({ tape: { ...tape, source: '9'.repeat(64) }, outcome: 'pass', verified: 1 })).status, 400)
+    const listed = await (await fetch(`${base}/api/review/replays`, { headers })).json()
+    assert.deepEqual(listed.map((item) => [item.outcome, item.divergedAt]).sort(), [['fail', 1], ['pass', undefined]])
+  } finally { await new Promise((resolve) => server.close(resolve)) }
+})
