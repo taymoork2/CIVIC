@@ -1,8 +1,8 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import type { SemanticComponent } from '../../graph/src/index.ts'
+import { validateGraph, type Evidence, type SemanticComponent } from '../../graph/src/index.ts'
 import { trimFigmaFile } from '../src/figma-trim.ts'
-import { compareLibraryDefaults, raiseOverrideDrift, readFigmaLibraryComponent, readFigmaProductFile, tsExportedComponents, type LibraryComponentMapping, type ProductManifest } from '../src/index.ts'
+import { assemble, compareLibraryDefaults, fragment, raiseOverrideDrift, readFigmaLibraryComponent, readFigmaProductFile, tsExportedComponents, type LibraryComponentMapping, type ProductManifest } from '../src/index.ts'
 
 const mapping: LibraryComponentMapping = {
   semanticId: 'semantic:card',
@@ -152,15 +152,22 @@ test('reads the components a declaration file exports', () => {
 })
 
 test('a trimmed export keeps only the path to its targets, and the components their swaps default to', () => {
-  const full = { ...libraryFile(), schemaVersion: 0, components: { '5:1': { key: 'icon', name: 'Icon' }, '5:2': { key: 'other', name: 'Other' } } }
+  const full = {
+    ...libraryFile(),
+    schemaVersion: 0,
+    components: { '5:1': { key: 'icon', name: 'Icon', componentSetId: '5:0' }, '5:2': { key: 'other', name: 'Other', remote: true }, '5:3': { key: 'logo', name: 'Logo', description: 'Long.' } },
+    componentSets: { '1:1': { key: 'card', name: 'Card', description: 'Long.' }, '6:0': { key: 'their-button', name: 'Button', remote: true } },
+  }
   const set = full.document.children[0]!.children[0]! as { children: unknown[]; componentPropertyDefinitions: Record<string, unknown> }
   set.children.push({ id: '1:9', name: 'Appearance=Filled, State=Rest', type: 'COMPONENT', cornerRadius: 4, children: [{ id: '1:10', name: 'Art', type: 'VECTOR' }] })
   set.componentPropertyDefinitions['Icon#1:4'] = { type: 'INSTANCE_SWAP', defaultValue: '5:1' }
   full.document.children.push({ id: '3:0', name: 'Artwork', type: 'CANVAS', children: [] } as never)
-  const trimmed = trimFigmaFile(full, [{ type: 'COMPONENT_SET', name: 'Card' }]) as { document: { children: { name: string; children: { children: unknown[] }[] }[] }; components: unknown }
+  const trimmed = trimFigmaFile(full, [{ type: 'COMPONENT_SET', name: 'Card' }]) as { document: { children: { name: string; children: { children: unknown[] }[] }[] }; components: unknown; componentSets: unknown }
   assert.deepEqual(trimmed.document.children.map((page) => page.name), ['Components'])
   assert.deepEqual(trimmed.document.children[0]!.children[0]!.children, [{ id: '1:9', name: 'Appearance=Filled, State=Rest', type: 'COMPONENT' }])
-  assert.deepEqual(trimmed.components, { '5:1': { key: 'icon', name: 'Icon' } })
+  // The swap default stays whole; everything the file publishes stays as its key and name; what it uses from other libraries goes.
+  assert.deepEqual(trimmed.components, { '5:1': { key: 'icon', name: 'Icon', componentSetId: '5:0' }, '5:3': { key: 'logo', name: 'Logo' } })
+  assert.deepEqual(trimmed.componentSets, { '1:1': { key: 'card', name: 'Card' } })
   assert.equal(readFigmaLibraryComponent(trimmed, mapping, 'now').defaults.Title, 'Title')
   assert.throws(() => trimFigmaFile(full, [{ type: 'COMPONENT_SET', name: 'Card' }, { type: 'FRAME', name: 'Buttons' }]), /Library has no Buttons/)
 })
@@ -179,4 +186,66 @@ test('content the library shows by default is raised for each platform with no e
   // The footer is on by default and iOS can't express it; the badge is off by default, so nothing inherits it.
   assert.deepEqual(conflicts.map((conflict) => conflict.id), ['conflict:card.ios.default.actions'])
   assert.deepEqual(conflicts[0]!.sides.map((side) => side.evidenceIds), [['evidence:figma.library.card'], ['evidence:ios']])
+})
+
+const keyed = (mappingKey?: string) => {
+  const file = { ...libraryFile(), components: { '1:5': { key: 'badge', name: 'Badge' } }, componentSets: { '1:1': { key: 'card', name: 'Card' } } }
+  return readFigmaLibraryComponent(file, { ...mapping, ...(mappingKey ? { key: mappingKey } : {}), file: 'kit' }, 'now')
+}
+
+test('a library mapping with a key finds its component set by that key, and refuses a key the file does not publish', () => {
+  const facts = keyed('card')
+  assert.match(facts.evidence.finding!, /Found by its published key card\./)
+  assert.deepEqual(facts.published, { file: 'kit', title: 'Library', revision: '7', keys: { card: 'Card', badge: 'Badge' } })
+  assert.throws(() => keyed('card-v2'), /Library: publishes no component set with key card-v2 \(Card\)/)
+  assert.match(keyed().evidence.finding!, /Found by name/)
+})
+
+test('instances match the library by published key, so another library\'s Card is not taken for it', () => {
+  const file = productFile([{ id: '2:1', name: 'Order Summary', type: 'FRAME', children: [instance('2:2', 'Rest'), { ...instance('2:3', 'Rest'), name: 'Their card', componentId: '7:1' }] }])
+  file.components['7:1' as '9:1'] = { key: 'k2', name: 'Appearance=Filled, State=Rest', componentSetId: '7:0', remote: true }
+  file.componentSets['7:0' as '9:0'] = { key: 'their-card', name: 'Card', remote: true }
+  const byKey = readFigmaProductFile(file, keyed('card'), product, 'now').records.filter((record) => record.kind === 'component-instance')
+  assert.deepEqual(byKey.map((record) => [record.id, record.library]), [['instance:shop.order-summary.card', { file: 'kit', key: 'card', matchedBy: 'key' }]])
+  // Without a key, both are matched by name, recorded as the weaker match.
+  const byName = readFigmaProductFile(file, keyed(), product, 'now')
+  assert.deepEqual(byName.records.filter((record) => record.kind === 'component-instance').map((record) => record.library?.matchedBy), ['name', 'name'])
+  assert.match(byName.records.find((record) => record.kind === 'evidence')!.finding!, /matched by name, a weaker match/)
+})
+
+test('with a declared lineage, every placed component is traced to a consumed library, and one from none is a failing finding', () => {
+  const lineage: ProductManifest = {
+    ...product,
+    designFiles: [
+      { tool: 'figma', file: 'shop', title: 'Shop', layers: ['product'], consumes: ['kit', 'patterns'] },
+      { tool: 'figma', file: 'patterns', title: 'Patterns', layers: ['product-library'], consumes: ['kit'] },
+      { tool: 'figma', file: 'kit', title: 'Kit', layers: ['design-system', 'component-library'] },
+    ],
+  }
+  const patterns = { file: 'patterns', title: 'Patterns', revision: '3', keys: { promo: 'Promo banner' } }
+  const placed = (id: string, name: string, componentId: string) => ({ id, name, type: 'INSTANCE', componentId, children: [{ id: `I${id};1`, name: 'Inside', type: 'INSTANCE', componentId: '8:9' }] })
+  const file = productFile([{ id: '2:1', name: 'Order Summary', type: 'FRAME', children: [
+    instance('2:2', 'Rest'),
+    { id: '2:3', name: 'Group', type: 'GROUP', children: [placed('2:4', 'Badge', '8:1'), placed('2:5', 'Promo', '8:2'), placed('2:6', 'Sticker', '8:3'), placed('2:7', 'Local note', '8:4')] },
+  ] }])
+  Object.assign(file.components, {
+    '8:1': { key: 'badge', name: 'Badge', remote: true },
+    '8:2': { key: 'promo-success', name: 'Tone=Success', componentSetId: '8:0', remote: true },
+    '8:3': { key: 'sticker', name: 'Sticker', remote: true },
+    '8:4': { key: 'note', name: 'Note' },
+    '8:9': { key: 'unknown-inside', name: 'Inside', remote: true },
+  })
+  Object.assign(file.componentSets, { '8:0': { key: 'promo', name: 'Promo banner', remote: true } })
+  const { records } = readFigmaProductFile(file, keyed('card'), lineage, 'now', { file: 'shop', libraries: [patterns] })
+  const failing = records.filter((record): record is Evidence => record.kind === 'evidence' && record.outcome === 'fail')
+  assert.deepEqual(failing.map((record) => [record.id, record.subjectIds]), [['evidence:figma.shop.order-summary.unknown-component.sticker', ['target:shop.order-summary']]])
+  assert.match(failing[0]!.finding!, /Sticker \(key sticker\), which none of kit, patterns publishes/)
+  assert.match((records.find((record) => record.id === 'evidence:figma.shop.shop') as Evidence).finding!, /Consumes kit, patterns; other placements: 1 from kit \(Badge\); 1 from patterns \(Promo banner\)\./)
+  const card: SemanticComponent = { id: 'semantic:card', kind: 'semantic-component', title: 'Card', purpose: 'Group.', variants: [{ key: 'filled', title: 'Filled' }], states: ['rest', 'loading'], owners: [{ role: 'design', who: 'ds' }] }
+  assert.deepEqual(validateGraph(assemble(fragment([card, ...records]))).filter((issue) => issue.severity === 'error'), [])
+
+  assert.throws(() => readFigmaProductFile(file, keyed('card'), lineage, 'now', { file: 'shop' }), /shop consumes patterns, which was not read/)
+  const withoutKit = { ...lineage, designFiles: [{ tool: 'figma', file: 'shop', title: 'Shop', layers: ['product'], consumes: ['patterns'] }] }
+  assert.throws(() => readFigmaProductFile(file, keyed('card'), withoutKit, 'now', { file: 'shop', libraries: [patterns] }), /shop does not declare that it consumes kit, the Card library/)
+  assert.throws(() => readFigmaProductFile(file, keyed('card'), lineage, 'now', { file: 'checkout' }), /declares no design file checkout/)
 })

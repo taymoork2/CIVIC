@@ -28,7 +28,7 @@ Every record has a stable ID, `<prefix>:<dot.separated.path>`, a title, and opti
 | Semantic component | `semantic:` | The platform-independent contract: purpose, variants, states, slots and contract rules. `productStates` are the states whose content depends on the product's data, such as loading, empty and error. |
 | Platform component | `platform:` | One platform's implementation, with how each semantic variant maps (`exact`, `closest` or `none`), its default variant, and any variants no semantic variant covers |
 | Extension point | `extension:` | A slot, prop, token, style API or theming hook on a platform component, and the semantic properties it can express |
-| Component instance | `instance:` | A use of a component on a product's screen, from design or code, with the contract `state` it shows and any product states it `inheritsStates` from the default |
+| Component instance | `instance:` | A use of a component on a product's screen, from design or code, with the contract `state` it shows, any product states it `inheritsStates` from the default, and for a design instance the `library` it comes from (file, published key, and whether it was matched by key or by name) |
 | Override | `override:` | A local change to an instance: added content, a changed property, a local style, or a detach |
 | Evidence | `evidence:` | What a source shows, tied to the exact revision it read, in one evidence tier |
 | Contract Conflict | `conflict:` | Two sources that disagree on a target, as the import raised it: the sides and their evidence, owners, and the state it was raised in |

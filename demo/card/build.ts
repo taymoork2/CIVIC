@@ -44,6 +44,7 @@ import {
   raiseOverrideDrift,
   readFigmaLibraryComponent,
   readFigmaProductFile,
+  readPublishedComponents,
   readPlatformComponent,
   swiftEnumCases,
   swiftPropertyDefault,
@@ -165,7 +166,9 @@ const android = readPlatformComponent(
 const libraryFile = json<{ lastModified: string }>('design/library.figma.json')
 const library = readFigmaLibraryComponent(libraryFile, mappings.library, libraryFile.lastModified)
 const productFile = json<{ lastModified: string }>('design/shop-checkout.figma.json')
-const shop = readFigmaProductFile(productFile, library, product, productFile.lastModified)
+// Shop's own patterns library, the product-level layer of its lineage (decision 0011).
+const patterns = readPublishedComponents(json('design/shop-patterns.figma.json'), 'shop-patterns')
+const shop = readFigmaProductFile(productFile, library, product, productFile.lastModified, { file: 'shop-checkout', libraries: [patterns] })
 const designEvidence = shop.records.find((record) => record.kind === 'evidence')!.id
 const overrides = shop.records.filter((record): record is Override => record.kind === 'override')
 const drift = fragment(raiseOverrideDrift(semantic, overrides, { design: designEvidence, contract: library.evidence.id }))

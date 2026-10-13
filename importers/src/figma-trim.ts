@@ -23,7 +23,8 @@ interface FigmaFile {
   lastModified: string
   schemaVersion: number
   document: FigmaNode
-  components?: Record<string, unknown>
+  components?: Record<string, { key: string; name: string; componentSetId?: string; remote?: boolean }>
+  componentSets?: Record<string, { key: string; name: string; remote?: boolean }>
 }
 
 const bare = (node: FigmaNode): FigmaNode => ({ id: node.id, name: node.name, type: node.type })
@@ -66,7 +67,13 @@ export function trimFigmaFile(input: unknown, targets: TrimTarget[]): object {
     for (const child of node.children ?? []) collect(child)
   }
   collect(document)
-  const components = Object.fromEntries(Object.entries(file.components ?? {}).filter(([id]) => swapDefaults.has(id)))
+  const components = Object.fromEntries(
+    Object.entries(file.components ?? {}).flatMap(([id, component]) => {
+      if (swapDefaults.has(id)) return [[id, component]]
+      return !component.remote && !component.componentSetId ? [[id, { key: component.key, name: component.name }]] : []
+    }),
+  )
+  const componentSets = Object.fromEntries(Object.entries(file.componentSets ?? {}).flatMap(([id, set]) => (set.remote ? [] : [[id, { key: set.key, name: set.name }]])))
   return {
     name: file.name,
     lastModified: file.lastModified,
@@ -74,5 +81,6 @@ export function trimFigmaFile(input: unknown, targets: TrimTarget[]): object {
     schemaVersion: file.schemaVersion,
     document,
     ...(Object.keys(components).length > 0 ? { components } : {}),
+    ...(Object.keys(componentSets).length > 0 ? { componentSets } : {}),
   }
 }

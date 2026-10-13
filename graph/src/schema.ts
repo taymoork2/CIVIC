@@ -208,6 +208,12 @@ export interface ComponentInstance extends RecordBase {
   state?: string
   /** Product states this instance explicitly leaves to the component's default (D32). */
   inheritsStates?: string[]
+  /**
+   * Where a design instance's component comes from: the library file, as the product's
+   * manifest names it, and the component set's published key (decision 0011). `name` means
+   * the export had no key to match on, which is weaker evidence than `key`.
+   */
+  library?: { file: string; key: string; matchedBy: 'key' | 'name' }
 }
 
 export const OVERRIDE_CHANGES = ['add-content', 'set-property', 'local-style', 'detach'] as const

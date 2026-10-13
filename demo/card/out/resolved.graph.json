@@ -58,7 +58,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-2",
+        "revision": "civic-stand-in-3",
         "path": "Shop checkout (CIVIC stand-in) / Checkout",
         "anchor": "40:0"
       }
@@ -83,7 +83,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-2",
+        "revision": "civic-stand-in-3",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Gift options",
         "anchor": "40:20"
       }
@@ -108,7 +108,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-2",
+        "revision": "civic-stand-in-3",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary",
         "anchor": "40:1"
       }
@@ -133,7 +133,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-2",
+        "revision": "civic-stand-in-3",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Loading",
         "anchor": "40:5"
       }
@@ -158,7 +158,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-2",
+        "revision": "civic-stand-in-3",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Promo applied",
         "anchor": "40:10"
       }
@@ -715,6 +715,11 @@
       "placedOn": "target:shop.order-summary",
       "product": "shop",
       "origin": "design",
+      "library": {
+        "file": "fluent-2-web",
+        "key": "0d1e1017597a223f89c25613fae3225cb1f34e41",
+        "matchedBy": "key"
+      },
       "owners": [
         {
           "role": "design",
@@ -724,7 +729,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-2",
+        "revision": "civic-stand-in-3",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Card",
         "anchor": "40:2"
       }
@@ -739,6 +744,11 @@
       "placedOn": "target:shop.order-summary.loading",
       "product": "shop",
       "origin": "design",
+      "library": {
+        "file": "fluent-2-web",
+        "key": "0d1e1017597a223f89c25613fae3225cb1f34e41",
+        "matchedBy": "key"
+      },
       "owners": [
         {
           "role": "design",
@@ -748,7 +758,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-2",
+        "revision": "civic-stand-in-3",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Loading / Card",
         "anchor": "40:6"
       }
@@ -768,7 +778,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-2",
+        "revision": "civic-stand-in-3",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Card",
         "anchor": "40:2"
       }
@@ -788,7 +798,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-2",
+        "revision": "civic-stand-in-3",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Card",
         "anchor": "40:2"
       }
@@ -803,7 +813,7 @@
       "tier": "static-analysis",
       "method": "design-export",
       "outcome": "finding",
-      "finding": "Card draws Style: Filled, Filled alt, Outline, Subtle; State: Rest, Hover, Pressed, Draggable, Selected, Disabled; product-settable properties: Layout (default Default), Body (default true), Footer (default true), .Card header / Custom header (default False), .Card header / 32px Icon (default Size=32, Theme=Regular), .Card header / Avatar (default false), .Card header / Product icon (default true), .Card header / Subtext (default true), .Card header / Checkbox (default false), .Card header / Header quick action (default true).",
+      "finding": "Card draws Style: Filled, Filled alt, Outline, Subtle; State: Rest, Hover, Pressed, Draggable, Selected, Disabled; product-settable properties: Layout (default Default), Body (default true), Footer (default true), .Card header / Custom header (default False), .Card header / 32px Icon (default Size=32, Theme=Regular), .Card header / Avatar (default false), .Card header / Product icon (default true), .Card header / Subtext (default true), .Card header / Checkbox (default false), .Card header / Header quick action (default true). Found by its published key 0d1e1017597a223f89c25613fae3225cb1f34e41.",
       "capturedAt": "2026-10-12T05:04:08Z",
       "source": {
         "tool": "figma",
@@ -825,12 +835,12 @@
       "tier": "static-analysis",
       "method": "design-export",
       "outcome": "finding",
-      "finding": "4 frame(s): Order Summary, Order Summary / Loading, Promo applied, Gift options. 2 Card instance(s) showing rest, rest; 2 override(s): state.selected, corner-radius.",
-      "capturedAt": "2026-10-12T00:00:00Z",
+      "finding": "4 frame(s): Order Summary, Order Summary / Loading, Promo applied, Gift options. 2 Card instance(s) showing rest, rest; 2 override(s): state.selected, corner-radius. Card instances matched by published key 0d1e1017597a223f89c25613fae3225cb1f34e41 from fluent-2-web. Consumes fluent-2-web, shop-patterns; other placements: 3 from fluent-2-web (Button); 1 from shop-patterns (Promo banner).",
+      "capturedAt": "2026-10-13T00:00:00Z",
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-2",
+        "revision": "civic-stand-in-3",
         "path": "Shop checkout (CIVIC stand-in)"
       }
     },
@@ -1220,7 +1230,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-2",
+        "revision": "civic-stand-in-3",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Gift options / Back to order",
         "anchor": "40:21"
       },
@@ -1252,7 +1262,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-2",
+        "revision": "civic-stand-in-3",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Continue to payment",
         "anchor": "40:4"
       },
@@ -1267,7 +1277,7 @@
       "source": {
         "tool": "figma",
         "importer": "figma-file",
-        "revision": "civic-stand-in-2",
+        "revision": "civic-stand-in-3",
         "path": "Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Apply promotion",
         "anchor": "40:3"
       },

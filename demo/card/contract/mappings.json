@@ -67,6 +67,8 @@
   "library": {
     "semanticId": "semantic:card",
     "componentSet": "Card",
+    "key": "0d1e1017597a223f89c25613fae3225cb1f34e41",
+    "file": "fluent-2-web",
     "owners": [{ "role": "design", "who": "design-system-maintainers" }],
     "variantProperty": "Style",
     "variants": { "Filled": "filled", "Outline": "outline" },
