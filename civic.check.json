@@ -25,5 +25,25 @@
         "env": "LAUNDRY_CHECKOUT"
       }
     }
+  ],
+  "methods": [
+    {
+      "graph": "demo/fluent-button/out/resolved.graph.json",
+      "profiles": [
+        "demo/fluent-button/contract/method.json"
+      ]
+    },
+    {
+      "graph": "demo/card/out/resolved.graph.json",
+      "profiles": [
+        "demo/card/contract/method.json"
+      ]
+    },
+    {
+      "graph": "projects/laundry/out/graph.json",
+      "profiles": [
+        "projects/laundry/method.json"
+      ]
+    }
   ]
 }

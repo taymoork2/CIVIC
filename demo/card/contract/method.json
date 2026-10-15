@@ -1,0 +1,11 @@
+{
+  "schema": "civic.method/0",
+  "id": "shop.atomic-design",
+  "title": "Atomic Design",
+  "extends": "atomic-design",
+  "note": "Shop's design team follows Atomic Design and places the library's Card and its own components in its tiers. Fluent doesn't use Atomic Design, so the Card's tier is Shop's reading of it, not the library's. Illustrative, like the demo's decisions: placeholder owners, not a real team's call.",
+  "owners": [{ "role": "design", "who": "shop-design" }],
+  "placements": [
+    { "tier": "molecule", "ids": ["semantic:card", "target:shop.component.gift-option"], "declaredBy": { "role": "design", "who": "shop-design" } }
+  ]
+}
