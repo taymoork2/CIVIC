@@ -14,6 +14,7 @@
 //   civic walk <file> <journey-id> [--path <label,...>] [--html <file>] [--json]
 //   civic stories <file> [--design <design.json>]... [--json]
 //   civic objects <file> [--json]
+//   civic method <file> <civic.method/0 file>... [--json]
 //   civic portal <file> --out <dir> [--title <t>] [--canvas <url>] [--design <design.json>]...
 //   civic screen <target-id> [<file>...] [--config civic.check.json] [--today <date>] [--json]
 //   civic check [<file>...] [--config civic.check.json] [--baseline <file>] [--update-baseline] [--today <date>] [--since <ref>] [--json] [--post] [--comment <pr>]
@@ -40,6 +41,7 @@ import { releaseBreaks, releasesBetween, renderReleases } from './release.ts'
 import { frameWalk, renderWalk, renderWalkPage, walkPath } from './walk.ts'
 import { renderStories, storiesIn } from './story.ts'
 import { objectMapOf, renderObjectMap } from './objects.ts'
+import { methodCheck, renderMethod, type ResolvedProfile } from './method.ts'
 import { renderPortal } from './portal.ts'
 import {
   ALIGNMENT_FOR,
@@ -63,7 +65,7 @@ import { gapsIn, renderGaps } from './gaps.ts'
 import { renderInstanceReview, reviewInstance } from './overrides.ts'
 import { renderScreen, screenFacts } from './screen.ts'
 import { indexGraph } from './graph.ts'
-import { loadGraph, readGraphFile } from './load.ts'
+import { loadGraph, readGraphFile, readMethodProfile } from './load.ts'
 import {
   CLASSIFICATIONS,
   COLLABORATION_TYPES,
@@ -132,6 +134,14 @@ async function main(): Promise<number> {
     const alignments = alignmentsIn(graph, { today: option('--today') ?? new Date().toISOString().slice(0, 10) }, option('--scope'))
     console.log(args.includes('--json') ? JSON.stringify(alignments, null, 2) : renderAlignments(graph, alignments))
     return 0
+  }
+  if (command === 'method' && args.length >= 2) {
+    const files = args.filter((arg) => !arg.startsWith('--'))
+    const graph = await loadGraph(files[0]!)
+    const checks = files.slice(1).map((file) => methodCheck(graph, readMethodProfile(file)))
+    if (args.includes('--json')) console.log(JSON.stringify(checks, null, 2))
+    else console.log(checks.map((result) => renderMethod(graph, result)).join('\n\n'))
+    return checks.some((result) => result.errors.length > 0) ? 1 : 0
   }
   if (command === 'objects' && args.length >= 1) {
     const map = objectMapOf(await loadGraph(args[0]!))
@@ -486,6 +496,13 @@ interface CheckConfig {
   freshness?: FreshnessRule[]
   /** Design files (`civic.design/0`) whose frames name the screens they design. */
   designs?: string[]
+  /** The methodology profiles (`civic.method/0`) each graph's team declared (decision 0014). */
+  methods?: { graph: string; profiles: string[] }[]
+}
+
+/** The resolved profiles the config declares for one graph. */
+function methodsFor(config: CheckConfig, root: string, file: string): ResolvedProfile[] {
+  return (config.methods ?? []).filter((entry) => entry.graph === file).flatMap((entry) => entry.profiles.map((path) => readMethodProfile(resolve(root, path))))
 }
 
 /** The stale evidence in one configured graph, or nothing when no freshness rule names it. */
@@ -586,10 +603,13 @@ async function check(): Promise<number> {
 
   const unwatched = (config.freshness ?? []).filter((rule) => !config.graphs.includes(rule.graph))
   if (unwatched.length > 0) return usage(`A freshness rule names a graph the gate doesn't check: ${unwatched.map((rule) => rule.graph).join(', ')}`)
+  const unchecked = (config.methods ?? []).filter((entry) => !config.graphs.includes(entry.graph))
+  if (unchecked.length > 0) return usage(`A methods entry names a graph the gate doesn't check: ${unchecked.map((entry) => entry.graph).join(', ')}`)
   const documents = config.graphs.map((file) => JSON.parse(readFileSync(resolve(root, file), 'utf8')) as GraphDocument)
+  const methods = config.graphs.map((file) => methodsFor(config, root, file))
   const checks = config.graphs.map((file, index) => {
     const stale = staleIn(config, root, file, documents[index]!)
-    return checkDocument(file, documents[index], { today, ...(stale ? { stale } : {}) })
+    return checkDocument(file, documents[index], { today, methods: methods[index]!, ...(stale ? { stale } : {}) })
   })
   const since = option('--since')
   const comment = option('--comment')
@@ -604,7 +624,7 @@ async function check(): Promise<number> {
       config.graphs.map((file, index): GraphAtRevisions => {
         const head = { document: documents[index]!, check: checks[index]! }
         const before = base.documents[index]
-        return before ? { graph: file, base: { document: before, check: checkDocument(file, before, { today }) }, head } : { graph: file, head }
+        return before ? { graph: file, base: { document: before, check: checkDocument(file, before, { today, methods: methods[index]! }) }, head } : { graph: file, head }
       }),
     )
   }
@@ -751,6 +771,7 @@ function usage(problem?: string): number {
       '  civic walk <file> <journey-id> [--path <label,...>] [--html <file>] [--json]',
       '  civic stories <file> [--design <design.json>]... [--json]',
       '  civic objects <file> [--json]',
+      '  civic method <file> <civic.method/0 file>... [--json]',
       '  civic portal <file> --out <dir> [--title <t>] [--canvas <url>] [--design <design.json>]...',
       '  civic screen <target-id> [<file>...] [--config civic.check.json] [--today <date>] [--json]',
       '  civic check [<file>...] [--config civic.check.json] [--baseline <file>] [--update-baseline] [--today <date>] [--since <ref>] [--json] [--post] [--comment <pr>]',

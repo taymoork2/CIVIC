@@ -1,0 +1,19 @@
+{
+  "schema": "civic.method/0",
+  "id": "atomic-design",
+  "title": "Atomic Design",
+  "link": "https://atomicdesign.bradfrost.com/chapter-2/",
+  "about": "Brad Frost's five stages. Atoms, molecules and organisms are components, a template is a screen, and a page is a template tested with real content, which is what CIVIC's persona runs already are, so pages are not a tier. Templates hold screens by this profile's own rule; the owners place each component.",
+  "tiers": [
+    { "key": "atom", "title": "atom", "holds": "components", "description": "A basic element that can't be broken down further and stay useful, such as a label, an input or a button." },
+    { "key": "molecule", "title": "molecule", "holds": "components", "description": "A small group of atoms working as one unit, such as a search field with its label and button." },
+    { "key": "organism", "title": "organism", "holds": "components", "description": "A distinct section of an interface made of molecules, atoms or other organisms, such as a header or a product grid." },
+    { "key": "template", "title": "template", "holds": "screens", "description": "A screen's layout: the components it places, before real content fills it." }
+  ],
+  "contains": {
+    "atom": [],
+    "molecule": ["atom"],
+    "organism": ["atom", "molecule", "organism"],
+    "template": ["atom", "molecule", "organism"]
+  }
+}

@@ -17,6 +17,9 @@ import {
   frameWalk,
   gapsIn,
   indexGraph,
+  methodCheck,
+  readMethodProfile,
+  renderMethod,
   renderCompleteness,
   renderGaps,
   designAndCode,
@@ -281,6 +284,10 @@ const raisedGraph = indexGraph(raised)
 // Journey stories (decision 0013): Shop's checkout as a story whose steps play the frame walk.
 const stories = storiesIn(indexGraph(resolved), 'demo/card/out/resolved.graph.json')
 const portal = renderPortal(indexGraph(resolved), stories, { title: 'Shop: journey stories' })
+// Decision 0014: Shop declares Atomic Design tiers for the library's Card and its own Gift
+// option, and the gate checks its composition rule against what the graph says each contains.
+const atomic = methodCheck(indexGraph(resolved), readMethodProfile(here('contract/method.json')))
+
 const outputs: Record<string, string> = {
   'out/raised.graph.json': `${JSON.stringify(raised, null, 2)}\n`,
   'out/resolved.graph.json': `${JSON.stringify(resolved, null, 2)}\n`,
@@ -290,6 +297,7 @@ const outputs: Record<string, string> = {
   'out/resolved.gaps.md': resolvedExport.gaps,
   'out/design-and-code.md': `# Design and code\n\nWhat Shop's React code builds of each design change, screen by screen, and where either uses a copy of the Card (decision 0011). Read from the stand-in code in \`code/src\` and the design file; static analysis, not behavior.\n\n${renderDesignAndCode(indexGraph(resolved), ['target:shop.order-summary', 'target:shop.gift-options', 'target:shop.promo-applied'].flatMap((screen) => designAndCode(indexGraph(resolved), screen)))}\n`,
   'out/library-release.md': `${renderDesignRelease(release)}\n`,
+  'out/method.md': `# Card demo: Atomic Design tiers\n\nShop's tiers ([\`contract/method.json\`](../contract/method.json)) checked against what the resolved graph says each target contains (decision 0014). Screens are templates by the profile's own rule; the owners placed the components. Findings are advisory.\n\n${renderMethod(indexGraph(resolved), atomic)}\n`,
   'out/completeness.md': `${renderCompleteness(raisedGraph, completenessOf(raisedGraph, JOURNEY))}\n`,
   // The frame walk (D33): Shop's checkout frames along their prototype links, as design intent.
   'out/walk.md': `${renderWalk(frameWalk(indexGraph(resolved), JOURNEY))}\n`,

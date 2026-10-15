@@ -3,6 +3,7 @@ import { completenessOf, stateCoverageOn } from './completeness.ts'
 import { conflictStates, describeFix, openProposals, type FixStage } from './decisions.ts'
 import { gapsIn, screensOf } from './gaps.ts'
 import { indexGraph, type Graph } from './graph.ts'
+import { methodCheck, type ResolvedProfile } from './method.ts'
 import { objectMapOf } from './objects.ts'
 import type { GraphDocument, Owner, Platform } from './schema.ts'
 import { validateGraph } from './validate.ts'
@@ -39,6 +40,9 @@ export const FINDING_KINDS = [
   'object-attribute-missing',
   'object-action-platform',
   'unconfirmed-object-tie',
+  'tier-composition',
+  'token-tier',
+  'no-tier',
 ] as const
 export type FindingKind = (typeof FINDING_KINDS)[number]
 
@@ -94,6 +98,11 @@ export interface CheckOptions {
    * isn't checked or measured.
    */
   stale?: ReadonlyMap<string, string>
+  /**
+   * The methodology profiles this graph's team declared (decision 0014), already resolved.
+   * Without any, no methodology check runs.
+   */
+  methods?: readonly ResolvedProfile[]
 }
 
 /** Validates one graph document and, if it is valid, runs every check on it. */
@@ -250,6 +259,19 @@ export function checkGraph(label: string, graph: Graph, options: CheckOptions): 
   measure('Object attributes missing from a screen of the same view', gapCount('object-attribute-missing'), objects.counts.attributeChecks)
   measure('Object calls to action missing on a platform', gapCount('object-action-platform'), objects.counts.actionChecks)
   measure('Object ties awaiting confirmation', gapCount('unconfirmed-object-tie'), objects.counts.ties)
+
+  // Methodology profiles (decision 0014): composition, token tiers and targets with no tier,
+  // in the team's own vocabulary. Advisory by default, since tier boundaries are judgment calls.
+  // A placement that doesn't fit the graph is an invalid declaration, so it fails like one.
+  for (const profile of options.methods ?? []) {
+    const result = methodCheck(graph, profile)
+    for (const error of result.errors) add('invalid-graph', profile.id, `${profile.title}: ${error}`, profile.owners ?? [], undefined, error)
+    for (const gap of result.gaps) add(gap.kind, gap.subjectId, gap.summary, gap.owners, undefined, gap.detail)
+    const gapCount = (kind: FindingKind) => result.gaps.filter((gap) => gap.kind === kind).length
+    measure(`${profile.title}: containments its tiers don't allow`, gapCount('tier-composition'), result.counts.containments)
+    measure(`${profile.title}: token reads past their tier`, result.counts.pastTier, result.counts.references)
+    measure(`${profile.title}: targets with no tier`, gapCount('no-tier'), result.counts.held)
+  }
 
   const seen = new Set<string>()
   const unique = findings.filter((item) => !seen.has(item.key) && Boolean(seen.add(item.key)))

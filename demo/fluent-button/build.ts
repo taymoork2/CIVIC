@@ -9,7 +9,7 @@
 //   node build.ts --check   fail if out/ is not what the inputs produce
 
 import { readFileSync, writeFileSync } from 'node:fs'
-import { assertValid, contextFor, gapsIn, indexGraph, renderGaps, renderWorkOrder, type DecisionFile, type Evidence, type GraphRecord, type Link, type SemanticComponent, type SourceRef } from '../../graph/src/index.ts'
+import { assertValid, contextFor, gapsIn, indexGraph, methodCheck, readMethodProfile, renderGaps, renderMethod, renderWorkOrder, type DecisionFile, type Evidence, type GraphRecord, type Link, type SemanticComponent, type SourceRef } from '../../graph/src/index.ts'
 import {
   applyDecisions,
   assemble,
@@ -209,6 +209,10 @@ const exportFor = (document: typeof raised) => {
 }
 const raisedExport = exportFor(raised)
 const resolvedExport = exportFor(resolved)
+// Decision 0014: the token-tier profile, with Fluent's global tokens as primitives and its
+// alias tokens as semantic, checked against the tokens each Button implementation reads.
+const tokenTiers = methodCheck(indexGraph(resolved), readMethodProfile(here('contract/method.json')))
+
 const outputs: Record<string, string> = {
   'out/raised.graph.json': `${JSON.stringify(raised, null, 2)}\n`,
   'out/resolved.graph.json': `${JSON.stringify(resolved, null, 2)}\n`,
@@ -216,6 +220,7 @@ const outputs: Record<string, string> = {
   'out/raised.gaps.md': raisedExport.gaps,
   'out/resolved.context.android.brand-outline.md': resolvedExport.context,
   'out/resolved.gaps.md': resolvedExport.gaps,
+  'out/token-tiers.md': `# Fluent Button: token tiers\n\nThe tokens each Button implementation reads, checked against the token-tier profile in [\`contract/method.json\`](../contract/method.json) (decision 0014). Only the React Button's token reads are in the graph, read from its styles; the iOS and Android token sets are read for their background colors as evidence, not as token reads. Findings are advisory.\n\n${renderMethod(indexGraph(resolved), tokenTiers)}\n`,
 }
 
 if (process.argv.includes('--check')) {

@@ -1,0 +1,20 @@
+{
+  "schema": "civic.method/0",
+  "id": "fluent.token-tiers",
+  "title": "Token tiers",
+  "extends": "token-tiers",
+  "note": "Fluent 2 names two token layers: global tokens for raw sizes, spacing, type, strokes and motion, and alias tokens for colors and shadows, which a theme sets. This places them as primitive and semantic by path prefix. Illustrative, with the demo's placeholder owners, not Fluent's own declaration.",
+  "owners": [{ "role": "design-engineering", "who": "fluent-web", "platform": "web" }],
+  "placements": [
+    {
+      "tier": "primitive",
+      "tokenPrefixes": ["borderRadius", "spacing", "fontFamily", "fontSize", "fontWeight", "lineHeight", "strokeWidth", "duration", "curve"],
+      "declaredBy": { "role": "design-engineering", "who": "fluent-web", "platform": "web" }
+    },
+    {
+      "tier": "semantic",
+      "tokenPrefixes": ["color", "shadow"],
+      "declaredBy": { "role": "design-engineering", "who": "fluent-web", "platform": "web" }
+    }
+  ]
+}

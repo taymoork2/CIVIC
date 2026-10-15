@@ -9,7 +9,7 @@
 //   node build.ts --check   fail if out/ is not what the inputs produce
 
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { assertValid, indexGraph, objectMapOf, renderObjectMap, renderPortal, storiesIn, type CollaborationRecord, type DecisionFile, type Evidence, type Owner } from '../../graph/src/index.ts'
+import { assertValid, indexGraph, methodCheck, objectMapOf, readMethodProfile, renderMethod, renderObjectMap, renderPortal, storiesIn, type CollaborationRecord, type DecisionFile, type Evidence, type Owner } from '../../graph/src/index.ts'
 import { applyDecisions, assemble, compareCssTokens, contentHash, findWebComponents, fragment, readComponentFamilies, readCoverageContract, readCssTokens, readJourneyIndex, readOrcaGrid, readPlaywrightReport, readRenderReceipt, readReplays, tieObjects, type CoverageContract, type JourneyIndex, type ObjectTiesFile, type RenderReceipt, type ReplayRecord } from '../../importers/src/index.ts'
 
 const here = (path: string) => new URL(path, import.meta.url)
@@ -270,6 +270,15 @@ ${renderObjectMap(objectMap)}
 const stories = storiesIn(indexGraph(graph), 'projects/laundry/out/graph.json', { designs: [{ file: 'projects/laundry/out/design.json', design }] })
 const portal = renderPortal(indexGraph(graph), stories, { title: 'Laundry: journey stories', canvas: 'http://127.0.0.1:3010' })
 
+// Decision 0014: a stand-in Atomic Design declaration for the component families.
+const atomic = methodCheck(indexGraph(graph), readMethodProfile(here('method.json')))
+const methodReport = `# Laundry: Atomic Design tiers
+
+Built by \`node projects/laundry/build.ts\` from [\`method.json\`](../method.json), a stand-in Atomic Design declaration (decision 0014). Screens are templates by the profile's own rule. Composition can't be checked yet: Laundry's graph records no component placed on any screen and no family inside another, because the design reference describes composition in prose and the web code that composes them isn't read. Findings are advisory.
+
+${renderMethod(indexGraph(graph), atomic)}
+`
+
 const outputs: Record<string, string> = {
   'out/graph.json': `${JSON.stringify(graph, null, 2)}\n`,
   'out/design.json': `${JSON.stringify(design, null, 2)}\n`,
@@ -279,6 +288,7 @@ const outputs: Record<string, string> = {
   'out/tokens.md': tokenReport,
   'out/components.md': componentReport,
   'out/objects.md': objectReport,
+  'out/method.md': methodReport,
   'out/stories.json': `${JSON.stringify(stories, null, 2)}\n`,
   ...Object.fromEntries([...portal].map(([path, body]) => [`out/portal/${path}`, body])),
 }

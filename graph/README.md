@@ -221,6 +221,24 @@ The object map ([decision 0014](../docs/decisions/0014-design-methodologies-are-
 
 The gate reports all four as advisory, to the object's Design owners with the screens' or platform's owners told, and counts each against what was compared. `civic objects <file>` prints the map: each object with how many screens show it, how many ties are suggested and how many journeys need it, then the findings.
 
+## Methodology profiles: `civic method`
+
+A team says which design methodology it follows in a `civic.method/0` file ([decision 0014](../docs/decisions/0014-design-methodologies-are-profiles.md), [`src/method.ts`](src/method.ts)). The graph stays neutral: no tier names go in it, and a methodology is a reading of what it already records, what contains what and which tokens a component reads. With no profile declared, nothing here runs.
+
+- **Bundled profiles.** [`methods/`](methods) ships Atomic Design (`atomic-design`: atoms, molecules and organisms hold components, templates hold screens, with Atomic's rules on which may contain which) and token tiers (`token-tiers`: primitive, semantic and component tokens, with components and their implementations reading only semantic or component ones). Neither is the default. A team's file names one in `extends` and takes its tiers and rules, or gives its own tiers and rules for an in-house methodology.
+- **Placement is declared.** A tier holds `components` (semantic components and product `component` targets), `screens` or `tokens`. When only one tier holds a kind, as templates hold screens, the profile's rule places every one. Otherwise the owners place targets by ID, or tokens by path prefix, each placement naming who declared it. States and surfaces have no tier: composition looks through them to what they place, and a component instance counts as its semantic component.
+- **Composition** (`tier-composition`): a tiered target that contains a target in a tier its rule doesn't allow, such as a molecule containing a molecule.
+- **Token tiers** (`token-tier`): a component or implementation that reads tokens past its tier, one finding per tier it reaches, with an extension point's reads counted as its implementation's. A rule for a tier wins over the rule for its kind.
+- **No tier** (`no-tier`): a target the profile's tiers hold that nobody has placed. Where the graph records what a product component contains, CIVIC suggests the lowest tier whose rule allows all of it, and the suggestion counts only once an owner declares it. It suggests nothing for a library's semantic component, whose contents the graph doesn't record, nor while something it contains has no tier.
+
+All three are advisory in the gate, to the target's owners and the profile's, since tier boundaries are judgment calls; a team that wants one to block lists it under `blocking`. A placement that names a missing record, a record the tier can't hold, or one record in two tiers is an invalid declaration and fails the gate. `methods` in `civic.check.json` names the profiles for each graph:
+
+```json
+{ "methods": [{ "graph": "demo/card/out/resolved.graph.json", "profiles": ["demo/card/contract/method.json"] }] }
+```
+
+`civic method <file> <profile>...` prints each profile's tiers with their members, then its findings. The Card demo declares Atomic Design for Shop ([`out/method.md`](../demo/card/out/method.md)), the Fluent Button demo places Fluent's tokens in token tiers ([`out/token-tiers.md`](../demo/fluent-button/out/token-tiers.md)), and Laundry has a stand-in Atomic declaration ([`out/method.md`](../projects/laundry/out/method.md)).
+
 ## Contract export
 
 Two read-only queries over a graph (D31). Both are deterministic and print Markdown, or JSON with `--json`.
@@ -240,7 +258,7 @@ Two read-only queries over a graph (D31). Both are deterministic and print Markd
 { "graphs": ["demo/card/out/resolved.graph.json"], "baseline": "civic.baseline.json", "blocking": ["open-conflict"] }
 ```
 
-- **What blocks by default.** Findings that wait on a decision or undo one: an invalid graph, an open conflict, an override no conflict tracks, an approved exception past its `expires` date, a decided fix that failed or regressed ([the decision loop](#the-decision-loop)), failing evidence, a product state a design neither shows nor inherits, and a journey screen that is a dead end or unreachable. Recorded facts and evidence debt are reported as advisory: variants mapped to `none`, platform-only variants, no run evidence, unconfirmed links, screens a crawl discovered that nobody has confirmed (D34), forks an importer inferred that nobody has confirmed (decision 0011), stale evidence, approved exceptions, decided fixes not yet adopted or adopted but not verified, proposals waiting for a decision, and open [collaboration records](#collaboration-records).
+- **What blocks by default.** Findings that wait on a decision or undo one: an invalid graph, an open conflict, an override no conflict tracks, an approved exception past its `expires` date, a decided fix that failed or regressed ([the decision loop](#the-decision-loop)), failing evidence, a product state a design neither shows nor inherits, and a journey screen that is a dead end or unreachable. Recorded facts and evidence debt are reported as advisory: variants mapped to `none`, platform-only variants, no run evidence, unconfirmed links, [methodology findings](#methodology-profiles-civic-method), screens a crawl discovered that nobody has confirmed (D34), forks an importer inferred that nobody has confirmed (decision 0011), stale evidence, approved exceptions, decided fixes not yet adopted or adopted but not verified, proposals waiting for a decision, and open [collaboration records](#collaboration-records).
 - **Baseline.** Each finding has a stable key (kind, subject, platform and what tells it apart, such as the state). A baselined finding doesn't block, so old debt doesn't stop a change, and a new one is raised at the change that caused it. `--update-baseline` writes every current blocking finding to the baseline, which shows up in review as a diff. Findings that are gone are listed as fixed until the baseline is updated. An invalid graph can't be baselined.
 - **Counts.** The report gives each check's count with its denominator, such as 1 of 4 conflicts open, never a score.
 - **Status.** `--post` records the result as a `civic` commit status through the GitHub CLI, from a clean working tree, the way `bin/signoff` records `signoff`. There are no GitHub Actions.
@@ -275,6 +293,7 @@ node src/cli.ts overrides examples/card-override.graph.json instance:shop.order-
 node src/cli.ts completeness examples/card-override.graph.json target:shop.checkout
 node src/cli.ts gaps examples/fluent-button.graph.json
 cd .. && bin/civic objects projects/laundry/out/graph.json           # Laundry's stand-in object map and its findings
+bin/civic method demo/card/out/resolved.graph.json demo/card/contract/method.json   # Shop's Atomic Design tiers and findings
 cd graph
 node src/cli.ts context examples/fluent-button.graph.json semantic:button --platform android --variant neutral-default
 node src/cli.ts check ../demo/fluent-button/out/raised.graph.json     # fails: the brand outline conflict is undecided

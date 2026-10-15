@@ -1,0 +1,16 @@
+{
+  "schema": "civic.method/0",
+  "id": "token-tiers",
+  "title": "Token tiers",
+  "link": "https://www.designtokens.org/tr/drafts/format/",
+  "about": "Primitive (reference or global) tokens hold raw values, semantic (system or alias) tokens name a purpose and point at primitives, and component tokens name one component's use of a semantic token. Components read semantic or component tokens, never primitives, so a theme or rebrand changes one layer. The owners place tokens by path prefix or by ID.",
+  "tiers": [
+    { "key": "primitive", "title": "primitive token", "holds": "tokens", "description": "A raw value, such as a palette color or a size on the spacing scale." },
+    { "key": "semantic", "title": "semantic token", "holds": "tokens", "description": "A purpose, such as the brand background, pointing at a primitive." },
+    { "key": "component", "title": "component token", "holds": "tokens", "description": "One component's use of a semantic token, such as the button's background." }
+  ],
+  "references": [
+    { "from": "components", "may": ["semantic", "component"] },
+    { "from": "implementations", "may": ["semantic", "component"] }
+  ]
+}
