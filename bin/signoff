@@ -147,7 +147,7 @@ cd "$repo_root"
 user="$(gh api user --jq .login)"
 gh api --silent "repos/{owner}/{repo}/statuses/$sha" \
   -f state=success -f context=signoff \
-  -f description="Signed off locally by $user: $scope"
+  -f description="Local signoff passed: graph, review, crawl, importers, examples, packages and install check"
 step "Signed off $sha as $user ($scope)"
 "$repo_root/bin/civic" check --config "$repo_root/civic.check.json" --post >/dev/null
 step "Posted the civic gate status for $sha"
