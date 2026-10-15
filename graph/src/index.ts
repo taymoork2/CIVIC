@@ -17,6 +17,7 @@ export { renderCoverage, runCoverage, type CoverageSubject, type OutcomeChange, 
 export { releaseBreaks, releasesBetween, renderReleases, type OverrideImpact, type ReleaseImpact, type UnmappedVariant } from './release.ts'
 export { DESIGN_INTENT, frameWalk, renderWalk, renderWalkPage, walkPath, type FrameWalk, type WalkAction, type WalkComponent, type WalkFrame } from './walk.ts'
 export { renderStories, storiesIn, STORIES_SCHEMA, type StoriesFile, type Story, type StoryOptions, type StoryStep } from './story.ts'
+export { describeGesture, readTape, RECORDING_LABEL, renderReplayPage, viewOf, type RecordedStep, type RecordedTape, type ReplayPlayback } from './replay-player.ts'
 export { renderPortal, stepOutcome, STORY_ELEMENT, type PortalOptions } from './portal.ts'
 export { OBJECT_GAP_KINDS, objectMapOf, renderObjectMap, type ObjectGap, type ObjectGapKind, type ObjectMap, type ObjectTie } from './objects.ts'
 export { evidenceAge, freshnessRoot, staleEvidence, type FreshnessRule } from './freshness.ts'

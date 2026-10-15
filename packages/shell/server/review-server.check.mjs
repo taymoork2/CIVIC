@@ -439,5 +439,10 @@ test('a finished replay is kept as CIVIC run evidence, with its tape by content 
     assert.equal((await post({ tape: { ...tape, source: '9'.repeat(64) }, outcome: 'pass', verified: 1 })).status, 400)
     const listed = await (await fetch(`${base}/api/review/replays`, { headers })).json()
     assert.deepEqual(listed.map((item) => [item.outcome, item.divergedAt]).sort(), [['fail', 1], ['pass', undefined]])
+    // The story portal's replay player reads a replayed tape by its hash, byte for byte; other hashes are refused.
+    const served = await fetch(`${base}/api/review/replays/tapes/${replay.tape}`, { headers })
+    assert.equal(served.status, 200)
+    assert.equal(await served.text(), JSON.stringify(tape))
+    assert.equal((await fetch(`${base}/api/review/replays/tapes/${'0'.repeat(64)}`, { headers })).status, 404)
   } finally { await new Promise((resolve) => server.close(resolve)) }
 })

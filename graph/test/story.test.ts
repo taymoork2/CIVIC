@@ -44,15 +44,15 @@ test('the portal renders each step as a still in a declarative shadow root, upgr
   const story = pages.get('stories/shop-checkout.html')!
   assert.equal(story.match(/<civic-story /g)?.length, 3)
   assert.match(story, /<template shadowrootmode="open">/)
-  assert.match(story, /frame-src="\.\.\/walks\/shop-checkout\.html#frame=target%3Ashop\.promo-applied"/)
+  assert.match(story, /&quot;src&quot;:&quot;\.\.\/walks\/shop-checkout\.html#frame=target%3Ashop\.promo-applied&quot;/)
   assert.match(story, /Override Local cornerRadius 20: web \(react\) forbidden/)
   // The walk page opens at the frame a step names.
   assert.match(pages.get('walks/shop-checkout.html')!, /#frame=/)
   assert.match(pages.get('civic-story.js')!, /customElements\.define\('civic-story'/)
 
   const live = renderPortal(laundry(), storiesIn(laundry(), 'laundry'), { title: 'Laundry', canvas: 'http://127.0.0.1:3010/' })
-  assert.match(live.get('stories/laundry-journey-drying.html')!, /frame-src="http:\/\/127\.0\.0\.1:3010\/review-frame\.html\?scenario=route\.drying\.washer-queued"/)
+  assert.match(live.get('stories/laundry-journey-drying.html')!, /&quot;src&quot;:&quot;http:\/\/127\.0\.0\.1:3010\/review-frame\.html\?scenario=route\.drying\.washer-queued&quot;/)
   // Without a canvas, journey-engine screens stay stills.
-  assert.doesNotMatch(renderPortal(laundry(), storiesIn(laundry(), 'laundry'), { title: 'Laundry' }).get('stories/laundry-journey-drying.html')!, /frame-src=/)
+  assert.doesNotMatch(renderPortal(laundry(), storiesIn(laundry(), 'laundry'), { title: 'Laundry' }).get('stories/laundry-journey-drying.html')!, /frames=/)
   assert.match(live.get('index.html')!, /<a href="stories\/laundry-journey-drying\.html">Drying<\/a><\/th><td>2<\/td><td>1<\/td><td>0<\/td><td>1<\/td><td>1<\/td>/)
 })

@@ -202,12 +202,14 @@ Journey stories ([decision 0013](../docs/decisions/0013-journey-stories-replace-
 - **Still.** The step drawn from the graph (evidence, paths, design intent and open records) as HTML in a declarative shadow root, so its styles stay scoped and it shows without scripts.
 - **Frame.** The step played in a sandboxed iframe: the frame walk opened at the step's frame where the design links the journey's frames, or, with `--canvas <url>`, the screen live in that running journey canvas's review frame (`review-frame.html?scenario=<id>`).
 
-The live island tier, component stories, replay players and the lens of design line, code line and environment come later. Laundry's and the Card demo's portals are built with their graphs: [`projects/laundry/out/portal`](../projects/laundry/out/portal/index.html) and [`demo/card/out/portal`](../demo/card/out/portal/index.html).
+- **Recorded runs.** With `--tapes <dir>` (tapes by SHA-256, as `civic share-replays` keeps them), each tape replayed from a step's screen gets a replay player ([`src/replay-player.ts`](src/replay-player.ts)): a page that plays the recording back step by step, showing what was done, the route, the visible headings, the fields and the writes. It marks the step where the latest replay diverged. It reads the tape and runs nothing again, so it works from disk and for any platform whose runs are recorded (decision 0009).
+
+The live island tier, component stories and the lens of design line, code line and environment come later. Laundry's and the Card demo's portals are built with their graphs: [`projects/laundry/out/portal`](../projects/laundry/out/portal/index.html) and [`demo/card/out/portal`](../demo/card/out/portal/index.html).
 
 ```sh
 bin/civic stories projects/laundry/out/graph.json                         # the stories as text, or --json
 bin/civic portal demo/card/out/resolved.graph.json --out portal --title "Shop"
-bin/civic portal projects/laundry/out/graph.json --out portal --canvas http://127.0.0.1:3010 --design projects/laundry/out/design.json
+bin/civic portal projects/laundry/out/graph.json --out portal --canvas http://127.0.0.1:3010 --design projects/laundry/out/design.json --tapes projects/laundry/inputs/tapes
 ```
 
 ## The object map: `civic objects`

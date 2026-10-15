@@ -257,6 +257,16 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
         const files = (await readdir(directory).catch(() => [])).filter((file) => file.endsWith('.json')).sort()
         json(200, (await Promise.all(files.map(async (file) => JSON.parse(await readFile(join(directory, file), 'utf8'))))).filter((replay) => replay.project === metadata.project?.key)); return
       }
+      // A replayed tape by its SHA-256, for the story portal's replay player (decision 0013). Only a tape one of
+      // this project's replays names is served.
+      const replayedTape = /^\/api\/review\/replays\/tapes\/([0-9a-f]{64})$/.exec(url.pathname)
+      if (replayedTape && req.method === 'GET') {
+        const directory = join(dataDir, 'replays')
+        const files = (await readdir(directory).catch(() => [])).filter((file) => file.endsWith('.json'))
+        const named = (await Promise.all(files.map(async (file) => JSON.parse(await readFile(join(directory, file), 'utf8'))))).some((replay) => replay.project === metadata.project?.key && replay.tape === replayedTape[1])
+        if (!named) { json(404, { error: 'No replay of this project names that tape' }); return }
+        json(200, JSON.parse(await readFile(join(directory, 'tapes', replayedTape[1] + '.json'), 'utf8'))); return
+      }
       const recording = /^\/api\/review\/runs\/([0-9a-f-]+)$/.exec(url.pathname)
       if (recording && req.method === 'GET') {
         if (!uuid.test(recording[1])) bad('Invalid recording identity')

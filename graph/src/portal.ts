@@ -3,6 +3,7 @@ import { forecastLabel } from './forecast.ts'
 import type { Graph } from './graph.ts'
 import { RUN_METHODS, type Evidence } from './schema.ts'
 import type { StoriesFile, Story, StoryStep } from './story.ts'
+import { renderReplayPage, type RecordedTape } from './replay-player.ts'
 import { frameWalk, renderWalkPage, type FrameWalk } from './walk.ts'
 
 // The read-only portal (decision 0013, first slice): the graph's journey stories as static
@@ -21,6 +22,11 @@ export interface PortalOptions {
    * Screens the journey engine read then get a live frame tier. Without it, they stay stills.
    */
   canvas?: string
+  /**
+   * Recorded runs' tapes by SHA-256, as `civic share-replays` keeps them. A step whose screen a
+   * replayed tape starts from gets a replay player for it (decision 0009).
+   */
+  tapes?: ReadonlyMap<string, RecordedTape>
 }
 
 export const STORY_ELEMENT = readFileSync(new URL('./civic-story.js', import.meta.url), 'utf8')
@@ -34,6 +40,12 @@ export function renderPortal(graph: Graph, stories: StoriesFile, options: Portal
     const walk = story.steps.some((step) => step.walk) ? frameWalk(graph, story.journeyId) : undefined
     if (walk) pages.set(`walks/${slug(story.id)}.html`, renderWalkPage(walk))
     pages.set(`stories/${slug(story.id)}.html`, storyPage(graph, stories, story, walk, options))
+    for (const step of story.steps) {
+      for (const replay of replaysOn(graph, step, options)) {
+        const page = `replays/${replay.sha}.html`
+        if (!pages.has(page)) pages.set(page, renderReplayPage({ sha: replay.sha, tape: replay.tape, title: step.title, outcome: replay.evidence.outcome === 'fail' ? 'fail' : 'pass', ...(replay.divergedAt ? { divergedAt: replay.divergedAt } : {}), head: replay.evidence.source.revision }))
+      }
+    }
   }
   return pages
 }
@@ -69,15 +81,15 @@ ${rows.join('\n')}
 </tbody>
 </table></div>` : '<p>No journey in this graph contains a screen yet.</p>'}
 <h2>Playing a story</h2>
-<p>Each step is a <code>&lt;civic-story&gt;</code> element. It shows a still first: the step's evidence, paths and design intent, drawn from the graph. A step that can be played offers to upgrade to a frame: the frame walk where the design links its frames, ${options.canvas ? `or the screen live in the journey canvas at <code>${escapeHtml(options.canvas)}</code>, which has to be running` : 'or the screen live in a journey canvas when the portal is built with one'}. Nothing plays until you ask.</p>
+<p>Each step is a <code>&lt;civic-story&gt;</code> element. It shows a still first: the step's evidence, paths and design intent, drawn from the graph. A step that can be played offers to upgrade to a frame: the frame walk where the design links its frames, ${options.canvas ? `or the screen live in the journey canvas at <code>${escapeHtml(options.canvas)}</code>, which has to be running` : 'or the screen live in a journey canvas when the portal is built with one'}, and each recorded run replayed from the screen, played back from its tape${options.tapes && options.tapes.size > 0 ? '' : ' (this portal was built with no tapes)'}. Nothing plays until you ask.</p>
 <p>Any page can host the same element: load <code>civic-story.js</code> and copy a step's <code>&lt;civic-story&gt;</code> markup.</p>`
   return page(options.title, body, '')
 }
 
 function storyPage(graph: Graph, stories: StoriesFile, story: Story, walk: FrameWalk | undefined, options: PortalOptions): string {
   const steps = story.steps.map((step, index) => {
-    const frame = frameTier(graph, story, step, options)
-    const attributes = [`story="${escapeHtml(story.id)}"`, `step="${escapeHtml(step.targetId)}"`, ...(frame ? [`frame-src="${escapeHtml(frame.src)}"`, `frame-label="${escapeHtml(frame.label)}"`, `frame-note="${escapeHtml(frame.note)}"`, `frame-sandbox="${frame.sandbox}"`] : [])]
+    const frames = frameTiers(graph, story, step, options)
+    const attributes = [`story="${escapeHtml(story.id)}"`, `step="${escapeHtml(step.targetId)}"`, ...(frames.length > 0 ? [`frames="${escapeHtml(JSON.stringify(frames))}"`] : [])]
     return `<civic-story ${attributes.join(' ')}>
 <template shadowrootmode="open">
 <style>${STILL_STYLE}</style>
@@ -94,7 +106,34 @@ ${steps.map((item) => `<li>${item}</li>`).join('\n')}
   return page(story.title, body, '<script defer src="../civic-story.js"></script>')
 }
 
-function frameTier(graph: Graph, story: Story, step: StoryStep, options: PortalOptions): { src: string; label: string; note: string; sandbox: string } | undefined {
+interface FrameOption { src: string; label: string; note: string; sandbox: string }
+
+/** The tapes replayed from this screen that the portal has, with each one's latest replay. */
+function replaysOn(graph: Graph, step: StoryStep, options: PortalOptions): { sha: string; tape: RecordedTape; evidence: Evidence; divergedAt?: number }[] {
+  return step.evidenceIds.flatMap((id) => {
+    const item = graph.get(id)
+    if (item?.kind !== 'evidence' || item.source.importer !== 'replay') return []
+    const sha = /^sha256:([0-9a-f]{64})$/.exec(item.source.contentHash ?? '')?.[1]
+    const tape = sha ? options.tapes?.get(sha) : undefined
+    if (!sha || !tape) return []
+    const diverged = /diverged at step (\d+)/i.exec(item.finding ?? '')?.[1]
+    return [{ sha, tape, evidence: item, ...(diverged ? { divergedAt: Number(diverged) } : {}) }]
+  })
+}
+
+/** Every way the step can be played, best first: the walk or the live screen, then each recorded run. */
+function frameTiers(graph: Graph, story: Story, step: StoryStep, options: PortalOptions): FrameOption[] {
+  const first = frameTier(graph, story, step, options)
+  const replays = replaysOn(graph, step, options).map(({ sha, tape, evidence }): FrameOption => ({
+    src: `../replays/${sha}.html`,
+    label: `Play the recorded run (${tape.steps.length} step${tape.steps.length === 1 ? '' : 's'})`,
+    note: `A recorded run from this screen, played back from its tape; its latest replay ${evidence.outcome === 'fail' ? 'diverged' : 'passed'}.`,
+    sandbox: 'allow-scripts',
+  }))
+  return [...(first ? [first] : []), ...replays]
+}
+
+function frameTier(graph: Graph, story: Story, step: StoryStep, options: PortalOptions): FrameOption | undefined {
   if (step.walk) {
     return { src: `../walks/${slug(story.id)}.html#frame=${encodeURIComponent(step.targetId)}`, label: 'Walk the design from here', note: 'The frame walk: design intent from the design file, not behavior from running code.', sandbox: 'allow-scripts' }
   }

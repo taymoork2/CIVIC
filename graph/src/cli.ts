@@ -15,7 +15,7 @@
 //   civic stories <file> [--design <design.json>]... [--json]
 //   civic objects <file> [--json]
 //   civic method <file> <civic.method/0 file>... [--json]
-//   civic portal <file> --out <dir> [--title <t>] [--canvas <url>] [--design <design.json>]...
+//   civic portal <file> --out <dir> [--title <t>] [--canvas <url>] [--design <design.json>]... [--tapes <dir>]
 //   civic screen <target-id> [<file>...] [--config civic.check.json] [--today <date>] [--json]
 //   civic check [<file>...] [--config civic.check.json] [--baseline <file>] [--update-baseline] [--today <date>] [--since <ref>] [--json] [--post] [--comment <pr>]
 //   civic release [<file>...] --since <ref> [--config civic.check.json] [--json]
@@ -31,7 +31,7 @@
 //   civic close <decisions.json> <collab-id> --graph <file> --by <role>:<who> --note <text> [--withdraw] [--records <id,...>] [--changes <tool>:<rev>,...] [--at <time>]
 
 import { execFileSync } from 'node:child_process'
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, relative, resolve } from 'node:path'
 import { baselineFrom, checkDocument, compareToBaseline, DEFAULT_BLOCKING, FINDING_KINDS, renderCheck, statusLine, type Baseline, type FindingKind } from './check.ts'
 import { alignmentsIn, renderAlignments } from './alignment.ts'
@@ -43,6 +43,7 @@ import { renderStories, storiesIn } from './story.ts'
 import { objectMapOf, renderObjectMap } from './objects.ts'
 import { methodCheck, renderMethod, type ResolvedProfile } from './method.ts'
 import { renderPortal } from './portal.ts'
+import { readTape, type RecordedTape } from './replay-player.ts'
 import {
   ALIGNMENT_FOR,
   decisionFileRecords,
@@ -576,7 +577,14 @@ async function stories(file: string): Promise<number> {
   const out = option('--out')
   if (!out) return usage('portal needs --out, the directory to write its pages to.')
   const canvas = option('--canvas')
-  const pages = renderPortal(graph, found, { title: option('--title') ?? `Journey stories: ${file}`, ...(canvas ? { canvas } : {}) })
+  // Tapes by SHA-256, named <sha>.json or <sha>.tape.json as the review store keeps them.
+  const tapesDir = option('--tapes')
+  const tapes = new Map<string, RecordedTape>()
+  for (const name of tapesDir ? readdirSync(tapesDir) : []) {
+    const sha = /^([0-9a-f]{64})(\.tape)?\.json$/.exec(name)?.[1]
+    if (sha) tapes.set(sha, readTape(JSON.parse(readFileSync(resolve(tapesDir!, name), 'utf8'))))
+  }
+  const pages = renderPortal(graph, found, { title: option('--title') ?? `Journey stories: ${file}`, ...(canvas ? { canvas } : {}), tapes })
   for (const [path, body] of pages) {
     mkdirSync(dirname(resolve(out, path)), { recursive: true })
     writeFileSync(resolve(out, path), body)
@@ -772,7 +780,7 @@ function usage(problem?: string): number {
       '  civic stories <file> [--design <design.json>]... [--json]',
       '  civic objects <file> [--json]',
       '  civic method <file> <civic.method/0 file>... [--json]',
-      '  civic portal <file> --out <dir> [--title <t>] [--canvas <url>] [--design <design.json>]...',
+      '  civic portal <file> --out <dir> [--title <t>] [--canvas <url>] [--design <design.json>]... [--tapes <dir>]',
       '  civic screen <target-id> [<file>...] [--config civic.check.json] [--today <date>] [--json]',
       '  civic check [<file>...] [--config civic.check.json] [--baseline <file>] [--update-baseline] [--today <date>] [--since <ref>] [--json] [--post] [--comment <pr>]',
       '  civic release [<file>...] --since <ref> [--config civic.check.json] [--json]',
