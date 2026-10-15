@@ -1,6 +1,6 @@
 # 0014: Design methodologies are profiles over a neutral graph, and Atomic Design is the first one
 
-- **Status:** Accepted (direction for a backlog item; nothing is scheduled)
+- **Status:** Accepted. Scheduled on 2026-10-15: the object map (step 5 below) and then steps 1 and 2 are in the roadmap's [order of work](../roadmap.md#order-of-work), approved by the founder.
 - **Date:** 2026-10-15 (revised the same day: all six methodologies are bundled profiles, and OOUX adds an object map)
 - **Decider:** Founder (question from the founder; the shape decided by Claude under the standing rule that Claude decides and records design decisions; the founder may revise it)
 - **Builds on:** [0005](0005-what-civic-is.md) (the gate), [0011](0011-layered-design-libraries.md) (layered libraries, product components, forks), [0013](0013-journey-stories-replace-storybook.md) (stories), the spec's targets ("Primitive" is the term, not "atom")
