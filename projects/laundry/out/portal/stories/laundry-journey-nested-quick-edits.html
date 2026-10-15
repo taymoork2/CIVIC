@@ -19,6 +19,8 @@ a { color: var(--accent); }
 table { border-collapse: collapse; width: 100%; font-size: 14px; }
 th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
 td { font-variant-numeric: tabular-nums; }
+td.none { color: var(--fail); }
+td.closest { color: var(--muted); }
 .steps { list-style: none; padding: 0; display: grid; gap: 12px; }
 </style>
 <script defer src="../civic-story.js"></script>
@@ -29,9 +31,10 @@ td { font-variant-numeric: tabular-nums; }
 <h1>Nested quick edits</h1>
 <p class="muted">2 steps in the order a person meets them, read from <code>projects/laundry/out/graph.json</code>. Story <code>story:laundry.journey.nested-quick-edits</code> points at journey <code>target:laundry.journey.nested-quick-edits</code>.</p>
 <ol class="steps">
-<li><civic-story story="story:laundry.journey.nested-quick-edits" step="target:laundry.records.item.care" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=records.item.care&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-1"><civic-story story="story:laundry.journey.nested-quick-edits" step="target:laundry.records.item.care" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=records.item.care&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -50,12 +53,14 @@ code { font-size: 12px; }
 <section><h4>Paths on</h4><p class="muted">None declared.</p></section>
 
 
+
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:laundry.journey.nested-quick-edits" step="target:laundry.records.item.tags" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=records.item.tags&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-2"><civic-story story="story:laundry.journey.nested-quick-edits" step="target:laundry.records.item.tags" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=records.item.tags&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -72,6 +77,7 @@ code { font-size: 12px; }
 <header><p class="muted">Step 2 of 2 <span class="outcome pass">pass</span></p><h3>Item · nested tags</h3><p class="muted"><code>target:laundry.records.item.tags</code></p></header>
 <section><h4>Evidence</h4><ul><li><span class="outcome pass">pass</span> every initial named scenario renders a real task drawer <span class="muted">playwright, e6542c4b3f2f</span></li><li><span class="outcome pass">pass</span> nested tags guard a draft, dismiss back to the record, and save through the local adapter <span class="muted">playwright, e6542c4b3f2f</span></li><li><span class="outcome pass">pass</span> pack intake keeps answers through Back, saves, and connects to the item record <span class="muted">playwright, e6542c4b3f2f</span></li></ul></section>
 <section><h4>Paths on</h4><p class="muted">None declared.</p></section>
+
 
 
 </article>

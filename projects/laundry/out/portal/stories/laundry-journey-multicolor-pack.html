@@ -19,6 +19,8 @@ a { color: var(--accent); }
 table { border-collapse: collapse; width: 100%; font-size: 14px; }
 th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
 td { font-variant-numeric: tabular-nums; }
+td.none { color: var(--fail); }
+td.closest { color: var(--muted); }
 .steps { list-style: none; padding: 0; display: grid; gap: 12px; }
 </style>
 <script defer src="../civic-story.js"></script>
@@ -29,9 +31,10 @@ td { font-variant-numeric: tabular-nums; }
 <h1>Multicolor pack</h1>
 <p class="muted">10 steps in the order a person meets them, read from <code>projects/laundry/out/graph.json</code>. Story <code>story:laundry.journey.multicolor-pack</code> points at journey <code>target:laundry.journey.multicolor-pack</code>.</p>
 <ol class="steps">
-<li><civic-story story="story:laundry.journey.multicolor-pack" step="target:laundry.intake.pack.care" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=intake.pack.care&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-1"><civic-story story="story:laundry.journey.multicolor-pack" step="target:laundry.intake.pack.care" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=intake.pack.care&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -50,12 +53,14 @@ code { font-size: 12px; }
 <section><h4>Paths on</h4><ul><li>Next to Multicolor pack · stain <span class="muted">declared</span></li></ul></section>
 
 
+
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:laundry.journey.multicolor-pack" step="target:laundry.intake.pack.color" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=intake.pack.color&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-2"><civic-story story="story:laundry.journey.multicolor-pack" step="target:laundry.intake.pack.color" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=intake.pack.color&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -74,12 +79,14 @@ code { font-size: 12px; }
 <section><h4>Paths on</h4><ul><li>Next to Multicolor pack · origin <span class="muted">declared</span></li></ul></section>
 
 
+
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:laundry.journey.multicolor-pack" step="target:laundry.intake.pack.details" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=intake.pack.details&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-3"><civic-story story="story:laundry.journey.multicolor-pack" step="target:laundry.intake.pack.details" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=intake.pack.details&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -98,12 +105,14 @@ code { font-size: 12px; }
 <section><h4>Paths on</h4><ul><li>Next to Multicolor pack · fabric <span class="muted">declared</span></li></ul></section>
 
 
+
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:laundry.journey.multicolor-pack" step="target:laundry.intake.pack.dye" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=intake.pack.dye&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-4"><civic-story story="story:laundry.journey.multicolor-pack" step="target:laundry.intake.pack.dye" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=intake.pack.dye&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -122,12 +131,14 @@ code { font-size: 12px; }
 <section><h4>Paths on</h4><ul><li>Next to Multicolor pack · care <span class="muted">declared</span></li></ul></section>
 
 
+
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:laundry.journey.multicolor-pack" step="target:laundry.intake.pack.fabric" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=intake.pack.fabric&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-5"><civic-story story="story:laundry.journey.multicolor-pack" step="target:laundry.intake.pack.fabric" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=intake.pack.fabric&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -146,12 +157,14 @@ code { font-size: 12px; }
 <section><h4>Paths on</h4><ul><li>Next to Multicolor pack · color <span class="muted">declared</span></li></ul></section>
 
 
+
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:laundry.journey.multicolor-pack" step="target:laundry.intake.pack.final" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=intake.pack.final&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-6"><civic-story story="story:laundry.journey.multicolor-pack" step="target:laundry.intake.pack.final" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=intake.pack.final&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -170,12 +183,14 @@ code { font-size: 12px; }
 <section><h4>Paths on</h4><ul><li>Save item; finish intake to Multicolor pack · saved item <span class="muted">declared</span></li></ul></section>
 
 
+
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:laundry.journey.multicolor-pack" step="target:laundry.intake.pack.origin" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=intake.pack.origin&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-7"><civic-story story="story:laundry.journey.multicolor-pack" step="target:laundry.intake.pack.origin" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=intake.pack.origin&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -194,12 +209,14 @@ code { font-size: 12px; }
 <section><h4>Paths on</h4><ul><li>Next with a pre-owned item to Multicolor pack · care <span class="muted">declared</span></li><li>Next with a newly owned item to Multicolor pack · dye <span class="muted">declared</span></li></ul></section>
 
 
+
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:laundry.journey.multicolor-pack" step="target:laundry.intake.pack.stain" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=intake.pack.stain&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-8"><civic-story story="story:laundry.journey.multicolor-pack" step="target:laundry.intake.pack.stain" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=intake.pack.stain&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -218,12 +235,14 @@ code { font-size: 12px; }
 <section><h4>Paths on</h4><ul><li>Next to Multicolor pack · final <span class="muted">declared</span></li></ul></section>
 
 
+
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:laundry.journey.multicolor-pack" step="target:laundry.intake.pack.type" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=intake.pack.type&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-9"><civic-story story="story:laundry.journey.multicolor-pack" step="target:laundry.intake.pack.type" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=intake.pack.type&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -242,12 +261,14 @@ code { font-size: 12px; }
 <section><h4>Paths on</h4><ul><li>Next to Multicolor pack · whose <span class="muted">declared</span></li></ul></section>
 
 
+
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:laundry.journey.multicolor-pack" step="target:laundry.intake.pack.whose" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=intake.pack.whose&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-10"><civic-story story="story:laundry.journey.multicolor-pack" step="target:laundry.intake.pack.whose" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=intake.pack.whose&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -264,6 +285,7 @@ code { font-size: 12px; }
 <header><p class="muted">Step 10 of 10 <span class="outcome pass">pass</span></p><h3>Multicolor pack · whose</h3><p class="muted"><code>target:laundry.intake.pack.whose</code></p></header>
 <section><h4>Evidence</h4><ul><li><span class="outcome pass">pass</span> every initial named scenario renders a real task drawer <span class="muted">playwright, e6542c4b3f2f</span></li><li><span class="outcome pass">pass</span> pack intake keeps answers through Back, saves, and connects to the item record <span class="muted">playwright, e6542c4b3f2f</span></li></ul></section>
 <section><h4>Paths on</h4><ul><li>Next to Multicolor pack · details <span class="muted">declared</span></li></ul></section>
+
 
 
 </article>

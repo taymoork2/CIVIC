@@ -19,6 +19,8 @@ a { color: var(--accent); }
 table { border-collapse: collapse; width: 100%; font-size: 14px; }
 th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
 td { font-variant-numeric: tabular-nums; }
+td.none { color: var(--fail); }
+td.closest { color: var(--muted); }
 .steps { list-style: none; padding: 0; display: grid; gap: 12px; }
 </style>
 <script defer src="../civic-story.js"></script>
@@ -29,9 +31,10 @@ td { font-variant-numeric: tabular-nums; }
 <h1>Family laundry day</h1>
 <p class="muted">4 steps in the order a person meets them, read from <code>projects/laundry/out/graph.json</code>. Story <code>story:laundry.journey.family-laundry-day</code> points at journey <code>target:laundry.journey.family-laundry-day</code>.</p>
 <ol class="steps">
-<li><civic-story story="story:laundry.journey.family-laundry-day" step="target:laundry.family.drying" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=family.drying&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-1"><civic-story story="story:laundry.journey.family-laundry-day" step="target:laundry.family.drying" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=family.drying&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -50,12 +53,14 @@ code { font-size: 12px; }
 <section><h4>Paths on</h4><ul><li>Back to Laundry to Family · plan the laundry day <span class="muted">declared</span></li><li>Confirm selected pieces dry to Family · put away <span class="muted">declared</span></li></ul></section>
 
 
+
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:laundry.journey.family-laundry-day" step="target:laundry.family.planning" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=family.planning&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-2"><civic-story story="story:laundry.journey.family-laundry-day" step="target:laundry.family.planning" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=family.planning&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -74,12 +79,14 @@ code { font-size: 12px; }
 <section><h4>Paths on</h4><ul><li>Review load and start preparation to Family · prepare and wash <span class="muted">declared</span></li></ul></section>
 
 
+
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:laundry.journey.family-laundry-day" step="target:laundry.family.putaway" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=family.putaway&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-3"><civic-story story="story:laundry.journey.family-laundry-day" step="target:laundry.family.putaway" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=family.putaway&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -98,12 +105,14 @@ code { font-size: 12px; }
 <section><h4>Paths on</h4><ul><li>Put away selected dry pieces to Family · drying check <span class="muted">declared</span></li><li>Back to Laundry to Family · plan the laundry day <span class="muted">declared</span></li></ul></section>
 
 
+
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:laundry.journey.family-laundry-day" step="target:laundry.family.washing" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=family.washing&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-4"><civic-story story="story:laundry.journey.family-laundry-day" step="target:laundry.family.washing" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=family.washing&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -120,6 +129,7 @@ code { font-size: 12px; }
 <header><p class="muted">Step 4 of 4 <span class="outcome pass">pass</span></p><h3>Family · prepare and wash</h3><p class="muted"><code>target:laundry.family.washing</code></p></header>
 <section><h4>Evidence</h4><ul><li><span class="outcome pass">pass</span> device, fold and orientation changes resize the real iframe and keep the same run and selection <span class="muted">playwright, e6542c4b3f2f</span></li><li><span class="outcome pass">pass</span> family day starts with a private 1000-piece run and exposes same-run account and connection controls <span class="muted">playwright, e6542c4b3f2f</span></li><li><span class="outcome pass">pass</span> native saved steps survive actual disconnection, same-run switching and reopening without automatic resend <span class="muted">playwright, e6542c4b3f2f</span></li><li><span class="outcome pass">pass</span> one load goes from washing through drying to a partial and then full put-away in the same run <span class="muted">playwright, e6542c4b3f2f</span></li></ul></section>
 <section><h4>Paths on</h4><ul><li>Transfer washed pieces to Family · drying check <span class="muted">declared</span></li><li>Back to laundry day to Family · plan the laundry day <span class="muted">declared</span></li></ul></section>
+
 
 
 </article>

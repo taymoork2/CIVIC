@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Card</title>
+<style>
+:root { --bg: #f7f7f5; --panel: #ffffff; --text: #1d1d1b; --muted: #5f5f5a; --line: #d9d9d4; --accent: #2b5fd9; --pass: #1d7a46; --fail: #b3261e; }
+@media (prefers-color-scheme: dark) { :root { --bg: #161615; --panel: #20201f; --text: #ededea; --muted: #a5a59f; --line: #3a3a37; --accent: #8fb0ff; --pass: #6fd49a; --fail: #ff8a80; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, sans-serif; }
+main { max-width: 860px; margin: 0 auto; padding: 24px 16px 48px; }
+h1 { font-size: 22px; margin: 0 0 6px; }
+h2 { font-size: 17px; margin: 24px 0 6px; }
+a { color: var(--accent); }
+.muted, .crumbs { color: var(--muted); font-size: 13px; }
+.tag { font-size: 12px; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; white-space: nowrap; }
+.table { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+td { font-variant-numeric: tabular-nums; }
+td.none { color: var(--fail); }
+td.closest { color: var(--muted); }
+.steps { list-style: none; padding: 0; display: grid; gap: 12px; }
+</style>
+
+</head>
+<body>
+<main>
+<p class="crumbs"><a href="../index.html">All stories and components</a></p>
+<h1>Card</h1>
+<p>Group related content and actions about one subject.</p>
+<p class="muted"><code>semantic:card</code>. States: rest, hover, selected, disabled, loading, empty, error; the product shows loading, empty, error. Slots: media, header, body, actions. Read from <code>demo/card/out/resolved.graph.json</code>.</p>
+<h2>Implementations</h2>
+<ul><li><strong>android (compose)</strong>: <code>BasicCard</code> from <code>microsoft/fluentui-android@207ae6843eda</code></li><li><strong>ios (uikit)</strong>: <code>CardView</code> from <code>microsoft/fluentui-apple@920ee25179c4</code><br><span class="muted">Also offers appColor, custom, which no contract variant covers.</span></li><li><strong>web (react)</strong>: <code>Card</code> from <code>@fluentui/react-card@9.7.3</code><br><span class="muted">Also offers filled-alternative, subtle, which no contract variant covers.</span></li><li><strong>web (web-components)</strong>: <code>fluent-card</code> from <code>@fluentui/web-components@2.6.1</code></li></ul>
+<h2>Variants by platform</h2>
+<div class="table"><table>
+<thead><tr><th scope="col">Variant</th><th scope="col">android (compose)</th><th scope="col">ios (uikit)</th><th scope="col">web (react)</th><th scope="col">web (web-components)</th></tr></thead>
+<tbody>
+<tr><th scope="row">Filled <code>filled</code></th><td class="closest">closest<br><code>Elevated</code><br><span class="muted">Elevated draws a shadow and no border.</span></td><td class="closest">closest<br><code>neutral</code><br><span class="muted">CardView always draws a border as well as a background.</span></td><td class="exact">exact<br><code>filled</code></td><td class="none">none<br><span class="muted">fluent-card has no appearance attribute; it always draws a neutral fill layer with an elevation shadow.</span></td></tr>
+<tr><th scope="row">Outline <code>outline</code></th><td class="exact">exact<br><code>Outlined</code></td><td class="none">none<br><span class="muted">CardView has no style without a background.</span></td><td class="exact">exact<br><code>outline</code></td><td class="none">none<br><span class="muted">fluent-card has no outline style.</span></td></tr>
+</tbody>
+</table></div>
+<h2>Design library</h2>
+<ul><li><code>fluent-2-web</code>, published key <code>0d1e1017597a223f89c25613fae3225cb1f34e41</code></li><li><code>@fluentui/react-card</code>, published key <code>Card</code></li></ul>
+<h2>Uses</h2>
+<ul><li>Card on Gift option <span class="muted">shop, design, filled, rest</span></li><li>Card in GiftOption.tsx <span class="muted">shop, code, web, filled</span></li><li>Card on Order Summary <span class="muted">shop, design, filled, rest</span><br><span class="muted">Overrides: Local cornerRadius 20; .Card header / Checkbox set to true</span></li><li>Card on Order Summary / Loading <span class="muted">shop, design, filled, rest</span></li><li>Card in OrderSummary.tsx <span class="muted">shop, code, web, filled</span></li><li>Card on Promo applied <span class="muted">shop, design, a copy of the library component</span><br><span class="muted">Overrides: Card on Promo applied is a copy of the library component</span></li><li>Copy of Card in PromoApplied.tsx <span class="muted">shop, code, web, a copy of the library component</span></li></ul>
+<h2>In journeys</h2>
+<ul><li><a href="../stories/shop-checkout.html#step-1">Checkout, step 1: Order Summary</a></li><li><a href="../stories/shop-checkout.html#step-2">Checkout, step 2: Promo applied</a></li><li><a href="../stories/shop-checkout.html#step-3">Checkout, step 3: Gift options</a></li></ul>
+<h2>Conflicts</h2>
+<ul><li>Default actions in the Card on ios <span class="muted">ios, decided: approve-exception, accepted-limitation</span></li><li>Default body in the Card on ios <span class="muted">ios, decided: change-implementation, awaiting-adoption</span></li><li>Default header.action in the Card on ios <span class="muted">ios, decided: approve-exception, accepted-limitation</span></li><li>Local cornerRadius 20 (Card override) <span class="muted">decided: update-design, awaiting-adoption</span></li><li>.Card header / Checkbox set to true (Card override) <span class="muted">open, unreviewed-drift</span></li><li>Card on Promo applied is a copy of the library component (Card override) <span class="muted">decided: update-design, awaiting-adoption</span></li></ul>
+</main>
+</body>
+</html>

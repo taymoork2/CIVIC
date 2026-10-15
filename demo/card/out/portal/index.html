@@ -19,6 +19,8 @@ a { color: var(--accent); }
 table { border-collapse: collapse; width: 100%; font-size: 14px; }
 th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
 td { font-variant-numeric: tabular-nums; }
+td.none { color: var(--fail); }
+td.closest { color: var(--muted); }
 .steps { list-style: none; padding: 0; display: grid; gap: 12px; }
 </style>
 
@@ -31,6 +33,14 @@ td { font-variant-numeric: tabular-nums; }
 <thead><tr><th scope="col">Story</th><th scope="col">Steps</th><th scope="col">Passing</th><th scope="col">Failing</th><th scope="col">No run evidence</th><th scope="col">Open records</th></tr></thead>
 <tbody>
 <tr><th scope="row"><a href="stories/shop-checkout.html">Checkout</a> <span class="tag">frame walk</span></th><td>3</td><td>0</td><td>0</td><td>3</td><td>0</td></tr>
+</tbody>
+</table></div>
+<h2>Components</h2>
+<p class="muted">Each component's page joins its contract, its implementation on each platform, its uses in design and code, and the journey steps whose screens use it.</p>
+<div class="table"><table>
+<thead><tr><th scope="col">Component</th><th scope="col">Implemented on</th><th scope="col">Uses</th><th scope="col">Journey steps</th><th scope="col">Open conflicts</th></tr></thead>
+<tbody>
+<tr><th scope="row"><a href="components/card.html">Card</a></th><td>android (compose), ios (uikit), web (react), web (web-components)</td><td>7</td><td>3</td><td>1</td></tr>
 </tbody>
 </table></div>
 <h2>Playing a story</h2>
