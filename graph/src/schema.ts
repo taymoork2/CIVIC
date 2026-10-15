@@ -780,6 +780,50 @@ export interface DraftChoice extends RecordBase {
   at: string
 }
 
+// ---------------------------------------------------------------------------
+// The object map (decision 0014, point 8). Object-first design (OOUX) maps a product's
+// objects, their relationships, calls to action and attributes (its ORCA grid) before any
+// screen exists. CIVIC reads that grid as design intent owned by Design, and targets are
+// tied to the objects they show with `shows` links.
+
+/** One attribute of an object: core content a person reads, or metadata to sort and filter by. */
+export interface ObjectAttribute {
+  /** Stable within its object, such as `fabric`. Ties name attributes by key. */
+  key: string
+  title: string
+  /** ORCA's two kinds of attribute. */
+  kind: 'core' | 'metadata'
+}
+
+/** A call to action on an object, such as Edit or Start preparation. */
+export interface ObjectAction {
+  key: string
+  title: string
+}
+
+/** One object nested in another, as the grid's nested-object rows name it. */
+export interface ObjectRelationship {
+  /** The `object:` the relationship points at. */
+  objectId: string
+  /** Free text from the grid, such as `one` or `many`. */
+  cardinality?: string
+}
+
+/**
+ * A domain object from a designer's ORCA grid, such as a garment or a load. It holds what
+ * the designer mapped, not what was built: what each screen shows of it is on the `shows`
+ * links that tie targets to it.
+ */
+export interface DomainObject extends RecordBase {
+  kind: 'object'
+  description?: string
+  /** Other names the team uses for it, which CIVIC matches when it suggests ties. */
+  synonyms?: string[]
+  attributes: ObjectAttribute[]
+  actions: ObjectAction[]
+  relationships: ObjectRelationship[]
+}
+
 export type GraphRecord =
   | Intent
   | Target
@@ -801,6 +845,7 @@ export type GraphRecord =
   | WorkRequest
   | DraftChoice
   | CollaborationRecord
+  | DomainObject
 
 export type RecordKind = GraphRecord['kind']
 
@@ -815,7 +860,7 @@ export type RecordKind = GraphRecord['kind']
 export const LINK_STATUSES = ['declared', 'observed', 'inferred', 'proposed'] as const
 export type LinkStatus = (typeof LINK_STATUSES)[number]
 
-export const RELATIONS = ['implements', 'serves', 'uses-token', 'navigates', 'contains'] as const
+export const RELATIONS = ['implements', 'serves', 'uses-token', 'navigates', 'contains', 'shows'] as const
 export type Relation = (typeof RELATIONS)[number]
 
 export interface Link {
@@ -833,4 +878,17 @@ export interface Link {
   route?: string
   condition?: string
   returnTo?: string
+  /**
+   * `shows` only (decision 0014): what a screen shows of the object, by key. Absent means
+   * not declared, so the comparisons skip it, rather than "shows none". A journey's `shows`
+   * says the journey needs the object and carries neither.
+   */
+  attributes?: string[]
+  actions?: string[]
+  /**
+   * `shows` only: which view of the object the screen is, such as `detail`, `card` or
+   * `editor`. Attributes are compared between screens with the same view, since a card
+   * shows less than a detail screen on purpose. Absent means `detail`.
+   */
+  view?: string
 }

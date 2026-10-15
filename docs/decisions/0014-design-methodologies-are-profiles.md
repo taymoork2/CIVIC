@@ -54,4 +54,4 @@ Each of these is a comparison, a verdict or a view over the graph, which is the 
 2. The composition and token-tier rules as advisory gate findings.
 3. The tier view: `civic screen` and the design lens in the profile's vocabulary.
 4. Registry provenance for copied-in code (point 6), then the core/shared/local and headless plus styled profiles.
-5. The OOUX object map: import an ORCA grid, tie screens to objects, and the three object comparisons (point 8), starting with Laundry's objects (garments, loads, care).
+5. The OOUX object map: import an ORCA grid, tie screens to objects, and the three object comparisons (point 8), starting with Laundry's objects (garments, loads, care). *Built* on 2026-10-15 from a stand-in Laundry grid (see the [roadmap](../roadmap.md#order-of-work)).

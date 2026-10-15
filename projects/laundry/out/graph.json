@@ -9265,6 +9265,251 @@
         "anchor": "screen.machine-problem",
         "contentHash": "sha256:4d139cb3fcf09ec0b2011cc7a7cd10e6def8fc1b8515facb7611bad5c89e9fef"
       }
+    },
+    {
+      "id": "object:laundry.care-routine",
+      "kind": "object",
+      "title": "Care routine",
+      "owners": [
+        {
+          "role": "design",
+          "who": "taymoork2"
+        }
+      ],
+      "attributes": [
+        {
+          "key": "wash-temperature",
+          "title": "Wash temperature",
+          "kind": "core"
+        },
+        {
+          "key": "wash-cycle",
+          "title": "Wash cycle",
+          "kind": "core"
+        },
+        {
+          "key": "dry-method",
+          "title": "Dry method",
+          "kind": "core"
+        },
+        {
+          "key": "detergent",
+          "title": "Detergent",
+          "kind": "metadata"
+        },
+        {
+          "key": "stain-treatment",
+          "title": "Stain treatment",
+          "kind": "metadata"
+        }
+      ],
+      "actions": [
+        {
+          "key": "change",
+          "title": "Change"
+        },
+        {
+          "key": "answer-care-question",
+          "title": "Answer care question"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "object:laundry.garment",
+          "cardinality": "many"
+        }
+      ],
+      "source": {
+        "tool": "stand-in",
+        "importer": "orca-grid",
+        "revision": "sha256:e57c57fe9f63e678c037918093d6b75b4153382a51b15f5a1c08fa1e7fd0b779",
+        "path": "projects/laundry/inputs/orca-grid.csv",
+        "contentHash": "sha256:e57c57fe9f63e678c037918093d6b75b4153382a51b15f5a1c08fa1e7fd0b779",
+        "anchor": "Care routine"
+      },
+      "description": "How one garment is washed and dried, from its care label: temperature, cycle and drying method.",
+      "synonyms": [
+        "care"
+      ]
+    },
+    {
+      "id": "object:laundry.garment",
+      "kind": "object",
+      "title": "Garment",
+      "owners": [
+        {
+          "role": "design",
+          "who": "taymoork2"
+        }
+      ],
+      "attributes": [
+        {
+          "key": "name",
+          "title": "Name",
+          "kind": "core"
+        },
+        {
+          "key": "type",
+          "title": "Type",
+          "kind": "core"
+        },
+        {
+          "key": "owner",
+          "title": "Owner",
+          "kind": "core"
+        },
+        {
+          "key": "fabric",
+          "title": "Fabric",
+          "kind": "metadata"
+        },
+        {
+          "key": "color",
+          "title": "Color",
+          "kind": "metadata"
+        },
+        {
+          "key": "origin",
+          "title": "Origin",
+          "kind": "metadata"
+        },
+        {
+          "key": "dye",
+          "title": "Dye",
+          "kind": "metadata"
+        },
+        {
+          "key": "stains",
+          "title": "Stains",
+          "kind": "metadata"
+        },
+        {
+          "key": "tags",
+          "title": "Tags",
+          "kind": "metadata"
+        }
+      ],
+      "actions": [
+        {
+          "key": "add",
+          "title": "Add"
+        },
+        {
+          "key": "edit",
+          "title": "Edit"
+        },
+        {
+          "key": "open-care-history",
+          "title": "Open care history"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "object:laundry.care-routine",
+          "cardinality": "one"
+        },
+        {
+          "objectId": "object:laundry.load",
+          "cardinality": "many"
+        }
+      ],
+      "source": {
+        "tool": "stand-in",
+        "importer": "orca-grid",
+        "revision": "sha256:e57c57fe9f63e678c037918093d6b75b4153382a51b15f5a1c08fa1e7fd0b779",
+        "path": "projects/laundry/inputs/orca-grid.csv",
+        "contentHash": "sha256:e57c57fe9f63e678c037918093d6b75b4153382a51b15f5a1c08fa1e7fd0b779",
+        "anchor": "Garment"
+      },
+      "description": "Something a household member wears or uses that goes through the wash: a shirt, a towel or a multicolor pack.",
+      "synonyms": [
+        "item",
+        "clothes",
+        "piece"
+      ]
+    },
+    {
+      "id": "object:laundry.load",
+      "kind": "object",
+      "title": "Load",
+      "owners": [
+        {
+          "role": "design",
+          "who": "taymoork2"
+        }
+      ],
+      "attributes": [
+        {
+          "key": "garments",
+          "title": "Garments",
+          "kind": "core"
+        },
+        {
+          "key": "washer",
+          "title": "Washer",
+          "kind": "core"
+        },
+        {
+          "key": "status",
+          "title": "Status",
+          "kind": "core"
+        },
+        {
+          "key": "planned-for",
+          "title": "Planned for",
+          "kind": "metadata"
+        },
+        {
+          "key": "started-at",
+          "title": "Started at",
+          "kind": "metadata"
+        }
+      ],
+      "actions": [
+        {
+          "key": "plan",
+          "title": "Plan"
+        },
+        {
+          "key": "start-preparation",
+          "title": "Start preparation"
+        },
+        {
+          "key": "confirm-washer-finished",
+          "title": "Confirm washer finished"
+        },
+        {
+          "key": "move-to-drying",
+          "title": "Move to drying"
+        },
+        {
+          "key": "put-away",
+          "title": "Put away"
+        }
+      ],
+      "relationships": [
+        {
+          "objectId": "object:laundry.garment",
+          "cardinality": "many"
+        },
+        {
+          "objectId": "object:laundry.care-routine",
+          "cardinality": "many"
+        }
+      ],
+      "source": {
+        "tool": "stand-in",
+        "importer": "orca-grid",
+        "revision": "sha256:e57c57fe9f63e678c037918093d6b75b4153382a51b15f5a1c08fa1e7fd0b779",
+        "path": "projects/laundry/inputs/orca-grid.csv",
+        "contentHash": "sha256:e57c57fe9f63e678c037918093d6b75b4153382a51b15f5a1c08fa1e7fd0b779",
+        "anchor": "Load"
+      },
+      "description": "One batch of garments washed together, from planning through the washer, drying and putting away.",
+      "synonyms": [
+        "wash",
+        "laundry day"
+      ]
     }
   ],
   "links": [
@@ -9321,6 +9566,20 @@
       "evidenceIds": [
         "evidence:source-analysis.laundry-components"
       ]
+    },
+    {
+      "from": "target:laundry.app.drying.putaway-one",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "inferred",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "suggested by the name \"item\""
+      }
     },
     {
       "from": "target:laundry.catalog.existing-specimens",
@@ -11511,6 +11770,35 @@
       }
     },
     {
+      "from": "target:laundry.family.drying",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "view": "card",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[17]"
+      }
+    },
+    {
+      "from": "target:laundry.family.drying",
+      "relation": "shows",
+      "to": "object:laundry.load",
+      "status": "declared",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[16]"
+      }
+    },
+    {
       "from": "target:laundry.family.planning",
       "relation": "navigates",
       "to": "target:laundry.family.washing",
@@ -11523,6 +11811,23 @@
         "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99",
         "path": "apps/web/src/review/scenarios.json",
         "anchor": "family.planning"
+      }
+    },
+    {
+      "from": "target:laundry.family.planning",
+      "relation": "shows",
+      "to": "object:laundry.load",
+      "status": "declared",
+      "actions": [
+        "start-preparation"
+      ],
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[12]"
       }
     },
     {
@@ -11556,6 +11861,38 @@
       }
     },
     {
+      "from": "target:laundry.family.putaway",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "view": "card",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[17]"
+      }
+    },
+    {
+      "from": "target:laundry.family.putaway",
+      "relation": "shows",
+      "to": "object:laundry.load",
+      "status": "declared",
+      "actions": [
+        "put-away"
+      ],
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[15]"
+      }
+    },
+    {
       "from": "target:laundry.family.washing",
       "relation": "navigates",
       "to": "target:laundry.family.drying",
@@ -11586,6 +11923,23 @@
       }
     },
     {
+      "from": "target:laundry.family.washing",
+      "relation": "shows",
+      "to": "object:laundry.load",
+      "status": "declared",
+      "actions": [
+        "move-to-drying"
+      ],
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[13]"
+      }
+    },
+    {
       "from": "target:laundry.intake.pack.care",
       "relation": "navigates",
       "to": "target:laundry.intake.pack.stain",
@@ -11597,6 +11951,20 @@
         "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99",
         "path": "apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.care"
+      }
+    },
+    {
+      "from": "target:laundry.intake.pack.care",
+      "relation": "shows",
+      "to": "object:laundry.care-routine",
+      "status": "inferred",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "suggested by the name \"care\""
       }
     },
     {
@@ -11614,6 +11982,21 @@
       }
     },
     {
+      "from": "target:laundry.intake.pack.color",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "view": "intake",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[7]"
+      }
+    },
+    {
       "from": "target:laundry.intake.pack.details",
       "relation": "navigates",
       "to": "target:laundry.intake.pack.fabric",
@@ -11625,6 +12008,21 @@
         "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99",
         "path": "apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.details"
+      }
+    },
+    {
+      "from": "target:laundry.intake.pack.details",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "view": "intake",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[7]"
       }
     },
     {
@@ -11642,6 +12040,21 @@
       }
     },
     {
+      "from": "target:laundry.intake.pack.dye",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "view": "intake",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[7]"
+      }
+    },
+    {
       "from": "target:laundry.intake.pack.fabric",
       "relation": "navigates",
       "to": "target:laundry.intake.pack.color",
@@ -11656,6 +12069,21 @@
       }
     },
     {
+      "from": "target:laundry.intake.pack.fabric",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "view": "intake",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[7]"
+      }
+    },
+    {
       "from": "target:laundry.intake.pack.final",
       "relation": "navigates",
       "to": "target:laundry.records.pack",
@@ -11667,6 +12095,21 @@
         "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99",
         "path": "apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.final"
+      }
+    },
+    {
+      "from": "target:laundry.intake.pack.final",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "view": "intake",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[7]"
       }
     },
     {
@@ -11698,6 +12141,21 @@
       }
     },
     {
+      "from": "target:laundry.intake.pack.origin",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "view": "intake",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[7]"
+      }
+    },
+    {
       "from": "target:laundry.intake.pack.stain",
       "relation": "navigates",
       "to": "target:laundry.intake.pack.final",
@@ -11709,6 +12167,21 @@
         "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99",
         "path": "apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.stain"
+      }
+    },
+    {
+      "from": "target:laundry.intake.pack.stain",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "view": "intake",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[7]"
       }
     },
     {
@@ -11726,6 +12199,21 @@
       }
     },
     {
+      "from": "target:laundry.intake.pack.type",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "view": "intake",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[7]"
+      }
+    },
+    {
       "from": "target:laundry.intake.pack.whose",
       "relation": "navigates",
       "to": "target:laundry.intake.pack.details",
@@ -11737,6 +12225,21 @@
         "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99",
         "path": "apps/web/src/review/scenarios.json",
         "anchor": "intake.pack.whose"
+      }
+    },
+    {
+      "from": "target:laundry.intake.pack.whose",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "view": "intake",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[7]"
       }
     },
     {
@@ -11754,6 +12257,20 @@
       }
     },
     {
+      "from": "target:laundry.intake.towel.care",
+      "relation": "shows",
+      "to": "object:laundry.care-routine",
+      "status": "inferred",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "suggested by the name \"care\""
+      }
+    },
+    {
       "from": "target:laundry.intake.towel.color",
       "relation": "navigates",
       "to": "target:laundry.intake.towel.origin",
@@ -11765,6 +12282,21 @@
         "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99",
         "path": "apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.color"
+      }
+    },
+    {
+      "from": "target:laundry.intake.towel.color",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "view": "intake",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[7]"
       }
     },
     {
@@ -11782,6 +12314,21 @@
       }
     },
     {
+      "from": "target:laundry.intake.towel.details",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "view": "intake",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[7]"
+      }
+    },
+    {
       "from": "target:laundry.intake.towel.dye",
       "relation": "navigates",
       "to": "target:laundry.intake.towel.care",
@@ -11793,6 +12340,21 @@
         "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99",
         "path": "apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.dye"
+      }
+    },
+    {
+      "from": "target:laundry.intake.towel.dye",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "view": "intake",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[7]"
       }
     },
     {
@@ -11810,6 +12372,21 @@
       }
     },
     {
+      "from": "target:laundry.intake.towel.fabric",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "view": "intake",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[7]"
+      }
+    },
+    {
       "from": "target:laundry.intake.towel.final",
       "relation": "navigates",
       "to": "target:laundry.records.towel",
@@ -11821,6 +12398,21 @@
         "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99",
         "path": "apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.final"
+      }
+    },
+    {
+      "from": "target:laundry.intake.towel.final",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "view": "intake",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[7]"
       }
     },
     {
@@ -11852,6 +12444,21 @@
       }
     },
     {
+      "from": "target:laundry.intake.towel.origin",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "view": "intake",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[7]"
+      }
+    },
+    {
       "from": "target:laundry.intake.towel.stain",
       "relation": "navigates",
       "to": "target:laundry.intake.towel.final",
@@ -11863,6 +12470,21 @@
         "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99",
         "path": "apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.stain"
+      }
+    },
+    {
+      "from": "target:laundry.intake.towel.stain",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "view": "intake",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[7]"
       }
     },
     {
@@ -11880,6 +12502,21 @@
       }
     },
     {
+      "from": "target:laundry.intake.towel.type",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "view": "intake",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[7]"
+      }
+    },
+    {
       "from": "target:laundry.intake.towel.whose",
       "relation": "navigates",
       "to": "target:laundry.intake.towel.details",
@@ -11891,6 +12528,21 @@
         "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99",
         "path": "apps/web/src/review/scenarios.json",
         "anchor": "intake.towel.whose"
+      }
+    },
+    {
+      "from": "target:laundry.intake.towel.whose",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "view": "intake",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[7]"
       }
     },
     {
@@ -11969,6 +12621,20 @@
         "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99",
         "path": "apps/web/src/review/scenarios.json",
         "anchor": "route.closet.running"
+      }
+    },
+    {
+      "from": "target:laundry.journey.closet",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[0]"
       }
     },
     {
@@ -12102,6 +12768,34 @@
       }
     },
     {
+      "from": "target:laundry.journey.cotton-polyester-towel",
+      "relation": "shows",
+      "to": "object:laundry.care-routine",
+      "status": "declared",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[2]"
+      }
+    },
+    {
+      "from": "target:laundry.journey.cotton-polyester-towel",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[1]"
+      }
+    },
+    {
       "from": "target:laundry.journey.drying",
       "relation": "contains",
       "to": "target:laundry.route.drying.reminder-check",
@@ -12125,6 +12819,20 @@
         "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99",
         "path": "apps/web/src/review/scenarios.json",
         "anchor": "route.drying.washer-queued"
+      }
+    },
+    {
+      "from": "target:laundry.journey.drying",
+      "relation": "shows",
+      "to": "object:laundry.load",
+      "status": "declared",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[3]"
       }
     },
     {
@@ -12177,6 +12885,34 @@
         "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99",
         "path": "apps/web/src/review/scenarios.json",
         "anchor": "family.washing"
+      }
+    },
+    {
+      "from": "target:laundry.journey.family-laundry-day",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[4]"
+      }
+    },
+    {
+      "from": "target:laundry.journey.family-laundry-day",
+      "relation": "shows",
+      "to": "object:laundry.load",
+      "status": "declared",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[3]"
       }
     },
     {
@@ -12531,6 +13267,34 @@
       }
     },
     {
+      "from": "target:laundry.journey.multicolor-pack",
+      "relation": "shows",
+      "to": "object:laundry.care-routine",
+      "status": "declared",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[2]"
+      }
+    },
+    {
+      "from": "target:laundry.journey.multicolor-pack",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[1]"
+      }
+    },
+    {
       "from": "target:laundry.journey.nested-quick-edits",
       "relation": "contains",
       "to": "target:laundry.records.item.care",
@@ -12554,6 +13318,34 @@
         "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99",
         "path": "apps/web/src/review/scenarios.json",
         "anchor": "records.item.tags"
+      }
+    },
+    {
+      "from": "target:laundry.journey.nested-quick-edits",
+      "relation": "shows",
+      "to": "object:laundry.care-routine",
+      "status": "declared",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[2]"
+      }
+    },
+    {
+      "from": "target:laundry.journey.nested-quick-edits",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[1]"
       }
     },
     {
@@ -12674,6 +13466,20 @@
       }
     },
     {
+      "from": "target:laundry.journey.saved-records",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[0]"
+      }
+    },
+    {
       "from": "target:laundry.journey.washing-recovery",
       "relation": "contains",
       "to": "target:laundry.route.laundry.hamper-item",
@@ -12710,6 +13516,132 @@
         "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99",
         "path": "apps/web/src/review/scenarios.json",
         "anchor": "route.laundry.washed"
+      }
+    },
+    {
+      "from": "target:laundry.journey.washing-recovery",
+      "relation": "shows",
+      "to": "object:laundry.load",
+      "status": "declared",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[3]"
+      }
+    },
+    {
+      "from": "target:laundry.legacy.care-family",
+      "relation": "shows",
+      "to": "object:laundry.care-routine",
+      "status": "inferred",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "suggested by the name \"care\""
+      }
+    },
+    {
+      "from": "target:laundry.legacy.closet-add-care",
+      "relation": "shows",
+      "to": "object:laundry.care-routine",
+      "status": "inferred",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "suggested by the name \"care\""
+      }
+    },
+    {
+      "from": "target:laundry.legacy.closet-care-dry",
+      "relation": "shows",
+      "to": "object:laundry.care-routine",
+      "status": "inferred",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "suggested by the name \"care\""
+      }
+    },
+    {
+      "from": "target:laundry.legacy.closet-care-question-pending",
+      "relation": "shows",
+      "to": "object:laundry.care-routine",
+      "status": "inferred",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "suggested by the name \"care\""
+      }
+    },
+    {
+      "from": "target:laundry.legacy.closet-care-question",
+      "relation": "shows",
+      "to": "object:laundry.care-routine",
+      "status": "inferred",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "suggested by the name \"care\""
+      }
+    },
+    {
+      "from": "target:laundry.legacy.closet-care-wash",
+      "relation": "shows",
+      "to": "object:laundry.care-routine",
+      "status": "inferred",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "suggested by the name \"care\""
+      }
+    },
+    {
+      "from": "target:laundry.legacy.closet-care-wash",
+      "relation": "shows",
+      "to": "object:laundry.load",
+      "status": "inferred",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "suggested by the name \"wash\""
+      }
+    },
+    {
+      "from": "target:laundry.legacy.closet-first-wash",
+      "relation": "shows",
+      "to": "object:laundry.load",
+      "status": "inferred",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "suggested by the name \"wash\""
       }
     },
     {
@@ -12776,6 +13708,20 @@
         "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99",
         "path": "apps/web/src/routes/drying.tsx",
         "anchor": "onBack={() => void navigate({ to: '/laundry' })}"
+      }
+    },
+    {
+      "from": "target:laundry.legacy.drying-second-wash",
+      "relation": "shows",
+      "to": "object:laundry.load",
+      "status": "inferred",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "suggested by the name \"wash\""
       }
     },
     {
@@ -12893,6 +13839,20 @@
       }
     },
     {
+      "from": "target:laundry.legacy.household-laundry-day",
+      "relation": "shows",
+      "to": "object:laundry.load",
+      "status": "inferred",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "suggested by the name \"laundry day\""
+      }
+    },
+    {
       "from": "target:laundry.legacy.laundry-completed",
       "relation": "navigates",
       "to": "target:laundry.legacy.me-history",
@@ -12927,6 +13887,104 @@
       }
     },
     {
+      "from": "target:laundry.legacy.laundry-day-hang-now",
+      "relation": "shows",
+      "to": "object:laundry.load",
+      "status": "inferred",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "suggested by the name \"laundry day\""
+      }
+    },
+    {
+      "from": "target:laundry.legacy.laundry-day-home-until",
+      "relation": "shows",
+      "to": "object:laundry.load",
+      "status": "inferred",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "suggested by the name \"laundry day\""
+      }
+    },
+    {
+      "from": "target:laundry.legacy.laundry-day-plan",
+      "relation": "shows",
+      "to": "object:laundry.load",
+      "status": "inferred",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "suggested by the name \"laundry day\""
+      }
+    },
+    {
+      "from": "target:laundry.legacy.laundry-day-scale",
+      "relation": "shows",
+      "to": "object:laundry.load",
+      "status": "inferred",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "suggested by the name \"laundry day\""
+      }
+    },
+    {
+      "from": "target:laundry.legacy.laundry-day-spread",
+      "relation": "shows",
+      "to": "object:laundry.load",
+      "status": "inferred",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "suggested by the name \"laundry day\""
+      }
+    },
+    {
+      "from": "target:laundry.legacy.laundry-day-strip-open",
+      "relation": "shows",
+      "to": "object:laundry.load",
+      "status": "inferred",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "suggested by the name \"laundry day\""
+      }
+    },
+    {
+      "from": "target:laundry.legacy.laundry-day-strip",
+      "relation": "shows",
+      "to": "object:laundry.load",
+      "status": "inferred",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "suggested by the name \"laundry day\""
+      }
+    },
+    {
       "from": "target:laundry.legacy.laundry-session",
       "relation": "navigates",
       "to": "target:laundry.route.laundry.washed",
@@ -12941,6 +13999,20 @@
         "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99",
         "path": "apps/web/src/laundry/session-view.tsx",
         "anchor": "void washFinished.run({ sessionId: detail.sessionId, at: Date.now() })"
+      }
+    },
+    {
+      "from": "target:laundry.legacy.load-review",
+      "relation": "shows",
+      "to": "object:laundry.load",
+      "status": "inferred",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "suggested by the name \"load\""
       }
     },
     {
@@ -12993,6 +14065,71 @@
       }
     },
     {
+      "from": "target:laundry.records.item.care",
+      "relation": "shows",
+      "to": "object:laundry.care-routine",
+      "status": "declared",
+      "actions": [
+        "change"
+      ],
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[9]"
+      }
+    },
+    {
+      "from": "target:laundry.records.item.care",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "inferred",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "suggested by the name \"item\""
+      }
+    },
+    {
+      "from": "target:laundry.records.item.tags",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "view": "tags",
+      "attributes": [
+        "name",
+        "tags"
+      ],
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[8]"
+      }
+    },
+    {
+      "from": "target:laundry.records.pack.edit",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "view": "editor",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[6]"
+      }
+    },
+    {
       "from": "target:laundry.records.pack",
       "relation": "navigates",
       "to": "target:laundry.records.pack.edit",
@@ -13007,6 +14144,48 @@
       }
     },
     {
+      "from": "target:laundry.records.pack",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "attributes": [
+        "name",
+        "type",
+        "owner",
+        "fabric",
+        "color",
+        "origin",
+        "dye",
+        "stains"
+      ],
+      "actions": [
+        "edit"
+      ],
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[5]"
+      }
+    },
+    {
+      "from": "target:laundry.records.towel.edit",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "view": "editor",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[6]"
+      }
+    },
+    {
       "from": "target:laundry.records.towel",
       "relation": "navigates",
       "to": "target:laundry.records.towel.edit",
@@ -13018,6 +14197,33 @@
         "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99",
         "path": "apps/web/src/review/scenarios.json",
         "anchor": "records.towel"
+      }
+    },
+    {
+      "from": "target:laundry.records.towel",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "attributes": [
+        "name",
+        "type",
+        "owner",
+        "fabric",
+        "color",
+        "origin",
+        "dye",
+        "stains"
+      ],
+      "actions": [
+        "edit"
+      ],
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[5]"
       }
     },
     {
@@ -13055,6 +14261,20 @@
       }
     },
     {
+      "from": "target:laundry.route.closet.add-choose",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "inferred",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "suggested by the name \"clothes\""
+      }
+    },
+    {
       "from": "target:laundry.route.closet.history",
       "relation": "navigates",
       "to": "target:laundry.legacy.laundry-completed",
@@ -13072,6 +14292,37 @@
       }
     },
     {
+      "from": "target:laundry.route.closet.history",
+      "relation": "shows",
+      "to": "object:laundry.care-routine",
+      "status": "inferred",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "suggested by the name \"care\""
+      }
+    },
+    {
+      "from": "target:laundry.route.closet.history",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "actions": [
+        "open-care-history"
+      ],
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[10]"
+      }
+    },
+    {
       "from": "target:laundry.route.closet.running",
       "relation": "navigates",
       "to": "target:laundry.route.laundry.session-closet",
@@ -13086,6 +14337,34 @@
         "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99",
         "path": "apps/web/src/routes/closet.tsx",
         "anchor": "search={{ from: 'closet' }}"
+      }
+    },
+    {
+      "from": "target:laundry.route.closet.running",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[11]"
+      }
+    },
+    {
+      "from": "target:laundry.route.closet.running",
+      "relation": "shows",
+      "to": "object:laundry.load",
+      "status": "inferred",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "suggested by the name \"wash\""
       }
     },
     {
@@ -13133,6 +14412,34 @@
         "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99",
         "path": "apps/web/src/routes/drying.tsx",
         "anchor": "onBack={() => void navigate({ to: '/laundry' })}"
+      }
+    },
+    {
+      "from": "target:laundry.route.drying.washer-queued",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "inferred",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "suggested by the name \"piece\""
+      }
+    },
+    {
+      "from": "target:laundry.route.drying.washer-queued",
+      "relation": "shows",
+      "to": "object:laundry.load",
+      "status": "declared",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[16]"
       }
     },
     {
@@ -13213,6 +14520,20 @@
       }
     },
     {
+      "from": "target:laundry.route.laundry.hamper-item",
+      "relation": "shows",
+      "to": "object:laundry.garment",
+      "status": "declared",
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[11]"
+      }
+    },
+    {
       "from": "target:laundry.route.laundry.session-closet",
       "relation": "navigates",
       "to": "target:laundry.route.closet.running",
@@ -13247,6 +14568,23 @@
       }
     },
     {
+      "from": "target:laundry.route.laundry.session-closet",
+      "relation": "shows",
+      "to": "object:laundry.load",
+      "status": "declared",
+      "actions": [
+        "confirm-washer-finished"
+      ],
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[14]"
+      }
+    },
+    {
       "from": "target:laundry.route.laundry.washed",
       "relation": "navigates",
       "to": "target:laundry.route.drying.washer-queued",
@@ -13261,6 +14599,23 @@
         "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99",
         "path": "apps/web/src/laundry/session-view.tsx",
         "anchor": "if (result !== undefined) void navigate({ to: '/drying' })"
+      }
+    },
+    {
+      "from": "target:laundry.route.laundry.washed",
+      "relation": "shows",
+      "to": "object:laundry.load",
+      "status": "declared",
+      "actions": [
+        "move-to-drying"
+      ],
+      "source": {
+        "tool": "civic",
+        "importer": "object-ties",
+        "revision": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "path": "projects/laundry/objects.json",
+        "contentHash": "sha256:6f4db08acf7d82c3e3df50d79ed8febe0f6213276fcf5f5e51287ce2cba2d7fb",
+        "anchor": "ties[13]"
       }
     }
   ]

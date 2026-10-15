@@ -36,12 +36,12 @@ An initial capture also finished with no unexpected failures, but its first
 family runtime test and keyboard feedback test needed retries. The dev server
 logged dependency optimization/reloads and an invalid-hook error during its
 first load; the feedback test's first attempt missed the captured draft value.
-The complete warm-server rerun passed both on their first attempts. No test or
-application source was changed to obtain the final report.
+The complete warm-server rerun passed both on their first attempts. No Laundry
+test or application source was changed to obtain the final report.
 
 ## Graph checks
 
-- `node projects/laundry/build.ts`: 347 records, 298 links, 37 tests, two replays,
+- `node projects/laundry/build.ts`: 350 records, 372 links, 37 tests, two replays,
   zero failing evidence and zero token conflicts.
 - All 18 default-theme comparisons and 12 dark-theme comparisons agree.
 - `civic check` with `LAUNDRY_CHECKOUT` set passes with zero new findings and no
@@ -52,3 +52,13 @@ application source was changed to obtain the final report.
 
 The reference stylesheets and frozen captures are preserved. No new physical
 device or native acceptance is claimed.
+
+The final graph includes main's object-map integration (`27045b9`), preserving
+its three objects and declared/suggested ties alongside the fresh evidence.
+The full signoff exposed two existing canvas-test assumptions: transformed
+source contains the checkout path, which can include "laundry", and compact
+overview mode hides detailed flow regions until a flow is selected. The test
+checks now remove only the checkout prefix and select the flow before asserting
+its details. Both checks pass in isolation. A separate viewport/replay test
+timed out once during signoff and passed unchanged in its isolated rerun; the
+final full signoff remains the required exact-head gate.
