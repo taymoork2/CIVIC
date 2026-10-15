@@ -538,9 +538,13 @@ export interface Actor extends RecordBase {
 
 /**
  * A stream of work with revisions (D36): main, a branch, a worktree, a PR with its
- * preview, or a design draft. Records made on a line stay on it until it merges.
+ * preview, a design draft, or a library release (decision 0013, point 3). Records made on a
+ * line stay on it until it merges. A release line is one published version of a library: a
+ * code package version (tool `npm`, ref `<package>@<version>`) or a design library publish
+ * (tool `figma`, ref `<file key>@<version>`). Its head is that version, its base is the line
+ * it was released from, and it never merges.
  */
-export const LINE_TYPES = ['main', 'branch', 'worktree', 'pr', 'design-draft'] as const
+export const LINE_TYPES = ['main', 'branch', 'worktree', 'pr', 'design-draft', 'release'] as const
 export type LineType = (typeof LINE_TYPES)[number]
 
 export interface Line extends RecordBase {
@@ -582,7 +586,22 @@ export interface DesignFrame {
 }
 
 /** The tools whose lines are code, not design: only a design line records frames. */
-export const CODE_LINE_TOOLS = ['git', 'github'] as const
+export const CODE_LINE_TOOLS = ['git', 'github', 'npm'] as const
+
+/**
+ * A place a product runs for people, such as staging or production (decision 0013, point 3),
+ * and which revision of which line runs there as last observed. A story plays through a lens
+ * of one design line, one code line and one environment.
+ */
+export interface Environment extends RecordBase {
+  kind: 'environment'
+  /** Where people open it. */
+  url?: string
+  /** A journey canvas serves its review frame here, so a screen can play live on it. */
+  canvas?: boolean
+  /** Each line deployed here and the revision of it, newest observation per line. */
+  runs: { line: string; revision: string; observedAt: string }[]
+}
 
 /**
  * A design file from a tool with no Figma-style file export (`civic.design/0`): its frames,
@@ -846,6 +865,7 @@ export type GraphRecord =
   | DraftChoice
   | CollaborationRecord
   | DomainObject
+  | Environment
 
 export type RecordKind = GraphRecord['kind']
 

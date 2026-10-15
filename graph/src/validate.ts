@@ -150,7 +150,18 @@ export function validateGraph(input: unknown): Issue[] {
         if (record.status === 'merged' && !record.mergedAs) error('line-merge', at, 'A merged line names the revision it merged as.')
         if (record.status !== 'merged' && record.mergedAs) error('line-merge', at, 'Only a merged line has `mergedAs`.')
         if (record.frames && (CODE_LINE_TOOLS as readonly string[]).includes(record.tool)) error('line-frames', at, 'Only a design line records frames.')
+        if (record.type === 'release' && record.status === 'merged') error('line-release', at, 'A release line is a published version; it never merges.')
         break
+      case 'environment': {
+        const seen = new Set<string>()
+        for (const run of record.runs) {
+          ref(at, 'runs.line', run.line, ['line'])
+          if (seen.has(run.line)) error('environment-runs', at, `${run.line} is listed twice; keep its newest observation.`)
+          seen.add(run.line)
+        }
+        if (record.runs.length === 0) error('environment-runs', at, 'An environment names at least one line that runs there.')
+        break
+      }
       case 'annotation':
         actorRef(at, 'writtenBy', record.writtenBy)
         ref(at, 'seenOn.line', record.seenOn.line, ['line'])
@@ -725,6 +736,19 @@ function checkRecordShape(raw: unknown, at: string, error: Report) {
     case 'work-request':
     case 'draft-choice':
       checkReviewShape(kind, raw, at, error)
+      break
+    case 'environment':
+      field.optional('url', (value, path) => checkString(value, path, error))
+      field.optional('canvas', (value, path) => {
+        if (typeof value !== 'boolean') error('shape', path, 'Must be true or false.')
+      })
+      field.list('runs', (run, path) => {
+        if (!isObject(run)) return error('shape', path, 'Must be an object.')
+        const f = fieldChecker(run, path, error)
+        f.string('line')
+        f.string('revision')
+        f.string('observedAt')
+      })
       break
     case 'object': {
       field.optional('description', (value, path) => checkString(value, path, error))

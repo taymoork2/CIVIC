@@ -22,6 +22,7 @@ td { font-variant-numeric: tabular-nums; }
 td.none { color: var(--fail); }
 td.closest { color: var(--muted); }
 .steps { list-style: none; padding: 0; display: grid; gap: 12px; }
+.lens { border: 1px solid var(--accent); border-radius: 6px; padding: 6px 10px; font-size: 13px; }
 </style>
 <script defer src="../civic-story.js"></script>
 </head>
@@ -29,9 +30,10 @@ td.closest { color: var(--muted); }
 <main>
 <p class="crumbs"><a href="../index.html">All stories</a></p>
 <h1>Home</h1>
+<p class="lens">Seen through design Laundry design reference at 2026-10-07T04:44:09.717Z, code taymoork2/washcloset main at e6542c4b3f2f, environment Laundry's review server. The lens is part of each story's link.</p>
 <p class="muted">3 steps in the order a person meets them, read from <code>projects/laundry/out/graph.json</code>. Story <code>story:laundry.journey.home</code> points at journey <code>target:laundry.journey.home</code>.</p>
 <ol class="steps">
-<li id="step-1"><civic-story story="story:laundry.journey.home" step="target:laundry.route.home.reminder-changed" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=route.home.reminder-changed&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-1"><civic-story story="story:laundry.journey.home" step="target:laundry.route.home.reminder-changed" lens="design=line:open-design.1dee16e6-3eaa-46ef-a677-6376e4cdc75f&amp;code=line:git.main&amp;environment=environment:laundry.review-server" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=route.home.reminder-changed&quot;,&quot;label&quot;:&quot;Play on Laundry's review server&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas Laundry's review server serves at http://127.0.0.1:3010, with synthetic data.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
 a { color: var(--accent, #2b5fd9); }
@@ -54,10 +56,11 @@ code { font-size: 12px; }
 
 
 <section><h4>Open records</h4><ul><li>coverage-gap: Coverage gap: Hanging reminder · visible, dismissed, changed task and exact run check</li></ul></section>
+<section><h4>Through the lens</h4><ul><li>Design on Laundry design reference: no frame designs this screen.</li><li>Runs on taymoork2/washcloset main: none</li><li>Laundry's review server: runs taymoork2/washcloset main at its head</li></ul></section>
 </article>
 </template>
 </civic-story></li>
-<li id="step-2"><civic-story story="story:laundry.journey.home" step="target:laundry.route.home.reminder-dismissed" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=route.home.reminder-dismissed&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-2"><civic-story story="story:laundry.journey.home" step="target:laundry.route.home.reminder-dismissed" lens="design=line:open-design.1dee16e6-3eaa-46ef-a677-6376e4cdc75f&amp;code=line:git.main&amp;environment=environment:laundry.review-server" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=route.home.reminder-dismissed&quot;,&quot;label&quot;:&quot;Play on Laundry's review server&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas Laundry's review server serves at http://127.0.0.1:3010, with synthetic data.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
 a { color: var(--accent, #2b5fd9); }
@@ -80,10 +83,11 @@ code { font-size: 12px; }
 
 
 
+<section><h4>Through the lens</h4><ul><li>Design on Laundry design reference: no frame designs this screen.</li><li>Runs on taymoork2/washcloset main: <span class="outcome pass">pass</span> a changed run/count reappears after dismissal and opens that run without recording dryness</li><li>Laundry's review server: runs taymoork2/washcloset main at its head</li></ul></section>
 </article>
 </template>
 </civic-story></li>
-<li id="step-3"><civic-story story="story:laundry.journey.home" step="target:laundry.route.home.reminder-visible" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=route.home.reminder-visible&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-3"><civic-story story="story:laundry.journey.home" step="target:laundry.route.home.reminder-visible" lens="design=line:open-design.1dee16e6-3eaa-46ef-a677-6376e4cdc75f&amp;code=line:git.main&amp;environment=environment:laundry.review-server" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=route.home.reminder-visible&quot;,&quot;label&quot;:&quot;Play on Laundry's review server&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas Laundry's review server serves at http://127.0.0.1:3010, with synthetic data.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
 a { color: var(--accent, #2b5fd9); }
@@ -106,6 +110,7 @@ code { font-size: 12px; }
 
 
 
+<section><h4>Through the lens</h4><ul><li>Design on Laundry design reference: no frame designs this screen.</li><li>Runs on taymoork2/washcloset main: <span class="outcome pass">pass</span> the real reminder dismisses only the task, restores focus and keeps Home access to its exact check</li><li>Laundry's review server: runs taymoork2/washcloset main at its head</li></ul></section>
 </article>
 </template>
 </civic-story></li>

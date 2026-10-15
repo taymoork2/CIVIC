@@ -9,7 +9,7 @@
 //   node build.ts --check   fail if out/ is not what the inputs produce
 
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { assertValid, indexGraph, methodCheck, objectMapOf, readMethodProfile, readTape, renderMethod, renderObjectMap, renderPortal, storiesIn, type CollaborationRecord, type DecisionFile, type Evidence, type Owner } from '../../graph/src/index.ts'
+import { assertValid, indexGraph, methodCheck, objectMapOf, readMethodProfile, readTape, renderMethod, renderObjectMap, renderPortal, resolveLens, storiesIn, type CollaborationRecord, type Environment, type Line, type DecisionFile, type Evidence, type Owner } from '../../graph/src/index.ts'
 import { applyDecisions, assemble, compareCssTokens, contentHash, findWebComponents, fragment, readComponentFamilies, readCoverageContract, readCssTokens, readJourneyIndex, readOrcaGrid, readPlaywrightReport, readRenderReceipt, readReplays, tieObjects, type CoverageContract, type JourneyIndex, type ObjectTiesFile, type RenderReceipt, type ReplayRecord } from '../../importers/src/index.ts'
 
 const here = (path: string) => new URL(path, import.meta.url)
@@ -282,7 +282,28 @@ const tapes = new Map(existsSync(here('inputs/tapes')) ? readdirSync(here('input
   const sha = /^([0-9a-f]{64})\.json$/.exec(name)?.[1]
   return sha ? [[sha, readTape(json(`inputs/tapes/${name}`))] as const] : []
 }) : [])
-const portal = renderPortal(indexGraph(graph), stories, { title: 'Laundry: journey stories', canvas: 'http://127.0.0.1:3010', tapes })
+// The lens (decision 0013, point 3): the portal is read through Open Design's reference as
+// the design line, Laundry's main at the captured commit as the code line, and Laundry's
+// review server as the environment that ran it during the capture. They are written to
+// out/lines.json in the shape `civic lines --json` prints, so `civic portal --lens` can
+// read the same lines; in a team the review store keeps them (civic design, civic environment).
+const designLine: Line = { id: `line:open-design.${design.key}`, kind: 'line', title: design.name, type: 'main', tool: design.tool, ref: design.key, head: design.version, status: 'open', frames: design.frames }
+const codeLine: Line = { id: 'line:git.main', kind: 'line', title: `${source.repository} main`, type: 'main', tool: 'git', ref: 'main', head: source.revision, status: 'open' }
+const reviewServer: Environment = {
+  id: 'environment:laundry.review-server',
+  kind: 'environment',
+  title: "Laundry's review server",
+  url: 'http://127.0.0.1:3010',
+  canvas: true,
+  runs: [{ line: codeLine.id, revision: source.revision, observedAt: json<{ stats: { startTime: string } }>('inputs/playwright-report.json').stats.startTime }],
+}
+const lensRecords = [designLine, codeLine, reviewServer]
+assertValid({ schema: graph.schema, records: lensRecords, links: [] })
+const portal = renderPortal(indexGraph(graph), stories, {
+  title: 'Laundry: journey stories',
+  tapes,
+  lens: { resolved: resolveLens(lensRecords, { design: designLine.id, code: codeLine.id, environment: reviewServer.id }), records: lensRecords },
+})
 
 // Decision 0014: a stand-in Atomic Design declaration for the component families.
 const atomic = methodCheck(indexGraph(graph), readMethodProfile(here('method.json')))
@@ -296,6 +317,7 @@ ${renderMethod(indexGraph(graph), atomic)}
 const outputs: Record<string, string> = {
   'out/graph.json': `${JSON.stringify(graph, null, 2)}\n`,
   'out/design.json': `${JSON.stringify(design, null, 2)}\n`,
+  'out/lines.json': `${JSON.stringify({ lines: [designLine, codeLine], environments: [reviewServer] }, null, 2)}\n`,
   'out/design.md': designReport,
   'out/runs.md': runs,
   'out/coverage.md': coverageReport,

@@ -16,6 +16,7 @@
 //   civic objects <file> [--json]
 //   civic method <file> <civic.method/0 file>... [--json]
 //   civic portal <file> --out <dir> [--title <t>] [--canvas <url>] [--design <design.json>]... [--tapes <dir>]
+//                [--lens "design=<line>&code=<line>&environment=<id>" --lines <civic lines --json output>]
 //                [--island <module-url> [--island-style <css-url>]... [--manifest civic.project.json]]
 //   civic screen <target-id> [<file>...] [--config civic.check.json] [--today <date>] [--json]
 //   civic check [<file>...] [--config civic.check.json] [--baseline <file>] [--update-baseline] [--today <date>] [--since <ref>] [--json] [--post] [--comment <pr>]
@@ -43,7 +44,8 @@ import { frameWalk, renderWalk, renderWalkPage, walkPath } from './walk.ts'
 import { renderStories, storiesIn } from './story.ts'
 import { objectMapOf, renderObjectMap } from './objects.ts'
 import { methodCheck, renderMethod, type ResolvedProfile } from './method.ts'
-import { renderPortal, type IslandOptions } from './portal.ts'
+import { renderPortal, type IslandOptions, type PortalOptions } from './portal.ts'
+import { parseLens, resolveLens } from './lens.ts'
 import { readTape, type RecordedTape } from './replay-player.ts'
 import {
   ALIGNMENT_FOR,
@@ -85,6 +87,7 @@ import {
   type Proposal,
   type RevisionRef,
   type Role,
+  type GraphRecord,
 } from './schema.ts'
 import { validateGraph } from './validate.ts'
 
@@ -595,7 +598,17 @@ async function stories(file: string): Promise<number> {
     const scenarios = manifest?.scenarios ? (JSON.parse(readFileSync(resolve(dirname(manifestPath!), manifest.scenarios), 'utf8')) as IslandOptions['scenarios']) : undefined
     island = { module, ...(styles.length > 0 ? { styles } : {}), ...(manifest?.personas ? { personas: manifest.personas } : {}), ...(manifest?.roles ? { roles: manifest.roles } : {}), ...(manifest?.conditions ? { conditions: manifest.conditions } : {}), ...(scenarios ? { scenarios } : {}) }
   }
-  const pages = renderPortal(graph, found, { title: option('--title') ?? `Journey stories: ${file}`, ...(canvas ? { canvas } : {}), tapes, ...(island ? { island } : {}) })
+  // The lens (decision 0013, point 3): lines and environments as `civic lines --json` prints them, or any graph document.
+  const lensQuery = option('--lens')
+  let lens: PortalOptions['lens']
+  if (lensQuery) {
+    const linesPath = option('--lines')
+    if (!linesPath) return usage('--lens needs --lines, the lines and environments as `civic lines --json` prints them.')
+    const read = JSON.parse(readFileSync(linesPath, 'utf8')) as { records?: GraphRecord[]; lines?: GraphRecord[]; environments?: GraphRecord[] }
+    const records = read.records ?? [...(read.lines ?? []), ...(read.environments ?? [])]
+    lens = { resolved: resolveLens(records, parseLens(lensQuery)), records }
+  }
+  const pages = renderPortal(graph, found, { title: option('--title') ?? `Journey stories: ${file}`, ...(canvas ? { canvas } : {}), tapes, ...(island ? { island } : {}), ...(lens ? { lens } : {}) })
   for (const [path, body] of pages) {
     mkdirSync(dirname(resolve(out, path)), { recursive: true })
     writeFileSync(resolve(out, path), body)
@@ -793,6 +806,7 @@ function usage(problem?: string): number {
       '  civic method <file> <civic.method/0 file>... [--json]',
       '  civic portal <file> --out <dir> [--title <t>] [--canvas <url>] [--design <design.json>]... [--tapes <dir>]',
       '               [--island <module-url> [--island-style <css-url>]... [--manifest civic.project.json]]',
+      '               [--lens "design=<line>&code=<line>&environment=<id>" --lines <civic lines --json output>]',
       '  civic screen <target-id> [<file>...] [--config civic.check.json] [--today <date>] [--json]',
       '  civic check [<file>...] [--config civic.check.json] [--baseline <file>] [--update-baseline] [--today <date>] [--since <ref>] [--json] [--post] [--comment <pr>]',
       '  civic release [<file>...] --since <ref> [--config civic.check.json] [--json]',
