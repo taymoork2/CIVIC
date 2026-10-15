@@ -10,7 +10,7 @@
 //   node build.ts           write out/
 //   node build.ts --check   fail if out/ is not what the inputs produce
 
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import {
   assertValid,
   completenessOf,
@@ -23,8 +23,10 @@ import {
   renderDesignAndCode,
   renderInstanceReview,
   renderWalk,
+  renderPortal,
   renderWalkPage,
   reviewInstance,
+  storiesIn,
   type DecisionFile,
   type ExtensionPoint,
   type GraphDocument,
@@ -276,6 +278,9 @@ const exportFor = (document: GraphDocument) => {
 const raisedExport = exportFor(raised)
 const resolvedExport = exportFor(resolved)
 const raisedGraph = indexGraph(raised)
+// Journey stories (decision 0013): Shop's checkout as a story whose steps play the frame walk.
+const stories = storiesIn(indexGraph(resolved), 'demo/card/out/resolved.graph.json')
+const portal = renderPortal(indexGraph(resolved), stories, { title: 'Shop: journey stories' })
 const outputs: Record<string, string> = {
   'out/raised.graph.json': `${JSON.stringify(raised, null, 2)}\n`,
   'out/resolved.graph.json': `${JSON.stringify(resolved, null, 2)}\n`,
@@ -289,6 +294,8 @@ const outputs: Record<string, string> = {
   // The frame walk (D33): Shop's checkout frames along their prototype links, as design intent.
   'out/walk.md': `${renderWalk(frameWalk(indexGraph(resolved), JOURNEY))}\n`,
   'out/walk.html': renderWalkPage(frameWalk(indexGraph(resolved), JOURNEY)),
+  'out/stories.json': `${JSON.stringify(stories, null, 2)}\n`,
+  ...Object.fromEntries([...portal].map(([path, body]) => [`out/portal/${path}`, body])),
 }
 
 const summary = `${raised.records.length} records, ${raised.links.length} links, ${overrides.length} override(s) raised as drift, ${libraryDefaults.records.length} library default(s) a platform can't build`
@@ -307,6 +314,10 @@ if (process.argv.includes('--check')) {
     console.log(`demo/card/out is current: ${summary}.`)
   }
 } else {
-  for (const [path, body] of Object.entries(outputs)) writeFileSync(here(path), body)
+  rmSync(here('out/portal'), { recursive: true, force: true })
+  for (const [path, body] of Object.entries(outputs)) {
+    mkdirSync(new URL('.', here(path)), { recursive: true })
+    writeFileSync(here(path), body)
+  }
   console.log(`Wrote demo/card/out: ${summary}.`)
 }

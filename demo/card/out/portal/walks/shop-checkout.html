@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Frame walk: Checkout</title>
+<style>
+:root { --bg: #f7f7f5; --panel: #ffffff; --text: #1d1d1b; --muted: #5f5f5a; --line: #d9d9d4; --accent: #2b5fd9; --warn: #9a5b00; }
+@media (prefers-color-scheme: dark) { :root { --bg: #161615; --panel: #20201f; --text: #ededea; --muted: #a5a59f; --line: #3a3a37; --accent: #8fb0ff; --warn: #f0b45c; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, sans-serif; }
+main { max-width: 760px; margin: 0 auto; padding: 24px 16px 48px; }
+h1 { font-size: 20px; margin: 0 0 4px; }
+.label { border: 1px solid var(--warn); color: var(--warn); border-radius: 6px; padding: 6px 10px; font-size: 13px; margin: 8px 0 16px; }
+.frame { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 16px; }
+.frame h2 { font-size: 18px; margin: 0 0 4px; }
+.muted { color: var(--muted); font-size: 13px; }
+ul { padding-left: 18px; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+button { font: inherit; border: 1px solid var(--accent); color: var(--accent); background: transparent; border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+button[disabled] { border-color: var(--line); color: var(--muted); cursor: not-allowed; }
+nav { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wrap: wrap; }
+.trail { color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<main>
+<h1>Frame walk: Checkout</h1>
+<p class="label">Design intent: frames and prototype links from the design file, not behavior from running code. Design revision civic-stand-in-5.</p>
+<nav><button id="back" type="button">Back</button><button id="restart" type="button">Start over</button><span class="trail" id="trail"></span></nav>
+<section class="frame" id="frame" aria-live="polite"></section>
+<noscript><p>This page needs JavaScript to step through the frames. <code>civic walk</code> prints the same walk as text.</p></noscript>
+</main>
+<script id="walk" type="application/json">{"journeyId":"target:shop.checkout","title":"Checkout","label":"Design intent: frames and prototype links from the design file, not behavior from running code.","revisions":["civic-stand-in-5"],"start":["target:shop.order-summary"],"frames":[{"id":"target:shop.order-summary","title":"Order Summary","scale":"screen","source":{"tool":"figma","importer":"figma-file","revision":"civic-stand-in-5","path":"Shop checkout (CIVIC stand-in) / Checkout / Order Summary","anchor":"40:1"},"states":["target:shop.order-summary.loading"],"components":[{"id":"instance:shop.order-summary.card","title":"Card on Order Summary","semanticId":"semantic:card","variant":"filled","state":"rest","overrides":[{"id":"override:shop.order-summary.card.corner-radius","title":"Local cornerRadius 20","property":"corner-radius","forecasts":[{"platform":"web","framework":"react","outcome":"forbidden"},{"platform":"web","framework":"web-components","outcome":"forbidden"},{"platform":"ios","framework":"uikit","outcome":"forbidden"},{"platform":"android","framework":"compose","outcome":"forbidden"}]},{"id":"override:shop.order-summary.card.state-selected","title":".Card header / Checkbox set to true","property":"state.selected","forecasts":[{"platform":"web","framework":"react","outcome":"supported"},{"platform":"web","framework":"web-components","outcome":"needs-library-change"},{"platform":"ios","framework":"uikit","outcome":"needs-library-change"},{"platform":"android","framework":"compose","outcome":"needs-library-change"}]}]},{"id":"instance:shop.order-summary.web.card","title":"Card in OrderSummary.tsx","semanticId":"semantic:card","variant":"filled","overrides":[]}],"actions":[{"label":"Apply promotion","to":"target:shop.promo-applied","source":{"tool":"figma","importer":"figma-file","revision":"civic-stand-in-5","path":"Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Apply promotion","anchor":"40:3"}},{"label":"Continue to payment","leaves":"/checkout/payment","source":{"tool":"figma","importer":"figma-file","revision":"civic-stand-in-5","path":"Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Continue to payment","anchor":"40:4"}}],"deadEnd":false,"unreachable":false},{"id":"target:shop.order-summary.loading","title":"Order Summary / Loading","scale":"state","source":{"tool":"figma","importer":"figma-file","revision":"civic-stand-in-5","path":"Shop checkout (CIVIC stand-in) / Checkout / Order Summary / Loading","anchor":"40:5"},"states":[],"components":[{"id":"instance:shop.order-summary.loading.card","title":"Card on Order Summary / Loading","semanticId":"semantic:card","variant":"filled","state":"rest","overrides":[]}],"actions":[],"deadEnd":false,"unreachable":false},{"id":"target:shop.promo-applied","title":"Promo applied","scale":"screen","source":{"tool":"figma","importer":"figma-file","revision":"civic-stand-in-5","path":"Shop checkout (CIVIC stand-in) / Checkout / Promo applied","anchor":"40:10"},"states":[],"components":[{"id":"instance:shop.promo-applied.card.fork","title":"Card on Promo applied","semanticId":"semantic:card","overrides":[{"id":"override:shop.promo-applied.card.fork.detach","title":"Card on Promo applied is a copy of the library component","property":"component","forecasts":[{"platform":"web","framework":"react","outcome":"needs-library-change"},{"platform":"web","framework":"web-components","outcome":"needs-library-change"},{"platform":"ios","framework":"uikit","outcome":"needs-library-change"},{"platform":"android","framework":"compose","outcome":"needs-library-change"}]}]},{"id":"instance:shop.promo-applied.web.card.fork","title":"Copy of Card in PromoApplied.tsx","semanticId":"semantic:card","overrides":[]}],"actions":[],"deadEnd":true,"unreachable":false},{"id":"target:shop.gift-options","title":"Gift options","scale":"screen","source":{"tool":"figma","importer":"figma-file","revision":"civic-stand-in-5","path":"Shop checkout (CIVIC stand-in) / Checkout / Gift options","anchor":"40:20"},"states":[],"components":[],"actions":[{"label":"Back to order","to":"target:shop.order-summary","source":{"tool":"figma","importer":"figma-file","revision":"civic-stand-in-5","path":"Shop checkout (CIVIC stand-in) / Checkout / Gift options / Back to order","anchor":"40:21"}}],"deadEnd":false,"unreachable":true}]}</script>
+<script>
+const walk = JSON.parse(document.getElementById('walk').textContent)
+const byId = new Map(walk.frames.map((frame) => [frame.id, frame]))
+const titleOf = (id) => (byId.get(id) || { title: id }).title
+// A story step opens the walk at its own frame with #frame=<id>; otherwise it starts at the start.
+const opened = decodeURIComponent((location.hash.match(/^#frame=(.+)$/) || [])[1] || '')
+let trail = byId.has(opened) ? [opened] : walk.start.slice(0, 1)
+const el = (tag, text, cls) => { const node = document.createElement(tag); if (text) node.textContent = text; if (cls) node.className = cls; return node }
+function show() {
+  const frame = byId.get(trail[trail.length - 1])
+  const root = document.getElementById('frame')
+  root.replaceChildren()
+  document.getElementById('trail').textContent = trail.map(titleOf).join(' then ')
+  document.getElementById('back').disabled = trail.length < 2
+  if (!frame) { root.append(el('p', 'This journey has no start frame.')); return }
+  root.append(el('h2', (frame.scale === 'state' ? 'State: ' : '') + frame.title))
+  if (frame.source) root.append(el('p', 'Figma node ' + frame.source.anchor + ' in ' + frame.source.path, 'muted'))
+  if (frame.components.length > 0) {
+    const list = el('ul')
+    for (const component of frame.components) {
+      const item = el('li', component.title + ': ' + component.semanticId + (component.variant ? ', ' + component.variant : '') + (component.state ? ', ' + component.state : ''))
+      if (component.overrides.length > 0) {
+        const sub = el('ul')
+        for (const override of component.overrides) sub.append(el('li', 'Override ' + override.title + ': ' + override.forecasts.map((f) => (f.framework ? f.platform + ' (' + f.framework + ')' : f.platform) + ' ' + f.outcome).join(', ')))
+        item.append(sub)
+      }
+      list.append(item)
+    }
+    root.append(list)
+  }
+  const actions = el('div', '', 'actions')
+  for (const state of frame.states) { const button = el('button', 'State: ' + titleOf(state)); button.type = 'button'; button.onclick = () => { trail.push(state); show() }; actions.append(button) }
+  for (const action of frame.actions) {
+    const button = el('button', action.label)
+    button.type = 'button'
+    if (action.to) button.onclick = () => { trail.push(action.to); show() }
+    else { button.disabled = true; button.title = 'Leaves the design for ' + action.leaves }
+    actions.append(button)
+  }
+  root.append(actions)
+  for (const action of frame.actions.filter((a) => !a.to)) root.append(el('p', action.label + ' leaves the design for ' + action.leaves + '; no frame draws it.', 'muted'))
+  if (frame.deadEnd) root.append(el('p', "No prototype link leads on, and the journey doesn't name this frame as an exit.", 'muted'))
+  if (frame.unreachable) root.append(el('p', "No prototype link reaches this frame from the start.", 'muted'))
+  const others = walk.frames.filter((f) => f.unreachable && f.scale === 'screen')
+  if (trail.length === 1 && others.length > 0) {
+    const p = el('p', 'Not reachable from the start: ', 'muted')
+    for (const other of others) { const button = el('button', other.title); button.type = 'button'; button.onclick = () => { trail.push(other.id); show() }; p.append(button, ' ') }
+    root.append(p)
+  }
+}
+document.getElementById('back').onclick = () => { if (trail.length > 1) { trail.pop(); show() } }
+document.getElementById('restart').onclick = () => { trail = walk.start.slice(0, 1); show() }
+show()
+</script>
+</body>
+</html>
