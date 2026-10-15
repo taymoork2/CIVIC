@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shop: journey stories</title>
+<style>
+:root { --bg: #f7f7f5; --panel: #ffffff; --text: #1d1d1b; --muted: #5f5f5a; --line: #d9d9d4; --accent: #2b5fd9; --pass: #1d7a46; --fail: #b3261e; }
+@media (prefers-color-scheme: dark) { :root { --bg: #161615; --panel: #20201f; --text: #ededea; --muted: #a5a59f; --line: #3a3a37; --accent: #8fb0ff; --pass: #6fd49a; --fail: #ff8a80; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, sans-serif; }
+main { max-width: 860px; margin: 0 auto; padding: 24px 16px 48px; }
+h1 { font-size: 22px; margin: 0 0 6px; }
+h2 { font-size: 17px; margin: 24px 0 6px; }
+a { color: var(--accent); }
+.muted, .crumbs { color: var(--muted); font-size: 13px; }
+.tag { font-size: 12px; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; white-space: nowrap; }
+.table { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+td { font-variant-numeric: tabular-nums; }
+.steps { list-style: none; padding: 0; display: grid; gap: 12px; }
+</style>
+
+</head>
+<body>
+<main>
+<h1>Shop: journey stories</h1>
+<p class="muted">Journey stories read from <code>demo/card/out/resolved.graph.json</code>. A story points at the graph's own records, so every still here shows what the graph holds now; nothing is recorded or copied for it.</p>
+<div class="table"><table>
+<thead><tr><th scope="col">Story</th><th scope="col">Steps</th><th scope="col">Passing</th><th scope="col">Failing</th><th scope="col">No run evidence</th><th scope="col">Open records</th></tr></thead>
+<tbody>
+<tr><th scope="row"><a href="stories/shop-checkout.html">Checkout</a> <span class="tag">frame walk</span></th><td>3</td><td>0</td><td>0</td><td>3</td><td>0</td></tr>
+</tbody>
+</table></div>
+<h2>Playing a story</h2>
+<p>Each step is a <code>&lt;civic-story&gt;</code> element. It shows a still first: the step's evidence, paths and design intent, drawn from the graph. A step that can be played offers to upgrade to a frame: the frame walk where the design links its frames, or the screen live in a journey canvas when the portal is built with one. Nothing plays until you ask.</p>
+<p>Any page can host the same element: load <code>civic-story.js</code> and copy a step's <code>&lt;civic-story&gt;</code> markup.</p>
+</main>
+</body>
+</html>

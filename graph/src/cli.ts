@@ -12,6 +12,8 @@
 //   civic alignment <file> [--scope <semantic-id>] [--today <date>] [--json]
 //   civic completeness <file> <journey-id> [--json]
 //   civic walk <file> <journey-id> [--path <label,...>] [--html <file>] [--json]
+//   civic stories <file> [--design <design.json>]... [--json]
+//   civic portal <file> --out <dir> [--title <t>] [--canvas <url>] [--design <design.json>]...
 //   civic screen <target-id> [<file>...] [--config civic.check.json] [--today <date>] [--json]
 //   civic check [<file>...] [--config civic.check.json] [--baseline <file>] [--update-baseline] [--today <date>] [--since <ref>] [--json] [--post] [--comment <pr>]
 //   civic release [<file>...] --since <ref> [--config civic.check.json] [--json]
@@ -27,7 +29,7 @@
 //   civic close <decisions.json> <collab-id> --graph <file> --by <role>:<who> --note <text> [--withdraw] [--records <id,...>] [--changes <tool>:<rev>,...] [--at <time>]
 
 import { execFileSync } from 'node:child_process'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, relative, resolve } from 'node:path'
 import { baselineFrom, checkDocument, compareToBaseline, DEFAULT_BLOCKING, FINDING_KINDS, renderCheck, statusLine, type Baseline, type FindingKind } from './check.ts'
 import { alignmentsIn, renderAlignments } from './alignment.ts'
@@ -35,6 +37,8 @@ import { changeBetween, renderChange, type ChangeReport, type GraphAtRevisions }
 import { completenessOf, renderCompleteness } from './completeness.ts'
 import { releaseBreaks, releasesBetween, renderReleases } from './release.ts'
 import { frameWalk, renderWalk, renderWalkPage, walkPath } from './walk.ts'
+import { renderStories, storiesIn } from './story.ts'
+import { renderPortal } from './portal.ts'
 import {
   ALIGNMENT_FOR,
   decisionFileRecords,
@@ -161,6 +165,7 @@ async function main(): Promise<number> {
   if (command === 'check') return check()
   if (command === 'release') return release()
   if (command === 'screen') return screen()
+  if ((command === 'stories' || command === 'portal') && args.length >= 1) return stories(args[0]!)
   if (command === 'decide' && args.length >= 2) return decide(args[0]!, args[1]!)
   if (command === 'propose' && args.length >= 1) return propose(args[0]!)
   if (command === 'adopt' && args.length >= 2) return adopt(args[0]!, args[1]!)
@@ -528,6 +533,34 @@ async function screen(): Promise<number> {
   return 3
 }
 
+/**
+ * Journey stories (decision 0013): one per journey, pointing at the graph's own records.
+ * `portal` writes them as static pages where each step is a <civic-story> player.
+ */
+async function stories(file: string): Promise<number> {
+  const designs: { file: string; design: DesignExport }[] = []
+  args.forEach((arg, index) => {
+    if (arg === '--design' && args[index + 1]) designs.push({ file: args[index + 1]!, design: JSON.parse(readFileSync(args[index + 1]!, 'utf8')) as DesignExport })
+  })
+  for (const { file: path, design } of designs) if (design.schema !== 'civic.design/0') return usage(`${path} is not a civic.design/0 file.`)
+  const graph = await loadGraph(file)
+  const found = storiesIn(graph, file, { designs })
+  if (command === 'stories') {
+    console.log(args.includes('--json') ? JSON.stringify(found, null, 2) : renderStories(found))
+    return 0
+  }
+  const out = option('--out')
+  if (!out) return usage('portal needs --out, the directory to write its pages to.')
+  const canvas = option('--canvas')
+  const pages = renderPortal(graph, found, { title: option('--title') ?? `Journey stories: ${file}`, ...(canvas ? { canvas } : {}) })
+  for (const [path, body] of pages) {
+    mkdirSync(dirname(resolve(out, path)), { recursive: true })
+    writeFileSync(resolve(out, path), body)
+  }
+  console.log(`Wrote ${pages.size} files for ${found.stories.length} ${found.stories.length === 1 ? 'story' : 'stories'} to ${out}. Open ${resolve(out, 'index.html')}.`)
+  return 0
+}
+
 async function check(): Promise<number> {
   const valued = new Set(['--config', '--baseline', '--today', '--since', '--comment'])
   const files = args.filter((arg, index) => !arg.startsWith('--') && !valued.has(args[index - 1] ?? ''))
@@ -709,6 +742,8 @@ function usage(problem?: string): number {
       '  civic alignment <file> [--scope <semantic-id>] [--today <date>] [--json]',
       '  civic completeness <file> <journey-id> [--json]',
       '  civic walk <file> <journey-id> [--path <label,...>] [--html <file>] [--json]',
+      '  civic stories <file> [--design <design.json>]... [--json]',
+      '  civic portal <file> --out <dir> [--title <t>] [--canvas <url>] [--design <design.json>]...',
       '  civic screen <target-id> [<file>...] [--config civic.check.json] [--today <date>] [--json]',
       '  civic check [<file>...] [--config civic.check.json] [--baseline <file>] [--update-baseline] [--today <date>] [--since <ref>] [--json] [--post] [--comment <pr>]',
       '  civic release [<file>...] --since <ref> [--config civic.check.json] [--json]',

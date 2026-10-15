@@ -1,0 +1,933 @@
+{
+  "schema": "civic.stories/0",
+  "graph": "projects/laundry/out/graph.json",
+  "stories": [
+    {
+      "id": "story:laundry.journey.appliances",
+      "kind": "journey",
+      "title": "Appliances",
+      "journeyId": "target:laundry.journey.appliances",
+      "steps": [
+        {
+          "targetId": "target:laundry.intake.appliance",
+          "title": "Basic appliance intake",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.new-basic-appliance-and-product-connect-to-their-saved-records-and-editors",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.records.appliance",
+          "title": "Saved appliance",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.records.appliance.edit",
+          "title": "Appliance editor",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record",
+            "evidence:playwright.student-member-and-missing-care-presets-affect-a-desktop-preview-offline-retains-its-draft"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        }
+      ]
+    },
+    {
+      "id": "story:laundry.journey.closet",
+      "kind": "journey",
+      "title": "Closet",
+      "journeyId": "target:laundry.journey.closet",
+      "steps": [
+        {
+          "targetId": "target:laundry.route.closet.add-choose",
+          "title": "Add clothes · chooser",
+          "evidenceIds": [
+            "evidence:playwright.completed-wash-opens-the-actual-history-tab-and-restores-the-completed-wash-and-me-origin",
+            "evidence:playwright.first-use-add-clothes-opens-the-actual-chooser-and-cancel-restores-home",
+            "evidence:playwright.the-hamper-drawer-keeps-its-quantity-inputs-and-returns-to-the-originating-closet-item"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.route.closet.history",
+          "title": "Garment · care history",
+          "evidenceIds": [
+            "evidence:playwright.completed-wash-opens-the-actual-history-tab-and-restores-the-completed-wash-and-me-origin",
+            "evidence:playwright.first-use-add-clothes-opens-the-actual-chooser-and-cancel-restores-home",
+            "evidence:playwright.the-hamper-drawer-keeps-its-quantity-inputs-and-returns-to-the-originating-closet-item"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.route.closet.running",
+          "title": "Garment · in running wash",
+          "evidenceIds": [
+            "evidence:playwright.an-in-load-garment-opens-its-running-wash-returns-to-the-item-and-can-confirm-washer-finish",
+            "evidence:playwright.completed-wash-opens-the-actual-history-tab-and-restores-the-completed-wash-and-me-origin",
+            "evidence:playwright.first-use-add-clothes-opens-the-actual-chooser-and-cancel-restores-home",
+            "evidence:playwright.the-hamper-drawer-keeps-its-quantity-inputs-and-returns-to-the-originating-closet-item"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        }
+      ]
+    },
+    {
+      "id": "story:laundry.journey.cotton-polyester-towel",
+      "kind": "journey",
+      "title": "Cotton/polyester towel",
+      "journeyId": "target:laundry.journey.cotton-polyester-towel",
+      "steps": [
+        {
+          "targetId": "target:laundry.intake.towel.care",
+          "title": "Cotton/polyester towel · care",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record",
+            "evidence:playwright.portalled-towel-screens-and-the-saved-outcome-produce-real-snapshots"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.intake.towel.color",
+          "title": "Cotton/polyester towel · color",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record",
+            "evidence:playwright.portalled-towel-screens-and-the-saved-outcome-produce-real-snapshots"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.intake.towel.details",
+          "title": "Cotton/polyester towel · details",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record",
+            "evidence:playwright.portalled-towel-screens-and-the-saved-outcome-produce-real-snapshots"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.intake.towel.dye",
+          "title": "Cotton/polyester towel · dye",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record",
+            "evidence:playwright.portalled-towel-screens-and-the-saved-outcome-produce-real-snapshots"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.intake.towel.fabric",
+          "title": "Cotton/polyester towel · fabric",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record",
+            "evidence:playwright.portalled-towel-screens-and-the-saved-outcome-produce-real-snapshots",
+            "evidence:playwright.proposal-commands-are-part-of-the-shared-tape-and-replay-without-discarding-the-towel-draft",
+            "evidence:playwright.towel-new-branch-captures-real-inputs-saves-through-the-app-and-replays-from-a-fresh-seed",
+            "evidence:playwright.towel-pre-owned-branch-captures-real-inputs-saves-through-the-app-and-replays-from-a-fresh-seed"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.intake.towel.final",
+          "title": "Cotton/polyester towel · final",
+          "evidenceIds": [
+            "evidence:playwright.a-failed-towel-save-keeps-its-draft-records-recovery-and-replays-the-successful-retry",
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record",
+            "evidence:playwright.portalled-towel-screens-and-the-saved-outcome-produce-real-snapshots"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.intake.towel.origin",
+          "title": "Cotton/polyester towel · origin",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record",
+            "evidence:playwright.portalled-towel-screens-and-the-saved-outcome-produce-real-snapshots"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.intake.towel.stain",
+          "title": "Cotton/polyester towel · stain",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record",
+            "evidence:playwright.portalled-towel-screens-and-the-saved-outcome-produce-real-snapshots"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.intake.towel.type",
+          "title": "Cotton/polyester towel · type",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record",
+            "evidence:playwright.portalled-towel-screens-and-the-saved-outcome-produce-real-snapshots"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.intake.towel.whose",
+          "title": "Cotton/polyester towel · whose",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record",
+            "evidence:playwright.portalled-towel-screens-and-the-saved-outcome-produce-real-snapshots"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        }
+      ]
+    },
+    {
+      "id": "story:laundry.journey.drying",
+      "kind": "journey",
+      "title": "Drying",
+      "journeyId": "target:laundry.journey.drying",
+      "steps": [
+        {
+          "targetId": "target:laundry.route.drying.reminder-check",
+          "title": "Drying check · from hanging reminder",
+          "evidenceIds": [],
+          "recordIds": [
+            "collab:coverage-gap.laundry.journey-hanging-reminder"
+          ],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.route.drying.washer-queued",
+          "title": "Drying · washed pieces queued",
+          "evidenceIds": [
+            "evidence:playwright.completed-wash-opens-the-actual-history-tab-and-restores-the-completed-wash-and-me-origin",
+            "evidence:playwright.first-use-add-clothes-opens-the-actual-chooser-and-cancel-restores-home",
+            "evidence:playwright.the-hamper-drawer-keeps-its-quantity-inputs-and-returns-to-the-originating-closet-item"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        }
+      ]
+    },
+    {
+      "id": "story:laundry.journey.family-laundry-day",
+      "kind": "journey",
+      "title": "Family laundry day",
+      "journeyId": "target:laundry.journey.family-laundry-day",
+      "steps": [
+        {
+          "targetId": "target:laundry.family.drying",
+          "title": "Family · drying check",
+          "evidenceIds": [
+            "evidence:playwright.device-fold-and-orientation-changes-resize-the-real-iframe-and-keep-the-same-run-and-selection",
+            "evidence:playwright.family-day-starts-with-a-private-1000-piece-run-and-exposes-same-run-account-and-connection-controls",
+            "evidence:playwright.native-saved-steps-survive-actual-disconnection-same-run-switching-and-reopening-without-automatic-resend",
+            "evidence:playwright.one-load-goes-from-washing-through-drying-to-a-partial-and-then-full-put-away-in-the-same-run"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.family.planning",
+          "title": "Family · plan the laundry day",
+          "evidenceIds": [
+            "evidence:playwright.device-fold-and-orientation-changes-resize-the-real-iframe-and-keep-the-same-run-and-selection",
+            "evidence:playwright.family-day-starts-with-a-private-1000-piece-run-and-exposes-same-run-account-and-connection-controls",
+            "evidence:playwright.native-saved-steps-survive-actual-disconnection-same-run-switching-and-reopening-without-automatic-resend",
+            "evidence:playwright.one-load-goes-from-washing-through-drying-to-a-partial-and-then-full-put-away-in-the-same-run"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.family.putaway",
+          "title": "Family · put away",
+          "evidenceIds": [
+            "evidence:playwright.device-fold-and-orientation-changes-resize-the-real-iframe-and-keep-the-same-run-and-selection",
+            "evidence:playwright.family-day-starts-with-a-private-1000-piece-run-and-exposes-same-run-account-and-connection-controls",
+            "evidence:playwright.native-saved-steps-survive-actual-disconnection-same-run-switching-and-reopening-without-automatic-resend",
+            "evidence:playwright.one-load-goes-from-washing-through-drying-to-a-partial-and-then-full-put-away-in-the-same-run"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.family.washing",
+          "title": "Family · prepare and wash",
+          "evidenceIds": [
+            "evidence:playwright.device-fold-and-orientation-changes-resize-the-real-iframe-and-keep-the-same-run-and-selection",
+            "evidence:playwright.family-day-starts-with-a-private-1000-piece-run-and-exposes-same-run-account-and-connection-controls",
+            "evidence:playwright.native-saved-steps-survive-actual-disconnection-same-run-switching-and-reopening-without-automatic-resend",
+            "evidence:playwright.one-load-goes-from-washing-through-drying-to-a-partial-and-then-full-put-away-in-the-same-run"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        }
+      ]
+    },
+    {
+      "id": "story:laundry.journey.home",
+      "kind": "journey",
+      "title": "Home",
+      "journeyId": "target:laundry.journey.home",
+      "steps": [
+        {
+          "targetId": "target:laundry.route.home.reminder-changed",
+          "title": "Hanging reminder · changed task",
+          "evidenceIds": [],
+          "recordIds": [
+            "collab:coverage-gap.laundry.journey-hanging-reminder"
+          ],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.route.home.reminder-dismissed",
+          "title": "Hanging reminder · dismissed",
+          "evidenceIds": [
+            "evidence:playwright.a-changed-run-count-reappears-after-dismissal-and-opens-that-run-without-recording-dryness"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.route.home.reminder-visible",
+          "title": "Hanging reminder · visible in Closet",
+          "evidenceIds": [
+            "evidence:playwright.the-real-reminder-dismisses-only-the-task-restores-focus-and-keeps-home-access-to-its-exact-check"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        }
+      ]
+    },
+    {
+      "id": "story:laundry.journey.live-application",
+      "kind": "journey",
+      "title": "Live application",
+      "journeyId": "target:laundry.journey.live-application",
+      "steps": [
+        {
+          "targetId": "target:laundry.app.account",
+          "title": "Live account",
+          "evidenceIds": [
+            "evidence:playwright.a-finished-replay-is-kept-as-civic-run-evidence-about-the-screen-the-run-started-from",
+            "evidence:playwright.drying-empty-has-a-real-return-path-to-laundry-and-replay-follows-it",
+            "evidence:playwright.home-outfit-editing-records-portalled-inputs-quantities-and-escape-then-replays-the-return",
+            "evidence:playwright.home-uses-the-shipped-wear-action-captures-its-real-arguments-and-replays-with-no-second-wear",
+            "evidence:playwright.no-ready-outfit-goes-to-laundry-a-failed-wear-stays-on-home-with-a-replayable-error-receipt",
+            "evidence:playwright.partial-put-away-captures-quantity-clear-all-branches-and-keeps-the-remaining-piece",
+            "evidence:playwright.put-away-selection-records-inputs-and-actual-effects-across-the-empty-branch-and-return",
+            "evidence:playwright.saved-recordings-reopen-on-their-original-preset-and-clock-in-a-fresh-preview",
+            "evidence:playwright.sensitive-fields-stay-out-of-recordings-and-an-ambiguous-control-stops-replay-before-a-mutation"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.app.closet",
+          "title": "Live closet",
+          "evidenceIds": [
+            "evidence:playwright.a-finished-replay-is-kept-as-civic-run-evidence-about-the-screen-the-run-started-from",
+            "evidence:playwright.drying-empty-has-a-real-return-path-to-laundry-and-replay-follows-it",
+            "evidence:playwright.home-outfit-editing-records-portalled-inputs-quantities-and-escape-then-replays-the-return",
+            "evidence:playwright.home-uses-the-shipped-wear-action-captures-its-real-arguments-and-replays-with-no-second-wear",
+            "evidence:playwright.no-ready-outfit-goes-to-laundry-a-failed-wear-stays-on-home-with-a-replayable-error-receipt",
+            "evidence:playwright.partial-put-away-captures-quantity-clear-all-branches-and-keeps-the-remaining-piece",
+            "evidence:playwright.put-away-selection-records-inputs-and-actual-effects-across-the-empty-branch-and-return",
+            "evidence:playwright.saved-recordings-reopen-on-their-original-preset-and-clock-in-a-fresh-preview",
+            "evidence:playwright.sensitive-fields-stay-out-of-recordings-and-an-ambiguous-control-stops-replay-before-a-mutation"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.app.drying",
+          "title": "Live drying",
+          "evidenceIds": [
+            "evidence:playwright.a-finished-replay-is-kept-as-civic-run-evidence-about-the-screen-the-run-started-from",
+            "evidence:playwright.drying-empty-has-a-real-return-path-to-laundry-and-replay-follows-it",
+            "evidence:playwright.home-outfit-editing-records-portalled-inputs-quantities-and-escape-then-replays-the-return",
+            "evidence:playwright.home-uses-the-shipped-wear-action-captures-its-real-arguments-and-replays-with-no-second-wear",
+            "evidence:playwright.no-ready-outfit-goes-to-laundry-a-failed-wear-stays-on-home-with-a-replayable-error-receipt",
+            "evidence:playwright.partial-put-away-captures-quantity-clear-all-branches-and-keeps-the-remaining-piece",
+            "evidence:playwright.put-away-selection-records-inputs-and-actual-effects-across-the-empty-branch-and-return",
+            "evidence:playwright.saved-recordings-reopen-on-their-original-preset-and-clock-in-a-fresh-preview",
+            "evidence:playwright.sensitive-fields-stay-out-of-recordings-and-an-ambiguous-control-stops-replay-before-a-mutation"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.app.drying.empty",
+          "title": "Drying · empty queue",
+          "evidenceIds": [
+            "evidence:playwright.a-finished-replay-is-kept-as-civic-run-evidence-about-the-screen-the-run-started-from",
+            "evidence:playwright.drying-empty-has-a-real-return-path-to-laundry-and-replay-follows-it",
+            "evidence:playwright.home-outfit-editing-records-portalled-inputs-quantities-and-escape-then-replays-the-return",
+            "evidence:playwright.home-uses-the-shipped-wear-action-captures-its-real-arguments-and-replays-with-no-second-wear",
+            "evidence:playwright.no-ready-outfit-goes-to-laundry-a-failed-wear-stays-on-home-with-a-replayable-error-receipt",
+            "evidence:playwright.partial-put-away-captures-quantity-clear-all-branches-and-keeps-the-remaining-piece",
+            "evidence:playwright.put-away-selection-records-inputs-and-actual-effects-across-the-empty-branch-and-return",
+            "evidence:playwright.saved-recordings-reopen-on-their-original-preset-and-clock-in-a-fresh-preview",
+            "evidence:playwright.sensitive-fields-stay-out-of-recordings-and-an-ambiguous-control-stops-replay-before-a-mutation"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.app.drying.putaway-one",
+          "title": "Drying · one item to put away",
+          "evidenceIds": [
+            "evidence:playwright.a-finished-replay-is-kept-as-civic-run-evidence-about-the-screen-the-run-started-from",
+            "evidence:playwright.drying-empty-has-a-real-return-path-to-laundry-and-replay-follows-it",
+            "evidence:playwright.home-outfit-editing-records-portalled-inputs-quantities-and-escape-then-replays-the-return",
+            "evidence:playwright.home-uses-the-shipped-wear-action-captures-its-real-arguments-and-replays-with-no-second-wear",
+            "evidence:playwright.no-ready-outfit-goes-to-laundry-a-failed-wear-stays-on-home-with-a-replayable-error-receipt",
+            "evidence:playwright.partial-put-away-captures-quantity-clear-all-branches-and-keeps-the-remaining-piece",
+            "evidence:playwright.put-away-selection-records-inputs-and-actual-effects-across-the-empty-branch-and-return",
+            "evidence:playwright.saved-recordings-reopen-on-their-original-preset-and-clock-in-a-fresh-preview",
+            "evidence:playwright.sensitive-fields-stay-out-of-recordings-and-an-ambiguous-control-stops-replay-before-a-mutation"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.app.home",
+          "title": "Live home",
+          "evidenceIds": [
+            "evidence:playwright.a-finished-replay-is-kept-as-civic-run-evidence-about-the-screen-the-run-started-from",
+            "evidence:playwright.drying-empty-has-a-real-return-path-to-laundry-and-replay-follows-it",
+            "evidence:playwright.home-outfit-editing-records-portalled-inputs-quantities-and-escape-then-replays-the-return",
+            "evidence:playwright.home-uses-the-shipped-wear-action-captures-its-real-arguments-and-replays-with-no-second-wear",
+            "evidence:playwright.no-ready-outfit-goes-to-laundry-a-failed-wear-stays-on-home-with-a-replayable-error-receipt",
+            "evidence:playwright.partial-put-away-captures-quantity-clear-all-branches-and-keeps-the-remaining-piece",
+            "evidence:playwright.put-away-selection-records-inputs-and-actual-effects-across-the-empty-branch-and-return",
+            "evidence:playwright.saved-recordings-reopen-on-their-original-preset-and-clock-in-a-fresh-preview",
+            "evidence:playwright.sensitive-fields-stay-out-of-recordings-and-an-ambiguous-control-stops-replay-before-a-mutation"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.app.home.no-ready",
+          "title": "Home · no ready outfit",
+          "evidenceIds": [
+            "evidence:playwright.a-finished-replay-is-kept-as-civic-run-evidence-about-the-screen-the-run-started-from",
+            "evidence:playwright.drying-empty-has-a-real-return-path-to-laundry-and-replay-follows-it",
+            "evidence:playwright.home-outfit-editing-records-portalled-inputs-quantities-and-escape-then-replays-the-return",
+            "evidence:playwright.home-uses-the-shipped-wear-action-captures-its-real-arguments-and-replays-with-no-second-wear",
+            "evidence:playwright.no-ready-outfit-goes-to-laundry-a-failed-wear-stays-on-home-with-a-replayable-error-receipt",
+            "evidence:playwright.partial-put-away-captures-quantity-clear-all-branches-and-keeps-the-remaining-piece",
+            "evidence:playwright.put-away-selection-records-inputs-and-actual-effects-across-the-empty-branch-and-return",
+            "evidence:playwright.saved-recordings-reopen-on-their-original-preset-and-clock-in-a-fresh-preview",
+            "evidence:playwright.sensitive-fields-stay-out-of-recordings-and-an-ambiguous-control-stops-replay-before-a-mutation"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.app.household",
+          "title": "Live household",
+          "evidenceIds": [
+            "evidence:playwright.a-finished-replay-is-kept-as-civic-run-evidence-about-the-screen-the-run-started-from",
+            "evidence:playwright.drying-empty-has-a-real-return-path-to-laundry-and-replay-follows-it",
+            "evidence:playwright.home-outfit-editing-records-portalled-inputs-quantities-and-escape-then-replays-the-return",
+            "evidence:playwright.home-uses-the-shipped-wear-action-captures-its-real-arguments-and-replays-with-no-second-wear",
+            "evidence:playwright.no-ready-outfit-goes-to-laundry-a-failed-wear-stays-on-home-with-a-replayable-error-receipt",
+            "evidence:playwright.partial-put-away-captures-quantity-clear-all-branches-and-keeps-the-remaining-piece",
+            "evidence:playwright.put-away-selection-records-inputs-and-actual-effects-across-the-empty-branch-and-return",
+            "evidence:playwright.saved-recordings-reopen-on-their-original-preset-and-clock-in-a-fresh-preview",
+            "evidence:playwright.sensitive-fields-stay-out-of-recordings-and-an-ambiguous-control-stops-replay-before-a-mutation"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.app.join.code",
+          "title": "Live join code",
+          "evidenceIds": [
+            "evidence:playwright.a-finished-replay-is-kept-as-civic-run-evidence-about-the-screen-the-run-started-from",
+            "evidence:playwright.drying-empty-has-a-real-return-path-to-laundry-and-replay-follows-it",
+            "evidence:playwright.home-outfit-editing-records-portalled-inputs-quantities-and-escape-then-replays-the-return",
+            "evidence:playwright.home-uses-the-shipped-wear-action-captures-its-real-arguments-and-replays-with-no-second-wear",
+            "evidence:playwright.no-ready-outfit-goes-to-laundry-a-failed-wear-stays-on-home-with-a-replayable-error-receipt",
+            "evidence:playwright.partial-put-away-captures-quantity-clear-all-branches-and-keeps-the-remaining-piece",
+            "evidence:playwright.put-away-selection-records-inputs-and-actual-effects-across-the-empty-branch-and-return",
+            "evidence:playwright.saved-recordings-reopen-on-their-original-preset-and-clock-in-a-fresh-preview",
+            "evidence:playwright.sensitive-fields-stay-out-of-recordings-and-an-ambiguous-control-stops-replay-before-a-mutation"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.app.laundry",
+          "title": "Live laundry",
+          "evidenceIds": [
+            "evidence:playwright.a-finished-replay-is-kept-as-civic-run-evidence-about-the-screen-the-run-started-from",
+            "evidence:playwright.drying-empty-has-a-real-return-path-to-laundry-and-replay-follows-it",
+            "evidence:playwright.home-outfit-editing-records-portalled-inputs-quantities-and-escape-then-replays-the-return",
+            "evidence:playwright.home-uses-the-shipped-wear-action-captures-its-real-arguments-and-replays-with-no-second-wear",
+            "evidence:playwright.no-ready-outfit-goes-to-laundry-a-failed-wear-stays-on-home-with-a-replayable-error-receipt",
+            "evidence:playwright.partial-put-away-captures-quantity-clear-all-branches-and-keeps-the-remaining-piece",
+            "evidence:playwright.put-away-selection-records-inputs-and-actual-effects-across-the-empty-branch-and-return",
+            "evidence:playwright.saved-recordings-reopen-on-their-original-preset-and-clock-in-a-fresh-preview",
+            "evidence:playwright.sensitive-fields-stay-out-of-recordings-and-an-ambiguous-control-stops-replay-before-a-mutation"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.app.me",
+          "title": "Live me",
+          "evidenceIds": [
+            "evidence:playwright.a-finished-replay-is-kept-as-civic-run-evidence-about-the-screen-the-run-started-from",
+            "evidence:playwright.drying-empty-has-a-real-return-path-to-laundry-and-replay-follows-it",
+            "evidence:playwright.home-outfit-editing-records-portalled-inputs-quantities-and-escape-then-replays-the-return",
+            "evidence:playwright.home-uses-the-shipped-wear-action-captures-its-real-arguments-and-replays-with-no-second-wear",
+            "evidence:playwright.no-ready-outfit-goes-to-laundry-a-failed-wear-stays-on-home-with-a-replayable-error-receipt",
+            "evidence:playwright.partial-put-away-captures-quantity-clear-all-branches-and-keeps-the-remaining-piece",
+            "evidence:playwright.put-away-selection-records-inputs-and-actual-effects-across-the-empty-branch-and-return",
+            "evidence:playwright.saved-recordings-reopen-on-their-original-preset-and-clock-in-a-fresh-preview",
+            "evidence:playwright.sensitive-fields-stay-out-of-recordings-and-an-ambiguous-control-stops-replay-before-a-mutation"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.app.session.sessionid",
+          "title": "Live session sessionid",
+          "evidenceIds": [
+            "evidence:playwright.a-finished-replay-is-kept-as-civic-run-evidence-about-the-screen-the-run-started-from",
+            "evidence:playwright.drying-empty-has-a-real-return-path-to-laundry-and-replay-follows-it",
+            "evidence:playwright.home-outfit-editing-records-portalled-inputs-quantities-and-escape-then-replays-the-return",
+            "evidence:playwright.home-uses-the-shipped-wear-action-captures-its-real-arguments-and-replays-with-no-second-wear",
+            "evidence:playwright.no-ready-outfit-goes-to-laundry-a-failed-wear-stays-on-home-with-a-replayable-error-receipt",
+            "evidence:playwright.partial-put-away-captures-quantity-clear-all-branches-and-keeps-the-remaining-piece",
+            "evidence:playwright.put-away-selection-records-inputs-and-actual-effects-across-the-empty-branch-and-return",
+            "evidence:playwright.saved-recordings-reopen-on-their-original-preset-and-clock-in-a-fresh-preview",
+            "evidence:playwright.sensitive-fields-stay-out-of-recordings-and-an-ambiguous-control-stops-replay-before-a-mutation"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.app.settings",
+          "title": "Live settings",
+          "evidenceIds": [
+            "evidence:playwright.a-finished-replay-is-kept-as-civic-run-evidence-about-the-screen-the-run-started-from",
+            "evidence:playwright.drying-empty-has-a-real-return-path-to-laundry-and-replay-follows-it",
+            "evidence:playwright.home-outfit-editing-records-portalled-inputs-quantities-and-escape-then-replays-the-return",
+            "evidence:playwright.home-uses-the-shipped-wear-action-captures-its-real-arguments-and-replays-with-no-second-wear",
+            "evidence:playwright.no-ready-outfit-goes-to-laundry-a-failed-wear-stays-on-home-with-a-replayable-error-receipt",
+            "evidence:playwright.partial-put-away-captures-quantity-clear-all-branches-and-keeps-the-remaining-piece",
+            "evidence:playwright.put-away-selection-records-inputs-and-actual-effects-across-the-empty-branch-and-return",
+            "evidence:playwright.saved-recordings-reopen-on-their-original-preset-and-clock-in-a-fresh-preview",
+            "evidence:playwright.sensitive-fields-stay-out-of-recordings-and-an-ambiguous-control-stops-replay-before-a-mutation"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.app.setup",
+          "title": "Live setup",
+          "evidenceIds": [
+            "evidence:playwright.a-finished-replay-is-kept-as-civic-run-evidence-about-the-screen-the-run-started-from",
+            "evidence:playwright.drying-empty-has-a-real-return-path-to-laundry-and-replay-follows-it",
+            "evidence:playwright.home-outfit-editing-records-portalled-inputs-quantities-and-escape-then-replays-the-return",
+            "evidence:playwright.home-uses-the-shipped-wear-action-captures-its-real-arguments-and-replays-with-no-second-wear",
+            "evidence:playwright.no-ready-outfit-goes-to-laundry-a-failed-wear-stays-on-home-with-a-replayable-error-receipt",
+            "evidence:playwright.partial-put-away-captures-quantity-clear-all-branches-and-keeps-the-remaining-piece",
+            "evidence:playwright.put-away-selection-records-inputs-and-actual-effects-across-the-empty-branch-and-return",
+            "evidence:playwright.saved-recordings-reopen-on-their-original-preset-and-clock-in-a-fresh-preview",
+            "evidence:playwright.sensitive-fields-stay-out-of-recordings-and-an-ambiguous-control-stops-replay-before-a-mutation"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        }
+      ]
+    },
+    {
+      "id": "story:laundry.journey.multicolor-pack",
+      "kind": "journey",
+      "title": "Multicolor pack",
+      "journeyId": "target:laundry.journey.multicolor-pack",
+      "steps": [
+        {
+          "targetId": "target:laundry.intake.pack.care",
+          "title": "Multicolor pack · care",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.intake.pack.color",
+          "title": "Multicolor pack · color",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.intake.pack.details",
+          "title": "Multicolor pack · details",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.feedback-pins-a-keyboard-target-retains-a-failed-send-captures-state-and-survives-reload",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record",
+            "evidence:playwright.pointer-pins-capture-an-element-and-a-region-unsent-feedback-survives-reload"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.intake.pack.dye",
+          "title": "Multicolor pack · dye",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.intake.pack.fabric",
+          "title": "Multicolor pack · fabric",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.intake.pack.final",
+          "title": "Multicolor pack · final",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.failure-retains-the-intake-draft-and-retries-it-a-scenario-change-has-a-restart-boundary",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record",
+            "evidence:playwright.review-opens-real-synthetic-sheets-without-a-household-connection",
+            "evidence:playwright.student-member-and-missing-care-presets-affect-a-desktop-preview-offline-retains-its-draft"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.intake.pack.origin",
+          "title": "Multicolor pack · origin",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.intake.pack.stain",
+          "title": "Multicolor pack · stain",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.intake.pack.type",
+          "title": "Multicolor pack · type",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.intake.pack.whose",
+          "title": "Multicolor pack · whose",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        }
+      ]
+    },
+    {
+      "id": "story:laundry.journey.nested-quick-edits",
+      "kind": "journey",
+      "title": "Nested quick edits",
+      "journeyId": "target:laundry.journey.nested-quick-edits",
+      "steps": [
+        {
+          "targetId": "target:laundry.records.item.care",
+          "title": "Item · nested care",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.records.item.tags",
+          "title": "Item · nested tags",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.nested-tags-guard-a-draft-dismiss-back-to-the-record-and-save-through-the-local-adapter",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        }
+      ]
+    },
+    {
+      "id": "story:laundry.journey.products",
+      "kind": "journey",
+      "title": "Products",
+      "journeyId": "target:laundry.journey.products",
+      "steps": [
+        {
+          "targetId": "target:laundry.intake.product",
+          "title": "Basic product intake",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.new-basic-appliance-and-product-connect-to-their-saved-records-and-editors",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.records.product",
+          "title": "Saved product",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.records.product.contents",
+          "title": "Product Contents editor",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record",
+            "evidence:playwright.the-direct-product-contents-editor-saves-through-the-real-form-and-local-adapter"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        }
+      ]
+    },
+    {
+      "id": "story:laundry.journey.saved-records",
+      "kind": "journey",
+      "title": "Saved records",
+      "journeyId": "target:laundry.journey.saved-records",
+      "steps": [
+        {
+          "targetId": "target:laundry.records.pack",
+          "title": "Multicolor pack · saved item",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.records.pack.edit",
+          "title": "Multicolor pack · item editor",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.records.profile",
+          "title": "Saved clothing profile",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record",
+            "evidence:playwright.saved-profile-and-water-editors-persist-local-changes"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.records.towel",
+          "title": "Cotton/polyester towel · saved item",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.records.towel.edit",
+          "title": "Cotton/polyester towel · item editor",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.records.water",
+          "title": "Saved water result",
+          "evidenceIds": [
+            "evidence:playwright.every-initial-named-scenario-renders-a-real-task-drawer",
+            "evidence:playwright.pack-intake-keeps-answers-through-back-saves-and-connects-to-the-item-record",
+            "evidence:playwright.saved-profile-and-water-editors-persist-local-changes"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        }
+      ]
+    },
+    {
+      "id": "story:laundry.journey.washing-recovery",
+      "kind": "journey",
+      "title": "Washing & recovery",
+      "journeyId": "target:laundry.journey.washing-recovery",
+      "steps": [
+        {
+          "targetId": "target:laundry.route.laundry.hamper-item",
+          "title": "Hamper item · from Closet",
+          "evidenceIds": [
+            "evidence:playwright.completed-wash-opens-the-actual-history-tab-and-restores-the-completed-wash-and-me-origin",
+            "evidence:playwright.first-use-add-clothes-opens-the-actual-chooser-and-cancel-restores-home",
+            "evidence:playwright.the-hamper-drawer-keeps-its-quantity-inputs-and-returns-to-the-originating-closet-item"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.route.laundry.session-closet",
+          "title": "Running wash · from Closet",
+          "evidenceIds": [
+            "evidence:playwright.completed-wash-opens-the-actual-history-tab-and-restores-the-completed-wash-and-me-origin",
+            "evidence:playwright.first-use-add-clothes-opens-the-actual-chooser-and-cancel-restores-home",
+            "evidence:playwright.the-hamper-drawer-keeps-its-quantity-inputs-and-returns-to-the-originating-closet-item"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        },
+        {
+          "targetId": "target:laundry.route.laundry.washed",
+          "title": "Washer finished · transfer ready",
+          "evidenceIds": [
+            "evidence:playwright.completed-wash-opens-the-actual-history-tab-and-restores-the-completed-wash-and-me-origin",
+            "evidence:playwright.failed-offline-and-read-only-transfers-stay-on-the-washed-screen-a-failed-transfer-can-retry",
+            "evidence:playwright.first-use-add-clothes-opens-the-actual-chooser-and-cancel-restores-home",
+            "evidence:playwright.the-hamper-drawer-keeps-its-quantity-inputs-and-returns-to-the-originating-closet-item",
+            "evidence:playwright.washer-transfer-succeeds-locally-and-back-retains-the-queued-pieces-in-laundry"
+          ],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": false
+        }
+      ]
+    }
+  ]
+}
