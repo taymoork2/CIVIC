@@ -12,7 +12,8 @@
 // Then run `node projects/laundry/build.ts` to rebuild out/.
 
 import { execFileSync, spawnSync } from 'node:child_process'
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { createHash } from 'node:crypto'
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 import { parseArgs } from 'node:util'
@@ -61,9 +62,25 @@ const replays = await fetch(`${base}/api/review/replays`, { headers: { cookie } 
 if (!replays.ok) throw new Error(`The review server answered ${replays.status} for replays: ${await replays.text()}`)
 // Replays others shared through civic sync count too; the same replay kept on both sides counts once.
 // Each checkout's project key is the manifest ID and a hash of where it is, so match the ID.
-const shared = Store.forCommonDir(resolve(checkout, git('rev-parse', '--git-common-dir'))).replays().filter((replay) => replay.project.startsWith(`${index.project.id}-`))
+const store = Store.forCommonDir(resolve(checkout, git('rev-parse', '--git-common-dir')))
+const shared = store.replays().filter((replay) => replay.project.startsWith(`${index.project.id}-`))
 const atHead = [...new Map([...((await replays.json()) as StoredReplay[]), ...shared].filter((replay) => replay.head === index.revision.head).map((replay) => [JSON.stringify(replay), replay])).values()]
 writeFileSync(join(inputs, 'replays.json'), JSON.stringify(atHead.sort((a, b) => a.tape.localeCompare(b.tape) || a.replayedAt.localeCompare(b.replayedAt)), null, 2) + '\n')
+// Each replayed tape by its SHA-256, for the story portal's replay player (decision 0013): from the review
+// server when it serves tapes, else from the shared store. A tape neither has is left out, and its replay stays
+// evidence without a player.
+rmSync(join(inputs, 'tapes'), { recursive: true, force: true })
+for (const sha of new Set(atHead.map((replay) => replay.tape))) {
+  const served = await fetch(`${base}/api/review/replays/tapes/${sha}`, { headers: { cookie } })
+  const bytes = served.ok ? Buffer.from(await served.arrayBuffer()) : store.readTape(sha)
+  if (!bytes) {
+    console.warn(`No tape ${sha.slice(0, 12)} on the review server or in the shared store; its replay gets no player.`)
+    continue
+  }
+  if (createHash('sha256').update(bytes).digest('hex') !== sha) throw new Error(`Tape ${sha.slice(0, 12)} doesn't match its SHA-256.`)
+  mkdirSync(join(inputs, 'tapes'), { recursive: true })
+  writeFileSync(join(inputs, 'tapes', `${sha}.json`), bytes)
+}
 
 // The coverage contract at the same commit: what Laundry declares must be shown and proven.
 writeFileSync(join(inputs, 'coverage.json'), readFileSync(join(checkout, COVERAGE), 'utf8'))

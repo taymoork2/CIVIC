@@ -8,8 +8,8 @@
 //   node build.ts           write out/
 //   node build.ts --check   fail if out/ is not what the inputs produce
 
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { assertValid, indexGraph, methodCheck, objectMapOf, readMethodProfile, renderMethod, renderObjectMap, renderPortal, storiesIn, type CollaborationRecord, type DecisionFile, type Evidence, type Owner } from '../../graph/src/index.ts'
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { assertValid, indexGraph, methodCheck, objectMapOf, readMethodProfile, readTape, renderMethod, renderObjectMap, renderPortal, storiesIn, type CollaborationRecord, type DecisionFile, type Evidence, type Owner } from '../../graph/src/index.ts'
 import { applyDecisions, assemble, compareCssTokens, contentHash, findWebComponents, fragment, readComponentFamilies, readCoverageContract, readCssTokens, readJourneyIndex, readOrcaGrid, readPlaywrightReport, readRenderReceipt, readReplays, tieObjects, type CoverageContract, type JourneyIndex, type ObjectTiesFile, type RenderReceipt, type ReplayRecord } from '../../importers/src/index.ts'
 
 const here = (path: string) => new URL(path, import.meta.url)
@@ -277,7 +277,12 @@ ${renderObjectMap(objectMap)}
 // Journey stories (decision 0013): one per journey, pointing at this graph's records, and a
 // read-only portal of them whose steps play live in Laundry's review server when it runs.
 const stories = storiesIn(indexGraph(graph), 'projects/laundry/out/graph.json', { designs: [{ file: 'projects/laundry/out/design.json', design }] })
-const portal = renderPortal(indexGraph(graph), stories, { title: 'Laundry: journey stories', canvas: 'http://127.0.0.1:3010' })
+// Replayed tapes the capture kept (inputs/tapes/<sha>.json) get a replay player.
+const tapes = new Map(existsSync(here('inputs/tapes')) ? readdirSync(here('inputs/tapes')).flatMap((name) => {
+  const sha = /^([0-9a-f]{64})\.json$/.exec(name)?.[1]
+  return sha ? [[sha, readTape(json(`inputs/tapes/${name}`))] as const] : []
+}) : [])
+const portal = renderPortal(indexGraph(graph), stories, { title: 'Laundry: journey stories', canvas: 'http://127.0.0.1:3010', tapes })
 
 // Decision 0014: a stand-in Atomic Design declaration for the component families.
 const atomic = methodCheck(indexGraph(graph), readMethodProfile(here('method.json')))
