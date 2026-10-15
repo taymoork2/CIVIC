@@ -212,7 +212,9 @@ nav { display: flex; gap: 8px; align-items: center; margin-bottom: 12px; flex-wr
 const walk = JSON.parse(document.getElementById('walk').textContent)
 const byId = new Map(walk.frames.map((frame) => [frame.id, frame]))
 const titleOf = (id) => (byId.get(id) || { title: id }).title
-let trail = walk.start.slice(0, 1)
+// A story step opens the walk at its own frame with #frame=<id>; otherwise it starts at the start.
+const opened = decodeURIComponent((location.hash.match(/^#frame=(.+)$/) || [])[1] || '')
+let trail = byId.has(opened) ? [opened] : walk.start.slice(0, 1)
 const el = (tag, text, cls) => { const node = document.createElement(tag); if (text) node.textContent = text; if (cls) node.className = cls; return node }
 function show() {
   const frame = byId.get(trail[trail.length - 1])

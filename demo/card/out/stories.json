@@ -1,0 +1,38 @@
+{
+  "schema": "civic.stories/0",
+  "graph": "demo/card/out/resolved.graph.json",
+  "stories": [
+    {
+      "id": "story:shop.checkout",
+      "kind": "journey",
+      "title": "Checkout",
+      "journeyId": "target:shop.checkout",
+      "steps": [
+        {
+          "targetId": "target:shop.order-summary",
+          "title": "Order Summary",
+          "evidenceIds": [],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": true
+        },
+        {
+          "targetId": "target:shop.promo-applied",
+          "title": "Promo applied",
+          "evidenceIds": [],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": true
+        },
+        {
+          "targetId": "target:shop.gift-options",
+          "title": "Gift options",
+          "evidenceIds": [],
+          "recordIds": [],
+          "designFrames": [],
+          "walk": true
+        }
+      ]
+    }
+  ]
+}

@@ -190,6 +190,23 @@ bin/civic walk demo/card/out/resolved.graph.json target:shop.checkout --path "Ap
 bin/civic walk demo/card/out/resolved.graph.json target:shop.checkout --html walk.html          # a page that plays it, opened from disk
 ```
 
+## Journey stories: `civic stories` and `civic portal`
+
+Journey stories ([decision 0013](../docs/decisions/0013-journey-stories-replace-storybook.md), [`src/story.ts`](src/story.ts)) are the first slice of CIVIC replacing Storybook stories. Each journey that contains a screen gets one story, in a `civic.stories/0` file. A story only points: at its journey, its screens in the order a person meets them (along paths from the journey's entry, then the rest), and for each screen the evidence about it, its open collaboration records, the design frames that name it and whether the frame walk can play from it. Nothing is recorded or copied for a story, so it is never older than the graph.
+
+`civic portal` ([`src/portal.ts`](src/portal.ts)) writes the stories as a read-only static site that opens from disk: an index with each story's passing, failing and unproven steps, and a page per story. Every step is a `<civic-story>` element ([`src/civic-story.js`](src/civic-story.js)), the story player any page can host. It renders in tiers and upgrades only when a person asks:
+
+- **Still.** The step drawn from the graph (evidence, paths, design intent and open records) as HTML in a declarative shadow root, so its styles stay scoped and it shows without scripts.
+- **Frame.** The step played in a sandboxed iframe: the frame walk opened at the step's frame where the design links the journey's frames, or, with `--canvas <url>`, the screen live in that running journey canvas's review frame (`review-frame.html?scenario=<id>`).
+
+The live island tier, component stories, replay players and the lens of design line, code line and environment come later. Laundry's and the Card demo's portals are built with their graphs: [`projects/laundry/out/portal`](../projects/laundry/out/portal/index.html) and [`demo/card/out/portal`](../demo/card/out/portal/index.html).
+
+```sh
+bin/civic stories projects/laundry/out/graph.json                         # the stories as text, or --json
+bin/civic portal demo/card/out/resolved.graph.json --out portal --title "Shop"
+bin/civic portal projects/laundry/out/graph.json --out portal --canvas http://127.0.0.1:3010 --design projects/laundry/out/design.json
+```
+
 ## Contract export
 
 Two read-only queries over a graph (D31). Both are deterministic and print Markdown, or JSON with `--json`.

@@ -8,8 +8,8 @@
 //   node build.ts           write out/
 //   node build.ts --check   fail if out/ is not what the inputs produce
 
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
-import { assertValid, indexGraph, type CollaborationRecord, type DecisionFile, type Evidence, type Owner } from '../../graph/src/index.ts'
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { assertValid, indexGraph, renderPortal, storiesIn, type CollaborationRecord, type DecisionFile, type Evidence, type Owner } from '../../graph/src/index.ts'
 import { applyDecisions, assemble, compareCssTokens, contentHash, findWebComponents, fragment, readComponentFamilies, readCoverageContract, readCssTokens, readJourneyIndex, readPlaywrightReport, readRenderReceipt, readReplays, type CoverageContract, type JourneyIndex, type RenderReceipt, type ReplayRecord } from '../../importers/src/index.ts'
 
 const here = (path: string) => new URL(path, import.meta.url)
@@ -246,6 +246,11 @@ ${web.missing.map((family) => `\`${family}\``).join(', ') || 'None.'}
 These may be built under another name or as plain markup, such as a CSS class. They are listed, not raised. Naming a component after its family, or recording which component builds it, lets CIVIC follow it.
 `
 
+// Journey stories (decision 0013): one per journey, pointing at this graph's records, and a
+// read-only portal of them whose steps play live in Laundry's review server when it runs.
+const stories = storiesIn(indexGraph(graph), 'projects/laundry/out/graph.json', { designs: [{ file: 'projects/laundry/out/design.json', design }] })
+const portal = renderPortal(indexGraph(graph), stories, { title: 'Laundry: journey stories', canvas: 'http://127.0.0.1:3010' })
+
 const outputs: Record<string, string> = {
   'out/graph.json': `${JSON.stringify(graph, null, 2)}\n`,
   'out/design.json': `${JSON.stringify(design, null, 2)}\n`,
@@ -254,6 +259,8 @@ const outputs: Record<string, string> = {
   'out/coverage.md': coverageReport,
   'out/tokens.md': tokenReport,
   'out/components.md': componentReport,
+  'out/stories.json': `${JSON.stringify(stories, null, 2)}\n`,
+  ...Object.fromEntries([...portal].map(([path, body]) => [`out/portal/${path}`, body])),
 }
 const summary = `${graph.records.length} records, ${graph.links.length} links, ${tests.length} test(s) and ${replayed.length} replayed run(s), ${failed.length} failing, ${tokenConflicts.length} token conflict(s), ${web.components.length} of ${families.length} component families found on web`
 if (process.argv.includes('--check')) {
@@ -271,6 +278,10 @@ if (process.argv.includes('--check')) {
     console.log(`projects/laundry/out is current: ${summary}.`)
   }
 } else {
-  for (const [path, body] of Object.entries(outputs)) writeFileSync(here(path), body)
+  rmSync(here('out/portal'), { recursive: true, force: true })
+  for (const [path, body] of Object.entries(outputs)) {
+    mkdirSync(new URL('.', here(path)), { recursive: true })
+    writeFileSync(here(path), body)
+  }
   console.log(`Wrote projects/laundry/out: ${summary}.`)
 }
