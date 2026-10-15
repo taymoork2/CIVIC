@@ -173,7 +173,7 @@ function ownersOf(record: GraphRecord | undefined): Owner[] {
 }
 
 /** The change as Markdown, for a pull request comment: what this change raised, and who is asked. */
-export function renderChange(change: ChangeReport, gate: Pick<CheckReport, 'passed' | 'blocking' | 'baselined'> & { graphs: number }): string {
+export function renderChange(change: ChangeReport, gate: Pick<CheckReport, 'passed' | 'blocking' | 'baselined'> & { graphs: number }, stories = ''): string {
   const count = (n: number, noun: string) => `${n} ${noun}${n === 1 ? '' : 's'}`
   const lines = [
     `## CIVIC: ${count(change.introduced.length, 'finding')} introduced, ${count(change.resolved.length, 'finding')} resolved since ${change.since}`,
@@ -211,6 +211,7 @@ export function renderChange(change: ChangeReport, gate: Pick<CheckReport, 'pass
     for (const item of change.resolved) lines.push(`- ${item.kind}: ${item.summary} (${item.graph})`)
     lines.push('')
   }
+  if (stories) lines.push(stories, '')
   lines.push('Run `bin/civic check --since <base>` to see this locally. CIVIC made no model calls.')
   return lines.join('\n')
 }

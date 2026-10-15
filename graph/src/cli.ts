@@ -46,6 +46,7 @@ import { objectMapOf, renderObjectMap } from './objects.ts'
 import { methodCheck, renderMethod, type ResolvedProfile } from './method.ts'
 import { renderPortal, type IslandOptions, type PortalOptions } from './portal.ts'
 import { parseLens, resolveLens } from './lens.ts'
+import { hasDifferences, renderStoryDifferences, storyDifferences } from './story-diff.ts'
 import { readTape, type RecordedTape } from './replay-player.ts'
 import {
   ALIGNMENT_FOR,
@@ -648,9 +649,11 @@ async function check(): Promise<number> {
   if (comment && !since) return usage('--comment needs --since, the base the pull request is compared with.')
   if (comment && !/^\d+$/.test(comment)) return usage('--comment takes a pull request number.')
   let change: ChangeReport | undefined
+  let baseDocs: { label: string; documents: (GraphDocument | undefined)[] } | undefined
   if (since) {
     const base = baseDocuments(root, since, config.graphs)
     if (base instanceof Error) return usage(base.message)
+    baseDocs = base
     change = changeBetween(
       base.label,
       config.graphs.map((file, index): GraphAtRevisions => {
@@ -672,8 +675,10 @@ async function check(): Promise<number> {
     console.log(`Wrote ${next.findings.length} finding(s) to ${relative(process.cwd(), baselinePath)}.`)
     return report.fresh.some((item) => item.kind === 'invalid-graph') ? 1 : 0
   }
-  const changeText = change ? renderChange(change, { ...report, graphs: checks.length }) : undefined
-  if (args.includes('--json')) console.log(JSON.stringify(change ? { ...report, change } : report, null, 2))
+  // Decision 0013, point 4: the change as differences in the stories each role reads.
+  const stories = change && baseDocs ? config.graphs.map((file, index) => storyDifferences(file, baseDocs.documents[index] ? indexGraph(baseDocs.documents[index]!) : undefined, indexGraph(documents[index]!))) : undefined
+  const changeText = change ? renderChange(change, { ...report, graphs: checks.length }, stories ? renderStoryDifferences(stories) : '') : undefined
+  if (args.includes('--json')) console.log(JSON.stringify(change ? { ...report, change: { ...change, stories: stories?.filter(hasDifferences) ?? [] } } : report, null, 2))
   else {
     console.log(changeText ? `${renderCheck(report)}\n\n${changeText}` : renderCheck(report))
     for (const note of uncompared(config, root, documents)) console.log(`\n${note}`)
