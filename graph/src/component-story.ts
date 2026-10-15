@@ -38,6 +38,8 @@ export interface ComponentStory {
   props?: Record<string, string | number | boolean | null>
   /** The Storybook stories this one stands for, when they were imported. */
   storybook?: StorybookRef[]
+  /** Recorded run steps that showed the component this way, by tape SHA-256 and step (from 1). */
+  runs?: { tape: string; step: number }[]
   /** The product code instances that show this variant and state on this platform. */
   instanceIds: string[]
 }
@@ -115,13 +117,65 @@ export function componentStoriesIn(graph: Graph, imported: readonly ComponentSto
       // Imported stories: pruned into a story that already shows them, else kept as their own.
       for (const item of imported.filter((candidate) => candidate.componentId === component.id)) {
         const same = own.find((story) => story.variant === item.variant && story.state === item.state && sameProps(story.props, item.props))
-        if (same) same.storybook = [...(same.storybook ?? []), ...(item.storybook ?? [])]
+        if (same) {
+          if (item.storybook) same.storybook = [...(same.storybook ?? []), ...item.storybook]
+          if (item.runs) same.runs = [...(same.runs ?? []), ...item.runs]
+        }
         else own.push(structuredClone(item))
       }
       stories.push(...own)
     }
   }
   return stories
+}
+
+/**
+ * Real usage harvested from recorded runs (decision 0013, point 1): each step of a tape names
+ * the components it showed, as the app marks them, with their variant, state and props. Each
+ * distinct way a platform component was shown becomes a usage story pointing at the run steps,
+ * to pass to `componentStoriesIn` with any imported stories. Components the graph doesn't
+ * have, and variants its implementation doesn't map, are left out.
+ */
+export function usageFromTapes(graph: Graph, tapes: ReadonlyMap<string, { steps: { components?: { component: string; variant?: string; state?: string; props?: Record<string, string> }[] }[] }>): ComponentStory[] {
+  const found = new Map<string, ComponentStory>()
+  for (const [sha, tape] of [...tapes].sort(([a], [b]) => a.localeCompare(b))) {
+    tape.steps.forEach((step, index) => {
+      for (const shown of step.components ?? []) {
+        const component = graph.get(shown.component)
+        if (component?.kind !== 'platform-component') continue
+        const semanticId = graph.linksFrom(component.id).find((link) => link.relation === 'implements')?.to
+        const semantic = semanticId ? graph.get(semanticId) : undefined
+        if (semantic?.kind !== 'semantic-component') continue
+        const variant = shown.variant ?? component.defaultVariant
+        const mapping = component.variants.find((item) => item.semanticVariant === variant)
+        if (!variant || !mapping || mapping.mapping === 'none' || !mapping.expression) continue
+        const state = shown.state && shown.state !== 'rest' ? shown.state : undefined
+        const props = Object.entries(shown.props ?? {}).sort(([a], [b]) => a.localeCompare(b))
+        const id = `story:component.${component.id.replace(/^platform:/, '')}.${variant}${state ? `.${state}` : ''}${props.map(([name, value]) => `.${`${name}-${value}`.toLowerCase().replace(/[^a-z0-9-]+/g, '-')}`).join('')}`
+        const story = found.get(id) ?? {
+          id,
+          kind: 'component' as const,
+          title: `${semantic.variants.find((item) => item.key === variant)?.title ?? variant}${state ? `, ${state}` : ''}${props.map(([name, value]) => `, ${name} ${value}`).join('')}`,
+          semanticId: semantic.id,
+          componentId: component.id,
+          platform: component.platform,
+          ...(component.framework ? { framework: component.framework } : {}),
+          variant,
+          expression: mapping.expression,
+          mapping: mapping.mapping,
+          ...(mapping.note ? { note: mapping.note } : {}),
+          ...(state ? { state } : {}),
+          from: 'usage' as const,
+          instanceIds: [],
+          ...(props.length > 0 ? { props: Object.fromEntries(props) } : {}),
+          runs: [],
+        }
+        if (!story.runs!.some((run) => run.tape === sha && run.step === index + 1)) story.runs!.push({ tape: sha, step: index + 1 })
+        found.set(id, story)
+      }
+    })
+  }
+  return [...found.values()]
 }
 
 function sameProps(a: ComponentStory['props'], b: ComponentStory['props']): boolean {

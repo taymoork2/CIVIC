@@ -46,6 +46,10 @@ An app with a runtime entry (`adapter.runtime`) runs live in an isolated worker 
 
 Either way the run's clock, random IDs and browser storage are pinned (`src/runtime-session.ts`).
 
+### Components a run shows
+
+An app that marks its components with their CIVIC IDs (D31) gets them on its recordings: `data-civic-component="platform:<id>"` on the element, with `data-civic-variant` and `data-civic-state` for the contract's variant and state and a `data-civic-prop-<name>` for each prop worth keeping. Each recorded step then lists the visible components it settled on (`components` in the tape), and CIVIC harvests a component's real usage from them (decision 0013). A replay compares them too, so a run whose button turns up disabled where it wasn't diverges there. A tape recorded before an app marked its components replays as before.
+
 ### Apps with sign-in
 
 Give each persona a synthetic review identity and say how the app signs in. Emails must be on a reserved domain (`@team.example`, `@example.com`, `.test`, `.invalid`); the manifest never holds a password.
