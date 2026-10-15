@@ -23,7 +23,7 @@ td.none { color: var(--fail); }
 td.closest { color: var(--muted); }
 .steps { list-style: none; padding: 0; display: grid; gap: 12px; }
 </style>
-
+<script defer src="../civic-story.js"></script>
 </head>
 <body>
 <main>
@@ -41,6 +41,212 @@ td.closest { color: var(--muted); }
 <tr><th scope="row">Outline <code>outline</code></th><td class="exact">exact<br><code>Outlined</code></td><td class="none">none<br><span class="muted">CardView has no style without a background.</span></td><td class="exact">exact<br><code>outline</code></td><td class="none">none<br><span class="muted">fluent-card has no outline style.</span></td></tr>
 </tbody>
 </table></div>
+<h2>Code stories</h2>
+<p class="muted">Generated, not written: one story per variant the implementation maps, the disabled state on its default variant, and each product use in code the variants don't already show.</p>
+<h3>android (compose): <code>BasicCard</code></h3>
+<p class="muted">Native harnesses wait on device runners, as the native crawl does, so these stay stills.</p>
+<ul class="steps">
+<li><civic-story story="story:component.fluent-android.basic-card.filled" step="platform:fluent-android.basic-card">
+<template shadowrootmode="open">
+<style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
+.still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
+header p { margin: 0; }
+h3 { font-size: 17px; margin: 2px 0; }
+h4 { font-size: 13px; margin: 12px 0 4px; color: var(--muted, #5f5f5a); font-weight: 600; }
+ul { margin: 0; padding-left: 18px; }
+p { margin: 0; }
+code { font-size: 12px; }
+.muted { color: var(--muted, #5f5f5a); font-size: 13px; }
+.outcome { display: inline-block; border-radius: 4px; padding: 0 6px; font-size: 12px; border: 1px solid currentColor; }
+.outcome.pass { color: var(--pass, #1d7a46); }
+.outcome.fail { color: var(--fail, #b3261e); }
+.outcome.finding, .outcome.none, .outcome.unknown { color: var(--muted, #5f5f5a); }</style>
+<article class="still">
+<h3>Filled</h3>
+<p><code>BasicCard</code> with <code>Elevated</code> <span class="muted">(closest)</span></p>
+<p class="muted">Elevated draws a shadow and no border.</p>
+<p class="muted">No product use in code shows this yet.</p>
+</article>
+</template>
+</civic-story></li>
+<li><civic-story story="story:component.fluent-android.basic-card.outline" step="platform:fluent-android.basic-card">
+<template shadowrootmode="open">
+<style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
+.still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
+header p { margin: 0; }
+h3 { font-size: 17px; margin: 2px 0; }
+h4 { font-size: 13px; margin: 12px 0 4px; color: var(--muted, #5f5f5a); font-weight: 600; }
+ul { margin: 0; padding-left: 18px; }
+p { margin: 0; }
+code { font-size: 12px; }
+.muted { color: var(--muted, #5f5f5a); font-size: 13px; }
+.outcome { display: inline-block; border-radius: 4px; padding: 0 6px; font-size: 12px; border: 1px solid currentColor; }
+.outcome.pass { color: var(--pass, #1d7a46); }
+.outcome.fail { color: var(--fail, #b3261e); }
+.outcome.finding, .outcome.none, .outcome.unknown { color: var(--muted, #5f5f5a); }</style>
+<article class="still">
+<h3>Outline</h3>
+<p><code>BasicCard</code> with <code>Outlined</code> <span class="muted">(exact)</span></p>
+
+<p class="muted">No product use in code shows this yet.</p>
+</article>
+</template>
+</civic-story></li>
+<li><civic-story story="story:component.fluent-android.basic-card.filled.disabled" step="platform:fluent-android.basic-card">
+<template shadowrootmode="open">
+<style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
+.still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
+header p { margin: 0; }
+h3 { font-size: 17px; margin: 2px 0; }
+h4 { font-size: 13px; margin: 12px 0 4px; color: var(--muted, #5f5f5a); font-weight: 600; }
+ul { margin: 0; padding-left: 18px; }
+p { margin: 0; }
+code { font-size: 12px; }
+.muted { color: var(--muted, #5f5f5a); font-size: 13px; }
+.outcome { display: inline-block; border-radius: 4px; padding: 0 6px; font-size: 12px; border: 1px solid currentColor; }
+.outcome.pass { color: var(--pass, #1d7a46); }
+.outcome.fail { color: var(--fail, #b3261e); }
+.outcome.finding, .outcome.none, .outcome.unknown { color: var(--muted, #5f5f5a); }</style>
+<article class="still">
+<h3>Filled, disabled</h3>
+<p><code>BasicCard</code> with <code>Elevated</code>, disabled <span class="muted">(closest)</span></p>
+<p class="muted">Elevated draws a shadow and no border.</p>
+<p class="muted">No product use in code shows this yet.</p>
+</article>
+</template>
+</civic-story></li>
+</ul>
+<h3>ios (uikit): <code>CardView</code></h3>
+<p class="muted">Native harnesses wait on device runners, as the native crawl does, so these stay stills.</p>
+<ul class="steps">
+<li><civic-story story="story:component.fluent-apple.card-view.filled" step="platform:fluent-apple.card-view">
+<template shadowrootmode="open">
+<style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
+.still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
+header p { margin: 0; }
+h3 { font-size: 17px; margin: 2px 0; }
+h4 { font-size: 13px; margin: 12px 0 4px; color: var(--muted, #5f5f5a); font-weight: 600; }
+ul { margin: 0; padding-left: 18px; }
+p { margin: 0; }
+code { font-size: 12px; }
+.muted { color: var(--muted, #5f5f5a); font-size: 13px; }
+.outcome { display: inline-block; border-radius: 4px; padding: 0 6px; font-size: 12px; border: 1px solid currentColor; }
+.outcome.pass { color: var(--pass, #1d7a46); }
+.outcome.fail { color: var(--fail, #b3261e); }
+.outcome.finding, .outcome.none, .outcome.unknown { color: var(--muted, #5f5f5a); }</style>
+<article class="still">
+<h3>Filled</h3>
+<p><code>CardView</code> with <code>neutral</code> <span class="muted">(closest)</span></p>
+<p class="muted">CardView always draws a border as well as a background.</p>
+<p class="muted">No product use in code shows this yet.</p>
+</article>
+</template>
+</civic-story></li>
+<li><civic-story story="story:component.fluent-apple.card-view.filled.disabled" step="platform:fluent-apple.card-view">
+<template shadowrootmode="open">
+<style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
+.still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
+header p { margin: 0; }
+h3 { font-size: 17px; margin: 2px 0; }
+h4 { font-size: 13px; margin: 12px 0 4px; color: var(--muted, #5f5f5a); font-weight: 600; }
+ul { margin: 0; padding-left: 18px; }
+p { margin: 0; }
+code { font-size: 12px; }
+.muted { color: var(--muted, #5f5f5a); font-size: 13px; }
+.outcome { display: inline-block; border-radius: 4px; padding: 0 6px; font-size: 12px; border: 1px solid currentColor; }
+.outcome.pass { color: var(--pass, #1d7a46); }
+.outcome.fail { color: var(--fail, #b3261e); }
+.outcome.finding, .outcome.none, .outcome.unknown { color: var(--muted, #5f5f5a); }</style>
+<article class="still">
+<h3>Filled, disabled</h3>
+<p><code>CardView</code> with <code>neutral</code>, disabled <span class="muted">(closest)</span></p>
+<p class="muted">CardView always draws a border as well as a background.</p>
+<p class="muted">No product use in code shows this yet.</p>
+</article>
+</template>
+</civic-story></li>
+</ul>
+<h3>web (react): <code>Card</code></h3>
+<p class="muted">No harness was given for this implementation, so its stories stay stills.</p>
+<ul class="steps">
+<li><civic-story story="story:component.fluent-react-v9.card.filled" step="platform:fluent-react-v9.card">
+<template shadowrootmode="open">
+<style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
+.still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
+header p { margin: 0; }
+h3 { font-size: 17px; margin: 2px 0; }
+h4 { font-size: 13px; margin: 12px 0 4px; color: var(--muted, #5f5f5a); font-weight: 600; }
+ul { margin: 0; padding-left: 18px; }
+p { margin: 0; }
+code { font-size: 12px; }
+.muted { color: var(--muted, #5f5f5a); font-size: 13px; }
+.outcome { display: inline-block; border-radius: 4px; padding: 0 6px; font-size: 12px; border: 1px solid currentColor; }
+.outcome.pass { color: var(--pass, #1d7a46); }
+.outcome.fail { color: var(--fail, #b3261e); }
+.outcome.finding, .outcome.none, .outcome.unknown { color: var(--muted, #5f5f5a); }</style>
+<article class="still">
+<h3>Filled</h3>
+<p><code>Card</code> with <code>filled</code> <span class="muted">(exact)</span></p>
+
+<p class="muted">3 product uses in code show this.</p>
+</article>
+</template>
+</civic-story></li>
+<li><civic-story story="story:component.fluent-react-v9.card.outline" step="platform:fluent-react-v9.card">
+<template shadowrootmode="open">
+<style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
+.still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
+header p { margin: 0; }
+h3 { font-size: 17px; margin: 2px 0; }
+h4 { font-size: 13px; margin: 12px 0 4px; color: var(--muted, #5f5f5a); font-weight: 600; }
+ul { margin: 0; padding-left: 18px; }
+p { margin: 0; }
+code { font-size: 12px; }
+.muted { color: var(--muted, #5f5f5a); font-size: 13px; }
+.outcome { display: inline-block; border-radius: 4px; padding: 0 6px; font-size: 12px; border: 1px solid currentColor; }
+.outcome.pass { color: var(--pass, #1d7a46); }
+.outcome.fail { color: var(--fail, #b3261e); }
+.outcome.finding, .outcome.none, .outcome.unknown { color: var(--muted, #5f5f5a); }</style>
+<article class="still">
+<h3>Outline</h3>
+<p><code>Card</code> with <code>outline</code> <span class="muted">(exact)</span></p>
+
+<p class="muted">No product use in code shows this yet.</p>
+</article>
+</template>
+</civic-story></li>
+<li><civic-story story="story:component.fluent-react-v9.card.filled.disabled" step="platform:fluent-react-v9.card">
+<template shadowrootmode="open">
+<style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
+.still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
+header p { margin: 0; }
+h3 { font-size: 17px; margin: 2px 0; }
+h4 { font-size: 13px; margin: 12px 0 4px; color: var(--muted, #5f5f5a); font-weight: 600; }
+ul { margin: 0; padding-left: 18px; }
+p { margin: 0; }
+code { font-size: 12px; }
+.muted { color: var(--muted, #5f5f5a); font-size: 13px; }
+.outcome { display: inline-block; border-radius: 4px; padding: 0 6px; font-size: 12px; border: 1px solid currentColor; }
+.outcome.pass { color: var(--pass, #1d7a46); }
+.outcome.fail { color: var(--fail, #b3261e); }
+.outcome.finding, .outcome.none, .outcome.unknown { color: var(--muted, #5f5f5a); }</style>
+<article class="still">
+<h3>Filled, disabled</h3>
+<p><code>Card</code> with <code>filled</code>, disabled <span class="muted">(exact)</span></p>
+
+<p class="muted">No product use in code shows this yet.</p>
+</article>
+</template>
+</civic-story></li>
+</ul>
 <h2>Design library</h2>
 <ul><li><code>fluent-2-web</code>, published key <code>0d1e1017597a223f89c25613fae3225cb1f34e41</code></li><li><code>@fluentui/react-card</code>, published key <code>Card</code></li></ul>
 <h2>Uses</h2>

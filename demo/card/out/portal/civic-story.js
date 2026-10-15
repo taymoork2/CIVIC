@@ -9,6 +9,8 @@
 //   Each island imports its own module, so frameworks don't share a runtime with each other.
 //   The context is a story's: the scenario, persona, role and condition, with no recording and
 //   no backend; state and transitions the screen reports become `civic-story-state` events.
+//   A component story's island is a component harness: its context also carries `component`,
+//   the platform component and the props the story shows (variant expression and state).
 // - a frame: an isolated, sandboxed iframe, for a whole journey, a live runtime, a recorded
 //   run or anything whose versions or global styles would clash on the host page.
 //
@@ -158,6 +160,7 @@ class CivicStory extends HTMLElement {
     // A story's context: the screen's scenario and presets, no recording and no backend.
     const context = {
       story: true,
+      ...(option.component ? { component: structuredClone(option.component) } : {}),
       config: { scenario: option.scenario?.id, persona: option.persona?.id, role: option.role?.id, condition: option.condition?.id, theme: option.theme || 'light', textScale: 1, width: holder.clientWidth },
       scenario: option.scenario || {},
       persona: structuredClone(option.persona || {}),

@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { placesOn } from './completeness.ts'
 import { componentFacts, type ComponentFacts } from './component-page.ts'
+import { componentStoriesIn, type ComponentStory } from './component-story.ts'
 import { forecastLabel } from './forecast.ts'
 import type { Graph } from './graph.ts'
 import { RUN_METHODS, type Evidence } from './schema.ts'
@@ -35,6 +36,18 @@ export interface PortalOptions {
    * presets are the project manifest's first persona, role and condition unless named.
    */
   island?: IslandOptions
+  /**
+   * Component harnesses (decision 0013, point 1) by platform component ID: a module, by URL
+   * relative to a component page, whose `mount(container, context)` renders that component
+   * with the props of `context.component`. Its code stories then run in the page as islands.
+   */
+  harnesses?: Readonly<Record<string, HarnessOptions>>
+}
+
+export interface HarnessOptions {
+  module: string
+  /** Stylesheets the component needs, linked inside each island's shadow root. */
+  styles?: string[]
 }
 
 export const STORY_ELEMENT = readFileSync(new URL('./civic-story.js', import.meta.url), 'utf8')
@@ -45,7 +58,11 @@ export function renderPortal(graph: Graph, stories: StoriesFile, options: Portal
   pages.set('civic-story.js', STORY_ELEMENT)
   pages.set('index.html', indexPage(graph, stories, options))
   // Component pages (decision 0013, point 2): each semantic component joined to its implementations, uses and journey steps.
-  for (const semantic of graph.ofKind('semantic-component')) pages.set(`components/${componentSlug(semantic.id)}.html`, componentPage(componentFacts(graph, semantic.id, stories), stories))
+  const codeStories = componentStoriesIn(graph)
+  for (const semantic of graph.ofKind('semantic-component')) {
+    const own = codeStories.filter((story) => story.semanticId === semantic.id)
+    pages.set(`components/${componentSlug(semantic.id)}.html`, componentPage(componentFacts(graph, semantic.id, stories), stories, own, options))
+  }
   for (const story of stories.stories) {
     const walk = story.steps.some((step) => step.walk) ? frameWalk(graph, story.journeyId) : undefined
     if (walk) pages.set(`walks/${slug(story.id)}.html`, renderWalkPage(walk))
@@ -297,7 +314,7 @@ ${rows.join('\n')}
 </table></div>`
 }
 
-function componentPage(facts: ComponentFacts, stories: StoriesFile): string {
+function componentPage(facts: ComponentFacts, stories: StoriesFile, codeStories: ComponentStory[], options: PortalOptions): string {
   const { semantic } = facts
   const list = (items: string[], empty: string) => (items.length > 0 ? `<ul>${items.join('')}</ul>` : `<p class="muted">${empty}</p>`)
   const variantRows = semantic.variants.map((variant) => `<tr><th scope="row">${escapeHtml(variant.title)} <code>${escapeHtml(variant.key)}</code></th>${facts.implementations.map((component) => {
@@ -316,7 +333,7 @@ ${facts.implementations.length > 0 && semantic.variants.length > 0 ? `<h2>Varian
 <tbody>
 ${variantRows.join('\n')}
 </tbody>
-</table></div>` : ''}
+</table></div>` : ''}${codeStoriesSection(facts, codeStories, options)}
 <h2>Design library</h2>
 ${list(facts.libraries.map((library) => `<li><code>${escapeHtml(library.file)}</code>, published key <code>${escapeHtml(library.key)}</code></li>`), 'No instance names the library file it comes from.')}
 <h2>Uses</h2>
@@ -325,7 +342,56 @@ ${list(facts.uses.map((use) => `<li>${escapeHtml(use.title)} <span class="muted"
 ${list(facts.steps.map((step) => `<li><a href="../stories/${slug(step.storyId)}.html#step-${step.index + 1}">${escapeHtml(step.storyTitle)}, step ${step.index + 1}: ${escapeHtml(step.title)}</a></li>`), 'No journey step shows a screen that uses it.')}
 <h2>Conflicts</h2>
 ${list(facts.conflicts.map((conflict) => `<li>${escapeHtml(conflict.title)} <span class="muted">${escapeHtml([conflict.platform, conflict.status === 'open' ? 'open' : `decided: ${conflict.outcome ?? ''}`, conflict.alignment].filter(Boolean).join(', '))}</span></li>`), 'None.')}`
-  return page(semantic.title, body, '')
+  return page(semantic.title, body, codeStories.length > 0 ? '<script defer src="../civic-story.js"></script>' : '')
+}
+
+/** Code stories per implementation: a still of the props, and an island where a harness mounts the component. */
+function codeStoriesSection(facts: ComponentFacts, codeStories: ComponentStory[], options: PortalOptions): string {
+  if (codeStories.length === 0) return ''
+  const section = (groups: string[]) => `\n<h2>Code stories</h2>
+<p class="muted">Generated, not written: one story per variant the implementation maps, the disabled state on its default variant, and each product use in code the variants don't already show.${options.harnesses && Object.keys(options.harnesses).length > 0 ? ' A story with a harness renders the real component on request; islands need the portal served over HTTP.' : ''}</p>
+${groups.join('\n')}`
+  const groups = facts.implementations.flatMap((component) => {
+    const own = codeStories.filter((story) => story.componentId === component.id)
+    if (own.length === 0) return []
+    const harness = options.harnesses?.[component.id]
+    const name = `${component.platform}${component.framework ? ` (${component.framework})` : ''}`
+    const items = own.map((story) => {
+      const island = harness
+        ? {
+            module: harness.module,
+            ...(harness.styles && harness.styles.length > 0 ? { styles: harness.styles } : {}),
+            label: 'Render it here',
+            note: `Mounts ${component.symbol} from ${component.package} in this page with these props, through the component's harness.`,
+            component: { id: component.id, symbol: component.symbol, platform: component.platform, ...(component.framework ? { framework: component.framework } : {}), variant: story.variant, expression: story.expression, ...(story.state ? { state: story.state } : {}) },
+          }
+        : undefined
+      const attributes = [`story="${escapeHtml(story.id)}"`, `step="${escapeHtml(story.componentId)}"`, ...(island ? [`island="${escapeHtml(JSON.stringify(island))}"`] : [])]
+      const used = story.instanceIds.length
+      return `<li><civic-story ${attributes.join(' ')}>
+<template shadowrootmode="open">
+<style>${STILL_STYLE}</style>
+<article class="still">
+<h3>${escapeHtml(story.title)}</h3>
+<p><code>${escapeHtml(component.symbol)}</code> with <code>${escapeHtml(story.expression)}</code>${story.state ? `, ${escapeHtml(story.state)}` : ''} <span class="muted">(${escapeHtml(story.mapping)}${story.from === 'usage' ? ', from a product use' : ''})</span></p>
+${story.note ? `<p class="muted">${escapeHtml(story.note)}</p>` : ''}
+<p class="muted">${used > 0 ? `${used} product use${used === 1 ? '' : 's'} in code show${used === 1 ? 's' : ''} this.` : 'No product use in code shows this yet.'}</p>
+</article>
+</template>
+</civic-story></li>`
+    })
+    const why = harness
+      ? ''
+      : component.platform === 'web'
+        ? '<p class="muted">No harness was given for this implementation, so its stories stay stills.</p>'
+        : '<p class="muted">Native harnesses wait on device runners, as the native crawl does, so these stay stills.</p>'
+    return [`<h3>${escapeHtml(name)}: <code>${escapeHtml(component.symbol)}</code></h3>
+${why}
+<ul class="steps">
+${items.join('\n')}
+</ul>`]
+  })
+  return section(groups)
 }
 
 function componentSlug(id: string): string {

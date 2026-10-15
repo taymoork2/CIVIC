@@ -1,0 +1,480 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Button</title>
+<style>
+:root { --bg: #f7f7f5; --panel: #ffffff; --text: #1d1d1b; --muted: #5f5f5a; --line: #d9d9d4; --accent: #2b5fd9; --pass: #1d7a46; --fail: #b3261e; }
+@media (prefers-color-scheme: dark) { :root { --bg: #161615; --panel: #20201f; --text: #ededea; --muted: #a5a59f; --line: #3a3a37; --accent: #8fb0ff; --pass: #6fd49a; --fail: #ff8a80; } }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 15px/1.5 system-ui, sans-serif; }
+main { max-width: 860px; margin: 0 auto; padding: 24px 16px 48px; }
+h1 { font-size: 22px; margin: 0 0 6px; }
+h2 { font-size: 17px; margin: 24px 0 6px; }
+a { color: var(--accent); }
+.muted, .crumbs { color: var(--muted); font-size: 13px; }
+.tag { font-size: 12px; color: var(--muted); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; white-space: nowrap; }
+.table { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
+td { font-variant-numeric: tabular-nums; }
+td.none { color: var(--fail); }
+td.closest { color: var(--muted); }
+.steps { list-style: none; padding: 0; display: grid; gap: 12px; }
+</style>
+<script defer src="../civic-story.js"></script>
+</head>
+<body>
+<main>
+<p class="crumbs"><a href="../index.html">All stories and components</a></p>
+<h1>Button</h1>
+<p>Trigger an action, with the emphasis set by its variant.</p>
+<p class="muted"><code>semantic:button</code>. States: rest, hover, pressed, focused, disabled. Slots: icon, label. Read from <code>demo/fluent-button/out/resolved.graph.json</code>.</p>
+<h2>Implementations</h2>
+<ul><li><strong>android</strong>: <code>Button</code> from <code>microsoft/fluentui-android@207ae6843eda</code></li><li><strong>ios</strong>: <code>Button</code> from <code>microsoft/fluentui-apple@920ee25179c4</code><br><span class="muted">Also offers dangerOutline, dangerSubtle, floatingAccent, floatingSubtle, which no contract variant covers.</span></li><li><strong>web</strong>: <code>Button</code> from <code>@fluentui/react-button@9.11.1</code></li></ul>
+<h2>Variants by platform</h2>
+<div class="table"><table>
+<thead><tr><th scope="col">Variant</th><th scope="col">android</th><th scope="col">ios</th><th scope="col">web</th></tr></thead>
+<tbody>
+<tr><th scope="row">Primary filled <code>primary-filled</code></th><td class="exact">exact<br><code>Button</code></td><td class="exact">exact<br><code>accent</code></td><td class="exact">exact<br><code>primary</code></td></tr>
+<tr><th scope="row">Brand outline <code>brand-outline</code></th><td class="exact">exact<br><code>OutlinedButton</code></td><td class="exact">exact<br><code>outlineAccent</code></td><td class="closest">closest<br><code>outline</code><br><span class="muted">Fluent web's outline is neutral-coloured, not brand-coloured.</span></td></tr>
+<tr><th scope="row">Neutral default <code>neutral-default</code></th><td class="none">none<br><span class="muted">No stock ButtonStyle.</span></td><td class="exact">exact<br><code>outlineNeutral</code></td><td class="exact">exact<br><code>secondary</code></td></tr>
+<tr><th scope="row">Subtle or text <code>subtle</code></th><td class="exact">exact<br><code>TextButton</code></td><td class="exact">exact<br><code>subtle</code></td><td class="exact">exact<br><code>subtle</code></td></tr>
+<tr><th scope="row">Transparent neutral <code>transparent-neutral</code></th><td class="none">none<br><span class="muted">No stock ButtonStyle.</span></td><td class="exact">exact<br><code>transparentNeutral</code></td><td class="exact">exact<br><code>transparent</code></td></tr>
+<tr><th scope="row">Danger <code>danger</code></th><td class="none">none<br><span class="muted">Only through custom ButtonTokens.</span></td><td class="exact">exact<br><code>danger</code><br><span class="muted">dangerOutline and dangerSubtle have no semantic variant yet.</span></td><td class="none">none<br><span class="muted">No base appearance.</span></td></tr>
+</tbody>
+</table></div>
+<h2>Code stories</h2>
+<p class="muted">Generated, not written: one story per variant the implementation maps, the disabled state on its default variant, and each product use in code the variants don't already show. A story with a harness renders the real component on request; islands need the portal served over HTTP.</p>
+<h3>android: <code>Button</code></h3>
+<p class="muted">Native harnesses wait on device runners, as the native crawl does, so these stay stills.</p>
+<ul class="steps">
+<li><civic-story story="story:component.fluent-android.compose-button.primary-filled" step="platform:fluent-android.compose-button">
+<template shadowrootmode="open">
+<style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
+.still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
+header p { margin: 0; }
+h3 { font-size: 17px; margin: 2px 0; }
+h4 { font-size: 13px; margin: 12px 0 4px; color: var(--muted, #5f5f5a); font-weight: 600; }
+ul { margin: 0; padding-left: 18px; }
+p { margin: 0; }
+code { font-size: 12px; }
+.muted { color: var(--muted, #5f5f5a); font-size: 13px; }
+.outcome { display: inline-block; border-radius: 4px; padding: 0 6px; font-size: 12px; border: 1px solid currentColor; }
+.outcome.pass { color: var(--pass, #1d7a46); }
+.outcome.fail { color: var(--fail, #b3261e); }
+.outcome.finding, .outcome.none, .outcome.unknown { color: var(--muted, #5f5f5a); }</style>
+<article class="still">
+<h3>Primary filled</h3>
+<p><code>Button</code> with <code>Button</code> <span class="muted">(exact)</span></p>
+
+<p class="muted">No product use in code shows this yet.</p>
+</article>
+</template>
+</civic-story></li>
+<li><civic-story story="story:component.fluent-android.compose-button.brand-outline" step="platform:fluent-android.compose-button">
+<template shadowrootmode="open">
+<style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
+.still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
+header p { margin: 0; }
+h3 { font-size: 17px; margin: 2px 0; }
+h4 { font-size: 13px; margin: 12px 0 4px; color: var(--muted, #5f5f5a); font-weight: 600; }
+ul { margin: 0; padding-left: 18px; }
+p { margin: 0; }
+code { font-size: 12px; }
+.muted { color: var(--muted, #5f5f5a); font-size: 13px; }
+.outcome { display: inline-block; border-radius: 4px; padding: 0 6px; font-size: 12px; border: 1px solid currentColor; }
+.outcome.pass { color: var(--pass, #1d7a46); }
+.outcome.fail { color: var(--fail, #b3261e); }
+.outcome.finding, .outcome.none, .outcome.unknown { color: var(--muted, #5f5f5a); }</style>
+<article class="still">
+<h3>Brand outline</h3>
+<p><code>Button</code> with <code>OutlinedButton</code> <span class="muted">(exact)</span></p>
+
+<p class="muted">No product use in code shows this yet.</p>
+</article>
+</template>
+</civic-story></li>
+<li><civic-story story="story:component.fluent-android.compose-button.subtle" step="platform:fluent-android.compose-button">
+<template shadowrootmode="open">
+<style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
+.still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
+header p { margin: 0; }
+h3 { font-size: 17px; margin: 2px 0; }
+h4 { font-size: 13px; margin: 12px 0 4px; color: var(--muted, #5f5f5a); font-weight: 600; }
+ul { margin: 0; padding-left: 18px; }
+p { margin: 0; }
+code { font-size: 12px; }
+.muted { color: var(--muted, #5f5f5a); font-size: 13px; }
+.outcome { display: inline-block; border-radius: 4px; padding: 0 6px; font-size: 12px; border: 1px solid currentColor; }
+.outcome.pass { color: var(--pass, #1d7a46); }
+.outcome.fail { color: var(--fail, #b3261e); }
+.outcome.finding, .outcome.none, .outcome.unknown { color: var(--muted, #5f5f5a); }</style>
+<article class="still">
+<h3>Subtle or text</h3>
+<p><code>Button</code> with <code>TextButton</code> <span class="muted">(exact)</span></p>
+
+<p class="muted">No product use in code shows this yet.</p>
+</article>
+</template>
+</civic-story></li>
+<li><civic-story story="story:component.fluent-android.compose-button.primary-filled.disabled" step="platform:fluent-android.compose-button">
+<template shadowrootmode="open">
+<style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
+.still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
+header p { margin: 0; }
+h3 { font-size: 17px; margin: 2px 0; }
+h4 { font-size: 13px; margin: 12px 0 4px; color: var(--muted, #5f5f5a); font-weight: 600; }
+ul { margin: 0; padding-left: 18px; }
+p { margin: 0; }
+code { font-size: 12px; }
+.muted { color: var(--muted, #5f5f5a); font-size: 13px; }
+.outcome { display: inline-block; border-radius: 4px; padding: 0 6px; font-size: 12px; border: 1px solid currentColor; }
+.outcome.pass { color: var(--pass, #1d7a46); }
+.outcome.fail { color: var(--fail, #b3261e); }
+.outcome.finding, .outcome.none, .outcome.unknown { color: var(--muted, #5f5f5a); }</style>
+<article class="still">
+<h3>Primary filled, disabled</h3>
+<p><code>Button</code> with <code>Button</code>, disabled <span class="muted">(exact)</span></p>
+
+<p class="muted">No product use in code shows this yet.</p>
+</article>
+</template>
+</civic-story></li>
+</ul>
+<h3>ios: <code>Button</code></h3>
+<p class="muted">Native harnesses wait on device runners, as the native crawl does, so these stay stills.</p>
+<ul class="steps">
+<li><civic-story story="story:component.fluent-apple.button.primary-filled" step="platform:fluent-apple.button">
+<template shadowrootmode="open">
+<style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
+.still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
+header p { margin: 0; }
+h3 { font-size: 17px; margin: 2px 0; }
+h4 { font-size: 13px; margin: 12px 0 4px; color: var(--muted, #5f5f5a); font-weight: 600; }
+ul { margin: 0; padding-left: 18px; }
+p { margin: 0; }
+code { font-size: 12px; }
+.muted { color: var(--muted, #5f5f5a); font-size: 13px; }
+.outcome { display: inline-block; border-radius: 4px; padding: 0 6px; font-size: 12px; border: 1px solid currentColor; }
+.outcome.pass { color: var(--pass, #1d7a46); }
+.outcome.fail { color: var(--fail, #b3261e); }
+.outcome.finding, .outcome.none, .outcome.unknown { color: var(--muted, #5f5f5a); }</style>
+<article class="still">
+<h3>Primary filled</h3>
+<p><code>Button</code> with <code>accent</code> <span class="muted">(exact)</span></p>
+
+<p class="muted">No product use in code shows this yet.</p>
+</article>
+</template>
+</civic-story></li>
+<li><civic-story story="story:component.fluent-apple.button.brand-outline" step="platform:fluent-apple.button">
+<template shadowrootmode="open">
+<style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
+.still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
+header p { margin: 0; }
+h3 { font-size: 17px; margin: 2px 0; }
+h4 { font-size: 13px; margin: 12px 0 4px; color: var(--muted, #5f5f5a); font-weight: 600; }
+ul { margin: 0; padding-left: 18px; }
+p { margin: 0; }
+code { font-size: 12px; }
+.muted { color: var(--muted, #5f5f5a); font-size: 13px; }
+.outcome { display: inline-block; border-radius: 4px; padding: 0 6px; font-size: 12px; border: 1px solid currentColor; }
+.outcome.pass { color: var(--pass, #1d7a46); }
+.outcome.fail { color: var(--fail, #b3261e); }
+.outcome.finding, .outcome.none, .outcome.unknown { color: var(--muted, #5f5f5a); }</style>
+<article class="still">
+<h3>Brand outline</h3>
+<p><code>Button</code> with <code>outlineAccent</code> <span class="muted">(exact)</span></p>
+
+<p class="muted">No product use in code shows this yet.</p>
+</article>
+</template>
+</civic-story></li>
+<li><civic-story story="story:component.fluent-apple.button.neutral-default" step="platform:fluent-apple.button">
+<template shadowrootmode="open">
+<style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
+.still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
+header p { margin: 0; }
+h3 { font-size: 17px; margin: 2px 0; }
+h4 { font-size: 13px; margin: 12px 0 4px; color: var(--muted, #5f5f5a); font-weight: 600; }
+ul { margin: 0; padding-left: 18px; }
+p { margin: 0; }
+code { font-size: 12px; }
+.muted { color: var(--muted, #5f5f5a); font-size: 13px; }
+.outcome { display: inline-block; border-radius: 4px; padding: 0 6px; font-size: 12px; border: 1px solid currentColor; }
+.outcome.pass { color: var(--pass, #1d7a46); }
+.outcome.fail { color: var(--fail, #b3261e); }
+.outcome.finding, .outcome.none, .outcome.unknown { color: var(--muted, #5f5f5a); }</style>
+<article class="still">
+<h3>Neutral default</h3>
+<p><code>Button</code> with <code>outlineNeutral</code> <span class="muted">(exact)</span></p>
+
+<p class="muted">No product use in code shows this yet.</p>
+</article>
+</template>
+</civic-story></li>
+<li><civic-story story="story:component.fluent-apple.button.subtle" step="platform:fluent-apple.button">
+<template shadowrootmode="open">
+<style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
+.still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
+header p { margin: 0; }
+h3 { font-size: 17px; margin: 2px 0; }
+h4 { font-size: 13px; margin: 12px 0 4px; color: var(--muted, #5f5f5a); font-weight: 600; }
+ul { margin: 0; padding-left: 18px; }
+p { margin: 0; }
+code { font-size: 12px; }
+.muted { color: var(--muted, #5f5f5a); font-size: 13px; }
+.outcome { display: inline-block; border-radius: 4px; padding: 0 6px; font-size: 12px; border: 1px solid currentColor; }
+.outcome.pass { color: var(--pass, #1d7a46); }
+.outcome.fail { color: var(--fail, #b3261e); }
+.outcome.finding, .outcome.none, .outcome.unknown { color: var(--muted, #5f5f5a); }</style>
+<article class="still">
+<h3>Subtle or text</h3>
+<p><code>Button</code> with <code>subtle</code> <span class="muted">(exact)</span></p>
+
+<p class="muted">No product use in code shows this yet.</p>
+</article>
+</template>
+</civic-story></li>
+<li><civic-story story="story:component.fluent-apple.button.transparent-neutral" step="platform:fluent-apple.button">
+<template shadowrootmode="open">
+<style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
+.still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
+header p { margin: 0; }
+h3 { font-size: 17px; margin: 2px 0; }
+h4 { font-size: 13px; margin: 12px 0 4px; color: var(--muted, #5f5f5a); font-weight: 600; }
+ul { margin: 0; padding-left: 18px; }
+p { margin: 0; }
+code { font-size: 12px; }
+.muted { color: var(--muted, #5f5f5a); font-size: 13px; }
+.outcome { display: inline-block; border-radius: 4px; padding: 0 6px; font-size: 12px; border: 1px solid currentColor; }
+.outcome.pass { color: var(--pass, #1d7a46); }
+.outcome.fail { color: var(--fail, #b3261e); }
+.outcome.finding, .outcome.none, .outcome.unknown { color: var(--muted, #5f5f5a); }</style>
+<article class="still">
+<h3>Transparent neutral</h3>
+<p><code>Button</code> with <code>transparentNeutral</code> <span class="muted">(exact)</span></p>
+
+<p class="muted">No product use in code shows this yet.</p>
+</article>
+</template>
+</civic-story></li>
+<li><civic-story story="story:component.fluent-apple.button.danger" step="platform:fluent-apple.button">
+<template shadowrootmode="open">
+<style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
+.still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
+header p { margin: 0; }
+h3 { font-size: 17px; margin: 2px 0; }
+h4 { font-size: 13px; margin: 12px 0 4px; color: var(--muted, #5f5f5a); font-weight: 600; }
+ul { margin: 0; padding-left: 18px; }
+p { margin: 0; }
+code { font-size: 12px; }
+.muted { color: var(--muted, #5f5f5a); font-size: 13px; }
+.outcome { display: inline-block; border-radius: 4px; padding: 0 6px; font-size: 12px; border: 1px solid currentColor; }
+.outcome.pass { color: var(--pass, #1d7a46); }
+.outcome.fail { color: var(--fail, #b3261e); }
+.outcome.finding, .outcome.none, .outcome.unknown { color: var(--muted, #5f5f5a); }</style>
+<article class="still">
+<h3>Danger</h3>
+<p><code>Button</code> with <code>danger</code> <span class="muted">(exact)</span></p>
+<p class="muted">dangerOutline and dangerSubtle have no semantic variant yet.</p>
+<p class="muted">No product use in code shows this yet.</p>
+</article>
+</template>
+</civic-story></li>
+<li><civic-story story="story:component.fluent-apple.button.brand-outline.disabled" step="platform:fluent-apple.button">
+<template shadowrootmode="open">
+<style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
+.still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
+header p { margin: 0; }
+h3 { font-size: 17px; margin: 2px 0; }
+h4 { font-size: 13px; margin: 12px 0 4px; color: var(--muted, #5f5f5a); font-weight: 600; }
+ul { margin: 0; padding-left: 18px; }
+p { margin: 0; }
+code { font-size: 12px; }
+.muted { color: var(--muted, #5f5f5a); font-size: 13px; }
+.outcome { display: inline-block; border-radius: 4px; padding: 0 6px; font-size: 12px; border: 1px solid currentColor; }
+.outcome.pass { color: var(--pass, #1d7a46); }
+.outcome.fail { color: var(--fail, #b3261e); }
+.outcome.finding, .outcome.none, .outcome.unknown { color: var(--muted, #5f5f5a); }</style>
+<article class="still">
+<h3>Brand outline, disabled</h3>
+<p><code>Button</code> with <code>outlineAccent</code>, disabled <span class="muted">(exact)</span></p>
+
+<p class="muted">No product use in code shows this yet.</p>
+</article>
+</template>
+</civic-story></li>
+</ul>
+<h3>web: <code>Button</code></h3>
+
+<ul class="steps">
+<li><civic-story story="story:component.fluent-react-v9.button.primary-filled" step="platform:fluent-react-v9.button" island="{&quot;module&quot;:&quot;../../../web/dist/story-harness.js&quot;,&quot;label&quot;:&quot;Render it here&quot;,&quot;note&quot;:&quot;Mounts Button from @fluentui/react-button in this page with these props, through the component's harness.&quot;,&quot;component&quot;:{&quot;id&quot;:&quot;platform:fluent-react-v9.button&quot;,&quot;symbol&quot;:&quot;Button&quot;,&quot;platform&quot;:&quot;web&quot;,&quot;variant&quot;:&quot;primary-filled&quot;,&quot;expression&quot;:&quot;primary&quot;}}">
+<template shadowrootmode="open">
+<style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
+.still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
+header p { margin: 0; }
+h3 { font-size: 17px; margin: 2px 0; }
+h4 { font-size: 13px; margin: 12px 0 4px; color: var(--muted, #5f5f5a); font-weight: 600; }
+ul { margin: 0; padding-left: 18px; }
+p { margin: 0; }
+code { font-size: 12px; }
+.muted { color: var(--muted, #5f5f5a); font-size: 13px; }
+.outcome { display: inline-block; border-radius: 4px; padding: 0 6px; font-size: 12px; border: 1px solid currentColor; }
+.outcome.pass { color: var(--pass, #1d7a46); }
+.outcome.fail { color: var(--fail, #b3261e); }
+.outcome.finding, .outcome.none, .outcome.unknown { color: var(--muted, #5f5f5a); }</style>
+<article class="still">
+<h3>Primary filled</h3>
+<p><code>Button</code> with <code>primary</code> <span class="muted">(exact)</span></p>
+
+<p class="muted">No product use in code shows this yet.</p>
+</article>
+</template>
+</civic-story></li>
+<li><civic-story story="story:component.fluent-react-v9.button.brand-outline" step="platform:fluent-react-v9.button" island="{&quot;module&quot;:&quot;../../../web/dist/story-harness.js&quot;,&quot;label&quot;:&quot;Render it here&quot;,&quot;note&quot;:&quot;Mounts Button from @fluentui/react-button in this page with these props, through the component's harness.&quot;,&quot;component&quot;:{&quot;id&quot;:&quot;platform:fluent-react-v9.button&quot;,&quot;symbol&quot;:&quot;Button&quot;,&quot;platform&quot;:&quot;web&quot;,&quot;variant&quot;:&quot;brand-outline&quot;,&quot;expression&quot;:&quot;outline&quot;}}">
+<template shadowrootmode="open">
+<style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
+.still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
+header p { margin: 0; }
+h3 { font-size: 17px; margin: 2px 0; }
+h4 { font-size: 13px; margin: 12px 0 4px; color: var(--muted, #5f5f5a); font-weight: 600; }
+ul { margin: 0; padding-left: 18px; }
+p { margin: 0; }
+code { font-size: 12px; }
+.muted { color: var(--muted, #5f5f5a); font-size: 13px; }
+.outcome { display: inline-block; border-radius: 4px; padding: 0 6px; font-size: 12px; border: 1px solid currentColor; }
+.outcome.pass { color: var(--pass, #1d7a46); }
+.outcome.fail { color: var(--fail, #b3261e); }
+.outcome.finding, .outcome.none, .outcome.unknown { color: var(--muted, #5f5f5a); }</style>
+<article class="still">
+<h3>Brand outline</h3>
+<p><code>Button</code> with <code>outline</code> <span class="muted">(closest)</span></p>
+<p class="muted">Fluent web's outline is neutral-coloured, not brand-coloured.</p>
+<p class="muted">No product use in code shows this yet.</p>
+</article>
+</template>
+</civic-story></li>
+<li><civic-story story="story:component.fluent-react-v9.button.neutral-default" step="platform:fluent-react-v9.button" island="{&quot;module&quot;:&quot;../../../web/dist/story-harness.js&quot;,&quot;label&quot;:&quot;Render it here&quot;,&quot;note&quot;:&quot;Mounts Button from @fluentui/react-button in this page with these props, through the component's harness.&quot;,&quot;component&quot;:{&quot;id&quot;:&quot;platform:fluent-react-v9.button&quot;,&quot;symbol&quot;:&quot;Button&quot;,&quot;platform&quot;:&quot;web&quot;,&quot;variant&quot;:&quot;neutral-default&quot;,&quot;expression&quot;:&quot;secondary&quot;}}">
+<template shadowrootmode="open">
+<style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
+.still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
+header p { margin: 0; }
+h3 { font-size: 17px; margin: 2px 0; }
+h4 { font-size: 13px; margin: 12px 0 4px; color: var(--muted, #5f5f5a); font-weight: 600; }
+ul { margin: 0; padding-left: 18px; }
+p { margin: 0; }
+code { font-size: 12px; }
+.muted { color: var(--muted, #5f5f5a); font-size: 13px; }
+.outcome { display: inline-block; border-radius: 4px; padding: 0 6px; font-size: 12px; border: 1px solid currentColor; }
+.outcome.pass { color: var(--pass, #1d7a46); }
+.outcome.fail { color: var(--fail, #b3261e); }
+.outcome.finding, .outcome.none, .outcome.unknown { color: var(--muted, #5f5f5a); }</style>
+<article class="still">
+<h3>Neutral default</h3>
+<p><code>Button</code> with <code>secondary</code> <span class="muted">(exact)</span></p>
+
+<p class="muted">No product use in code shows this yet.</p>
+</article>
+</template>
+</civic-story></li>
+<li><civic-story story="story:component.fluent-react-v9.button.subtle" step="platform:fluent-react-v9.button" island="{&quot;module&quot;:&quot;../../../web/dist/story-harness.js&quot;,&quot;label&quot;:&quot;Render it here&quot;,&quot;note&quot;:&quot;Mounts Button from @fluentui/react-button in this page with these props, through the component's harness.&quot;,&quot;component&quot;:{&quot;id&quot;:&quot;platform:fluent-react-v9.button&quot;,&quot;symbol&quot;:&quot;Button&quot;,&quot;platform&quot;:&quot;web&quot;,&quot;variant&quot;:&quot;subtle&quot;,&quot;expression&quot;:&quot;subtle&quot;}}">
+<template shadowrootmode="open">
+<style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
+.still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
+header p { margin: 0; }
+h3 { font-size: 17px; margin: 2px 0; }
+h4 { font-size: 13px; margin: 12px 0 4px; color: var(--muted, #5f5f5a); font-weight: 600; }
+ul { margin: 0; padding-left: 18px; }
+p { margin: 0; }
+code { font-size: 12px; }
+.muted { color: var(--muted, #5f5f5a); font-size: 13px; }
+.outcome { display: inline-block; border-radius: 4px; padding: 0 6px; font-size: 12px; border: 1px solid currentColor; }
+.outcome.pass { color: var(--pass, #1d7a46); }
+.outcome.fail { color: var(--fail, #b3261e); }
+.outcome.finding, .outcome.none, .outcome.unknown { color: var(--muted, #5f5f5a); }</style>
+<article class="still">
+<h3>Subtle or text</h3>
+<p><code>Button</code> with <code>subtle</code> <span class="muted">(exact)</span></p>
+
+<p class="muted">No product use in code shows this yet.</p>
+</article>
+</template>
+</civic-story></li>
+<li><civic-story story="story:component.fluent-react-v9.button.transparent-neutral" step="platform:fluent-react-v9.button" island="{&quot;module&quot;:&quot;../../../web/dist/story-harness.js&quot;,&quot;label&quot;:&quot;Render it here&quot;,&quot;note&quot;:&quot;Mounts Button from @fluentui/react-button in this page with these props, through the component's harness.&quot;,&quot;component&quot;:{&quot;id&quot;:&quot;platform:fluent-react-v9.button&quot;,&quot;symbol&quot;:&quot;Button&quot;,&quot;platform&quot;:&quot;web&quot;,&quot;variant&quot;:&quot;transparent-neutral&quot;,&quot;expression&quot;:&quot;transparent&quot;}}">
+<template shadowrootmode="open">
+<style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
+.still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
+header p { margin: 0; }
+h3 { font-size: 17px; margin: 2px 0; }
+h4 { font-size: 13px; margin: 12px 0 4px; color: var(--muted, #5f5f5a); font-weight: 600; }
+ul { margin: 0; padding-left: 18px; }
+p { margin: 0; }
+code { font-size: 12px; }
+.muted { color: var(--muted, #5f5f5a); font-size: 13px; }
+.outcome { display: inline-block; border-radius: 4px; padding: 0 6px; font-size: 12px; border: 1px solid currentColor; }
+.outcome.pass { color: var(--pass, #1d7a46); }
+.outcome.fail { color: var(--fail, #b3261e); }
+.outcome.finding, .outcome.none, .outcome.unknown { color: var(--muted, #5f5f5a); }</style>
+<article class="still">
+<h3>Transparent neutral</h3>
+<p><code>Button</code> with <code>transparent</code> <span class="muted">(exact)</span></p>
+
+<p class="muted">No product use in code shows this yet.</p>
+</article>
+</template>
+</civic-story></li>
+<li><civic-story story="story:component.fluent-react-v9.button.neutral-default.disabled" step="platform:fluent-react-v9.button" island="{&quot;module&quot;:&quot;../../../web/dist/story-harness.js&quot;,&quot;label&quot;:&quot;Render it here&quot;,&quot;note&quot;:&quot;Mounts Button from @fluentui/react-button in this page with these props, through the component's harness.&quot;,&quot;component&quot;:{&quot;id&quot;:&quot;platform:fluent-react-v9.button&quot;,&quot;symbol&quot;:&quot;Button&quot;,&quot;platform&quot;:&quot;web&quot;,&quot;variant&quot;:&quot;neutral-default&quot;,&quot;expression&quot;:&quot;secondary&quot;,&quot;state&quot;:&quot;disabled&quot;}}">
+<template shadowrootmode="open">
+<style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
+.still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
+header p { margin: 0; }
+h3 { font-size: 17px; margin: 2px 0; }
+h4 { font-size: 13px; margin: 12px 0 4px; color: var(--muted, #5f5f5a); font-weight: 600; }
+ul { margin: 0; padding-left: 18px; }
+p { margin: 0; }
+code { font-size: 12px; }
+.muted { color: var(--muted, #5f5f5a); font-size: 13px; }
+.outcome { display: inline-block; border-radius: 4px; padding: 0 6px; font-size: 12px; border: 1px solid currentColor; }
+.outcome.pass { color: var(--pass, #1d7a46); }
+.outcome.fail { color: var(--fail, #b3261e); }
+.outcome.finding, .outcome.none, .outcome.unknown { color: var(--muted, #5f5f5a); }</style>
+<article class="still">
+<h3>Neutral default, disabled</h3>
+<p><code>Button</code> with <code>secondary</code>, disabled <span class="muted">(exact)</span></p>
+
+<p class="muted">No product use in code shows this yet.</p>
+</article>
+</template>
+</civic-story></li>
+</ul>
+<h2>Design library</h2>
+<p class="muted">No instance names the library file it comes from.</p>
+<h2>Uses</h2>
+<p class="muted">No product use is in the graph.</p>
+<h2>In journeys</h2>
+<p class="muted">No journey step shows a screen that uses it.</p>
+<h2>Conflicts</h2>
+<ul><li>Brand outline Button on android <span class="muted">android, decided: update-design, awaiting-adoption</span></li><li>Danger Button on ios <span class="muted">ios, decided: update-design, awaiting-adoption</span></li><li>Transparent neutral Button on ios <span class="muted">ios, decided: approve-exception, approved-adaptation</span></li></ul>
+</main>
+</body>
+</html>
