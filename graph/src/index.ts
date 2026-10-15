@@ -19,7 +19,7 @@ export { DESIGN_INTENT, frameWalk, renderWalk, renderWalkPage, walkPath, type Fr
 export { renderStories, storiesIn, STORIES_SCHEMA, type StoriesFile, type Story, type StoryOptions, type StoryStep } from './story.ts'
 export { describeGesture, readTape, RECORDING_LABEL, renderReplayPage, viewOf, type RecordedStep, type RecordedTape, type ReplayPlayback } from './replay-player.ts'
 export { componentFacts, type ComponentFacts } from './component-page.ts'
-export { componentStoriesIn, type ComponentStory } from './component-story.ts'
+export { componentStoriesIn, type ComponentStory, type StorybookRef } from './component-story.ts'
 export { describeLens, lensView, parseLens, resolveLens, type LensView, type ResolvedLens, type StoryLens } from './lens.ts'
 export { hasDifferences, renderStoryDifferences, storyDifferences, type ComponentDifference, type StepDifference, type StoryDifferences } from './story-diff.ts'
 export { renderPortal, stepOutcome, STORY_ELEMENT, type HarnessOptions, type IslandOptions, type PortalOptions } from './portal.ts'

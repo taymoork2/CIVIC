@@ -43,6 +43,8 @@ export interface PortalOptions {
    * with the props of `context.component`. Its code stories then run in the page as islands.
    */
   harnesses?: Readonly<Record<string, HarnessOptions>>
+  /** Stories imported once from Storybook (decision 0013), pruned into the generated ones where those show them. */
+  imported?: readonly ComponentStory[]
   /**
    * The lens the portal is read through (decision 0013, point 3): one design line, one code
    * line and one environment, from the review store's records. Each step then shows its frames
@@ -66,7 +68,7 @@ export function renderPortal(graph: Graph, stories: StoriesFile, options: Portal
   pages.set('civic-story.js', STORY_ELEMENT)
   pages.set('index.html', indexPage(graph, stories, options))
   // Component pages (decision 0013, point 2): each semantic component joined to its implementations, uses and journey steps.
-  const codeStories = componentStoriesIn(graph)
+  const codeStories = componentStoriesIn(graph, options.imported)
   for (const semantic of graph.ofKind('semantic-component')) {
     const own = codeStories.filter((story) => story.semanticId === semantic.id)
     pages.set(`components/${componentSlug(semantic.id)}.html`, componentPage(componentFacts(graph, semantic.id, stories), stories, own, options))
@@ -385,7 +387,7 @@ ${list(facts.conflicts.map((conflict) => `<li>${escapeHtml(conflict.title)} <spa
 function codeStoriesSection(facts: ComponentFacts, codeStories: ComponentStory[], options: PortalOptions): string {
   if (codeStories.length === 0) return ''
   const section = (groups: string[]) => `\n<h2>Code stories</h2>
-<p class="muted">Generated, not written: one story per variant the implementation maps, the disabled state on its default variant, and each product use in code the variants don't already show.${options.harnesses && Object.keys(options.harnesses).length > 0 ? ' A story with a harness renders the real component on request; islands need the portal served over HTTP.' : ''}</p>
+<p class="muted">Generated, not written: one story per variant the implementation maps, the disabled state on its default variant, and each product use in code the variants don't already show.${options.imported && options.imported.length > 0 ? ' Storybook stories imported once are pruned into these where they show the same thing, and kept as their own where they set more props.' : ''}${options.harnesses && Object.keys(options.harnesses).length > 0 ? ' A story with a harness renders the real component on request; islands need the portal served over HTTP.' : ''}</p>
 ${groups.join('\n')}`
   const groups = facts.implementations.flatMap((component) => {
     const own = codeStories.filter((story) => story.componentId === component.id)
@@ -399,7 +401,7 @@ ${groups.join('\n')}`
             ...(harness.styles && harness.styles.length > 0 ? { styles: harness.styles } : {}),
             label: 'Render it here',
             note: `Mounts ${component.symbol} from ${component.package} in this page with these props, through the component's harness.`,
-            component: { id: component.id, symbol: component.symbol, platform: component.platform, ...(component.framework ? { framework: component.framework } : {}), variant: story.variant, expression: story.expression, ...(story.state ? { state: story.state } : {}) },
+            component: { id: component.id, symbol: component.symbol, platform: component.platform, ...(component.framework ? { framework: component.framework } : {}), variant: story.variant, expression: story.expression, ...(story.state ? { state: story.state } : {}), ...(story.props ? { props: Object.fromEntries(Object.entries(story.props).filter(([, value]) => value !== null)) } : {}) },
           }
         : undefined
       const attributes = [`story="${escapeHtml(story.id)}"`, `step="${escapeHtml(story.componentId)}"`, ...(island ? [`island="${escapeHtml(JSON.stringify(island))}"`] : [])]
@@ -409,8 +411,9 @@ ${groups.join('\n')}`
 <style>${STILL_STYLE}</style>
 <article class="still">
 <h3>${escapeHtml(story.title)}</h3>
-<p><code>${escapeHtml(component.symbol)}</code> with <code>${escapeHtml(story.expression)}</code>${story.state ? `, ${escapeHtml(story.state)}` : ''} <span class="muted">(${escapeHtml(story.mapping)}${story.from === 'usage' ? ', from a product use' : ''})</span></p>
+<p><code>${escapeHtml(component.symbol)}</code> with <code>${escapeHtml(story.expression)}</code>${story.state ? `, ${escapeHtml(story.state)}` : ''}${Object.entries(story.props ?? {}).map(([name, value]) => `, <code>${escapeHtml(name)}${value === null ? '' : `=${escapeHtml(String(value))}`}</code>${value === null ? ' (set in code)' : ''}`).join('')} <span class="muted">(${escapeHtml(story.mapping)}${story.from === 'usage' ? ', from a product use' : story.from === 'storybook' ? ', imported from Storybook' : ''})</span></p>
 ${story.note ? `<p class="muted">${escapeHtml(story.note)}</p>` : ''}
+${story.storybook && story.storybook.length > 0 ? `<p class="muted">Stands for Storybook's ${escapeHtml([...new Set(story.storybook.map((ref) => `${ref.story} (“${ref.label}”)`))].join(', '))}.${[...new Set(story.storybook.flatMap((ref) => ref.undeclared ?? []))].length > 0 ? ` It also sets ${escapeHtml([...new Set(story.storybook.flatMap((ref) => ref.undeclared ?? []))].join(', '))}, which no extension point declares.` : ''}</p>` : ''}
 <p class="muted">${used > 0 ? `${used} product use${used === 1 ? '' : 's'} in code show${used === 1 ? 's' : ''} this.` : 'No product use in code shows this yet.'}</p>
 </article>
 </template>
