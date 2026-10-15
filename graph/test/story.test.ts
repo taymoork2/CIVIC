@@ -56,3 +56,23 @@ test('the portal renders each step as a still in a declarative shadow root, upgr
   assert.doesNotMatch(renderPortal(laundry(), storiesIn(laundry(), 'laundry'), { title: 'Laundry' }).get('stories/laundry-journey-drying.html')!, /frames=/)
   assert.match(live.get('index.html')!, /<a href="stories\/laundry-journey-drying\.html">Drying<\/a><\/th><td>2<\/td><td>1<\/td><td>0<\/td><td>1<\/td><td>1<\/td>/)
 })
+
+test('with an island, a screen the journey engine read mounts its own code in the story, with the manifest\'s first presets and its fixture', () => {
+  const graph = laundry()
+  const island = { module: '../app/preview.js', styles: ['../app/preview.css'], personas: [{ id: 'family', label: 'Family' }, { id: 'solo' }], roles: [{ id: 'owner' }], conditions: [{ id: 'normal' }], scenarios: [{ id: 'route.drying.washer-queued', label: 'Washer queued', fixture: { pieces: 6 } }] }
+  const page = renderPortal(graph, storiesIn(graph, 'laundry'), { title: 'Laundry', island }).get('stories/laundry-journey-drying.html')!
+  const islands = [...page.matchAll(/island="([^"]+)"/g)].map((match) => JSON.parse(match[1]!.replaceAll('&quot;', '"').replaceAll('&amp;', '&')) as Record<string, unknown>)
+  assert.equal(islands.length, 2)
+  assert.deepEqual(islands[1], {
+    module: '../app/preview.js',
+    styles: ['../app/preview.css'],
+    label: 'Run this screen here',
+    note: "Mounts the screen's own code in this page as Family, with no backend and nothing recorded.",
+    scenario: { id: 'route.drying.washer-queued', label: 'Washer queued', fixture: { pieces: 6 } },
+    persona: { id: 'family', label: 'Family' },
+    role: { id: 'owner' },
+    condition: { id: 'normal' },
+  })
+  // Design frames have no code to mount, so the Card demo's walk steps get no island.
+  assert.doesNotMatch(renderPortal(card(), storiesIn(card(), 'card'), { title: 'Shop', island }).get('stories/shop-checkout.html')!, /island=/)
+})

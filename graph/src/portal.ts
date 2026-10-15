@@ -27,6 +27,12 @@ export interface PortalOptions {
    * replayed tape starts from gets a replay player for it (decision 0009).
    */
   tapes?: ReadonlyMap<string, RecordedTape>
+  /**
+   * The island tier (decision 0013): screens the journey engine read mount live in the story
+   * through the app's own `mount(container, context)` module, built for the browser. The
+   * presets are the project manifest's first persona, role and condition unless named.
+   */
+  island?: IslandOptions
 }
 
 export const STORY_ELEMENT = readFileSync(new URL('./civic-story.js', import.meta.url), 'utf8')
@@ -81,7 +87,7 @@ ${rows.join('\n')}
 </tbody>
 </table></div>` : '<p>No journey in this graph contains a screen yet.</p>'}
 <h2>Playing a story</h2>
-<p>Each step is a <code>&lt;civic-story&gt;</code> element. It shows a still first: the step's evidence, paths and design intent, drawn from the graph. A step that can be played offers to upgrade to a frame: the frame walk where the design links its frames, ${options.canvas ? `or the screen live in the journey canvas at <code>${escapeHtml(options.canvas)}</code>, which has to be running` : 'or the screen live in a journey canvas when the portal is built with one'}, and each recorded run replayed from the screen, played back from its tape${options.tapes && options.tapes.size > 0 ? '' : ' (this portal was built with no tapes)'}. Nothing plays until you ask.</p>
+<p>Each step is a <code>&lt;civic-story&gt;</code> element. It shows a still first: the step's evidence, paths and design intent, drawn from the graph. A step that can be played offers to upgrade to a frame: the frame walk where the design links its frames, ${options.canvas ? `or the screen live in the journey canvas at <code>${escapeHtml(options.canvas)}</code>, which has to be running` : 'or the screen live in a journey canvas when the portal is built with one'}, and each recorded run replayed from the screen, played back from its tape${options.tapes && options.tapes.size > 0 ? '' : ' (this portal was built with no tapes)'}.${options.island ? ' A screen of the app can also run as an island: its own code mounted live in the story, with no backend and nothing recorded. Islands need the portal served over HTTP. ' : ' '}Nothing plays until you ask.</p>
 <p>Any page can host the same element: load <code>civic-story.js</code> and copy a step's <code>&lt;civic-story&gt;</code> markup.</p>`
   return page(options.title, body, '')
 }
@@ -89,7 +95,8 @@ ${rows.join('\n')}
 function storyPage(graph: Graph, stories: StoriesFile, story: Story, walk: FrameWalk | undefined, options: PortalOptions): string {
   const steps = story.steps.map((step, index) => {
     const frames = frameTiers(graph, story, step, options)
-    const attributes = [`story="${escapeHtml(story.id)}"`, `step="${escapeHtml(step.targetId)}"`, ...(frames.length > 0 ? [`frames="${escapeHtml(JSON.stringify(frames))}"`] : [])]
+    const island = islandOf(graph, step, options)
+    const attributes = [`story="${escapeHtml(story.id)}"`, `step="${escapeHtml(step.targetId)}"`, ...(island ? [`island="${escapeHtml(JSON.stringify(island))}"`] : []), ...(frames.length > 0 ? [`frames="${escapeHtml(JSON.stringify(frames))}"`] : [])]
     return `<civic-story ${attributes.join(' ')}>
 <template shadowrootmode="open">
 <style>${STILL_STYLE}</style>
@@ -107,6 +114,43 @@ ${steps.map((item) => `<li>${item}</li>`).join('\n')}
 }
 
 interface FrameOption { src: string; label: string; note: string; sandbox: string }
+
+export interface IslandOptions {
+  /** The built preview module, by URL relative to a story page, exporting `mount(container, context)`. */
+  module: string
+  /** Stylesheets the screens need, linked inside each island's shadow root. */
+  styles?: string[]
+  /** The project manifest's presets (`civic.project.json`). */
+  personas?: { id: string; label?: string; seed?: unknown }[]
+  roles?: { id: string; label?: string }[]
+  conditions?: { id: string; label?: string }[]
+  /** The scenario registry, for each screen's fixture. */
+  scenarios?: { id: string; label?: string; fixture?: unknown }[]
+}
+
+function islandOf(graph: Graph, step: StoryStep, options: PortalOptions): Record<string, unknown> | undefined {
+  const island = options.island
+  const scenario = scenarioOf(graph, step)
+  if (!island || !scenario) return undefined
+  const registered = island.scenarios?.find((item) => item.id === scenario)
+  const [persona, role, condition] = [island.personas?.[0], island.roles?.[0], island.conditions?.[0]]
+  return {
+    module: island.module,
+    ...(island.styles && island.styles.length > 0 ? { styles: island.styles } : {}),
+    label: 'Run this screen here',
+    note: `Mounts the screen's own code in this page${persona ? ` as ${persona.label ?? persona.id}` : ''}, with no backend and nothing recorded.`,
+    scenario: { id: scenario, label: registered?.label ?? step.title, ...(registered?.fixture !== undefined ? { fixture: registered.fixture } : {}) },
+    ...(persona ? { persona } : {}),
+    ...(role ? { role } : {}),
+    ...(condition ? { condition } : {}),
+  }
+}
+
+/** The scenario a screen the journey engine read is registered under. */
+function scenarioOf(graph: Graph, step: StoryStep): string | undefined {
+  const target = graph.get(step.targetId)
+  return target?.source?.tool === 'journey-engine' && target.source.importer === 'journey-index' ? target.source.anchor : undefined
+}
 
 /** The tapes replayed from this screen that the portal has, with each one's latest replay. */
 function replaysOn(graph: Graph, step: StoryStep, options: PortalOptions): { sha: string; tape: RecordedTape; evidence: Evidence; divergedAt?: number }[] {
@@ -137,8 +181,7 @@ function frameTier(graph: Graph, story: Story, step: StoryStep, options: PortalO
   if (step.walk) {
     return { src: `../walks/${slug(story.id)}.html#frame=${encodeURIComponent(step.targetId)}`, label: 'Walk the design from here', note: 'The frame walk: design intent from the design file, not behavior from running code.', sandbox: 'allow-scripts' }
   }
-  const target = graph.get(step.targetId)
-  const scenario = target?.source?.tool === 'journey-engine' && target.source.importer === 'journey-index' ? target.source.anchor : undefined
+  const scenario = scenarioOf(graph, step)
   if (options.canvas && scenario) {
     const base = options.canvas.replace(/\/+$/, '')
     return { src: `${base}/review-frame.html?scenario=${encodeURIComponent(scenario)}`, label: 'Play this screen live', note: `Opens the screen in the journey canvas's review frame at ${base}, with synthetic data. That server has to be running.`, sandbox: 'allow-scripts allow-same-origin allow-forms' }
