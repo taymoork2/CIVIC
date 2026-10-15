@@ -21,6 +21,7 @@ export { describeGesture, readTape, RECORDING_LABEL, renderReplayPage, viewOf, t
 export { componentFacts, type ComponentFacts } from './component-page.ts'
 export { componentStoriesIn, type ComponentStory } from './component-story.ts'
 export { describeLens, lensView, parseLens, resolveLens, type LensView, type ResolvedLens, type StoryLens } from './lens.ts'
+export { hasDifferences, renderStoryDifferences, storyDifferences, type ComponentDifference, type StepDifference, type StoryDifferences } from './story-diff.ts'
 export { renderPortal, stepOutcome, STORY_ELEMENT, type HarnessOptions, type IslandOptions, type PortalOptions } from './portal.ts'
 export { OBJECT_GAP_KINDS, objectMapOf, renderObjectMap, type ObjectGap, type ObjectGapKind, type ObjectMap, type ObjectTie } from './objects.ts'
 export { evidenceAge, freshnessRoot, staleEvidence, type FreshnessRule } from './freshness.ts'
