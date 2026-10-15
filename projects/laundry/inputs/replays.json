@@ -1,1 +1,24 @@
-[]
+[
+  {
+    "schema": "civic.replay/0",
+    "project": "laundry-app-b14159141f9c",
+    "scenario": "family.planning",
+    "head": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99",
+    "source": "471ec94a232b579042e76c0dd04001c211ae992e912254a0b99f851a68fea769",
+    "tape": "45147eced2b7eb19369835df763747622a5fe656d2dea5c7a613ed33c9ed7277",
+    "steps": 13,
+    "outcome": "pass",
+    "replayedAt": "2026-10-15T01:13:07.404Z"
+  },
+  {
+    "schema": "civic.replay/0",
+    "project": "laundry-app-b14159141f9c",
+    "scenario": "app.drying.empty",
+    "head": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99",
+    "source": "471ec94a232b579042e76c0dd04001c211ae992e912254a0b99f851a68fea769",
+    "tape": "f12d615a1530b1f411f299936d398b4f16f914db2dae026111ff1df5073883d6",
+    "steps": 1,
+    "outcome": "pass",
+    "replayedAt": "2026-10-15T01:13:40.046Z"
+  }
+]

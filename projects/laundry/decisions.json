@@ -192,5 +192,87 @@
       ],
       "supersedes": "decision:token.space-6"
     }
+  ],
+  "adoptions": [
+    {
+      "id": "adoption:token.accent.2",
+      "kind": "adoption",
+      "title": "Adoption of The reference's --accent maps to the app's new --reference-accent",
+      "decisionId": "decision:token.accent.2",
+      "carriedBy": {
+        "tool": "git",
+        "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99"
+      },
+      "adoptedBy": {
+        "role": "engineering",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-15T01:11:32.237Z",
+      "note": "Published Laundry reference-token adapter; fresh capture follows at this revision."
+    },
+    {
+      "id": "adoption:token.accent.dark.2",
+      "kind": "adoption",
+      "title": "Adoption of The reference's dark --accent maps to the app's new --reference-accent",
+      "decisionId": "decision:token.accent.dark.2",
+      "carriedBy": {
+        "tool": "git",
+        "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99"
+      },
+      "adoptedBy": {
+        "role": "engineering",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-15T01:11:32.353Z",
+      "note": "Published Laundry reference-token adapter; fresh capture follows at this revision."
+    },
+    {
+      "id": "adoption:token.space-2.2",
+      "kind": "adoption",
+      "title": "Adoption of The reference's --space-2 maps to the app's new --reference-space-2",
+      "decisionId": "decision:token.space-2.2",
+      "carriedBy": {
+        "tool": "git",
+        "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99"
+      },
+      "adoptedBy": {
+        "role": "engineering",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-15T01:11:32.488Z",
+      "note": "Published Laundry reference-token adapter; fresh capture follows at this revision."
+    },
+    {
+      "id": "adoption:token.space-4.2",
+      "kind": "adoption",
+      "title": "Adoption of The reference's --space-4 maps to the app's new --reference-space-4",
+      "decisionId": "decision:token.space-4.2",
+      "carriedBy": {
+        "tool": "git",
+        "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99"
+      },
+      "adoptedBy": {
+        "role": "engineering",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-15T01:11:32.676Z",
+      "note": "Published Laundry reference-token adapter; fresh capture follows at this revision."
+    },
+    {
+      "id": "adoption:token.space-6.2",
+      "kind": "adoption",
+      "title": "Adoption of The reference's --space-6 maps to the app's new --reference-space-6",
+      "decisionId": "decision:token.space-6.2",
+      "carriedBy": {
+        "tool": "git",
+        "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99"
+      },
+      "adoptedBy": {
+        "role": "engineering",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-15T01:11:32.809Z",
+      "note": "Published Laundry reference-token adapter; fresh capture follows at this revision."
+    }
   ]
 }
