@@ -89,9 +89,14 @@ export interface TokenComparison {
  * person can say which. A name the design sets and the code doesn't is a role the code
  * hasn't adopted, which is reported but not raised. Each theme is compared on its own; a dark
  * theme conflict's ID ends in `.dark`. `names` limits the comparison, such as to the names a
- * dark theme sets itself. Deterministic, with no model calls.
+ * dark theme sets itself. `map` names the code property a design name is compared against
+ * when the two sides use the same name for different things, as a person decided: the names
+ * are separate namespaces, so a mapped name is never compared with the code's property of the
+ * same name. A mapped property the code doesn't set yet is an open conflict, not a listing,
+ * because someone decided the code should carry it. The conflict keeps the design name's ID.
+ * Deterministic, with no model calls.
  */
-export function compareCssTokens(design: TokenSide, code: TokenSide, options: { owners: Owner[]; theme?: 'default' | 'dark'; names?: ReadonlySet<string> }): TokenComparison {
+export function compareCssTokens(design: TokenSide, code: TokenSide, options: { owners: Owner[]; theme?: 'default' | 'dark'; names?: ReadonlySet<string>; map?: ReadonlyMap<string, string> }): TokenComparison {
   const dark = options.theme === 'dark'
   const where = dark ? ' in the dark theme' : ''
   const tokens: Token[] = []
