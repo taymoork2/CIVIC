@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 import { createRuntimeBridge } from './runtime-bridge'
 
-function notebook() {
+function notebook(components?: () => { component: string; variant?: string; state?: string; props?: Record<string, string> }[]) {
   let route = '/', title = '', saved = '', source = 'revision-one'
   let bridge: ReturnType<typeof createRuntimeBridge>
   const ports = {
@@ -23,7 +23,7 @@ function notebook() {
       } else route = '/'
     },
   }
-  bridge = createRuntimeBridge(ports)
+  bridge = createRuntimeBridge({ ...ports, ...(components ? { components } : {}) })
   return { bridge, ports, drift: () => { source = 'revision-two' } }
 }
 
@@ -86,4 +86,24 @@ test('beforeinput preserves the departing screen before the browser changes an i
   const tape = await bridge.recording()
   expect(tape.steps[0].fields[0].value).toBe('')
   expect(await bridge.replay(tape)).toEqual({ verified: 2 })
+})
+
+test('records the components a step shows when the app marks them, and replays a tape recorded before it did', async () => {
+  const plain = notebook()
+  for (const gesture of [{ kind: 'input', value: 'Kept' }, { kind: 'save' }]) { plain.bridge.record(gesture); await plain.ports.interact(gesture); await plain.bridge.flush() }
+  const older = await plain.bridge.recording()
+  expect(older.steps.every((step) => !('components' in step))).toBe(true)
+
+  // What a step shows follows the app: a large primary button while editing, disabled once saved.
+  let route = () => '/'
+  const { bridge: marked, ports } = notebook(() => [route() === '/saved' ? { component: 'platform:fluent-react-v9.button', variant: 'primary-filled', state: 'disabled' } : { component: 'platform:fluent-react-v9.button', variant: 'primary-filled', props: { size: 'large' } }])
+  route = ports.route
+  for (const gesture of [{ kind: 'input', value: 'Kept' }, { kind: 'save' }]) { marked.record(gesture); await ports.interact(gesture); await marked.flush() }
+  const tape = await marked.recording()
+  expect(tape.steps.map((step) => step.components)).toEqual([[{ component: 'platform:fluent-react-v9.button', variant: 'primary-filled', props: { size: 'large' } }], [{ component: 'platform:fluent-react-v9.button', variant: 'primary-filled', state: 'disabled' }]])
+  // An older tape has no components to compare, so it still replays on an app that marks them.
+  expect(await marked.replay(older)).toEqual({ verified: 2 })
+  // A tape that has them diverges when a component's props change.
+  const changed = structuredClone(tape); delete changed.steps[1].components![0].state
+  await expect(marked.replay(JSON.parse(JSON.stringify(changed)))).rejects.toThrow('Replay diverged at step 2')
 })

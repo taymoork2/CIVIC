@@ -5,7 +5,7 @@ import { readFixtureFields } from './journey'
 import { createRuntimeBridge } from './runtime-bridge'
 import { fillCredentials, openRuntimeSession, routeFetch } from './runtime-session'
 import { routeServerFunctions } from './server-functions'
-import { observeRuntime, replayGesture, runtimeFields, runtimeView, trackCloseWatchers } from './runtime-dom'
+import { observeRuntime, replayGesture, runtimeComponents, runtimeFields, runtimeView, trackCloseWatchers } from './runtime-dom'
 import type { RuntimeBridge, RuntimeGesture, RuntimeRecording } from './runtime-bridge'
 import { defaultViewportHeight, validViewport, type PreviewViewport } from './viewport-presets'
 
@@ -125,7 +125,7 @@ try {
       const interact = (gesture: RuntimeGesture) => gesture.kind === 'command' && gesture.target?.tag === 'adapter' && commands.includes(gesture.target.name) ? control(gesture) : ports.interact ? ports.interact(gesture) : replayGesture(scope, gesture)
       // A replay starts from the viewport the recording started in.
       const reset = async (tape: RuntimeRecording) => { if (window.frameElement) await resize(initialViewport); await ports.reset(tape) }
-      const bridge = createRuntimeBridge({ ...ports, reset, settle, seed: { context: structuredClone(config), application: ports.seed }, project: project.key, source: snapshot.revision.source, fields: captured, view: () => runtimeView(scope), interact })
+      const bridge = createRuntimeBridge({ ...ports, reset, settle, seed: { context: structuredClone(config), application: ports.seed }, project: project.key, source: snapshot.revision.source, fields: captured, view: () => runtimeView(scope), components: () => runtimeComponents(scope), interact })
       runtimeBridge = bridge
       const publish = () => {
         const screen = ports.screen(), entry = index.scenarios.find((scenario) => scenario.id === screen)

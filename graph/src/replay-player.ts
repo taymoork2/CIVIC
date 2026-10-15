@@ -21,6 +21,8 @@ export interface RecordedStep {
   fields: { label: string; value: string }[]
   /** The visible headings, selected tab and pressed buttons, as the recorder's JSON list. */
   view: string
+  /** The components the step showed, as the app marks them (D31), when it does. */
+  components?: { component: string; variant?: string; state?: string; props?: Record<string, string> }[]
   operations: { kind: string; name: string; actor?: string; error?: string }[]
 }
 
@@ -108,7 +110,7 @@ export function renderReplayPage(playback: ReplayPlayback): string {
 ${diverged ? '<p class="warn">The latest replay diverged here: the app did not do what it did when this was recorded.</p>' : ''}
 <p class="muted">Then on <code>${escapeHtml(step.route || '/')}</code></p>
 ${view.length > 0 ? `<p>Showing: ${view.map((item) => `<strong>${escapeHtml(item)}</strong>`).join(', ')}</p>` : ''}
-${step.fields.length > 0 ? `<details><summary>Fields (${step.fields.length})</summary><dl>${step.fields.map((field) => `<div><dt>${escapeHtml(field.label)}</dt><dd>${escapeHtml(field.value || '(empty)')}</dd></div>`).join('')}</dl></details>` : ''}
+${step.components && step.components.length > 0 ? `<p>Components: ${step.components.map((shown) => `<code>${escapeHtml(shown.component.replace(/^platform:/, ''))}</code>${[shown.variant, shown.state, ...Object.entries(shown.props ?? {}).map(([name, value]) => `${name} ${value}`)].filter(Boolean).length > 0 ? ` ${escapeHtml([shown.variant, shown.state, ...Object.entries(shown.props ?? {}).map(([name, value]) => `${name} ${value}`)].filter(Boolean).join(', '))}` : ''}`).join('; ')}</p>` : ''}${step.fields.length > 0 ? `<details><summary>Fields (${step.fields.length})</summary><dl>${step.fields.map((field) => `<div><dt>${escapeHtml(field.label)}</dt><dd>${escapeHtml(field.value || '(empty)')}</dd></div>`).join('')}</dl></details>` : ''}
 ${step.operations.length > 0 ? `<p>Wrote: ${step.operations.map((operation) => `<code>${escapeHtml(operation.name)}</code>${operation.actor ? ` as ${escapeHtml(operation.actor)}` : ''}${operation.error ? ` <span class="warn">failed: ${escapeHtml(operation.error)}</span>` : ''}`).join(', ')}</p>` : ''}
 </li>`
   })

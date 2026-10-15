@@ -1,11 +1,19 @@
 export type RuntimeGesture = { kind: string; value?: string; target?: { tag: string; name: string; index: number; count: number }; checked?: boolean }
 /** `actor` names the synthetic account that made a write after the run switched accounts; a run that never switched records none. */
 export type RuntimeOperation = { kind: 'mutation' | 'action'; name: string; args: unknown; actor?: string; result?: unknown; error?: string }
-export type RuntimeStep = { gesture: RuntimeGesture; route: string; fields: { label: string; value: string }[]; view: string; operations: RuntimeOperation[] }
+/**
+ * A component the step settled on showing, as the app marks it with its stable CIVIC IDs (D31):
+ * the platform component, the contract variant and state, and the props it names. CIVIC
+ * harvests a component's real usage from these (decision 0013). Only steps of an app that
+ * marks its components carry them, so other tapes stay as they were.
+ */
+export type RuntimeComponent = { component: string; variant?: string; state?: string; props?: Record<string, string> }
+export type RuntimeStep = { gesture: RuntimeGesture; route: string; fields: { label: string; value: string }[]; view: string; components?: RuntimeComponent[]; operations: RuntimeOperation[] }
 export type RuntimeRecording = { version: 1; project: string; source: string; seed: unknown; now: number; initialRoute: string; steps: RuntimeStep[] }
 export type RuntimePorts = {
   project: string; source: string; seed: unknown; now: number
   route: () => string; fields: () => RuntimeStep['fields']; view: () => string
+  components?: () => RuntimeComponent[]
   subscribe?: (changed: () => void) => () => void
   assertSource: () => Promise<void>; reset: (recording: RuntimeRecording) => Promise<void>
   settle: () => Promise<void>; interact: (gesture: RuntimeGesture) => Promise<void>
@@ -19,7 +27,13 @@ export function createRuntimeBridge(ports: RuntimePorts) {
   let current: RuntimeStep | null = null, replaying = false
   let replayDone: Promise<void> | null = null
   let mismatch: { step: number; expected: RuntimeStep; actual: RuntimeStep } | null = null
-  const snapshot = (step: RuntimeStep) => Object.assign(step, { route: ports.route(), fields: structuredClone(ports.fields()), view: ports.view() })
+  const snapshot = (step: RuntimeStep) => {
+    Object.assign(step, { route: ports.route(), fields: structuredClone(ports.fields()), view: ports.view() })
+    const components = ports.components?.() ?? []
+    if (components.length) step.components = structuredClone(components)
+    else delete step.components
+    return step
+  }
   const seal = () => { if (current && !sealed.has(current)) { snapshot(current); sealed.add(current) } }
   let finalizing = Promise.resolve()
   // A settle that has not started yet serves every flush asked for the same step meanwhile, so frequent callers
@@ -78,7 +92,9 @@ export function createRuntimeBridge(ports: RuntimePorts) {
           await ports.assertSource()
           current = { gesture: expected.gesture, route: '', fields: [], view: '', operations: [] }
           await ports.interact(expected.gesture); await flush()
-          if (JSON.stringify(current) !== JSON.stringify(expected)) {
+          // A tape recorded before components were marked (or from an app that marks none) checks the rest.
+          if (!expected.components) delete current.components
+          if (JSON.stringify(ordered(current)) !== JSON.stringify(ordered(expected))) {
             mismatch = { step: index + 1, expected: structuredClone(expected), actual: structuredClone(current) }
             throw Error(`Replay diverged at step ${index + 1}. Inspect the captured inputs, route and operation receipts.`)
           }
@@ -94,3 +110,8 @@ export function createRuntimeBridge(ports: RuntimePorts) {
 }
 
 export type RuntimeBridge = ReturnType<typeof createRuntimeBridge>
+
+/** A step's keys in the recorder's order, so a tape read back from JSON compares equal. */
+function ordered(step: RuntimeStep): RuntimeStep {
+  return { gesture: step.gesture, route: step.route, fields: step.fields, view: step.view, ...(step.components ? { components: step.components } : {}), operations: step.operations }
+}

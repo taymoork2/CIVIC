@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { placesOn } from './completeness.ts'
 import { componentFacts, type ComponentFacts } from './component-page.ts'
-import { componentStoriesIn, type ComponentStory } from './component-story.ts'
+import { componentStoriesIn, usageFromTapes, type ComponentStory } from './component-story.ts'
 import { forecastLabel } from './forecast.ts'
 import type { Graph } from './graph.ts'
 import { describeLens, lensView, type ResolvedLens } from './lens.ts'
@@ -68,7 +68,8 @@ export function renderPortal(graph: Graph, stories: StoriesFile, options: Portal
   pages.set('civic-story.js', STORY_ELEMENT)
   pages.set('index.html', indexPage(graph, stories, options))
   // Component pages (decision 0013, point 2): each semantic component joined to its implementations, uses and journey steps.
-  const codeStories = componentStoriesIn(graph, options.imported)
+  // Real usage from recorded runs: each way a tape's steps showed a component (decision 0013).
+  const codeStories = componentStoriesIn(graph, [...(options.imported ?? []), ...(options.tapes ? usageFromTapes(graph, options.tapes) : [])])
   for (const semantic of graph.ofKind('semantic-component')) {
     const own = codeStories.filter((story) => story.semanticId === semantic.id)
     pages.set(`components/${componentSlug(semantic.id)}.html`, componentPage(componentFacts(graph, semantic.id, stories), stories, own, options))
@@ -83,6 +84,11 @@ export function renderPortal(graph: Graph, stories: StoriesFile, options: Portal
         if (!pages.has(page)) pages.set(page, renderReplayPage({ sha: replay.sha, tape: replay.tape, title: step.title, outcome: replay.evidence.outcome === 'fail' ? 'fail' : 'pass', ...(replay.divergedAt ? { divergedAt: replay.divergedAt } : {}), head: replay.evidence.source.revision }))
       }
     }
+  }
+  // A tape a component story points at gets its player, whether or not a journey step does.
+  for (const sha of new Set(codeStories.flatMap((story) => (story.runs ?? []).map((run) => run.tape)))) {
+    const tape = options.tapes?.get(sha)
+    if (tape && !pages.has(`replays/${sha}.html`)) pages.set(`replays/${sha}.html`, renderReplayPage({ sha, tape, title: `a run showing ${[...new Set(codeStories.filter((story) => story.runs?.some((run) => run.tape === sha)).map((story) => graph.get(story.semanticId)?.title ?? story.semanticId))].join(', ')}` }))
   }
   return pages
 }
@@ -387,7 +393,7 @@ ${list(facts.conflicts.map((conflict) => `<li>${escapeHtml(conflict.title)} <spa
 function codeStoriesSection(facts: ComponentFacts, codeStories: ComponentStory[], options: PortalOptions): string {
   if (codeStories.length === 0) return ''
   const section = (groups: string[]) => `\n<h2>Code stories</h2>
-<p class="muted">Generated, not written: one story per variant the implementation maps, the disabled state on its default variant, and each product use in code the variants don't already show.${options.imported && options.imported.length > 0 ? ' Storybook stories imported once are pruned into these where they show the same thing, and kept as their own where they set more props.' : ''}${options.harnesses && Object.keys(options.harnesses).length > 0 ? ' A story with a harness renders the real component on request; islands need the portal served over HTTP.' : ''}</p>
+<p class="muted">Generated, not written: one story per variant the implementation maps, the disabled state on its default variant, and each product use in code the variants don't already show, and each way a recorded run showed it.${options.imported && options.imported.length > 0 ? ' Storybook stories imported once are pruned into these where they show the same thing, and kept as their own where they set more props.' : ''}${options.harnesses && Object.keys(options.harnesses).length > 0 ? ' A story with a harness renders the real component on request; islands need the portal served over HTTP.' : ''}</p>
 ${groups.join('\n')}`
   const groups = facts.implementations.flatMap((component) => {
     const own = codeStories.filter((story) => story.componentId === component.id)
@@ -413,7 +419,7 @@ ${groups.join('\n')}`
 <h3>${escapeHtml(story.title)}</h3>
 <p><code>${escapeHtml(component.symbol)}</code> with <code>${escapeHtml(story.expression)}</code>${story.state ? `, ${escapeHtml(story.state)}` : ''}${Object.entries(story.props ?? {}).map(([name, value]) => `, <code>${escapeHtml(name)}${value === null ? '' : `=${escapeHtml(String(value))}`}</code>${value === null ? ' (set in code)' : ''}`).join('')} <span class="muted">(${escapeHtml(story.mapping)}${story.from === 'usage' ? ', from a product use' : story.from === 'storybook' ? ', imported from Storybook' : ''})</span></p>
 ${story.note ? `<p class="muted">${escapeHtml(story.note)}</p>` : ''}${story.storybook && story.storybook.length > 0 ? `\n<p class="muted">Stands for Storybook's ${escapeHtml([...new Set(story.storybook.map((ref) => `${ref.story} (“${ref.label}”)`))].join(', '))}.${[...new Set(story.storybook.flatMap((ref) => ref.undeclared ?? []))].length > 0 ? ` It also sets ${escapeHtml([...new Set(story.storybook.flatMap((ref) => ref.undeclared ?? []))].join(', '))}, which no extension point declares.` : ''}</p>` : ''}
-<p class="muted">${used > 0 ? `${used} product use${used === 1 ? '' : 's'} in code show${used === 1 ? 's' : ''} this.` : 'No product use in code shows this yet.'}</p>
+${story.runs && story.runs.length > 0 ? `<p class="muted">Seen in ${story.runs.length} recorded run step${story.runs.length === 1 ? '' : 's'}: ${story.runs.map((run) => `<a href="../replays/${run.tape}.html#step=${run.step}">${escapeHtml(run.tape.slice(0, 8))} step ${run.step}</a>`).join(', ')}.</p>\n` : ''}<p class="muted">${used > 0 ? `${used} product use${used === 1 ? '' : 's'} in code show${used === 1 ? 's' : ''} this.` : 'No product use in code shows this yet.'}</p>
 </article>
 </template>
 </civic-story></li>`

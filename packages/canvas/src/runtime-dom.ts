@@ -1,4 +1,4 @@
-import type { RuntimeBridge, RuntimeGesture } from './runtime-bridge'
+import type { RuntimeBridge, RuntimeComponent, RuntimeGesture } from './runtime-bridge'
 import { readFixtureFields } from './journey'
 
 const selector = 'button, a, input, select, textarea, [role="radio"], [role="checkbox"], [role="tab"]'
@@ -32,6 +32,19 @@ export function runtimeFields(root: HTMLElement) {
   })
   return [...readFixtureFields(root.ownerDocument, root, (element) => safe(element) && visible(element)), ...quantities].filter((field) => !secret.test(field.label))
 }
+/**
+ * The components a screen shows, as the app marks them in code (D31): `data-civic-component`
+ * names the platform component, `data-civic-variant` and `data-civic-state` the contract's
+ * variant and state, and each `data-civic-prop-<name>` a prop. Visible ones only, in page order.
+ */
+export function runtimeComponents(root: HTMLElement): RuntimeComponent[] {
+  return [...root.querySelectorAll<HTMLElement>('[data-civic-component]')].filter(visible).map((element) => {
+    const props = Object.fromEntries([...element.attributes].filter((attribute) => attribute.name.startsWith('data-civic-prop-')).map((attribute) => [attribute.name.slice('data-civic-prop-'.length), attribute.value]).sort(([a], [b]) => a.localeCompare(b)))
+    const variant = element.dataset.civicVariant, state = element.dataset.civicState
+    return { component: element.dataset.civicComponent!, ...(variant ? { variant } : {}), ...(state ? { state } : {}), ...(Object.keys(props).length ? { props } : {}) }
+  })
+}
+
 export function runtimeView(root: HTMLElement) {
   return JSON.stringify([...root.querySelectorAll('h1, [role="dialog"] h2, [role="tab"][aria-selected="true"], button[aria-pressed="true"]')].filter((element) => visible(element as HTMLElement)).map((element) => element.textContent?.trim()))
 }
