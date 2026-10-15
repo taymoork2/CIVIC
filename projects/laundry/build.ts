@@ -9,8 +9,8 @@
 //   node build.ts --check   fail if out/ is not what the inputs produce
 
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { assertValid, indexGraph, renderPortal, storiesIn, type CollaborationRecord, type DecisionFile, type Evidence, type Owner } from '../../graph/src/index.ts'
-import { applyDecisions, assemble, compareCssTokens, contentHash, findWebComponents, fragment, readComponentFamilies, readCoverageContract, readCssTokens, readJourneyIndex, readPlaywrightReport, readRenderReceipt, readReplays, type CoverageContract, type JourneyIndex, type RenderReceipt, type ReplayRecord } from '../../importers/src/index.ts'
+import { assertValid, indexGraph, objectMapOf, renderObjectMap, renderPortal, storiesIn, type CollaborationRecord, type DecisionFile, type Evidence, type Owner } from '../../graph/src/index.ts'
+import { applyDecisions, assemble, compareCssTokens, contentHash, findWebComponents, fragment, readComponentFamilies, readCoverageContract, readCssTokens, readJourneyIndex, readOrcaGrid, readPlaywrightReport, readRenderReceipt, readReplays, tieObjects, type CoverageContract, type JourneyIndex, type ObjectTiesFile, type RenderReceipt, type ReplayRecord } from '../../importers/src/index.ts'
 
 const here = (path: string) => new URL(path, import.meta.url)
 const text = (path: string) => readFileSync(here(path), 'utf8')
@@ -131,9 +131,27 @@ for (const declaration of source.exports) {
 const webSources = [...exportsIn].map(([path, lines]) => ({ path, text: Array.from(lines, (text) => text ?? '').join('\n') }))
 const web = findWebComponents(families, webSources, { prefix: PREFIX, package: '@washcloset/web', owners: componentOwners, revision: index.revision.head, evidenceId: 'evidence:source-analysis.laundry-components', capturedAt: at })
 
+// --- The object map (roadmap order of work, item 2; decision 0014, point 8) --------------
+// Laundry's objects from an ORCA grid, owned by Design, and the targets tied to them. No
+// grid exists for Laundry yet, so inputs/orca-grid.csv and objects.json are a stand-in
+// written from the review index's scenario names, components and path actions; a
+// designer's own grid and ties replace them. CIVIC suggests ties where a screen's name
+// names an object, and they count once a person confirms them in objects.json.
+const ORCA_GRID = 'projects/laundry/inputs/orca-grid.csv'
+const OBJECT_TIES = 'projects/laundry/objects.json'
+const gridText = text('inputs/orca-grid.csv')
+const tiesText = text('objects.json')
+const objects = readOrcaGrid(gridText, {
+  prefix: PREFIX,
+  owners: [{ role: 'design', who: 'taymoork2' }],
+  source: { tool: 'stand-in', importer: 'orca-grid', revision: contentHash(gridText), path: ORCA_GRID, contentHash: contentHash(gridText) },
+})
+const targetRecords = journeys.fragment.records.filter((record) => record.kind === 'target')
+const ties = tieObjects(objects, targetRecords, JSON.parse(tiesText) as ObjectTiesFile, { source: { tool: 'civic', importer: 'object-ties', revision: contentHash(tiesText), path: OBJECT_TIES, contentHash: contentHash(tiesText) } })
+
 // A person's calls on the conflicts (roadmap step 3), from decisions.json.
 const decisions = json<DecisionFile>('decisions.json')
-const graph = applyDecisions(assemble(journeys.fragment, fragment(evidence), coverage, fragment([...tokenRecords, designEvidence, codeEvidence, ...tokenConflicts]), fragment([...families, ...web.components, web.evidence], web.links)), decisions)
+const graph = applyDecisions(assemble(journeys.fragment, fragment(evidence), coverage, fragment([...tokenRecords, designEvidence, codeEvidence, ...tokenConflicts]), fragment([...families, ...web.components, web.evidence], web.links), fragment(objects, ties)), decisions)
 assertValid(graph)
 
 // --- The design reference (roadmap order of work, item 2) ------------------------------------
@@ -237,6 +255,16 @@ ${web.missing.map((family) => `\`${family}\``).join(', ') || 'None.'}
 These may be built under another name or as plain markup, such as a CSS class. They are listed, not raised. Naming a component after its family, or recording which component builds it, lets CIVIC follow it.
 `
 
+const objectMap = objectMapOf(indexGraph(graph))
+const objectReport = `# Laundry: objects
+
+**Stand-in.** No ORCA grid exists for Laundry yet. [\`${ORCA_GRID.split('/').slice(2).join('/')}\`](../inputs/orca-grid.csv) and [\`objects.json\`](../objects.json) were written from the review index's scenario names, components and path actions to exercise the object map, and a designer's own grid and ties replace them.
+
+Built by \`node projects/laundry/build.ts\`. The ORCA grid's ${objectMap.objects.length} objects are object records in [\`graph.json\`](graph.json), owned by Design, and \`objects.json\` ties journeys and screens to them. A journey's tie says it needs the object; a screen's tie says what it shows of it: its view (detail unless named), and, where declared, its attributes and calls to action. CIVIC suggests a tie wherever a screen's name names an object or one of its other names; a suggestion counts once a person moves it into \`objects.json\`, and a wrong one goes under \`dismissed\`. Every finding is advisory and goes to Design. Laundry is built for web only, so no call to action is compared across platforms yet.
+
+${renderObjectMap(objectMap)}
+`
+
 // Journey stories (decision 0013): one per journey, pointing at this graph's records, and a
 // read-only portal of them whose steps play live in Laundry's review server when it runs.
 const stories = storiesIn(indexGraph(graph), 'projects/laundry/out/graph.json', { designs: [{ file: 'projects/laundry/out/design.json', design }] })
@@ -250,10 +278,11 @@ const outputs: Record<string, string> = {
   'out/coverage.md': coverageReport,
   'out/tokens.md': tokenReport,
   'out/components.md': componentReport,
+  'out/objects.md': objectReport,
   'out/stories.json': `${JSON.stringify(stories, null, 2)}\n`,
   ...Object.fromEntries([...portal].map(([path, body]) => [`out/portal/${path}`, body])),
 }
-const summary = `${graph.records.length} records, ${graph.links.length} links, ${tests.length} test(s) and ${replayed.length} replayed run(s), ${failed.length} failing, ${tokenConflicts.length} token conflict(s), ${web.components.length} of ${families.length} component families found on web`
+const summary = `${graph.records.length} records, ${graph.links.length} links, ${tests.length} test(s) and ${replayed.length} replayed run(s), ${failed.length} failing, ${tokenConflicts.length} token conflict(s), ${web.components.length} of ${families.length} component families found on web, ${objects.length} objects with ${ties.filter((tie) => tie.status === 'declared').length} declared and ${ties.filter((tie) => tie.status === 'inferred').length} suggested ties`
 if (process.argv.includes('--check')) {
   const stale = Object.entries(outputs).filter(([path, body]) => {
     try {

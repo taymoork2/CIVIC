@@ -29,3 +29,4 @@ export { designLibraryRelease, designReleaseBreaks, renderDesignRelease, type De
 export { readRenderReceipt, type RenderReceipt, type RenderReferenceOptions } from './render-reference.ts'
 export { readReplays, type ReplayOptions, type ReplayRecord } from './replay.ts'
 export { rebrandAction, rebrandDivergences, rebrandImpact, renderRebrand, type HiddenAction, type HiddenOverride, type Rebrand, type RebrandOptions, type TokenReach, type UnreadComponent } from './rebrand.ts'
+export { objectId, OBJECT_TIES_SCHEMA, parseCsv, readOrcaGrid, tieObjects, type ObjectTieDeclaration, type ObjectTieOptions, type ObjectTiesFile, type OrcaGridOptions } from './orca.ts'

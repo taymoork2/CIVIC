@@ -38,6 +38,7 @@ Every record has a stable ID, `<prefix>:<dot.separated.path>`, a title, and opti
 | Line | `line:` | A stream of work with revisions: main, a branch, a worktree, a PR with its preview, or a design draft |
 | Annotation | `annotation:` | A comment on a journey, screen, part of a screen, path or branch, with layered anchors, a frozen capture, and the line and revision it was made on |
 | Draft choice | `choice:` | A person's choice between design drafts from one base: the chosen line and revision, and the drafts passed over, which are marked abandoned |
+| Object | `object:` | A domain object from a designer's ORCA grid (OOUX, decision 0014): its description, other names, attributes (core content or metadata), calls to action and the objects nested in it. Design owns it. What a screen shows of it is on the `shows` link that ties them. |
 | Work request | `request:` | Annotations handed to an agent: base revision, acceptance checks, repro command, claim lease, reported fixes, CIVIC's re-capture, a status history, and a version that counts its changes (roadmap step 5) |
 
 ### Decisions
@@ -131,7 +132,7 @@ Each row lists the records behind its state. `--json` gives the same with every 
 
 ## Links
 
-A link is a traceable claim between two records: `implements`, `serves`, `uses-token`, `navigates` or `contains`. Every link has a status, as in the journey engine:
+A link is a traceable claim between two records: `implements`, `serves`, `uses-token`, `navigates`, `contains` or `shows`. Every link has a status, as in the journey engine:
 
 - **declared**: a person, manifest or explicit reference says so.
 - **observed**: a confirmed run showed it. It needs passing automated or physical-device evidence.
@@ -139,6 +140,8 @@ A link is a traceable claim between two records: `implements`, `serves`, `uses-t
 - **proposed**: a candidate a person hasn't confirmed.
 
 Only declared and observed links count for readiness. A `navigates` link follows the journey engine's cross-route actions (action, route, condition, return context). It can leave out `to` when the destination isn't mapped yet, and then it says what is known in `unmapped`, so the gap stays visible.
+
+A `shows` link ties a target to an object (decision 0014). From a journey it says the journey needs the object. From a screen it can say which `view` of the object the screen is (`detail` unless named, or a team's own, such as `card` or `editor`) and which `attributes` and `actions` it shows, by the object's keys. Leaving them out means not declared, so the comparisons skip that screen, rather than "shows none".
 
 ## What validation enforces
 
@@ -207,6 +210,17 @@ bin/civic portal demo/card/out/resolved.graph.json --out portal --title "Shop"
 bin/civic portal projects/laundry/out/graph.json --out portal --canvas http://127.0.0.1:3010 --design projects/laundry/out/design.json
 ```
 
+## The object map: `civic objects`
+
+The object map ([decision 0014](../docs/decisions/0014-design-methodologies-are-profiles.md), point 8, [`src/objects.ts`](src/objects.ts)) asks a designer's object-first questions of what was built, from object records and the `shows` links that tie targets to them. Only declared and observed ties count; a tie CIVIC suggested from a screen's name waits for a person to confirm or dismiss it.
+
+- **An object a journey needs that none of its screens shows** (`object-not-shown`), naming any suggested tie on those screens that would answer it once confirmed.
+- **An attribute shown on one screen of an object and missing from another** (`object-attribute-missing`). Screens are compared only with screens of the same view, since a card shows less than a detail screen on purpose, and only where they declare their attributes.
+- **A call to action one platform offers on an object and another doesn't** (`object-action-platform`), once screens on two or more platforms declare the object's actions.
+- **A suggested tie waiting for a person** (`unconfirmed-object-tie`).
+
+The gate reports all four as advisory, to the object's Design owners with the screens' or platform's owners told, and counts each against what was compared. `civic objects <file>` prints the map: each object with how many screens show it, how many ties are suggested and how many journeys need it, then the findings.
+
 ## Contract export
 
 Two read-only queries over a graph (D31). Both are deterministic and print Markdown, or JSON with `--json`.
@@ -260,6 +274,8 @@ node src/cli.ts forecast examples/card-override.graph.json override:shop.order-s
 node src/cli.ts overrides examples/card-override.graph.json instance:shop.order-summary.card
 node src/cli.ts completeness examples/card-override.graph.json target:shop.checkout
 node src/cli.ts gaps examples/fluent-button.graph.json
+cd .. && bin/civic objects projects/laundry/out/graph.json           # Laundry's stand-in object map and its findings
+cd graph
 node src/cli.ts context examples/fluent-button.graph.json semantic:button --platform android --variant neutral-default
 node src/cli.ts check ../demo/fluent-button/out/raised.graph.json     # fails: the brand outline conflict is undecided
 node src/cli.ts fixes ../demo/fluent-button/out/resolved.graph.json   # the brand outline fix awaits adoption
