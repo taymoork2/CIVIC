@@ -17,6 +17,7 @@ export { releaseBreaks, releasesBetween, renderReleases, type OverrideImpact, ty
 export { DESIGN_INTENT, frameWalk, renderWalk, renderWalkPage, walkPath, type FrameWalk, type WalkAction, type WalkComponent, type WalkFrame } from './walk.ts'
 export { renderStories, storiesIn, STORIES_SCHEMA, type StoriesFile, type Story, type StoryOptions, type StoryStep } from './story.ts'
 export { renderPortal, stepOutcome, STORY_ELEMENT, type PortalOptions } from './portal.ts'
+export { OBJECT_GAP_KINDS, objectMapOf, renderObjectMap, type ObjectGap, type ObjectGapKind, type ObjectMap, type ObjectTie } from './objects.ts'
 export { evidenceAge, freshnessRoot, staleEvidence, type FreshnessRule } from './freshness.ts'
 export { baselineFrom, checkDocument, checkGraph, compareToBaseline, DEFAULT_BLOCKING, FINDING_KINDS, renderCheck, statusLine, type Baseline, type BaselineEntry, type CheckOptions, type CheckReport, type Finding, type FindingKind, type GraphCheck, type Measure } from './check.ts'
 export {

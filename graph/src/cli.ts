@@ -13,6 +13,7 @@
 //   civic completeness <file> <journey-id> [--json]
 //   civic walk <file> <journey-id> [--path <label,...>] [--html <file>] [--json]
 //   civic stories <file> [--design <design.json>]... [--json]
+//   civic objects <file> [--json]
 //   civic portal <file> --out <dir> [--title <t>] [--canvas <url>] [--design <design.json>]...
 //   civic screen <target-id> [<file>...] [--config civic.check.json] [--today <date>] [--json]
 //   civic check [<file>...] [--config civic.check.json] [--baseline <file>] [--update-baseline] [--today <date>] [--since <ref>] [--json] [--post] [--comment <pr>]
@@ -38,6 +39,7 @@ import { completenessOf, renderCompleteness } from './completeness.ts'
 import { releaseBreaks, releasesBetween, renderReleases } from './release.ts'
 import { frameWalk, renderWalk, renderWalkPage, walkPath } from './walk.ts'
 import { renderStories, storiesIn } from './story.ts'
+import { objectMapOf, renderObjectMap } from './objects.ts'
 import { renderPortal } from './portal.ts'
 import {
   ALIGNMENT_FOR,
@@ -129,6 +131,11 @@ async function main(): Promise<number> {
     const graph = await loadGraph(args[0]!)
     const alignments = alignmentsIn(graph, { today: option('--today') ?? new Date().toISOString().slice(0, 10) }, option('--scope'))
     console.log(args.includes('--json') ? JSON.stringify(alignments, null, 2) : renderAlignments(graph, alignments))
+    return 0
+  }
+  if (command === 'objects' && args.length >= 1) {
+    const map = objectMapOf(await loadGraph(args[0]!))
+    console.log(args.includes('--json') ? JSON.stringify(map, null, 2) : renderObjectMap(map))
     return 0
   }
   if (command === 'overrides' && args.length >= 2) {
@@ -743,6 +750,7 @@ function usage(problem?: string): number {
       '  civic completeness <file> <journey-id> [--json]',
       '  civic walk <file> <journey-id> [--path <label,...>] [--html <file>] [--json]',
       '  civic stories <file> [--design <design.json>]... [--json]',
+      '  civic objects <file> [--json]',
       '  civic portal <file> --out <dir> [--title <t>] [--canvas <url>] [--design <design.json>]...',
       '  civic screen <target-id> [<file>...] [--config civic.check.json] [--today <date>] [--json]',
       '  civic check [<file>...] [--config civic.check.json] [--baseline <file>] [--update-baseline] [--today <date>] [--since <ref>] [--json] [--post] [--comment <pr>]',

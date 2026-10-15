@@ -3,6 +3,7 @@ import { completenessOf, stateCoverageOn } from './completeness.ts'
 import { conflictStates, describeFix, openProposals, type FixStage } from './decisions.ts'
 import { gapsIn, screensOf } from './gaps.ts'
 import { indexGraph, type Graph } from './graph.ts'
+import { objectMapOf } from './objects.ts'
 import type { GraphDocument, Owner, Platform } from './schema.ts'
 import { validateGraph } from './validate.ts'
 
@@ -34,6 +35,10 @@ export const FINDING_KINDS = [
   'awaiting-adoption',
   'unverified-adoption',
   'open-collaboration',
+  'object-not-shown',
+  'object-attribute-missing',
+  'object-action-platform',
+  'unconfirmed-object-tie',
 ] as const
 export type FindingKind = (typeof FINDING_KINDS)[number]
 
@@ -235,6 +240,16 @@ export function checkGraph(label: string, graph: Graph, options: CheckOptions): 
   }
   const mappings = graph.ofKind('platform-component').flatMap((component) => component.variants)
   measure('Variant mappings with no equivalent', mappings.filter((mapping) => mapping.mapping === 'none').length, mappings.length)
+
+  // The object map (decision 0014, point 8): the designer's questions of what was built.
+  // Advisory by default, since what a screen leaves out of an object is often on purpose.
+  const objects = objectMapOf(graph)
+  for (const gap of objects.gaps) add(gap.kind, gap.subjectId, gap.summary, gap.owners, gap.platform, gap.detail)
+  const gapCount = (kind: FindingKind) => objects.gaps.filter((gap) => gap.kind === kind).length
+  measure('Objects a journey needs that no screen of it shows', gapCount('object-not-shown'), objects.counts.needs)
+  measure('Object attributes missing from a screen of the same view', gapCount('object-attribute-missing'), objects.counts.attributeChecks)
+  measure('Object calls to action missing on a platform', gapCount('object-action-platform'), objects.counts.actionChecks)
+  measure('Object ties awaiting confirmation', gapCount('unconfirmed-object-tie'), objects.counts.ties)
 
   const seen = new Set<string>()
   const unique = findings.filter((item) => !seen.has(item.key) && Boolean(seen.add(item.key)))

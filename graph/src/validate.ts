@@ -47,6 +47,7 @@ const RELATION_KINDS: Record<Relation, { from: RecordKind[]; to: RecordKind[] }>
   'uses-token': { from: ['semantic-component', 'platform-component', 'extension-point'], to: ['token'] },
   navigates: { from: ['target'], to: ['target'] },
   contains: { from: ['target'], to: ['target', 'component-instance'] },
+  shows: { from: ['target'], to: ['object'] },
 }
 
 /** Evidence tiers that prove behavior, so they can back an observed link. */
@@ -343,6 +344,14 @@ export function validateGraph(input: unknown): Issue[] {
         }
         break
       }
+      case 'object': {
+        for (const [list, label] of [[record.attributes, 'attribute'], [record.actions, 'action']] as const) {
+          const keys = list.map((item) => item.key)
+          for (const key of keys.filter((key, index) => keys.indexOf(key) !== index)) error('object-key', at, `${label} ${key} appears more than once; a tie names it by key.`)
+        }
+        for (const relationship of record.relationships) ref(at, 'relationships.objectId', relationship.objectId, ['object'])
+        break
+      }
       case 'adoption': {
         const decision = ref(at, 'decisionId', record.decisionId, ['decision'])
         if (decision?.kind === 'decision' && decision.outcome === 'approve-exception') {
@@ -401,6 +410,18 @@ export function validateGraph(input: unknown): Issue[] {
     const key = `${link.from} ${link.relation} ${link.to ?? `?${link.unmapped}`}`
     if (seenLinks.has(key)) error('duplicate-link', at, `${key} appears more than once; one link carries one status.`)
     seenLinks.add(key)
+
+    if (link.relation === 'shows') {
+      const object = records.get(link.to!)
+      const from = records.get(link.from)
+      if (from?.kind === 'target' && from.scale === 'journey' && (link.attributes || link.actions || link.view)) {
+        error('shows-journey', at, 'A journey that shows an object needs it; what is shown of it is said on its screens.')
+      }
+      if (object?.kind === 'object') {
+        for (const key of link.attributes ?? []) if (!object.attributes.some((item) => item.key === key)) error('object-key', at, `${object.id} has no attribute ${key}.`)
+        for (const key of link.actions ?? []) if (!object.actions.some((item) => item.key === key)) error('object-key', at, `${object.id} has no call to action ${key}.`)
+      }
+    }
 
     const evidence = (link.evidenceIds ?? []).map((id) => ref(at, 'evidenceIds', id, ['evidence'])).filter(isEvidence)
     if (link.status === 'observed') {
@@ -705,6 +726,29 @@ function checkRecordShape(raw: unknown, at: string, error: Report) {
     case 'draft-choice':
       checkReviewShape(kind, raw, at, error)
       break
+    case 'object': {
+      field.optional('description', (value, path) => checkString(value, path, error))
+      field.optionalList('synonyms', (value, path) => checkString(value, path, error))
+      const keyed = (item: unknown, path: string) => {
+        if (!isObject(item)) {
+          error('shape', path, 'Must be an object.')
+          return undefined
+        }
+        const f = fieldChecker(item, path, error)
+        f.string('key')
+        f.string('title')
+        return f
+      }
+      field.list('attributes', (item, path) => keyed(item, path)?.oneOf('kind', ['core', 'metadata']))
+      field.list('actions', (item, path) => keyed(item, path))
+      field.list('relationships', (item, path) => {
+        if (!isObject(item)) return error('shape', path, 'Must be an object.')
+        const f = fieldChecker(item, path, error)
+        f.string('objectId')
+        f.optional('cardinality', (value, at) => checkString(value, at, error))
+      })
+      break
+    }
   }
 }
 
@@ -884,6 +928,15 @@ function checkLinkShape(raw: unknown, at: string, error: Report) {
   if (raw.relation !== 'navigates') {
     for (const key of ['action', 'route', 'condition', 'returnTo']) {
       if (raw[key] !== undefined) error('shape', at, `\`${key}\` belongs only on a navigates link.`)
+    }
+  }
+  if (raw.relation === 'shows') {
+    field.optionalList('attributes', (value, path) => checkString(value, path, error))
+    field.optionalList('actions', (value, path) => checkString(value, path, error))
+    field.optional('view', (value, path) => checkString(value, path, error))
+  } else {
+    for (const key of ['attributes', 'actions', 'view']) {
+      if (raw[key] !== undefined) error('shape', at, `\`${key}\` belongs only on a shows link.`)
     }
   }
 }
