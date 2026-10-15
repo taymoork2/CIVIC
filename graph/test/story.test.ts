@@ -40,7 +40,7 @@ test('Laundry gets a story per journey with screens, with its run evidence and o
 
 test('the portal renders each step as a still in a declarative shadow root, upgrading to the walk or a live canvas frame', () => {
   const pages = renderPortal(card(), storiesIn(card(), 'card'), { title: 'Shop' })
-  assert.deepEqual([...pages.keys()].sort(), ['civic-story.js', 'index.html', 'stories/shop-checkout.html', 'walks/shop-checkout.html'])
+  assert.deepEqual([...pages.keys()].sort(), ['civic-story.js', 'components/card.html', 'index.html', 'stories/shop-checkout.html', 'walks/shop-checkout.html'])
   const story = pages.get('stories/shop-checkout.html')!
   assert.equal(story.match(/<civic-story /g)?.length, 3)
   assert.match(story, /<template shadowrootmode="open">/)

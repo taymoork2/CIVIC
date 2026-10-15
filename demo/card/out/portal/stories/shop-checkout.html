@@ -19,6 +19,8 @@ a { color: var(--accent); }
 table { border-collapse: collapse; width: 100%; font-size: 14px; }
 th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
 td { font-variant-numeric: tabular-nums; }
+td.none { color: var(--fail); }
+td.closest { color: var(--muted); }
 .steps { list-style: none; padding: 0; display: grid; gap: 12px; }
 </style>
 <script defer src="../civic-story.js"></script>
@@ -29,9 +31,10 @@ td { font-variant-numeric: tabular-nums; }
 <h1>Checkout</h1>
 <p class="muted">3 steps in the order a person meets them, read from <code>demo/card/out/resolved.graph.json</code>. Story <code>story:shop.checkout</code> points at journey <code>target:shop.checkout</code>.</p>
 <ol class="steps">
-<li><civic-story story="story:shop.checkout" step="target:shop.order-summary" frames="[{&quot;src&quot;:&quot;../walks/shop-checkout.html#frame=target%3Ashop.order-summary&quot;,&quot;label&quot;:&quot;Walk the design from here&quot;,&quot;note&quot;:&quot;The frame walk: design intent from the design file, not behavior from running code.&quot;,&quot;sandbox&quot;:&quot;allow-scripts&quot;}]">
+<li id="step-1"><civic-story story="story:shop.checkout" step="target:shop.order-summary" frames="[{&quot;src&quot;:&quot;../walks/shop-checkout.html#frame=target%3Ashop.order-summary&quot;,&quot;label&quot;:&quot;Walk the design from here&quot;,&quot;note&quot;:&quot;The frame walk: design intent from the design file, not behavior from running code.&quot;,&quot;sandbox&quot;:&quot;allow-scripts&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -49,13 +52,15 @@ code { font-size: 12px; }
 <section><h4>Evidence</h4><p class="muted">None about this screen yet.</p></section>
 <section><h4>Paths on</h4><ul><li>Continue to payment to unmapped /checkout/payment <span class="muted">declared, prototype link</span></li><li>Apply promotion to Promo applied <span class="muted">declared, prototype link</span></li></ul></section>
 <section><h4>Design intent</h4><ul><li>Card on Order Summary: semantic:card, filled, rest<ul><li>Override Local cornerRadius 20: web (react) forbidden, web (web-components) forbidden, ios (uikit) forbidden, android (compose) forbidden</li><li>Override .Card header / Checkbox set to true: web (react) supported, web (web-components) needs-library-change, ios (uikit) needs-library-change, android (compose) needs-library-change</li></ul></li><li>Card in OrderSummary.tsx: semantic:card, filled</li></ul></section>
+<section><h4>Components</h4><ul><li><a href="../components/card.html">Card</a> <span class="muted">design, code web</span></li></ul></section>
 
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:shop.checkout" step="target:shop.promo-applied" frames="[{&quot;src&quot;:&quot;../walks/shop-checkout.html#frame=target%3Ashop.promo-applied&quot;,&quot;label&quot;:&quot;Walk the design from here&quot;,&quot;note&quot;:&quot;The frame walk: design intent from the design file, not behavior from running code.&quot;,&quot;sandbox&quot;:&quot;allow-scripts&quot;}]">
+<li id="step-2"><civic-story story="story:shop.checkout" step="target:shop.promo-applied" frames="[{&quot;src&quot;:&quot;../walks/shop-checkout.html#frame=target%3Ashop.promo-applied&quot;,&quot;label&quot;:&quot;Walk the design from here&quot;,&quot;note&quot;:&quot;The frame walk: design intent from the design file, not behavior from running code.&quot;,&quot;sandbox&quot;:&quot;allow-scripts&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -73,13 +78,15 @@ code { font-size: 12px; }
 <section><h4>Evidence</h4><p class="muted">None about this screen yet.</p></section>
 <section><h4>Paths on</h4><p class="muted">None declared.</p></section>
 <section><h4>Design intent</h4><ul><li>Card on Promo applied: semantic:card<ul><li>Override Card on Promo applied is a copy of the library component: web (react) needs-library-change, web (web-components) needs-library-change, ios (uikit) needs-library-change, android (compose) needs-library-change</li></ul></li><li>Copy of Card in PromoApplied.tsx: semantic:card</li></ul></section>
+<section><h4>Components</h4><ul><li><a href="../components/card.html">Card</a> <span class="muted">design copy, code web copy</span></li></ul></section>
 
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:shop.checkout" step="target:shop.gift-options" frames="[{&quot;src&quot;:&quot;../walks/shop-checkout.html#frame=target%3Ashop.gift-options&quot;,&quot;label&quot;:&quot;Walk the design from here&quot;,&quot;note&quot;:&quot;The frame walk: design intent from the design file, not behavior from running code.&quot;,&quot;sandbox&quot;:&quot;allow-scripts&quot;}]">
+<li id="step-3"><civic-story story="story:shop.checkout" step="target:shop.gift-options" frames="[{&quot;src&quot;:&quot;../walks/shop-checkout.html#frame=target%3Ashop.gift-options&quot;,&quot;label&quot;:&quot;Walk the design from here&quot;,&quot;note&quot;:&quot;The frame walk: design intent from the design file, not behavior from running code.&quot;,&quot;sandbox&quot;:&quot;allow-scripts&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -97,6 +104,7 @@ code { font-size: 12px; }
 <section><h4>Evidence</h4><p class="muted">None about this screen yet.</p></section>
 <section><h4>Paths on</h4><ul><li>Back to order to Order Summary <span class="muted">declared, prototype link</span></li></ul></section>
 
+<section><h4>Components</h4><ul><li><a href="../components/card.html">Card</a> <span class="muted">design, code web</span></li></ul></section>
 
 </article>
 </template>

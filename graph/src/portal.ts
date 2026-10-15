@@ -1,4 +1,6 @@
 import { readFileSync } from 'node:fs'
+import { placesOn } from './completeness.ts'
+import { componentFacts, type ComponentFacts } from './component-page.ts'
 import { forecastLabel } from './forecast.ts'
 import type { Graph } from './graph.ts'
 import { RUN_METHODS, type Evidence } from './schema.ts'
@@ -42,6 +44,8 @@ export function renderPortal(graph: Graph, stories: StoriesFile, options: Portal
   const pages = new Map<string, string>()
   pages.set('civic-story.js', STORY_ELEMENT)
   pages.set('index.html', indexPage(graph, stories, options))
+  // Component pages (decision 0013, point 2): each semantic component joined to its implementations, uses and journey steps.
+  for (const semantic of graph.ofKind('semantic-component')) pages.set(`components/${componentSlug(semantic.id)}.html`, componentPage(componentFacts(graph, semantic.id, stories), stories))
   for (const story of stories.stories) {
     const walk = story.steps.some((step) => step.walk) ? frameWalk(graph, story.journeyId) : undefined
     if (walk) pages.set(`walks/${slug(story.id)}.html`, renderWalkPage(walk))
@@ -86,6 +90,7 @@ ${stories.stories.length > 0 ? `<div class="table"><table>
 ${rows.join('\n')}
 </tbody>
 </table></div>` : '<p>No journey in this graph contains a screen yet.</p>'}
+${componentTable(graph, stories)}
 <h2>Playing a story</h2>
 <p>Each step is a <code>&lt;civic-story&gt;</code> element. It shows a still first: the step's evidence, paths and design intent, drawn from the graph. A step that can be played offers to upgrade to a frame: the frame walk where the design links its frames, ${options.canvas ? `or the screen live in the journey canvas at <code>${escapeHtml(options.canvas)}</code>, which has to be running` : 'or the screen live in a journey canvas when the portal is built with one'}, and each recorded run replayed from the screen, played back from its tape${options.tapes && options.tapes.size > 0 ? '' : ' (this portal was built with no tapes)'}.${options.island ? ' A screen of the app can also run as an island: its own code mounted live in the story, with no backend and nothing recorded. Islands need the portal served over HTTP. ' : ' '}Nothing plays until you ask.</p>
 <p>Any page can host the same element: load <code>civic-story.js</code> and copy a step's <code>&lt;civic-story&gt;</code> markup.</p>`
@@ -108,7 +113,7 @@ ${still(graph, story, step, index, walk)}
 <h1>${escapeHtml(story.title)}</h1>
 <p class="muted">${story.steps.length} step${story.steps.length === 1 ? '' : 's'} in the order a person meets them, read from <code>${escapeHtml(stories.graph)}</code>. Story <code>${escapeHtml(story.id)}</code> points at journey <code>${escapeHtml(story.journeyId)}</code>.</p>
 <ol class="steps">
-${steps.map((item) => `<li>${item}</li>`).join('\n')}
+${steps.map((item, index) => `<li id="step-${index + 1}">${item}</li>`).join('\n')}
 </ol>`
   return page(story.title, body, '<script defer src="../civic-story.js"></script>')
 }
@@ -204,17 +209,26 @@ function still(graph: Graph, story: Story, step: StoryStep, index: number, walk:
     const item = graph.get(id)
     return item?.kind === 'collaboration' ? [`<li>${escapeHtml(item.type)}: ${escapeHtml(item.title)}</li>`] : []
   })
+  // The components the screen uses, in design or code, each linked to its component page.
+  const places = new Set(placesOn(graph, step.targetId))
+  const used = new Map<string, string[]>()
+  for (const instance of graph.ofKind('component-instance').filter((item) => places.has(item.placedOn))) {
+    used.set(instance.semanticId, [...(used.get(instance.semanticId) ?? []), `${instance.origin}${instance.platform ? ` ${instance.platform}` : ''}${instance.fork ? ' copy' : ''}`])
+  }
+  const usedComponents = [...used.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([id, uses]) => `<li><a href="../components/${componentSlug(id)}.html">${escapeHtml(title(id))}</a> <span class="muted">${escapeHtml([...new Set(uses)].join(', '))}</span></li>`)
   const section = (heading: string, items: string[], empty?: string) => (items.length > 0 ? `<section><h4>${heading}</h4><ul>${items.join('')}</ul></section>` : empty ? `<section><h4>${heading}</h4><p class="muted">${empty}</p></section>` : '')
   return `<article class="still" part="still">
 <header><p class="muted">Step ${index + 1} of ${story.steps.length} <span class="outcome ${outcome}">${outcome === 'none' ? 'no run evidence' : outcome}</span></p><h3>${escapeHtml(step.title)}</h3><p class="muted"><code>${escapeHtml(step.targetId)}</code></p></header>
 ${section('Evidence', evidence, 'None about this screen yet.')}
 ${section('Paths on', paths, 'None declared.')}
 ${section('Design intent', [...components, ...frames])}
+${section('Components', usedComponents)}
 ${section('Open records', records)}
 </article>`
 }
 
 const STILL_STYLE = `:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -250,6 +264,8 @@ a { color: var(--accent); }
 table { border-collapse: collapse; width: 100%; font-size: 14px; }
 th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
 td { font-variant-numeric: tabular-nums; }
+td.none { color: var(--fail); }
+td.closest { color: var(--muted); }
 .steps { list-style: none; padding: 0; display: grid; gap: 12px; }
 </style>
 ${head}
@@ -261,6 +277,59 @@ ${body}
 </body>
 </html>
 `
+}
+
+function componentTable(graph: Graph, stories: StoriesFile): string {
+  const rows = graph.ofKind('semantic-component').map((semantic) => {
+    const facts = componentFacts(graph, semantic.id, stories)
+    const platforms = [...new Set(facts.implementations.map((item) => (item.framework ? `${item.platform} (${item.framework})` : item.platform)))].join(', ') || 'none'
+    const open = facts.conflicts.filter((item) => item.status === 'open').length
+    return `<tr><th scope="row"><a href="components/${componentSlug(semantic.id)}.html">${escapeHtml(semantic.title)}</a></th><td>${escapeHtml(platforms)}</td><td>${facts.uses.length}</td><td>${facts.steps.length}</td><td>${open}</td></tr>`
+  })
+  if (rows.length === 0) return ''
+  return `<h2>Components</h2>
+<p class="muted">Each component's page joins its contract, its implementation on each platform, its uses in design and code, and the journey steps whose screens use it.</p>
+<div class="table"><table>
+<thead><tr><th scope="col">Component</th><th scope="col">Implemented on</th><th scope="col">Uses</th><th scope="col">Journey steps</th><th scope="col">Open conflicts</th></tr></thead>
+<tbody>
+${rows.join('\n')}
+</tbody>
+</table></div>`
+}
+
+function componentPage(facts: ComponentFacts, stories: StoriesFile): string {
+  const { semantic } = facts
+  const list = (items: string[], empty: string) => (items.length > 0 ? `<ul>${items.join('')}</ul>` : `<p class="muted">${empty}</p>`)
+  const variantRows = semantic.variants.map((variant) => `<tr><th scope="row">${escapeHtml(variant.title)} <code>${escapeHtml(variant.key)}</code></th>${facts.implementations.map((component) => {
+    const mapped = component.variants.find((item) => item.variant === variant.key)!
+    return `<td class="${mapped.mapping}">${escapeHtml(mapped.mapping)}${mapped.expression ? `<br><code>${escapeHtml(mapped.expression)}</code>` : ''}${mapped.note ? `<br><span class="muted">${escapeHtml(mapped.note)}</span>` : ''}</td>`
+  }).join('')}</tr>`)
+  const body = `<p class="crumbs"><a href="../index.html">All stories and components</a></p>
+<h1>${escapeHtml(semantic.title)}</h1>
+<p>${escapeHtml(semantic.purpose)}</p>
+<p class="muted"><code>${escapeHtml(semantic.id)}</code>. States: ${escapeHtml(semantic.states.join(', ') || 'none')}${semantic.productStates.length > 0 ? `; the product shows ${escapeHtml(semantic.productStates.join(', '))}` : ''}.${semantic.slots.length > 0 ? ` Slots: ${escapeHtml(semantic.slots.join(', '))}.` : ''} Read from <code>${escapeHtml(stories.graph)}</code>.</p>
+<h2>Implementations</h2>
+${facts.implementations.length > 0 ? `<ul>${facts.implementations.map((component) => `<li><strong>${escapeHtml(component.platform)}${component.framework ? ` (${escapeHtml(component.framework)})` : ''}</strong>: <code>${escapeHtml(component.symbol)}</code> from <code>${escapeHtml(component.package)}${component.version ? `@${escapeHtml(component.version)}` : ''}</code>${component.confirmed ? '' : ` <span class="muted">(${escapeHtml(component.status)}, not confirmed yet)</span>`}${component.extraVariants.length > 0 ? `<br><span class="muted">Also offers ${escapeHtml(component.extraVariants.join(', '))}, which no contract variant covers.</span>` : ''}</li>`).join('')}</ul>` : '<p class="muted">No platform implements it yet.</p>'}
+${facts.implementations.length > 0 && semantic.variants.length > 0 ? `<h2>Variants by platform</h2>
+<div class="table"><table>
+<thead><tr><th scope="col">Variant</th>${facts.implementations.map((component) => `<th scope="col">${escapeHtml(component.platform)}${component.framework ? ` (${escapeHtml(component.framework)})` : ''}</th>`).join('')}</tr></thead>
+<tbody>
+${variantRows.join('\n')}
+</tbody>
+</table></div>` : ''}
+<h2>Design library</h2>
+${list(facts.libraries.map((library) => `<li><code>${escapeHtml(library.file)}</code>, published key <code>${escapeHtml(library.key)}</code></li>`), 'No instance names the library file it comes from.')}
+<h2>Uses</h2>
+${list(facts.uses.map((use) => `<li>${escapeHtml(use.title)} <span class="muted">${escapeHtml([use.product, use.origin, use.platform, use.variant, use.state].filter(Boolean).join(', '))}${use.fork ? ', a copy of the library component' : ''}</span>${use.overrides.length > 0 ? `<br><span class="muted">Overrides: ${escapeHtml(use.overrides.join('; '))}</span>` : ''}</li>`), 'No product use is in the graph.')}
+<h2>In journeys</h2>
+${list(facts.steps.map((step) => `<li><a href="../stories/${slug(step.storyId)}.html#step-${step.index + 1}">${escapeHtml(step.storyTitle)}, step ${step.index + 1}: ${escapeHtml(step.title)}</a></li>`), 'No journey step shows a screen that uses it.')}
+<h2>Conflicts</h2>
+${list(facts.conflicts.map((conflict) => `<li>${escapeHtml(conflict.title)} <span class="muted">${escapeHtml([conflict.platform, conflict.status === 'open' ? 'open' : `decided: ${conflict.outcome ?? ''}`, conflict.alignment].filter(Boolean).join(', '))}</span></li>`), 'None.')}`
+  return page(semantic.title, body, '')
+}
+
+function componentSlug(id: string): string {
+  return id.replace(/^semantic:/, '').replace(/[^a-z0-9-]+/gi, '-').toLowerCase()
 }
 
 function slug(id: string): string {

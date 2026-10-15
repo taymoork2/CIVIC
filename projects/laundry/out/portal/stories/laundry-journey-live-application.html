@@ -19,6 +19,8 @@ a { color: var(--accent); }
 table { border-collapse: collapse; width: 100%; font-size: 14px; }
 th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--line); }
 td { font-variant-numeric: tabular-nums; }
+td.none { color: var(--fail); }
+td.closest { color: var(--muted); }
 .steps { list-style: none; padding: 0; display: grid; gap: 12px; }
 </style>
 <script defer src="../civic-story.js"></script>
@@ -29,9 +31,10 @@ td { font-variant-numeric: tabular-nums; }
 <h1>Live application</h1>
 <p class="muted">14 steps in the order a person meets them, read from <code>projects/laundry/out/graph.json</code>. Story <code>story:laundry.journey.live-application</code> points at journey <code>target:laundry.journey.live-application</code>.</p>
 <ol class="steps">
-<li><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.account" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.account&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-1"><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.account" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.account&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -50,12 +53,14 @@ code { font-size: 12px; }
 <section><h4>Paths on</h4><p class="muted">None declared.</p></section>
 
 
+
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.closet" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.closet&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-2"><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.closet" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.closet&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -74,12 +79,14 @@ code { font-size: 12px; }
 <section><h4>Paths on</h4><p class="muted">None declared.</p></section>
 
 
+
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.drying" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.drying&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-3"><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.drying" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.drying&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -98,12 +105,14 @@ code { font-size: 12px; }
 <section><h4>Paths on</h4><p class="muted">None declared.</p></section>
 
 
+
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.drying.empty" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.drying.empty&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-4"><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.drying.empty" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.drying.empty&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -122,12 +131,14 @@ code { font-size: 12px; }
 <section><h4>Paths on</h4><p class="muted">None declared.</p></section>
 
 
+
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.drying.putaway-one" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.drying.putaway-one&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-5"><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.drying.putaway-one" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.drying.putaway-one&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -146,12 +157,14 @@ code { font-size: 12px; }
 <section><h4>Paths on</h4><p class="muted">None declared.</p></section>
 
 
+
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.home" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.home&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-6"><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.home" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.home&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -170,12 +183,14 @@ code { font-size: 12px; }
 <section><h4>Paths on</h4><p class="muted">None declared.</p></section>
 
 
+
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.home.no-ready" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.home.no-ready&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-7"><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.home.no-ready" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.home.no-ready&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -194,12 +209,14 @@ code { font-size: 12px; }
 <section><h4>Paths on</h4><p class="muted">None declared.</p></section>
 
 
+
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.household" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.household&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-8"><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.household" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.household&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -218,12 +235,14 @@ code { font-size: 12px; }
 <section><h4>Paths on</h4><p class="muted">None declared.</p></section>
 
 
+
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.join.code" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.join.code&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-9"><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.join.code" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.join.code&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -242,12 +261,14 @@ code { font-size: 12px; }
 <section><h4>Paths on</h4><p class="muted">None declared.</p></section>
 
 
+
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.laundry" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.laundry&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-10"><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.laundry" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.laundry&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -266,12 +287,14 @@ code { font-size: 12px; }
 <section><h4>Paths on</h4><p class="muted">None declared.</p></section>
 
 
+
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.me" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.me&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-11"><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.me" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.me&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -290,12 +313,14 @@ code { font-size: 12px; }
 <section><h4>Paths on</h4><p class="muted">None declared.</p></section>
 
 
+
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.session.sessionid" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.session.sessionid&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-12"><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.session.sessionid" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.session.sessionid&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -314,12 +339,14 @@ code { font-size: 12px; }
 <section><h4>Paths on</h4><p class="muted">None declared.</p></section>
 
 
+
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.settings" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.settings&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-13"><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.settings" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.settings&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -338,12 +365,14 @@ code { font-size: 12px; }
 <section><h4>Paths on</h4><p class="muted">None declared.</p></section>
 
 
+
 </article>
 </template>
 </civic-story></li>
-<li><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.setup" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.setup&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
+<li id="step-14"><civic-story story="story:laundry.journey.live-application" step="target:laundry.app.setup" frames="[{&quot;src&quot;:&quot;http://127.0.0.1:3010/review-frame.html?scenario=app.setup&quot;,&quot;label&quot;:&quot;Play this screen live&quot;,&quot;note&quot;:&quot;Opens the screen in the journey canvas's review frame at http://127.0.0.1:3010, with synthetic data. That server has to be running.&quot;,&quot;sandbox&quot;:&quot;allow-scripts allow-same-origin allow-forms&quot;}]">
 <template shadowrootmode="open">
 <style>:host { display: block; }
+a { color: var(--accent, #2b5fd9); }
 .still { background: var(--panel, #fff); color: var(--text, #1d1d1b); border: 1px solid var(--line, #d9d9d4); border-radius: 10px; padding: 14px 16px; font: 14px/1.5 system-ui, sans-serif; overflow-wrap: anywhere; }
 header p { margin: 0; }
 h3 { font-size: 17px; margin: 2px 0; }
@@ -360,6 +389,7 @@ code { font-size: 12px; }
 <header><p class="muted">Step 14 of 14 <span class="outcome pass">pass</span></p><h3>Live setup</h3><p class="muted"><code>target:laundry.app.setup</code></p></header>
 <section><h4>Evidence</h4><ul><li><span class="outcome pass">pass</span> a finished replay is kept as CIVIC run evidence about the screen the run started from <span class="muted">playwright, e6542c4b3f2f</span></li><li><span class="outcome pass">pass</span> Drying empty has a real return path to Laundry and replay follows it <span class="muted">playwright, e6542c4b3f2f</span></li><li><span class="outcome pass">pass</span> Home outfit editing records portalled inputs, quantities and Escape, then replays the return <span class="muted">playwright, e6542c4b3f2f</span></li><li><span class="outcome pass">pass</span> Home uses the shipped Wear action, captures its real arguments and replays with no second wear <span class="muted">playwright, e6542c4b3f2f</span></li><li><span class="outcome pass">pass</span> no-ready outfit goes to Laundry; a failed Wear stays on Home with a replayable error receipt <span class="muted">playwright, e6542c4b3f2f</span></li><li><span class="outcome pass">pass</span> partial put-away captures quantity, clear/all branches and keeps the remaining piece <span class="muted">playwright, e6542c4b3f2f</span></li><li><span class="outcome pass">pass</span> put-away selection records inputs and actual effects across the empty branch and return <span class="muted">playwright, e6542c4b3f2f</span></li><li><span class="outcome pass">pass</span> saved recordings reopen on their original preset and clock in a fresh preview <span class="muted">playwright, e6542c4b3f2f</span></li><li><span class="outcome pass">pass</span> sensitive fields stay out of recordings and an ambiguous control stops replay before a mutation <span class="muted">playwright, e6542c4b3f2f</span></li></ul></section>
 <section><h4>Paths on</h4><p class="muted">None declared.</p></section>
+
 
 
 </article>
