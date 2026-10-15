@@ -93,6 +93,9 @@ const designTokens = Object.fromEntries(THEMES.map((theme) => [theme, readCssTok
 const codeTokens = Object.fromEntries(THEMES.map((theme) => [theme, readCssTokens(repoText(CODE_TOKENS), theme)])) as Record<(typeof THEMES)[number], Map<string, string>>
 const designEvidence = tokenEvidence('evidence:design-export.laundry-tokens', 'Design reference tokens', DESIGN_TOKENS, 'design-export', `${designTokens.default.size} custom properties in the default theme, ${designTokens.dark.size} in the dark theme.`)
 const codeEvidence = tokenEvidence('evidence:token-analysis.laundry-tokens', 'Generated web tokens', [CODE_TOKENS], 'token-analysis', `${codeTokens.default.size} custom properties in the default theme, ${codeTokens.dark.size} in the dark theme.`)
+// Names the reference and the app use for different things, compared under the app's own name
+// for the reference's role (token-map.json, decided by the owner).
+const tokenMap = new Map(json<{ map: { reference: string; app: string }[] }>('token-map.json').map.map((entry) => [entry.reference, entry.app]))
 const darkOwn = new Set([designTokens, codeTokens].flatMap((side) => [...side.dark].filter(([name, value]) => side.default.get(name) !== value).map(([name]) => name)))
 const tokenOwners: Owner[] = [{ role: 'design', who: 'taymoork2' }, ...OWNERS.filter((owner) => owner.role === 'engineering')]
 const themes = THEMES.map((theme) => ({
@@ -102,7 +105,7 @@ const themes = THEMES.map((theme) => ({
     { tokens: codeTokens[theme], label: "Laundry's generated tokens.css", evidence: codeEvidence },
     // The dark theme is compared only where it sets something itself, on either side, so a
     // name it inherits isn't raised twice.
-    { owners: tokenOwners, theme, ...(theme === 'dark' ? { names: darkOwn } : {}) },
+    { owners: tokenOwners, theme, map: tokenMap, ...(theme === 'dark' ? { names: darkOwn } : {}) },
   ),
 }))
 const tokenRecords = [...new Map(themes.flatMap((compared) => compared.tokens).map((token) => [token.id, token])).values()]
@@ -203,12 +206,18 @@ Built by \`node projects/laundry/build.ts\` from Open Design's source-render rec
 Register it as Laundry's design line with \`bin/civic design projects/laundry/out/design.json\`, and a designer's proposal as a draft with \`bin/civic draft <its design.json> --name "<draft>"\`. \`bin/civic lens <draft line>\` then says which frames the proposal changes and reads each one on this code line.
 `
 
-const decisionFor = (conflictId: string) => decisions.decisions.find((decision) => decision.conflictId === conflictId)
-const themeSection = ({ theme, tokens: shared, conflicts, agreed, designOnly }: (typeof themes)[number]) => `## ${theme === 'default' ? 'Default theme' : 'Dark theme'}
+// The decision in force: the one no later decision on the same conflict supersedes.
+const decisionFor = (conflictId: string) => {
+  const on = decisions.decisions.filter((decision) => decision.conflictId === conflictId)
+  return on.filter((decision) => !on.some((other) => other.supersedes === decision.id)).at(-1)
+}
+const themeSection = ({ theme, tokens: shared, conflicts, agreed, designOnly, mapped }: (typeof themes)[number]) => `## ${theme === 'default' ? 'Default theme' : 'Dark theme'}
 
-${theme === 'default' ? `The design reference sets ${designTokens[theme].size} and the code ${codeTokens[theme].size}; ${shared.length} names are set by both.` : `Only the names the dark theme sets itself, on either side, are compared again: ${shared.length} of them are set by both.`} ${conflicts.length} ${conflicts.length === 1 ? 'is' : 'are'} set differently, ${agreed.length} the same, and ${designOnly.length} only in the reference.
+${theme === 'default' ? `The design reference sets ${designTokens[theme].size} and the code ${codeTokens[theme].size}; ${shared.length} names are compared.` : `Only the names the dark theme sets itself, on either side, are compared again: ${shared.length} of them.`} ${conflicts.length} ${conflicts.length === 1 ? 'is' : 'are'} set differently, ${agreed.length} the same, and ${designOnly.length} only in the reference.
 
-${conflicts.length > 0 ? `| Token | Design reference | Code | Decision |\n|---|---|---|---|\n${conflicts.map((conflict) => { const name = conflict.targetId.slice('token:'.length); const call = decisionFor(conflict.id); return `| \`--${name}\` | ${designTokens[theme].get(name)} | ${codeTokens[theme].get(name)} | ${call ? `${call.outcome}: ${call.title}` : 'Undecided'} |` }).join('\n')}` : 'Nothing is set differently.'}
+${conflicts.length > 0 ? `| Token | Design reference | Code | Decision |\n|---|---|---|---|\n${conflicts.map((conflict) => { const name = conflict.targetId.slice('token:'.length); const as = tokenMap.get(name) ?? name; const call = decisionFor(conflict.id); return `| \`--${name}\`${as === name ? '' : ` as \`--${as}\``} | ${designTokens[theme].get(name)} | ${codeTokens[theme].get(as) ?? 'not set yet'} | ${call ? `${call.outcome}: ${call.title}` : 'Undecided'} |` }).join('\n')}` : 'Nothing is set differently.'}
+
+${mapped.length > 0 ? `Compared under the app's own name, because the two use the same name for different things ([\`token-map.json\`](../token-map.json)): ${mapped.map(([name, as]) => `\`--${name}\` as \`--${as}\``).join(', ')}. The app's own ${mapped.map(([name]) => `\`--${name}\``).join(', ')} ${mapped.length === 1 ? 'keeps its' : 'keep their'} meaning and ${mapped.length === 1 ? "isn't" : "aren't"} compared with the reference.` : ''}
 
 Set the same: ${agreed.map((name) => `\`--${name}\``).join(', ') || 'none'}.
 

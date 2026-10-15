@@ -6902,7 +6902,7 @@
     {
       "id": "token:accent",
       "kind": "token",
-      "title": "--accent",
+      "title": "--accent as --reference-accent",
       "path": "accent",
       "type": "color",
       "source": {
@@ -6911,7 +6911,7 @@
         "revision": "783e0742dc07ab01d420acbbddca7fddd4c85e73",
         "path": "apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
-        "anchor": "--accent"
+        "anchor": "--reference-accent"
       }
     },
     {
@@ -7097,7 +7097,7 @@
     {
       "id": "token:space-2",
       "kind": "token",
-      "title": "--space-2",
+      "title": "--space-2 as --reference-space-2",
       "path": "space-2",
       "type": "dimension",
       "source": {
@@ -7106,13 +7106,13 @@
         "revision": "783e0742dc07ab01d420acbbddca7fddd4c85e73",
         "path": "apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
-        "anchor": "--space-2"
+        "anchor": "--reference-space-2"
       }
     },
     {
       "id": "token:space-4",
       "kind": "token",
-      "title": "--space-4",
+      "title": "--space-4 as --reference-space-4",
       "path": "space-4",
       "type": "dimension",
       "source": {
@@ -7121,13 +7121,13 @@
         "revision": "783e0742dc07ab01d420acbbddca7fddd4c85e73",
         "path": "apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
-        "anchor": "--space-4"
+        "anchor": "--reference-space-4"
       }
     },
     {
       "id": "token:space-6",
       "kind": "token",
-      "title": "--space-6",
+      "title": "--space-6 as --reference-space-6",
       "path": "space-6",
       "type": "dimension",
       "source": {
@@ -7136,7 +7136,7 @@
         "revision": "783e0742dc07ab01d420acbbddca7fddd4c85e73",
         "path": "apps/web/src/generated/tokens.css",
         "contentHash": "sha256:f43cde5ee110f183c75c39c35dc5fa715250dd26833906a4a85983a23103961f",
-        "anchor": "--space-6"
+        "anchor": "--reference-space-6"
       }
     },
     {
@@ -8790,10 +8790,10 @@
     {
       "id": "conflict:token.accent",
       "kind": "contract-conflict",
-      "title": "--accent differs between design and code",
+      "title": "--accent differs from the code's --reference-accent",
       "targetId": "token:accent",
       "platform": "web",
-      "summary": "Laundry's design reference sets --accent to #164be0; Laundry's generated tokens.css sets it to #1f45ff.",
+      "summary": "Laundry's design reference sets --accent to #164be0; Laundry's generated tokens.css doesn't set --reference-accent yet.",
       "sides": [
         {
           "claim": "Laundry's design reference sets --accent to #164be0.",
@@ -8802,7 +8802,7 @@
           ]
         },
         {
-          "claim": "Laundry's generated tokens.css sets --accent to #1f45ff.",
+          "claim": "Laundry's generated tokens.css doesn't set --reference-accent yet.",
           "evidenceIds": [
             "evidence:token-analysis.laundry-tokens"
           ]
@@ -8824,10 +8824,10 @@
     {
       "id": "conflict:token.accent.dark",
       "kind": "contract-conflict",
-      "title": "--accent differs between design and code in the dark theme",
+      "title": "--accent differs from the code's --reference-accent in the dark theme",
       "targetId": "token:accent",
       "platform": "web",
-      "summary": "Laundry's design reference sets --accent to #2f4cf0 in the dark theme; Laundry's generated tokens.css sets it to #9db4ff.",
+      "summary": "Laundry's design reference sets --accent to #2f4cf0 in the dark theme; Laundry's generated tokens.css doesn't set --reference-accent yet in the dark theme.",
       "sides": [
         {
           "claim": "Laundry's design reference sets --accent to #2f4cf0 in the dark theme.",
@@ -8836,7 +8836,7 @@
           ]
         },
         {
-          "claim": "Laundry's generated tokens.css sets --accent to #9db4ff in the dark theme.",
+          "claim": "Laundry's generated tokens.css doesn't set --reference-accent yet in the dark theme.",
           "evidenceIds": [
             "evidence:token-analysis.laundry-tokens"
           ]
@@ -8858,10 +8858,10 @@
     {
       "id": "conflict:token.space-2",
       "kind": "contract-conflict",
-      "title": "--space-2 differs between design and code",
+      "title": "--space-2 differs from the code's --reference-space-2",
       "targetId": "token:space-2",
       "platform": "web",
-      "summary": "Laundry's design reference sets --space-2 to 2px; Laundry's generated tokens.css sets it to 0.5rem.",
+      "summary": "Laundry's design reference sets --space-2 to 2px; Laundry's generated tokens.css doesn't set --reference-space-2 yet.",
       "sides": [
         {
           "claim": "Laundry's design reference sets --space-2 to 2px.",
@@ -8870,7 +8870,7 @@
           ]
         },
         {
-          "claim": "Laundry's generated tokens.css sets --space-2 to 0.5rem.",
+          "claim": "Laundry's generated tokens.css doesn't set --reference-space-2 yet.",
           "evidenceIds": [
             "evidence:token-analysis.laundry-tokens"
           ]
@@ -8892,10 +8892,10 @@
     {
       "id": "conflict:token.space-4",
       "kind": "contract-conflict",
-      "title": "--space-4 differs between design and code",
+      "title": "--space-4 differs from the code's --reference-space-4",
       "targetId": "token:space-4",
       "platform": "web",
-      "summary": "Laundry's design reference sets --space-4 to 4px; Laundry's generated tokens.css sets it to 1rem.",
+      "summary": "Laundry's design reference sets --space-4 to 4px; Laundry's generated tokens.css doesn't set --reference-space-4 yet.",
       "sides": [
         {
           "claim": "Laundry's design reference sets --space-4 to 4px.",
@@ -8904,7 +8904,7 @@
           ]
         },
         {
-          "claim": "Laundry's generated tokens.css sets --space-4 to 1rem.",
+          "claim": "Laundry's generated tokens.css doesn't set --reference-space-4 yet.",
           "evidenceIds": [
             "evidence:token-analysis.laundry-tokens"
           ]
@@ -8926,10 +8926,10 @@
     {
       "id": "conflict:token.space-6",
       "kind": "contract-conflict",
-      "title": "--space-6 differs between design and code",
+      "title": "--space-6 differs from the code's --reference-space-6",
       "targetId": "token:space-6",
       "platform": "web",
-      "summary": "Laundry's design reference sets --space-6 to 6px; Laundry's generated tokens.css sets it to 2rem.",
+      "summary": "Laundry's design reference sets --space-6 to 6px; Laundry's generated tokens.css doesn't set --reference-space-6 yet.",
       "sides": [
         {
           "claim": "Laundry's design reference sets --space-6 to 6px.",
@@ -8938,7 +8938,7 @@
           ]
         },
         {
-          "claim": "Laundry's generated tokens.css sets --space-6 to 2rem.",
+          "claim": "Laundry's generated tokens.css doesn't set --reference-space-6 yet.",
           "evidenceIds": [
             "evidence:token-analysis.laundry-tokens"
           ]
@@ -9483,6 +9483,106 @@
       "evidenceIds": [
         "evidence:token-analysis.laundry-tokens"
       ]
+    },
+    {
+      "id": "decision:token.accent.2",
+      "kind": "decision",
+      "title": "The reference's --accent maps to the app's new --reference-accent",
+      "conflictId": "conflict:token.accent",
+      "outcome": "change-implementation",
+      "classification": "temporary-gap",
+      "alignment": "awaiting-adoption",
+      "decidedBy": {
+        "role": "design",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-15T00:57:44.000Z",
+      "rationale": "Owner decision (Taymoor, 2026-10-15), superseding Claude's 2026-10-13 call. The reference's --accent is the primary or signature role (#164be0 light). It maps to an additive app property, --reference-accent: var(--button). The app's own --accent keeps its meaning as the interactive color (#1f45ff), and --focus is unchanged. The names are separate namespaces, not equivalent values, so the reference's declarations stay as they are (token-map.json). Settled once the app's generated tokens carry --reference-accent.",
+      "evidenceIds": [
+        "evidence:design-export.laundry-tokens",
+        "evidence:token-analysis.laundry-tokens"
+      ],
+      "supersedes": "decision:token.accent"
+    },
+    {
+      "id": "decision:token.accent.dark.2",
+      "kind": "decision",
+      "title": "The reference's dark --accent maps to the app's new --reference-accent",
+      "conflictId": "conflict:token.accent.dark",
+      "outcome": "change-implementation",
+      "classification": "temporary-gap",
+      "alignment": "awaiting-adoption",
+      "decidedBy": {
+        "role": "design",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-15T00:57:44.000Z",
+      "rationale": "Owner decision (Taymoor, 2026-10-15), superseding Claude's 2026-10-13 call. In the dark theme the reference's --accent is the cobalt signature #2f4cf0. It maps to the app's --reference-accent: var(--button), which resolves to the same value in the dark theme. The app's own dark --accent stays the interactive #9db4ff, and --focus is unchanged (token-map.json). Settled once the app's generated tokens carry --reference-accent.",
+      "evidenceIds": [
+        "evidence:design-export.laundry-tokens",
+        "evidence:token-analysis.laundry-tokens"
+      ],
+      "supersedes": "decision:token.accent.dark"
+    },
+    {
+      "id": "decision:token.space-2.2",
+      "kind": "decision",
+      "title": "The reference's --space-2 maps to the app's new --reference-space-2",
+      "conflictId": "conflict:token.space-2",
+      "outcome": "change-implementation",
+      "classification": "temporary-gap",
+      "alignment": "awaiting-adoption",
+      "decidedBy": {
+        "role": "design",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-15T00:57:44.000Z",
+      "rationale": "Owner decision (Taymoor, 2026-10-15), superseding Claude's 2026-10-13 call. The reference's --space-2 is a 2px layout role. It maps to an additive app property, --reference-space-2: 2px. The app's own --space-2 stays 0.5rem on its spacing scale. The names are separate namespaces, not equivalent values, so the reference's declarations stay as they are (token-map.json). Settled once the app's generated tokens carry --reference-space-2.",
+      "evidenceIds": [
+        "evidence:design-export.laundry-tokens",
+        "evidence:token-analysis.laundry-tokens"
+      ],
+      "supersedes": "decision:token.space-2"
+    },
+    {
+      "id": "decision:token.space-4.2",
+      "kind": "decision",
+      "title": "The reference's --space-4 maps to the app's new --reference-space-4",
+      "conflictId": "conflict:token.space-4",
+      "outcome": "change-implementation",
+      "classification": "temporary-gap",
+      "alignment": "awaiting-adoption",
+      "decidedBy": {
+        "role": "design",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-15T00:57:44.000Z",
+      "rationale": "Owner decision (Taymoor, 2026-10-15), superseding Claude's 2026-10-13 call. The reference's --space-4 is a 4px layout role. It maps to an additive app property, --reference-space-4: 4px. The app's own --space-4 stays 1rem on its spacing scale. The names are separate namespaces, not equivalent values, so the reference's declarations stay as they are (token-map.json). Settled once the app's generated tokens carry --reference-space-4.",
+      "evidenceIds": [
+        "evidence:design-export.laundry-tokens",
+        "evidence:token-analysis.laundry-tokens"
+      ],
+      "supersedes": "decision:token.space-4"
+    },
+    {
+      "id": "decision:token.space-6.2",
+      "kind": "decision",
+      "title": "The reference's --space-6 maps to the app's new --reference-space-6",
+      "conflictId": "conflict:token.space-6",
+      "outcome": "change-implementation",
+      "classification": "temporary-gap",
+      "alignment": "awaiting-adoption",
+      "decidedBy": {
+        "role": "design",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-15T00:57:44.000Z",
+      "rationale": "Owner decision (Taymoor, 2026-10-15), superseding Claude's 2026-10-13 call. The reference's --space-6 is a 6px layout role. It maps to an additive app property, --reference-space-6: 6px. The app's own --space-6 stays 2rem on its spacing scale. The names are separate namespaces, not equivalent values, so the reference's declarations stay as they are (token-map.json). Settled once the app's generated tokens carry --reference-space-6.",
+      "evidenceIds": [
+        "evidence:design-export.laundry-tokens",
+        "evidence:token-analysis.laundry-tokens"
+      ],
+      "supersedes": "decision:token.space-6"
     }
   ],
   "links": [

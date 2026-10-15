@@ -78,6 +78,8 @@ export interface TokenComparison {
   agreed: string[]
   /** Names only the design sets: roles the code has no token for. Reported, not raised. */
   designOnly: string[]
+  /** Design names compared under another code name, from `map`, as [design, code]. */
+  mapped: [string, string][]
 }
 
 /**
@@ -96,36 +98,40 @@ export function compareCssTokens(design: TokenSide, code: TokenSide, options: { 
   const conflicts: ContractConflict[] = []
   const agreed: string[] = []
   const designOnly: string[] = []
+  const mapped: [string, string][] = []
   for (const [name, value] of design.tokens) {
     if (options.names && !options.names.has(name)) continue
-    const built = code.tokens.get(name)
-    if (built === undefined) {
+    const as = options.map?.get(name) ?? name
+    if (as !== name) mapped.push([name, as])
+    const built = code.tokens.get(as)
+    if (built === undefined && as === name) {
       designOnly.push(name)
       continue
     }
     const id = `token:${name}`
-    tokens.push({ id, kind: 'token', title: `--${name}`, path: name, type: typeOf(value), source: { ...code.evidence.source, anchor: `--${name}` } })
-    if (sameCssValue(value, built)) {
+    tokens.push({ id, kind: 'token', title: as === name ? `--${name}` : `--${name} as --${as}`, path: name, type: typeOf(value), source: { ...code.evidence.source, anchor: `--${as}` } })
+    if (built !== undefined && sameCssValue(value, built)) {
       agreed.push(name)
       continue
     }
+    const codeClaim = built === undefined ? `${code.label} doesn't set --${as} yet${where}` : as === name ? `${code.label} sets it to ${built}` : `${code.label} sets --${as} to ${built}`
     conflicts.push({
       id: `conflict:token.${name}${dark ? '.dark' : ''}`,
       kind: 'contract-conflict',
-      title: `--${name} differs between design and code${where}`,
+      title: as === name ? `--${name} differs between design and code${where}` : `--${name} differs from the code's --${as}${where}`,
       targetId: id,
       platform: 'web',
-      summary: `${design.label} sets --${name} to ${value}${where}; ${code.label} sets it to ${built}.`,
+      summary: `${design.label} sets --${name} to ${value}${where}; ${codeClaim}.`,
       sides: [
         { claim: `${design.label} sets --${name} to ${value}${where}.`, evidenceIds: [design.evidence.id] },
-        { claim: `${code.label} sets --${name} to ${built}${where}.`, evidenceIds: [code.evidence.id] },
+        { claim: built === undefined ? `${codeClaim}.` : `${code.label} sets --${as} to ${built}${where}.`, evidenceIds: [code.evidence.id] },
       ],
       classification: 'unclassified',
       owners: options.owners,
       alignment: 'unreviewed-drift',
     })
   }
-  return { tokens, conflicts, agreed, designOnly }
+  return { tokens, conflicts, agreed, designOnly, mapped }
 }
 
 function typeOf(value: string): string {

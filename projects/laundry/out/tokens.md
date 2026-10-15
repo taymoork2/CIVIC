@@ -4,14 +4,16 @@ Built by `node projects/laundry/build.ts` from the design reference's stylesheet
 
 ## Default theme
 
-The design reference sets 120 and the code 129; 18 names are set by both. 4 are set differently, 14 the same, and 102 only in the reference.
+The design reference sets 120 and the code 129; 18 names are compared. 4 are set differently, 14 the same, and 102 only in the reference.
 
 | Token | Design reference | Code | Decision |
 |---|---|---|---|
-| `--accent` | #164be0 | #1f45ff | update-design: Laundry's accent is the shipped #1f45ff |
-| `--space-2` | 2px | 0.5rem | update-design: --space-2 keeps the code's rem scale |
-| `--space-4` | 4px | 1rem | update-design: --space-4 keeps the code's rem scale |
-| `--space-6` | 6px | 2rem | update-design: --space-6 keeps the code's rem scale |
+| `--accent` as `--reference-accent` | #164be0 | not set yet | change-implementation: The reference's --accent maps to the app's new --reference-accent |
+| `--space-2` as `--reference-space-2` | 2px | not set yet | change-implementation: The reference's --space-2 maps to the app's new --reference-space-2 |
+| `--space-4` as `--reference-space-4` | 4px | not set yet | change-implementation: The reference's --space-4 maps to the app's new --reference-space-4 |
+| `--space-6` as `--reference-space-6` | 6px | not set yet | change-implementation: The reference's --space-6 maps to the app's new --reference-space-6 |
+
+Compared under the app's own name, because the two use the same name for different things ([`token-map.json`](../token-map.json)): `--accent` as `--reference-accent`, `--space-2` as `--reference-space-2`, `--space-4` as `--reference-space-4`, `--space-6` as `--reference-space-6`. The app's own `--accent`, `--space-2`, `--space-4`, `--space-6` keep their meaning and aren't compared with the reference.
 
 Set the same: `--bg`, `--conflict-bg`, `--e1`, `--e2`, `--font-mono`, `--glass`, `--ink`, `--radius-card`, `--radius-control`, `--radius-mark`, `--ready-bg`, `--selection`, `--surface`, `--washing-bg`.
 
@@ -19,11 +21,13 @@ Only in the design reference: `--ac`, `--accent-hover`, `--amB`, `--amF`, `--amI
 
 ## Dark theme
 
-Only the names the dark theme sets itself, on either side, are compared again: 12 of them are set by both. 1 is set differently, 11 the same, and 50 only in the reference.
+Only the names the dark theme sets itself, on either side, are compared again: 12 of them. 1 is set differently, 11 the same, and 50 only in the reference.
 
 | Token | Design reference | Code | Decision |
 |---|---|---|---|
-| `--accent` | #2f4cf0 | #9db4ff | update-design: Laundry's dark accent is the shipped #9db4ff |
+| `--accent` as `--reference-accent` | #2f4cf0 | not set yet | change-implementation: The reference's dark --accent maps to the app's new --reference-accent |
+
+Compared under the app's own name, because the two use the same name for different things ([`token-map.json`](../token-map.json)): `--accent` as `--reference-accent`. The app's own `--accent` keeps its meaning and isn't compared with the reference.
 
 Set the same: `--bg`, `--conflict-bg`, `--e1`, `--e2`, `--glass`, `--ink`, `--ready-bg`, `--selection`, `--surface`, `--text-tracking`, `--washing-bg`.
 
