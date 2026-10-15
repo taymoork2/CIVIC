@@ -37,7 +37,7 @@ export interface ReactCodeOptions {
   capturedAt: string
 }
 
-interface JsxElement {
+export interface JsxElement {
   start: number
   props: Map<string, string | number | boolean | undefined>
   inner: string
@@ -245,6 +245,15 @@ function imports(text: string): { local: string; symbol: string; from: string }[
 }
 
 /** Every JSX element with this tag: its props and, unless it closes itself, what is inside it. */
+export function jsxElements(text: string, tag: string): JsxElement[] {
+  return elements(text, tag)
+}
+
+/** A file's named and default imports, by local name, exported symbol and module. */
+export function jsImports(text: string): { local: string; symbol: string; from: string }[] {
+  return imports(text)
+}
+
 function elements(text: string, tag: string): JsxElement[] {
   const found: JsxElement[] = []
   const open = new RegExp(`<${tag}(?=[\\s/>])`, 'g')

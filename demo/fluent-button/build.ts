@@ -9,7 +9,7 @@
 //   node build.ts --check   fail if out/ is not what the inputs produce
 
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
-import { assertValid, contextFor, gapsIn, indexGraph, methodCheck, readMethodProfile, renderGaps, renderMethod, renderPortal, renderWorkOrder, storiesIn, type DecisionFile, type Evidence, type GraphRecord, type Link, type SemanticComponent, type SourceRef } from '../../graph/src/index.ts'
+import { assertValid, componentStoriesIn, contextFor, gapsIn, indexGraph, methodCheck, readMethodProfile, renderGaps, renderMethod, renderPortal, renderWorkOrder, storiesIn, type DecisionFile, type Evidence, type GraphRecord, type Link, type SemanticComponent, type SourceRef } from '../../graph/src/index.ts'
 import {
   applyDecisions,
   assemble,
@@ -25,6 +25,8 @@ import {
   readFigmaComponentSet,
   readPlatformComponent,
   readPlaywrightReport,
+  readStorybookStories,
+  renderStorybookImport,
   swiftEnumCases,
   swiftPropertyDefault,
   swiftPublicMembers,
@@ -215,8 +217,23 @@ const tokenTiers = methodCheck(indexGraph(resolved), readMethodProfile(here('con
 // Component stories (decision 0013, point 1): the Button's code stories come from the variant
 // matrix. The React Button's run through its harness, built by `pnpm --dir web run bundle:story`
 // into web/dist (not committed); the iOS and Android stories stay stills until device runners.
-const portal = renderPortal(indexGraph(resolved), storiesIn(indexGraph(resolved), 'demo/fluent-button/out/resolved.graph.json'), {
+// The one-time Storybook import (decision 0013): Fluent's own Button stories, vendored at the
+// release of the React types, become component stories, pruned where the contract shows them.
+const resolvedGraph = indexGraph(resolved)
+const reactButton = resolvedGraph.get(platformMapping('web').id)
+if (reactButton?.kind !== 'platform-component') throw new Error('The resolved graph has no React Button.')
+const storybookFiles = Object.keys(sources.inputs['react-button-stories']!.files).filter((name) => name.endsWith('.stories.tsx')).map((name) => ({ name, text: text(`sources/react-button-stories/${name}`) }))
+const storybook = readStorybookStories(storybookFiles, {
+  component: reactButton,
+  semantic,
+  extensionPoints: resolvedGraph.ofKind('extension-point'),
+  variantProperty: platformMapping('web').variantProperty,
+  packages: ['@fluentui/react-components', reactButton.library.package],
+  path: 'sources/react-button-stories',
+})
+const portal = renderPortal(resolvedGraph, storiesIn(resolvedGraph, 'demo/fluent-button/out/resolved.graph.json'), {
   title: 'Fluent Button: component stories',
+  imported: storybook.stories,
   harnesses: { [platformMapping('web').id]: { module: '../../../web/dist/story-harness.js' } },
 })
 
@@ -228,6 +245,7 @@ const outputs: Record<string, string> = {
   'out/resolved.context.android.brand-outline.md': resolvedExport.context,
   'out/resolved.gaps.md': resolvedExport.gaps,
   ...Object.fromEntries([...portal].map(([path, body]) => [`out/portal/${path}`, body])),
+  'out/storybook-import.md': `${renderStorybookImport(storybook, componentStoriesIn(resolvedGraph, storybook.stories))}\n`,
   'out/token-tiers.md': `# Fluent Button: token tiers\n\nThe tokens each Button implementation reads, checked against the token-tier profile in [\`contract/method.json\`](../contract/method.json) (decision 0014). Only the React Button's token reads are in the graph, read from its styles; the iOS and Android token sets are read for their background colors as evidence, not as token reads. Findings are advisory.\n\n${renderMethod(indexGraph(resolved), tokenTiers)}\n`,
 }
 
