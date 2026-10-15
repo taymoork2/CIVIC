@@ -412,8 +412,7 @@ ${groups.join('\n')}`
 <article class="still">
 <h3>${escapeHtml(story.title)}</h3>
 <p><code>${escapeHtml(component.symbol)}</code> with <code>${escapeHtml(story.expression)}</code>${story.state ? `, ${escapeHtml(story.state)}` : ''}${Object.entries(story.props ?? {}).map(([name, value]) => `, <code>${escapeHtml(name)}${value === null ? '' : `=${escapeHtml(String(value))}`}</code>${value === null ? ' (set in code)' : ''}`).join('')} <span class="muted">(${escapeHtml(story.mapping)}${story.from === 'usage' ? ', from a product use' : story.from === 'storybook' ? ', imported from Storybook' : ''})</span></p>
-${story.note ? `<p class="muted">${escapeHtml(story.note)}</p>` : ''}
-${story.storybook && story.storybook.length > 0 ? `<p class="muted">Stands for Storybook's ${escapeHtml([...new Set(story.storybook.map((ref) => `${ref.story} (“${ref.label}”)`))].join(', '))}.${[...new Set(story.storybook.flatMap((ref) => ref.undeclared ?? []))].length > 0 ? ` It also sets ${escapeHtml([...new Set(story.storybook.flatMap((ref) => ref.undeclared ?? []))].join(', '))}, which no extension point declares.` : ''}</p>` : ''}
+${story.note ? `<p class="muted">${escapeHtml(story.note)}</p>` : ''}${story.storybook && story.storybook.length > 0 ? `\n<p class="muted">Stands for Storybook's ${escapeHtml([...new Set(story.storybook.map((ref) => `${ref.story} (“${ref.label}”)`))].join(', '))}.${[...new Set(story.storybook.flatMap((ref) => ref.undeclared ?? []))].length > 0 ? ` It also sets ${escapeHtml([...new Set(story.storybook.flatMap((ref) => ref.undeclared ?? []))].join(', '))}, which no extension point declares.` : ''}</p>` : ''}
 <p class="muted">${used > 0 ? `${used} product use${used === 1 ? '' : 's'} in code show${used === 1 ? 's' : ''} this.` : 'No product use in code shows this yet.'}</p>
 </article>
 </template>
