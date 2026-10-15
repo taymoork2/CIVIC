@@ -10,6 +10,7 @@ import {
   type EdgeRef,
   type ElementLocator,
   type GraphDocument,
+  type Environment,
   type Lane,
   type Line,
   type Owner,
@@ -156,6 +157,78 @@ export function registerPullRequest(context: Context, input: PullRequestInput): 
     const origins = [...(line.previews ?? []).map((preview) => preview.url), ...(input.preview ? [new URL(input.preview).origin] : [])]
     if (origins.length) line.previews = [...new Set(origins)].map((url) => ({ url, revision: head }))
     return structuredClone(line)
+  })
+}
+
+export interface ReleaseInput {
+  /** `npm` for a code package version, `figma` for a design library publish. */
+  tool: 'npm' | 'figma'
+  /** `<package>@<version>` or `<file key>@<version>`. */
+  ref: string
+  /** The line it was released from; main by default. */
+  from?: string
+  title?: string
+}
+
+/**
+ * Records a library release as its own line (decision 0013, point 3): a published version a
+ * product can pin, so a story can be read on it. A release never moves or merges, so
+ * registering it again only renames it.
+ */
+export function registerRelease(context: Context, input: ReleaseInput): Line {
+  allow(context, 'write', 'register a library release')
+  const at = input.ref.lastIndexOf('@')
+  if (at <= 0 || at === input.ref.length - 1) throw new Error(`A release is <package>@<version> or <file key>@<version>. Got ${input.ref}.`)
+  const version = input.ref.slice(at + 1)
+  return context.store.transact((document) => {
+    ensureLines(document, context.checkout)
+    const base = input.from ?? mainLineId()
+    if (!document.records.some((record) => record.id === base && record.kind === 'line')) throw new Error(`No line ${base} to release from. \`civic lines\` lists them.`)
+    const id = `line:${input.tool}.release.${idPath(input.ref.replaceAll('@', '.'))}`
+    let line = document.records.find((record): record is Line => record.id === id && record.kind === 'line')
+    if (!line) {
+      line = { id, kind: 'line', title: input.title ?? input.ref, type: 'release', tool: input.tool, ref: input.ref, base, head: version, status: 'open' }
+      document.records.push(line)
+    } else if (input.title) line.title = input.title
+    return structuredClone(line)
+  })
+}
+
+export interface EnvironmentInput {
+  name: string
+  title?: string
+  url?: string
+  canvas?: boolean
+  /** Lines deployed there, each at a revision; a line given without one runs at its head. */
+  runs: { line: string; revision?: string }[]
+}
+
+/**
+ * Records which revision of which line runs in an environment, such as staging or production
+ * (decision 0013, point 3). Each call is an observation: it replaces the revision of each line
+ * it names and keeps the others.
+ */
+export function recordEnvironment(context: Context, input: EnvironmentInput): Environment {
+  allow(context, 'write', 'record an environment')
+  if (input.runs.length === 0) throw new Error('Name at least one line that runs there: --runs <line>[@<revision>].')
+  const observedAt = nowOf(context).toISOString()
+  return context.store.transact((document) => {
+    ensureLines(document, context.checkout)
+    const id = `environment:${idPath(input.name)}`
+    let environment = document.records.find((record): record is Environment => record.id === id && record.kind === 'environment')
+    if (!environment) {
+      environment = { id, kind: 'environment', title: input.title ?? input.name, runs: [] }
+      document.records.push(environment)
+    }
+    if (input.title) environment.title = input.title
+    if (input.url) environment.url = new URL(input.url).origin
+    if (input.canvas !== undefined) environment.canvas = input.canvas
+    for (const run of input.runs) {
+      const line = document.records.find((record): record is Line => record.id === run.line && record.kind === 'line')
+      if (!line) throw new Error(`No line ${run.line}. \`civic lines\` lists them.`)
+      environment.runs = [...environment.runs.filter((item) => item.line !== line.id), { line: line.id, revision: run.revision ?? line.head, observedAt }]
+    }
+    return structuredClone(environment)
   })
 }
 

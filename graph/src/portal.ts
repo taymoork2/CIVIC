@@ -4,7 +4,8 @@ import { componentFacts, type ComponentFacts } from './component-page.ts'
 import { componentStoriesIn, type ComponentStory } from './component-story.ts'
 import { forecastLabel } from './forecast.ts'
 import type { Graph } from './graph.ts'
-import { RUN_METHODS, type Evidence } from './schema.ts'
+import { describeLens, lensView, type ResolvedLens } from './lens.ts'
+import { RUN_METHODS, type Evidence, type GraphRecord } from './schema.ts'
 import type { StoriesFile, Story, StoryStep } from './story.ts'
 import { renderReplayPage, type RecordedTape } from './replay-player.ts'
 import { frameWalk, renderWalkPage, type FrameWalk } from './walk.ts'
@@ -42,6 +43,13 @@ export interface PortalOptions {
    * with the props of `context.component`. Its code stories then run in the page as islands.
    */
   harnesses?: Readonly<Record<string, HarnessOptions>>
+  /**
+   * The lens the portal is read through (decision 0013, point 3): one design line, one code
+   * line and one environment, from the review store's records. Each step then shows its frames
+   * on the design line, the run evidence on the code line, and whether the environment runs it,
+   * and the lens goes into every story's link. Without one, a step shows everything the graph has.
+   */
+  lens?: { resolved: ResolvedLens; records: readonly GraphRecord[] }
 }
 
 export interface HarnessOptions {
@@ -97,9 +105,9 @@ function indexPage(graph: Graph, stories: StoriesFile, options: PortalOptions): 
     const count = (outcome: string) => outcomes.filter((item) => item === outcome).length
     const records = new Set(story.steps.flatMap((step) => step.recordIds)).size
     const walk = story.steps.some((step) => step.walk)
-    return `<tr><th scope="row"><a href="stories/${slug(story.id)}.html">${escapeHtml(story.title)}</a>${walk ? ' <span class="tag">frame walk</span>' : ''}</th><td>${story.steps.length}</td><td>${count('pass')}</td><td>${count('fail')}</td><td>${count('none')}</td><td>${records}</td></tr>`
+    return `<tr><th scope="row"><a href="stories/${slug(story.id)}.html${lensSuffix(options)}">${escapeHtml(story.title)}</a>${walk ? ' <span class="tag">frame walk</span>' : ''}</th><td>${story.steps.length}</td><td>${count('pass')}</td><td>${count('fail')}</td><td>${count('none')}</td><td>${records}</td></tr>`
   })
-  const body = `<h1>${escapeHtml(options.title)}</h1>
+  const body = `<h1>${escapeHtml(options.title)}</h1>${lensBar(options)}
 <p class="muted">Journey stories read from <code>${escapeHtml(stories.graph)}</code>. A story points at the graph's own records, so every still here shows what the graph holds now; nothing is recorded or copied for it.</p>
 ${stories.stories.length > 0 ? `<div class="table"><table>
 <thead><tr><th scope="col">Story</th><th scope="col">Steps</th><th scope="col">Passing</th><th scope="col">Failing</th><th scope="col">No run evidence</th><th scope="col">Open records</th></tr></thead>
@@ -118,16 +126,16 @@ function storyPage(graph: Graph, stories: StoriesFile, story: Story, walk: Frame
   const steps = story.steps.map((step, index) => {
     const frames = frameTiers(graph, story, step, options)
     const island = islandOf(graph, step, options)
-    const attributes = [`story="${escapeHtml(story.id)}"`, `step="${escapeHtml(step.targetId)}"`, ...(island ? [`island="${escapeHtml(JSON.stringify(island))}"`] : []), ...(frames.length > 0 ? [`frames="${escapeHtml(JSON.stringify(frames))}"`] : [])]
+    const attributes = [`story="${escapeHtml(story.id)}"`, `step="${escapeHtml(step.targetId)}"`, ...(options.lens?.resolved.query ? [`lens="${escapeHtml(options.lens.resolved.query)}"`] : []), ...(island ? [`island="${escapeHtml(JSON.stringify(island))}"`] : []), ...(frames.length > 0 ? [`frames="${escapeHtml(JSON.stringify(frames))}"`] : [])]
     return `<civic-story ${attributes.join(' ')}>
 <template shadowrootmode="open">
 <style>${STILL_STYLE}</style>
-${still(graph, story, step, index, walk)}
+${still(graph, story, step, index, walk, options)}
 </template>
 </civic-story>`
   })
   const body = `<p class="crumbs"><a href="../index.html">All stories</a></p>
-<h1>${escapeHtml(story.title)}</h1>
+<h1>${escapeHtml(story.title)}</h1>${lensBar(options)}
 <p class="muted">${story.steps.length} step${story.steps.length === 1 ? '' : 's'} in the order a person meets them, read from <code>${escapeHtml(stories.graph)}</code>. Story <code>${escapeHtml(story.id)}</code> points at journey <code>${escapeHtml(story.journeyId)}</code>.</p>
 <ol class="steps">
 ${steps.map((item, index) => `<li id="step-${index + 1}">${item}</li>`).join('\n')}
@@ -196,7 +204,34 @@ function frameTiers(graph: Graph, story: Story, step: StoryStep, options: Portal
     note: `A recorded run from this screen, played back from its tape; its latest replay ${evidence.outcome === 'fail' ? 'diverged' : 'passed'}.`,
     sandbox: 'allow-scripts',
   }))
-  return [...(first ? [first] : []), ...replays]
+  const environment = options.lens?.resolved.environment
+  const scenario = scenarioOf(graph, step)
+  const live = environment?.canvas && environment.url && scenario
+    ? [{ src: `${environment.url.replace(/\/+$/, '')}/review-frame.html?scenario=${encodeURIComponent(scenario)}`, label: `Play on ${environment.title}`, note: `Opens the screen in the journey canvas ${environment.title} serves at ${environment.url}, with synthetic data.`, sandbox: 'allow-scripts allow-same-origin allow-forms' }]
+    : []
+  return [...(first ? [first] : []), ...live, ...replays]
+}
+
+function lensSuffix(options: PortalOptions): string {
+  return options.lens?.resolved.query ? `?${escapeHtml(options.lens.resolved.query)}` : ''
+}
+
+function lensBar(options: PortalOptions): string {
+  if (!options.lens) return ''
+  return `\n<p class="lens">Seen through ${escapeHtml(describeLens(options.lens.resolved))}. The lens is part of each story's link.</p>`
+}
+
+/** What the step looks like through the portal's lens: the design line's frames, the code line's runs, and the environment. */
+function lensSection(graph: Graph, step: StoryStep, options: PortalOptions): string {
+  if (!options.lens) return ''
+  const { resolved, records } = options.lens
+  const view = lensView(graph, records, resolved, step.targetId)
+  const items = [
+    ...(resolved.design ? (view.frames.length > 0 ? view.frames.map((frame) => `<li>Design on ${escapeHtml(resolved.design!.title)}: ${escapeHtml(frame.page)} / ${escapeHtml(frame.name)} <span class="muted">${escapeHtml(frame.change === 'no base' ? 'no base to compare' : `${frame.change} from the base`)}</span></li>`) : [`<li>Design on ${escapeHtml(resolved.design.title)}: no frame designs this screen.</li>`]) : []),
+    ...(resolved.code ? [`<li>Runs on ${escapeHtml(resolved.code.title)}: ${view.runs.length > 0 ? view.runs.map((run) => `<span class="outcome ${run.outcome}">${escapeHtml(run.outcome)}</span> ${escapeHtml(run.title)}`).join(', ') : 'none'}${view.elsewhere > 0 ? ` <span class="muted">(${view.elsewhere} from other lines set aside)</span>` : ''}</li>`] : []),
+    ...(resolved.environment ? [`<li>${escapeHtml(resolved.environment.title)}: ${!resolved.code ? 'pick a code line to compare' : view.deployed ? (view.deployed.current ? `runs ${escapeHtml(resolved.code.title)} at its head` : `runs ${escapeHtml(resolved.code.title)} at ${escapeHtml(view.deployed.revision.slice(0, 12))}, behind its head`) : `doesn't run ${escapeHtml(resolved.code.title)}`}</li>`] : []),
+  ]
+  return `\n<section><h4>Through the lens</h4><ul>${items.join('')}</ul></section>`
 }
 
 function frameTier(graph: Graph, story: Story, step: StoryStep, options: PortalOptions): FrameOption | undefined {
@@ -211,7 +246,7 @@ function frameTier(graph: Graph, story: Story, step: StoryStep, options: PortalO
   return undefined
 }
 
-function still(graph: Graph, story: Story, step: StoryStep, index: number, walk: FrameWalk | undefined): string {
+function still(graph: Graph, story: Story, step: StoryStep, index: number, walk: FrameWalk | undefined, options: PortalOptions): string {
   const title = (id: string) => graph.get(id)?.title ?? id
   const outcome = stepOutcome(graph, step)
   const evidence = step.evidenceIds.flatMap((id) => {
@@ -240,7 +275,7 @@ ${section('Evidence', evidence, 'None about this screen yet.')}
 ${section('Paths on', paths, 'None declared.')}
 ${section('Design intent', [...components, ...frames])}
 ${section('Components', usedComponents)}
-${section('Open records', records)}
+${section('Open records', records)}${lensSection(graph, step, options)}
 </article>`
 }
 
@@ -284,6 +319,7 @@ td { font-variant-numeric: tabular-nums; }
 td.none { color: var(--fail); }
 td.closest { color: var(--muted); }
 .steps { list-style: none; padding: 0; display: grid; gap: 12px; }
+.lens { border: 1px solid var(--accent); border-radius: 6px; padding: 6px 10px; font-size: 13px; }
 </style>
 ${head}
 </head>

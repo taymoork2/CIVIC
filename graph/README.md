@@ -35,10 +35,11 @@ Every record has a stable ID, `<prefix>:<dot.separated.path>`, a title, and opti
 | Decision | `decision:` | A person's call on a conflict: outcome, classification, the alignment state it leaves, who decided, rationale, evidence, and for an exception its revisit trigger and expiry. A later decision `supersedes` an earlier one. |
 | Collaboration record | `collab:` | An ambiguity, constraint, coverage gap, divergence, risk or exception: what it affects, the perspectives it needs, owners, a deadline, and once closed, how it closed and the artifact changes that resulted. An exception also has user impact, a revisit trigger and an end date. |
 | Actor | `actor:` | Who wrote something: a person, an agent acting for a named person, or CIVIC's own deterministic process |
-| Line | `line:` | A stream of work with revisions: main, a branch, a worktree, a PR with its preview, or a design draft |
+| Line | `line:` | A stream of work with revisions: main, a branch, a worktree, a PR with its preview, a design draft, or a library release (a package version or a design library publish, which never merges) |
 | Annotation | `annotation:` | A comment on a journey, screen, part of a screen, path or branch, with layered anchors, a frozen capture, and the line and revision it was made on |
 | Draft choice | `choice:` | A person's choice between design drafts from one base: the chosen line and revision, and the drafts passed over, which are marked abandoned |
 | Object | `object:` | A domain object from a designer's ORCA grid (OOUX, decision 0014): its description, other names, attributes (core content or metadata), calls to action and the objects nested in it. Design owns it. What a screen shows of it is on the `shows` link that ties them. |
+| Environment | `environment:` | Where a product runs for people, such as staging or production (decision 0013): its URL, whether it serves the journey canvas, and which revision of which line runs there as last observed (`civic environment`) |
 | Work request | `request:` | Annotations handed to an agent: base revision, acceptance checks, repro command, claim lease, reported fixes, CIVIC's re-capture, a status history, and a version that counts its changes (roadmap step 5) |
 
 ### Decisions
@@ -209,12 +210,15 @@ The portal also has a page per semantic component ([`src/component-page.ts`](src
 
 A component page also lists the component's code stories per platform ([`src/component-story.ts`](src/component-story.ts), decision 0013 point 1). Nobody writes them: there is one per variant the implementation maps, one for the disabled state on its default variant (the one contract state props alone can set), and one for each product use in code that the variants don't already show, each naming the uses that show it. Pass `harnesses` to `renderPortal`, by platform component ID, and a story renders the real component on request: the harness is a module whose `mount(container, context)` renders the component with `context.component` (its variant expression and state), the canvas's own mount contract. The Fluent Button demo's React harness is the first. Native stories stay stills until device runners.
 
-The lens of design line, code line and environment comes later. Laundry's and the Card demo's portals are built with their graphs: [`projects/laundry/out/portal`](../projects/laundry/out/portal/index.html) and [`demo/card/out/portal`](../demo/card/out/portal/index.html).
+A portal can be read through a lens ([`src/lens.ts`](src/lens.ts), decision 0013 point 3): one design line, one code line and one environment, from the review store (`civic lines --json` prints them). With `--lens "design=<line>&code=<line>&environment=<id>" --lines <file>`, each step adds what it looks like through the lens: the design line's frames that design the screen and whether each changed from the line's base, the run evidence taken on the code line's head or one of its previews (runs from other lines are set aside and counted), and whether the environment runs the code line at its head or behind it. An environment that serves the journey canvas gives each screen a frame to play it there. The lens goes into each story's link and each `<civic-story>`'s `lens` attribute. A library release is a line too (`civic release-line`), so a code line can be a package version.
+
+Laundry's and the Card demo's portals are built with their graphs: [`projects/laundry/out/portal`](../projects/laundry/out/portal/index.html) and [`demo/card/out/portal`](../demo/card/out/portal/index.html).
 
 ```sh
 bin/civic stories projects/laundry/out/graph.json                         # the stories as text, or --json
 bin/civic portal demo/card/out/resolved.graph.json --out portal --title "Shop"
 bin/civic portal projects/laundry/out/graph.json --out portal --canvas http://127.0.0.1:3010 --design projects/laundry/out/design.json --tapes projects/laundry/inputs/tapes
+bin/civic portal projects/laundry/out/graph.json --out portal --lens "code=line:git.main&environment=environment:laundry.review-server" --lines projects/laundry/out/lines.json
 ```
 
 ## The object map: `civic objects`

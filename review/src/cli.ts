@@ -28,6 +28,8 @@ import {
   listRequests,
   registerPreview,
   registerPullRequest,
+  recordEnvironment,
+  registerRelease,
   release,
   reopen,
   reportFix,
@@ -61,6 +63,8 @@ const USAGE = `Usage (records are shared by every worktree of this repository):
   civic overlay [--port 4777]                     serves the capture overlay for dev and preview pages
   civic preview <url> [--bearer-file <file>]      civic lines [--json] | annotations [--line <id>] [--json] | whoami
   civic pr <number> [--preview <url>] [--remote origin]   a pull request as its own line, with its hosted preview
+  civic release-line <package>@<version> [--tool npm|figma] [--from <line>]   a library release as its own line
+  civic environment <name> --runs <line>[@<revision>]... [--url <url>] [--canvas]   what runs on staging or production
   civic design <figma export.json> --file <key>  a design file's main line, at the export's version (a civic.design/0
                  file from another design tool names its own key, so it needs no --file)
   civic draft <figma export.json> --file <key> --name "<draft>" [--branch <key>]   a designer's draft as its own line
@@ -297,6 +301,24 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
       print(has('--json') ? JSON.stringify(lens, null, 2) : renderDesignLens(lens))
       return 0
     }
+    case 'release-line': {
+      need(1)
+      const tool = one('--tool') ?? 'npm'
+      if (tool !== 'npm' && tool !== 'figma') throw new UsageError('release-line needs --tool npm (a code package version) or figma (a design library publish).')
+      const line = registerRelease(context, { tool, ref: positional[0]!, ...(one('--from') ? { from: one('--from')! } : {}), ...(one('--title') ? { title: one('--title')! } : {}) })
+      print(`${line.id} at ${line.head}, released from ${line.base}`)
+      return 0
+    }
+    case 'environment': {
+      need(1)
+      const runs = (flags.get('--runs') ?? []).map((value) => {
+        const at = value.lastIndexOf('@')
+        return at > 0 ? { line: value.slice(0, at), revision: value.slice(at + 1) } : { line: value }
+      })
+      const environment = recordEnvironment(context, { name: positional[0]!, runs, ...(one('--title') ? { title: one('--title')! } : {}), ...(one('--url') ? { url: one('--url')! } : {}), ...(has('--canvas') ? { canvas: true } : {}) })
+      print(`${environment.id}${environment.url ? ` at ${environment.url}` : ''} runs ${environment.runs.map((run) => `${run.line} at ${run.revision.slice(0, 12)}`).join(', ')}`)
+      return 0
+    }
     case 'preview': {
       need(1)
       const bearer = one('--bearer-file')
@@ -318,7 +340,7 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
       for (const draft of drafts) {
         try { lenses[draft.id] = designLens(document, draft.id, current, graphs) } catch { /* a draft whose base has no frames yet has no lens */ }
       }
-      print(JSON.stringify({ current, lines: document.records.filter((record) => record.kind === 'line'), lenses, changing: linesChanging(document, lenses) }, null, 2))
+      print(JSON.stringify({ current, lines: document.records.filter((record) => record.kind === 'line'), environments: document.records.filter((record) => record.kind === 'environment'), lenses, changing: linesChanging(document, lenses) }, null, 2))
       return 0
     }
     case 'annotations': {
@@ -423,7 +445,7 @@ function gitConfig(root: string, key: string): string | undefined {
 function parse(args: string[]) {
   const positional: string[] = []
   const flags = new Map<string, string[]>()
-  const booleans = new Set(['--change', '--high-risk', '--json', '--no-checks', '--recapture'])
+  const booleans = new Set(['--canvas', '--change', '--high-risk', '--json', '--no-checks', '--recapture'])
   for (let index = 0; index < args.length; index++) {
     const arg = args[index]!
     if (!arg.startsWith('--')) positional.push(arg)

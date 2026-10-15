@@ -20,6 +20,7 @@ export { renderStories, storiesIn, STORIES_SCHEMA, type StoriesFile, type Story,
 export { describeGesture, readTape, RECORDING_LABEL, renderReplayPage, viewOf, type RecordedStep, type RecordedTape, type ReplayPlayback } from './replay-player.ts'
 export { componentFacts, type ComponentFacts } from './component-page.ts'
 export { componentStoriesIn, type ComponentStory } from './component-story.ts'
+export { describeLens, lensView, parseLens, resolveLens, type LensView, type ResolvedLens, type StoryLens } from './lens.ts'
 export { renderPortal, stepOutcome, STORY_ELEMENT, type HarnessOptions, type IslandOptions, type PortalOptions } from './portal.ts'
 export { OBJECT_GAP_KINDS, objectMapOf, renderObjectMap, type ObjectGap, type ObjectGapKind, type ObjectMap, type ObjectTie } from './objects.ts'
 export { evidenceAge, freshnessRoot, staleEvidence, type FreshnessRule } from './freshness.ts'
