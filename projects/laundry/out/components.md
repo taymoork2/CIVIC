@@ -1,6 +1,6 @@
 # Laundry: components
 
-Built by `node projects/laundry/build.ts` from the design reference's component contract, [`journey-engine/design/laundry-reference/COMPONENTS.md`](../../../journey-engine/design/laundry-reference/COMPONENTS.md), and the exported declarations in Laundry's web source (`apps/web/src` in taymoork2/washcloset, captured at `783e0742dc07`). Each of the contract's 14 component families is a Semantic component in [`graph.json`](graph.json). A web component exported under the family's name in PascalCase implements it. That link is inferred until someone confirms it, because a shared name is a guess.
+Built by `node projects/laundry/build.ts` from the design reference's component contract, [`journey-engine/design/laundry-reference/COMPONENTS.md`](../../../journey-engine/design/laundry-reference/COMPONENTS.md), and the exported declarations in Laundry's web source (`apps/web/src` in taymoork2/washcloset, captured at `e6542c4b3f2f`). Each of the contract's 14 component families is a Semantic component in [`graph.json`](graph.json). A web component exported under the family's name in PascalCase implements it. That link is inferred until someone confirms it, because a shared name is a guess.
 
 ## Found on web: 6 of 14
 

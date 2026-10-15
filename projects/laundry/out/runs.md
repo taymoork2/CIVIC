@@ -1,6 +1,6 @@
 # Laundry: run evidence by journey
 
-Built by `node projects/laundry/build.ts` from Laundry's review index and a Playwright report of its own review specs, both captured from a Laundry checkout at taymoork2/washcloset commit `783e0742dc07`. 229 screens, 37 tests and replayed runs: 37 passed, 0 failed. No recorded run has been replayed at this commit.
+Built by `node projects/laundry/build.ts` from Laundry's review index and a Playwright report of its own review specs, both captured from a Laundry checkout at taymoork2/washcloset commit `e6542c4b3f2f`. 229 screens, 39 tests and replayed runs: 39 passed, 0 failed. 2 of them are recorded runs replayed in the canvas.
 
 A screen passes when every test that covers it passed, and fails when any did. The specs run against the review server's synthetic fixtures, not a household backend.
 

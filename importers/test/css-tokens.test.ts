@@ -60,3 +60,19 @@ test('the dark theme lays its own rules over the default, from data-theme rules 
   assert.deepEqual(result.conflicts.map((conflict) => [conflict.id, conflict.summary]), [['conflict:token.accent.dark', 'design sets --accent to #eee in the dark theme; code sets it to #fff.']])
   assert.deepEqual(result.agreed, ['bg'])
 })
+
+test('a mapped design name is compared with the code property it maps to, never the code property of the same name', () => {
+  const side = (tokens: Map<string, string>, id: string) => ({ tokens, evidence: evidence(id), label: id })
+  const map = new Map([['accent', 'reference-accent'], ['space-4', 'reference-space-4']])
+  const before = compareCssTokens(side(readCssTokens(design), 'design'), side(readCssTokens(code), 'code'), { owners: [], map })
+  assert.deepEqual(before.mapped, [['accent', 'reference-accent'], ['space-4', 'reference-space-4']])
+  assert.deepEqual(before.conflicts.map((conflict) => [conflict.id, conflict.title, conflict.summary]), [
+    ['conflict:token.accent', "--accent differs from the code's --reference-accent", "design sets --accent to #164be0; code doesn't set --reference-accent yet."],
+    ['conflict:token.space-4', "--space-4 differs from the code's --reference-space-4", "design sets --space-4 to 4px; code doesn't set --reference-space-4 yet."],
+  ])
+  const adapted = `${code}\n:root { --reference-accent: var(--sig); --sig: #164be0; --reference-space-4: 4px; }`
+  const after = compareCssTokens(side(readCssTokens(design), 'design'), side(readCssTokens(adapted), 'code'), { owners: [], map })
+  assert.deepEqual(after.conflicts, [])
+  assert.deepEqual(after.agreed, ['accent', 'glass', 'space-4'])
+  assert.equal(after.tokens.find((token) => token.id === 'token:accent')?.source?.anchor, '--reference-accent')
+})

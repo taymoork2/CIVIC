@@ -1,6 +1,6 @@
 {
   "schema": "civic.decisions/0",
-  "note": "Decision records for Laundry's graph (roadmap step 3). The token conflicts were decided by Claude under Taymoor's standing instruction to decide and record design calls himself rather than wait (2026-10-13): the shipped code wins, and the design reference is what changes. Taymoor can revise any of them with `civic decide`.",
+  "note": "Decision records for Laundry's graph (roadmap step 3). The token conflicts were first decided by Claude on 2026-10-13 under Taymoor's standing instruction (the shipped code wins and the reference changes). On 2026-10-15 the owner, Taymoor, decided them himself, and those decisions supersede the earlier ones, which stay as history: the reference's --accent and --space-2/4/6 are a separate namespace, compared with the app's additive --reference-accent and --reference-space-2/4/6 (token-map.json). The app's own tokens and the reference's declarations are unchanged. Once the app's generated tokens carry the adapter, record its revision with `civic adopt`.",
   "decisions": [
     {
       "id": "decision:token.accent",
@@ -91,6 +91,188 @@
       "evidenceIds": [
         "evidence:token-analysis.laundry-tokens"
       ]
+    },
+    {
+      "id": "decision:token.accent.2",
+      "kind": "decision",
+      "title": "The reference's --accent maps to the app's new --reference-accent",
+      "conflictId": "conflict:token.accent",
+      "outcome": "change-implementation",
+      "classification": "temporary-gap",
+      "alignment": "awaiting-adoption",
+      "decidedBy": {
+        "role": "design",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-15T00:57:44.000Z",
+      "rationale": "Owner decision (Taymoor, 2026-10-15), superseding Claude's 2026-10-13 call. The reference's --accent is the primary or signature role (#164be0 light). It maps to an additive app property, --reference-accent: var(--button). The app's own --accent keeps its meaning as the interactive color (#1f45ff), and --focus is unchanged. The names are separate namespaces, not equivalent values, so the reference's declarations stay as they are (token-map.json). Settled once the app's generated tokens carry --reference-accent.",
+      "evidenceIds": [
+        "evidence:design-export.laundry-tokens",
+        "evidence:token-analysis.laundry-tokens"
+      ],
+      "supersedes": "decision:token.accent"
+    },
+    {
+      "id": "decision:token.accent.dark.2",
+      "kind": "decision",
+      "title": "The reference's dark --accent maps to the app's new --reference-accent",
+      "conflictId": "conflict:token.accent.dark",
+      "outcome": "change-implementation",
+      "classification": "temporary-gap",
+      "alignment": "awaiting-adoption",
+      "decidedBy": {
+        "role": "design",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-15T00:57:44.000Z",
+      "rationale": "Owner decision (Taymoor, 2026-10-15), superseding Claude's 2026-10-13 call. In the dark theme the reference's --accent is the cobalt signature #2f4cf0. It maps to the app's --reference-accent: var(--button), which resolves to the same value in the dark theme. The app's own dark --accent stays the interactive #9db4ff, and --focus is unchanged (token-map.json). Settled once the app's generated tokens carry --reference-accent.",
+      "evidenceIds": [
+        "evidence:design-export.laundry-tokens",
+        "evidence:token-analysis.laundry-tokens"
+      ],
+      "supersedes": "decision:token.accent.dark"
+    },
+    {
+      "id": "decision:token.space-2.2",
+      "kind": "decision",
+      "title": "The reference's --space-2 maps to the app's new --reference-space-2",
+      "conflictId": "conflict:token.space-2",
+      "outcome": "change-implementation",
+      "classification": "temporary-gap",
+      "alignment": "awaiting-adoption",
+      "decidedBy": {
+        "role": "design",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-15T00:57:44.000Z",
+      "rationale": "Owner decision (Taymoor, 2026-10-15), superseding Claude's 2026-10-13 call. The reference's --space-2 is a 2px layout role. It maps to an additive app property, --reference-space-2: 2px. The app's own --space-2 stays 0.5rem on its spacing scale. The names are separate namespaces, not equivalent values, so the reference's declarations stay as they are (token-map.json). Settled once the app's generated tokens carry --reference-space-2.",
+      "evidenceIds": [
+        "evidence:design-export.laundry-tokens",
+        "evidence:token-analysis.laundry-tokens"
+      ],
+      "supersedes": "decision:token.space-2"
+    },
+    {
+      "id": "decision:token.space-4.2",
+      "kind": "decision",
+      "title": "The reference's --space-4 maps to the app's new --reference-space-4",
+      "conflictId": "conflict:token.space-4",
+      "outcome": "change-implementation",
+      "classification": "temporary-gap",
+      "alignment": "awaiting-adoption",
+      "decidedBy": {
+        "role": "design",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-15T00:57:44.000Z",
+      "rationale": "Owner decision (Taymoor, 2026-10-15), superseding Claude's 2026-10-13 call. The reference's --space-4 is a 4px layout role. It maps to an additive app property, --reference-space-4: 4px. The app's own --space-4 stays 1rem on its spacing scale. The names are separate namespaces, not equivalent values, so the reference's declarations stay as they are (token-map.json). Settled once the app's generated tokens carry --reference-space-4.",
+      "evidenceIds": [
+        "evidence:design-export.laundry-tokens",
+        "evidence:token-analysis.laundry-tokens"
+      ],
+      "supersedes": "decision:token.space-4"
+    },
+    {
+      "id": "decision:token.space-6.2",
+      "kind": "decision",
+      "title": "The reference's --space-6 maps to the app's new --reference-space-6",
+      "conflictId": "conflict:token.space-6",
+      "outcome": "change-implementation",
+      "classification": "temporary-gap",
+      "alignment": "awaiting-adoption",
+      "decidedBy": {
+        "role": "design",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-15T00:57:44.000Z",
+      "rationale": "Owner decision (Taymoor, 2026-10-15), superseding Claude's 2026-10-13 call. The reference's --space-6 is a 6px layout role. It maps to an additive app property, --reference-space-6: 6px. The app's own --space-6 stays 2rem on its spacing scale. The names are separate namespaces, not equivalent values, so the reference's declarations stay as they are (token-map.json). Settled once the app's generated tokens carry --reference-space-6.",
+      "evidenceIds": [
+        "evidence:design-export.laundry-tokens",
+        "evidence:token-analysis.laundry-tokens"
+      ],
+      "supersedes": "decision:token.space-6"
+    }
+  ],
+  "adoptions": [
+    {
+      "id": "adoption:token.accent.2",
+      "kind": "adoption",
+      "title": "Adoption of The reference's --accent maps to the app's new --reference-accent",
+      "decisionId": "decision:token.accent.2",
+      "carriedBy": {
+        "tool": "git",
+        "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99"
+      },
+      "adoptedBy": {
+        "role": "engineering",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-15T01:11:32.237Z",
+      "note": "Published Laundry reference-token adapter; fresh capture follows at this revision."
+    },
+    {
+      "id": "adoption:token.accent.dark.2",
+      "kind": "adoption",
+      "title": "Adoption of The reference's dark --accent maps to the app's new --reference-accent",
+      "decisionId": "decision:token.accent.dark.2",
+      "carriedBy": {
+        "tool": "git",
+        "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99"
+      },
+      "adoptedBy": {
+        "role": "engineering",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-15T01:11:32.353Z",
+      "note": "Published Laundry reference-token adapter; fresh capture follows at this revision."
+    },
+    {
+      "id": "adoption:token.space-2.2",
+      "kind": "adoption",
+      "title": "Adoption of The reference's --space-2 maps to the app's new --reference-space-2",
+      "decisionId": "decision:token.space-2.2",
+      "carriedBy": {
+        "tool": "git",
+        "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99"
+      },
+      "adoptedBy": {
+        "role": "engineering",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-15T01:11:32.488Z",
+      "note": "Published Laundry reference-token adapter; fresh capture follows at this revision."
+    },
+    {
+      "id": "adoption:token.space-4.2",
+      "kind": "adoption",
+      "title": "Adoption of The reference's --space-4 maps to the app's new --reference-space-4",
+      "decisionId": "decision:token.space-4.2",
+      "carriedBy": {
+        "tool": "git",
+        "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99"
+      },
+      "adoptedBy": {
+        "role": "engineering",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-15T01:11:32.676Z",
+      "note": "Published Laundry reference-token adapter; fresh capture follows at this revision."
+    },
+    {
+      "id": "adoption:token.space-6.2",
+      "kind": "adoption",
+      "title": "Adoption of The reference's --space-6 maps to the app's new --reference-space-6",
+      "decisionId": "decision:token.space-6.2",
+      "carriedBy": {
+        "tool": "git",
+        "revision": "e6542c4b3f2ffb46d04c1a871264f9105ef2aa99"
+      },
+      "adoptedBy": {
+        "role": "engineering",
+        "who": "taymoork2"
+      },
+      "at": "2026-10-15T01:11:32.809Z",
+      "note": "Published Laundry reference-token adapter; fresh capture follows at this revision."
     }
   ]
 }

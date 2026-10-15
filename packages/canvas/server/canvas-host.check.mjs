@@ -39,7 +39,7 @@ test('the standalone canvas opens a module app with no host workspace and draws 
   assert.deepEqual((await readdir(notebook)).sort(), ['civic.coverage.json', 'civic.project.json', 'civic.scenarios.json', 'src'])
   const canvas = await fetch(`${origin}/@fs${canvasRoot}/src/app-canvas.tsx`, { headers })
   assert.equal(canvas.status, 200)
-  assert.doesNotMatch(await canvas.text(), /towel|laundry/i)
+  assert.doesNotMatch((await canvas.text()).replaceAll(join(canvasRoot, '../..'), '<repo>'), /towel|laundry/i)
   assert.equal((await fetch(`${origin}/@fs${canvasRoot}/src/extension.ts`, { headers })).status, 200)
 
   let browser
@@ -49,9 +49,9 @@ test('the standalone canvas opens a module app with no host workspace and draws 
   const errors = []
   tab.on('pageerror', (error) => errors.push(error.message))
   await tab.goto(origin + '/review')
+  await tab.locator('.app-nav-section button', { hasText: 'Write a note' }).click()
   await tab.getByRole('region', { name: 'Write a note flow' }).waitFor({ timeout: 20000 })
   assert.equal(await tab.title(), 'Notebook · CIVIC')
-  await tab.locator('.app-nav-section button', { hasText: 'Write a note' }).click()
   await tab.locator('.app-screen > button', { hasText: 'Notebook home' }).click()
   await tab.getByRole('button', { name: 'Play this screen' }).click()
   const frame = tab.frameLocator('iframe[title="Live Notebook home"]')
@@ -179,8 +179,8 @@ test('a connector\'s canvas extension drives a guided run: one frame plays the f
   tab.on('pageerror', (error) => errors.push(error.message))
   await tab.goto(origin + '/review')
   const flow = tab.locator('section.app-flow', { has: tab.locator('h2', { hasText: 'Keep the pantry' }) })
-  await flow.locator('header p', { hasText: 'Shelf and adding, played continuously' }).waitFor({ timeout: 20000 })
   await tab.locator('.app-nav-section button', { hasText: 'Keep the pantry' }).click()
+  await flow.locator('header p', { hasText: 'Shelf and adding, played continuously' }).waitFor({ timeout: 20000 })
   await flow.getByRole('button', { name: 'Play pantry run' }).click()
   const live = tab.frameLocator('iframe[title="Live pantry run"]')
   await live.getByText('Rice × 2').waitFor({ timeout: 20000 })
