@@ -8,8 +8,8 @@
 //   node build.ts           write out/
 //   node build.ts --check   fail if out/ is not what the inputs produce
 
-import { readFileSync, writeFileSync } from 'node:fs'
-import { assertValid, contextFor, gapsIn, indexGraph, methodCheck, readMethodProfile, renderGaps, renderMethod, renderWorkOrder, type DecisionFile, type Evidence, type GraphRecord, type Link, type SemanticComponent, type SourceRef } from '../../graph/src/index.ts'
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { assertValid, contextFor, gapsIn, indexGraph, methodCheck, readMethodProfile, renderGaps, renderMethod, renderPortal, renderWorkOrder, storiesIn, type DecisionFile, type Evidence, type GraphRecord, type Link, type SemanticComponent, type SourceRef } from '../../graph/src/index.ts'
 import {
   applyDecisions,
   assemble,
@@ -212,6 +212,13 @@ const resolvedExport = exportFor(resolved)
 // Decision 0014: the token-tier profile, with Fluent's global tokens as primitives and its
 // alias tokens as semantic, checked against the tokens each Button implementation reads.
 const tokenTiers = methodCheck(indexGraph(resolved), readMethodProfile(here('contract/method.json')))
+// Component stories (decision 0013, point 1): the Button's code stories come from the variant
+// matrix. The React Button's run through its harness, built by `pnpm --dir web run bundle:story`
+// into web/dist (not committed); the iOS and Android stories stay stills until device runners.
+const portal = renderPortal(indexGraph(resolved), storiesIn(indexGraph(resolved), 'demo/fluent-button/out/resolved.graph.json'), {
+  title: 'Fluent Button: component stories',
+  harnesses: { [platformMapping('web').id]: { module: '../../../web/dist/story-harness.js' } },
+})
 
 const outputs: Record<string, string> = {
   'out/raised.graph.json': `${JSON.stringify(raised, null, 2)}\n`,
@@ -220,6 +227,7 @@ const outputs: Record<string, string> = {
   'out/raised.gaps.md': raisedExport.gaps,
   'out/resolved.context.android.brand-outline.md': resolvedExport.context,
   'out/resolved.gaps.md': resolvedExport.gaps,
+  ...Object.fromEntries([...portal].map(([path, body]) => [`out/portal/${path}`, body])),
   'out/token-tiers.md': `# Fluent Button: token tiers\n\nThe tokens each Button implementation reads, checked against the token-tier profile in [\`contract/method.json\`](../contract/method.json) (decision 0014). Only the React Button's token reads are in the graph, read from its styles; the iOS and Android token sets are read for their background colors as evidence, not as token reads. Findings are advisory.\n\n${renderMethod(indexGraph(resolved), tokenTiers)}\n`,
 }
 
@@ -238,6 +246,10 @@ if (process.argv.includes('--check')) {
     console.log(`demo/fluent-button/out is current: ${raised.records.length} records, ${raised.links.length} links, ${conflicts.length} conflict(s) raised.`)
   }
 } else {
-  for (const [path, body] of Object.entries(outputs)) writeFileSync(here(path), body)
+  rmSync(here('out/portal'), { recursive: true, force: true })
+  for (const [path, body] of Object.entries(outputs)) {
+    mkdirSync(new URL('.', here(path)), { recursive: true })
+    writeFileSync(here(path), body)
+  }
   console.log(`Wrote demo/fluent-button/out: ${raised.records.length} records, ${raised.links.length} links, ${conflicts.length} conflict(s) raised.`)
 }

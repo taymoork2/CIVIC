@@ -6,6 +6,7 @@
   "scripts": {
     "tokens": "node export-tokens.mjs ../tokens/fluent-web-light.tokens.json",
     "bundle": "esbuild src/harness.tsx --bundle --minify --outfile=dist/harness.js --define:process.env.NODE_ENV='\"production\"'",
+    "bundle:story": "esbuild src/story-harness.tsx --bundle --format=esm --minify --outfile=dist/story-harness.js --define:process.env.NODE_ENV='\"production\"'",
     "evidence": "pnpm run bundle && pnpm run storybook:build && playwright test",
     "evidence:record": "pnpm run bundle && pnpm run storybook:build && CIVIC_REPORT=../evidence/playwright-report.json playwright test",
     "storybook:build": "storybook build --quiet --output-dir storybook-static"
