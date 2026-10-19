@@ -8,7 +8,7 @@ import { checkedProject, checkedScenarios, loadProject, manifestIn, projectPath,
 import { discoverScreens, generatedScenarios } from './review-discovery.mjs'
 import { discoverSourceVersions, figmaFile, previewVersion } from './review-source-versions.mjs'
 import { compareVersionScreens } from './review-version-changes.mjs'
-import { historyOrder, versionChoices } from '@civic/shell/version-choices'
+import { historyOrder, versionChoices } from '@civic/shell/server'
 
 const bad = (message) => { throw Object.assign(Error(message), { status: 400 }) }
 const json = async (file) => JSON.parse(await readFile(file, 'utf8'))

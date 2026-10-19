@@ -4,6 +4,7 @@ import { createRequire } from 'node:module'
 import { join } from 'node:path'
 import { checkedRecording, replayRecord } from './review-recording.mjs'
 import { checkedState, interactionStore } from './review-interactions.mjs'
+export { historyOrder, versionChoices } from '../src/version-choices.mjs'
 
 const equal = (a, b) => typeof a === 'string' && Buffer.byteLength(a) === Buffer.byteLength(b) && timingSafeEqual(Buffer.from(a), Buffer.from(b))
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
