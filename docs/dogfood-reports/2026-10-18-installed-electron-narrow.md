@@ -11,4 +11,6 @@ Updated the Electron smoke check to the combined Projects & versions dialog and 
 - [Installed narrow picker](assets/2026-10-18-installed-electron-picker-narrow.png)
 - [Installed narrow notification](assets/2026-10-18-installed-electron-notification-narrow.png)
 
-This remains the existing source-backed local Electron launcher. No Electron runtime upgrade, signed installer, production app mutation, or physical-device test was performed. The full source-bound repository signoff is run separately before publication.
+The repository's empty-app install check then exposed a separate packaged-source startup failure: Vite did not discover Base UI's CommonJS `use-sync-external-store/shim` and `shim/with-selector` entries when CIVIC lived inside `node_modules`. Both entries are now explicitly optimized while host optimization settings and CIVIC's shared source modules are preserved. A connector regression check covers that configuration. The install check reports renderer startup errors immediately; a fresh Git installation subsequently rendered CIVIC and played Notebook successfully.
+
+This remains the existing source-backed local Electron launcher. No Electron runtime upgrade, signed installer, production app mutation, or physical-device test was performed. The full source-bound repository signoff is run separately before publication; native Appium and external Orca-source build tests retain their explicit environment-dependent skips.
