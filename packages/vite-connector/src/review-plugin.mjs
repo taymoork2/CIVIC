@@ -73,6 +73,10 @@ export function civicReview({ host, canvas = host, repo = resolve(host, '../..')
       const include = [...new Set([...(config.optimizeDeps?.include ?? []), '@civic/shell > @base-ui/react > use-sync-external-store/shim', '@civic/shell > @base-ui/react > use-sync-external-store/shim/with-selector'])]
       config.optimizeDeps = { ...config.optimizeDeps, entries: [join(canvas, 'src/main.tsx'), join(canvas, 'src/frame.tsx')], include, exclude }
     },
+    hotUpdate({ file }) {
+      // Source refresh updates inventory; mounted runs keep their document and draft.
+      if ([...project.sources, project.entry, project.runtimeEntry, project.extension, project.scenariosPath, project.coverageFile, project.manifestPath].filter(Boolean).some(path => file === path || file.startsWith(path + '/'))) return []
+    },
     resolveId(id, importer) {
       if (id in modules) return '\0' + id
       return connector?.resolveId?.(id, project, importer)

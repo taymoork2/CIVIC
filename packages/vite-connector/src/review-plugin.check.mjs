@@ -62,6 +62,14 @@ test('an app whose adapter kind has no registered connector is refused', async (
   assert.throws(() => civicReview({ host: web, repo }), /No connector is registered for adapter kind laundry/)
 })
 
+test('app hot updates retain mounted runs while engine updates keep normal HMR', async () => {
+  const { repo, web, app } = await host()
+  const plugin = civicReview({ host: web, repo })
+  assert.deepEqual(plugin.hotUpdate({ file: join(app, 'src/preview.js') }), [])
+  assert.deepEqual(plugin.hotUpdate({ file: join(app, 'civic.scenarios.json') }), [])
+  assert.equal(plugin.hotUpdate({ file: join(web, 'src/main.tsx') }), undefined)
+})
+
 test('installed shell state shims are pre-bundled without replacing host optimizations', async () => {
   const { repo, web } = await host()
   const plugin = civicReview({ host: web, repo })

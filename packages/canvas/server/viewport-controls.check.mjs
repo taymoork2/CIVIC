@@ -31,7 +31,7 @@ async function workspace(t, standalone = false, { prepare, template = 'notebook'
   await tab.goto(origin + '/review' + (standalone ? '?standaloneViewport=1' : ''))
   // Initial Vite dependency optimization can replace the dev document.
   if (!prepare) await tab.waitForLoadState('networkidle')
-  return { tab, origin }
+  return { tab, origin, manifest }
 }
 
 async function draft(tab) {
@@ -251,6 +251,20 @@ test('source changes mark the mounted revision stale without replacing the live 
   })
   await tab.locator('main[data-preview-state="stale"]').waitFor()
   assert.equal(await tab.locator('main').getAttribute('data-preview-source'), source)
+  assert.equal(await live.evaluate((element, previous) => element === previous, before), true)
+  assert.equal(await frame.getByLabel('Title', { exact: true }).inputValue(), 'Keep this draft')
+})
+
+test('editing app source refreshes snapshots and notifies without reloading a live draft', { timeout: 90000 }, async t => {
+  const { tab, manifest } = await workspace(t, false, { prepare: async () => {} })
+  await tab.waitForLoadState('networkidle')
+  const { live, frame } = await draft(tab)
+  await tab.locator('main[data-preview-state="ready"]').waitFor()
+  const before = await live.elementHandle()
+  const source = join(manifest, '../src/preview.js')
+  await writeFile(source, (await readFile(source, 'utf8')) + '\n// Fixture source revision.\n')
+  await tab.getByText('Source updated', { exact: true }).waitFor()
+  await tab.locator('main[data-preview-state="stale"]').waitFor()
   assert.equal(await live.evaluate((element, previous) => element === previous, before), true)
   assert.equal(await frame.getByLabel('Title', { exact: true }).inputValue(), 'Keep this draft')
 })
