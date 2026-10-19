@@ -1,6 +1,6 @@
 import { useEffect, useImperativeHandle, useRef, useState, type FormEvent, type Ref, type RefObject } from 'react'
 import project from 'virtual:civic-project'
-import { reviewApi } from './review-api'
+import { useProjectVersions, requestProjects as request, type Connections } from './use-project-versions'
 import { DiscoverySetup, type Discovery } from './discovery-setup'
 import { Check, ChevronDown, GitBranch, Search, SearchX, FolderOpen, Settings2, Pencil, Monitor, Layers, X, ArrowUpRight } from '@civic/shell/icons'
 import { Button } from '@civic/shell/ui/button'
@@ -11,37 +11,27 @@ import { Dialog, DialogContent, DialogTitle } from '@civic/shell/ui/dialog'
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from '@civic/shell/ui/empty'
 import { Skeleton } from '@civic/shell/ui/skeleton'
 import { Alert, AlertDescription } from '@civic/shell/ui/alert'
-import { projectShortcut, projectWindowHref, preferredConnection, versionCaption, versionDetails, checkoutGroup, type AppVersion, type DraftScreen } from './project-choice'
-import type { VersionChoice } from '@civic/shell/version-choices'
-import { readinessFor, type ConnectionReadiness, type PreviewCapabilities } from './connection-readiness'
+import { projectShortcut, projectWindowHref, preferredConnection, versionCaption, versionDetails, checkoutGroup, type DraftScreen } from './project-choice'
+import { readinessFor, type ConnectionReadiness } from './connection-readiness'
 import { SourceBrowser } from './source-browser'
-import { VersionChanges, type VersionChange } from './version-changes'
-import { HistoryList, HistoryMeta, type VersionHistory } from './version-history'
+import { VersionChanges } from './version-changes'
+import { HistoryList, HistoryMeta } from './version-history'
 import { VersionRow } from './version-row'
 import './project-picker.css'
 
-type App = { id: string; name: string }
-type Connection = { key: string; name: string; sourceName?: string; refreshRequired?: boolean; root: string; manifest: string; app: App; kind: string; design?: { id: string }; version?: { id?: string; name?: string; history?: VersionHistory }; workspace?: string; workspaceName?: string; preview?: boolean; available: boolean; error?: string; readiness?: ConnectionReadiness; capabilities?: PreviewCapabilities }
-type Connections = { active: string; projects: Connection[]; apps: (App & { connections: Connection[]; versions: AppVersion<Connection>[] })[]; workspaceErrors: string[]; canOpenWindow?: boolean }
-type VersionPage = { items: (VersionChoice<Connection> & { previewCount: number })[]; total: number; offset: number; limit: number; hasMore: boolean; errors: string[] }
 const versionLabel = (kind: string) => ({ design: 'Design reference', live: 'Running app', isolated: 'Test instance' })[kind] ?? 'Branch checkout'
 const versionIcon = (kind: string) => ({ design: Pencil, live: Monitor, isolated: Layers })[kind] ?? GitBranch
-async function request<T>(input?: unknown, signal?: AbortSignal): Promise<T> {
-  return reviewApi<T>('projects', input, { signal, fallback: 'Project request failed' })
-}
 
 export type ProjectPickerHandle = { open: (mode: 'work' | 'sources' | 'existing' | 'new') => void }
 export function ProjectPicker({ blocked, activeRun, selectedScreen, focusScreen, onSearch, searchOpen, ref, hideTrigger = false, returnFocus, tabDirty = false, readiness: activeReadiness }: { blocked: boolean; activeRun: boolean; selectedScreen?: DraftScreen; focusScreen: (id: string) => void; onSearch: () => void; searchOpen: boolean; ref?: Ref<ProjectPickerHandle>; hideTrigger?: boolean; returnFocus?: RefObject<HTMLButtonElement | null>; tabDirty?: boolean; readiness?: ConnectionReadiness }) {
   const trigger = useRef<HTMLButtonElement>(null)
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<'work' | 'sources' | 'existing' | 'new'>('work')
-  const [connections, setConnections] = useState<Connections | null>(null)
   const [name, setName] = useState('')
   const [root, setRoot] = useState('')
   const [manifest, setManifest] = useState('')
   const [source, setSource] = useState('src')
   const [busy, setBusy] = useState(false)
-  const [loadingConnections, setLoadingConnections] = useState(true)
   const [error, setError] = useState('')
   const [created, setCreated] = useState<{ key: string; name: string; preview: boolean } | null>(null)
   const [discovery, setDiscovery] = useState<Discovery | null>(null)
@@ -50,23 +40,15 @@ export function ProjectPicker({ blocked, activeRun, selectedScreen, focusScreen,
   const [version, setVersion] = useState('')
   const [versionQuery, setVersionQuery] = useState('')
   const [expandedVersion, setExpandedVersion] = useState('')
-  const [page, setPage] = useState<(VersionPage & { scope: string }) | null>(null)
-  const [details, setDetails] = useState<Record<string, VersionPage['items'][number]>>({})
-  const [pageError, setPageError] = useState(''), [detailError, setDetailError] = useState('')
   const [offset, setOffset] = useState(0), [refresh, setRefresh] = useState('')
-  const [loadingScreens, setLoadingScreens] = useState(false)
-  const [changes, setChanges] = useState<Record<string, VersionChange>>({})
-  const [changeError, setChangeError] = useState('')
   const [browseAppId, setBrowseAppId] = useState(project.app?.id ?? project.id)
+  const target = browseAppId === (project.app?.id ?? project.id) ? selectedScreen : undefined
+  const versionsData = useProjectVersions({ open, mode, browseAppId, target, versionQuery, expandedVersion, offset, refresh, setError })
+  const { connections, loadingConnections, loadingScreens, page, details, pageError, detailError, changes, changeError, pageRequest, versions, previewCount } = versionsData
   const currentApp = connections?.apps.find(app => app.id === browseAppId)
   const canOpenWindow = connections?.canOpenWindow && ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname)
-  const target = browseAppId === (project.app?.id ?? project.id) ? selectedScreen : undefined
-  const selectedIdentity = target && { id: target.id, label: target.label, targetId: target.targetId, componentId: target.componentId, route: target.route, component: target.component, componentExport: target.componentExport, state: target.state ?? (target.fixture && typeof target.fixture === 'object' && 'state' in target.fixture && typeof target.fixture.state === 'string' ? target.fixture.state : undefined) }
-  const pageRequest = JSON.stringify({ app: browseAppId, selected: selectedIdentity, query: versionQuery, offset, refresh })
-  const versions = page?.scope === pageRequest ? page.items.map(item => details[item.id] ?? item) : []
   const chosen = versions.flatMap(item => item.previews).find(item => item.id === version)
   const chosenLocation = chosen?.row.kind === 'live' ? 'Live app · read only' : chosen?.row.kind === 'isolated' ? 'Test copy · isolated data' : 'Local preview'
-  const previewCount = page?.scope === pageRequest ? page.total : 0
   const visibleVersions = versions
   const versionSections = [
     { title: 'Branches', icon: GitBranch, items: visibleVersions.filter(item => item.kind === 'implementation') },
@@ -75,57 +57,14 @@ export function ProjectPicker({ blocked, activeRun, selectedScreen, focusScreen,
   ]
   const currentConnection = connections?.projects.find(row => !row.workspace && row.key === project.key)
   const currentName = currentConnection?.sourceName ?? (currentConnection?.error || error ? 'Version unavailable' : 'Loading version…')
-  const currentVersion = currentConnection?.version
   const currentKind = currentConnection?.kind ?? 'implementation'
   const CurrentIcon = versionIcon(currentKind)
   const caption = { ...versionCaption(currentName), ...(currentConnection?.version?.name ? { name: currentConnection.version.name } : {}) }
   useEffect(() => {
     void window.civicDesktop?.register({ appId: project.app?.id ?? project.id, name: (project.app?.name ?? project.name).slice(0, 240), key: project.key, version: caption.name.slice(0, 240), dirty: tabDirty }).catch(error => setError(error.message))
   }, [caption.name, tabDirty])
-  const comparisonPreviews = visibleVersions.filter(item => !item.current || item.preview.row.refreshRequired).map(item => item.preview).filter(item => item.screen)
-  const comparisonRequest = JSON.stringify({ scenario: target?.id, baseVersion: currentVersion?.id, candidates: comparisonPreviews.map(item => ({ id: item.id, key: item.row.key, workspace: item.row.workspace, scenario: item.screen!.id, version: item.row.version?.id })) })
   const appInput = () => { const app = connections?.apps.find(app => app.id === appId); return app ? { app: { id: app.id, name: app.name } } : {} }
   useEffect(() => { try { localStorage.setItem(`civic:${project.app?.id ?? project.id}:work`, JSON.stringify({ key: project.key })) } catch {} }, [])
-  const hasConnections = connections !== null
-  useEffect(() => {
-    if (!open && hasConnections) return
-    const controller = new AbortController()
-    setLoadingConnections(true); setError('')
-    void request<Connections>({ action: 'catalog' }, controller.signal).then(result => { if (!controller.signal.aborted) setConnections(result) }).catch(error => { if (!controller.signal.aborted) setError(error.message) }).finally(() => { if (!controller.signal.aborted) setLoadingConnections(false) })
-    return () => controller.abort()
-  }, [open, hasConnections])
-  useEffect(() => {
-    if (!open || mode !== 'work' || !hasConnections) return
-    const controller = new AbortController()
-    setLoadingScreens(true); setPageError(''); setDetails({}); setDetailError('')
-    const pending = setTimeout(() => { void request<VersionPage>({ ...JSON.parse(pageRequest), action: 'version-page' }, controller.signal).then(result => {
-      if (controller.signal.aborted) return
-      setPage({ ...result, scope: pageRequest })
-      setConnections(current => current && { ...current, projects: [...new Map([...current.projects, ...result.items.flatMap(item => item.connections)].map(row => [`${row.workspace ?? ''}:${row.key}`, row])).values()] })
-    }).catch(error => { if (!controller.signal.aborted) { setPage(null); setPageError(error.message) } }).finally(() => { if (!controller.signal.aborted) setLoadingScreens(false) }) }, 150)
-    return () => { clearTimeout(pending); controller.abort() }
-  }, [open, mode, hasConnections, pageRequest, refresh])
-  useEffect(() => {
-    if (!open || mode !== 'work' || !expandedVersion || loadingScreens) return
-    const controller = new AbortController()
-    setDetailError('')
-    void request<VersionPage>({ ...JSON.parse(pageRequest), action: 'version-page', version: expandedVersion, offset: 0, limit: 1 }, controller.signal).then(result => {
-      if (!controller.signal.aborted && result.items[0]) setDetails(current => ({ ...current, [expandedVersion]: result.items[0]! }))
-    }).catch(error => { if (!controller.signal.aborted) setDetailError(error.message) })
-    return () => controller.abort()
-  }, [open, mode, expandedVersion, loadingScreens, pageRequest])
-  useEffect(() => {
-    if (!open || mode !== 'work' || loadingScreens) return
-    const input = JSON.parse(comparisonRequest)
-    if (!input.scenario || !input.candidates.length) return
-    let cancelled = false
-    const controller = new AbortController()
-    setChanges({}); setChangeError('')
-    const pending = setTimeout(() => { void request<{ comparisons: VersionChange[] }>({ ...input, action: 'changes' }, controller.signal).then(result => {
-      if (!cancelled) setChanges(Object.fromEntries(result.comparisons.map(item => [item.id, item])))
-    }).catch(() => { if (!cancelled) setChangeError('Changes could not be loaded. Reopen the picker to retry.') }) }, 150)
-    return () => { cancelled = true; clearTimeout(pending); controller.abort() }
-  }, [open, mode, loadingScreens, comparisonRequest])
   const close = () => setOpen(false)
   const start = (next: 'existing' | 'new', connectedAppId = '') => { setMode(next); setError(''); setCreated(null); setDiscovery(null); setName(''); setRoot(''); setManifest(''); setSource('src'); setAppId(connectedAppId) }
   const add = async (event: FormEvent) => {
@@ -134,15 +73,15 @@ export function ProjectPicker({ blocked, activeRun, selectedScreen, focusScreen,
       if (mode === 'existing') {
         const result = await request<{ connection?: { key: string; name: string; preview: boolean }; discovery?: Discovery }>({ action: 'discover', root, manifest, source, ...appInput() })
         if (result.discovery) { setDiscovery(result.discovery); if (!name.trim()) setName(root.split('/').filter(Boolean).at(-1) ?? 'Connected app') }
-        if (result.connection) { setCreated(result.connection); setConnections(await request({ action: 'catalog' })) }
-      } else { setCreated(await request({ action: 'add', kind: mode, name, root, manifest, source })); setConnections(await request({ action: 'catalog' })) }
+        if (result.connection) { setCreated(result.connection); await versionsData.reloadConnections() }
+      } else { setCreated(await request({ action: 'add', kind: mode, name, root, manifest, source })); await versionsData.reloadConnections() }
     }
     catch (error) { setError((error as Error).message) }
     finally { setBusy(false) }
   }
   const createConnection = async (input: Record<string, unknown>) => {
     setBusy(true); setError('')
-    try { setCreated(await request({ ...input, name, ...appInput() })); setConnections(await request({ action: 'catalog' })); setDiscovery(null) }
+    try { setCreated(await request({ ...input, name, ...appInput() })); await versionsData.reloadConnections(); setDiscovery(null) }
     catch (error) { if (input.action !== 'generate') setError((error as Error).message); throw error }
     finally { setBusy(false) }
   }
@@ -176,10 +115,10 @@ export function ProjectPicker({ blocked, activeRun, selectedScreen, focusScreen,
   }
   const canSwitch = !blocked && (!activeRun || acknowledged)
   const openPicker = () => {
-    setMode('work'); setBrowseAppId(project.app?.id ?? project.id); setVersion(''); setExpandedVersion(''); setCreated(null); setDiscovery(null); setAcknowledged(false); setError(''); setPage(null); setDetails({}); setOffset(0); setChanges({}); setChangeError(''); setVersionQuery(''); setLoadingScreens(false); setOpen(true)
+    setMode('work'); setBrowseAppId(project.app?.id ?? project.id); setVersion(''); setExpandedVersion(''); setCreated(null); setDiscovery(null); setAcknowledged(false); setError(''); versionsData.reset(); setOffset(0); setVersionQuery(''); setOpen(true)
   }
   const chooseApp = (app: Connections['apps'][number]) => {
-    setBrowseAppId(app.id); setVersion(''); setExpandedVersion(''); setVersionQuery(''); setOffset(0); setChanges({}); setChangeError('')
+    setBrowseAppId(app.id); setVersion(''); setExpandedVersion(''); setVersionQuery(''); setOffset(0); versionsData.clearChanges()
   }
   type Preview = (typeof versions)[number]['preview']
   const isCurrent = (item: Preview) => !item.row.workspace && item.row.key === connections?.active && (!target || item.screen?.id === target.id)
