@@ -1,17 +1,14 @@
 import { Button } from '@civic/shell/ui/button'
 import { Input } from '@civic/shell/ui/input'
 import { useEffect, useState, type FormEvent } from 'react'
-import { projectFetch } from './project-request'
+import { reviewApi } from './review-api'
 import { HistoryList, HistoryMeta, type VersionHistory } from './version-history'
 import { GitBranch, GitPullRequest, Pencil } from '@civic/shell/icons'
 
 type Source = { id: string; type: string; title: string; detail: string; path?: string; source?: string; url?: string; revision?: string; connected?: boolean; history?: VersionHistory }
 type Sources = { items: Source[]; total: number; offset: number; limit: number; hasMore: boolean; hiddenInactive: number; providers: { name: string; status: string; message: string }[] }
 async function request(input: unknown, signal?: AbortSignal) {
-  const response = await projectFetch('/api/review/projects', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(input), signal })
-  const result = await response.json()
-  if (!response.ok) throw Error(result.error ?? 'Source discovery unavailable')
-  return result
+  return reviewApi<Sources>('projects', input, { signal, fallback: 'Source discovery unavailable' })
 }
 const typeLabel = (type: string) => ({ worktree: 'Worktree', branch: 'Branch', 'pull-request': 'Pull request', design: 'Design snapshot', figma: 'Figma' })[type] ?? 'Source'
 

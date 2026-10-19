@@ -1,6 +1,6 @@
 import { useEffect, useImperativeHandle, useRef, useState, type FormEvent, type Ref, type RefObject } from 'react'
 import project from 'virtual:civic-project'
-import { projectFetch } from './project-request'
+import { reviewApi } from './review-api'
 import { DiscoverySetup, type Discovery } from './discovery-setup'
 import { Check, ChevronDown, GitBranch, Search, SearchX, FolderOpen, Settings2, Pencil, Monitor, Layers, X, ArrowUpRight } from '@civic/shell/icons'
 import { Button } from '@civic/shell/ui/button'
@@ -24,10 +24,7 @@ type Connections = { active: string; projects: Connection[]; apps: (App & { conn
 const versionLabel = (kind: string) => ({ design: 'Design reference', live: 'Running app', isolated: 'Test instance' })[kind] ?? 'Branch checkout'
 const versionIcon = (kind: string) => ({ design: Pencil, live: Monitor, isolated: Layers })[kind] ?? GitBranch
 async function request<T>(input?: unknown, signal?: AbortSignal): Promise<T> {
-  const response = await projectFetch('/api/review/projects', { ...(input ? { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(input) } : {}), signal })
-  const value = await response.json()
-  if (!response.ok) throw Error(value.error ?? 'Project request failed')
-  return value
+  return reviewApi<T>('projects', input, { signal, fallback: 'Project request failed' })
 }
 
 export type ProjectPickerHandle = { open: (mode: 'work' | 'sources' | 'existing' | 'new') => void }

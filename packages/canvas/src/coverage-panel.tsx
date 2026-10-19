@@ -7,7 +7,7 @@ import { notifications } from '@civic/shell/ui/notifications'
 import { useEffect, useRef, useState } from 'react'
 import type { MapScenario } from './app-map'
 import type { ReviewSnapshot } from './adapter'
-import { projectFetch } from './project-request'
+import { reviewApi, ReviewRequestError } from './review-api'
 import { InteractionCoverage, type InteractionReport, type InteractionExpectation } from './interaction-coverage'
 
 type Target = InteractionExpectation & { component?: string; implementation: string; preview: string; verification: string; reason: string; missingEdges: string[] }
@@ -28,10 +28,17 @@ export function useCoverage(onIndex: (index: ReviewSnapshot & { scenarios: MapSc
       try {
         if (document.visibilityState !== 'hidden' && window.civicDesktop?.isActive() !== false) {
           const version = mutation.current
-          const responses = await Promise.all(['/api/review/index', '/api/review/coverage'].map((path) => projectFetch(path, { signal: controller.signal })))
-          if (responses.some((response) => response.status === 409)) throw Error('The active project changed in another tab. Reload this tab; previous drafts are retained.')
-          if (responses.some((response) => !response.ok)) throw Error('Coverage update unavailable. Previous state and drafts are retained.')
-          const [index, next] = await Promise.all(responses.map((response) => response.json()))
+          const options = { signal: controller.signal, fallback: 'Coverage update unavailable. Previous state and drafts are retained.' }
+          const results = await Promise.allSettled([
+            reviewApi<ReviewSnapshot & { scenarios: MapScenario[]; fixtureSource: string }>('index', undefined, options),
+            reviewApi<Coverage>('coverage', undefined, options),
+          ])
+          const conflict = results.find(result => result.status === 'rejected' && result.reason instanceof ReviewRequestError && result.reason.status === 409)
+          if (conflict?.status === 'rejected') throw conflict.reason
+          const [inventory, coverage] = results
+          if (inventory.status === 'rejected') throw inventory.reason
+          if (coverage.status === 'rejected') throw coverage.reason
+          const index = inventory.value, next = coverage.value
           if (index.revision.source !== next.source) throw Error('Inventory changed while loading. Retrying; previous drafts are retained.')
           if (version === mutation.current) {
             const changed = lastSource.current !== next.source
@@ -40,7 +47,7 @@ export function useCoverage(onIndex: (index: ReviewSnapshot & { scenarios: MapSc
             setData(next); if (changed) callback.current(index); setError('')
           }
         }
-      } catch (caught) { if (!controller.signal.aborted) setError((caught as Error).message) }
+      } catch (caught) { if (!controller.signal.aborted) setError(caught instanceof ReviewRequestError && caught.status === 409 ? 'The active project changed in another tab. Reload this tab; previous drafts are retained.' : (caught as Error).message) }
       if (!controller.signal.aborted) timer = setTimeout(poll, 5000)
     }
     void poll()
@@ -48,9 +55,7 @@ export function useCoverage(onIndex: (index: ReviewSnapshot & { scenarios: MapSc
   }, [])
   const update = async (input: Record<string, unknown>) => {
     mutation.current++
-    const response = await projectFetch('/api/review/coverage', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(input) })
-    const result = await response.json()
-    if (!response.ok) throw Error(result.error ?? 'Coverage could not be saved. Your draft is retained.')
+    const result = await reviewApi<Coverage>('coverage', input, { fallback: 'Coverage could not be saved. Your draft is retained.' })
     mutation.current++; setData(result); return result as Coverage
   }
   return { data, error, update }
