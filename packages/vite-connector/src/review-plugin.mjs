@@ -36,11 +36,11 @@ import { projectPicker } from './review-projects.mjs'
 // CIVIC_* settings, with the engine's older REHEARSAL_* names still read.
 const env = (name) => process.env[`CIVIC_${name}`] ?? process.env[`REHEARSAL_${name}`]
 
-export function civicReview({ host, canvas = host, repo = resolve(host, '../..'), connectors = {}, review = () => ({}), runtime = null, engineRoots, picker = {} }) {
+export function civicReview({ host, canvas = host, repo = resolve(host, '../..'), connectors = {}, review = () => ({}), runtime = null, engineRoots, picker = {}, project: connection = {}, designRoot: designOverride, restart: restartHost }) {
   // The canvas, the shell it imports, and the packages they resolve from its workspace.
   const canvasRoots = [canvas, resolve(dirname(fileURLToPath(import.meta.resolve('@civic/shell/server'))), '..'), join(searchForWorkspaceRoot(canvas), 'node_modules')]
   const viteClientEnv = join(dirname(fileURLToPath(import.meta.resolve('vite/package.json'))), 'dist/client/env.mjs')
-  let project = loadProject(repo)
+  let project = loadProject(repo, connection)
   const kind = project.manifest.adapter.kind
   const connector = kind === 'module' ? null : connectors[kind]
   if (kind !== 'module' && !connector) throw Error(`No connector is registered for adapter kind ${kind}. Register one with civicReview({ connectors }).`)
@@ -48,7 +48,7 @@ export function civicReview({ host, canvas = host, repo = resolve(host, '../..')
   const publicOrigin = env('PUBLIC_ORIGIN') ?? project.local.publicOrigin
   const storeRoot = env('DATA_DIR') ? resolve(env('DATA_DIR')) : join(repo, '.review-data')
   const dataDir = connector?.sharedStore?.(project) ? storeRoot : join(storeRoot, 'projects', project.key)
-  const designRoot = env('DESIGN_ROOT') ?? connector?.designRoot?.(repo)
+  const designRoot = designOverride ?? env('DESIGN_ROOT') ?? connector?.designRoot?.(repo)
   const roots = engineRoots ?? [join(canvas, 'src')]
   const inventoryOptions = { connector, engineRoots: roots }
   const watchPaths = () => [...project.sources, project.manifestPath, project.scenariosPath, project.coverageFile, ...(project.entry ? [dirname(project.entry)] : []), ...(project.publicDir ? [project.publicDir] : []), ...roots, dirname(fileURLToPath(import.meta.url)), join(repo, '.review-data/application.json'), join(repo, 'docs/design/review-validation.json'), ...[repo, appRepo].flatMap((root) => ['package.json', 'pnpm-lock.yaml', 'package-lock.json', 'yarn.lock', 'tsconfig.json'].map((file) => join(root, file)))]
@@ -99,7 +99,7 @@ export function civicReview({ host, canvas = host, repo = resolve(host, '../..')
         const delay = new Promise((resolve) => { wake = resolve })
         scheduled = { wake }
         refreshing = refreshing.then(() => delay).then(async () => {
-          const nextProject = loadProject(repo)
+          const nextProject = loadProject(repo, connection)
           if (compilation(nextProject) !== binding) throw Error('Project adapter or checkout binding changed. Restart the review to apply it without mixing projects.')
           project = nextProject
           server.watcher.add(watchPaths())
@@ -125,7 +125,7 @@ export function civicReview({ host, canvas = host, repo = resolve(host, '../..')
       // Runs keep their journals beside the project's reviews, so a closed run can be reopened on the same source.
       const runs = runtime?.(project, source, { dataDir })
       const options = await review({ project, repo, dataDir })
-      const auth = await reviewMiddleware({ dataDir, metadata, evidence, capture: captureReview, publicOrigin, projects, ...options, ...(runs ? { runtime: runs } : {}), restart: () => server.restart().catch((error) => server.config.logger.error(`Project restart failed: ${error.message}`)) })
+      const auth = await reviewMiddleware({ dataDir, metadata, evidence, capture: captureReview, publicOrigin, projects, ...options, ...(runs ? { runtime: runs } : {}), restart: () => (restartHost ? restartHost(loadProject(repo, connection)) : server.restart()).catch((error) => server.config.logger.error(`Project restart failed: ${error.message}`)) })
       server.httpServer?.once('listening', () => {
         const address = server.httpServer.address()
         if (options.shared && address && typeof address === 'object') options.shared.registerPreview(`http://127.0.0.1:${address.port}`, join(dataDir, 'access-key')).catch((error) => server.config.logger.warn(`CIVIC preview registration failed: ${error.message}`))

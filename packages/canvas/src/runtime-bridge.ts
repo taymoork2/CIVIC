@@ -8,12 +8,13 @@ export type RuntimeOperation = { kind: 'mutation' | 'action'; name: string; args
  * marks its components carry them, so other tapes stay as they were.
  */
 export type RuntimeComponent = { component: string; variant?: string; state?: string; props?: Record<string, string> }
-export type RuntimeStep = { gesture: RuntimeGesture; route: string; fields: { label: string; value: string }[]; view: string; components?: RuntimeComponent[]; operations: RuntimeOperation[] }
+export type RuntimeStep = { gesture: RuntimeGesture; route: string; fields: { label: string; value: string }[]; view: string; components?: RuntimeComponent[]; discovery?: { before: import('./runtime-dom').InteractionState; after: import('./runtime-dom').InteractionState }; operations: RuntimeOperation[] }
 export type RuntimeRecording = { version: 1; project: string; source: string; seed: unknown; now: number; initialRoute: string; steps: RuntimeStep[] }
 export type RuntimePorts = {
   project: string; source: string; seed: unknown; now: number
   route: () => string; fields: () => RuntimeStep['fields']; view: () => string
   components?: () => RuntimeComponent[]
+  discover?: () => import('./runtime-dom').InteractionState
   subscribe?: (changed: () => void) => () => void
   assertSource: () => Promise<void>; reset: (recording: RuntimeRecording) => Promise<void>
   settle: () => Promise<void>; interact: (gesture: RuntimeGesture) => Promise<void>
@@ -32,6 +33,7 @@ export function createRuntimeBridge(ports: RuntimePorts) {
     const components = ports.components?.() ?? []
     if (components.length) step.components = structuredClone(components)
     else delete step.components
+    if (step.discovery && ports.discover) step.discovery.after = structuredClone(ports.discover())
     return step
   }
   const seal = () => { if (current && !sealed.has(current)) { snapshot(current); sealed.add(current) } }
@@ -62,6 +64,7 @@ export function createRuntimeBridge(ports: RuntimePorts) {
       seal()
       if (tape.steps.length >= 1000) throw Error('Recording limit reached. Save this run and start another.')
       current = { gesture: structuredClone(gesture), route: ports.route(), fields: [], view: '', operations: [] }
+      if (ports.discover) { const state = structuredClone(ports.discover()); current.discovery = { before: state, after: structuredClone(state) } }
       tape.steps.push(current)
     },
     operation<T>(kind: RuntimeOperation['kind'], name: string, args: unknown, execute: () => Promise<T>, actor?: string): Promise<T> {
@@ -91,6 +94,7 @@ export function createRuntimeBridge(ports: RuntimePorts) {
         for (const [index, expected] of input.steps.entries()) {
           await ports.assertSource()
           current = { gesture: expected.gesture, route: '', fields: [], view: '', operations: [] }
+          if (expected.discovery && ports.discover) { const state = structuredClone(ports.discover()); current.discovery = { before: state, after: structuredClone(state) } }
           await ports.interact(expected.gesture); await flush()
           // A tape recorded before components were marked (or from an app that marks none) checks the rest.
           if (!expected.components) delete current.components
@@ -113,5 +117,5 @@ export type RuntimeBridge = ReturnType<typeof createRuntimeBridge>
 
 /** A step's keys in the recorder's order, so a tape read back from JSON compares equal. */
 function ordered(step: RuntimeStep): RuntimeStep {
-  return { gesture: step.gesture, route: step.route, fields: step.fields, view: step.view, ...(step.components ? { components: step.components } : {}), operations: step.operations }
+  return { gesture: step.gesture, route: step.route, fields: step.fields, view: step.view, ...(step.components ? { components: step.components } : {}), ...(step.discovery ? { discovery: step.discovery } : {}), operations: step.operations }
 }

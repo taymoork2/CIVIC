@@ -38,6 +38,12 @@ test('coverage contract rejects duplicate identities, traversal, oversized data 
   for (const targets of [[target, target], [{ ...target, component: 'apps/web/src/../../secret.ts' }], [{ ...target, kind: 'atom' }], [{ ...target, title: 'x'.repeat(161) }]]) assert.throws(() => checkedContract({ version: 1, targets }))
 })
 
+test('observed state and control bindings stay explicit and reject values or ambiguous identities', () => {
+  const binding = { ...target, kind: 'interaction', state: 'a'.repeat(64), control: { tag: 'button', name: 'Open menu', index: 0 } }
+  assert.deepEqual(checkedContract({ version: 1, targets: [binding] }).targets[0], binding)
+  for (const change of [{ state: 'bad' }, { control: { ...binding.control, value: 'private' } }, { control: { ...binding.control, index: -1 } }, { control: { ...binding.control, name: 'Password' } }]) assert.throws(() => checkedContract({ version: 1, targets: [{ ...binding, ...change }] }))
+})
+
 test('automatic drafts are durable, source-bound, do not replace edits, and never satisfy coverage', async () => {
   const dataDir = await mkdtemp(join(tmpdir(), 'rehearsal-coverage-test-'))
   const m = metadata(); m.coverage = coverageReport(m, { version: 1, targets: [target] }, new Set())

@@ -2,14 +2,20 @@ import { createHash, randomBytes, timingSafeEqual } from 'node:crypto'
 import { mkdir, readFile, readdir, rename, stat, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import { join } from 'node:path'
-import { pathToFileURL } from 'node:url'
 import { checkedRecording, replayRecord } from './review-recording.mjs'
+import { checkedState, interactionStore } from './review-interactions.mjs'
 
 const equal = (a, b) => typeof a === 'string' && Buffer.byteLength(a) === Buffer.byteLength(b) && timingSafeEqual(Buffer.from(a), Buffer.from(b))
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
 const bad = (message) => { throw Object.assign(new Error(message), { status: 400 }) }
 const text = (value, max) => typeof value === 'string' && value.trim().length > 0 && value.length <= max ? value.trim() : bad('Invalid or oversized text')
 const choice = (value, choices) => choices.includes(value) ? value : bad('Unknown review condition')
+const fixtureViewport = value => {
+  if (value === undefined) return undefined
+  if (!value || !Number.isInteger(value.width) || !Number.isInteger(value.height) || value.width < 200 || value.width > 1920 || value.height < 200 || value.height > 1600) bad('Invalid snapshot viewport')
+  return { width: value.width, height: value.height }
+}
+const fixtureName = (id, viewport) => id.replace(':', '-') + (viewport ? `-${viewport.width}x${viewport.height}` : '')
 
 // An element locator read at capture time (D37): ARIA role and accessible name, matched exactly or not at all.
 function checkedLocator(locator) {
@@ -74,7 +80,7 @@ function checkedFeedback(input, metadata, adapter) {
   if (!anchor || ['x', 'y', 'width', 'height'].some((key) => typeof anchor[key] !== 'number' || !Number.isFinite(anchor[key]) || anchor[key] < 0 || anchor[key] > 1) || anchor.width === 0 || anchor.height === 0 || anchor.x + anchor.width > 1.001 || anchor.y + anchor.height > 1.001) bad('Invalid highlight')
   const state = c.state
   if (!state || !Array.isArray(state.dialogs) || !Array.isArray(state.tabs) || !Array.isArray(state.fields) || state.dialogs.length > 12 || state.tabs.length > 40 || state.fields.length > 250) bad('Invalid screen state')
-  if (metadata.project?.adapter === 'module' && state.fields.some((field) => !metadata.scenarios.find((scenario) => scenario.id === c.scenario).captureFields?.includes(field?.label) || /password|secret|token|credential/i.test(field.label))) bad('Input field is outside the project capture allowlist')
+  if ((metadata.project?.adapter === 'module' || metadata.project?.mode === 'live-read-only') && state.fields.some((field) => !metadata.scenarios.find((scenario) => scenario.id === c.scenario).captureFields?.includes(field?.label) || /password|secret|token|credential/i.test(field.label))) bad('Input field is outside the project capture allowlist')
   const snapshot = input.snapshot
   if (!snapshot || !/^[0-9a-f]{40}$/.test(snapshot.revision?.head) || !/^[0-9a-f]{64}$/.test(snapshot.revision?.source) || !Number.isFinite(Date.parse(snapshot.revision?.capturedAt)) || snapshot.design?.project !== metadata.design.project || !snapshot.design?.hashes) bad('Invalid rendered source receipt')
   const designHashes = {}
@@ -89,6 +95,8 @@ function checkedFeedback(input, metadata, adapter) {
   if (simulation && !c.scenario.startsWith('family.')) bad('Family simulation requires a family scenario')
   const evidenceKind = input.evidence?.kind === undefined ? 'live' : choice(input.evidence.kind, ['live', 'fixture', 'map'])
   if (evidenceKind === 'fixture' && (!c.screen || !/^[0-9a-f]{64}$/.test(input.evidence.fixtureSource) || !['screen', 'region'].includes(target?.kind))) bad('Invalid fixture evidence')
+  const capturedViewport = evidenceKind === 'fixture' ? fixtureViewport(input.evidence.viewport) : undefined
+  if (capturedViewport && (capturedViewport.width !== viewport.width || capturedViewport.height !== viewport.height)) bad('Fixture viewport does not match the captured screen')
   if (evidenceKind === 'map' && !['app', 'flow', 'path'].includes(target?.kind)) bad('Invalid map evidence')
   return {
     id: input.requestId, kind: choice(input.kind, ['bug', 'confusing', 'idea', 'other']), message: text(input.message, 4000),
@@ -96,7 +104,7 @@ function checkedFeedback(input, metadata, adapter) {
     anchor: { label: text(anchor.label, 300), x: anchor.x, y: anchor.y, width: anchor.width, height: anchor.height, ...(anchor.locator === undefined ? {} : { locator: checkedLocator(anchor.locator) }) },
     ...(target ? { target } : {}),
     ...(input.recording ? { recording: input.recording } : {}),
-    evidence: { kind: evidenceKind, ...(evidenceKind === 'fixture' ? { fixtureSource: input.evidence.fixtureSource } : {}) },
+    evidence: { kind: evidenceKind, ...(evidenceKind === 'fixture' ? { fixtureSource: input.evidence.fixtureSource, ...(capturedViewport ? { viewport: capturedViewport } : {}) } : {}) },
     html: evidenceKind === 'fixture' ? null : text(input.html, 2_500_000),
     snapshot: { revision: { head: snapshot.revision.head, source: snapshot.revision.source, capturedAt: snapshot.revision.capturedAt }, design: { project: metadata.design.project, hashes: designHashes } },
   }
@@ -126,6 +134,17 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
   const withCurrentSource = (row) => ({ ...row, sourceStale: row.revision.source !== metadata.revision.source || row.revision.head !== metadata.revision.head || !!row.evidence?.fixtureSource && row.evidence.fixtureSource !== (metadata.fixtureSource ?? metadata.revision.source) })
   await mkdir(dataDir, { recursive: true, mode: 0o700 })
   const bridge = metadata.coverage && coverage ? await coverage({ dataDir, metadata }) : null
+  const interactions = metadata.project?.mode === 'live-read-only' || metadata.project?.runtime ? interactionStore({ dataDir, metadata }) : null
+  let scan = { status: 'idle', completed: 0, total: 0, errors: [], source: metadata.revision.source }
+  const interactionReport = async () => ({ ...await interactions.report(), scan, canVerify: Boolean(metadata.project.runtime && adapter.verifyBehavior) })
+  const saveRecording = async input => {
+    const tape = checkedRecording(input, metadata.project)
+    for (const step of tape.steps) if (step.discovery) { checkedState(step.discovery.before, metadata); checkedState(step.discovery.after, metadata) }
+    const id = crypto.randomUUID(), directory = join(dataDir, 'runs')
+    await mkdir(directory, { recursive: true, mode: 0o700 })
+    await writeFile(join(directory, id + '.json'), JSON.stringify(tape), { flag: 'wx', mode: 0o600 })
+    return { id, url: `/api/review/runs/${id}` }
+  }
   // Local browsers need no key; CIVIC's own tools and Amp portal visitors who are not collaborators use it.
   const keyPath = join(dataDir, 'access-key')
   let accessKey
@@ -141,13 +160,14 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
   await mkdir(fixtureDir, { recursive: true, mode: 0o700 })
   const feedbackImage = async (input, host) => {
     if (input.evidence.kind !== 'fixture') return capture(input.html, input.context.viewport, { origin: `http://${host}`, cookie: `review_session=${session}` })
-    try { return await readFile(join(fixtureDir, `${input.evidence.fixtureSource}-${input.context.screen.replace(':', '-')}.png`)) }
+    try { return await readFile(join(fixtureDir, `${input.evidence.fixtureSource}-${fixtureName(input.context.screen, input.evidence.viewport)}.png`)) }
     catch (error) { if (error.code !== 'ENOENT') throw error; bad('The frozen fixture is unavailable. Refresh snapshots and try again; your note is retained.') }
   }
-  const thumbnail = (node, host, browser, signal) => {
+  const thumbnail = (node, host, browser, signal, viewport) => {
     const source = metadata.fixtureSource ?? metadata.revision.source
     const fingerprint = metadata.fixtureHashes?.[node.id] ?? source
-    const cacheKey = `${source}:${node.id}`
+    const variant = fixtureName(node.id, viewport)
+    const cacheKey = `${source}:${variant}`
     fixtureDemand.set(cacheKey, (fixtureDemand.get(cacheKey) ?? 0) + 1)
     let released = false
     const release = () => {
@@ -159,10 +179,10 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
     if (signal?.aborted) release(); else signal?.addEventListener('abort', release, { once: true })
     if (!thumbnails.has(cacheKey)) {
       if (thumbnails.size >= 512) thumbnails.clear()
-      const file = join(fixtureDir, `${source}-${node.id.replace(':', '-')}.png`)
-      const contentFile = join(fixtureDir, `${fingerprint}-${node.id.replace(':', '-')}.png`)
+      const file = join(fixtureDir, `${source}-${variant}.png`)
+      const contentFile = join(fixtureDir, `${fingerprint}-${variant}.png`)
       const remember = async () => {
-        const pointer = join(fixtureDir, `latest-${node.id.replace(':', '-')}.json`)
+        const pointer = join(fixtureDir, `latest-${variant}.json`)
         await writeFile(pointer + '.tmp', JSON.stringify({ source }), { mode: 0o600 }); await rename(pointer + '.tmp', pointer)
       }
       const operation = fixtureQueue.then(async () => {
@@ -173,7 +193,7 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
           try { const png = await readFile(contentFile); await writeFile(file, png, { mode: 0o600 }); await remember(); return png }
           catch (error) { if (error.code !== 'ENOENT') throw error }
         }
-        const png = await captureFixture(node, { origin: `http://${host}`, cookie: `review_session=${session}`, browser })
+        const png = await captureFixture(viewport ? { ...node, viewport } : node, { origin: `http://${host}`, cookie: `review_session=${session}`, browser })
         if (source !== (metadata.fixtureSource ?? metadata.revision.source)) throw Object.assign(new Error('Source changed during capture. Retry snapshots.'), { status: 409 })
         await writeFile(file + '.tmp', png, { mode: 0o600 }); await rename(file + '.tmp', file)
         if (contentFile !== file) { await writeFile(contentFile + '.tmp', png, { mode: 0o600 }); await rename(contentFile + '.tmp', contentFile) }
@@ -213,11 +233,14 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
       const captureHost = portal || proxied ? `127.0.0.1:${req.socket.localPort}` : host
       if (req.method !== 'GET' && req.method !== 'HEAD' && req.headers.origin && req.headers.origin !== origin) { json(403, { error: 'Review origin refused' }); return }
       const url = new URL(req.url, `http://${host}`)
-      const cookie = req.headers.cookie?.split('; ').find((part) => part.startsWith('review_session='))?.slice(15)
+      // Cookies ignore ports; separate local CIVIC listeners must not replace each other's session.
+      const sessionName = `review_session_${req.socket.localPort}`
+      const cookies = req.headers.cookie?.split(/;\s*/) ?? []
+      const cookie = cookies.find(part => part.startsWith(`${sessionName}=`))?.slice(sessionName.length + 1) ?? cookies.find(part => part.startsWith('review_session='))?.slice(15)
       const secure = portal || proxied ? '; Secure' : ''
       if (url.pathname === '/api/review/login' && req.method === 'POST') {
         if (!equal((await body(req)).key, accessKey)) { json(401, { error: 'That review key is not valid.' }); return }
-        res.setHeader('set-cookie', `review_session=${session}; HttpOnly; SameSite=Strict; Path=/${secure}`)
+        res.setHeader('set-cookie', `${sessionName}=${session}; HttpOnly; SameSite=Strict; Path=/${secure}`)
         json(200, { signedIn: true }); return
       }
       // Amp's portal proxy sets this header; public (unauthenticated) portal visitors are not collaborators.
@@ -229,19 +252,66 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
           res.writeHead(200, { 'content-type': 'text/html', 'cache-control': 'no-store', 'content-security-policy': "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'" })
           res.end('<!doctype html><html lang="en"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Review access</title><style>body{font:18px/1.5 system-ui;max-width:32rem;margin:12vh auto;padding:24px}input,button{font:inherit;padding:12px;width:100%;box-sizing:border-box;margin:8px 0}</style><h1>A Laundered Closet review</h1><p>Enter the local review key from <code>.review-data/access-key</code> in this worktree. This workspace uses synthetic records.</p><form><label for="key">Review key</label><input id="key" type="password" autocomplete="off" required><button>Open review workspace</button><p role="alert" id="error"></p></form><script>document.querySelector("form").onsubmit=async(e)=>{e.preventDefault();try{const r=await fetch("/api/review/login",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({key:document.getElementById("key").value})});if(!r.ok)throw Error("That review key is not valid.");location.reload()}catch(e){document.getElementById("error").textContent=e.message}}</script></html>'); return
         }
-        res.setHeader('set-cookie', `review_session=${session}; HttpOnly; SameSite=Strict; Path=/${secure}`)
+        res.setHeader('set-cookie', `${sessionName}=${session}; HttpOnly; SameSite=Strict; Path=/${secure}`)
       }
       if (url.pathname.startsWith('/api/review/') && req.headers['x-rehearsal-project'] && req.headers['x-rehearsal-project'] !== metadata.project?.key) { json(409, { error: 'The active project changed. Reload this tab before reading or changing its reviews.' }); return }
       if (url.pathname === '/api/review/index' && req.method === 'GET') { json(metadata.refreshError ? 503 : 200, metadata.refreshError ? { error: metadata.refreshError } : metadata); return }
       if (url.pathname === '/api/review/runtime' && req.method === 'POST' && runtime) { json(200, await runtime.handle(await body(req))); return }
+      if (url.pathname === '/api/review/interactions' && ['GET', 'POST'].includes(req.method)) {
+        if (!interactions || metadata.refreshError) { json(503, { error: 'Runtime interaction discovery is unavailable for this project.' }); return }
+        if (req.method === 'GET') { json(200, await interactionReport()); return }
+        const input = await body(req)
+        if (input?.action === 'observe') { json(201, await interactions.observe(input)); return }
+        if (!['scan', 'explore', 'verify'].includes(input?.action) || input.source !== metadata.revision.source) bad('Unknown discovery action or stale source')
+        if (input.action === 'verify' && (!metadata.project.runtime || !adapter.verifyBehavior)) { json(409, { error: 'This project has no authored isolated behavior checks.' }); return }
+        if (scan.status === 'running') { json(202, scan); return }
+        scan = { status: 'running', completed: 0, total: metadata.scenarios.length, errors: [], source: metadata.revision.source }
+        const progress = scan
+        progress.current = 'Starting browser'
+        void (async () => {
+          let browser
+          try {
+            browser = await launchFixtureBrowser()
+            const deadline = Date.now() + 180000
+            if (input.action === 'verify') {
+              progress.checks = await adapter.verifyBehavior({ origin: `http://${captureHost}`, cookie: `review_session=${session}`, browser, saveRecording, source: progress.source })
+              if (progress.source !== metadata.revision.source) throw Error('Source changed during behavior checks; run them against the current revision.')
+              await writeFile(join(dataDir, 'behavior-checks.json.tmp'), JSON.stringify({ source: progress.source, at: new Date().toISOString(), checks: progress.checks }), { mode: 0o600 })
+              await rename(join(dataDir, 'behavior-checks.json.tmp'), join(dataDir, 'behavior-checks.json'))
+              progress.total = progress.completed = progress.checks.length
+            }
+            const eligible = input.action === 'explore' && adapter.explorationScenarios ? adapter.explorationScenarios(metadata.scenarios) : metadata.scenarios
+            if (input.action === 'explore' && eligible.length < metadata.scenarios.length) progress.errors.push({ scenario: null, message: `${metadata.scenarios.length - eligible.length} screens lack an automated runtime starting state; they remain coverage gaps.` })
+            const scenarios = input.action === 'verify' ? [] : input.action === 'explore' ? eligible.flatMap(scenario => [{ ...scenario, viewport: { width: 1440, height: 900 } }, { ...scenario, viewport: { width: 393, height: 852 } }]) : metadata.scenarios
+            if (input.action !== 'verify') progress.total = scenarios.length
+            for (const scenario of scenarios) {
+              if (Date.now() >= deadline) { progress.limited = true; break }
+              progress.current = (scenario.label ?? scenario.id) + (scenario.viewport ? ` · ${scenario.viewport.width} × ${scenario.viewport.height}` : '')
+              if (progress.source !== metadata.revision.source) throw Error('Source changed during discovery; run it again against the new revision.')
+              try {
+                const options = { origin: `http://${captureHost}`, cookie: `review_session=${session}`, browser, saveRecording }
+                if (input.action === 'explore') {
+                  if (!adapter.exploreFixture) throw Error('This adapter has no automatic explorer')
+                  const result = await adapter.exploreFixture({ ...scenario, scenario: scenario.id }, options)
+                  progress.states = (progress.states ?? 0) + result.states; progress.actions = (progress.actions ?? 0) + result.actions
+                  progress.limited ||= result.limited
+                  for (const message of result.errors) progress.errors.push({ scenario: scenario.id, message })
+                } else await captureFixture({ ...scenario, scenario: scenario.id }, options)
+              }
+              catch (error) { progress.errors.push({ scenario: scenario.id, message: error.message.split('\n')[0].slice(0, 300) }) }
+              progress.completed++
+            }
+            progress.status = progress.errors.length || progress.limited || progress.checks?.some(check => check.outcome !== 'pass') ? 'partial' : 'complete'
+          } catch (error) { progress.status = 'failed'; progress.errors.push({ scenario: null, message: error.message }) }
+          finally { try { await browser?.close() } catch (error) { progress.status = 'failed'; progress.errors.push({ scenario: null, message: error.message }) } }
+        })()
+        json(202, scan); return
+      }
       if (url.pathname === '/api/review/runs' && req.method === 'POST') {
-        const tape = checkedRecording(await body(req), metadata.project)
-        const id = crypto.randomUUID(), directory = join(dataDir, 'runs')
-        await mkdir(directory, { recursive: true, mode: 0o700 })
-        await writeFile(join(directory, id + '.json'), JSON.stringify(tape), { flag: 'wx', mode: 0o600 })
-        json(201, { id, url: `/api/review/runs/${id}` }); return
+        json(201, await saveRecording(await body(req))); return
       }
       if (url.pathname === '/api/review/replays' && req.method === 'POST') {
+        if (metadata.project?.mode === 'live-read-only') { json(409, { error: 'Live Orca recordings are observational; replay verification requires an isolated runtime.' }); return }
         const input = await body(req)
         const tapeText = JSON.stringify(input?.tape ?? null), sha = createHash('sha256').update(tapeText).digest('hex')
         const replay = replayRecord(input, metadata.project, metadata.revision, new Date().toISOString(), sha)
@@ -276,14 +346,25 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
       }
       if (url.pathname === '/api/review/projects' && projects && ['GET', 'POST'].includes(req.method)) {
         const input = req.method === 'POST' ? await body(req) : null
-        const result = await serial(async () => {
+        const compare = async () => {
+          const controller = new AbortController(), cancel = () => { if (!res.writableFinished) controller.abort() }
+          res.once('close', cancel)
+          try { return await projects.changes(input, { signal: controller.signal }) }
+          finally { res.off('close', cancel) }
+        }
+        const result = input?.action === 'source-versions' ? await projects.sourceVersions(input) : input?.action === 'changes' ? await compare() : input?.action === 'open-window' ? await projects.openWindow(input.key, input.workspace) : input?.action === 'window-origins' ? { origins: projects.windowOrigins() } : await serial(async () => {
           if (!input) return projects.list()
           if (input.action === 'add') return projects.add(input)
           if (input.action === 'discover') return projects.discover(input)
           if (input.action === 'generate') return projects.generate(input)
+          if (input.action === 'organize') return projects.organize(input)
+          if (input.action === 'sources') return projects.sources(input.key, input.workspace)
+          if (input.action === 'link-figma') return projects.linkFigma(input)
+          if (input.action === 'scenarios') return projects.scenarios(input.key, input.workspace)
           if (input.action !== 'select') bad('Unknown project action')
+          if (scan.status === 'running') throw Object.assign(Error('Wait for interaction discovery to finish before switching projects.'), { status: 409 })
           if ((await read()).some((row) => row.deliveries?.some((delivery) => ['pending', 'accepted'].includes(delivery.status)))) throw Object.assign(Error('An agent delivery is active. Wait for its final receipt before switching projects.'), { status: 409 })
-          return projects.select(input.key)
+          return projects.select(input.key, input.workspace)
         })
         if (result.restarting) res.once('finish', () => setTimeout(restart, 100))
         json(200, result); return
@@ -291,7 +372,8 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
       if (url.pathname === '/api/review/agents' && req.method === 'GET') { json(200, (await destinations()).map((target) => agents.publicDestination(target))); return }
       if (url.pathname === '/api/review/coverage' && ['GET', 'POST'].includes(req.method)) {
         if (!bridge || metadata.refreshError) { json(503, { error: 'Coverage inventory is unavailable. Repair the source and retry.' }); return }
-        json(200, req.method === 'GET' ? await bridge.get() : await bridge.update(await body(req))); return
+        const result = req.method === 'GET' ? await bridge.get() : await bridge.update(await body(req))
+        json(200, { ...result, ...(interactions ? { interactions: await interactionReport() } : {}) }); return
       }
       if (url.pathname === '/api/review/proposals' && req.method === 'GET') { json(200, await serial(readProposals)); return }
       if (url.pathname === '/api/review/proposals' && req.method === 'POST') {
@@ -348,12 +430,14 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
         const declaredNode = metadata.project?.adapter !== 'module' ? screens.find((node) => node.id === id) : null
         const node = declaredNode ? { ...metadata.scenarios.find((entry) => entry.id === declaredNode.scenario), ...declaredNode } : scenario ? { ...scenario, scenario: scenario.id } : null
         if (!node) bad('Unknown registered screen')
+        const viewport = url.searchParams.has('width') || url.searchParams.has('height') ? fixtureViewport({ width: Number(url.searchParams.get('width')), height: Number(url.searchParams.get('height')) }) : undefined
+        const variant = fixtureName(node.id, viewport)
         const requested = url.searchParams.get('source')
         if (requested !== null && !/^[0-9a-f]{64}$/.test(requested)) bad('Invalid snapshot source')
         if (url.searchParams.get('cached') === '1') {
-          const suffix = `-${node.id.replace(':', '-')}.png`
+          const suffix = `-${variant}.png`
           let cachedSource
-          try { cachedSource = JSON.parse(await readFile(join(fixtureDir, `latest-${node.id.replace(':', '-')}.json`), 'utf8')).source }
+          try { cachedSource = JSON.parse(await readFile(join(fixtureDir, `latest-${variant}.json`), 'utf8')).source }
           catch (error) {
             if (error.code !== 'ENOENT') throw error
             // Older caches predate the latest pointer; retain their image as explicitly stale.
@@ -368,7 +452,7 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
         }
         if (requested && requested !== (metadata.fixtureSource ?? metadata.revision.source)) {
           let png
-          try { png = await readFile(join(fixtureDir, `${requested}-${node.id.replace(':', '-')}.png`)) }
+          try { png = await readFile(join(fixtureDir, `${requested}-${variant}.png`)) }
           catch (error) { if (error.code !== 'ENOENT') throw error; json(404, { error: 'Historical fixture snapshot unavailable' }); return }
           res.writeHead(200, { 'content-type': 'image/png', 'cache-control': 'private, max-age=3600', 'x-review-source': requested }); res.end(png); return
         }
@@ -376,7 +460,7 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
         const disconnected = () => controller.abort()
         res.once('close', disconnected)
         let png
-        try { png = await thumbnail(node, captureHost, undefined, controller.signal) }
+        try { png = await thumbnail(node, captureHost, undefined, controller.signal, viewport) }
         finally { res.off('close', disconnected) }
         if (controller.signal.aborted) return
         res.writeHead(200, { 'content-type': 'image/png', 'cache-control': 'private, max-age=3600', 'x-review-source': metadata.fixtureSource ?? metadata.revision.source }); res.end(png); return
@@ -519,17 +603,12 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
   return Object.assign(middleware, { refreshCoverage: () => bridge?.get() })
 }
 
-/**
- * The host app's own Playwright when it has one. Playwright refuses to load twice in a process, and a
- * host's review adapter already loads its copy; that's a different copy when the host is a checkout
- * outside CIVIC's tree (bin/civic-laundry, decision 0010).
- */
-async function hostPlaywright() {
-  try {
-    const playwright = await import(pathToFileURL(createRequire(join(process.cwd(), 'package.json')).resolve('@playwright/test')).href)
-    return playwright.chromium ? playwright : playwright.default
-  }
-  catch { return import('@playwright/test') }
+/** Use the installed automation API without initializing another project's test runner. */
+export async function hostPlaywright() {
+  let entry
+  try { entry = createRequire(join(process.cwd(), 'package.json')).resolve('@playwright/test') }
+  catch { entry = createRequire(import.meta.url).resolve('@playwright/test') }
+  return createRequire(entry)('playwright')
 }
 
 /** Rasterizes the submitted synthetic DOM with scripts disabled and all external requests blocked. */

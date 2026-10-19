@@ -9,6 +9,13 @@ import { projectPicker } from './review-projects.mjs'
 import { loadProject, checkedScenarios } from './review-project.mjs'
 
 const repo = fileURLToPath(new URL('../../../', import.meta.url))
+test('registered interaction types are retained and invalid types are rejected', () => {
+  const project = { root: repo, manifest: { adapter: { kind: 'module' }, navigation: ['Main'] } }
+  const rows = [{ id: 'home', label: 'Home', journey: 'App', edges: [{ action: 'Done', destination: 'home', interaction: 'update' }] }]
+  assert.equal(checkedScenarios(rows, project)[0].edges[0].interaction, 'update')
+  rows[0].edges[0].interaction = 'unknown'
+  assert.throws(() => checkedScenarios(rows, project), /invalid edges/)
+})
 async function fixture() {
   const root = await mkdtemp(join(await realpath(tmpdir()), 'rehearsal-discovery-'))
   await mkdir(join(root, 'src'))
@@ -70,6 +77,7 @@ test('onboarding generation owns its files, rejects stale source and does not im
   assert.equal(row.root, root); assert.ok(row.manifest.startsWith(join(host, 'rehearsal-projects/')))
   assert.match(await readFile(join(row.manifest, '../rehearsal.ts'), 'utf8'), /mountDiscovered/)
   assert.equal(JSON.parse(await readFile(row.manifest)).adapter.entry, 'rehearsal.ts')
+  assert.equal(JSON.parse(await readFile(join(row.manifest, '../civic.scenarios.json'))).find(screen => screen.component === 'src/Counter.jsx').componentExport, 'default')
   assert.deepEqual(await readdir(root), ['src']); assert.equal(await readFile(join(root, 'src/index.html'), 'utf8'), before)
   await writeFile(join(root, 'src/index.html'), before + '<p>Changed</p>')
   await assert.rejects(picker.generate(input), /Source changed/)

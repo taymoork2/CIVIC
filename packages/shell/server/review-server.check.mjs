@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict'
-import { mkdtemp, readFile, readdir, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, readdir, writeFile } from 'node:fs/promises'
 import http, { createServer, request } from 'node:http'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test } from 'node:test'
-import { reviewMiddleware } from './review-server.mjs'
+import { hostPlaywright, reviewMiddleware } from './review-server.mjs'
 
 // A synthetic adapter shaped like the towel journey: 13 screens over 10 scenarios.
 const steps = ['type', 'whose', 'details', 'fabric', 'color', 'origin', 'dye', 'care:wash', 'care:bleach', 'care:dry', 'stain', 'final', 'saved']
@@ -29,6 +29,154 @@ const coverage = async () => {
 
 const snapshot = { revision: { head: '0'.repeat(40), source: '1'.repeat(64), capturedAt: new Date().toISOString() }, design: { project: 'synthetic-test-design', hashes: {} } }
 
+test('parallel CIVIC ports keep independent browser sessions on the same hostname', async t => {
+  const servers = []
+  for (let index = 0; index < 2; index++) {
+    const dataDir = await mkdtemp(join(tmpdir(), 'civic-port-session-'))
+    const middleware = await reviewMiddleware({ dataDir, metadata: snapshot, adapter: adapter() })
+    const server = createServer((req, res) => middleware(req, res, () => res.end('Review')))
+    await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
+    t.after(() => new Promise(resolve => server.close(resolve)))
+    const base = `http://127.0.0.1:${server.address().port}`
+    const cookie = (await fetch(base + '/review')).headers.get('set-cookie').split(';')[0]
+    servers.push({ base, cookie })
+  }
+  assert.notEqual(servers[0].cookie.split('=')[0], servers[1].cookie.split('=')[0])
+  const jar = servers.map(row => row.cookie).join('; ')
+  for (const [index, row] of servers.entries()) {
+    assert.equal((await fetch(row.base + '/api/review/index', { headers: { cookie: jar } })).status, 200)
+    assert.equal((await fetch(row.base + '/api/review/index', { headers: { cookie: servers[1 - index].cookie } })).status, 401)
+  }
+})
+
+test('browser automation resolves through the host dependency without loading its test runner', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'civic-browser-loader-')), cwd = process.cwd()
+  for (const name of ['@playwright/test', 'playwright']) {
+    const folder = join(root, 'node_modules', name); await mkdir(folder, { recursive: true })
+    await writeFile(join(folder, 'package.json'), JSON.stringify({ name, main: 'index.cjs' }))
+    await writeFile(join(folder, 'index.cjs'), name === '@playwright/test' ? 'throw Error("A second test runner must never be loaded")' : 'module.exports = { chromium: { fixtureOnly: true } }')
+  }
+  try { process.chdir(root); assert.equal((await hostPlaywright()).chromium.fixtureOnly, true) }
+  finally { process.chdir(cwd) }
+})
+test('source discovery requires project authentication and does not hold the write queue during provider reads', async t => {
+  const dataDir = await mkdtemp(join(tmpdir(), 'civic-source-api-'))
+  let started, finish, linked = 0
+  const pending = new Promise(resolve => { finish = resolve }), sourceStarted = new Promise(resolve => { started = resolve })
+  const middleware = await reviewMiddleware({ dataDir, metadata: { ...snapshot, project: { key: 'source-app' } }, adapter: adapter(), projects: {
+    sourceVersions: async () => { started(); await pending; return { items: [], limit: 10 } },
+    linkFigma: async () => { linked++; return { linked: true } },
+  } })
+  const server = createServer((req, res) => middleware(req, res, () => res.end('Review')))
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
+  t.after(() => new Promise(resolve => { finish(); server.close(resolve) }))
+  const base = `http://127.0.0.1:${server.address().port}`, headers = { ...await localHeaders(base), 'x-rehearsal-project': 'source-app' }
+  const post = (action, auth = headers) => fetch(base + '/api/review/projects', { method: 'POST', headers: auth, body: JSON.stringify({ action }), signal: AbortSignal.timeout(2000) })
+  assert.equal((await post('source-versions', { 'content-type': 'application/json' })).status, 401)
+  assert.equal((await post('source-versions', { ...headers, 'x-rehearsal-project': 'other-app' })).status, 409)
+  const discovery = post('source-versions')
+  await sourceStarted
+  try { assert.equal((await post('link-figma')).status, 200); assert.equal(linked, 1) }
+  finally { finish() }
+  assert.equal((await discovery).status, 200)
+})
+test('project-window requests require authentication and retain the originating project binding', async t => {
+  const dataDir = await mkdtemp(join(tmpdir(), 'civic-window-api-')), calls = []
+  const middleware = await reviewMiddleware({ dataDir, metadata: { ...snapshot, project: { key: 'source-app' } }, adapter: adapter(), projects: {
+    openWindow: async (key, workspace) => { calls.push({ key, workspace }); return { url: 'http://127.0.0.1:4001/review' } },
+    windowOrigins: () => ['http://127.0.0.1:4001'],
+  } })
+  const server = createServer((req, res) => middleware(req, res, () => res.end('Review')))
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
+  t.after(() => new Promise(resolve => server.close(resolve)))
+  const base = `http://127.0.0.1:${server.address().port}`, headers = { ...await localHeaders(base), 'x-rehearsal-project': 'source-app' }
+  const post = (action, auth = headers) => fetch(base + '/api/review/projects', { method: 'POST', headers: auth, body: JSON.stringify({ action, key: 'laundry' }) })
+  assert.equal((await post('open-window', { 'content-type': 'application/json' })).status, 401)
+  assert.equal((await post('open-window', { ...headers, 'x-rehearsal-project': 'other-app' })).status, 409)
+  assert.deepEqual(await (await post('open-window')).json(), { url: 'http://127.0.0.1:4001/review' })
+  assert.deepEqual(calls, [{ key: 'laundry', workspace: undefined }])
+  assert.deepEqual(await (await post('window-origins')).json(), { origins: ['http://127.0.0.1:4001'] })
+})
+test('screen comparisons are authenticated, project-bound and do not block the write queue', async t => {
+  const dataDir = await mkdtemp(join(tmpdir(), 'civic-changes-api-'))
+  let started, finish, linked = 0
+  const pending = new Promise(resolve => { finish = resolve }), comparisonStarted = new Promise(resolve => { started = resolve })
+  const middleware = await reviewMiddleware({ dataDir, metadata: { ...snapshot, project: { key: 'selected-app' } }, adapter: adapter(), projects: {
+    changes: async input => { started(); await pending; return { scenario: input.scenario, comparisons: [] } },
+    linkFigma: async () => { linked++; return { linked: true } },
+  } })
+  const server = createServer((req, res) => middleware(req, res, () => res.end('Review')))
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
+  t.after(() => new Promise(resolve => { finish(); server.close(resolve) }))
+  const base = `http://127.0.0.1:${server.address().port}`, headers = { ...await localHeaders(base), 'x-rehearsal-project': 'selected-app' }
+  const post = (action, auth = headers) => fetch(base + '/api/review/projects', { method: 'POST', headers: auth, body: JSON.stringify({ action, scenario: 'home', candidates: [] }), signal: AbortSignal.timeout(2000) })
+  assert.equal((await post('changes', { 'content-type': 'application/json' })).status, 401)
+  assert.equal((await post('changes', { ...headers, 'x-rehearsal-project': 'other-app' })).status, 409)
+  const comparison = post('changes')
+  await comparisonStarted
+  try { assert.equal((await post('link-figma')).status, 200); assert.equal(linked, 1) }
+  finally { finish() }
+  assert.deepEqual(await (await comparison).json(), { scenario: 'home', comparisons: [] })
+})
+
+test('live interaction inventory is authenticated, source-bound and scans only registered read-only fixtures', async () => {
+  const dataDir = await mkdtemp(join(tmpdir(), 'civic-interaction-api-'))
+  const project = { key: 'orca', mode: 'live-read-only', personas: [{ id: 'owner' }], roles: [{ id: 'browse' }], conditions: [{ id: 'live' }] }
+  const metadata = { ...snapshot, project, coverage: { targets: [] }, scenarios: [{ id: 'home', label: 'Home' }, { id: 'settings', label: 'Settings' }] }
+  const captured = []
+  let closed = false
+  const middleware = await reviewMiddleware({ dataDir, metadata, coverage, adapter: { ...adapter(async node => { captured.push(node.id); if (node.id === 'settings') throw Error('Unavailable state'); return Buffer.from('png') }), launchFixtureBrowser: async () => ({ close: async () => { closed = true } }) } })
+  const server = createServer((req, res) => middleware(req, res, () => res.end('Review')))
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
+  const base = `http://127.0.0.1:${server.address().port}`, headers = await localHeaders(base)
+  const state = { scenario: 'home', persona: 'owner', role: 'browse', condition: 'live', viewport: { width: 1440, height: 900 }, controls: [{ tag: 'button', role: 'button', name: 'Menu', count: 1, index: 0, disabled: false }], landmarks: [], truncated: false }
+  const input = { action: 'observe', source: snapshot.revision.source, state }
+  const post = (data, auth = headers) => fetch(`${base}/api/review/interactions`, { method: 'POST', headers: auth, body: JSON.stringify(data) })
+  try {
+    assert.equal((await post(input, { 'content-type': 'application/json' })).status, 401)
+    assert.equal((await post(input, { ...headers, origin: 'https://foreign.test' })).status, 403)
+    assert.equal((await post(input, { ...headers, 'x-rehearsal-project': 'another' })).status, 409)
+    assert.equal((await post({ ...input, source: 'a'.repeat(64) })).status, 409)
+    assert.equal((await post({ ...input, state: { ...state, controls: [{ ...state.controls[0], value: 'private' }] } })).status, 400)
+    assert.equal((await post(input)).status, 201)
+    assert.equal((await fetch(`${base}/api/review/replays`, { method: 'POST', headers, body: '{}' })).status, 409, 'Live observations cannot be posted as verified replays')
+    assert.equal((await post({ action: 'verify', source: input.source })).status, 409, 'Live projects cannot run isolated writes')
+    const report = await (await fetch(`${base}/api/review/coverage`, { headers })).json()
+    assert.equal(report.interactions.summary.controls, 1)
+    assert.equal(report.interactions.summary.unrecorded, 1)
+    assert.equal((await post({ action: 'scan', source: input.source })).status, 202)
+    const deadline = Date.now() + 2000
+    while (!closed && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 10))
+    assert.equal(closed, true)
+    assert.deepEqual(captured, ['home', 'settings'])
+    const scan = (await (await fetch(`${base}/api/review/interactions`, { headers })).json()).scan
+    assert.equal(scan.status, 'partial')
+    assert.deepEqual(scan.errors, [{ scenario: 'settings', message: 'Unavailable state' }])
+  } finally { await new Promise(resolve => server.close(resolve)) }
+})
+
+test('isolated behavior results persist with their source and cannot verify a changed build', async () => {
+  const dataDir = await mkdtemp(join(tmpdir(), 'civic-behavior-api-'))
+  const metadata = { ...snapshot, project: { key: 'isolated', runtime: true, personas: [{ id: 'owner' }], roles: [{ id: 'owner' }], conditions: [{ id: 'normal' }] }, scenarios: [{ id: 'home' }] }
+  let closed = false, explored = false
+  const middleware = await reviewMiddleware({ dataDir, metadata, adapter: { ...adapter(), launchFixtureBrowser: async () => ({ close: async () => { closed = true } }), exploreFixture: async () => { explored = true; return { states: 3, actions: 2, errors: [], limited: true } }, verifyBehavior: async () => [{ title: 'Synthetic write retained', outcome: 'pass', assertions: ['One owned record'] }] } })
+  const server = createServer((req, res) => middleware(req, res, () => res.end('Review')))
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
+  const base = `http://127.0.0.1:${server.address().port}`, headers = await localHeaders(base)
+  const post = action => fetch(`${base}/api/review/interactions`, { method: 'POST', headers, body: JSON.stringify({ action, source: metadata.revision.source }) })
+  const wait = async () => { const deadline = Date.now() + 2000; while (!closed && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 10)); assert.equal(closed, true) }
+  const report = async () => (await fetch(`${base}/api/review/interactions`, { headers })).json()
+  try {
+    assert.equal((await post('explore')).status, 202); await wait()
+    assert.equal(explored, true); assert.equal((await report()).scan.status, 'partial')
+    closed = false
+    assert.equal((await post('verify')).status, 202); await wait()
+    assert.equal((await report()).behavior.checks[0].outcome, 'pass')
+    metadata.revision = { ...metadata.revision, source: 'a'.repeat(64) }
+    assert.equal((await report()).behavior, null)
+  } finally { await new Promise(resolve => server.close(resolve)) }
+})
+
 test('content-addressed snapshots survive unrelated revisions and retain historical evidence while changed inputs render', async () => {
   const dataDir = await mkdtemp(join(tmpdir(), 'rehearsal-cache-'))
   const metadata = { ...snapshot, project: { adapter: 'module' }, scenarios: [{ id: 'a' }], fixtureHashes: { a: 'a'.repeat(64) } }
@@ -52,6 +200,28 @@ test('content-addressed snapshots survive unrelated revisions and retain histori
     server.removeAllListeners('request'); server.on('request', (req, res) => restarted(req, res, () => res.end('Review')))
     assert.equal(await (await fetch(base + '/api/review/fixture.png?screen=a', { headers: await localHeaders(base) })).text(), 'image-2')
   } finally { await new Promise((resolve) => server.close(resolve)) }
+})
+
+test('one screen keeps distinct phone and desktop snapshot caches across source changes', async () => {
+  const dataDir = await mkdtemp(join(tmpdir(), 'rehearsal-viewport-cache-'))
+  const metadata = { ...snapshot, project: { adapter: 'module' }, scenarios: [{ id: 'a' }] }
+  const renders = []
+  const middleware = await reviewMiddleware({ dataDir, metadata, adapter: adapter(async node => { renders.push(node.viewport); return Buffer.from(JSON.stringify(node.viewport)) }) })
+  const server = createServer((req, res) => middleware(req, res, () => res.end('Review')))
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
+  const base = `http://127.0.0.1:${server.address().port}`, headers = await localHeaders(base)
+  const get = query => fetch(`${base}/api/review/fixture.png?screen=a&${query}`, { headers })
+  try {
+    assert.deepEqual(await (await get('width=393&height=852')).json(), { width: 393, height: 852 })
+    assert.deepEqual(await (await get('width=1440&height=900')).json(), { width: 1440, height: 900 })
+    assert.equal(renders.length, 2)
+    await get('width=393&height=852'); assert.equal(renders.length, 2)
+    metadata.fixtureSource = '2'.repeat(64)
+    assert.deepEqual(await (await get('width=1440&height=900&cached=1')).json(), { width: 1440, height: 900 })
+    assert.deepEqual(await (await get(`width=393&height=852&source=${snapshot.revision.source}`)).json(), { width: 393, height: 852 })
+    assert.equal((await get('width=1440')).status, 400)
+    assert.equal((await get('width=99999&height=900')).status, 400)
+  } finally { await new Promise(resolve => server.close(resolve)) }
 })
 
 test('one private HTTPS proxy gets secure sessions, exact origins and loopback captures', async () => {

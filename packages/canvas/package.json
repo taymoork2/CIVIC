@@ -27,7 +27,7 @@
   "scripts": {
     "check": "tsc --noEmit",
     "test": "vitest run && pnpm run test:host",
-    "test:host": "node --test server/server-functions.check.mjs server/runtime-service.check.mjs server/canvas-host.check.mjs"
+    "test:host": "node --test server/server-functions.check.mjs server/runtime-service.check.mjs server/canvas-host.check.mjs server/module-adapter.check.mjs"
   },
   "dependencies": {
     "@playwright/test": "1.63.0",

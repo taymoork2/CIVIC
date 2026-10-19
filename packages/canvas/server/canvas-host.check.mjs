@@ -122,7 +122,7 @@ test('an app on a function backend runs live against an isolated run of its func
   await tab.goto(origin + '/review')
   // The app's extension files each flow under the manifest's navigation, and draws the shopping flow first.
   await tab.locator('.app-nav-section').first().waitFor()
-  const sections = await tab.locator('.app-nav-section').evaluateAll((rows) => rows.map((row) => [row.querySelector('h3').textContent, [...row.querySelectorAll(':scope > ol > li > button')].map((button) => button.textContent.replace(/^\S+\s/, '').replace(/\d+$/, ''))]))
+  const sections = await tab.locator('.app-nav-section').evaluateAll((rows) => rows.map((row) => [row.querySelector('h3').textContent, [...row.querySelectorAll(':scope > ol > li > button > span')].map((label) => label.textContent)]))
   assert.deepEqual(sections, [['Pantry', ['Keep the pantry']], ['Shopping', ['Plan shopping']]])
   const flows = await tab.locator('.app-flow h2').allTextContents()
   assert.deepEqual(flows, ['Plan shopping', 'Keep the pantry'])
@@ -304,7 +304,8 @@ test('a live run switches account, goes offline and back, and changes viewport o
   await tab.getByRole('button', { name: 'Play this screen' }).click()
   const live = tab.locator('iframe[title="Live Team board"]'), frame = tab.frameLocator('iframe[title="Live Team board"]')
   await frame.getByText('Signed in as Alex Rivera').waitFor({ timeout: 20000 })
-  await tab.getByRole('button', { name: 'Inspect', exact: true }).click()
+  await tab.getByRole('button', { name: 'Open details', exact: true }).click()
+  await tab.getByRole('menuitem', { name: 'Inspect', exact: true }).click()
   const run = tab.getByRole('region', { name: 'Isolated run' })
   // Input is held while the account changes, as it is for a person; act once the app is ready again.
   const ready = () => tab.waitForFunction(() => { const doc = document.querySelector('iframe[title="Live Team board"]')?.contentDocument; return Boolean(doc?.body) && !doc.body.inert && doc.getElementById('review-root')?.dataset.rehearsalReady === 'true' })

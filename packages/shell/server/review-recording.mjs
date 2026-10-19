@@ -1,3 +1,5 @@
+import { checkedState } from './review-interactions.mjs'
+
 const refuse = (message) => { throw Object.assign(Error(message), { status: 400 }) }
 const sensitive = /password|secret|token|credential|one.time.code|credit.card/i
 export function sensitivePayload(value, depth = 0) {
@@ -26,8 +28,10 @@ export function checkedRecording(input, project) {
     const escape = gesture?.kind === 'key' && gesture.value === 'Escape' && target?.tag === 'document' && target.name === 'Escape'
     const command = gesture?.kind === 'command' && target?.tag === 'adapter'
     if (command) { try { if (sensitivePayload(JSON.parse(gesture.value)) || !runStep(target.name, JSON.parse(gesture.value))) refuse('Sensitive command') } catch { refuse('Invalid or sensitive adapter command') } }
-    if (!escape && !command && (!['click', 'input'].includes(gesture?.kind) || !target || !['button', 'a', 'input', 'select', 'textarea', 'div', 'span'].includes(target.tag)) || !target || typeof target.name !== 'string' || !target.name || target.name.length > 2000 || sensitive.test(target.name) || !Number.isSafeInteger(target.index) || !Number.isSafeInteger(target.count) || target.index < 0 || target.count <= target.index || target.count > 1000 || gesture.value !== undefined && (typeof gesture.value !== 'string' || gesture.value.length > (command ? 32000 : 4000))) refuse('Invalid or sensitive recorded gesture')
+    if (!escape && !command && (!['click', 'input'].includes(gesture?.kind) || !target || !/^[a-z][a-z0-9-]{0,39}$/.test(target.tag)) || !target || typeof target.name !== 'string' || !target.name || target.name.length > 2000 || sensitive.test(target.name) || !Number.isSafeInteger(target.index) || !Number.isSafeInteger(target.count) || target.index < 0 || target.count <= target.index || target.count > 1000 || gesture.value !== undefined && (typeof gesture.value !== 'string' || gesture.value.length > (command ? 32000 : 4000))) refuse('Invalid or sensitive recorded gesture')
     if (typeof step.route !== 'string' || step.route.length > 2000 || typeof step.view !== 'string' || step.view.length > 100_000 || !Array.isArray(step.fields) || step.fields.length > 250 || !Array.isArray(step.operations) || step.operations.length > 100) refuse('Invalid recorded state')
+    if (step.discovery !== undefined && (!step.discovery || Object.keys(step.discovery).some(key => !['before', 'after'].includes(key)) || !step.discovery.before || !step.discovery.after)) refuse('Invalid interaction evidence')
+    if (step.discovery) { checkedState(step.discovery.before, { project }); checkedState(step.discovery.after, { project }) }
     for (const field of step.fields) if (!field || typeof field.label !== 'string' || sensitive.test(field.label) || typeof field.value !== 'string' || field.value.length > 4000) refuse('Invalid recorded field')
     for (const operation of step.operations) if (!operation || !['mutation', 'action'].includes(operation.kind) || typeof operation.name !== 'string' || operation.name.length > 200 || operation.actor !== undefined && (typeof operation.actor !== 'string' || !/^[\w.-]{1,80}$/.test(operation.actor)) || sensitivePayload(operation.args) || sensitivePayload(operation.result)) refuse('Invalid or sensitive recorded operation')
   }

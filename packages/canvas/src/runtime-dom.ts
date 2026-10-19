@@ -1,11 +1,68 @@
 import type { RuntimeBridge, RuntimeComponent, RuntimeGesture } from './runtime-bridge'
 import { readFixtureFields } from './journey'
 
-const selector = 'button, a, input, select, textarea, [role="radio"], [role="checkbox"], [role="tab"]'
+const selector = 'button, a, input, select, textarea, summary, [role="button"], [role="link"], [role="radio"], [role="checkbox"], [role="tab"], [role="menuitem"], [role="switch"]'
 const secret = /password|secret|token|credential|one.time.code|credit.card/i
-const label = (element: HTMLElement) => element.getAttribute('aria-label') || element.getAttribute('aria-labelledby')?.split(' ').map((id) => element.ownerDocument.getElementById(id)?.textContent).join(' ').trim() || (element instanceof HTMLInputElement || element instanceof HTMLSelectElement || element instanceof HTMLTextAreaElement ? element.labels?.[0]?.textContent?.trim() || element.name || element.id : element.textContent?.trim() || element.closest('label')?.textContent?.trim()) || ''
+const label = (element: HTMLElement) => element.getAttribute('aria-label') || element.getAttribute('aria-labelledby')?.split(' ').map((id) => element.ownerDocument.getElementById(id)?.textContent).join(' ').trim() || element.getAttribute('title') || (element instanceof HTMLInputElement || element instanceof HTMLSelectElement || element instanceof HTMLTextAreaElement ? element.labels?.[0]?.textContent?.trim() || element.getAttribute('placeholder') || element.name || element.id : element.textContent?.trim() || element.closest('label')?.textContent?.trim()) || ''
 const safe = (element: HTMLElement) => !secret.test([label(element), element.getAttribute('name'), element.getAttribute('autocomplete')].join(' ')) && !(element instanceof HTMLInputElement && ['password', 'file', 'hidden'].includes(element.type))
-const visible = (element: HTMLElement) => element.getBoundingClientRect().width > 0 && !element.closest('[inert], [hidden], [aria-hidden="true"]')
+const visible = (element: HTMLElement) => {
+  const rect = element.getBoundingClientRect()
+  if (!rect.width || !rect.height || element.closest('[inert], [hidden], [aria-hidden="true"]') || !element.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true })) return false
+  const modal = [...element.ownerDocument.querySelectorAll<HTMLElement>('dialog[open], [role="dialog"][aria-modal="true"]')].filter(dialog => dialog.getClientRects().length && !dialog.closest('[hidden], [aria-hidden="true"]')).at(-1)
+  if (modal && !modal.contains(element)) return false
+  for (let parent = element.parentElement; parent; parent = parent.parentElement) {
+    // Portaled fixed dialogs can leave the body at zero height; root overflow clips to the viewport.
+    const style = getComputedStyle(parent), box = parent === element.ownerDocument.body || parent === element.ownerDocument.documentElement ? { top: 0, left: 0, bottom: innerHeight, right: innerWidth } : parent.getBoundingClientRect()
+    if (/hidden|clip/.test(style.overflowY) && (rect.bottom <= box.top || rect.top >= box.bottom) || /hidden|clip/.test(style.overflowX) && (rect.right <= box.left || rect.left >= box.right)) return false
+  }
+  return true
+}
+export type InteractionControl = { tag: string; role: string; name: string; index: number; count: number; disabled: boolean; destination?: string; link?: 'internal' | 'external' | 'unmapped'; expanded?: string; pressed?: string; selected?: string; checked?: string }
+export type InteractionState = { scenario: string; persona: string; role: string; condition: string; viewport: { width: number; height: number }; controls: InteractionControl[]; landmarks: string[]; truncated: boolean }
+
+/** Describes visible controls, including same-screen actions, without reading input values. */
+export function interactionState(root: HTMLElement, context: Omit<InteractionState, 'controls' | 'landmarks' | 'truncated'>, scenarios: { id: string; route?: string }[]): InteractionState {
+  const elements = [...root.querySelectorAll<HTMLElement>(selector)].filter(element => visible(element) && safe(element) && getComputedStyle(element).visibility !== 'hidden')
+  const controls = elements.slice(0, 300).map(element => {
+    const name = label(element).replace(/\s+/g, ' ').trim().slice(0, 200), tag = element.tagName.toLowerCase()
+    const peers = elements.filter(peer => peer.tagName === element.tagName && label(peer).replace(/\s+/g, ' ').trim().slice(0, 200) === name)
+    const role = element.getAttribute('role') || ({ a: 'link', button: 'button', summary: 'button', select: 'combobox', textarea: 'textbox' }[tag] ?? (element instanceof HTMLInputElement ? ['checkbox', 'radio', 'range'].includes(element.type) ? element.type === 'range' ? 'slider' : element.type : ['submit', 'button', 'reset'].includes(element.type) ? 'button' : 'textbox' : 'button'))
+    const control: InteractionControl = { tag, role, name, index: peers.indexOf(element), count: peers.length, disabled: element.matches(':disabled, [aria-disabled="true"]') }
+    for (const field of ['expanded', 'pressed', 'selected', 'checked'] as const) {
+      const value = element.getAttribute(`aria-${field}`)
+      if (value && ['true', 'false', 'mixed'].includes(value)) control[field] = value
+    }
+    if (element instanceof HTMLInputElement && ['checkbox', 'radio'].includes(element.type)) control.checked = String(element.checked)
+    if (element instanceof HTMLDetailsElement || tag === 'summary') control.expanded = String(element.closest('details')?.open ?? false)
+    if (element instanceof HTMLAnchorElement) {
+      const href = new URL(element.href, location.href)
+      const destination = href.origin === location.origin && scenarios.find(row => row.route && new RegExp('^' + row.route.split('/').map(part => part.startsWith(':') ? '[^/]+' : part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('/') + '/?$').test(href.pathname))
+      control.link = href.origin !== location.origin ? 'external' : destination ? 'internal' : 'unmapped'
+      if (destination) control.destination = destination.id
+    }
+    return control
+  })
+  const landmarks = [...root.querySelectorAll<HTMLElement>('[role="dialog"], dialog[open], [role="tab"][aria-selected="true"]')].filter(visible).map(element => (element.getAttribute('aria-label') || element.querySelector('h1,h2,h3')?.textContent || label(element)).replace(/\s+/g, ' ').trim().slice(0, 200)).filter(name => name && !secret.test(name)).slice(0, 40)
+  return { ...context, controls, landmarks, truncated: elements.length > 300 }
+}
+
+export function observeInteractions(root: HTMLElement, read: () => InteractionState, send: (state: InteractionState) => Promise<void>, failed: (error: Error) => void) {
+  let previous = '', queue = Promise.resolve(), timer: ReturnType<typeof setTimeout> | undefined, stopped = false
+  const capture = () => {
+    const state = read(), signature = JSON.stringify(state)
+    if (!root.closest('[inert]') && signature !== previous) {
+      previous = signature
+      queue = queue.then(() => send(state)).catch(error => { previous = ''; failed(error) })
+    }
+    return state
+  }
+  const schedule = () => { timer ??= setTimeout(() => { timer = undefined; if (!stopped) capture() }, 250) }
+  const observer = new MutationObserver(schedule)
+  observer.observe(root, { subtree: true, childList: true, attributes: true, attributeFilter: ['inert', 'open', 'hidden', 'disabled', 'class', 'style', 'aria-expanded', 'aria-pressed', 'aria-selected', 'aria-checked', 'aria-disabled', 'aria-hidden'] })
+  window.addEventListener('resize', schedule)
+  capture()
+  return { capture, flush: async () => { capture(); await queue }, stop: () => { stopped = true; clearTimeout(timer); observer.disconnect(); window.removeEventListener('resize', schedule) } }
+}
 type CloseWatcher = EventTarget & { requestClose(): void; destroy(): void }
 const closeWatchers = new WeakMap<Document, Set<CloseWatcher>>()
 
@@ -55,6 +112,24 @@ function targetOf(root: HTMLElement, element: HTMLElement) {
   const target = { tag: element.tagName.toLowerCase(), name: label(element), index: 0, count: 0 }
   const matches = matching(root, target); target.index = matches.indexOf(element); target.count = matches.length
   return target
+}
+/** Only open UI surfaces; submits and destructive actions need an authored isolated test. */
+export function explorationTargets(root: HTMLElement) {
+  return [...root.querySelectorAll<HTMLElement>(selector)].filter(element => {
+    if (!visible(element) || !safe(element) || element.matches(':disabled, [aria-disabled="true"], a, input, textarea, select')) return false
+    if (element instanceof HTMLButtonElement && element.form && element.type === 'submit') return false
+    const name = label(element)
+    if (/delete|remove|archive|send|save|submit|confirm|approve|accept|start|run|pause|stop|sign out|log out|purchase/i.test(name)) return false
+    return element.tagName === 'SUMMARY' && !element.closest('details')?.open || element.getAttribute('aria-expanded') === 'false' || ['menu', 'dialog', 'listbox', 'true'].includes(element.getAttribute('aria-haspopup') ?? '') || element.getAttribute('role') === 'tab' && element.getAttribute('aria-selected') === 'false' || /^(?:open|show|edit|add|new|manage|invite|rename)\b|^(?:menu|more|options|command palette|keyboard shortcuts|shortcuts|help)$/i.test(name)
+  }).map(element => targetOf(root, element)).filter(target => target.name && target.index >= 0)
+}
+export async function explorationPoint(root: HTMLElement, target: NonNullable<RuntimeGesture['target']>) {
+  if (!explorationTargets(root).some(candidate => JSON.stringify(candidate) === JSON.stringify(target))) throw Error('Control is outside automatic exploration policy')
+  const element = matching(root, target)[target.index]
+  element.scrollIntoView({ block: 'center', inline: 'center' })
+  await new Promise<void>(resolve => requestAnimationFrame(() => resolve()))
+  const box = element.getBoundingClientRect()
+  return { x: box.x + box.width / 2, y: box.y + box.height / 2 }
 }
 export async function replayGesture(root: HTMLElement, gesture: RuntimeGesture) {
   if (gesture.kind === 'key' && gesture.value === 'Escape') {

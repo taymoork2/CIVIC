@@ -29,6 +29,7 @@ export function checkedProject(input) {
   if (!input || input.version !== 1 || !id(input.id) || !words(input.name)) fail('use version 1, a stable id and a name')
   // `module` is the portable preview contract. Any other kind names a connector the host registers (Laundry's is `laundry`).
   if (!id(input.adapter?.kind) || input.adapter.entry !== undefined && !words(input.adapter.entry)) fail('unsupported adapter or entry')
+  if (input.adapter.mode !== undefined && input.adapter.mode !== 'live-read-only') fail('unsupported live review mode')
   if (input.adapter.runtime !== undefined && !words(input.adapter.runtime, 500)) fail('invalid isolated runtime entry')
   if (input.adapter.extension !== undefined && !words(input.adapter.extension, 500)) fail('invalid canvas extension')
   for (const field of ['sources', 'navigation']) if (!Array.isArray(input[field]) || !input[field].length || input[field].length > 50 || new Set(input[field]).size !== input[field].length || input[field].some((s) => !words(s))) fail(`invalid ${field}`)
@@ -84,12 +85,20 @@ export function loadProject(repo, options = {}) {
   if (extension && !/\.(?:[cm]?js|tsx?)$/.test(extension)) fail('canvas extension must be JavaScript or TypeScript')
   const publicDir = manifest.publicDir ? projectPath(root, manifest.publicDir, true, strict) : false
   const aliases = Object.fromEntries(Object.entries(manifest.aliases ?? {}).map(([name, path]) => [name, projectPath(root, path, true, strict)]))
-  const key = `${manifest.id}-${createHash('sha256').update(JSON.stringify([manifestPath, root])).digest('hex').slice(0, 12)}`
-  return { manifest, manifestPath, manifestRoot, root, sources, scenariosPath, coverageFile, entry, runtimeEntry, extension, publicDir, aliases, key, local }
+  let saved
+  try {
+    const rows = JSON.parse(readFileSync(join(repo, '.review-data/project-picker.json'), 'utf8'))
+    saved = rows.find(row => row.manifest === manifestPath && row.root === root)
+    if (saved && !new RegExp(`^${manifest.id.replaceAll('.', '\\.')}\\-[a-f0-9]{12}$`).test(saved.key)) fail('invalid saved connection key')
+    if (saved && rows.some(row => row !== saved && row.key === saved.key)) fail('duplicate saved connection key')
+  } catch (error) { if (error.code !== 'ENOENT') throw error }
+  // Paths can move; an established connection keeps the identity used by its saved evidence.
+  const key = saved?.key ?? `${manifest.id}-${createHash('sha256').update(JSON.stringify([manifestPath, root])).digest('hex').slice(0, 12)}`
+  return { manifest, manifestPath, manifestRoot, root, sources, scenariosPath, coverageFile, entry, runtimeEntry, extension, publicDir, aliases, key, local, app: saved?.app, connectionKind: saved?.kind }
 }
 export function publicProject(project) {
   const { manifest: m, key } = project
-  return { id: m.id, key, name: m.name, adapter: m.adapter.kind, preview: Boolean(project.entry), runtime: Boolean(project.runtimeEntry), personas: m.personas, roles: m.roles, conditions: m.conditions, navigation: m.navigation }
+  return { id: m.id, key, name: m.name, ...(project.app ? { app: project.app } : {}), ...(project.connectionKind ? { connectionKind: project.connectionKind } : {}), adapter: m.adapter.kind, ...(m.adapter.mode ? { mode: m.adapter.mode } : {}), preview: Boolean(project.entry), runtime: Boolean(project.runtimeEntry), personas: m.personas, roles: m.roles, conditions: m.conditions, navigation: m.navigation }
 }
 export function checkedScenarios(rows, project) {
   if (!Array.isArray(rows) || rows.length > 2000) fail('invalid scenario registry')
@@ -97,10 +106,13 @@ export function checkedScenarios(rows, project) {
   for (const row of rows) {
     if (!row || !id(row.id) || ids.has(row.id) || !words(row.label) || !words(row.journey)) fail('invalid or duplicate scenario identity')
     ids.add(row.id)
+    for (const field of ['targetId', 'componentId']) if (row[field] !== undefined && !id(row[field])) fail(`invalid ${field}: ${row.id}`)
+    if (row.viewport !== undefined && (!row.viewport || !Number.isInteger(row.viewport.width) || !Number.isInteger(row.viewport.height) || row.viewport.width < 200 || row.viewport.width > 1920 || row.viewport.height < 200 || row.viewport.height > 1600 || Object.keys(row.viewport).some(key => !['width', 'height'].includes(key)))) fail(`invalid screen viewport: ${row.id}`)
     if (row.flow !== undefined && !id(row.flow) || row.branchOf !== undefined && !id(row.branchOf)) fail(`invalid flow or branch identity: ${row.id}`)
     if (row.component !== undefined) projectPath(project.root, row.component, false, project.manifest.adapter.kind === 'module')
+    if (row.componentExport !== undefined && (!row.component || !words(row.componentExport, 120) || !/^[a-zA-Z_$][\w$]*$/.test(row.componentExport))) fail(`invalid component export: ${row.id}`)
     if (row.section !== undefined && !project.manifest.navigation.includes(row.section)) fail(`unknown navigation section: ${row.section}`)
-    if (row.edges !== undefined && (!Array.isArray(row.edges) || row.edges.length > 100 || row.edges.some((edge) => !edge || !id(edge.destination) || !words(edge.action) || edge.when !== undefined && !words(edge.when, 1000) || edge.returnTo !== undefined && !words(edge.returnTo, 1000)))) fail(`invalid edges: ${row.id}`)
+    if (row.edges !== undefined && (!Array.isArray(row.edges) || row.edges.length > 100 || row.edges.some((edge) => !edge || !id(edge.destination) || !words(edge.action) || edge.when !== undefined && !words(edge.when, 1000) || edge.returnTo !== undefined && !words(edge.returnTo, 1000) || edge.interaction !== undefined && !['navigate', 'update', 'return'].includes(edge.interaction)))) fail(`invalid edges: ${row.id}`)
     if (row.identity !== undefined && row.identity !== 'signed-out') fail(`identity is "signed-out" or absent: ${row.id}`)
     if (row.captureFields !== undefined && (!Array.isArray(row.captureFields) || row.captureFields.length > 100 || row.captureFields.some((s) => !words(s, 300)))) fail(`invalid capture fields: ${row.id}`)
   }

@@ -6,6 +6,7 @@ const sha = (value) => createHash('sha256').update(value).digest('hex')
 // The canvas modules that draw fixture frames; the rest of the canvas draws the workspace around them.
 export const canvasFrame = /^packages\/canvas\/src\/(?:frame\.tsx|adapter\.ts|journey\.ts|project-request\.ts|runtime-bridge\.ts|runtime-dom\.ts)$/
 const commonInputs = /^application:|\.(?:png|svg|webp|jpe?g|woff2?)$|package(?:-lock)?\.json$|pnpm-lock\.yaml$|\/vite\.config\.ts$|\/review(?:-frame)?\.html$/
+export const sourceModuleCandidates = path => [path, ...['.ts', '.tsx', '.js', '.jsx', '.mjs', '.css', '.json', '/index.ts', '/index.tsx', '/index.js'].map(ext => path + ext)]
 
 /**
  * Conservative module dependencies, not per-export analysis; shared CSS/assets invalidate every screen.
@@ -15,7 +16,7 @@ const commonInputs = /^application:|\.(?:png|svg|webp|jpe?g|woff2?)$|package(?:-
  */
 export function fixtureHashes(metadata, evidence, project, inputs = [], { screens = [], fingerprint = {} } = {}) {
   const code = new Map([...evidence].filter(([path]) => !path.startsWith('design:') && !/\.(test|spec|check)\./.test(path)))
-  const resolve = (path) => [path, ...['.ts', '.tsx', '.js', '.jsx', '.mjs', '.css', '.json', '/index.ts', '/index.tsx', '/index.js'].map((ext) => path + ext)].find((path) => code.has(path))
+  const resolve = (path) => sourceModuleCandidates(path).find(path => code.has(path))
   const dependency = (from, specifier) => {
     if (specifier.startsWith('.')) return resolve(posix.normalize(posix.join(posix.dirname(from), specifier)))
     for (const [alias, target] of Object.entries(project.aliases ?? {})) if (specifier === alias || specifier.startsWith(alias + '/')) return resolve(relative(project.root, target) + specifier.slice(alias.length))

@@ -19,7 +19,7 @@
     "build:styles": "tailwindcss -i styles/ui.css -o styles/ui.generated.css --minify",
     "check": "tsc --noEmit",
     "test": "vitest run && pnpm run test:server",
-    "test:server": "node --test server/review-server.check.mjs server/review-recording.check.mjs"
+    "test:server": "node --test server/review-server.check.mjs server/review-recording.check.mjs server/review-interactions.check.mjs"
   },
   "peerDependencies": {
     "react": "19.3.0"

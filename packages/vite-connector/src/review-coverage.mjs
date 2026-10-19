@@ -13,8 +13,10 @@ export function checkedContract(input) {
     if (!t || !/^[a-z][a-z0-9.-]{0,119}$/.test(t.id) || ids.has(t.id) || !['screen', 'interaction', 'journey'].includes(t.kind)) fail('Invalid or duplicate coverage identity')
     ids.add(t.id)
     if (!Array.isArray(t.scenarios) || t.scenarios.length > 100 || !Array.isArray(t.acceptance) || t.acceptance.length > 20) fail('Invalid coverage expectations')
+    if (t.state !== undefined && !/^[0-9a-f]{64}$/.test(t.state)) fail('Invalid observed state binding')
+    if (t.control !== undefined && (t.kind !== 'interaction' || !t.control || Object.keys(t.control).some(key => !['tag', 'name', 'index'].includes(key)) || !/^[a-z][a-z0-9-]{0,39}$/.test(t.control.tag ?? '') || typeof t.control.name !== 'string' || t.control.name.length > 200 || /password|secret|token|credential/i.test(t.control.name) || t.control.index !== undefined && (!Number.isInteger(t.control.index) || t.control.index < 0 || t.control.index >= 1000))) fail('Invalid interaction binding')
     if (t.component !== undefined && (!/^(?:[a-zA-Z0-9_$.-]+\/)*[a-zA-Z0-9_$.-]+\.(?:[cm]?[jt]sx?)(?:#[a-zA-Z0-9_]+)?$/.test(t.component) || t.component.split('/').some((part) => part === '..' || part === '.' || part === '.git' || part === '.review-data'))) fail('Use an application source path')
-    return { id: t.id, title: words(t.title, 160), kind: t.kind, ...(t.component ? { component: t.component } : {}), scenarios: t.scenarios.map((id) => words(id, 200)), acceptance: t.acceptance.map((s) => words(s, 1000)) }
+    return { id: t.id, title: words(t.title, 160), kind: t.kind, ...(t.component ? { component: t.component } : {}), ...(t.state ? { state: t.state } : {}), ...(t.control ? { control: t.control } : {}), scenarios: t.scenarios.map((id) => words(id, 200)), acceptance: t.acceptance.map((s) => words(s, 1000)) }
   })
   return { version: input.version, targets }
 }
@@ -37,7 +39,7 @@ export function coverageReport(metadata, contract, sourcePaths) {
     const implementation = t.component ? sourcePaths.has(t.component.split('#')[0]) ? 'present' : 'missing' : t.scenarios.length ? known.every(Boolean) ? 'present' : 'unknown' : 'planned'
     const preview = !known.length || known.some((s) => !s) ? 'missing' : known.some((s) => s.renderer === 'legacy') ? 'partial' : 'registered'
     const edges = t.scenarios.slice(0, -1).filter((id, i) => !reachable(id, t.scenarios[i + 1]))
-    const verification = metadata.validation?.status === 'source-current' && t.scenarios.length && t.scenarios.every((id) => metadata.validation.receipt?.behaviorScenarios?.includes(id)) ? 'scoped receipt' : 'unverified'
+    const verification = !t.state && !t.control && metadata.validation?.status === 'source-current' && t.scenarios.length && t.scenarios.every((id) => metadata.validation.receipt?.behaviorScenarios?.includes(id)) ? 'scoped receipt' : 'unverified'
     return { ...t, implementation, preview, missingEdges: edges, verification, reason: preview === 'missing' ? 'Expected state has no registered working preview.' : preview === 'partial' ? 'Some expected states are partial specimens.' : t.kind === 'journey' ? edges.length ? 'Expected transitions are not all declared.' : verification === 'scoped receipt' ? 'Scoped local behavior has execution evidence; full acceptance remains unverified.' : 'Declared transitions still need a continuous runtime and execution evidence.' : 'Registered preview still needs execution evidence.' }
   })
   const coveredComponents = new Set(contract.targets.map((t) => t.component))

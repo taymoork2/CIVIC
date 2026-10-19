@@ -21,13 +21,17 @@ export const defaultStore = () => resolve(process.env.CIVIC_STORE ?? join(homedi
  * and live runs use CIVIC's run service for apps that declare a runtime entry. An app's TanStack Start
  * server functions are sent to its live run.
  */
-export function canvasPlugins({ store = defaultStore(), connectors = {}, runtime = runtimeService, review = () => ({}) } = {}) {
+export function canvasPlugins({ store = defaultStore(), connectors = {}, runtime = runtimeService, review = () => ({}), picker = {}, project: connection = {}, designRoot, restart } = {}) {
   let appRoot
-  return [react(), serverFunctionsPlugin({ appRoot: () => { try { return appRoot ??= loadProject(store).root } catch { return null } }, side: 'client' }), civicReview({
+  return [react(), serverFunctionsPlugin({ appRoot: () => { try { return appRoot ??= loadProject(store, connection).root } catch { return null } }, side: 'client' }), civicReview({
     host: canvasRoot,
     canvas: canvasRoot,
     repo: store,
     connectors,
+    picker,
+    project: connection,
+    designRoot,
+    restart,
     runtime,
     engineRoots: [join(canvasRoot, 'src'), join(canvasRoot, 'server')],
     review: async (context) => ({

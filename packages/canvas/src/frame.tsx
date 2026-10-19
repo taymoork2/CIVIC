@@ -5,7 +5,7 @@ import { readFixtureFields } from './journey'
 import { createRuntimeBridge } from './runtime-bridge'
 import { fillCredentials, openRuntimeSession, routeFetch } from './runtime-session'
 import { routeServerFunctions } from './server-functions'
-import { observeRuntime, replayGesture, runtimeComponents, runtimeFields, runtimeView, trackCloseWatchers } from './runtime-dom'
+import { observeRuntime, observeInteractions, interactionState, explorationTargets, explorationPoint, replayGesture, runtimeComponents, runtimeFields, runtimeView, trackCloseWatchers } from './runtime-dom'
 import type { RuntimeBridge, RuntimeGesture, RuntimeRecording } from './runtime-bridge'
 import { defaultViewportHeight, validViewport, type PreviewViewport } from './viewport-presets'
 
@@ -39,7 +39,7 @@ try {
   }
   const persona = pick('persona', project.personas), role = pick('role', project.roles), condition = pick('condition', project.conditions)
   const preset = params.get('preset') ?? undefined
-  const config: ReviewConfig = savedConfig ? structuredClone(savedConfig) : { scenario: scenario.id, persona: persona.id, role: role.id, condition: condition.id, theme: params.get('theme') === 'dark' ? 'dark' : 'light', textScale: params.get('scale') === '2' ? 2 : 1, width: Number(params.get('width')) || 393, height: Number(params.get('height')) || defaultViewportHeight, ...(preset ? { preset } : {}) }
+  const config: ReviewConfig = savedConfig ? structuredClone(savedConfig) : { scenario: scenario.id, persona: persona.id, role: role.id, condition: condition.id, theme: params.get('theme') === 'dark' ? 'dark' : 'light', textScale: params.get('scale') === '2' ? 2 : 1, width: Number(params.get('width')) || scenario.viewport?.width || 393, height: Number(params.get('height')) || scenario.viewport?.height || defaultViewportHeight, ...(preset ? { preset } : {}) }
   const snapshot = { revision: index.revision, design: index.design }
   // Recordings made before viewports had a height keep none in their seed, so they still replay; they show at the default height.
   const initialViewport: PreviewViewport = { width: config.width, height: config.height ?? defaultViewportHeight, theme: config.theme, textScale: config.textScale, ...(config.preset ? { preset: config.preset } : {}) }
@@ -86,22 +86,28 @@ try {
       if (mounted && !restoring) root.dataset.rehearsalReady = 'true'
       window.dispatchEvent(new CustomEvent('rehearsal-state', { detail: state }))
     },
-    transition(destination, action, origin = 'app') {
+    transition(destination, action, origin = 'app', departureHTML) {
       if (runtimeBridge?.isReplaying()) return
       if (!state || !at) throw Error('Publish the current state before reporting a transition.')
       const from = index.scenarios.find((s) => s.id === at)
       if (!from?.edges?.some((edge) => edge.destination === destination && edge.action === action) || !index.scenarios.some((s) => s.id === destination)) throw Error('Transition is not a registered project edge.')
       const current = from.id === state.screen ? { ...state, fields: fields(state.screen) } : { screen: from.id, dirty: false, pending: false, title: from.label, fields: fields(from.id) }
       at = destination
-      window.dispatchEvent(new CustomEvent('rehearsal-transition', { detail: { from: from.id, to: destination, action, origin, state: current } }))
+      window.dispatchEvent(new CustomEvent('rehearsal-transition', { detail: { from: from.id, to: destination, action, origin, state: current, ...(departureHTML ? { html: departureHTML } : {}) } }))
     },
     connectRuntime(ports) {
       if (stopRuntime) throw Error('This frame already has an application runtime.')
       // App dialogs can portal beside the React root; the isolated frame is the recording boundary.
       const scope = root.ownerDocument.body
+      const discovery = project.mode === 'live-read-only' || project.runtime ? observeInteractions(scope, () => interactionState(scope, { scenario: ports.screen(), persona: config.persona, role: config.role, condition: config.condition, viewport: { width: config.width, height: config.height ?? defaultViewportHeight } }, index.scenarios), async state => {
+        const result = await projectFetch('/api/review/interactions', { method: 'POST', signal: AbortSignal.timeout(10000), headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'observe', source: snapshot.revision.source, state }) })
+        if (!result.ok) throw Error((await result.json()).error ?? 'Interaction discovery could not be saved')
+        delete root.dataset.discoveryError
+      }, error => { root.dataset.discoveryError = error.message; window.dispatchEvent(new Event('rehearsal-run')) }) : undefined
       const captured = () => runtimeFields(scope).filter((field) => ports.captureInputs === 'synthetic' || ports.captureInputs.includes(field.label))
       const settle = async () => {
         await ports.settle()
+        await discovery?.flush()
         const animations = document.getAnimations().filter((animation) => animation.playState === 'running' && Number.isFinite(animation.effect?.getComputedTiming().endTime) && Number(animation.effect?.getComputedTiming().endTime) <= 5000)
         await Promise.allSettled(animations.map((animation) => animation.finished))
         await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
@@ -125,7 +131,7 @@ try {
       const interact = (gesture: RuntimeGesture) => gesture.kind === 'command' && gesture.target?.tag === 'adapter' && commands.includes(gesture.target.name) ? control(gesture) : ports.interact ? ports.interact(gesture) : replayGesture(scope, gesture)
       // A replay starts from the viewport the recording started in.
       const reset = async (tape: RuntimeRecording) => { if (window.frameElement) await resize(initialViewport); await ports.reset(tape) }
-      const bridge = createRuntimeBridge({ ...ports, reset, settle, seed: { context: structuredClone(config), application: ports.seed }, project: project.key, source: snapshot.revision.source, fields: captured, view: () => runtimeView(scope), components: () => runtimeComponents(scope), interact })
+      const bridge = createRuntimeBridge({ ...ports, reset, settle, seed: { context: structuredClone(config), application: ports.seed }, project: project.key, source: snapshot.revision.source, fields: captured, view: () => runtimeView(scope), components: () => runtimeComponents(scope), ...(discovery ? { discover: discovery.capture } : {}), interact })
       runtimeBridge = bridge
       const publish = () => {
         const screen = ports.screen(), entry = index.scenarios.find((scenario) => scenario.id === screen)
@@ -140,7 +146,7 @@ try {
       const failed = (error: Error) => { root.dataset.rehearsalRunError = error.message; window.dispatchEvent(new Event('rehearsal-run')) }
       const stopObserving = observeRuntime(scope, bridge, publish, failed, (name) => ports.captureInputs === 'synthetic' || ports.captureInputs.includes(name))
       const stopRoutes = ports.subscribe?.(() => { void settle().then(publish).catch(failed) })
-      stopRuntime = () => { stopObserving(); stopRoutes?.() }
+      stopRuntime = () => { discovery?.stop(); stopObserving(); stopRoutes?.() }
       window.reviewPreview = { config, snapshot, state: () => state, data: ports.data, restart: () => location.reload(), retryWrites: () => { throw Error('Start a normal run to change a declared failure condition.') }, recording: bridge.recording, replayMismatch: bridge.mismatch, replay: async (tape) => {
         root.dataset.rehearsalReplaying = 'true'
         const guarded = document.body.inert
@@ -148,6 +154,11 @@ try {
         try { const result = await bridge.replay(tape); publish(); return result }
         finally { document.body.inert = guarded; delete root.dataset.rehearsalReplaying }
       } }
+      if (discovery) {
+        window.reviewPreview.flushDiscovery = discovery.flush
+        window.reviewPreview.exploration = () => ({ state: discovery.capture(), targets: explorationTargets(scope) })
+        window.reviewPreview.explorationPoint = target => explorationPoint(scope, target)
+      }
       /** Records a step, performs it and waits for the app to settle. A replay can't be interrupted by one. */
       const step = async (name: string, value: unknown) => {
         if (bridge.isReplaying()) throw Error('Wait for the replay to finish.')
@@ -192,6 +203,7 @@ try {
     },
   }
   const dispose = await mount(root, context)
+  if (window.reviewPreview) window.reviewPreview.mode = project.mode
   if (window.frameElement) await resize(initialViewport)
   // Ready is only announced once input is allowed, so nothing typed before then is lost to the inert page.
   mounted = true

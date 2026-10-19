@@ -1,10 +1,13 @@
 import { randomUUID } from 'node:crypto'
+import { execFileSync } from 'node:child_process'
 import { existsSync, realpathSync, statSync } from 'node:fs'
 import { cp, mkdir, readFile, rename, writeFile } from 'node:fs/promises'
 import { dirname, isAbsolute, join, parse, resolve } from 'node:path'
 import { homedir } from 'node:os'
 import { checkedProject, checkedScenarios, loadProject, manifestIn, projectPath, publicProject } from './review-project.mjs'
 import { discoverScreens, generatedScenarios } from './review-discovery.mjs'
+import { discoverSourceVersions, figmaFile, previewVersion } from './review-source-versions.mjs'
+import { compareVersionScreens } from './review-version-changes.mjs'
 
 const bad = (message) => { throw Object.assign(Error(message), { status: 400 }) }
 const json = async (file) => JSON.parse(await readFile(file, 'utf8'))
@@ -16,12 +19,18 @@ async function atomic(file, value) {
 
 // Connections and starters belong to the review host. Connecting never writes into an app checkout.
 // The host supplies the runtime that mounts discovered screens and the starter project it copies.
-export async function projectPicker(repo, current, { discoveredAdapter = join(repo, 'packages/canvas/src/discovered-adapter.tsx'), starterTemplate = join(repo, 'packages/canvas/examples/notebook'), kinds = null } = {}) {
+export async function projectPicker(repo, current, { discoveredAdapter = join(repo, 'packages/canvas/src/discovered-adapter.tsx'), starterTemplate = join(repo, 'packages/canvas/examples/notebook'), sourceRoot = join(homedir(), 'Projects/civic-apps'), kinds = null, workspaces = [], syncConnections, openWindow, windowOrigins = () => [], registry = {} } = {}) {
+  for (const workspace of workspaces) {
+    const url = new URL(workspace.origin)
+    if (url.origin !== workspace.origin || url.protocol !== 'http:' || !['localhost', '127.0.0.1', '[::1]'].includes(url.hostname) || !isAbsolute(workspace.store)) bad('Linked CIVIC workspaces must use a loopback origin and absolute store')
+  }
   const store = join(repo, '.review-data/project-picker.json')
   await mkdir(dirname(store), { recursive: true, mode: 0o700 })
-  let rows
-  try { rows = await json(store) } catch (error) { if (error.code !== 'ENOENT') throw error; rows = [] }
+  registry.loading ??= json(store).catch(error => { if (error.code !== 'ENOENT') throw error; return [] })
+  const rows = await registry.loading
   if (!Array.isArray(rows)) throw Error('Invalid project connection store')
+  registry.saving ??= Promise.resolve()
+  const persistRows = () => { registry.saving = registry.saving.catch(() => {}).then(() => atomic(store, rows)); return registry.saving }
   const record = (project) => ({ key: project.key, manifest: project.manifestPath, root: project.root })
   const discoveries = new Map()
   if (!rows.some((row) => row.key === current.key)) { rows.push(record(current)); await atomic(store, rows) }
@@ -33,7 +42,138 @@ export async function projectPicker(repo, current, { discoveredAdapter = join(re
     if (!Number.isInteger(coverage.version) || coverage.version < 1 || !Array.isArray(coverage.targets)) bad('Use a coverage file with a positive version and targets')
     return project
   }
+  const kindOf = project => project.manifest.adapter.mode ? 'live' : project.runtimeEntry ? 'isolated' : project.manifest.design ? 'design' : 'implementation'
+  const describe = async (row, host = repo) => {
+    try {
+      const p = host === repo ? await validate(row.manifest, row.root) : loadProject(host, { manifest: row.manifest, applicationRoot: row.root })
+      const kind = row.kind ?? kindOf(p)
+      return { ...publicProject(p), root: p.root, manifest: p.manifestPath, design: p.manifest.design, app: row.app ?? { id: p.manifest.id, name: p.manifest.name }, kind, ...await previewVersion(p, kind), refreshRequired: host === repo && p.key === current.key && (p.entry !== current.entry || p.runtimeEntry !== current.runtimeEntry), available: true }
+    } catch (error) { return { ...row, app: row.app ?? { id: row.key, name: row.root.split('/').at(-1) }, name: row.root.split('/').at(-1), available: false, error: error.message } }
+  }
+  const assign = (row, input) => {
+    const app = input.app
+    if (!app || typeof app !== 'object' || !/^[a-z][a-z0-9.-]{0,119}$/.test(app.id) || typeof app.name !== 'string' || !app.name.trim() || app.name.length > 120) bad('Use a stable app identity and name')
+    if (!['design', 'live', 'isolated', 'implementation'].includes(input.kind)) bad('Invalid connection kind')
+    if (rows.some(other => other.key !== row.key && other.app?.id === app.id && other.app.name !== app.name.trim())) bad('Connections under an app must use the same name')
+    row.app = { id: app.id, name: app.name.trim() }; row.kind = input.kind
+  }
+  const connectedProject = async (key, workspaceOrigin) => {
+    const workspace = workspaces.find(workspace => workspace.origin === workspaceOrigin)
+    if (workspaceOrigin && !workspace) bad('Unknown CIVIC workspace')
+    const saved = workspace ? await json(join(workspace.store, '.review-data/project-picker.json')) : rows
+    const row = saved.find(row => row.key === key)
+    if (!row) bad('Unknown saved connection')
+    return loadProject(workspace?.store ?? repo, { manifest: row.manifest, applicationRoot: row.root })
+  }
+  let syncing
+  const openedOrigins = new Set()
+  const sync = async () => {
+    if (!syncConnections || (rows.find(row => row.key === current.key)?.app?.id ?? current.manifest.id) !== 'orca') return []
+    const result = await syncConnections()
+    // Merge into the live registry after compilation; edits made during the build stay in it.
+    let changed = false
+    for (const input of result.connections) {
+      const p = await validate(input.manifest, input.root)
+      if (!rows.some(row => row.key === p.key)) { const row = record(p); assign(row, input); rows.push(row); changed = true }
+    }
+    if (changed) await persistRows()
+    return result.errors
+  }
   return {
+    windowOrigins() { return [...new Set([...windowOrigins(), ...openedOrigins])] },
+    async openWindow(key, workspaceOrigin) {
+      if (!openWindow) bad('This CIVIC host does not support independent project windows')
+      let url
+      if (workspaceOrigin) {
+        const workspace = workspaces.find(workspace => workspace.origin === workspaceOrigin)
+        if (!workspace) bad('Unknown CIVIC workspace')
+        await connectedProject(key, workspaceOrigin)
+        const selected = await json(join(workspace.store, '.review-data/application.json'))
+        const active = loadProject(workspace.store, { manifest: selected.project, applicationRoot: selected.root })
+        const accessKey = (await readFile(join(workspace.store, '.review-data/projects', active.key, 'access-key'), 'utf8')).trim()
+        const response = await fetch(`${workspace.origin}/api/review/projects`, { method: 'POST', headers: { authorization: `Bearer ${accessKey}`, 'x-rehearsal-project': active.key, 'content-type': 'application/json' }, body: JSON.stringify({ action: 'open-window', key }), signal: AbortSignal.timeout(30_000) })
+        const result = await response.json()
+        if (!response.ok) throw Object.assign(Error(result.error ?? 'The workspace could not open a project window'), { status: response.status })
+        url = result.url
+      } else {
+        const row = rows.find(row => row.key === key)
+        if (!row) bad('Unknown saved connection')
+        url = await openWindow(await validate(row.manifest, row.root))
+      }
+      const destination = new URL(url)
+      if (destination.protocol !== 'http:' || !['127.0.0.1', 'localhost', '[::1]'].includes(destination.hostname) || destination.username || destination.password || destination.pathname !== '/review' || destination.search || destination.hash) bad('Project windows must use a local CIVIC review origin')
+      openedOrigins.add(destination.origin)
+      return { url: destination.href }
+    },
+    async sourceVersions(input = {}) {
+      const list = await this.list(), appId = rows.find(row => row.key === current.key)?.app?.id ?? current.manifest.id
+      const connections = list.apps.find(app => app.id === appId)?.connections ?? []
+      const projects = await Promise.all(connections.filter(row => row.available).map(row => connectedProject(row.key, row.workspace)))
+      const links = new Map()
+      for (const host of [repo, ...workspaces.map(workspace => workspace.store)]) {
+        try { for (const link of (await json(join(host, '.review-data/source-links.json')))[appId] ?? []) links.set(link.key, link) }
+        catch (error) { if (host === repo && error.code !== 'ENOENT') throw error }
+      }
+      return discoverSourceVersions(projects, [...links.values()], { query: input.query ?? '', inactive: input.inactive ?? false, offset: input.offset ?? 0 })
+    },
+    async linkFigma(input) {
+      let link
+      try { link = figmaFile(input.url) } catch (error) { bad(error.message) }
+      const appId = rows.find(row => row.key === current.key)?.app?.id ?? current.manifest.id
+      const file = join(repo, '.review-data/source-links.json')
+      let links = {}
+      try { links = await json(file) } catch (error) { if (error.code !== 'ENOENT') throw error }
+      const saved = links[appId] ?? []
+      if (!saved.some(row => row.key === link.key)) {
+        if (saved.length >= 10) bad('Ten Figma files are already connected to this app')
+        links[appId] = [...saved, link]; await atomic(file, links)
+      }
+      return { linked: true }
+    },
+    async organize(input) {
+      const row = rows.find(row => row.key === input.key)
+      if (!row) bad('Unknown saved connection')
+      assign(row, input); await persistRows()
+      return { key: row.key, app: row.app, kind: row.kind }
+    },
+    async scenarios(key, workspaceOrigin) {
+      const project = await connectedProject(key, workspaceOrigin)
+      const screens = checkedScenarios(await json(project.scenariosPath), project)
+      return screens.map(({ id, label, component, componentExport, route, targetId, componentId, fixture }) => ({ id, label, component, componentExport, route, ...(targetId ? { targetId } : {}), ...(componentId ? { componentId } : {}), ...(typeof fixture?.state === 'string' ? { state: fixture.state } : {}) }))
+    },
+    async changes(input, { signal } = {}) {
+      signal?.throwIfAborted()
+      if (typeof input.scenario !== 'string' || !Array.isArray(input.candidates) || input.candidates.length > 10 || new Set(input.candidates.map(row => row?.id)).size !== input.candidates.length) bad('Compare up to ten unique registered previews')
+      const baseRows = checkedScenarios(await json(current.scenariosPath), current)
+      const app = rows.find(row => row.key === current.key)?.app?.id ?? current.manifest.id
+      const comparisons = []
+      // Bound parser memory; each comparison reads snapshots without executing application code.
+      for (const candidate of input.candidates) {
+        signal?.throwIfAborted()
+        if (!candidate || typeof candidate.id !== 'string' || candidate.id.length > 600 || typeof candidate.key !== 'string' || typeof candidate.scenario !== 'string') bad('Invalid preview comparison')
+        const project = await connectedProject(candidate.key, candidate.workspace)
+        if ((project.app?.id ?? project.manifest.id) !== app) bad('Compare versions within the selected app')
+        const candidateRows = checkedScenarios(await json(project.scenariosPath), project)
+        comparisons.push({ id: candidate.id, ...await compareVersionScreens(current, project, baseRows, candidateRows, input.scenario, candidate.scenario, signal) })
+      }
+      return { scenario: input.scenario, comparisons }
+    },
+    async sources(key, workspaceOrigin) {
+      const project = await connectedProject(key, workspaceOrigin)
+      let reference = project.manifest.design ? { project: project.manifest.design.id, files: project.manifest.design.files } : null
+      if (project.manifest.design) {
+        try { const receipt = await json(join(project.manifestRoot, 'receipt.json')); reference = { ...reference, source: receipt.source, revision: receipt.sourceHead, capturedAt: receipt.capturedAt } }
+        catch (error) { if (error.code !== 'ENOENT') throw error }
+      }
+      const root = reference?.source ?? project.root
+      let worktrees = [], unavailable = ''
+      try {
+        const git = args => execFileSync('git', ['-C', root, ...args], { encoding: 'utf8', timeout: 3000, maxBuffer: 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+        if (realpathSync(git(['rev-parse', '--show-toplevel'])) !== realpathSync(root)) throw Error('This is a reference folder, rather than a Git checkout')
+        worktrees = git(['worktree', 'list', '--porcelain', '-z']).split('\0\0').filter(Boolean).map(block => Object.fromEntries(block.split('\0').filter(Boolean).map(line => { const index = line.indexOf(' '); return index < 0 ? [line, true] : [line.slice(0, index), line.slice(index + 1)] }))).map(row => ({ path: row.worktree, head: row.HEAD, branch: row.branch ?? null }))
+      } catch { unavailable = 'Git worktree information is unavailable for this source.' }
+      return { root, reference, worktrees, unavailable }
+    },
     async discover(input) {
       if (typeof input.root !== 'string' || !isAbsolute(input.root)) bad('Enter an absolute app folder path on the CIVIC review host')
       let root
@@ -44,7 +184,8 @@ export async function projectPicker(repo, current, { discoveredAdapter = join(re
         const manifest = input.manifest?.trim() ? projectPath(root, input.manifest.trim()) : existsSync(manifestIn(root)) ? manifestIn(root) : existing.manifest
         const project = await validate(manifest, root)
         if (project.entry) {
-          if (!rows.some((row) => row.key === project.key)) { rows.push(record(project)); await atomic(store, rows) }
+          if (!rows.some((row) => row.key === project.key)) { rows.push(record(project)); await persistRows() }
+          if (input.app) await this.organize({ key: project.key, app: input.app, kind: input.connectionKind ?? kindOf(project) })
           return { connection: { key: project.key, name: project.manifest.name, preview: true } }
         }
         input = { ...input, source: project.manifest.sources[0] }
@@ -64,7 +205,7 @@ export async function projectPicker(repo, current, { discoveredAdapter = join(re
       if (fresh.sourceHash !== discovery.sourceHash || input.sourceHash !== discovery.sourceHash) throw Object.assign(Error('Source changed since discovery. Scan again before generating.'), { status: 409 })
       const scenarios = generatedScenarios(discovery, input)
       checkedScenarios(scenarios, { root: discovery.root, manifest: { adapter: { kind: 'module' }, navigation: ['Start', 'Main'] } })
-      const connection = await this.add({ kind: 'existing', root: discovery.root, source: discovery.source, name: input.name }, true)
+      const connection = await this.add({ kind: 'existing', root: discovery.root, source: discovery.source, name: input.name, app: input.app }, true)
       const row = rows.find((row) => row.key === connection.key)
       const folder = dirname(row.manifest)
       const manifest = await json(row.manifest)
@@ -84,10 +225,27 @@ export async function projectPicker(repo, current, { discoveredAdapter = join(re
       return { ...connection, preview: true, generated: true, screens: screens.length, paths: scenarios.reduce((total, screen) => total + screen.edges.length, 0) }
     },
     async list() {
-      return { active: current.key, projects: await Promise.all(rows.map(async (row) => {
-        try { const p = await validate(row.manifest, row.root); return { ...publicProject(p), root: p.root, manifest: p.manifestPath, available: true } }
-        catch (error) { return { ...row, name: row.root.split('/').at(-1), available: false, error: error.message } }
-      })) }
+      syncing ??= sync().catch(error => [`Worktree previews could not refresh: ${error.message}. Saved versions are retained.`]).finally(() => { syncing = null })
+      const syncErrors = await syncing
+      const projects = await Promise.all(rows.map(row => describe(row)))
+      const workspaceErrors = [...syncErrors]
+      for (const workspace of workspaces) {
+        try {
+          const linked = await json(join(workspace.store, '.review-data/project-picker.json'))
+          projects.push(...await Promise.all(linked.map(async row => ({ ...await describe(row, workspace.store), workspace: workspace.origin, workspaceName: workspace.name }))))
+        } catch { workspaceErrors.push(`${workspace.name ?? workspace.origin}: saved connections are unavailable. Local connections and evidence are retained.`) }
+      }
+      const apps = []
+      for (const row of projects) {
+        let app = apps.find(app => app.id === row.app.id)
+        if (!app) { app = { ...row.app, connections: [], versions: [] }; apps.push(app) }
+        app.connections.push(row)
+        const identity = { ...row.version, id: row.version?.id ?? `${row.workspace ?? ''}:${row.key}`, name: row.version?.name ?? row.sourceName ?? row.name, kind: row.kind === 'design' ? 'design' : 'implementation' }
+        let version = app.versions.find(version => version.id === identity.id)
+        if (!version) { version = { ...identity, connections: [] }; app.versions.push(version) }
+        version.connections.push(row)
+      }
+      return { active: current.key, projects, apps, workspaceErrors, canOpenWindow: Boolean(openWindow) }
     },
     async add(input, ownedOnly = false) {
       if (!input || !['existing', 'new'].includes(input.kind)) bad('Choose an existing app or a new project')
@@ -100,7 +258,8 @@ export async function projectPicker(repo, current, { discoveredAdapter = join(re
         manifest = input.manifest?.trim() ? projectPath(root, input.manifest.trim()) : manifestIn(root)
         if (!ownedOnly && (input.manifest?.trim() || existsSync(manifest))) {
           const project = await validate(manifest, root)
-          if (!rows.some((row) => row.key === project.key)) { rows.push(record(project)); await atomic(store, rows) }
+          if (!rows.some((row) => row.key === project.key)) { rows.push(record(project)); await persistRows() }
+          if (input.app) await this.organize({ key: project.key, app: input.app, kind: input.connectionKind ?? kindOf(project) })
           return { key: project.key, name: project.manifest.name, preview: Boolean(project.entry) }
         }
         if (typeof input.source !== 'string') bad('Enter a source folder relative to the app folder')
@@ -112,7 +271,8 @@ export async function projectPicker(repo, current, { discoveredAdapter = join(re
       const owned = join(repo, 'rehearsal-projects')
       await mkdir(owned, { recursive: true, mode: 0o700 })
       if (realpathSync(owned) !== resolve(owned)) bad('CIVIC project storage must not be a symlink')
-      const folder = join(owned, id)
+      const folder = join(input.kind === 'new' ? resolve(sourceRoot) : owned, id)
+      await mkdir(dirname(folder), { recursive: true, mode: 0o700 })
       await mkdir(folder, { mode: 0o700 })
       if (input.kind === 'new') {
         const template = starterTemplate
@@ -125,10 +285,42 @@ export async function projectPicker(repo, current, { discoveredAdapter = join(re
         for (const [file, data] of Object.entries({ 'civic.project.json': descriptor, 'civic.scenarios.json': [], 'civic.coverage.json': { version: 1, targets: [] } })) await atomic(join(folder, file), data)
       }
       const project = await validate(join(folder, 'civic.project.json'), root)
-      rows.push(record(project)); await atomic(store, rows)
+      const row = record(project)
+      if (input.app) assign(row, { ...input, kind: input.connectionKind ?? 'implementation' })
+      rows.push(row); await persistRows()
       return { key: project.key, name: project.manifest.name, preview: Boolean(project.entry) }
     },
-    async select(key) {
+    async select(key, workspaceOrigin) {
+      if (openWindow) {
+        if (!workspaceOrigin && key === current.key) {
+          const project = await connectedProject(key)
+          if (project.entry !== current.entry || project.runtimeEntry !== current.runtimeEntry) return { key, restarting: true }
+        }
+        return { key, redirect: (await this.openWindow(key, workspaceOrigin)).url }
+      }
+      if (workspaceOrigin) {
+        const workspace = workspaces.find(workspace => workspace.origin === workspaceOrigin)
+        if (!workspace) bad('Unknown CIVIC workspace')
+        const connections = await json(join(workspace.store, '.review-data/project-picker.json'))
+        const target = connections.find(row => row.key === key)
+        if (!target || loadProject(workspace.store, { manifest: target.manifest, applicationRoot: target.root }).key !== key) bad('Unknown saved connection')
+        const selected = await json(join(workspace.store, '.review-data/application.json'))
+        const active = loadProject(workspace.store, { manifest: selected.project, applicationRoot: selected.root })
+        const accessKey = (await readFile(join(workspace.store, '.review-data/projects', active.key, 'access-key'), 'utf8')).trim()
+        const headers = { authorization: `Bearer ${accessKey}`, 'x-rehearsal-project': active.key, 'content-type': 'application/json' }
+        const response = await fetch(`${workspace.origin}/api/review/projects`, { method: 'POST', headers, body: JSON.stringify({ action: 'select', key }), signal: AbortSignal.timeout(5000) })
+        const result = await response.json()
+        if (!response.ok) throw Object.assign(Error(result.error ?? 'The isolated workspace could not be opened'), { status: response.status })
+        for (let attempt = 0; attempt < 60; attempt++) {
+          try {
+            const selectedKey = (await readFile(join(workspace.store, '.review-data/projects', key, 'access-key'), 'utf8')).trim()
+            const ready = await fetch(`${workspace.origin}/api/review/index`, { headers: { authorization: `Bearer ${selectedKey}` }, signal: AbortSignal.timeout(1000) })
+            if (ready.ok && (await ready.json()).project.key === key) return { key, redirect: `${workspace.origin}/review` }
+          } catch { /* The other CIVIC listener may be restarting. */ }
+          await new Promise(resolve => setTimeout(resolve, 500))
+        }
+        throw Object.assign(Error('The isolated connection was selected but has not reopened. Reload its workspace.'), { status: 503 })
+      }
       const row = rows.find((row) => row.key === key)
       if (!row) bad('Unknown saved project')
       const project = await validate(row.manifest, row.root)
@@ -139,7 +331,7 @@ export async function projectPicker(repo, current, { discoveredAdapter = join(re
       // Vite rebuilds its aliases, filesystem allowlist and adapter on the same port.
       process.env.CIVIC_PROJECT = project.manifestPath
       process.env.CIVIC_APP_ROOT = project.root
-      return { key: project.key, name: project.manifest.name, restarting: project.key !== current.key }
+      return { key: project.key, name: project.manifest.name, restarting: project.key !== current.key || project.entry !== current.entry || project.runtimeEntry !== current.runtimeEntry }
     },
   }
 }

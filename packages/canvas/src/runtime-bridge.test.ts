@@ -1,5 +1,19 @@
 import { expect, test } from 'vitest'
 import { createRuntimeBridge } from './runtime-bridge'
+import type { InteractionState } from './runtime-dom'
+
+test('binds execution evidence to the exact before and after interaction states and checks it on replay', async () => {
+  const before: InteractionState = { scenario: 'home', persona: 'owner', role: 'browse', condition: 'live', viewport: { width: 1440, height: 900 }, controls: [{ tag: 'button', role: 'button', name: 'Menu', index: 0, count: 1, disabled: false, expanded: 'false' }], landmarks: [], truncated: false }
+  const after = structuredClone(before); after.controls[0]!.expanded = 'true'; after.landmarks = ['Menu']
+  let state = before
+  const bridge = createRuntimeBridge({ project: 'app', source: 'source', seed: {}, now: 0, route: () => '/', fields: () => [], view: () => '', discover: () => state, assertSource: async () => {}, settle: async () => {}, reset: async () => { state = before }, interact: async () => { state = after } })
+  bridge.record({ kind: 'click', target: { tag: 'button', name: 'Menu', index: 0, count: 1 } }); state = after
+  const tape = await bridge.recording()
+  expect(tape.steps[0]!.discovery).toEqual({ before, after })
+  expect(await bridge.replay(tape)).toEqual({ verified: 1 })
+  const drift = structuredClone(tape); drift.steps[0]!.discovery!.after.controls[0]!.expanded = 'false'
+  await expect(bridge.replay(drift)).rejects.toThrow('Replay diverged')
+})
 
 function notebook(components?: () => { component: string; variant?: string; state?: string; props?: Record<string, string> }[]) {
   let route = '/', title = '', saved = '', source = 'revision-one'
