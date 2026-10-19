@@ -1,6 +1,6 @@
 import { useEffect, useEffectEvent, useMemo, useRef, useState, type CSSProperties } from 'react'
-import { appFlows, crossFlowEdges, flowEdges, flowAtCenter, screenAtCenter, overviewFlows, screenSize, type MapScenario, type MapScreen } from './app-map'
-import { AppOverview, overviewConnections } from './app-overview'
+import { appFlows, screenSize, type MapScenario, type MapScreen } from './app-map'
+import { AppOverview } from './app-overview'
 import { FixturePicture, fixtureURL } from './fixture-picture'
 import { extension, useGuidedSession } from './extension'
 import project from 'virtual:civic-project'
@@ -8,15 +8,14 @@ import { ReviewPanel, type ReviewTarget } from './review-panel'
 import type { ReviewSnapshot } from './adapter'
 import { ConnectionPaths } from './connection-paths'
 import { ConnectionLegend } from './connection-legend'
-import { connectionBounds, connectionBundles, type ConnectionBundle, type RoutedConnection } from './connection-routing'
+import { type ConnectionBundle, type RoutedConnection } from './connection-routing'
 import { SharedNavigation } from './shared-navigation'
 import { JourneyOutline } from './journey-outline'
 import { useDesktopProjects } from './desktop-project-tabs'
 import { ContractPanel } from './contract-panel'
 import { CoveragePanel, useCoverage } from './coverage-panel'
 import type { ScenarioEvidence } from '@civic/shell/contract'
-import { useCanvasCamera } from '@civic/shell/use-canvas-camera'
-import { revealNavigation } from '@civic/shell/reveal-navigation'
+import { useCanvasSelection } from './use-canvas-selection'
 import { CanvasControls } from '@civic/shell/canvas-controls'
 import { PanelLeft, PanelRight, Pencil, Play, Search, Settings2, FolderOpen, GitBranch, Maximize, Hand, MousePointer2, Monitor, Plus, Minus } from '@civic/shell/icons'
 import { Button } from '@civic/shell/ui/button'
@@ -48,11 +47,10 @@ export function AppCanvas() {
   const { viewport, busy: viewportBusy, error: viewportError } = viewportController
   const changeViewport = ({ width, height, preset }: Pick<PreviewViewport, 'width' | 'height' | 'preset'>) => viewportController.change({ width, height, preset })
   const screenStyle = (screen: MapScreen): CSSProperties => ({ left: screen.x, top: screen.y, width: screenSize(screen).width, '--screen-width': `${screenSize(screen).width}px`, '--screen-preview-height': `${screenSize(screen).previewHeight}px` } as CSSProperties)
+  const initialized = useRef(false)
   const [scenarios, setScenarios] = useState<(MapScenario & ScenarioEvidence)[]>([])
   const [source, setSource] = useState('')
   const [fixtureSnapshot, setFixtureSnapshot] = useState<ReviewSnapshot | null>(null)
-  const [pathTarget, setPathTarget] = useState<ReviewTarget | null>(null)
-  const [appSelected, setAppSelected] = useState(true)
   const [searchOpen, setSearchOpen] = useState(false)
   const projectPicker = useRef<ProjectPickerHandle>(null)
   const desktop = useDesktopProjects()
@@ -60,25 +58,8 @@ export function AppCanvas() {
   const searchTrigger = useRef<HTMLButtonElement>(null)
   const [outline, setOutline] = useState(() => window.innerWidth >= 1180)
   const [outlineQuery, setOutlineQuery] = useState('')
-  const [focused, setFocused] = useState(extension.guidedFlow ?? '')
-  const [expanded, setExpanded] = useState<string | null>(null)
-  const [viewed, setViewed] = useState<string | null>(null)
-  const [overview, setOverview] = useState(false)
-  const [canvasDetail, setCanvasDetail] = useState(() => { try { return localStorage.getItem('rehearsal-canvas-detail') === 'all' ? 'all' : 'compact' } catch { return 'compact' } })
   const flows = useMemo(() => appFlows(generic ? scenarios.map(row => ({ ...row, viewport: { width: viewport.width, height: viewport.height } })) : scenarios, project), [scenarios, generic, viewport.width, viewport.height])
-  const compactFlows = useMemo(() => overviewFlows(flows), [flows])
-  const crossEdges = useMemo(() => crossFlowEdges(flows), [flows])
-  const internalEdges = useMemo(() => Object.fromEntries(flows.map((flow) => [flow.id, flowEdges(flow)])), [flows])
-  const overviewEdges = useMemo(() => overviewConnections(compactFlows), [compactFlows])
-  const sharedPaths = useMemo(() => connectionBundles(overview ? overviewEdges : [...Object.values(internalEdges).flat(), ...crossEdges]), [overview, overviewEdges, internalEdges, crossEdges])
-  const [bundleSelection, setBundleSelection] = useState<string | null>(null)
-  const displayedFlows = overview ? compactFlows : flows
-  const { width: detailWidth, height: detailHeight } = connectionBounds(flows, crossEdges)
-  const { width: overviewWidth, height: overviewHeight } = connectionBounds(compactFlows, overviewEdges)
-  const worldHeight = overview ? overviewHeight : detailHeight
-  const worldWidth = overview ? overviewWidth : detailWidth
-  const { stage, camera, setCamera, pan, setPan, panning, changeZoom, controls, size } = useCanvasCamera({ x: 20, y: 20, zoom: .25 }, { width: worldWidth, height: worldHeight })
-  const zoom = camera.zoom
+  const { pathTarget, setPathTarget, appSelected, focused, setFocused, expanded, setExpanded, viewed, overview, canvasDetail, setCanvasDetail, compactFlows, crossEdges, internalEdges, overviewEdges, sharedPaths, bundleSelection, setBundleSelection, worldHeight, worldWidth, stage, camera, pan, setPan, panning, changeZoom, controls, size, zoom, navigator, cameraNavigation, focus, focusScreen, fit, fitApp, fitSelected, interactScreen, focusedFlow, selectedScreen } = useCanvasSelection({ flows, initialFlow: extension.guidedFlow ?? '', outline, initialized, viewport, stopFollowing: () => { guided.follow.current = false } })
   const session = usePreviewSession({ flows, generic, viewport, focusScreen: screen => focusScreen(screen) })
   const { preview, previewFrame, initialViewport, adapterMode, adapterScreen, adapterVisits, adapterError, queued, run, replaying, attachAdapter, replayFromStart } = session
   const browsingLive = live && (!preview || scenarios.find(row => row.id === preview.scenario)?.preview === 'live-read-only')
@@ -91,43 +72,9 @@ export function AppCanvas() {
   const guided = useGuidedSession(viewed, !generic)
   const blocked = guided.saving || guided.dirtyProposal || !!guided.state?.pending || !generic && guided.visits.some(row => !row.capture) || adapterVisits.some(row => !row.screenshot)
   const frameReadiness = useFrameReadiness(() => previewFrame.current ?? guided.frame.current, project.key, fixtureSnapshot?.revision.source ?? '')
-  const navigator = useRef<HTMLElement>(null)
-  const initialized = useRef(false)
-  const cameraNavigation = useRef(false)
-  useEffect(() => { revealNavigation(navigator.current) }, [focused, viewed, expanded, size.width, size.height])
-  useEffect(() => { if (bundleSelection && outline) navigator.current?.querySelector(`[data-shared-path="${CSS.escape(bundleSelection)}"]`)?.scrollIntoView({ block: 'nearest' }) }, [bundleSelection, outline])
-  useEffect(() => {
-    if (!cameraNavigation.current) return
-    const canvas = stage.current; if (!canvas?.clientWidth || !canvas.clientHeight) return
-    const x = (canvas.clientWidth / 2 - camera.x) / zoom, y = (canvas.clientHeight / 2 - camera.y) / zoom
-    const flow = flowAtCenter(displayedFlows, x, y)
-    if (flow && zoom >= .04) { setFocused(flow.id); setExpanded(flow.id); setViewed(!overview && zoom >= .5 ? screenAtCenter(flow, x, y)?.id ?? null : null) }
-  }, [camera, displayedFlows, zoom, overview])
-  const fit = (x: number, y: number, width: number, height: number) => {
-    const canvas = stage.current; if (!canvas) return
-    const next = Math.max(.003, Math.min(1.25, (canvas.clientWidth - 48) / width, (canvas.clientHeight - 112) / height))
-    setCamera({ x: (canvas.clientWidth - width * next) / 2 - x * next, y: (canvas.clientHeight - height * next) / 2 - y * next, zoom: next }, { width: detailWidth, height: detailHeight })
-  }
   useEffect(() => {
     if (!initialized.current && scenarios.length && size.width && size.height) { initialized.current = true; const params = new URLSearchParams(location.search); const target = flows.flatMap((flow) => flow.screens).find((screen) => screen.scenario === params.get('scenario') && (!params.has('care') || screen.id === `care:${params.get('care')}`)); if (target) { if (params.get('play') === '1') openScreen(target); else focusScreen(target) } else if (flows.length === 1) focus(flows[0]!.id); else fitApp() }
   }, [flows, scenarios.length, size.width, size.height])
-  const focus = (id: string) => {
-    cameraNavigation.current = false
-    setBundleSelection(null)
-    setPathTarget(null); setAppSelected(false)
-    guided.follow.current = false
-    const flow = flows.find((flow) => flow.id === id); if (!flow) return
-    setOverview(false); setFocused(id); setExpanded(id); setViewed(null); fit(flow.x, flow.y, flow.width, flow.height)
-  }
-  const focusScreen = (screen: MapScreen) => {
-    cameraNavigation.current = false
-    setBundleSelection(null)
-    setPathTarget(null); setAppSelected(false)
-    guided.follow.current = false
-    const flow = flows.find((entry) => entry.screens.some((node) => node.id === screen.id)); if (!flow) return
-    setOverview(false); setFocused(flow.id); setExpanded(flow.id); setViewed(screen.id)
-    fit(flow.x + 36 + screen.x!, flow.y + 132 + screen.y!, screenSize(screen).width, screenSize(screen).height)
-  }
   const openScreen = (screen: MapScreen) => {
     if (preview?.id === screen.id && frameReadiness.state === 'failed') {
       if (!blocked) session.start(screen, true)
@@ -140,30 +87,6 @@ export function AppCanvas() {
       else if (screen.id !== guided.current) guided.requestStart(screen.id)
       guided.follow.current = screen.id === guided.current || !guided.running
     } else session.request(screen)
-  }
-  const focusedFlow = flows.find((flow) => flow.id === focused)
-  const selectedScreen = focusedFlow?.screens.find((screen) => screen.id === viewed)
-  const fitApp = (detail = canvasDetail) => {
-    cameraNavigation.current = false
-    setBundleSelection(null)
-    const canvas = stage.current; if (!canvas) return
-    setPathTarget(null); setAppSelected(true)
-    guided.follow.current = false; setViewed(null); setOverview(detail === 'compact')
-    const width = detail === 'all' ? detailWidth : overviewWidth, height = detail === 'all' ? detailHeight : overviewHeight
-    const next = Math.max(detail === 'all' ? .18 : .35, Math.min(.9, (canvas.clientWidth - 48) / width, (canvas.clientHeight - 112) / height))
-    setCamera({ x: width * next > canvas.clientWidth - 48 ? 24 : (canvas.clientWidth - width * next) / 2, y: height * next > canvas.clientHeight - 112 ? 40 : (canvas.clientHeight - height * next) / 2, zoom: next }, { width, height })
-  }
-  const fitSelected = () => selectedScreen ? focusScreen(selectedScreen) : focus(focused)
-  useEffect(() => { if (initialized.current && viewed) fitSelected() }, [viewport.width, viewport.height])
-  const previousWindowWidth = useRef(window.innerWidth)
-  useEffect(() => {
-    const previous = previousWindowWidth.current; previousWindowWidth.current = window.innerWidth
-    if (previous !== window.innerWidth && size.width && initialized.current && viewed && !cameraNavigation.current) fitSelected()
-  }, [size.width])
-  const interactScreen = (screen: MapScreen) => {
-    focusScreen(screen)
-    const flow = flows.find((entry) => entry.screens.some((node) => node.id === screen.id)), element = stage.current
-    if (flow && element) setCamera({ x: element.clientWidth / 2 - 135.5 - flow.x - 36 - screen.x!, y: 20 - flow.y - 132 - screen.y!, zoom: 1 })
   }
   const guidedFlow = flows.find((flow) => flow.id === guided.flowId)
   const liveGuidedScreen = guidedFlow?.screens.find((screen) => screen.id === guided.currentNode.id)
