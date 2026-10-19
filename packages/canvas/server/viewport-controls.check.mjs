@@ -40,6 +40,7 @@ async function draft(tab) {
   await tab.getByRole('button', { name: 'Play this screen' }).click()
   const live = tab.locator('iframe[title="Live Notebook home"]')
   const frame = tab.frameLocator('iframe[title="Live Notebook home"]')
+  await frame.locator('[data-rehearsal-ready="true"]').waitFor({ state: 'attached' })
   await frame.getByRole('button', { name: 'New note' }).click()
   await frame.getByLabel('Title', { exact: true }).fill('Keep this draft')
   return { live, frame }
@@ -275,6 +276,7 @@ test('returning from mount without a ready screen stays unchecked until the adap
   await tab.getByRole('button', { name: 'Play this screen' }).click()
   const live = tab.locator('iframe[title="Live Notebook home"]')
   await tab.frameLocator('iframe[title="Live Notebook home"]').getByText('Waiting for adapter readiness').waitFor()
+  await tab.waitForFunction(() => document.querySelector('iframe[title="Live Notebook home"]').contentWindow.reviewPreview?.readiness?.state === 'unchecked')
   const before = await live.evaluate(element => element.contentWindow.reviewPreview)
   assert.equal(before.readiness.state, 'unchecked')
   assert.equal(before.capabilities.resize, false)
