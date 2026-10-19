@@ -2,6 +2,7 @@ import { Button } from '@civic/shell/ui/button'
 import { Input } from '@civic/shell/ui/input'
 import { NativeSelect } from '@civic/shell/ui/native-select'
 import { Textarea } from '@civic/shell/ui/textarea'
+import { useDesktopDraft } from './desktop-project-tabs'
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@civic/shell/ui/empty'
 import { MessageSquare } from '@civic/shell/icons'
 import { useEffect, useRef, useState } from 'react'
@@ -117,6 +118,7 @@ export function ReviewPanel({ project, selected, flowScreens, allScreens, frame,
   const [status, setStatus] = useState('')
   const [resolution, setResolution] = useState('')
   const [discard, setDiscard] = useState(false)
+  useDesktopDraft('review', Boolean(draft) || pending || Boolean(resolution))
   const linkedReview = useRef(new URLSearchParams(location.search).get('feedback'))
   const refresh = () => reviewApi<Feedback[]>('feedback').then(rows => { setComments(rows); setLoaded(true) })
   useEffect(() => { refresh().catch((error) => setError(error.message)) }, [])

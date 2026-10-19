@@ -1,4 +1,16 @@
 import { expect, test } from 'vitest'
+import { checkoutGroup } from './project-choice'
+
+test('identical-content checkouts share a commit label while preserving their branch names', () => {
+  const version = { kind: 'implementation', name: 'Docs checkpoint', history: { kind: 'code' as const, status: 'ahead', revision: 'b2ea7f2b12345678' }, connections: [
+    { kind: 'implementation', sourceName: 'docs/checkpoint · b2ea7f2b' },
+    { kind: 'implementation', sourceName: 't3/redesign · b2ea7f2b' },
+  ] }
+  expect(checkoutGroup(version)).toEqual({ label: 'Commit b2ea7f2b', shared: true, branches: ['docs/checkpoint', 't3/redesign'] })
+  expect(checkoutGroup({ ...version, connections: version.connections.slice(0, 1) }).shared).toBe(false)
+  expect(checkoutGroup({ ...version, history: undefined }).shared).toBe(false)
+  expect(checkoutGroup({ ...version, kind: 'instance' }).shared).toBe(false)
+})
 import { matchingDraftScreens, preferredConnection, versionCaption, versionDetails, versionChoices, projectShortcut, projectWindowHref, projectWindowDestination } from './project-choice'
 
 test('the project command shortcut respects composition, other handlers and modified shortcuts', () => {

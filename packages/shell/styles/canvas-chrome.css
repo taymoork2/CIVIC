@@ -23,9 +23,6 @@
 .rh-layout.outline-closed { grid-template-columns: minmax(0, 1fr); }
 .rh-layout.outline-closed.has-inspector { grid-template-columns: minmax(0, 1fr) 300px; }
 .rh-journeys { align-self: stretch; max-height: none; padding: 16px 12px; border: 0; border-right: 1px solid var(--rh-line); border-radius: 0; background: var(--civic-surface); }
-.rh-outline-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-.rh-journeys .rh-outline-heading h2 { font-size: 13px; margin: 0; display: block; }
-.rh-outline-heading button { display: none; border: 0; color: var(--rh-muted); width: 32px; font-size: 20px; }
 .rh-search { display: grid; width: 100%; margin: 0 0 12px; gap: 4px; font-size: 11px; color: var(--rh-muted); }
 .rh-search input, .rh-search select { min-height: 36px; padding: 7px 9px; font-size: 12px; }
 .rh-search input { background: var(--civic-background); }
@@ -111,10 +108,8 @@
 .rh-interaction-totals dt { font-size: 12px; }
 .rh-interaction-totals dd { font-weight: 650; margin: 0; }
 .rh-shared-navigation { border-top: 1px solid var(--rh-line); padding-top: 12px; margin-top: 12px; }
-.rh-shared-navigation p { color: var(--rh-muted); font-size: 11px; line-height: 1.5; }
-.rh-shared-navigation details { margin: 12px 0; }
-.rh-shared-navigation summary { cursor: pointer; font-size: 12px; line-height: 1.5; }
-.rh-shared-navigation summary small { color: var(--rh-muted); }
+.rh-shared-navigation h3 { align-items: baseline; gap: 8px; }
+.rh-shared-navigation h3 small { flex-shrink: 0; color: var(--rh-muted); font-size: 11px; font-weight: 400; }
 .rh-canvas.is-panning .rh-path-hit { pointer-events: none; }
 .rh-review-target { display: grid; gap: 6px; border: 1px solid var(--rh-line); border-radius: 8px; padding: 12px; }
 .rh-review-target small { color: var(--rh-muted); }
@@ -152,7 +147,6 @@
 @media (max-width: 1179px) {
   .rh-layout, .rh-layout.has-inspector { grid-template-columns: minmax(0, 1fr); }
   .rh-journeys { position: absolute; inset: 0 auto 0 0; width: 248px; z-index: 10; box-shadow: 8px 0 24px #25272c12; }
-  .rh-outline-heading button { display: grid; place-items: center; }
   .rh-inspector { position: absolute; inset: 0 0 0 auto; width: min(320px, 100%); z-index: 11; box-shadow: -8px 0 24px #25272c12; }
   .rh-layout.outline-closed.has-inspector { grid-template-columns: minmax(0, 1fr); }
 }

@@ -3,6 +3,22 @@ import { test } from 'node:test'
 import { projectWindows } from './project-windows.mjs'
 import { trustedWindow } from './desktop-windows.mjs'
 
+test('tab leases release owned hosts only after the last owner leaves', async () => {
+  let closed = 0
+  const windows = projectWindows({ current: 'main', origin: 'http://127.0.0.1:3012', limit: 2, createHost: async () => ({ url: 'http://127.0.0.1:4001/review', close: async () => { closed++ } }) })
+  const a = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', b = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb'
+  await windows.open({ key: 'other' }, a); await windows.open({ key: 'other' }, b)
+  assert.deepEqual(await windows.release('other', a), { closed: false })
+  assert.deepEqual(await windows.release('other', 'unknown'), { closed: false })
+  assert.equal((await windows.release('other', b)).closed, true)
+  assert.equal(closed, 1)
+  assert.deepEqual(windows.origins(), ['http://127.0.0.1:3012'])
+  await windows.open({ key: 'next' }, a)
+  await windows.open({ key: 'next' })
+  assert.deepEqual(await windows.release('next', a), { closed: false }, 'A browser window pins a shared host')
+  await assert.rejects(windows.open({ key: 'bad' }, 'invalid'), /Invalid project host lease/)
+})
+
 test('windows reuse one host per connection, including concurrent opens, and close owned hosts', async () => {
   let created = 0, closed = 0
   const windows = projectWindows({ current: 'orca', origin: 'http://127.0.0.1:3012', async createHost(project) { created++; return { url: `http://127.0.0.1:${4000 + created}/review`, close: async () => { closed++ } } } })

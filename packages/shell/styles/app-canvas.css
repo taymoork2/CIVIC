@@ -13,7 +13,6 @@
 .app-flow-edges { position: absolute; left: 36px; top: 132px; z-index: 1; }
 .app-cross-flow-edges { position: absolute; inset: 0; }
 .app-screen { position: absolute; width: 271px; height: 665px; }
-.app-screen.is-filtered { opacity: .12; pointer-events: none; }
 .app-screen > button { width: 100%; text-align: left; border: 0; background: transparent; padding: 0; min-height: 72px; margin-bottom: 12px; }
 .app-screen strong { display: block; font-size: 20px; line-height: 1.3; }
 .app-screen small { color: #526880; display: block; font-size: 15px; margin-top: 6px; }

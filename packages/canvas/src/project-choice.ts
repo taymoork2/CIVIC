@@ -51,6 +51,13 @@ export function versionDetails(value: string) {
   return { ...caption, name, edited: name !== caption.name }
 }
 
+export function checkoutGroup(version: { kind: string; name: string; history?: VersionHistory; connections: { kind: string; sourceName?: string; name?: string }[] }) {
+  const branches = [...new Set(version.connections.filter(row => !['live', 'isolated', 'design'].includes(row.kind)).map(row => versionDetails(row.sourceName ?? row.name ?? '').name).filter(Boolean))]
+  const revision = version.history?.revision
+  const shared = version.kind === 'implementation' && branches.length > 1 && Boolean(revision)
+  return { branches, shared, label: shared ? `Commit ${revision!.slice(0, 8)}` : version.name }
+}
+
 export function matchingDraftScreens(rows: DraftScreen[], selected: DraftScreen, scope: 'screen' | 'component') {
   if (scope === 'screen' && selected.targetId) return rows.filter(row => row.targetId === selected.targetId)
   if (scope === 'component' && selected.componentId) return rows.filter(row => row.componentId === selected.componentId)

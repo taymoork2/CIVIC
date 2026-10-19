@@ -2,6 +2,7 @@ import { Button } from '@civic/shell/ui/button'
 import { Input } from '@civic/shell/ui/input'
 import { NativeSelect } from '@civic/shell/ui/native-select'
 import { Textarea } from '@civic/shell/ui/textarea'
+import { useDesktopDraft } from './desktop-project-tabs'
 import { notifications } from '@civic/shell/ui/notifications'
 import { useEffect, useRef, useState } from 'react'
 import type { MapScenario } from './app-map'
@@ -25,7 +26,7 @@ export function useCoverage(onIndex: (index: ReviewSnapshot & { scenarios: MapSc
     let timer: ReturnType<typeof setTimeout>
     const poll = async () => {
       try {
-        if (document.visibilityState !== 'hidden') {
+        if (document.visibilityState !== 'hidden' && window.civicDesktop?.isActive() !== false) {
           const version = mutation.current
           const responses = await Promise.all(['/api/review/index', '/api/review/coverage'].map((path) => projectFetch(path, { signal: controller.signal })))
           if (responses.some((response) => response.status === 409)) throw Error('The active project changed in another tab. Reload this tab; previous drafts are retained.')
@@ -76,6 +77,7 @@ export function CoveragePanel({ bridge, focus }: { bridge: ReturnType<typeof use
   const target = data?.report.targets.find((t) => t.id === selected)
   const candidate = data?.candidates.find((c) => c.id === selected)
   const dirtyDraft = Boolean(draft && (!candidate || draft.title !== candidate.title || draft.body !== candidate.body || draft.action !== candidate.action))
+  useDesktopDraft('coverage', dirtyDraft || Boolean(intent) || busy)
   const act = async (input: Record<string, unknown>) => {
     setBusy(true); setError(''); setStatus('')
     try { const result = await update(input); setStatus('Saved locally.'); return result }

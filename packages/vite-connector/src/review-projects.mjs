@@ -19,7 +19,7 @@ async function atomic(file, value) {
 
 // Connections and starters belong to the review host. Connecting never writes into an app checkout.
 // The host supplies the runtime that mounts discovered screens and the starter project it copies.
-export async function projectPicker(repo, current, { discoveredAdapter = join(repo, 'packages/canvas/src/discovered-adapter.tsx'), starterTemplate = join(repo, 'packages/canvas/examples/notebook'), sourceRoot = join(homedir(), 'Projects/civic-apps'), kinds = null, workspaces = [], syncConnections, openWindow, windowOrigins = () => [], registry = {} } = {}) {
+export async function projectPicker(repo, current, { discoveredAdapter = join(repo, 'packages/canvas/src/discovered-adapter.tsx'), starterTemplate = join(repo, 'packages/canvas/examples/notebook'), sourceRoot = join(homedir(), 'Projects/civic-apps'), kinds = null, workspaces = [], syncConnections, openWindow, releaseWindow, windowOrigins = () => [], registry = {} } = {}) {
   for (const workspace of workspaces) {
     const url = new URL(workspace.origin)
     if (url.origin !== workspace.origin || url.protocol !== 'http:' || !['localhost', '127.0.0.1', '[::1]'].includes(url.hostname) || !isAbsolute(workspace.store)) bad('Linked CIVIC workspaces must use a loopback origin and absolute store')
@@ -81,7 +81,8 @@ export async function projectPicker(repo, current, { discoveredAdapter = join(re
   }
   return {
     windowOrigins() { return [...new Set([...windowOrigins(), ...openedOrigins])] },
-    async openWindow(key, workspaceOrigin) {
+    async openWindow(key, workspaceOrigin, lease) {
+      if (lease !== undefined && !/^[a-f0-9-]{36}$/.test(lease)) bad('Invalid project host lease')
       if (!openWindow) bad('This CIVIC host does not support independent project windows')
       let url
       if (workspaceOrigin) {
@@ -91,19 +92,40 @@ export async function projectPicker(repo, current, { discoveredAdapter = join(re
         const selected = await json(join(workspace.store, '.review-data/application.json'))
         const active = loadProject(workspace.store, { manifest: selected.project, applicationRoot: selected.root })
         const accessKey = (await readFile(join(workspace.store, '.review-data/projects', active.key, 'access-key'), 'utf8')).trim()
-        const response = await fetch(`${workspace.origin}/api/review/projects`, { method: 'POST', headers: { authorization: `Bearer ${accessKey}`, 'x-rehearsal-project': active.key, 'content-type': 'application/json' }, body: JSON.stringify({ action: 'open-window', key }), signal: AbortSignal.timeout(30_000) })
+        const response = await fetch(`${workspace.origin}/api/review/projects`, { method: 'POST', headers: { authorization: `Bearer ${accessKey}`, 'x-rehearsal-project': active.key, 'content-type': 'application/json' }, body: JSON.stringify({ action: 'open-window', key, lease }), signal: AbortSignal.timeout(30_000) })
         const result = await response.json()
         if (!response.ok) throw Object.assign(Error(result.error ?? 'The workspace could not open a project window'), { status: response.status })
         url = result.url
       } else {
         const row = rows.find(row => row.key === key)
         if (!row) bad('Unknown saved connection')
-        url = await openWindow(await validate(row.manifest, row.root))
+        url = await openWindow(await validate(row.manifest, row.root), lease)
       }
       const destination = new URL(url)
       if (destination.protocol !== 'http:' || !['127.0.0.1', 'localhost', '[::1]'].includes(destination.hostname) || destination.username || destination.password || destination.pathname !== '/review' || destination.search || destination.hash) bad('Project windows must use a local CIVIC review origin')
       openedOrigins.add(destination.origin)
       return { url: destination.href }
+    },
+    async releaseWindow(key, workspaceOrigin, lease) {
+      if (!/^[a-f0-9-]{36}$/.test(lease ?? '')) bad('Invalid project host lease')
+      if (workspaceOrigin) {
+        const workspace = workspaces.find(workspace => workspace.origin === workspaceOrigin)
+        if (!workspace) bad('Unknown CIVIC workspace')
+        await connectedProject(key, workspaceOrigin)
+        const selected = await json(join(workspace.store, '.review-data/application.json'))
+        const active = loadProject(workspace.store, { manifest: selected.project, applicationRoot: selected.root })
+        const accessKey = (await readFile(join(workspace.store, '.review-data/projects', active.key, 'access-key'), 'utf8')).trim()
+        const response = await fetch(`${workspace.origin}/api/review/projects`, { method: 'POST', headers: { authorization: `Bearer ${accessKey}`, 'x-rehearsal-project': active.key, 'content-type': 'application/json' }, body: JSON.stringify({ action: 'release-window', key, lease }), signal: AbortSignal.timeout(5000) })
+        if (!response.ok) throw Error('The workspace could not release its project host')
+        const result = await response.json()
+        if (result.closed && result.url) openedOrigins.delete(new URL(result.url).origin)
+        return result
+      }
+      const row = rows.find(row => row.key === key)
+      if (!row) bad('Unknown saved connection')
+      const result = releaseWindow ? await releaseWindow(await validate(row.manifest, row.root), lease) : { closed: false }
+      if (result.closed && result.url) openedOrigins.delete(new URL(result.url).origin)
+      return result
     },
     async sourceVersions(input = {}) {
       const list = await this.list(), appId = rows.find(row => row.key === current.key)?.app?.id ?? current.manifest.id

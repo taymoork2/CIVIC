@@ -38,6 +38,20 @@ test('independent project windows preserve selection, connection identities and 
   const unsafe = await projectPicker(host, current, { openWindow: async () => 'https://example.com/review' })
   await assert.rejects(unsafe.openWindow(next.key), /local CIVIC/)
 })
+test('project host leases validate saved identities and forward only their owner token', async () => {
+  const { host, current } = await fixture(), calls = []
+  const lease = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa'
+  const picker = await projectPicker(host, current, { openWindow: async (project, value) => { calls.push(['open', project.key, value]); return 'http://127.0.0.1:4001/review' }, releaseWindow: async (project, value) => { calls.push(['release', project.key, value]); return { closed: true, url: 'http://127.0.0.1:4001/review' } } })
+  await picker.list()
+  await picker.openWindow(current.key, undefined, lease)
+  assert.equal(picker.windowOrigins().includes('http://127.0.0.1:4001'), true)
+  await picker.releaseWindow(current.key, undefined, lease)
+  assert.deepEqual(calls, [['open', current.key, lease], ['release', current.key, lease]])
+  assert.equal(picker.windowOrigins().includes('http://127.0.0.1:4001'), false)
+  await assert.rejects(picker.releaseWindow(current.key, undefined, 'bad'), /Invalid project host lease/)
+  await assert.rejects(picker.releaseWindow('unknown', undefined, lease), /Unknown saved connection/)
+})
+
 test('project-window hosts share one connection registry instead of overwriting each other', async () => {
   const { base, host, root, current } = await fixture(), registry = {}
   const first = await projectPicker(host, current, { registry }), second = await projectPicker(host, current, { registry })
