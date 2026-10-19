@@ -20,7 +20,7 @@ const publishAppearance = () => {
   for (const context of windows) {
     const colors = windowColors()
     context.window.setBackgroundColor(colors.color)
-    if (process.platform === 'win32') context.window.setTitleBarOverlay({ ...colors, height: 40 })
+    if (process.platform === 'win32') context.window.setTitleBarOverlay({ ...colors, height: 60 })
     for (const view of context.tabs.views()) if (!view.contents.isDestroyed()) view.contents.send('civic-desktop:appearance', appearance())
   }
 }
@@ -29,7 +29,7 @@ const report = error => dialog.showErrorBox('Could not open project', error.mess
 const external = url => { if (/^https?:$/.test(new URL(url).protocol)) void shell.openExternal(url) }
 
 async function open(initialURL = origin + '/review') {
-  const window = new BaseWindow({ show: false, title: 'CIVIC', width: 1440, height: 1000, minWidth: 360, minHeight: 480, backgroundColor: windowColors().color, ...(process.platform === 'darwin' ? { titleBarStyle: 'hiddenInset', trafficLightPosition: { x: 14, y: 12 } } : process.platform === 'win32' ? { titleBarStyle: 'hidden', titleBarOverlay: { ...windowColors(), height: 40 } } : {}) })
+  const window = new BaseWindow({ show: false, title: 'CIVIC', width: 1440, height: 1000, minWidth: 360, minHeight: 480, backgroundColor: windowColors().color, ...(process.platform === 'darwin' ? { titleBarStyle: 'hiddenInset', trafficLightPosition: { x: 14, y: 22 } } : process.platform === 'win32' ? { titleBarStyle: 'hidden', titleBarOverlay: { ...windowColors(), height: 60 } } : {}) })
   let closing = false, reviewSession
   const context = { window, tabs: null }
   const stateFor = id => ({ ...context.tabs.snapshot(), visible: window.isVisible() && !window.isMinimized() && context.tabs.idForView(id) === context.tabs.snapshot().active })
