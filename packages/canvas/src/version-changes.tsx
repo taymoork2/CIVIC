@@ -1,3 +1,4 @@
+import { Disclosure } from '@civic/shell/ui/disclosure'
 export type VersionChange = {
   id: string
   status: 'same' | 'changed' | 'unavailable'
@@ -30,10 +31,10 @@ export function VersionChanges({ change, scope }: { change?: VersionChange; scop
     {change.stylesChanged && <p>Layout or styling code changed.</p>}
     {change.eventsChanged && <p>Interaction-handler code changed.</p>}
     {change.fixtureChanged && <p>Preview inputs or route changed.</p>}
-    {change.changes.length > 0 && <details className="civic-source-changes"><summary>Source changes · {change.totalChanges}</summary>
+    {change.changes.length > 0 && <Disclosure className="civic-source-changes" title={<>Source changes · {change.totalChanges}</>}>
       {change.totalChanges > change.changes.length && <p>Showing {change.changes.length} of {change.totalChanges} changed source units.</p>}
-      {change.changes.map(item => <details key={`${item.file}#${item.name}`}><summary>{item.name} · {item.change}</summary><p className="civic-source-path">{item.file}{item.truncated ? ' · excerpt' : ''}</p><p>Current</p><pre tabIndex={0} aria-label={`Current source for ${item.name}`}><code>{item.before || 'Not present'}</code></pre><p>This version</p><pre tabIndex={0} aria-label={`Candidate source for ${item.name}`}><code>{item.after || 'Not present'}</code></pre></details>)}
-    </details>}
+      {change.changes.map(item => <Disclosure key={`${item.file}#${item.name}`} title={<>{item.name} · {item.change}</>}><p className="civic-source-path">{item.file}{item.truncated ? ' · excerpt' : ''}</p><p>Current</p><pre tabIndex={0} aria-label={`Current source for ${item.name}`}><code>{item.before || 'Not present'}</code></pre><p>This version</p><pre tabIndex={0} aria-label={`Candidate source for ${item.name}`}><code>{item.after || 'Not present'}</code></pre></Disclosure>)}
+    </Disclosure>}
     {change.limits.map(limit => <p key={limit} role="status">{limit}</p>)}
     <p className="civic-change-basis">{change.basis}</p>
   </section>

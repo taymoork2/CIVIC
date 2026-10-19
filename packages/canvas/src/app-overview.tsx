@@ -1,3 +1,4 @@
+import { Button } from '@civic/shell/ui/button'
 import { crossFlowConnections, type AppFlow } from './app-map'
 import { connectionBundles, routeConnections, type Connection, type ConnectionBundle, type RoutedConnection } from './connection-routing'
 import { ConnectionPaths } from './connection-paths'
@@ -26,10 +27,10 @@ export function AppOverview({ flows, connections, source, active, focused, pan, 
     </svg>
     {flows.map((flow) => <section key={flow.id} className={`app-overview-flow ${focused === flow.id ? 'is-focused' : ''}`} style={{ left: flow.x, top: flow.y, width: flow.width, height: flow.height }}>
       {flow.y === 40 && <h2 className="app-overview-area">{flow.section}</h2>}
-      <button aria-label={`Open ${flow.label} flow`} disabled={pan} onClick={() => focus(flow.id)}>
+      <Button variant="outline" className="cv:block cv:h-full cv:w-full cv:rounded-xl cv:p-5 cv:text-left cv:whitespace-normal cv:aria-[current=location]:border-primary" aria-current={focused === flow.id ? 'location' : undefined} aria-label={`Open ${flow.label} flow`} disabled={pan} onClick={() => focus(flow.id)}>
         <strong>{flow.label}</strong><span>{flow.screens.length} screens{flow.screens.every((screen) => screen.partial) ? ' · partial' : ''}</span>
         <div className="app-overview-filmstrip" aria-hidden="true">{flow.screens.slice(0, 3).map((screen) => <FixturePicture key={screen.id} viewport={screen.viewport} active={active} src={fixtureURL(screen.id, source, screen.viewport)} alt="" />)}<span className="app-overview-more">+{Math.max(0, flow.screens.length - 3)}</span></div>
-      </button>
+      </Button>
     </section>)}
   </div>
 }

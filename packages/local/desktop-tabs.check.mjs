@@ -79,8 +79,9 @@ test('preload combines independent draft guards and exposes no bridge to embedde
   const require = name => { assert.equal(name, 'electron'); return { contextBridge: { exposeInMainWorld: (name, api) => exposed.push(api) }, ipcRenderer: { on() {}, invoke: async (name, input) => calls.push({ name, input }) } } }
   runInNewContext(source, { require, process: { isMainFrame: false } })
   assert.equal(exposed.length, 0)
-  runInNewContext(source, { require, process: { isMainFrame: true } })
+  runInNewContext(source, { require, process: { isMainFrame: true, versions: { electron: '44.9.0', chrome: '152.0.0', node: '26.0.0' } } })
   const api = exposed[0]
+  assert.equal(JSON.stringify(api.runtime), JSON.stringify({ electron: '44.9.0', chrome: '152.0.0' }))
   await api.setDraft('review', true)
   await api.register({ key: 'main', dirty: false })
   assert.equal(calls.at(-1).input.dirty, true)

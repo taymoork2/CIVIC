@@ -4,16 +4,19 @@ import { IconButton } from '@civic/shell/ui/icon-button'
 import { Tabs, TabsList, TabsTrigger } from '@civic/shell/ui/tabs'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from '@civic/shell/ui/dropdown-menu'
 import { notifications } from '@civic/shell/ui/notifications'
+import type { AppearanceBridge } from '@civic/shell/theme'
 
 export type DesktopTab = { id: string; appId: string; name: string; version: string; dirty: boolean }
 export type DesktopState = { active?: string; tabs: DesktopTab[]; visible: boolean }
 export type DesktopSelection = { appId: string; name: string; key: string; workspace?: string; scenario?: string }
 declare global {
   interface Window {
-    civicDesktop?: {
+    civicDesktop?: AppearanceBridge & {
+      runtime?: { electron: string; chrome: string }
       state: () => Promise<DesktopState>
       subscribe: (listener: (state: DesktopState) => void) => () => void
       onFocusScenario: (listener: (id: string) => void) => () => void
+      onSettings: (listener: () => void) => () => void
       isActive: () => boolean
       register: (input: { appId: string; name: string; key: string; version: string; dirty: boolean }) => Promise<unknown>
       setDraft: (name: string, dirty: boolean) => Promise<unknown> | undefined

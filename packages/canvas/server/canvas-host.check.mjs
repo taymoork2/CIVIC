@@ -123,7 +123,7 @@ test('an app on a function backend runs live against an isolated run of its func
   await tab.goto(origin + '/review')
   // The app's extension files each flow under the manifest's navigation, and draws the shopping flow first.
   await tab.locator('.app-nav-section').first().waitFor()
-  const sections = await tab.locator('.app-nav-section').evaluateAll((rows) => rows.map((row) => [row.querySelector('h3').textContent, [...row.querySelectorAll(':scope > ol > li > button > span')].map((label) => label.textContent)]))
+  const sections = await tab.locator('.app-nav-section').evaluateAll((rows) => rows.map((row) => [row.querySelector('h3').textContent, [...row.querySelectorAll(':scope > [data-slot="sidebar-menu"] > li > button > span')].map((label) => label.textContent)]))
   assert.deepEqual(sections, [['Pantry', ['Keep the pantry']], ['Shopping', ['Plan shopping']]])
   const flows = await tab.locator('.app-flow h2').allTextContents()
   assert.deepEqual(flows, ['Plan shopping', 'Keep the pantry'])
@@ -226,7 +226,7 @@ test('workspace panes preserve the live draft and block replacement until failed
   const identity = await live.elementHandle()
   const inspect = async () => { await tab.getByRole('button', { name: 'Open details', exact: true }).click(); await tab.getByRole('menuitem', { name: 'Inspect', exact: true }).click() }
   await inspect()
-  await tab.locator('summary', { hasText: 'Run history (1)' }).click()
+  await tab.getByRole('button', { name: 'Run history (1)', exact: true }).click()
   await tab.getByText('Fixture capture unavailable', { exact: true }).waitFor()
   await tab.locator('.app-screen-outline button', { hasText: 'Saved note' }).click()
   await tab.getByRole('button', { name: 'Play this screen', exact: true }).click()

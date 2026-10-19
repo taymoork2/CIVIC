@@ -59,8 +59,6 @@ export type CanvasExtension = {
   frameParams?: (scenario: string) => string[]
   /** Storage key for unsent review notes, kept for hosts with existing drafts. */
   draftKey?: string
-  /** An older workspace opened with `?legacy=1`. */
-  legacy?: () => Promise<unknown>
   /** Host pages opened with `?<name>=1` in place of the canvas, such as Laundry's synthetic laundry day. */
   pages?: Record<string, () => Promise<unknown>>
 }

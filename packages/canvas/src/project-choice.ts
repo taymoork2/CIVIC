@@ -13,8 +13,8 @@ export function projectWindowDestination(value: string, desktop?: string | null)
   if (desktop) url.searchParams.set('desktop', desktop)
   return url.href
 }
-export function projectShortcut(event: { key: string; metaKey: boolean; ctrlKey: boolean; altKey: boolean; shiftKey: boolean; defaultPrevented: boolean; repeat: boolean; isComposing: boolean }) {
-  return event.key.toLowerCase() === 'k' && (event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey && !event.defaultPrevented && !event.repeat && !event.isComposing
+export function projectShortcut(event: { key: string; metaKey: boolean; ctrlKey: boolean; altKey: boolean; shiftKey: boolean; defaultPrevented: boolean; repeat: boolean; isComposing: boolean }, key = 'k') {
+  return event.key.toLowerCase() === key && (event.metaKey || event.ctrlKey) && !event.altKey && !event.shiftKey && !event.defaultPrevented && !event.repeat && !event.isComposing
 }
 
 export function versionCaption(value: string) {

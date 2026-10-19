@@ -1,3 +1,6 @@
+import { Badge } from '@civic/shell/ui/badge'
+import { Alert, AlertTitle, AlertDescription } from '@civic/shell/ui/alert'
+import { Progress } from '@civic/shell/ui/progress'
 import { Button } from '@civic/shell/ui/button'
 import { useEffect, useState } from 'react'
 import type { MapScreen } from './app-map'
@@ -15,7 +18,7 @@ export function ContractPanel({ selected, scenarios, openReviewPane }: { selecte
   useEffect(() => { reviewApi<Feedback[]>('feedback').then(setReviews).catch((caught) => setError((caught as Error).message)) }, [selected?.id])
   if (!selected) return <div className="rh-contract">
     <p>Registered screens with each contract dimension proven. Nothing here is inferred from screenshots or fixture jumps.</p>
-    <ul className="rh-contract-rows">{coverage(scenarios).map((row) => <li key={row.label}><span>{row.label}<small>{row.owner}</small></span><meter min={0} max={row.total || 1} value={row.proven} aria-label={`${row.label}: ${row.proven} of ${row.total} proven`} /><small>{row.proven}/{row.total} proven{row.partial ? ` · ${row.partial} partial` : ''}</small></li>)}</ul>
+    <ul className="rh-contract-rows">{coverage(scenarios).map((row) => <li key={row.label}><span>{row.label}<small>{row.owner}</small></span><Progress min={0} max={row.total || 1} value={row.proven} aria-label={`${row.label}: ${row.proven} of ${row.total} proven`} /><small>{row.proven}/{row.total} proven{row.partial ? ` · ${row.partial} partial` : ''}</small></li>)}</ul>
     <p className="rh-muted">Select a screen to see its contract.</p>
   </div>
   const scenario = scenarios.find((entry) => entry.id === selected.scenario)
@@ -24,9 +27,9 @@ export function ContractPanel({ selected, scenarios, openReviewPane }: { selecte
   const open = reviews.filter((review) => review.status !== 'resolved' && feedbackOnScreen(review, selected))
   const state = alignment(dimensions, open.length)
   return <div className="rh-contract">
-    <p className={`rh-alignment is-${state === 'Aligned' ? 'aligned' : state === 'Unreviewed drift' ? 'drift' : 'unknown'}`}><strong>{state}</strong>{state === 'Unreviewed drift' ? `${open.length} open review${open.length === 1 ? '' : 's'} without a decision.` : state === 'Aligned' ? 'Every dimension has current evidence.' : 'Missing or stale evidence prevents an alignment judgment.'}</p>
-    {error && <p role="alert" className="rh-alert">{error}</p>}
-    {owners.map((owner) => <section key={owner} aria-label={`${owner} evidence`}><h3>{owner}</h3><dl className="rh-fields">{dimensions.filter((dimension) => dimension.owner === owner).map((dimension) => <div key={dimension.label}><dt>{dimension.label}</dt><dd><span className={`rh-tone is-${dimension.tone}`}>{toneLabel[dimension.tone]}</span> {['missing', 'unverified', 'present'].includes(dimension.value) ? '' : dimension.value}</dd></div>)}</dl></section>)}
+    <Alert role="status"><AlertTitle>{state}</AlertTitle><AlertDescription>{state === 'Unreviewed drift' ? `${open.length} open review${open.length === 1 ? '' : 's'} without a decision.` : state === 'Aligned' ? 'Every dimension has current evidence.' : 'Missing or stale evidence prevents an alignment judgment.'}</AlertDescription></Alert>
+    {error && <Alert variant="destructive" ><AlertDescription>{error}</AlertDescription></Alert>}
+    {owners.map((owner) => <section key={owner} aria-label={`${owner} evidence`}><h3>{owner}</h3><dl className="rh-fields">{dimensions.filter((dimension) => dimension.owner === owner).map((dimension) => <div key={dimension.label}><dt>{dimension.label}</dt><dd><Badge variant={dimension.tone === 'missing' ? 'secondary' : 'outline'}>{toneLabel[dimension.tone]}</Badge> {['missing', 'unverified', 'present'].includes(dimension.value) ? '' : dimension.value}</dd></div>)}</dl></section>)}
     <CivicGraph scenario={selected.scenario} />
     {open.length > 0 && <Button variant="outline" onClick={openReviewPane}>Open {open.length} review{open.length === 1 ? '' : 's'}</Button>}
     <p className="rh-muted">Approved adaptations, accepted limitations and adoption need recorded decisions, which this build does not store yet.</p>
@@ -63,7 +66,7 @@ function CivicGraph({ scenario }: { scenario: string }) {
   const stale = [...new Set(facts.evidence.flatMap((item) => item.stale ? [item.stale] : []))]
   return <section aria-label="CIVIC graph"><h3>CIVIC graph</h3>
     <dl className="rh-fields">
-      <div><dt>Run evidence</dt><dd>{facts.evidence.length === 0 ? <span className="rh-tone is-missing">Missing</span> : <><span className={`rh-tone ${failing.length ? 'is-failing' : 'is-proven'}`}>{failing.length ? 'Failing' : 'Passing'}</span>{passing.length} passed, {failing.length} failed{revisions.length ? ` at ${revisions.join(', ')}` : ''}{stale.length > 0 && <small>Stale: {stale.join('; ')}. Recapture before relying on it.</small>}</>}</dd></div>
+      <div><dt>Run evidence</dt><dd>{facts.evidence.length === 0 ? <Badge variant="secondary">Missing</Badge> : <><Badge variant={failing.length ? 'destructive' : 'outline'}>{failing.length ? 'Failing' : 'Passing'}</Badge>{passing.length} passed, {failing.length} failed{revisions.length ? ` at ${revisions.join(', ')}` : ''}{stale.length > 0 && <small>Stale: {stale.join('; ')}. Recapture before relying on it.</small>}</>}</dd></div>
       <div><dt>Design</dt><dd>{!facts.design?.length ? 'No design frame names this screen' : facts.design.map((item) => `${item.frames.length} frame${item.frames.length === 1 ? '' : 's'} in ${item.name} (${item.tool}, ${item.version.slice(0, 10)})`).join('; ')}{facts.design?.length ? <small>Design intent, shown beside the runs and never counted as evidence.</small> : null}</dd></div>
       <div><dt>Paths on</dt><dd>{facts.paths.length === 0 ? 'None declared' : facts.paths.map((path) => `${path.action ?? 'Path'} → ${path.toTitle ?? path.unmapped}${path.counts ? '' : ` (${path.status})`}`).join('; ')}</dd></div>
     </dl>

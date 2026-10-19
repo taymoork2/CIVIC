@@ -15,10 +15,10 @@ export const workspacePanels = [
 ] as const
 export type WorkspacePanel = typeof workspacePanels[number]['value']
 
-export function DetailsMenu({ pane, setPane, proposals }: { pane: WorkspacePanel | null; setPane: (pane: WorkspacePanel | null) => void; proposals: number }) {
+export function DetailsMenu({ pane, setPane, proposals, onSettings }: { pane: WorkspacePanel | null; setPane: (pane: WorkspacePanel | null) => void; proposals: number; onSettings?: () => void }) {
   return <DropdownMenu>
-    <DropdownMenuTrigger render={<Button variant="ghost" aria-label={pane ? `${pane[0]!.toUpperCase()}${pane.slice(1)} details` : 'Open details'} aria-controls="civic-details-panel" />}><PanelRight aria-hidden="true" /><span className="civic-details-label">{workspacePanels.find(item => item.value === pane)?.label ?? 'Details'}</span>{proposals > 0 && <small aria-label={`${proposals} new proposals`}>{proposals}</small>}<ChevronDown aria-hidden="true" /></DropdownMenuTrigger>
-    <DropdownMenuContent align="end"><DropdownMenuGroup><DropdownMenuLabel>Details panel</DropdownMenuLabel>{workspacePanels.map(({ value, label, icon: Icon }) => <DropdownMenuItem key={value} onClick={() => setPane(value)}><Icon aria-hidden="true" />{label}</DropdownMenuItem>)}</DropdownMenuGroup>{pane && <><DropdownMenuSeparator /><DropdownMenuItem onClick={() => setPane(null)}><X aria-hidden="true" />Close details</DropdownMenuItem></>}</DropdownMenuContent>
+    <DropdownMenuTrigger render={<Button className="civic-details-trigger" variant="ghost" aria-label={pane ? `${pane[0]!.toUpperCase()}${pane.slice(1)} details` : 'Open details'} aria-controls="civic-details-panel" />}><PanelRight aria-hidden="true" /><span className="civic-details-label">{workspacePanels.find(item => item.value === pane)?.label ?? 'Details'}</span>{proposals > 0 && <small aria-label={`${proposals} new proposals`}>{proposals}</small>}<ChevronDown aria-hidden="true" /></DropdownMenuTrigger>
+    <DropdownMenuContent align="end"><DropdownMenuGroup><DropdownMenuLabel>Details panel</DropdownMenuLabel>{workspacePanels.map(({ value, label, icon: Icon }) => <DropdownMenuItem key={value} onClick={() => setPane(value)}><Icon aria-hidden="true" />{label}</DropdownMenuItem>)}</DropdownMenuGroup>{pane && <><DropdownMenuSeparator /><DropdownMenuItem onClick={() => setPane(null)}><X aria-hidden="true" />Close details</DropdownMenuItem></>}{onSettings && <><DropdownMenuSeparator /><DropdownMenuGroup><DropdownMenuItem onClick={onSettings}><Settings2 aria-hidden="true" />CIVIC settings<kbd className="cv:ml-auto cv:text-xs cv:text-muted-foreground">{navigator.platform.includes('Mac') ? '⌘,' : 'Ctrl+,'}</kbd></DropdownMenuItem></DropdownMenuGroup></>}</DropdownMenuContent>
   </DropdownMenu>
 }
 
@@ -33,11 +33,11 @@ export function ViewportPicker({ viewport, busy, disabled, reason, changeViewpor
         event.preventDefault()
         const values = new FormData(event.currentTarget)
         changeViewport({ width: Number(values.get('width')), height: Number(values.get('height')), preset: undefined })
-      }}><FieldGroup className="cv:flex-row cv:items-end cv:gap-2">
+      }}><FieldGroup><FieldGroup className="cv:flex-row cv:items-end cv:gap-2">
         <Field className="cv:min-w-0 cv:gap-1"><FieldLabel htmlFor="civic-viewport-width" className="cv:text-xs cv:text-muted-foreground">Width (px)</FieldLabel><Input id="civic-viewport-width" name="width" type="number" min={200} max={1920} step={1} required defaultValue={viewport.width} disabled={disabled || busy} /></Field>
         <Field className="cv:min-w-0 cv:gap-1"><FieldLabel htmlFor="civic-viewport-height" className="cv:text-xs cv:text-muted-foreground">Height (px)</FieldLabel><Input id="civic-viewport-height" name="height" type="number" min={200} max={1600} step={1} required defaultValue={viewport.height} disabled={disabled || busy} /></Field>
         <Button type="submit" variant="secondary" disabled={disabled || busy}>{busy ? 'Applying…' : 'Apply'}</Button>
-      </FieldGroup></form>
+      </FieldGroup></FieldGroup></form>
       {reason && <p role="status" className="cv:text-xs cv:text-muted-foreground">{reason}</p>}
     </PopoverContent>
   </Popover>

@@ -14,7 +14,7 @@ test('interaction meaning uses an explicit type before conservative label infere
 test('conditions are independent of action type and return context does not mean returning now', () => {
   const settings = { action: 'Open settings', returnTo: 'home' }
   expect(interactionOf(settings)).toBe('navigate')
-  expect(connectionStyle({ action: 'Confirm', when: 'Dry' })).toMatchObject({ interaction: 'update', stroke: '#7c3fb0', strokeDasharray: '2 5' })
+  expect(connectionStyle({ action: 'Confirm', when: 'Dry' })).toMatchObject({ interaction: 'update', stroke: 'var(--civic-connection-update, #7c3fb0)', strokeDasharray: '2 5' })
   expect(connectionStyle({ action: 'Back', when: 'No unsaved inputs' })).toMatchObject({ interaction: 'return', strokeDasharray: '8 6' })
-  expect(connectionStyle({ action: 'Open settings', when: 'Signed in' })).toMatchObject({ interaction: 'navigate', stroke: '#157b70', strokeDasharray: '2 5' })
+  expect(connectionStyle({ action: 'Open settings', when: 'Signed in' })).toMatchObject({ interaction: 'navigate', stroke: 'var(--civic-connection-conditional, #157b70)', strokeDasharray: '2 5' })
 })

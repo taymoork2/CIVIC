@@ -5,7 +5,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
 const toggleVariants = cva(
-  "cv:group/toggle cv:inline-flex cv:items-center cv:justify-center cv:gap-1 cv:rounded-lg cv:text-sm cv:font-medium cv:whitespace-nowrap cv:transition-all cv:outline-none cv:hover:bg-muted cv:hover:text-foreground cv:focus-visible:border-ring cv:focus-visible:ring-[3px] cv:focus-visible:ring-ring/50 cv:disabled:pointer-events-none cv:disabled:opacity-50 cv:aria-invalid:border-destructive cv:aria-invalid:ring-destructive/20 cv:aria-pressed:bg-muted cv:data-[state=on]:bg-muted cv:dark:aria-invalid:ring-destructive/40 cv:[&_svg]:pointer-events-none cv:[&_svg]:shrink-0 cv:[&_svg:not([class*=size-])]:size-4",
+  "cv:group/toggle cv:inline-flex cv:items-center cv:justify-center cv:gap-1 cv:rounded-lg cv:text-sm cv:font-medium cv:whitespace-nowrap cv:transition-all cv:outline-none cv:hover:bg-muted cv:hover:text-foreground cv:focus-visible:border-ring cv:focus-visible:ring-[3px] cv:focus-visible:ring-ring/50 cv:disabled:pointer-events-none cv:disabled:opacity-50 cv:aria-invalid:border-destructive cv:aria-invalid:ring-destructive/20 cv:aria-pressed:bg-accent cv:aria-pressed:text-accent-foreground cv:data-[state=on]:bg-accent cv:data-[state=on]:text-accent-foreground cv:dark:aria-invalid:ring-destructive/40 cv:[&_svg]:pointer-events-none cv:[&_svg]:shrink-0 cv:[&_svg:not([class*=size-])]:size-4",
   {
     variants: {
       variant: {

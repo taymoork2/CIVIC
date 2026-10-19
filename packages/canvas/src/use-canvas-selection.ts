@@ -31,7 +31,7 @@ export function useCanvasSelection({ flows, initialFlow, outline, initialized, v
   const { stage, camera, setCamera, pan, setPan, panning, changeZoom, controls, size } = useCanvasCamera({ x: 20, y: 20, zoom: .25 }, { width: worldWidth, height: worldHeight })
   const zoom = camera.zoom
 
-  const navigator = useRef<HTMLElement>(null)
+  const navigator = useRef<HTMLDivElement>(null)
   const cameraNavigation = useRef(false)
   useEffect(() => { revealNavigation(navigator.current) }, [focused, viewed, expanded, size.width, size.height])
   useEffect(() => { if (bundleSelection && outline) navigator.current?.querySelector(`[data-shared-path="${CSS.escape(bundleSelection)}"]`)?.scrollIntoView({ block: 'nearest' }) }, [bundleSelection, outline])

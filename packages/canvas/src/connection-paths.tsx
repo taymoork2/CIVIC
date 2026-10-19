@@ -23,12 +23,12 @@ export function ConnectionPaths({ edges, markerId, disabled, selectedPath, selec
       const edge = group.members[0]!, bundle = edge.bundle!, style = paint(edge, group.members.every(observed))
       return <SelectablePath key={group.id} id={`bundle:${group.id}`} action={`${group.action} · ${group.members.length} paths`} description={connectionDescription(edge)} d={`${bundle.d} ${bundle.arrowD}`} disabled={disabled} selected={selectedBundle === group.id} select={() => selectBundle(group)}>
         <path d={bundle.d} {...style} />{bundle.arrowD && <path d={bundle.arrowD} {...style} markerEnd={marker(edge)} />}
-        <text x={bundle.x} y={bundle.y} textAnchor="middle" fontSize="18" fill="#526880">{group.action} · {group.members.length} paths</text>
+        <text x={bundle.x} y={bundle.y} textAnchor="middle" fontSize="18" fill="var(--civic-muted, #526880)">{group.action} · {group.members.length} paths</text>
       </SelectablePath>
     })}
     {edges.map(edge => <SelectablePath key={edge.id} id={edge.id} action={edge.action} description={`${connectionDescription(edge)}${observed(edge) ? ' · Captured visit' : ''}`} d={edge.d} hitD={edge.branchD} disabled={disabled} selected={selectedPath === edge.id} select={() => select(edge)}>
       <path d={edge.branchD ?? edge.d} {...paint(edge)} markerEnd={edge.branchArrow ? marker(edge) : undefined} />
-      {!edge.bundle && <text x={edge.x} y={edge.y} textAnchor="middle" fontSize="18" fill="#526880">{edge.action}</text>}
+      {!edge.bundle && <text x={edge.x} y={edge.y} textAnchor="middle" fontSize="18" fill="var(--civic-muted, #526880)">{edge.action}</text>}
     </SelectablePath>)}
   </>
 }

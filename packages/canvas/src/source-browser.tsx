@@ -1,3 +1,7 @@
+import { Alert, AlertDescription } from '@civic/shell/ui/alert'
+import { Disclosure } from '@civic/shell/ui/disclosure'
+import { Checkbox } from '@civic/shell/ui/checkbox'
+import { Field, FieldLabel, FieldGroup } from '@civic/shell/ui/field'
 import { Button } from '@civic/shell/ui/button'
 import { Input } from '@civic/shell/ui/input'
 import { useEffect, useState, type FormEvent } from 'react'
@@ -34,9 +38,9 @@ export function SourceBrowser({ connect }: { connect: (source: Source) => void }
   }
   return <section className="rh-source-browser" aria-label="Project sources">
     <p>Discover active work from this app’s repositories and linked designs. Existing reviews are kept.</p>
-    <label>Search sources<Input type="search" aria-label="Search sources" maxLength={120} value={query} onChange={event => { setQuery(event.target.value); setOffset(0) }} placeholder="Branch, PR, worktree or design…" /></label>
-    <div className="rh-source-controls"><label><input type="checkbox" checked={inactive} onChange={event => { setInactive(event.target.checked); setOffset(0) }} />Include inactive work</label><Button variant="outline" disabled={loading} onClick={() => setRefresh(value => value + 1)}>Refresh</Button></div>
-    {error && <p role="alert">{error}</p>}
+    <Field><FieldLabel className="cv:grid cv:w-full cv:gap-2">Search sources<Input type="search" aria-label="Search sources" maxLength={120} value={query} onChange={event => { setQuery(event.target.value); setOffset(0) }} placeholder="Branch, PR, worktree or design…" /></FieldLabel></Field>
+    <div className="rh-source-controls"><Field orientation="horizontal" ><FieldLabel className="cv:flex cv:min-h-11 cv:w-full cv:items-center cv:gap-2"><Checkbox checked={inactive} onCheckedChange={checked => { setInactive(checked); setOffset(0) }} />Include inactive work</FieldLabel></Field><Button variant="outline" disabled={loading} onClick={() => setRefresh(value => value + 1)}>Refresh</Button></div>
+    {error && <Alert variant="destructive" ><AlertDescription>{error}</AlertDescription></Alert>}
     {loading ? <p role="status">Checking sources…</p> : data && <>
       <p role="status">{data.total ? `${data.offset + 1}–${Math.min(data.offset + 10, data.total)} of ${data.total} sources` : 'No matching sources.'}{!inactive && data.hiddenInactive > 0 && ` · ${data.hiddenInactive} inactive hidden`}</p>
       <HistoryList className="rh-source-results" items={sourceItems.map(row => ({ id: row.id, label: row.title, history: row.history, marker: row.type === 'pull-request' ? <GitPullRequest /> : ['figma', 'design'].includes(row.type) ? <Pencil /> : <GitBranch />, content: <>
@@ -45,12 +49,12 @@ export function SourceBrowser({ connect }: { connect: (source: Source) => void }
         <HistoryMeta history={row.history} />
         {row.type !== 'pull-request' && row.history?.key && data.items.filter(pr => pr.type === 'pull-request' && pr.history?.key === row.history?.key).map(pr => <div key={pr.id} className="civic-history-pr"><a href={pr.url} target="_blank" rel="noreferrer">{pr.title} ↗</a><HistoryMeta history={pr.history} /></div>)}
         {row.revision && <small>Revision {row.revision.slice(0, 8)}</small>}
-        {row.path && <details><summary>Folder</summary><code>{row.path}</code></details>}
+        {row.path && <Disclosure title={<>Folder</>}><code>{row.path}</code></Disclosure>}
         <div>{row.path && !row.connected && <Button variant="outline" onClick={() => connect(row)}>Connect preview</Button>}{row.url && <a href={row.url} target="_blank" rel="noreferrer">{row.type === 'figma' ? 'Open in Figma' : 'Open on GitHub'} ↗</a>}</div>
       </> }))} />
       {(data.offset > 0 || data.hasMore) && <nav aria-label="Source pages"><Button variant="outline" disabled={data.offset === 0} onClick={() => setOffset(value => Math.max(0, value - 10))}>Previous</Button><Button variant="outline" disabled={!data.hasMore} onClick={() => setOffset(value => value + 10)}>Next 10</Button></nav>}
       <ul className="rh-source-status">{data.providers.map((provider, index) => <li key={index}><strong>{provider.name}</strong> · {provider.message}</li>)}</ul>
     </>}
-    {linking ? <form onSubmit={event => void link(event)}><label>Figma file link<Input type="url" aria-label="Figma file link" value={url} onChange={event => setURL(event.target.value)} required placeholder="https://www.figma.com/design/…" /></label><div className="rh-project-actions"><Button variant="outline" type="button" onClick={() => setLinking(false)} disabled={saving}>Cancel</Button><Button variant="outline" type="submit" disabled={saving}>{saving ? 'Linking…' : 'Link file'}</Button></div></form> : <Button variant="outline" onClick={() => setLinking(true)}>Link Figma file</Button>}
+    {linking ? <form onSubmit={event => void link(event)}><FieldGroup><Field><FieldLabel className="cv:grid cv:w-full cv:gap-2">Figma file link<Input type="url" aria-label="Figma file link" value={url} onChange={event => setURL(event.target.value)} required placeholder="https://www.figma.com/design/…" /></FieldLabel></Field><div className="rh-project-actions"><Button variant="outline" type="button" onClick={() => setLinking(false)} disabled={saving}>Cancel</Button><Button variant="outline" type="submit" disabled={saving}>{saving ? 'Linking…' : 'Link file'}</Button></div></FieldGroup></form> : <Button variant="outline" onClick={() => setLinking(true)}>Link Figma file</Button>}
   </section>
 }

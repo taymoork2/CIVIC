@@ -14,7 +14,7 @@ export function connectionStyle(edge: PathAction) {
   return {
     interaction,
     label: interaction === 'return' ? 'Back / cancel' : interaction === 'update' ? 'Action / update' : 'Navigate',
-    stroke: interaction === 'return' ? '#526880' : interaction === 'update' ? '#7c3fb0' : edge.when ? '#157b70' : '#2456d6',
+    stroke: interaction === 'return' ? 'var(--civic-connection-return, #526880)' : interaction === 'update' ? 'var(--civic-connection-update, #7c3fb0)' : edge.when ? 'var(--civic-connection-conditional, #157b70)' : 'var(--civic-connection-navigate, #2456d6)',
     strokeDasharray: interaction === 'return' ? '8 6' : edge.when ? '2 5' : undefined,
   }
 }

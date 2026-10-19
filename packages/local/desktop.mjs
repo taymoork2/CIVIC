@@ -1,19 +1,35 @@
-import { app, BaseWindow, WebContentsView, ipcMain, shell, dialog } from 'electron'
+import { app, BaseWindow, WebContentsView, ipcMain, shell, dialog, Menu, nativeTheme } from 'electron'
 import { fileURLToPath } from 'node:url'
 import { store } from './onboard.mjs'
 import { localReviewOrigin, trustedWindow } from './desktop-windows.mjs'
 import { projectTabs } from './desktop-tabs.mjs'
+import { readAppearance, saveAppearance } from './desktop-appearance.mjs'
+import { join } from 'node:path'
 
 const origin = localReviewOrigin(process.env.CIVIC_DESKTOP_ORIGIN ?? 'http://127.0.0.1:3012')
 if (!origin) throw Error('CIVIC desktop requires a local review origin')
 const windows = new Set()
 app.setName('CIVIC')
 app.setPath('userData', store + '/desktop')
+const appearanceFile = join(app.getPath('userData'), 'appearance.json')
+let themePreference = readAppearance(appearanceFile)
+nativeTheme.themeSource = themePreference
+const appearance = () => ({ preference: themePreference, resolved: nativeTheme.shouldUseDarkColors ? 'dark' : 'light' })
+const windowColors = () => nativeTheme.shouldUseDarkColors ? { color: '#191b20', symbolColor: '#eceef3' } : { color: '#ffffff', symbolColor: '#25272c' }
+const publishAppearance = () => {
+  for (const context of windows) {
+    const colors = windowColors()
+    context.window.setBackgroundColor(colors.color)
+    if (process.platform === 'win32') context.window.setTitleBarOverlay({ ...colors, height: 40 })
+    for (const view of context.tabs.views()) if (!view.contents.isDestroyed()) view.contents.send('civic-desktop:appearance', appearance())
+  }
+}
+nativeTheme.on('updated', publishAppearance)
 const report = error => dialog.showErrorBox('Could not open project', error.message)
 const external = url => { if (/^https?:$/.test(new URL(url).protocol)) void shell.openExternal(url) }
 
 async function open(initialURL = origin + '/review') {
-  const window = new BaseWindow({ show: false, title: 'CIVIC', width: 1440, height: 1000, minWidth: 360, minHeight: 480, backgroundColor: '#ffffff', ...(process.platform === 'darwin' ? { titleBarStyle: 'hiddenInset', trafficLightPosition: { x: 14, y: 12 } } : process.platform === 'win32' ? { titleBarStyle: 'hidden', titleBarOverlay: { color: '#ffffff', symbolColor: '#25272c', height: 40 } } : {}) })
+  const window = new BaseWindow({ show: false, title: 'CIVIC', width: 1440, height: 1000, minWidth: 360, minHeight: 480, backgroundColor: windowColors().color, ...(process.platform === 'darwin' ? { titleBarStyle: 'hiddenInset', trafficLightPosition: { x: 14, y: 12 } } : process.platform === 'win32' ? { titleBarStyle: 'hidden', titleBarOverlay: { ...windowColors(), height: 40 } } : {}) })
   let closing = false, reviewSession
   const context = { window, tabs: null }
   const stateFor = id => ({ ...context.tabs.snapshot(), visible: window.isVisible() && !window.isMinimized() && context.tabs.idForView(id) === context.tabs.snapshot().active })
@@ -94,9 +110,16 @@ async function open(initialURL = origin + '/review') {
   return context
 }
 
-for (const action of ['state', 'register', 'open', 'select', 'close']) ipcMain.handle('civic-desktop:' + action, async (event, input) => {
+for (const action of ['state', 'register', 'open', 'select', 'close', 'appearance', 'set-appearance']) ipcMain.handle('civic-desktop:' + action, async (event, input) => {
   const context = [...windows].find(context => context.tabs.owns(event.sender.id))
   if (!context || event.senderFrame !== event.sender.mainFrame || !localReviewOrigin(event.senderFrame.url) || new URL(event.senderFrame.url).pathname !== '/review') throw Error('Untrusted desktop sender')
+  if (action === 'set-appearance') {
+    saveAppearance(appearanceFile, input)
+    themePreference = input
+    nativeTheme.themeSource = input
+    publishAppearance()
+  }
+  if (action === 'appearance' || action === 'set-appearance') return appearance()
   if (action === 'state') return context.stateFor(event.sender.id)
   if (action === 'register') context.tabs.register(event.sender.id, input)
   if (action === 'open') {
@@ -107,6 +130,18 @@ for (const action of ['state', 'register', 'open', 'select', 'close']) ipcMain.h
   if (action === 'close') { await context.tabs.close(input); if (!context.tabs.snapshot().tabs.length) context.window.close() }
   return context.tabs.snapshot()
 })
-app.whenReady().then(() => open()).catch(error => { report(error); app.quit() })
+const openSettings = () => {
+  const context = [...windows].find(context => context.window.isFocused()) ?? [...windows][0]
+  const view = context?.tabs.views().find(view => context.tabs.idForView(view.id) === context.tabs.snapshot().active)
+  if (view && !view.contents.isDestroyed()) { context.window.show(); context.window.focus(); view.contents.send('civic-desktop:settings') }
+}
+app.whenReady().then(() => {
+  const settings = { id: 'civic-settings', label: 'Settings…', accelerator: 'CmdOrCtrl+,', click: openSettings }
+  Menu.setApplicationMenu(Menu.buildFromTemplate([
+    process.platform === 'darwin' ? { label: 'CIVIC', submenu: [{ role: 'about' }, { type: 'separator' }, settings, { type: 'separator' }, { role: 'services' }, { type: 'separator' }, { role: 'hide' }, { role: 'hideOthers' }, { role: 'unhide' }, { type: 'separator' }, { role: 'quit' }] } : { label: 'File', submenu: [settings, { type: 'separator' }, { role: 'quit' }] },
+    { role: 'editMenu' }, { role: 'viewMenu' }, { role: 'windowMenu' },
+  ]))
+  return open()
+}).catch(error => { report(error); app.quit() })
 app.on('activate', () => { if (!windows.size) void open().catch(report) })
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit() })

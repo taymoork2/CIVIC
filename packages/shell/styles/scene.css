@@ -1,0 +1,44 @@
+@layer components {
+.rehearsal[hidden], .rehearsal ~ div[hidden] { display: none; }
+.app-camera-layer { position: absolute; inset: 0; }
+.app-scene { position: absolute; left: 0; top: 0; transform-origin: top left; }
+.app-flow { position: absolute; background: var(--civic-background); border: 2px solid var(--civic-border); border-radius: 10px; padding: 28px 36px; }
+.app-flow.is-focused { border-color: var(--civic-primary); }
+.app-flow > header { display: flex; align-items: center; gap: 20px; margin-bottom: 34px; min-height: 70px; max-width: 1660px; }
+.app-flow h2 { font-size: 30px; }
+.app-flow header p { color: var(--civic-muted); font-size: 16px; }
+.app-flow header button:first-of-type { margin-left: auto; }
+.app-screen-grid { position: relative; }
+.app-flow-edges, .app-cross-flow-edges, .app-overview-edges { pointer-events: none; overflow: visible; }
+.app-flow-edges { position: absolute; left: 36px; top: 132px; z-index: 1; }
+.app-cross-flow-edges { position: absolute; inset: 0; }
+.app-screen { position: absolute; width: 271px; height: 665px; }
+.app-screen > button { width: 100%; min-height: 72px; margin-bottom: 12px; }
+.app-screen strong { display: block; font-size: 20px; line-height: 1.3; }
+.app-screen small { color: var(--civic-muted); display: block; font-size: 15px; margin-top: 6px; }
+.app-screen .app-screen-picture { min-height: 0; display: block; width: var(--screen-width, 271px); padding: 0; border: 1px solid var(--civic-border); border-radius: 10px; overflow: hidden; }
+.app-screen-picture img { width: 100%; height: 100%; object-fit: contain; display: block; background: var(--civic-surface); }
+.rh-fixture-picture { display: block; width: var(--screen-width, 271px); height: var(--screen-preview-height, 588px); overflow: hidden; background: var(--civic-background); }
+.rh-fixture-picture { position: relative; }
+.rh-fixture-picture > .rh-snapshot-state { position: absolute; inset: auto 0 0; height: auto; padding: 4px; background: color-mix(in srgb, var(--civic-surface) 92%, transparent); font-size: 10px; }
+.rh-fixture-picture > span { display: grid; height: 100%; place-content: center; padding: 12px; color: var(--civic-muted); font-size: 12px; }
+.app-live-screen { position: relative; width: var(--screen-width, 271px); height: var(--screen-preview-height, 588px); border: 2px solid var(--civic-positive); border-radius: 10px; overflow: hidden; background: var(--civic-surface); }
+.app-live-screen iframe { width: 393px; height: 852px; border: 0; transform: scale(.69); transform-origin: top left; }
+.app-screen-placeholder { width: var(--screen-width, 271px); height: var(--screen-preview-height, 588px); display: grid; place-items: center; text-align: center; padding: 20px; color: var(--civic-muted); background: var(--civic-surface); font-size: 16px; border-radius: 10px; }
+.app-screen.is-viewed .app-screen-picture { border: 2px solid var(--civic-primary); }
+.app-screen > .app-play-screen { min-height: 44px; }
+.app-detail-scene[hidden] { display: none; }
+.app-overview { position: absolute; inset: 0; }
+.app-overview-edges { position: absolute; inset: 0; width: 100%; height: 100%; }
+.app-overview-flow { position: absolute; }
+.app-overview-area { position: absolute; top: -34px; left: 0; font-size: 20px; color: var(--civic-muted); }
+.app-overview-flow > button { width: 100%; height: 100%; overflow: hidden; }
+.app-overview-flow.is-focused > button { border-color: var(--civic-primary); }
+.app-overview-flow strong { display: block; font-size: 26px; line-height: 1.2; }
+.app-overview-flow button > span { display: block; margin: 8px 0 14px; font-size: 18px; color: var(--civic-muted); }
+.app-overview-filmstrip { display: flex; align-items: center; gap: 14px; }
+.app-overview-filmstrip img, .app-overview-filmstrip > span:not(.app-overview-more) { width: 58px; height: 126px; background: var(--civic-background); border: 1px solid var(--civic-border); border-radius: 4px; }
+.app-overview-more { font-size: 20px; color: var(--civic-muted); }
+.app-overview-filmstrip > span.rh-fixture-picture { width: 58px; height: auto; aspect-ratio: var(--fixture-aspect, 393 / 852); }
+.app-overview-filmstrip img { width: 100%; height: 100%; object-fit: contain; }
+}

@@ -1,9 +1,9 @@
-import { useEffect, useEffectEvent, useMemo, useRef, useState, type RefObject } from 'react'
+import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import { ArrowRight, Layers, Search } from '@civic/shell/icons'
 import { Dialog, DialogContent, DialogTitle } from '@civic/shell/ui/dialog'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@civic/shell/ui/command'
 import type { AppFlow, MapScreen } from './app-map'
-import { projectShortcut } from './project-choice'
+import { useWorkspaceShortcut } from './use-workspace-shortcut'
 
 export type WorkspaceAction = { id: string; label: string; keywords?: string; icon: typeof Search; disabled?: boolean; opensDialog?: boolean; run: () => void }
 type SearchItem = { id: string; label: string; detail: string; keywords: string; kind: 'flow' | 'screen' | 'action'; disabled?: boolean }
@@ -34,21 +34,10 @@ export function WorkspaceSearch({ open, setOpen, name, flows, actions, focusFlow
   const [query, setQuery] = useState('')
   const destination = useRef<'trigger' | 'canvas' | 'dialog'>('trigger')
   const index = useMemo(() => open ? workspaceIndex(flows) : [], [open, flows])
-  const shortcut = useEffectEvent((event: KeyboardEvent) => {
-    if (!projectShortcut(event) || !open && document.querySelector('[role=dialog]')) return
+  useWorkspaceShortcut('k', event => {
+    if (!open && document.querySelector('[role=dialog][aria-modal=true]:not([hidden]):not([data-closed])')) return
     event.preventDefault(); event.stopPropagation(); setOpen(!open)
-  })
-  useEffect(() => { window.addEventListener('keydown', shortcut); return () => window.removeEventListener('keydown', shortcut) }, [])
-  useEffect(() => {
-    let win: Window | null = null
-    const unbind = () => { try { win?.removeEventListener('keydown', shortcut, true) } catch {} win = null }
-    const bind = () => {
-      unbind()
-      try { win = frame?.contentWindow ?? null; win?.addEventListener('keydown', shortcut, true) } catch { win = null }
-    }
-    bind(); frame?.addEventListener('load', bind)
-    return () => { unbind(); frame?.removeEventListener('load', bind) }
-  }, [frame])
+  }, frame)
   useEffect(() => { if (!open) setQuery(''); else destination.current = 'trigger' }, [open])
   const results = workspaceResults([...actions.map(action => ({ ...action, kind: 'action' as const, detail: 'Action', keywords: action.keywords ?? '' })), ...index], query)
   const select = (item: SearchItem) => {

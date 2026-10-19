@@ -14,7 +14,7 @@ test('rendering preserves action type through captured visits and refuses mixed-
   expect(markup).toContain('marker-end="url(#semantics-navigate)"')
   expect(markup).toContain('marker-end="url(#semantics-update)"')
   expect(markup).toContain('marker-end="url(#semantics-return)"')
-  expect(markup).toContain('stroke="#7c3fb0"')
+  expect(markup).toContain('stroke="var(--civic-connection-update, #7c3fb0)"')
   expect(markup).toContain('stroke-dasharray="8 6"')
   expect(markup.match(/stroke-width="3"/g)).toHaveLength(3)
   expect(markup).toContain('aria-description="Action / update · Captured visit"')

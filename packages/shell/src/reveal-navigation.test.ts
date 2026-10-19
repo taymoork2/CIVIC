@@ -10,3 +10,10 @@ test('following a screen scrolls only its outline containers, without moving the
   expect(list.scrollBy).toHaveBeenCalledWith({ left: 240, top: 0, behavior: 'instant' })
   expect(aside.scrollBy).toHaveBeenCalledWith({ left: 0, top: 14, behavior: 'instant' })
 })
+
+test('a selected sidebar item does not require a legacy ordered list', () => {
+  const button = { closest: () => null, getBoundingClientRect: () => ({ left: 0, right: 100, top: 120, bottom: 150 }) }
+  const aside = { querySelector: () => button, getBoundingClientRect: () => ({ left: 0, right: 220, top: 0, bottom: 90 }), scrollBy: vi.fn() }
+  revealNavigation(aside as unknown as HTMLElement)
+  expect(aside.scrollBy).toHaveBeenCalledWith({ left: 0, top: 60, behavior: 'instant' })
+})

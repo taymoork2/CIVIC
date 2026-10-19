@@ -5,6 +5,7 @@
   "exports": {
     "./ui/*": "./src/ui/*.tsx",
     "./icons": "./src/icons.ts",
+    "./theme": "./src/theme.ts",
     "./canvas-camera": "./src/canvas-camera.ts",
     "./use-canvas-camera": "./src/use-canvas-camera.ts",
     "./canvas-controls": "./src/canvas-controls.tsx",

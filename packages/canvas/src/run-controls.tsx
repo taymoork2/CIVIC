@@ -1,3 +1,4 @@
+import { Field, FieldLabel } from '@civic/shell/ui/field'
 import { Button } from '@civic/shell/ui/button'
 import { NativeSelect } from '@civic/shell/ui/native-select'
 import { useEffect, useState } from 'react'
@@ -70,7 +71,7 @@ export function RunControls({ frame, onViewportChange, viewportController, runSe
     <ViewportControls frame={frame} onChange={onViewportChange} controller={viewportController} />
     {runSection && run && <section className="rh-run-controls" aria-label="Isolated run">
       <h3>Isolated run</h3>
-      {run.accounts.length > 1 && <label>Synthetic account<NativeSelect className="cv:w-full" aria-label="Synthetic account" disabled={busy} value={run.account ?? ''} onChange={(event) => void command('identity', event.target.value)}>{run.accounts.map((account) => <option key={account} value={account}>{account}</option>)}</NativeSelect></label>}
+      {run.accounts.length > 1 && <Field><FieldLabel className="cv:grid cv:w-full cv:gap-2">Synthetic account<NativeSelect className="cv:w-full" aria-label="Synthetic account" disabled={busy} value={run.account ?? ''} onChange={(event) => void command('identity', event.target.value)}>{run.accounts.map((account) => <option key={account} value={account}>{account}</option>)}</NativeSelect></FieldLabel></Field>}
       <Button variant="outline" disabled={busy} onClick={() => void command('connection', !run.connected)}>{run.connected ? 'Disconnect app' : 'Reconnect app'}</Button>
       <Button variant="outline" disabled={busy} onClick={() => void reopen()}>Reopen app</Button>
       <p className="rh-muted">{run.connected ? 'Connected to its isolated data.' : 'Offline. Nothing is resent by itself; review saved steps after reconnecting.'}</p>
