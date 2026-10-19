@@ -57,7 +57,8 @@ try {
         const tab = await browser.newPage({ viewport: { width: 1280, height: 900 } })
         const errors = []
         tab.on('pageerror', (error) => errors.push(error.message))
-        await tab.goto(origin + '/review')
+        const startupError = new Promise((_, reject) => tab.once('pageerror', reject))
+        await Promise.race([tab.goto(origin + '/review').then(() => tab.locator('.rh-project-trigger').waitFor({ timeout: 30000 })), startupError])
         await tab.locator('.app-nav-section button', { hasText: 'Write a note' }).click({ timeout: 30000 })
         await tab.locator('.app-screen > button', { hasText: 'Notebook home' }).click()
         await tab.getByRole('button', { name: 'Play this screen' }).click()
