@@ -1,8 +1,14 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { ImageOff } from '@civic/shell/icons'
+import { Skeleton } from '@civic/shell/ui/skeleton'
 import { projectFetch } from './project-request'
 
+export function fixtureURL(screen: string, source: string, viewport?: { width: number; height: number }) {
+  return `/api/review/fixture.png?${new URLSearchParams({ screen, source, ...(viewport ? { width: String(viewport.width), height: String(viewport.height) } : {}) })}`
+}
+
 /** Observe the transformed canvas, rather than relying on browser lazy-loading distance. */
-export function FixturePicture({ src, alt, active = true }: { src: string; alt: string; active?: boolean }) {
+export function FixturePicture({ src, alt, active = true, viewport }: { src: string; alt: string; active?: boolean; viewport?: { width: number; height: number } }) {
   const target = useRef<HTMLSpanElement>(null)
   const [visible, setVisible] = useState(false)
   const [failed, setFailed] = useState(false)
@@ -43,7 +49,7 @@ export function FixturePicture({ src, alt, active = true }: { src: string; alt: 
     return () => { controller.abort(); clearTimeout(retry) }
   }, [src, active, visible, picture?.source, attempt])
   useEffect(() => () => { if (picture) URL.revokeObjectURL(picture.url) }, [picture])
-  return <span ref={target} className="rh-fixture-picture" data-snapshot-stale={picture && picture.source !== src ? 'true' : undefined}>
-    {picture ? <><img src={picture.url} alt={alt} decoding="async" onError={() => setPicture(null)} />{picture.source !== src && <span className="rh-snapshot-state">{failed ? 'Retrying update…' : 'Updating…'}</span>}</> : <span>{failed ? 'Retrying snapshot…' : 'Screen snapshot'}</span>}
+  return <span ref={target} className="rh-fixture-picture" style={viewport ? { '--fixture-aspect': viewport.width / viewport.height } as CSSProperties : undefined} data-snapshot-stale={picture && picture.source !== src ? 'true' : undefined}>
+    {picture ? <><img src={picture.url} alt={alt} decoding="async" onError={() => setPicture(null)} />{picture.source !== src && <span className="rh-snapshot-state">{failed ? 'Retrying update…' : 'Updating…'}</span>}</> : <span className="civic-snapshot-placeholder" role="status">{failed ? <><ImageOff aria-hidden="true" /><strong>Snapshot unavailable</strong><small>Retrying automatically. Select this screen and press Play to open it.</small></> : <><Skeleton className="cv:h-16 cv:w-3/4" /><span>Preparing snapshot…</span></>}</span>}
   </span>
 }

@@ -1,3 +1,5 @@
+import { Button } from '@civic/shell/ui/button'
+import { NativeSelect } from '@civic/shell/ui/native-select'
 import { useEffect, useState } from 'react'
 import { reviewApi } from './review-api'
 import type { RunStatus } from './adapter'
@@ -10,6 +12,7 @@ export function RunControls({ frame, onViewportChange, runSection = true }: { fr
   const [available, setAvailable] = useState(false), [busy, setBusy] = useState(false), [status, setStatus] = useState(''), [count, setCount] = useState(0)
   const [run, setRun] = useState<RunStatus | null>(null)
   const runtime = () => frame?.contentWindow?.reviewPreview
+  const observational = runtime()?.mode === 'live-read-only'
   useEffect(() => {
     const win = frame?.contentWindow
     const update = () => {
@@ -64,13 +67,13 @@ export function RunControls({ frame, onViewportChange, runSection = true }: { fr
     <ViewportControls frame={frame} onChange={onViewportChange} />
     {runSection && run && <section className="rh-run-controls" aria-label="Isolated run">
       <h3>Isolated run</h3>
-      {run.accounts.length > 1 && <label>Synthetic account<select aria-label="Synthetic account" disabled={busy} value={run.account ?? ''} onChange={(event) => void command('identity', event.target.value)}>{run.accounts.map((account) => <option key={account} value={account}>{account}</option>)}</select></label>}
-      <button disabled={busy} onClick={() => void command('connection', !run.connected)}>{run.connected ? 'Disconnect app' : 'Reconnect app'}</button>
-      <button disabled={busy} onClick={() => void reopen()}>Reopen app</button>
+      {run.accounts.length > 1 && <label>Synthetic account<NativeSelect className="cv:w-full" aria-label="Synthetic account" disabled={busy} value={run.account ?? ''} onChange={(event) => void command('identity', event.target.value)}>{run.accounts.map((account) => <option key={account} value={account}>{account}</option>)}</NativeSelect></label>}
+      <Button variant="outline" disabled={busy} onClick={() => void command('connection', !run.connected)}>{run.connected ? 'Disconnect app' : 'Reconnect app'}</Button>
+      <Button variant="outline" disabled={busy} onClick={() => void reopen()}>Reopen app</Button>
       <p className="rh-muted">{run.connected ? 'Connected to its isolated data.' : 'Offline. Nothing is resent by itself; review saved steps after reconnecting.'}</p>
-      {run.pending.length > 0 && <section aria-label="Saved steps"><h4>Saved steps for {run.account ?? 'this account'}</h4><p>Check what was done before resending. These steps belong to this account.</p>{run.pending.map((row) => <div key={row.id}><strong>{row.name}</strong><button disabled={busy || !run.connected} onClick={() => void command('applyPending', row.id)}>Resend saved step</button><button disabled={busy} onClick={() => void command('discardPending', row.id)}>Discard saved step</button></div>)}</section>}
+      {run.pending.length > 0 && <section aria-label="Saved steps"><h4>Saved steps for {run.account ?? 'this account'}</h4><p>Check what was done before resending. These steps belong to this account.</p>{run.pending.map((row) => <div key={row.id}><strong>{row.name}</strong><Button variant="outline" disabled={busy || !run.connected} onClick={() => void command('applyPending', row.id)}>Resend saved step</Button><Button variant="outline" disabled={busy} onClick={() => void command('discardPending', row.id)}>Discard saved step</Button></div>)}</section>}
     </section>}
-    {available && <section aria-label="Application recording"><h3>Recorded run</h3><p>{count} actions · isolated data</p><button disabled={busy || count === 0} onClick={() => void perform('replay')}>{busy ? 'Working…' : 'Replay this run'}</button><button disabled={busy} onClick={() => void perform('save')}>Save recording</button></section>}
+    {available && <section aria-label="Application recording"><h3>Recorded run</h3><p>{count} actions · {observational ? 'live observation; changing backend' : 'isolated data'}</p>{!observational && <Button variant="outline" disabled={busy || count === 0} onClick={() => void perform('replay')}>{busy ? 'Working…' : 'Replay this run'}</Button>}<Button variant="outline" disabled={busy} onClick={() => void perform('save')}>Save recording</Button></section>}
     <p role="status">{status}</p>
   </>
 }

@@ -1,12 +1,19 @@
 import { journeyGraph, pathId } from './journey-graph.mjs'
 import { extension } from './extension'
-import { arrowPath, routeArrow } from './arrow-routing'
+import { routeConnections, type Connection } from './connection-routing'
+import { interactionOf, type Interaction } from './connection-semantics'
 
 export type RouteAction = { from: string; action: string; destination?: string; route: string; when: string; returnTo?: string; source: string; status: string }
-export type MapScreen = { id: string; label: string; scenario: string; partial: boolean; section?: string; x?: number; y?: number; branchOf?: string; edges: { action: string; destination: string; when?: string; returnTo?: string }[]; routeActions?: RouteAction[] }
+export type MapScreen = { id: string; label: string; scenario: string; partial: boolean; viewport?: { width: number; height: number }; section?: string; x?: number; y?: number; branchOf?: string; edges: { action: string; destination: string; when?: string; returnTo?: string; interaction?: Interaction }[]; routeActions?: RouteAction[] }
 export type AppFlow = { id: string; label: string; section: string; screens: MapScreen[]; x: number; y: number; width: number; height: number }
-export type MapScenario = { id: string; label: string; journey: string; renderer: string; flow?: string; section?: string; screen?: string; branchOf?: string; edges?: MapScreen['edges']; routeActions?: RouteAction[]; discovery?: { evidence: string } }
+export type MapScenario = { id: string; label: string; journey: string; renderer: string; targetId?: string; componentId?: string; component?: string; componentExport?: string; route?: string; viewport?: MapScreen['viewport']; flow?: string; section?: string; screen?: string; branchOf?: string; edges?: MapScreen['edges']; routeActions?: RouteAction[]; discovery?: { evidence: string } }
 export type GraphFlow = { id: string; label: string; screens: MapScreen[] }
+export function screenSize(screen: Pick<MapScreen, 'viewport'>) {
+  if (!screen.viewport) return { width: 271, height: 737, previewHeight: 588 }
+  const width = screen.viewport.width > screen.viewport.height ? 800 : 271
+  const previewHeight = width * screen.viewport.height / screen.viewport.width
+  return { width, height: previewHeight + 149, previewHeight }
+}
 /**
  * Lays out the journey graph. Module projects group screens by their declared flow and section; a
  * host's canvas extension may supply its own graph, flow order and sections (Laundry does).
@@ -17,16 +24,18 @@ export function appFlows(scenarios: MapScenario[], project?: { adapter: string; 
   extension.arrange?.(rows)
   const result = rows.map((flow) => {
     const main = flow.screens.filter((screen) => !screen.branchOf)
+    const spacing = Math.max(...flow.screens.map(screen => screenSize(screen).width)) + 169
     const lanes = new Map<number, number>()
     const screens = flow.screens.map((screen, i) => {
       const parent = main.findIndex((entry) => entry.id === screen.branchOf)
-      const x = (parent >= 0 ? parent : main.indexOf(screen) >= 0 ? main.indexOf(screen) : i) * 440
+      const x = (parent >= 0 ? parent : main.indexOf(screen) >= 0 ? main.indexOf(screen) : i) * spacing
       const lane = (lanes.get(x) ?? 0) + 1
       if (screen.branchOf) lanes.set(x, lane)
       return { ...screen, label: screen.partial ? screen.label.replace(/-/g, ' ').replace(/^./, (letter) => letter.toUpperCase()) : screen.label, x, y: screen.branchOf ? lane * 900 : extension.lowered?.includes(screen.id) ? 900 : 0 }
     })
-    const width = 72 + (Math.max(...screens.map((screen) => screen.x)) + 440)
-    const height = Math.max(1000, ...screens.map((screen) => screen.y + 1000))
+    const width = 72 + Math.max(...screens.map((screen) => screen.x + screenSize(screen).width + 169))
+    const gutter = Math.max(131, screens.reduce((count, screen) => count + screen.edges.length, 0) * 8 + 40)
+    const height = Math.max(1000, ...screens.map((screen) => screen.y + screenSize(screen).height + 132 + gutter))
     return { ...flow, section: extension.sectionOf?.(flow) ?? flow.screens[0]?.section ?? sections[0]!, x: 0, y: 0, width, height, screens }
   })
   let x = 40
@@ -41,7 +50,7 @@ export function appFlows(scenarios: MapScenario[], project?: { adapter: string; 
 
 // Navigation grouping is layout intent; only registry edges establish declared actions.
 export function overviewFlows(flows: AppFlow[]): AppFlow[] {
-  const sections = [...new Set(flows.map((flow) => flow.section))]
+  const sections = [...new Set([...flows].sort((a, b) => a.x - b.x).map((flow) => flow.section))]
   return flows.map((flow) => ({ ...flow, x: 40 + sections.indexOf(flow.section) * 460, y: 40 + flows.filter((other) => other.section === flow.section).indexOf(flow) * 360, width: 340, height: 260 }))
 }
 
@@ -50,36 +59,38 @@ export function flowAtCenter(flows: AppFlow[], x: number, y: number): AppFlow | 
 }
 
 export function screenAtCenter(flow: AppFlow, x: number, y: number): MapScreen | undefined {
-  return flow.screens.find((screen) => x >= flow.x + 36 + screen.x! && x <= flow.x + 36 + screen.x! + 271 && y >= flow.y + 132 + screen.y! && y <= flow.y + 132 + screen.y! + 665)
+  return flow.screens.find((screen) => x >= flow.x + 36 + screen.x! && x <= flow.x + 36 + screen.x! + screenSize(screen).width && y >= flow.y + 132 + screen.y! && y <= flow.y + 132 + screen.y! + screenSize(screen).height)
 }
 
 export function flowEdges(flow: AppFlow) {
-  const boxes = flow.screens.map((screen) => ({ x: screen.x!, y: screen.y!, width: 271, height: 737 }))
-  return flow.screens.flatMap((screen) => screen.edges.flatMap((edge, lane) => {
+  const boxes = flow.screens.map((screen) => ({ x: screen.x!, y: screen.y!, ...screenSize(screen) }))
+  const raw = flow.screens.flatMap<Connection>((screen) => screen.edges.flatMap((edge) => {
     const target = flow.screens.find((node) => node.id === edge.destination)
     if (!target) return []
-    const a = { x: screen.x! + 271, y: screen.y! + 370 }, b = { x: target.x!, y: target.y! + 370 }
-    const points = routeArrow({ x: a.x + 16, y: a.y }, { x: b.x - 16, y: b.y }, boxes, lane)
-    if (!points.length) return []
-    const bottom = Math.max(...points.map((point) => point.y))
-    return [{ id: pathId(screen.id, target.id, edge.action), from: screen.id, to: target.id, action: edge.action, when: edge.when, returnTo: edge.returnTo, d: arrowPath([a, ...points, b]), branch: screen.edges.length > 1, returning: target.x! <= screen.x!, x: a.x + 30, y: bottom > Math.max(a.y, b.y) ? bottom - 12 : b.y > a.y ? a.y + 110 : a.y - 16 }]
+    const vertical = screen.x === target.x, returning = vertical ? target.y! <= screen.y! : target.x! < screen.x!
+    // Backtracking geometry uses bottom ports; it does not determine interaction meaning.
+    return [{ id: pathId(screen.id, target.id, edge.action), from: screen.id, to: target.id, ...edge, returning, branch: Boolean(edge.when),
+      source: { box: { x: screen.x!, y: screen.y!, ...screenSize(screen) }, side: returning || vertical ? 'bottom' : 'right' },
+      target: { box: { x: target.x!, y: target.y!, ...screenSize(target) }, side: returning ? 'bottom' : vertical ? 'top' : 'left' },
+    }]
   }))
+  return routeConnections(raw, boxes)
 }
 
 export function crossFlowEdges(flows: AppFlow[]) {
-  let lane = 0
-  return flows.flatMap((flow) => flow.screens.flatMap((screen) => screen.edges.flatMap((edge) => {
+  const innerBoxes = flows.flatMap(flow => [{ x: flow.x, y: flow.y, width: flow.width, height: 104 }, ...flow.screens.map(screen => screenBox(flow, screen))])
+  return routeConnections(crossFlowConnections(flows), flows, innerBoxes)
+}
+
+export function crossFlowConnections(flows: AppFlow[]): Connection[] {
+  return flows.flatMap((flow) => flow.screens.flatMap<Connection>((screen) => screen.edges.flatMap((edge) => {
     const destination = flows.find((other) => other.id !== flow.id && other.screens.some((node) => node.id === edge.destination))
     const target = destination?.screens.find((node) => node.id === edge.destination)
     if (!destination || !target) return []
-    const x1 = flow.x + 36 + screen.x! + 271
-    const x2 = destination.x + 36 + target.x!
-    const startX = x1 - 135.5, startY = flow.y + 132 + screen.y! + 737
-    const endX = x2 + 135.5, endY = destination.y + 112 + target.y!
-    const start = { x: startX, y: flow.y + flow.height + 32 }, end = { x: endX, y: destination.y - 16 }
-    const points = routeArrow(start, end, flows, lane++)
-    if (!points.length) return []
-    const d = arrowPath([{ x: startX, y: startY }, ...points, { x: endX, y: endY + 20 }])
-    return [{ id: pathId(screen.id, target.id, edge.action), from: screen.id, to: target.id, action: edge.action, when: edge.when, returnTo: edge.returnTo, d, x: startX + 20, y: start.y - 12, kind: /^back\b|return\b/i.test(edge.action) ? 'return' : screen.edges.length > 1 ? 'branch' : 'action' }]
+    return [{ id: pathId(screen.id, target.id, edge.action), from: screen.id, to: target.id, ...edge, returning: interactionOf(edge) === 'return', branch: Boolean(edge.when),
+      source: { box: screenBox(flow, screen), boundary: flow, side: 'bottom' }, target: { box: screenBox(destination, target), boundary: destination, side: 'top' },
+    }]
   })))
 }
+
+const screenBox = (flow: AppFlow, screen: MapScreen) => ({ x: flow.x + 36 + screen.x!, y: flow.y + 132 + screen.y!, ...screenSize(screen) })

@@ -1,3 +1,4 @@
+@layer civic-legacy {
 /* The review shell uses the app's tokens; task sheets render unchanged inside the frame. */
 .rh-family-controls { position: fixed; z-index: 100; inset: .5rem .5rem auto auto; max-width: min(22rem, calc(100vw - 1rem)); background: var(--bg); border: 1px solid var(--line); border-radius: .4rem; }
 .rh-family-controls summary { padding: .5rem .75rem; cursor: pointer; font-size: .8rem; }
@@ -34,3 +35,4 @@
 /* Family notices announce memory changes; their actions are always inline. */
 .rh-family-notifications [data-sonner-toast] { pointer-events: none !important; }
 @media (max-width: 800px) { .review-columns { grid-template-columns: minmax(0, 1fr); } .review-navigator { max-height: 20rem; } }
+}

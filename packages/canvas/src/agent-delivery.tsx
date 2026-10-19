@@ -1,3 +1,6 @@
+import { Button } from '@civic/shell/ui/button'
+import { NativeSelect } from '@civic/shell/ui/native-select'
+import { Textarea } from '@civic/shell/ui/textarea'
 import { useEffect, useState } from 'react'
 import { reviewApi } from './review-api'
 import type { Feedback } from './review-panel'
@@ -38,17 +41,17 @@ export function AgentDelivery({ review, saved }: { review: Feedback; saved: (rev
   }
   return <section className="rh-agent-delivery" aria-label="Send saved review to an agent">
     <h4>Send to agent</h4>
-    <label>Agent destination<select value={selection} disabled={pending || blocked} onChange={(event) => setSelection(event.target.value)}><option value="">Choose a destination…</option>{destinations.map((target) => <option key={target.id} value={target.id}>{target.label} · {target.provider} · {target.host}</option>)}</select></label>
+    <label>Agent destination<NativeSelect className="cv:w-full" value={selection} disabled={pending || blocked} onChange={(event) => setSelection(event.target.value)}><option value="">Choose a destination…</option>{destinations.map((target) => <option key={target.id} value={target.id}>{target.label} · {target.provider} · {target.host}</option>)}</NativeSelect></label>
     {destination && <><p className="rh-muted">{destination.cwd}<br />Session: {destination.sessionId}</p><p className="rh-muted">{destination.provider === 'codex' ? 'Append to this Codex thread through its configured app server. Busy threads are refused.' : 'Resume this idle Claude Code session. Running sessions are refused; unattended permission prompts are denied.'} Sending can start agent work and use its account quota.</p></>}
     {!destinations.length && <p className="rh-muted">No destinations configured. Add this machine or an SSH host and its session to .review-data/agents.json. Reload destinations after setup.</p>}
-    <button type="button" onClick={() => { setError(''); void load() }} disabled={pending}>Reload destinations</button>
-    <button type="button" className="rh-primary" disabled={!destination || pending || blocked} onClick={() => {
+    <Button variant="outline" type="button" onClick={() => { setError(''); void load() }} disabled={pending}>Reload destinations</Button>
+    <Button variant="outline" type="button" className="rh-primary" disabled={!destination || pending || blocked} onClick={() => {
       if (!destination || pending) return
       void send(destination.id)
-    }}>{pending ? 'Saving dispatch…' : 'Send saved review'}</button>
+    }}>{pending ? 'Saving dispatch…' : 'Send saved review'}</Button>
     {error && <p role="alert" className="rh-alert">{error}</p>}
     {review.deliveries?.map((delivery) => <div key={delivery.id} role="status"><strong>{delivery.status} · {delivery.destination.label}</strong>{delivery.message && <p>You: {delivery.message}</p>}<p>{delivery.detail}</p><small>Session {delivery.destination.sessionId}{delivery.turnId ? ` · Turn ${delivery.turnId}` : ''}</small>{delivery.result && <details open><summary>Agent reply</summary><p style={{ whiteSpace: 'pre-wrap' }}>{delivery.result}</p></details>}</div>)}
-    {latest && (latest.status === 'completed' || latest.status === 'failed' && (latest.acceptedAt || latest.replyTo)) && review.status !== 'resolved' && <form onSubmit={(event) => { event.preventDefault(); if (reply.trim() && !pending) void send(latest.destination.id, latest) }}><label>Reply to agent<textarea value={reply} maxLength={4000} disabled={pending} onChange={(event) => setReply(event.target.value)} placeholder="Clarify the request or ask for verification evidence" /></label><button type="submit" disabled={pending || !reply.trim()}>Send follow-up</button><p className="rh-muted">Continues {latest.destination.label} in the same session with this review’s evidence.</p></form>}
+    {latest && (latest.status === 'completed' || latest.status === 'failed' && (latest.acceptedAt || latest.replyTo)) && review.status !== 'resolved' && <form onSubmit={(event) => { event.preventDefault(); if (reply.trim() && !pending) void send(latest.destination.id, latest) }}><label>Reply to agent<Textarea value={reply} maxLength={4000} disabled={pending} onChange={(event) => setReply(event.target.value)} placeholder="Clarify the request or ask for verification evidence" /></label><Button variant="outline" type="submit" disabled={pending || !reply.trim()}>Send follow-up</Button><p className="rh-muted">Continues {latest.destination.label} in the same session with this review’s evidence.</p></form>}
     {!!review.deliveries?.length && <p className="rh-muted">Delivery does not resolve this review. Check the correction and attach evidence below.</p>}
   </section>
 }

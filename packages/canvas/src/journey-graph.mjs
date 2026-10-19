@@ -5,7 +5,7 @@ export function journeyGraph(scenarios) {
   for (const scenario of scenarios) {
     const id = scenario.flow ?? `flow:${scenario.journey}`
     if (!flows.has(id)) flows.set(id, { id, label: scenario.journey, screens: [] })
-    flows.get(id).screens.push({ id: scenario.id, label: scenario.label, scenario: scenario.id, partial: scenario.renderer === 'legacy' || scenario.preview === 'requires-start-state', section: scenario.section, branchOf: scenario.branchOf, edges: scenario.edges ?? [], routeActions: scenario.routeActions })
+    flows.get(id).screens.push({ id: scenario.id, label: scenario.label, scenario: scenario.id, partial: scenario.renderer === 'legacy' || scenario.preview === 'requires-start-state', section: scenario.section, branchOf: scenario.branchOf, edges: scenario.edges ?? [], routeActions: scenario.routeActions, viewport: scenario.viewport })
   }
   return [...flows.values()]
 }

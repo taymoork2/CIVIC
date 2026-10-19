@@ -1,3 +1,4 @@
+import { Button } from '@civic/shell/ui/button'
 import { useEffect, useState } from 'react'
 import type { MapScreen } from './app-map'
 import { reviewApi } from './review-api'
@@ -27,7 +28,7 @@ export function ContractPanel({ selected, scenarios, openReviewPane }: { selecte
     {error && <p role="alert" className="rh-alert">{error}</p>}
     {owners.map((owner) => <section key={owner} aria-label={`${owner} evidence`}><h3>{owner}</h3><dl className="rh-fields">{dimensions.filter((dimension) => dimension.owner === owner).map((dimension) => <div key={dimension.label}><dt>{dimension.label}</dt><dd><span className={`rh-tone is-${dimension.tone}`}>{toneLabel[dimension.tone]}</span> {['missing', 'unverified', 'present'].includes(dimension.value) ? '' : dimension.value}</dd></div>)}</dl></section>)}
     <CivicGraph scenario={selected.scenario} />
-    {open.length > 0 && <button onClick={openReviewPane}>Open {open.length} review{open.length === 1 ? '' : 's'}</button>}
+    {open.length > 0 && <Button variant="outline" onClick={openReviewPane}>Open {open.length} review{open.length === 1 ? '' : 's'}</Button>}
     <p className="rh-muted">Approved adaptations, accepted limitations and adoption need recorded decisions, which this build does not store yet.</p>
   </div>
 }
