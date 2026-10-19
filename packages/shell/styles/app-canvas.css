@@ -1,55 +1,64 @@
+@layer civic-legacy {
 .rehearsal[hidden], .rehearsal ~ div[hidden] { display: none; }
 .app-camera-layer { position: absolute; inset: 0; }
 .app-scene { position: absolute; left: 0; top: 0; transform-origin: top left; }
-.app-flow { position: absolute; background: #f9fafb; border: 2px solid #d6d9df; border-radius: 10px; padding: 28px 36px; }
-.app-flow.is-focused { border-color: #2456d6; }
+.app-flow { position: absolute; background: var(--civic-background); border: 2px solid var(--civic-border); border-radius: 10px; padding: 28px 36px; }
+.app-flow.is-focused { border-color: var(--civic-primary); }
 .app-flow > header { display: flex; align-items: center; gap: 20px; margin-bottom: 34px; min-height: 70px; max-width: 1660px; }
 .app-flow h2 { font-size: 30px; }
 .app-flow header p { color: #526880; font-size: 16px; }
 .app-flow header button:first-of-type { margin-left: auto; }
 .app-screen-grid { position: relative; }
 .app-flow-edges, .app-cross-flow-edges, .app-overview-edges { pointer-events: none; overflow: visible; }
-.app-flow-edges { position: absolute; left: 36px; top: 132px; }
+.app-flow-edges { position: absolute; left: 36px; top: 132px; z-index: 1; }
 .app-cross-flow-edges { position: absolute; inset: 0; }
 .app-screen { position: absolute; width: 271px; height: 665px; }
 .app-screen.is-filtered { opacity: .12; pointer-events: none; }
 .app-screen > button { width: 100%; text-align: left; border: 0; background: transparent; padding: 0; min-height: 72px; margin-bottom: 12px; }
 .app-screen strong { display: block; font-size: 20px; line-height: 1.3; }
 .app-screen small { color: #526880; display: block; font-size: 15px; margin-top: 6px; }
-.app-screen .app-screen-picture { min-height: 0; display: block; width: 271px; padding: 0; border: 1px solid #dbe5ed; border-radius: 10px; overflow: hidden; }
-.app-screen-picture img { width: 271px; height: 588px; display: block; background: #fff; }
-.rh-fixture-picture { display: block; width: 271px; height: 588px; overflow: hidden; background: #f4f5f7; }
+.app-screen .app-screen-picture { min-height: 0; display: block; width: var(--screen-width, 271px); padding: 0; border: 1px solid #dbe5ed; border-radius: 10px; overflow: hidden; }
+.app-screen-picture img { width: 100%; height: 100%; object-fit: contain; display: block; background: var(--civic-surface); }
+.rh-fixture-picture { display: block; width: var(--screen-width, 271px); height: var(--screen-preview-height, 588px); overflow: hidden; background: var(--civic-background); }
 .rh-fixture-picture { position: relative; }
 .rh-fixture-picture > .rh-snapshot-state { position: absolute; inset: auto 0 0; height: auto; padding: 4px; background: #ffffffeb; font-size: 10px; }
 .rh-fixture-picture > span { display: grid; height: 100%; place-content: center; padding: 12px; color: #526880; font-size: 12px; }
-.app-live-screen { position: relative; width: 271px; height: 588px; border: 2px solid #328360; border-radius: 10px; overflow: hidden; background: #fff; }
+.app-live-screen { position: relative; width: var(--screen-width, 271px); height: var(--screen-preview-height, 588px); border: 2px solid #328360; border-radius: 10px; overflow: hidden; background: var(--civic-surface); }
 .app-live-screen iframe { width: 393px; height: 852px; border: 0; transform: scale(.69); transform-origin: top left; }
-.app-screen-placeholder { width: 271px; height: 588px; display: grid; place-items: center; text-align: center; padding: 20px; color: #526880; background: #fff; font-size: 16px; border-radius: 10px; }
-.app-rehearsal .rh-journeys li button[aria-current=location] { background: #edf2ff; color: #2456d6; }
+.app-screen-placeholder { width: var(--screen-width, 271px); height: var(--screen-preview-height, 588px); display: grid; place-items: center; text-align: center; padding: 20px; color: #526880; background: var(--civic-surface); font-size: 16px; border-radius: 10px; }
+.app-rehearsal .rh-journeys li button[aria-current=location] { background: var(--civic-primary-soft); color: var(--civic-primary); }
 .app-rehearsal .app-screen-outline { margin: 4px 0 12px 12px; border-left: 1px solid #dbe5ed; }
 .app-rehearsal .app-screen-outline button { justify-content: flex-start; gap: 10px; padding: 9px 10px; font-size: 13px; }
 .app-rehearsal .app-screen-outline button small { flex: 0 0 20px; color: #526880; margin-left: 0; }
 .app-rehearsal .app-screen-outline button span { font-size: 13px; color: inherit; }
 .app-nav-section > ol > li > button span { font-size: 13px; color: inherit; }
-.app-rehearsal .app-screen-outline button[aria-current=page] { background: #edf2ff; color: #2456d6; font-weight: 650; }
-.app-screen.is-viewed .app-screen-picture { border: 2px solid #2456d6; }
-.app-screen > .app-play-screen { background: #2456d6; color: white; padding: 12px; min-height: 44px; border-radius: 8px; text-align: center; font-size: 18px; }
+.app-rehearsal .app-screen-outline button[aria-current=page] { background: var(--civic-primary-soft); color: var(--civic-primary); font-weight: 650; }
+.app-screen.is-viewed .app-screen-picture { border: 2px solid var(--civic-primary); }
+.app-screen > .app-play-screen { background: var(--civic-primary); color: white; padding: 12px; min-height: 44px; border-radius: 8px; text-align: center; font-size: 18px; }
 .app-nav-section h3 { color: #526880; font-size: 12px; margin-top: 18px; }
 .app-detail-scene[hidden] { display: none; }
 .app-overview { position: absolute; inset: 0; }
 .app-overview-edges { position: absolute; inset: 0; width: 100%; height: 100%; }
 .app-overview-flow { position: absolute; }
 .app-overview-area { position: absolute; top: -34px; left: 0; font-size: 20px; color: #526880; }
-.app-overview-flow > button { width: 100%; height: 100%; padding: 20px; text-align: left; background: #fff; border: 2px solid #d6d9df; border-radius: 10px; overflow: hidden; }
-.app-overview-flow.is-focused > button { border-color: #2456d6; }
+.app-overview-flow > button { width: 100%; height: 100%; padding: 20px; text-align: left; background: var(--civic-surface); border: 2px solid var(--civic-border); border-radius: 10px; overflow: hidden; }
+.app-overview-flow.is-focused > button { border-color: var(--civic-primary); }
 .app-overview-flow strong { display: block; font-size: 26px; line-height: 1.2; }
 .app-overview-flow button > span { display: block; margin: 8px 0 14px; font-size: 18px; color: #526880; }
 .app-overview-filmstrip { display: flex; align-items: center; gap: 14px; }
-.app-overview-filmstrip img, .app-overview-filmstrip > span:not(.app-overview-more) { width: 58px; height: 126px; background: #f4f5f7; border: 1px solid #d6d9df; border-radius: 4px; }
+.app-overview-filmstrip img, .app-overview-filmstrip > span:not(.app-overview-more) { width: 58px; height: 126px; background: var(--civic-background); border: 1px solid var(--civic-border); border-radius: 4px; }
 .app-overview-more { font-size: 20px; color: #526880; }
-.rh-route-actions article { padding: 14px 0; border-top: 1px solid #d6d9df; }
+.app-overview-filmstrip > span.rh-fixture-picture { width: 58px; height: auto; aspect-ratio: var(--fixture-aspect, 393 / 852); }
+.app-overview-filmstrip img { width: 100%; height: 100%; object-fit: contain; }
+.rh-route-actions article { padding: 14px 0; border-top: 1px solid var(--civic-border); }
 .rh-route-actions code { overflow-wrap: anywhere; }
 .rh-route-actions a { display: block; margin-top: 10px; }
 .rh-canvas-detail { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
 .rh-canvas-detail > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
-.rh-canvas-detail select { font: inherit; font-size: 12px; min-height: 36px; max-width: 132px; background: #fff; border: 1px solid #d6d9df; border-radius: 6px; padding: 4px 8px; }
+.rh-canvas-detail select { font: inherit; font-size: 12px; min-height: 36px; max-width: 132px; background: var(--civic-surface); border: 1px solid var(--civic-border); border-radius: 6px; padding: 4px 8px; }
+.rh-map-bar { flex-wrap: wrap; }
+@media (max-width: 600px) {
+  .app-rehearsal .rh-map-bar { flex-wrap: nowrap; }
+  .app-rehearsal .rh-map-bar .rh-breadcrumb { flex: 1; }
+}
+}
