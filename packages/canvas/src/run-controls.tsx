@@ -5,10 +5,11 @@ import { reviewApi } from './review-api'
 import type { RunStatus } from './adapter'
 import { ViewportControls } from './viewport-controls'
 import type { PreviewViewport } from './viewport-presets'
+import type { ViewportController } from './use-preview-viewport'
 
 /** Controls for a live preview: its viewport, its run (account, connection, saved steps, reopening) and its recording. */
 /** `runSection` is off where a host page offers its own run controls. */
-export function RunControls({ frame, onViewportChange, runSection = true }: { frame: HTMLIFrameElement | null; onViewportChange?: (viewport: PreviewViewport) => void; runSection?: boolean }) {
+export function RunControls({ frame, onViewportChange, viewportController, runSection = true }: { frame: HTMLIFrameElement | null; onViewportChange?: (viewport: PreviewViewport) => void; viewportController?: ViewportController; runSection?: boolean }) {
   const [available, setAvailable] = useState(false), [busy, setBusy] = useState(false), [status, setStatus] = useState(''), [count, setCount] = useState(0)
   const [run, setRun] = useState<RunStatus | null>(null)
   const runtime = () => frame?.contentWindow?.reviewPreview
@@ -64,7 +65,7 @@ export function RunControls({ frame, onViewportChange, runSection = true }: { fr
     frame.src = live.reopen()
   })
   return <>
-    <ViewportControls frame={frame} onChange={onViewportChange} />
+    <ViewportControls frame={frame} onChange={onViewportChange} controller={viewportController} />
     {runSection && run && <section className="rh-run-controls" aria-label="Isolated run">
       <h3>Isolated run</h3>
       {run.accounts.length > 1 && <label>Synthetic account<NativeSelect className="cv:w-full" aria-label="Synthetic account" disabled={busy} value={run.account ?? ''} onChange={(event) => void command('identity', event.target.value)}>{run.accounts.map((account) => <option key={account} value={account}>{account}</option>)}</NativeSelect></label>}
