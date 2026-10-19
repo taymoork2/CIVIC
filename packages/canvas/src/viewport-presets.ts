@@ -21,9 +21,10 @@ export const viewportPresets: readonly ViewportPreset[] = [
 ]
 export const defaultViewportHeight = 852
 
-/** Match exact dimensions first, then rotation; desktop and tablet have swapped dimensions. */
-export function presetOf(viewport: { width: number; height: number }) {
-  return viewportPresets.find((p) => p.width === viewport.width && p.height === viewport.height)
+/** Preserve the selected device through rotation; infer exact dimensions when no device is selected. */
+export function presetOf(viewport: { width: number; height: number; preset?: string }) {
+  return viewportPresets.find(p => p.id === viewport.preset && (p.width === viewport.width && p.height === viewport.height || p.width === viewport.height && p.height === viewport.width))
+    ?? viewportPresets.find((p) => p.width === viewport.width && p.height === viewport.height)
     ?? viewportPresets.find((p) => p.width === viewport.height && p.height === viewport.width)
 }
 export function validViewport(value: unknown): value is PreviewViewport {

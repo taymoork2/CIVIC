@@ -17,12 +17,12 @@ function StandaloneViewportControls({ frame, onChange }: { frame: HTMLIFrameElem
 function ViewportFields({ frame, controller: { viewport, busy, error, change }, standalone = false }: { frame: HTMLIFrameElement | null; controller: ViewportController; standalone?: boolean }) {
   const disabled = busy || !supportsPreview(frame?.contentWindow?.reviewPreview, 'resize')
   const device = presetOf(viewport)?.id ?? ''
-  const choose = (id: string) => { const p = viewportPresets.find(row => row.id === id); if (p) void change({ width: p.width, height: p.height }) }
+  const choose = (id: string) => { const p = viewportPresets.find(row => row.id === id); if (p) void change({ width: p.width, height: p.height, preset: p.id }) }
   const fold = () => {
     const id = device === 'unfolded' ? 'folded' : 'unfolded', p = viewportPresets.find((row) => row.id === id)!
-    void change(viewport.width > viewport.height ? { width: p.height, height: p.width } : { width: p.width, height: p.height })
+    void change({ ...(viewport.width > viewport.height ? { width: p.height, height: p.width } : { width: p.width, height: p.height }), preset: p.id })
   }
-  const category = viewport.width <= 500 ? 'phone' : viewport.width < 1000 ? 'tablet' : 'desktop'
+  const category = presetOf(viewport)?.group ?? (viewport.width <= 500 ? 'phone' : viewport.width < 1000 ? 'tablet' : 'desktop')
   return <section className="rh-viewport-controls" aria-label="Responsive preview">
     {standalone && <><label>Viewport<NativeSelect className="cv:w-full" aria-label="Viewport category" disabled={disabled} value={category} onChange={(event) => choose(event.target.value)}><option value="phone">Phone</option><option value="tablet">Tablet</option><option value="desktop">Desktop</option></NativeSelect></label>
     <label>Device<NativeSelect className="cv:w-full" aria-label="Preview device" disabled={disabled} value={device} onChange={(event) => choose(event.target.value)}><option value="" disabled>Custom viewport</option>{(['phone', 'tablet', 'desktop'] as const).map((group) => <optgroup key={group} label={group[0]!.toUpperCase() + group.slice(1)}>{viewportPresets.filter((p) => p.group === group).map((p) => <option key={p.id} value={p.id}>{p.name} · {p.width} × {p.height}</option>)}</optgroup>)}</NativeSelect></label></>}

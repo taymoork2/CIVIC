@@ -12,12 +12,12 @@ type Options = {
 }
 const normalize = (value: PreviewViewport): PreviewViewport => {
   const { preset: _preset, ...size } = value
-  const preset = presetOf(size)
+  const preset = presetOf(value)
   return { ...size, ...(preset ? { preset: preset.id } : {}) }
 }
 const fromFrame = (frame: HTMLIFrameElement | null) => {
   const config = frame?.contentWindow?.reviewPreview?.config
-  return config && normalize({ width: config.width, height: config.height ?? defaultViewportHeight, theme: config.theme, textScale: config.textScale })
+  return config && normalize({ width: config.width, height: config.height ?? defaultViewportHeight, theme: config.theme, textScale: config.textScale, preset: config.preset })
 }
 
 export function usePreviewViewport(options: Options) {

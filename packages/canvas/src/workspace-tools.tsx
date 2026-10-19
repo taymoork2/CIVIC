@@ -22,16 +22,17 @@ export function DetailsMenu({ pane, setPane, proposals }: { pane: WorkspacePanel
   </DropdownMenu>
 }
 
-export function ViewportPicker({ viewport, busy, disabled, reason, changeViewport }: { viewport: PreviewViewport; busy: boolean; disabled: boolean; reason?: string; changeViewport: (size: Pick<PreviewViewport, 'width' | 'height'>) => void }) {
+export function ViewportPicker({ viewport, busy, disabled, reason, changeViewport }: { viewport: PreviewViewport; busy: boolean; disabled: boolean; reason?: string; changeViewport: (size: Pick<PreviewViewport, 'width' | 'height' | 'preset'>) => void }) {
   const preset = presetOf(viewport), dimensions = `${viewport.width} × ${viewport.height}`
-  const DeviceIcon = viewport.width < 600 ? Smartphone : viewport.width < 1000 ? Tablet : Monitor
+  const group = preset?.group ?? (viewport.width < 600 ? 'phone' : viewport.width < 1000 ? 'tablet' : 'desktop')
+  const DeviceIcon = group === 'phone' ? Smartphone : group === 'tablet' ? Tablet : Monitor
   return <Popover><PopoverTrigger render={<Button variant="ghost" aria-label={`Viewport · ${preset?.name ?? 'Custom'} · ${dimensions}`} title={`${preset?.name ?? 'Custom viewport'} · ${dimensions}`} className="civic-view-trigger" />}><DeviceIcon aria-hidden="true" /><span className="cv:max-w-40 cv:truncate">{preset?.name ?? dimensions}</span><ChevronDown aria-hidden="true" /></PopoverTrigger>
     <PopoverContent align="end" className="cv:gap-3 cv:p-3"><PopoverTitle className="cv:sr-only">Viewport</PopoverTitle>
-      <Field><FieldLabel htmlFor="civic-viewport" className="cv:sr-only">Device</FieldLabel><NativeSelect id="civic-viewport" value={preset?.id ?? ''} disabled={disabled || busy} onChange={event => { const next = viewportPresets.find(row => row.id === event.target.value); if (next) changeViewport(next) }} className="cv:w-full"><option value="" disabled>Custom size</option>{(['phone', 'tablet', 'desktop'] as const).map(group => <optgroup key={group} label={group === 'phone' ? 'Phones' : group === 'tablet' ? 'Tablets' : 'Desktops'}>{viewportPresets.filter(row => row.group === group).map(row => <option key={row.id} value={row.id}>{row.name} · {row.width} × {row.height}</option>)}</optgroup>)}</NativeSelect></Field>
+      <Field><FieldLabel htmlFor="civic-viewport" className="cv:sr-only">Device</FieldLabel><NativeSelect id="civic-viewport" value={preset?.id ?? ''} disabled={disabled || busy} onChange={event => { const next = viewportPresets.find(row => row.id === event.target.value); if (next) changeViewport({ ...next, preset: next.id }) }} className="cv:w-full"><option value="" disabled>Custom size</option>{(['phone', 'tablet', 'desktop'] as const).map(group => <optgroup key={group} label={group === 'phone' ? 'Phones' : group === 'tablet' ? 'Tablets' : 'Desktops'}>{viewportPresets.filter(row => row.group === group).map(row => <option key={row.id} value={row.id}>{row.name} · {row.width} × {row.height}</option>)}</optgroup>)}</NativeSelect></Field>
       <form key={dimensions} onSubmit={event => {
         event.preventDefault()
         const values = new FormData(event.currentTarget)
-        changeViewport({ width: Number(values.get('width')), height: Number(values.get('height')) })
+        changeViewport({ width: Number(values.get('width')), height: Number(values.get('height')), preset: undefined })
       }}><FieldGroup className="cv:flex-row cv:items-end cv:gap-2">
         <Field className="cv:min-w-0 cv:gap-1"><FieldLabel htmlFor="civic-viewport-width" className="cv:text-xs cv:text-muted-foreground">Width (px)</FieldLabel><Input id="civic-viewport-width" name="width" type="number" min={200} max={1920} step={1} required defaultValue={viewport.width} disabled={disabled || busy} /></Field>
         <Field className="cv:min-w-0 cv:gap-1"><FieldLabel htmlFor="civic-viewport-height" className="cv:text-xs cv:text-muted-foreground">Height (px)</FieldLabel><Input id="civic-viewport-height" name="height" type="number" min={200} max={1600} step={1} required defaultValue={viewport.height} disabled={disabled || busy} /></Field>
