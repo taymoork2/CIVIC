@@ -2,11 +2,8 @@ import { useEffect, useEffectEvent, useMemo, useRef, useState, type CSSPropertie
 import { appFlows, crossFlowEdges, flowEdges, flowAtCenter, screenAtCenter, overviewFlows, screenSize, type MapScenario, type MapScreen } from './app-map'
 import { AppOverview, overviewConnections } from './app-overview'
 import { FixturePicture, fixtureURL } from './fixture-picture'
-import { reviewApi } from './review-api'
 import { extension, useGuidedSession } from './extension'
 import project from 'virtual:civic-project'
-import { captureScreen } from '@civic/shell/capture'
-import type { AdapterState } from './adapter'
 import { ReviewPanel, type ReviewTarget } from './review-panel'
 import type { ReviewSnapshot } from './adapter'
 import { ConnectionPaths } from './connection-paths'
@@ -31,7 +28,7 @@ import { workspacePanels, type WorkspacePanel } from './workspace-tools'
 import { WorkspaceHeader, WorkspaceMapBar } from './workspace-layout'
 import { ProjectPicker, type ProjectPickerHandle } from './project-picker'
 import { WorkspaceSearch, type WorkspaceAction } from './workspace-search'
-import { replay, replayPath, type ReplayStep } from './replay'
+import { usePreviewSession } from './use-preview-session'
 import { WorkspaceInspector, PreviewInspector } from './workspace-inspector'
 import { viewportPresets, type PreviewViewport } from './viewport-presets'
 import { usePreviewViewport } from './use-preview-viewport'
@@ -49,7 +46,6 @@ export function AppCanvas() {
     initial: { width: live ? 1440 : 393, height: live ? 900 : 852, theme: 'light', textScale: 1 },
   })
   const { viewport, busy: viewportBusy, error: viewportError } = viewportController
-  const initialViewport = useRef(viewport)
   const changeViewport = ({ width, height, preset }: Pick<PreviewViewport, 'width' | 'height' | 'preset'>) => viewportController.change({ width, height, preset })
   const screenStyle = (screen: MapScreen): CSSProperties => ({ left: screen.x, top: screen.y, width: screenSize(screen).width, '--screen-width': `${screenSize(screen).width}px`, '--screen-preview-height': `${screenSize(screen).previewHeight}px` } as CSSProperties)
   const [scenarios, setScenarios] = useState<(MapScenario & ScenarioEvidence)[]>([])
@@ -83,19 +79,10 @@ export function AppCanvas() {
   const worldWidth = overview ? overviewWidth : detailWidth
   const { stage, camera, setCamera, pan, setPan, panning, changeZoom, controls, size } = useCanvasCamera({ x: 20, y: 20, zoom: .25 }, { width: worldWidth, height: worldHeight })
   const zoom = camera.zoom
-  const [preview, setPreview] = useState<MapScreen | null>(null)
+  const session = usePreviewSession({ flows, generic, viewport, focusScreen: screen => focusScreen(screen) })
+  const { preview, previewFrame, initialViewport, adapterMode, adapterScreen, adapterVisits, adapterError, queued, run, replaying, attachAdapter, replayFromStart } = session
   const browsingLive = live && (!preview || scenarios.find(row => row.id === preview.scenario)?.preview === 'live-read-only')
   const previewLabel = browsingLive ? 'Live app · browse only' : 'Private synthetic preview'
-  const adapterMode = generic || Boolean(preview && extension.adapterScenario?.(preview.scenario))
-  const [adapterScreen, setAdapterScreen] = useState<string | null>(null)
-  const [adapterVisits, setAdapterVisits] = useState<{ id: string; from: string; to: string; fields: AdapterState['fields']; screenshot?: string; error?: string }[]>([])
-  const failedCaptures = useRef(new Map<string, unknown>())
-  const [adapterError, setAdapterError] = useState('')
-  const [queued, setQueued] = useState<MapScreen | null>(null)
-  // Replay from start (step 6): a fresh run walks declared paths to the selected screen.
-  const [run, setRun] = useState(0)
-  const [replaying, setReplaying] = useState<{ target: string; steps: ReplayStep[]; status: 'running' | 'done' | 'missed'; message: string } | null>(null)
-  const pendingReplay = useRef<{ target: string; steps: ReplayStep[] } | null>(null)
   const [pane, setPane] = useState<'inspect' | 'review' | 'contract' | 'coverage' | null>(() => { const params = new URLSearchParams(location.search); return params.has('feedback') || params.get('view') === 'review' ? 'review' : params.get('view') === 'contract' ? 'contract' : null })
   const [applicationRoot, setApplicationRoot] = useState('')
   const bridge = useCoverage((index) => { setScenarios(index.scenarios); setSource(index.fixtureSource); setFixtureSnapshot(index); setApplicationRoot(index.connection?.applicationRoot ?? '') })
@@ -103,7 +90,6 @@ export function AppCanvas() {
   const discovered = scenarios.some((scenario) => scenario.discovery)
   const guided = useGuidedSession(viewed, !generic)
   const blocked = guided.saving || guided.dirtyProposal || !!guided.state?.pending || !generic && guided.visits.some(row => !row.capture) || adapterVisits.some(row => !row.screenshot)
-  const previewFrame = useRef<HTMLIFrameElement>(null)
   const frameReadiness = useFrameReadiness(() => previewFrame.current ?? guided.frame.current, project.key, fixtureSnapshot?.revision.source ?? '')
   const navigator = useRef<HTMLElement>(null)
   const initialized = useRef(false)
@@ -144,7 +130,7 @@ export function AppCanvas() {
   }
   const openScreen = (screen: MapScreen) => {
     if (preview?.id === screen.id && frameReadiness.state === 'failed') {
-      if (!blocked) { initialViewport.current = viewport; setRun(count => count + 1) }
+      if (!blocked) session.start(screen, true)
       return
     }
     const flow = flows.find((entry) => entry.screens.some((node) => node.id === screen.id))!
@@ -153,69 +139,8 @@ export function AppCanvas() {
       if (!guided.running) guided.requestStart(screen.id)
       else if (screen.id !== guided.current) guided.requestStart(screen.id)
       guided.follow.current = screen.id === guided.current || !guided.running
-    } else if (preview && (adapterMode ? adapterScreen : preview.id) !== screen.id) setQueued(screen)
-    else if (!preview) { initialViewport.current = viewport; setAdapterScreen(screen.id); setPreview(screen) }
+    } else session.request(screen)
   }
-  const saveAdapterCapture = async (id: string, input: unknown) => {
-    try {
-      const receipt = await reviewApi<{ screenshot: string }>('capture', input)
-      failedCaptures.current.delete(id)
-      setAdapterVisits((rows) => rows.map((row) => row.id === id ? { ...row, screenshot: receipt.screenshot, error: undefined } : row))
-    } catch (error) {
-      failedCaptures.current.set(id, input)
-      setAdapterVisits((rows) => rows.map((row) => row.id === id ? { ...row, error: (error as Error).message } : row))
-    }
-  }
-  useEffect(() => {
-    if (!adapterMode || !adapterVisits.some((row) => !row.screenshot)) return
-    const protect = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = '' }
-    window.addEventListener('beforeunload', protect)
-    return () => window.removeEventListener('beforeunload', protect)
-  }, [adapterVisits, adapterMode])
-  const attachAdapter = () => {
-    const win = previewFrame.current?.contentWindow
-    if (!win) return
-    const update = () => {
-      const state = win.reviewPreview?.state?.()
-      if (!state) return
-      const screen = flows.flatMap((flow) => flow.screens).find((s) => s.id === state?.screen)
-      if (!screen) { setAdapterError('Adapter reached an unmapped screen; register it before continuing.'); return }
-      setAdapterError(''); setAdapterScreen(screen.id); focusScreen(screen)
-    }
-    const transition = (event: Event) => {
-      const detail = (event as CustomEvent<{ from: string; to: string; action: string; origin: 'app' | 'synthetic'; state: AdapterState; html?: string }>).detail
-      const runtime = win.reviewPreview, doc = previewFrame.current?.contentDocument
-      if (!runtime || !doc) return
-      const id = crypto.randomUUID()
-      const provenance = detail.origin === 'synthetic' ? 'Synthetic navigation · state carried by CIVIC' : 'App adapter transition'
-      const input = { requestId: id, kind: 'other', message: `${provenance}: ${project.name} transition ${detail.from} → ${detail.to}: ${detail.action}`, snapshot: runtime.snapshot, html: detail.html ?? captureScreen(doc), anchor: { label: 'Whole screen', x: 0, y: 0, width: 1, height: 1 }, context: { ...runtime.config, scenario: detail.from, screen: detail.from, viewport: { width: previewFrame.current!.clientWidth, height: previewFrame.current!.clientHeight }, state: { dialogs: [detail.state.title, provenance], tabs: [], fields: detail.state.fields } } }
-      setAdapterVisits((rows) => [...rows, { id, from: detail.from, to: detail.to, fields: detail.state.fields }])
-      void saveAdapterCapture(id, input)
-    }
-    win.addEventListener('rehearsal-state', update)
-    win.addEventListener('rehearsal-transition', transition)
-    win.addEventListener('pagehide', () => { win.removeEventListener('rehearsal-state', update); win.removeEventListener('rehearsal-transition', transition) }, { once: true })
-    update()
-    const pending = pendingReplay.current
-    if (pending) {
-      pendingReplay.current = null
-      const label = (id: string) => flows.flatMap((flow) => flow.screens).find((screen) => screen.id === id)?.label ?? id
-      void replay({ document: () => previewFrame.current?.contentDocument ?? undefined, screen: () => previewFrame.current?.contentWindow?.reviewPreview?.state?.()?.screen }, pending.steps, label).then((result) => {
-        setReplaying({ ...pending, status: result.miss ? 'missed' : 'done', message: result.miss ?? `Replayed ${result.done} declared step${result.done === 1 ? '' : 's'} from ${label(pending.steps[0]?.from ?? pending.target)} to ${label(pending.target)}.` })
-      })
-    }
-  }
-  const replayFromStart = (screen: MapScreen) => {
-    const flow = flows.find((entry) => entry.screens.some((node) => node.id === screen.id))!
-    const start = flow.screens[0]!
-    const steps = replayPath(flows.flatMap((entry) => entry.screens), start.id, screen.id)
-    if (!steps) { setReplaying({ target: screen.id, steps: [], status: 'missed', message: `No declared path reaches ${screen.label} from ${start.label}, so there is nothing to replay.` }); return }
-    if (previewFrame.current?.contentWindow?.reviewPreview?.state?.()?.dirty) { setReplaying({ target: screen.id, steps, status: 'missed', message: 'The open preview has an unsaved draft. Save or cancel it first; a replay starts a fresh run.' }); return }
-    pendingReplay.current = { target: screen.id, steps }
-    setReplaying({ target: screen.id, steps, status: 'running', message: `Replaying ${steps.length} declared step${steps.length === 1 ? '' : 's'} from ${start.label}…` })
-    initialViewport.current = viewport; focusScreen(start); setQueued(null); setAdapterError(''); setAdapterScreen(start.id); setPreview(start); setRun((count) => count + 1)
-  }
-
   const focusedFlow = flows.find((flow) => flow.id === focused)
   const selectedScreen = focusedFlow?.screens.find((screen) => screen.id === viewed)
   const fitApp = (detail = canvasDetail) => {
@@ -322,14 +247,14 @@ export function AppCanvas() {
   ]
   return <main className="rehearsal app-rehearsal" data-application-root={applicationRoot} data-preview-state={frameReadiness.state} data-preview-source={frameReadiness.source}>
       <WorkspaceSearch open={searchOpen} setOpen={setSearchOpen} name={project.app?.name ?? project.name} flows={flows} actions={searchActions} loading={!bridge.data && !bridge.error} frame={selectedLiveFrame} canvas={stage} trigger={searchTrigger} focusFlow={id => { setOutlineQuery(''); focus(id); if (window.innerWidth < 1180) setOutline(false) }} focusScreen={screen => { setOutlineQuery(''); focusScreen(screen); if (window.innerWidth < 1180) setOutline(false) }} />
-      <WorkspaceHeader desktop={desktop} pickerTrigger={desktopPickerTrigger} openPicker={() => projectPicker.current?.open('work')} projects={<ProjectPicker ref={projectPicker} readiness={frameReadiness} hideTrigger={Boolean(window.civicDesktop)} returnFocus={desktopPickerTrigger} tabDirty={blocked || guided.running || !!preview} onSearch={() => setSearchOpen(true)} searchOpen={searchOpen} selectedScreen={scenarios.find(row => row.id === selectedScreen?.scenario)} focusScreen={id => { const screen = flows.flatMap(flow => flow.screens).find(screen => screen.scenario === id); if (screen) { initialViewport.current = viewport; focusScreen(screen); setAdapterScreen(screen.id); setPreview(screen); setRun(count => count + 1) } }} blocked={blocked} activeRun={guided.running || !!preview} />}
+      <WorkspaceHeader desktop={desktop} pickerTrigger={desktopPickerTrigger} openPicker={() => projectPicker.current?.open('work')} projects={<ProjectPicker ref={projectPicker} readiness={frameReadiness} hideTrigger={Boolean(window.civicDesktop)} returnFocus={desktopPickerTrigger} tabDirty={blocked || guided.running || !!preview} onSearch={() => setSearchOpen(true)} searchOpen={searchOpen} selectedScreen={scenarios.find(row => row.id === selectedScreen?.scenario)} focusScreen={id => { const screen = flows.flatMap(flow => flow.screens).find(screen => screen.scenario === id); if (screen) { focusScreen(screen); session.start(screen, true) } }} blocked={blocked} activeRun={guided.running || !!preview} />}
         searchTrigger={searchTrigger} onSearch={() => setSearchOpen(true)} playLabel={failedPreview ? 'Retry preview' : 'Play'} playPressed={!guidedSelected || guided.mode === 'play'} playDisabled={guided.saving || generic && !project.preview || failedPreview && blocked} onPlay={playSelection}
         showEdit={guidedSelected || guided.mode === 'edit'} editPressed={guidedSelected && guided.mode === 'edit'} editDisabled={!guidedSelected} onEdit={() => { guided.setMode('edit'); setPane('inspect') }}
         pane={pane} setPane={setPane} proposals={proposals} />
       {!generic && guided.notices}{adapterError && <p role="alert" className="rh-alert">{adapterError}</p>}
       {discovered && <p className="rh-status">Synthetic navigation · state carried by CIVIC · app behavior unverified</p>}
       {bridge.error && <Alert variant="destructive" className="civic-shell-alert"><AlertDescription>{bridge.error} Checking again automatically.</AlertDescription></Alert>}{viewportError && <p role="alert" className="rh-alert">{viewportError}</p>}
-      {queued && <section className="rh-confirm"><h2>Replace the open synthetic preview?</h2><p>Its unsaved draft will be replaced. {guided.labels.retained}</p><Button variant="outline" disabled={blocked} onClick={() => { if (blocked) return; initialViewport.current = viewport; setAdapterScreen(queued.id); setPreview(queued); setQueued(null) }}>Open selected screen</Button><Button variant="outline" onClick={() => setQueued(null)}>Keep current preview</Button></section>}
+      {queued && <section className="rh-confirm"><h2>Replace the open synthetic preview?</h2><p>Its unsaved draft will be replaced. {guided.labels.retained}</p><Button variant="outline" disabled={blocked} onClick={() => session.replace(blocked)}>Open selected screen</Button><Button variant="outline" onClick={session.cancelReplacement}>Keep current preview</Button></section>}
       <div className={`rh-layout ${pane ? 'has-inspector' : ''} ${outline ? '' : 'outline-closed'}`}><aside id="civic-journey-outline" ref={navigator} className="rh-journeys" aria-label="App flow navigator" hidden={!outline}>
         <JourneyOutline flows={flows} sections={project.navigation} query={outlineQuery} setQuery={setOutlineQuery} focused={focused} expanded={expanded} viewed={viewed} liveScreen={guided.running ? guided.current : undefined} focus={focus} focusScreen={focusScreen} close={() => setOutline(false)} />
         <SharedNavigation flows={flows} group={selectedBundle} select={selectConnection} />
@@ -339,12 +264,12 @@ export function AppCanvas() {
           <div className={`rh-canvas rh-infinite-canvas ${panning ? 'is-panning' : ''} ${zoom < .5 ? 'is-zoomed-out' : ''}`} ref={stage} aria-label="Entire application canvas" style={{ backgroundPosition: `${camera.x}px ${camera.y}px` }} {...controls} onWheelCapture={() => { cameraNavigation.current = true; guided.follow.current = false }} onPointerDownCapture={(event) => { if (panning || event.button === 1 || !(event.target as Element).closest('button,input,select,iframe')) { cameraNavigation.current = true; guided.follow.current = false; } controls.onPointerDownCapture?.(event) }}>
             {!bridge.data && !bridge.error && <div className="civic-canvas-message" role="status" aria-label="Loading project"><Skeleton className="cv:h-8 cv:w-44" /><Skeleton className="cv:h-44 cv:w-64" /><p>Loading journeys…</p></div>}{bridge.data && !scenarios.length && <Empty className="civic-canvas-message" role="status"><EmptyHeader><EmptyMedia variant="icon"><FolderOpen aria-hidden="true" /></EmptyMedia><EmptyTitle>No screens registered yet</EmptyTitle><EmptyDescription>Connect a scenario registry to explore this app’s screens and paths.</EmptyDescription></EmptyHeader><EmptyContent><Button variant="outline" onClick={() => setPane('coverage')}>Review coverage</Button></EmptyContent></Empty>}<div className="app-camera-layer"><div className="app-scene" style={{ width: worldWidth, height: worldHeight, transform: `translate(${camera.x}px, ${camera.y}px) scale(${zoom})` }}>{overview && <AppOverview flows={compactFlows} connections={overviewEdges} selectedBundle={bundleSelection} selectBundle={selectBundle} source={source} active={initialized.current && desktop.visible} focused={focused} pan={pan} focus={focus} reviewConnection={selectConnection} />}<div className="app-detail-scene" hidden={overview}>{flows.map((flow) => <section key={flow.id} className={`app-flow ${focused === flow.id ? 'is-focused' : ''}`} aria-label={`${flow.label} flow`} style={{ left: flow.x, top: flow.y, width: flow.width, height: flow.height }}><header><div><h2>{flow.label}</h2><p>{flow.screens.length} screens · {flow.screens.every((screen) => screen.partial) ? 'Partial specimens · paths unverified' : flow.id === guided.flowId ? guided.labels.summary : generic ? 'Project adapter · declared paths; scoped recordings' : 'Working fixtures · end-to-end recording not yet connected'}</p></div><button onClick={() => focus(flow.id)}>Fit whole flow</button>{flow.id === guided.flowId && <button className="rh-primary" onClick={() => guided.running ? resume() : openScreen(flow.screens[0]!)}>{guided.running ? 'Resume run' : guided.labels.play}</button>}</header>
               <svg className="app-flow-edges" width={flow.width - 72} height={flow.height - 132} aria-label={`Declared paths in ${flow.label}`}><ConnectionPaths edges={internalEdges[flow.id] ?? []} markerId={`arrow-${flow.id.replace(/[^a-z0-9]/gi, '')}`} disabled={panning} selectedPath={pathTarget?.id} selectedBundle={bundleSelection} observed={observed} select={selectConnection} selectBundle={selectBundle} /></svg>
-              <div className="app-screen-grid">{flow.screens.map((screen, index) => <article key={screen.id} style={screenStyle(screen)} className={`app-screen ${viewed === screen.id ? 'is-viewed' : ''}`}><button onClick={() => focusScreen(screen)} disabled={pan}><strong>{String(index + 1).padStart(2, '0')} {screen.label}</strong><small>{flow.id === guided.flowId && liveScreen && liveScreen.id === screen.id || (adapterMode ? adapterScreen : preview?.id) === screen.id ? previewLabel : screen.partial ? 'Partial specimen' : 'Real app fixture'}</small></button>{adapterMode && genericLive?.id === screen.id ? <div className="app-screen-placeholder" aria-hidden="true" /> : flow.id === guided.flowId && liveScreen && liveScreen.id === screen.id ? <div className="app-screen-placeholder" aria-hidden="true" /> : !adapterMode && preview?.id === screen.id ? <div className="app-live-screen"><iframe ref={previewFrame} onLoad={() => setPreview((current) => current ? { ...current } : null)} title={`Live ${screen.label}`} src={`/review-frame.html?scenario=${encodeURIComponent(screen.scenario)}${extension.frameParams?.(screen.scenario).length ? `&${new URLSearchParams([...new URLSearchParams(location.search)].filter(([key]) => extension.frameParams!(screen.scenario).includes(key)))}` : ''}`} />{(zoom < .5 || viewed !== screen.id) && <button className="rh-interact-shield" onClick={() => interactScreen(screen)}>Zoom to interact</button>}</div> : source ? <button className="app-screen-picture" aria-label={`View ${screen.label} snapshot`} disabled={pan} onClick={() => focusScreen(screen)}><FixturePicture viewport={screen.viewport} active={initialized.current && desktop.visible} src={flow.id === guided.flowId && guided.snapshots.get(screen.id)?.capture || fixtureURL(screen.id, source, generic ? viewport : undefined)} alt={`${screen.label} actual screen snapshot`} /></button> : <div className="app-screen-placeholder">Loading app inventory…</div>}{viewed === screen.id && !(flow.id === guided.flowId && liveScreen?.id === screen.id) && preview?.id !== screen.id && <button className="app-play-screen" disabled={pan || generic && !project.preview || flow.id === guided.flowId && !guided.running && !guided.canStartAt(screen.id)} onClick={() => openScreen(screen)}>Play this screen</button>}</article>)}</div>
+              <div className="app-screen-grid">{flow.screens.map((screen, index) => <article key={screen.id} style={screenStyle(screen)} className={`app-screen ${viewed === screen.id ? 'is-viewed' : ''}`}><button onClick={() => focusScreen(screen)} disabled={pan}><strong>{String(index + 1).padStart(2, '0')} {screen.label}</strong><small>{flow.id === guided.flowId && liveScreen && liveScreen.id === screen.id || (adapterMode ? adapterScreen : preview?.id) === screen.id ? previewLabel : screen.partial ? 'Partial specimen' : 'Real app fixture'}</small></button>{adapterMode && genericLive?.id === screen.id ? <div className="app-screen-placeholder" aria-hidden="true" /> : flow.id === guided.flowId && liveScreen && liveScreen.id === screen.id ? <div className="app-screen-placeholder" aria-hidden="true" /> : !adapterMode && preview?.id === screen.id ? <div className="app-live-screen"><iframe ref={previewFrame} onLoad={session.refreshLegacy} title={`Live ${screen.label}`} src={`/review-frame.html?scenario=${encodeURIComponent(screen.scenario)}${extension.frameParams?.(screen.scenario).length ? `&${new URLSearchParams([...new URLSearchParams(location.search)].filter(([key]) => extension.frameParams!(screen.scenario).includes(key)))}` : ''}`} />{(zoom < .5 || viewed !== screen.id) && <button className="rh-interact-shield" onClick={() => interactScreen(screen)}>Zoom to interact</button>}</div> : source ? <button className="app-screen-picture" aria-label={`View ${screen.label} snapshot`} disabled={pan} onClick={() => focusScreen(screen)}><FixturePicture viewport={screen.viewport} active={initialized.current && desktop.visible} src={flow.id === guided.flowId && guided.snapshots.get(screen.id)?.capture || fixtureURL(screen.id, source, generic ? viewport : undefined)} alt={`${screen.label} actual screen snapshot`} /></button> : <div className="app-screen-placeholder">Loading app inventory…</div>}{viewed === screen.id && !(flow.id === guided.flowId && liveScreen?.id === screen.id) && preview?.id !== screen.id && <button className="app-play-screen" disabled={pan || generic && !project.preview || flow.id === guided.flowId && !guided.running && !guided.canStartAt(screen.id)} onClick={() => openScreen(screen)}>Play this screen</button>}</article>)}</div>
             </section>)}<svg className="app-cross-flow-edges" width={worldWidth} height={worldHeight} aria-label="Declared paths between flows"><ConnectionPaths edges={crossEdges} markerId="cross-flow-arrow" disabled={panning} selectedPath={pathTarget?.id} selectedBundle={bundleSelection} observed={observed} select={selectConnection} selectBundle={selectBundle} /></svg>{adapterMode && preview && genericLive && genericFlow && <article className="app-screen app-live-session" aria-label="Live project session" style={{ ...screenStyle(genericLive), left: genericFlow.x + 36 + genericLive.x!, top: genericFlow.y + 132 + genericLive.y! }}><button onClick={() => focusScreen(genericLive)}><strong>{genericLive.label}</strong><small>{previewLabel}</small></button><div className="app-live-screen"><iframe key={`${preview.id}:${run}`} ref={previewFrame} title={`Live ${preview.label}`} onLoad={attachAdapter} src={`/review-frame.html?${new URLSearchParams({ scenario: preview.scenario, ...Object.fromEntries([...new URLSearchParams(location.search)].filter(([key]) => ['persona', 'role', 'condition'].includes(key))), ...(initialViewport.current.preset ? { preset: initialViewport.current.preset } : {}), width: String(initialViewport.current.width), height: String(initialViewport.current.height), theme: initialViewport.current.theme, scale: String(initialViewport.current.textScale) })}`} />{(zoom < .5 || viewed !== genericLive.id) && <button className="rh-interact-shield" onClick={() => interactScreen(genericLive)}>Zoom to interact</button>}</div></article>}{liveScreen && guidedFlow && <article className="app-screen app-live-session" aria-label={guided.labels.live} style={{ left: guidedFlow.x + 36 + liveScreen.x!, top: guidedFlow.y + 132 + liveScreen.y! }}><button onClick={resume}><strong>{guided.active?.label ?? (guided.current === 'closed' ? 'Run ended' : `Unmapped screen · ${guided.current}`)}</strong><small>{guided.candidate || guided.mode === 'edit' ? `Proposal ${guided.dirtyProposal ? 'draft' : `v${guided.proposal.version}`} · not in app` : 'Live · baseline'}</small></button><div className="app-live-screen"><iframe key={guided.generation} ref={guided.frame} title={guided.labels.live} src={guided.src} onLoad={guided.attach} />{(zoom < .65 || viewed !== guided.current) && <button className="rh-interact-shield" onClick={() => { interactScreen(liveScreen); guided.follow.current = true }}>Zoom to interact</button>}{guided.mode === 'edit' && viewed === guided.current && zoom >= .65 && <button className="rh-edit-surface" aria-label="Select screen or action to edit" onClick={(event) => { const rect = event.currentTarget.getBoundingClientRect(); guided.setProperty((event.clientY - rect.top) / rect.height > .87 ? 'action' : 'screen'); setPane('inspect') }} />}</div></article>}</div></div></div>
           </div><CanvasControls stage={stage} pan={pan} setPan={chooseTool} zoom={zoom} changeZoom={zoomTo} fitApp={() => fitApp()} fitFlow={() => focus(focused)} fitSelection={fitSelected} /><footer className="rh-foot"><ConnectionLegend /><span>{adapterMode ? adapterVisits.length : guided.visits.length} captured visits · {browsingLive ? 'Live app · read only' : 'Private synthetic run'}</span></footer>
         </section>
         <WorkspaceInspector pane={pane} setPane={setPane} editing={guided.mode === 'edit' && guidedSelected} scope={reviewTarget.label}
-          inspect={<PreviewInspector frame={selectedLiveFrame} viewportController={viewportController} guidedSelected={guidedSelected} guidedContent={guided.inspector} selectedScreen={selectedScreen} generic={generic} live={live} previewAvailable={project.preview} adapterMode={adapterMode} visits={adapterVisits} replaying={replaying} onPlay={openScreen} onReplay={replayFromStart} onDestination={id => { const screen = flows.flatMap(flow => flow.screens).find(screen => screen.id === id); if (screen) focusScreen(screen) }} onRetryCapture={id => { void saveAdapterCapture(id, failedCaptures.current.get(id)) }} />}
+          inspect={<PreviewInspector frame={selectedLiveFrame} viewportController={viewportController} guidedSelected={guidedSelected} guidedContent={guided.inspector} selectedScreen={selectedScreen} generic={generic} live={live} previewAvailable={project.preview} adapterMode={adapterMode} visits={adapterVisits} replaying={replaying} onPlay={openScreen} onReplay={replayFromStart} onDestination={id => { const screen = flows.flatMap(flow => flow.screens).find(screen => screen.id === id); if (screen) focusScreen(screen) }} onRetryCapture={id => { void session.retryCapture(id) }} />}
           review={<ReviewPanel project={project} selected={selectedScreen ?? null} flowScreens={focusedFlow?.screens ?? []} allScreens={flows.flatMap((flow) => flow.screens)} frame={selectedLiveFrame} target={reviewTarget} canvas={stage.current} fixture={{ source, snapshot: fixtureSnapshot, ...(generic ? { viewport } : {}) }} focus={focusReviewTarget} navigationReady={initialized.current} />}
           contract={pane === 'contract' && <ContractPanel selected={selectedScreen ?? null} scenarios={scenarios} openReviewPane={() => setPane('review')} />}
           coverage={<CoveragePanel bridge={bridge} focus={(scenario) => { const screen = flows.flatMap((flow) => flow.screens).find((screen) => screen.scenario === scenario); if (screen) focusScreen(screen) }} />}
