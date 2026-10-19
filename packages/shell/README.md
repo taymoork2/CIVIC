@@ -6,6 +6,7 @@ The parts of the CIVIƆ review shell that know nothing about the application und
 |---|---|
 | `canvas-camera`, `use-canvas-camera` | Bounded pan/zoom camera with a 240px outside margin |
 | `canvas-controls` | Select/Hand tools, zoom menu and keyboard shortcuts |
+| `ui/*`, `icons` | shadcn/ui Base UI components and Lucide icons |
 | `reveal-navigation` | Keeps the active outline entry visible without moving the page |
 | `contract` | Three-way Product Contract dimensions, alignment and coverage |
 | `capture` | Freezes a rendered screen's DOM and allowlisted field values |
@@ -32,6 +33,16 @@ The canvas UI itself is now [`@civic/canvas`](../canvas), and the Vite plugin, m
 - The feedback context vocabulary in `server/review-server.mjs` (personas, roles and conditions) is still Laundry's.
 
 ## Checks
+
+The shell uses the **base-nova** shadcn registry, Base UI behaviors and Lucide icons.
+Keep shared colors, radii, control sizes and orientation variants in `styles/ui.css`.
+Classes use the `cv:` prefix; tokens use `--civic-*` so app previews keep their own styles.
+The canvas imports the compiled stylesheet rather than requiring a host Tailwind plugin or global preflight.
+After changing shell components, canvas utility classes or tokens, run
+`pnpm --filter @civic/shell build:styles` and include `styles/ui.generated.css` with the source.
+Use `Button`, `IconButton` (with a required accessible label and tooltip), `Field`,
+`Input`, `NativeSelect`, `Tabs`, `Dialog` and `Popover` from this package.
+Canvas nodes and captured app controls keep their application semantics.
 
 ```sh
 pnpm --filter @civic/shell run check

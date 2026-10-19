@@ -12,6 +12,8 @@ Then open `http://127.0.0.1:3020/review`. Five examples are included: `examples/
 
 Without a connector, the standalone host opens `module` apps: a manifest, a scenario registry, and a preview entry that exports `mount(container, context)` (see [`@civic/vite-connector`](../vite-connector) for `init` and `check`).
 
+Use **⌘K / Ctrl+K**, the header search icon, or **Search this project** in the journey rail to open the same command menu. It searches the running instance's loaded journeys, screens, component states, and workspace actions, with at most ten results. Selecting a screen focuses its canvas card; Play remains a separate action. Search builds no index of other projects or versions. **Projects & versions** opens the project picker when you want to browse other work.
+
 ## Installing it in an app
 
 The packages aren't published. An app installs all three from git, pinned to one CIVIC commit (`@civic/shell` and `@civic/vite-connector` are peers of the canvas):
@@ -35,6 +37,18 @@ Then `pnpm exec civic-canvas --project ./civic.project.json`. Signoff proves thi
 A connector's `canvasExtension(project)` names a module whose default export is a `CanvasExtension` (`src/extension.ts`). Every field is optional: its own journey graph, flow order and sections, a guided run (a flow played continuously in its own frame, with presentation proposals), the scenarios that run through the preview adapter, extra frame parameters, and an older workspace. Laundry's extension is `apps/web/src/review/canvas-extension.ts`. An app without a connector names its own in its manifest (`"adapter": { "extension": "src/canvas-extension.js" }`); `examples/pantry` files its flows under the manifest's navigation and orders them. Without either, the canvas uses CIVIC's own layout. A guided run (`guidedFlow` and `useGuidedSession`) is offered only to connector apps; the canvas's checks drive one with a check fixture (`src/check-fixtures/guided-extension.tsx`) on the Pantry app under a connector of its own.
 
 The canvas imports only React, `@civic/shell`, its own virtual modules and itself; its checks enforce that.
+
+### Connection meanings
+
+Scenario edges may declare `"interaction": "navigate"`, `"update"`, or `"return"`. Use `navigate` for opening screens, dialogs, or menus; `update` for an action that changes state; and `return` for going back or cancelling. For example:
+
+```json
+{ "action": "Done", "destination": "saved", "interaction": "update", "when": "Inputs are valid" }
+```
+
+Without an explicit type, CIVIC infers common Back/Cancel and Save/Confirm labels and otherwise uses navigation. The path tooltip and review details identify inferred types. A screen's position never determines its meaning. `when` adds a dotted conditional line; returns stay dashed. Navigation uses a filled arrowhead, updates add a bar, and returns use an open arrowhead. Captured visits increase line weight without replacing the type. Matching paths share a line only when their interaction types and conditions agree.
+
+The Connections key in the canvas footer shows the same symbols. The overview follows the app's declared navigation section order; arrowheads always point to the actual destination, including links to an earlier section.
 
 ## Live runs
 
