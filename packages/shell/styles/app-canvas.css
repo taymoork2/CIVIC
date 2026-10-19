@@ -8,8 +8,9 @@
 .app-flow header p { color: #526880; font-size: 16px; }
 .app-flow header button:first-of-type { margin-left: auto; }
 .app-screen-grid { position: relative; }
-.app-flow-edges { position: absolute; left: 36px; top: 132px; pointer-events: none; overflow: visible; }
-.app-cross-flow-edges { position: absolute; inset: 0; pointer-events: none; }
+.app-flow-edges, .app-cross-flow-edges, .app-overview-edges { pointer-events: none; overflow: visible; }
+.app-flow-edges { position: absolute; left: 36px; top: 132px; }
+.app-cross-flow-edges { position: absolute; inset: 0; }
 .app-screen { position: absolute; width: 271px; height: 665px; }
 .app-screen.is-filtered { opacity: .12; pointer-events: none; }
 .app-screen > button { width: 100%; text-align: left; border: 0; background: transparent; padding: 0; min-height: 72px; margin-bottom: 12px; }
@@ -36,7 +37,7 @@
 .app-nav-section h3 { color: #526880; font-size: 12px; margin-top: 18px; }
 .app-detail-scene[hidden] { display: none; }
 .app-overview { position: absolute; inset: 0; }
-.app-overview-edges { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.app-overview-edges { position: absolute; inset: 0; width: 100%; height: 100%; }
 .app-overview-flow { position: absolute; }
 .app-overview-area { position: absolute; top: -34px; left: 0; font-size: 20px; color: #526880; }
 .app-overview-flow > button { width: 100%; height: 100%; padding: 20px; text-align: left; background: #fff; border: 2px solid #d6d9df; border-radius: 10px; overflow: hidden; }
