@@ -6,7 +6,7 @@ import { ReviewPanel, type ReviewTarget } from './review-panel'
 import type { ReviewSnapshot } from './adapter'
 import { CanvasStage } from './canvas-stage'
 import { ConnectionLegend } from './connection-legend'
-import { type ConnectionBundle, type RoutedConnection } from './connection-routing'
+import type { ConnectionBundle, RoutedConnection } from './connection-routing'
 import { SharedNavigation } from './shared-navigation'
 import { JourneyOutline } from './journey-outline'
 import { useDesktopProjects } from './desktop-project-tabs'
@@ -17,7 +17,6 @@ import { useCanvasSelection } from './use-canvas-selection'
 import { CanvasControls } from '@civic/shell/canvas-controls'
 import { PanelLeft, PanelRight, Pencil, Play, Search, Settings2, FolderOpen, GitBranch, Maximize, Hand, MousePointer2, Monitor, Plus, Minus } from '@civic/shell/icons'
 import { Button } from '@civic/shell/ui/button'
-import { IconButton } from '@civic/shell/ui/icon-button'
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from '@civic/shell/ui/empty'
 import { Skeleton } from '@civic/shell/ui/skeleton'
 import { Alert, AlertDescription } from '@civic/shell/ui/alert'
@@ -58,10 +57,10 @@ export function AppCanvas() {
   const flows = useMemo(() => appFlows(generic ? scenarios.map(row => ({ ...row, viewport: { width: viewport.width, height: viewport.height } })) : scenarios, project), [scenarios, generic, viewport.width, viewport.height])
   const { pathTarget, setPathTarget, appSelected, focused, setFocused, expanded, setExpanded, viewed, overview, canvasDetail, setCanvasDetail, compactFlows, crossEdges, internalEdges, overviewEdges, sharedPaths, bundleSelection, setBundleSelection, worldHeight, worldWidth, stage, camera, pan, setPan, panning, changeZoom, controls, size, zoom, navigator, cameraNavigation, focus, focusScreen, fit, fitApp, fitSelected, interactScreen, focusedFlow, selectedScreen } = useCanvasSelection({ flows, initialFlow: extension.guidedFlow ?? '', outline, initialized, viewport, stopFollowing: () => { guided.follow.current = false } })
   const session = usePreviewSession({ flows, generic, viewport, focusScreen: screen => focusScreen(screen) })
-  const { preview, previewFrame, initialViewport, adapterMode, adapterScreen, adapterVisits, adapterError, queued, run, replaying, attachAdapter, replayFromStart } = session
+  const { preview, previewFrame, adapterMode, adapterScreen, adapterVisits, adapterError, queued, replaying, replayFromStart } = session
   const browsingLive = live && (!preview || scenarios.find(row => row.id === preview.scenario)?.preview === 'live-read-only')
   const previewLabel = browsingLive ? 'Live app · browse only' : 'Private synthetic preview'
-  const [pane, setPane] = useState<'inspect' | 'review' | 'contract' | 'coverage' | null>(() => { const params = new URLSearchParams(location.search); return params.has('feedback') || params.get('view') === 'review' ? 'review' : params.get('view') === 'contract' ? 'contract' : null })
+  const [pane, setPane] = useState<WorkspacePanel | null>(() => { const params = new URLSearchParams(location.search); return params.has('feedback') || params.get('view') === 'review' ? 'review' : params.get('view') === 'contract' ? 'contract' : null })
   const [applicationRoot, setApplicationRoot] = useState('')
   const bridge = useCoverage((index) => { setScenarios(index.scenarios); setSource(index.fixtureSource); setFixtureSnapshot(index); setApplicationRoot(index.connection?.applicationRoot ?? '') })
   const proposals = bridge.data?.candidates.filter((c) => c.targetPresent && !c.acknowledged).length ?? 0

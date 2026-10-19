@@ -31,10 +31,9 @@ export function useProjectVersions({ open, mode, browseAppId, target, versionQue
   const pageRequest = JSON.stringify({ app: browseAppId, selected: selectedIdentity, query: versionQuery, offset, refresh })
   const versions = page?.scope === pageRequest ? page.items.map(item => details[item.id] ?? item) : []
 
-  const visibleVersions = versions
   const previewCount = page?.scope === pageRequest ? page.total : 0
   const currentVersion = connections?.projects.find(row => !row.workspace && row.key === project.key)?.version
-  const comparisonPreviews = visibleVersions.filter(item => !item.current || item.preview.row.refreshRequired).map(item => item.preview).filter(item => item.screen)
+  const comparisonPreviews = versions.filter(item => !item.current || item.preview.row.refreshRequired).map(item => item.preview).filter(item => item.screen)
   const comparisonRequest = JSON.stringify({ scenario: target?.id, baseVersion: currentVersion?.id, candidates: comparisonPreviews.map(item => ({ id: item.id, key: item.row.key, workspace: item.row.workspace, scenario: item.screen!.id, version: item.row.version?.id })) })
 
   const hasConnections = connections !== null

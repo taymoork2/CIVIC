@@ -84,7 +84,6 @@ export function usePreviewSession({ flows, generic, viewport, focusScreen }: {
     initialViewport.current = viewport; focusScreen(start); setQueued(null); setAdapterError(''); setAdapterScreen(start.id); setPreview(start); setRun((count) => count + 1)
   }
 
-
   const start = (screen: MapScreen, fresh = false) => {
     initialViewport.current = viewport; setAdapterScreen(screen.id); setPreview(screen)
     if (fresh) setRun(count => count + 1)

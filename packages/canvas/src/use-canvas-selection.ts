@@ -93,4 +93,3 @@ export function useCanvasSelection({ flows, initialFlow, outline, initialized, v
 
   return { pathTarget, setPathTarget, appSelected, focused, setFocused, expanded, setExpanded, viewed, overview, canvasDetail, setCanvasDetail, compactFlows, crossEdges, internalEdges, overviewEdges, sharedPaths, bundleSelection, setBundleSelection, worldHeight, worldWidth, stage, camera, pan, setPan, panning, changeZoom, controls, size, zoom, navigator, cameraNavigation, focus, focusScreen, fit, fitApp, fitSelected, interactScreen, focusedFlow, selectedScreen }
 }
-export type CanvasSelection = ReturnType<typeof useCanvasSelection>
