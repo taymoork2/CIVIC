@@ -6,15 +6,17 @@ import { projectPicker } from '@civic/vite-connector/projects'
 import { reviewInventory } from '@civic/vite-connector/inventory'
 import { liveScenarios, allowedAsset } from './orca-live.mjs'
 import { componentBuildStatus, registerComponents } from './orca-drafts.mjs'
-import { worktreeHash } from './orca-worktrees.mjs'
+import { checkRuntimeDependencies, worktreeHash } from './orca-worktrees.mjs'
 
 export async function connectIsolatedOrca(store, source, receipt) {
+  await checkRuntimeDependencies(source)
   const folder = join(store, 'projects/orca-isolated')
   await mkdir(folder, { recursive: true, mode: 0o700 })
   const json = (name, value) => writeFile(join(folder, name), JSON.stringify(value, null, 2) + '\n', { mode: 0o600 })
   const scenarios = liveScenarios().filter(row => !['orca.live.work', 'orca.live.session'].includes(row.id)).map(row => ({ ...row, id: row.id.replace('.live.', '.isolated.'), journey: 'Orca · isolated user journey', section: 'Isolated implementation', preview: 'isolated', behavior: 'Synthetic backend; authored assertions required', edges: row.edges.filter(edge => !['orca.live.work', 'orca.live.session'].includes(edge.destination)).map(edge => ({ ...edge, destination: edge.destination.replace('.live.', '.isolated.') })) }))
   await json('civic.scenarios.json', scenarios)
-  await json('civic.coverage.json', { version: 1, targets: [] })
+  try { await writeFile(join(folder, 'civic.coverage.json'), '{"version":1,"targets":[]}\n', { mode: 0o600, flag: 'wx' }) }
+  catch (error) { if (error.code !== 'EEXIST') throw error }
   await json('receipt.json', { source, ui: receipt.ui, server: receipt.server, script: receipt.script, css: receipt.css })
   for (const [from, to] of [['orca-isolated-preview.mjs', 'preview.mjs'], ['orca-isolated-runtime.mjs', 'runtime.mjs']]) await copyFile(new URL(from, import.meta.url), join(folder, to))
   await json('civic.project.json', { version: 1, id: 'orca-isolated', name: 'Orca · isolated implementation', adapter: { kind: 'orca-isolated', entry: 'preview.mjs', runtime: 'runtime.mjs' }, sources: ['apps/web/src', 'apps/server/src', 'packages/contracts/src'], scenarios: 'civic.scenarios.json', coverage: 'civic.coverage.json', personas: [{ id: 'owner', label: 'Synthetic owner' }], roles: [{ id: 'owner', label: 'Isolated writes' }], conditions: [{ id: 'normal', label: 'Synthetic database; no models or host commands' }], navigation: ['Isolated implementation'] })
@@ -27,6 +29,7 @@ export async function connectIsolatedOrca(store, source, receipt) {
 }
 export const isolatedOrcaConnector = {
   kind: 'orca-isolated', sharedStore: () => false,
+  capabilities: { resize: true, record: true, replay: false, reason: 'Orca protocol replay is not supported. Use authored behavior checks.' },
   async inventory(store, designRoot, appRoot) {
     const project = loadProject(store)
     const result = await reviewInventory(store, designRoot, appRoot, project, { connector: { kind: 'orca-isolated' }, engineRoots: [fileURLToPath(new URL('.', import.meta.url))] })

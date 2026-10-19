@@ -36,6 +36,8 @@ async function workspace(t, many = false) {
   const requests = []
   tab.on('request', request => { if (request.url().endsWith('/api/review/projects')) requests.push(request.postDataJSON()) })
   await tab.goto(`http://127.0.0.1:${server.httpServer.address().port}/review`)
+  // Initial Vite dependency optimization can replace the dev document.
+  await tab.waitForLoadState('networkidle')
   return { tab, store, rows, requests }
 }
 
@@ -49,14 +51,14 @@ test('closing project sources aborts its pending scoped search', { timeout: 6000
     window.fetch = (path, options) => {
       if (String(path).endsWith('/api/review/projects') && options?.body) {
         const input = JSON.parse(options.body)
-        if (input && input.action === 'source-versions') options.signal.addEventListener('abort', () => { window.sourceAborts++ }, { once: true })
+        if (input?.action === 'source-versions' && input.query === 'Pending search') options.signal.addEventListener('abort', () => { window.sourceAborts++ }, { once: true })
       }
       return fetch(path, options)
     }
   })
   await tab.route('**/api/review/projects', async route => {
     const request = route.request(), input = request.postDataJSON()
-    if (input?.action !== 'source-versions') return route.continue()
+    if (input?.action !== 'source-versions' || input.query !== 'Pending search') return route.continue()
     assert.ok(request.headers()['x-rehearsal-project'])
     requests.push(request)
     held = route

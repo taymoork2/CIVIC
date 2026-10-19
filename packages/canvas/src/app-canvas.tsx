@@ -35,6 +35,7 @@ import { replay, replayPath, type ReplayStep } from './replay'
 import { RunControls } from './run-controls'
 import { viewportPresets, type PreviewViewport } from './viewport-presets'
 import { usePreviewViewport } from './use-preview-viewport'
+import { supportsPreview, useFrameReadiness } from './connection-readiness'
 import '@civic/shell/styles/canvas.css'
 import '@civic/shell/styles/app-canvas.css'
 import '@civic/shell/styles/canvas-chrome.css'
@@ -103,6 +104,7 @@ export function AppCanvas() {
   const guided = useGuidedSession(viewed, !generic)
   const blocked = guided.saving || guided.dirtyProposal || !!guided.state?.pending || !generic && guided.visits.some(row => !row.capture) || adapterVisits.some(row => !row.screenshot)
   const previewFrame = useRef<HTMLIFrameElement>(null)
+  const frameReadiness = useFrameReadiness(() => previewFrame.current ?? guided.frame.current, project.key, fixtureSnapshot?.revision.source ?? '')
   const navigator = useRef<HTMLElement>(null)
   const initialized = useRef(false)
   const cameraNavigation = useRef(false)
@@ -141,6 +143,10 @@ export function AppCanvas() {
     fit(flow.x + 36 + screen.x!, flow.y + 132 + screen.y!, screenSize(screen).width, screenSize(screen).height)
   }
   const openScreen = (screen: MapScreen) => {
+    if (preview?.id === screen.id && frameReadiness.state === 'failed') {
+      if (!blocked) { initialViewport.current = viewport; setRun(count => count + 1) }
+      return
+    }
     const flow = flows.find((entry) => entry.screens.some((node) => node.id === screen.id))!
     focusScreen(screen)
     if (!generic && flow.id === guided.flowId) {
@@ -285,6 +291,10 @@ export function AppCanvas() {
   const observed = (edge: RoutedConnection) => guided.visits.some(visit => visit.runId === guided.runId && visit.from === edge.from && visit.to === edge.to)
   const selectedBundle = sharedPaths.find(group => group.id === bundleSelection)
   const playSelection = () => { if (guidedSelected) guided.play(); if (selectedScreen && (!guidedSelected || !guided.running)) openScreen(selectedScreen) }
+  const failedPreview = frameReadiness.state === 'failed' && Boolean(preview && preview.id === selectedScreen?.id)
+  const activeFrame = previewFrame.current ?? guided.frame.current
+  const viewportUnavailable = Boolean(activeFrame && !supportsPreview(activeFrame.contentWindow?.reviewPreview, 'resize'))
+  const viewportReason = viewportUnavailable ? activeFrame?.contentWindow?.reviewPreview?.capabilities?.reason ?? (frameReadiness.state === 'ready' ? 'This preview does not support resizing.' : frameReadiness.reason ?? 'Opening preview…') : undefined
   const changeDetail = (next: string) => { setCanvasDetail(next); try { localStorage.setItem('rehearsal-canvas-detail', next) } catch {} fitApp(next) }
   const zoomTo = (value: number) => { cameraNavigation.current = true; guided.follow.current = false; changeZoom(value) }
   const chooseTool = (value: boolean) => { guided.follow.current = false; setPan(value); stage.current?.focus({ preventScroll: true }) }
@@ -305,20 +315,20 @@ export function AppCanvas() {
     { id: 'pan-tool', label: 'Pan tool', keywords: 'hand', icon: Hand, run: () => chooseTool(true) },
     { id: 'compact', label: 'Show compact flows', icon: Monitor, run: () => changeDetail('compact') },
     { id: 'all-screens', label: 'Show all screens', icon: Monitor, run: () => changeDetail('all') },
-    ...viewportPresets.map(row => ({ id: `viewport:${row.id}`, label: `${row.name} viewport`, keywords: `view device size responsive ${row.width} ${row.height}`, icon: Monitor, disabled: !generic || viewportBusy, run: () => { void changeViewport(row) } })),
+    ...viewportPresets.map(row => ({ id: `viewport:${row.id}`, label: `${row.name} viewport`, keywords: `view device size responsive ${row.width} ${row.height}`, icon: Monitor, disabled: !generic || viewportBusy || viewportUnavailable, run: () => { void changeViewport(row) } })),
     { id: 'edit-proposal', label: 'Edit proposal', icon: Pencil, disabled: !guidedSelected, run: () => { guided.setMode('edit'); setPane('inspect') } },
     { id: 'connect', label: 'Connect existing app', icon: FolderOpen, opensDialog: true, run: () => projectPicker.current?.open('existing') },
     { id: 'new-project', label: 'New project', icon: FolderOpen, opensDialog: true, run: () => projectPicker.current?.open('new') },
   ]
-  return <main className="rehearsal app-rehearsal" data-application-root={applicationRoot}>
+  return <main className="rehearsal app-rehearsal" data-application-root={applicationRoot} data-preview-state={frameReadiness.state} data-preview-source={frameReadiness.source}>
       <WorkspaceSearch open={searchOpen} setOpen={setSearchOpen} name={project.app?.name ?? project.name} flows={flows} actions={searchActions} loading={!bridge.data && !bridge.error} frame={selectedLiveFrame} canvas={stage} trigger={searchTrigger} focusFlow={id => { setOutlineQuery(''); focus(id); if (window.innerWidth < 1180) setOutline(false) }} focusScreen={screen => { setOutlineQuery(''); focusScreen(screen); if (window.innerWidth < 1180) setOutline(false) }} />
       <header className="rh-brand">
         {!window.civicDesktop && <strong>CIVIC</strong>}
         {window.civicDesktop && <DesktopProjectTabs state={desktop} pickerTrigger={desktopPickerTrigger} openPicker={() => projectPicker.current?.open('work')} />}
-        <ProjectPicker ref={projectPicker} hideTrigger={Boolean(window.civicDesktop)} returnFocus={desktopPickerTrigger} tabDirty={blocked || guided.running || !!preview} onSearch={() => setSearchOpen(true)} searchOpen={searchOpen} selectedScreen={scenarios.find(row => row.id === selectedScreen?.scenario)} focusScreen={id => { const screen = flows.flatMap(flow => flow.screens).find(screen => screen.scenario === id); if (screen) { initialViewport.current = viewport; focusScreen(screen); setAdapterScreen(screen.id); setPreview(screen); setRun(count => count + 1) } }} blocked={blocked} activeRun={guided.running || !!preview} />
+        <ProjectPicker ref={projectPicker} readiness={frameReadiness} hideTrigger={Boolean(window.civicDesktop)} returnFocus={desktopPickerTrigger} tabDirty={blocked || guided.running || !!preview} onSearch={() => setSearchOpen(true)} searchOpen={searchOpen} selectedScreen={scenarios.find(row => row.id === selectedScreen?.scenario)} focusScreen={id => { const screen = flows.flatMap(flow => flow.screens).find(screen => screen.scenario === id); if (screen) { initialViewport.current = viewport; focusScreen(screen); setAdapterScreen(screen.id); setPreview(screen); setRun(count => count + 1) } }} blocked={blocked} activeRun={guided.running || !!preview} />
         <div className="civic-workspace-actions">
           <IconButton ref={searchTrigger} icon={Search} label="Search this project" shortcut="⌘K" onClick={() => setSearchOpen(true)} />
-          <Button aria-label="Play" aria-pressed={!guidedSelected || guided.mode === 'play'} disabled={guided.saving || generic && !project.preview} onClick={playSelection}><Play aria-hidden="true" /><span className="civic-play-label">Play</span></Button>
+          <Button aria-label={failedPreview ? 'Retry preview' : 'Play'} aria-pressed={!guidedSelected || guided.mode === 'play'} disabled={guided.saving || generic && !project.preview || failedPreview && blocked} onClick={playSelection}><Play aria-hidden="true" /><span className="civic-play-label">{failedPreview ? 'Retry' : 'Play'}</span></Button>
           {(guidedSelected || guided.mode === 'edit') && <IconButton icon={Pencil} label="Edit proposal" aria-pressed={guidedSelected && guided.mode === 'edit'} disabled={!guidedSelected} onClick={() => { guided.setMode('edit'); setPane('inspect') }} />}
           <DetailsMenu pane={pane} setPane={setPane} proposals={proposals} />
         </div>
@@ -331,7 +341,7 @@ export function AppCanvas() {
         <JourneyOutline flows={flows} sections={project.navigation} query={outlineQuery} setQuery={setOutlineQuery} focused={focused} expanded={expanded} viewed={viewed} liveScreen={guided.running ? guided.current : undefined} focus={focus} focusScreen={focusScreen} close={() => setOutline(false)} />
         <SharedNavigation flows={flows} group={selectedBundle} select={selectConnection} />
       </aside>
-        <section className="rh-map-area"><div className="rh-map-bar"><IconButton icon={PanelLeft} label="Toggle journey outline" aria-controls="civic-journey-outline" aria-expanded={outline} onClick={() => setOutline(!outline)} /><nav className="rh-breadcrumb" aria-label="Canvas location"><Button variant="ghost" size="sm" onClick={() => fitApp()}>App</Button><ChevronRight className="cv:size-3 cv:shrink-0 cv:text-muted-foreground" aria-hidden="true" /><Button variant="ghost" size="sm" onClick={() => focus(focused)}>{appSelected ? 'All journeys' : focusedFlow?.label ?? 'Application map'}</Button>{selectedScreen && <><ChevronRight className="cv:size-3 cv:shrink-0 cv:text-muted-foreground" aria-hidden="true" /><Button variant="ghost" size="sm" onClick={fitSelected}>{selectedScreen.label}</Button></>}</nav><ViewportPicker viewport={viewport} busy={viewportBusy} disabled={!generic} changeViewport={size => void changeViewport(size)} />{guided.running && <button className="rh-resume" onClick={resume}>{guided.state?.dirty ? `App draft · ${guided.active?.label ?? guided.current}` : 'Resume run'}</button>}</div>
+        <section className="rh-map-area"><div className="rh-map-bar"><IconButton icon={PanelLeft} label="Toggle journey outline" aria-controls="civic-journey-outline" aria-expanded={outline} onClick={() => setOutline(!outline)} /><nav className="rh-breadcrumb" aria-label="Canvas location"><Button variant="ghost" size="sm" onClick={() => fitApp()}>App</Button><ChevronRight className="cv:size-3 cv:shrink-0 cv:text-muted-foreground" aria-hidden="true" /><Button variant="ghost" size="sm" onClick={() => focus(focused)}>{appSelected ? 'All journeys' : focusedFlow?.label ?? 'Application map'}</Button>{selectedScreen && <><ChevronRight className="cv:size-3 cv:shrink-0 cv:text-muted-foreground" aria-hidden="true" /><Button variant="ghost" size="sm" onClick={fitSelected}>{selectedScreen.label}</Button></>}</nav><ViewportPicker viewport={viewport} busy={viewportBusy} disabled={!generic || viewportUnavailable} reason={viewportReason} changeViewport={size => void changeViewport(size)} />{guided.running && <button className="rh-resume" onClick={resume}>{guided.state?.dirty ? `App draft · ${guided.active?.label ?? guided.current}` : 'Resume run'}</button>}</div>
           {focusedFlow && !appSelected && focusedFlow.screens.length > 1 && !internalEdges[focusedFlow.id]?.length && !crossEdges.some(edge => focusedFlow.screens.some(screen => screen.id === edge.from || screen.id === edge.to)) && <div className="civic-connection-notice" role="status"><span>No paths registered for this journey.</span><Button variant="link" size="sm" onClick={() => setPane('coverage')}>Review coverage</Button></div>}{guidedSelected && guided.running && selectedScreen.id !== guided.current && <div className="rh-selection">Your run is on {guided.active?.label ?? guided.current}. <button onClick={resume}>Resume run</button><button disabled={!guided.canStartAt(selectedScreen.id) || guided.state?.pending} onClick={() => guided.requestStart(selectedScreen.id)}>Start here…</button></div>}
           <div className={`rh-canvas rh-infinite-canvas ${panning ? 'is-panning' : ''} ${zoom < .5 ? 'is-zoomed-out' : ''}`} ref={stage} aria-label="Entire application canvas" style={{ backgroundPosition: `${camera.x}px ${camera.y}px` }} {...controls} onWheelCapture={() => { cameraNavigation.current = true; guided.follow.current = false }} onPointerDownCapture={(event) => { if (panning || event.button === 1 || !(event.target as Element).closest('button,input,select,iframe')) { cameraNavigation.current = true; guided.follow.current = false; } controls.onPointerDownCapture?.(event) }}>
             {!bridge.data && !bridge.error && <div className="civic-canvas-message" role="status" aria-label="Loading project"><Skeleton className="cv:h-8 cv:w-44" /><Skeleton className="cv:h-44 cv:w-64" /><p>Loading journeys…</p></div>}{bridge.data && !scenarios.length && <Empty className="civic-canvas-message" role="status"><EmptyHeader><EmptyMedia variant="icon"><FolderOpen aria-hidden="true" /></EmptyMedia><EmptyTitle>No screens registered yet</EmptyTitle><EmptyDescription>Connect a scenario registry to explore this app’s screens and paths.</EmptyDescription></EmptyHeader><EmptyContent><Button variant="outline" onClick={() => setPane('coverage')}>Review coverage</Button></EmptyContent></Empty>}<div className="app-camera-layer"><div className="app-scene" style={{ width: worldWidth, height: worldHeight, transform: `translate(${camera.x}px, ${camera.y}px) scale(${zoom})` }}>{overview && <AppOverview flows={compactFlows} connections={overviewEdges} selectedBundle={bundleSelection} selectBundle={selectBundle} source={source} active={initialized.current && desktop.visible} focused={focused} pan={pan} focus={focus} reviewConnection={selectConnection} />}<div className="app-detail-scene" hidden={overview}>{flows.map((flow) => <section key={flow.id} className={`app-flow ${focused === flow.id ? 'is-focused' : ''}`} aria-label={`${flow.label} flow`} style={{ left: flow.x, top: flow.y, width: flow.width, height: flow.height }}><header><div><h2>{flow.label}</h2><p>{flow.screens.length} screens · {flow.screens.every((screen) => screen.partial) ? 'Partial specimens · paths unverified' : flow.id === guided.flowId ? guided.labels.summary : generic ? 'Project adapter · declared paths; scoped recordings' : 'Working fixtures · end-to-end recording not yet connected'}</p></div><button onClick={() => focus(flow.id)}>Fit whole flow</button>{flow.id === guided.flowId && <button className="rh-primary" onClick={() => guided.running ? resume() : openScreen(flow.screens[0]!)}>{guided.running ? 'Resume run' : guided.labels.play}</button>}</header>

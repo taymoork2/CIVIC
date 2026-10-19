@@ -54,7 +54,7 @@ export function civicReview({ host, canvas = host, repo = resolve(host, '../..')
   const watchPaths = () => [...project.sources, project.manifestPath, project.scenariosPath, project.coverageFile, ...(project.entry ? [dirname(project.entry)] : []), ...(project.publicDir ? [project.publicDir] : []), ...roots, dirname(fileURLToPath(import.meta.url)), join(repo, '.review-data/application.json'), join(repo, 'docs/design/review-validation.json'), ...[repo, appRepo].flatMap((root) => ['package.json', 'pnpm-lock.yaml', 'package-lock.json', 'yarn.lock', 'tsconfig.json'].map((file) => join(root, file)))]
   const compilation = (value) => JSON.stringify([value.root, value.entry, value.runtimeEntry, value.extension, value.aliases, value.publicDir, value.coverageFile, value.manifest.adapter.kind, value.key, env('PUBLIC_ORIGIN') ?? value.local.publicOrigin])
   const binding = compilation(project)
-  const modules = { 'virtual:civic-project': () => `export default ${JSON.stringify(publicProject(project))}`, 'virtual:civic-preview': () => project.entry ? `export { mount } from ${JSON.stringify('/@fs/' + project.entry)}` : 'export function mount() { throw Error("This project has no preview adapter. Connect a synthetic mount entry first.") }', 'virtual:civic-shell-style': () => connector?.shellStyle?.(project) ?? '', 'virtual:civic-canvas-extension': () => { const file = connector?.canvasExtension?.(project) ?? project.extension; return file ? `export { default } from ${JSON.stringify('/@fs' + file)}` : 'export default {}' } }
+  const modules = { 'virtual:civic-project': () => `export default ${JSON.stringify(publicProject(project, connector?.capabilities))}`, 'virtual:civic-preview': () => project.entry ? `export { mount } from ${JSON.stringify('/@fs/' + project.entry)}` : 'export function mount() { throw Error("This project has no preview adapter. Connect a synthetic mount entry first.") }', 'virtual:civic-shell-style': () => connector?.shellStyle?.(project) ?? '', 'virtual:civic-canvas-extension': () => { const file = connector?.canvasExtension?.(project) ?? project.extension; return file ? `export { default } from ${JSON.stringify('/@fs' + file)}` : 'export default {}' } }
   return {
     name: 'isolated-product-review',
     enforce: 'pre',
@@ -122,7 +122,7 @@ export function civicReview({ host, canvas = host, repo = resolve(host, '../..')
         debounce = setTimeout(() => { const pending = scheduled; scheduled = null; pending.wake() }, 250)
       }
       server.watcher.on('change', refresh).on('add', refresh).on('unlink', refresh)
-      const projects = await projectPicker(repo, project, { discoveredAdapter: join(canvas, 'src/discovered-adapter.tsx'), starterTemplate: join(canvas, 'examples/notebook'), ...picker, kinds: ['module', ...Object.keys(connectors)] })
+      const projects = await projectPicker(repo, project, { discoveredAdapter: join(canvas, 'src/discovered-adapter.tsx'), starterTemplate: join(canvas, 'examples/notebook'), ...picker, kinds: ['module', ...Object.keys(connectors)], capabilitiesFor: kind => connectors[kind]?.capabilities })
       const source = () => { if (pendingRefreshes) throw Object.assign(Error('Source is updating. Wait for refresh before starting a new run.'), { status: 409 }); if (metadata.refreshError) throw Error(metadata.refreshError); return metadata.revision.source }
       // Runs keep their journals beside the project's reviews, so a closed run can be reopened on the same source.
       const runs = runtime?.(project, source, { dataDir })

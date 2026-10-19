@@ -96,9 +96,9 @@ export function loadProject(repo, options = {}) {
   const key = saved?.key ?? `${manifest.id}-${createHash('sha256').update(JSON.stringify([manifestPath, root])).digest('hex').slice(0, 12)}`
   return { manifest, manifestPath, manifestRoot, root, sources, scenariosPath, coverageFile, entry, runtimeEntry, extension, publicDir, aliases, key, local, app: saved?.app, connectionKind: saved?.kind }
 }
-export function publicProject(project) {
+export function publicProject(project, capabilities) {
   const { manifest: m, key } = project
-  return { id: m.id, key, name: m.name, ...(project.app ? { app: project.app } : {}), ...(project.connectionKind ? { connectionKind: project.connectionKind } : {}), adapter: m.adapter.kind, ...(m.adapter.mode ? { mode: m.adapter.mode } : {}), preview: Boolean(project.entry), runtime: Boolean(project.runtimeEntry), personas: m.personas, roles: m.roles, conditions: m.conditions, navigation: m.navigation }
+  return { id: m.id, key, name: m.name, ...(project.app ? { app: project.app } : {}), ...(project.connectionKind ? { connectionKind: project.connectionKind } : {}), adapter: m.adapter.kind, ...(m.adapter.mode ? { mode: m.adapter.mode } : {}), ...(capabilities ? { capabilities } : {}), preview: Boolean(project.entry), runtime: Boolean(project.runtimeEntry), personas: m.personas, roles: m.roles, conditions: m.conditions, navigation: m.navigation }
 }
 export function checkedScenarios(rows, project) {
   if (!Array.isArray(rows) || rows.length > 2000) fail('invalid scenario registry')

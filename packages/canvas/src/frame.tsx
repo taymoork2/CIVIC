@@ -12,6 +12,7 @@ import { defaultViewportHeight, validViewport, type PreviewViewport } from './vi
 bindProjectRequests(project.key)
 
 const root = document.getElementById('review-root')!
+root.dataset.civicProject = project.key
 // A screen may appear before its run and recorder are ready; no input counts until then.
 document.body.inert = true
 const stopCloseWatchers = trackCloseWatchers(document)
@@ -20,6 +21,9 @@ try {
   const response = await projectFetch('/api/review/index')
   if (!response.ok) throw Error('Project inventory unavailable. Repair the connection and reload.')
   const index = await response.json() as ReviewSnapshot & { scenarios: AdapterScenario[] }
+  root.dataset.civicSource = index.revision.source
+  root.dataset.civicPreview = 'checking'
+  window.dispatchEvent(new Event('civic-preview-status'))
   const params = new URLSearchParams(location.search)
   let recording: RuntimeRecording | undefined
   if (params.has('recording')) {
@@ -69,6 +73,24 @@ try {
   let runtimeBridge: RuntimeBridge | undefined
   let mounted = false
   let stopRuntime: (() => void) | undefined
+  const reportPreview = () => {
+    const preview = window.reviewPreview
+    if (!preview) return
+    const before = JSON.stringify([preview.readiness, preview.capabilities])
+    const ready = Boolean(mounted && state && !restoring && root.dataset.rehearsalReady === 'true')
+    preview.readiness = { state: ready ? 'ready' : restoring ? 'checking' : 'unchecked', source: snapshot.revision.source, reason: ready ? 'Preview mounted for this source revision.' : restoring ? 'Restoring recording…' : 'Adapter has not reported a ready screen.' }
+    preview.capabilities = {
+      resize: ready && typeof preview.setViewport === 'function' && project.capabilities?.resize !== false,
+      record: ready && typeof preview.recording === 'function' && project.capabilities?.record !== false,
+      replay: ready && typeof preview.replay === 'function' && project.mode !== 'live-read-only' && project.capabilities?.replay !== false,
+      ...(project.capabilities?.reason ? { reason: project.capabilities.reason } : {}),
+    }
+    if (before !== JSON.stringify([preview.readiness, preview.capabilities])) {
+      root.dataset.civicPreview = preview.readiness.state
+      window.dispatchEvent(new Event('civic-preview-status'))
+      window.dispatchEvent(new Event('rehearsal-run'))
+    }
+  }
   const fields = (screen: string) => {
     const allowed = index.scenarios.find((s) => s.id === screen)?.captureFields ?? []
     return readFixtureFields(document).filter((field) => allowed.includes(field.label) && !/password|secret|token|credential/i.test(field.label))
@@ -85,6 +107,7 @@ try {
       at = state.screen
       if (mounted && !restoring) root.dataset.rehearsalReady = 'true'
       window.dispatchEvent(new CustomEvent('rehearsal-state', { detail: state }))
+      if (mounted) reportPreview()
     },
     transition(destination, action, origin = 'app', departureHTML) {
       if (runtimeBridge?.isReplaying()) return
@@ -142,6 +165,7 @@ try {
         if (mounted && !restoring && !bridge.isReplaying()) root.dataset.rehearsalReady = 'true'
         window.dispatchEvent(new CustomEvent('rehearsal-state', { detail: state }))
         window.dispatchEvent(new Event('rehearsal-run'))
+        if (mounted) reportPreview()
       }
       const failed = (error: Error) => { root.dataset.rehearsalRunError = error.message; window.dispatchEvent(new Event('rehearsal-run')) }
       const stopObserving = observeRuntime(scope, bridge, publish, failed, (name) => ports.captureInputs === 'synthetic' || ports.captureInputs.includes(name))
@@ -212,23 +236,30 @@ try {
   if (!restoring && state) root.dataset.rehearsalReady = 'true'
   if (!state && project.adapter === 'module') throw Error('The preview adapter did not publish a ready screen.')
   if (recording) {
+    if (project.mode === 'live-read-only' || project.capabilities?.replay === false) throw Error(project.capabilities?.reason ?? 'This preview does not support replay.')
     if (!window.reviewPreview?.replay) throw Error('This adapter does not support replay.')
     try { await window.reviewPreview.replay(recording) }
     catch (error) { stopRuntime?.(); dispose?.(); delete window.reviewPreview; throw error }
     restoring = false; root.dataset.rehearsalReady = 'true'; window.dispatchEvent(new Event('rehearsal-run'))
   }
   document.body.inert = false
+  reportPreview()
   window.addEventListener('pagehide', () => { stopRuntime?.(); dispose?.(); delete window.reviewPreview }, { once: true })
 } catch (error) {
   document.body.inert = false
+  const hadState = Boolean(window.reviewPreview?.state?.())
+  delete window.reviewPreview
+  delete window.reviewRuntime
   stopCloseWatchers()
   delete root.dataset.rehearsalReady
   root.replaceChildren()
   const heading = document.createElement('h1'); heading.textContent = 'Preview unavailable'
   const detail = document.createElement('p'); detail.setAttribute('role', 'alert'); detail.textContent = (error as Error).message
   root.append(heading, detail)
+  root.dataset.civicPreview = 'failed'
+  window.dispatchEvent(new Event('civic-preview-status'))
   const retries = Number(new URLSearchParams(location.search).get('mountRetry') ?? 0)
-  if (/Failed to fetch dynamically imported module|Importing a module script failed|Source changed during startup|Source changed while creating the run/.test(detail.textContent) && retries < 2 && !window.reviewPreview?.state?.()) {
+  if (/Failed to fetch dynamically imported module|Importing a module script failed|Source changed during startup|Source changed while creating the run/.test(detail.textContent) && retries < 2 && !hadState) {
     detail.textContent = 'The preview compiler is updating. Retrying automatically…'
     const retry = new URL(location.href); retry.searchParams.set('mountRetry', String(retries + 1))
     setTimeout(() => location.replace(retry.href), 1000)

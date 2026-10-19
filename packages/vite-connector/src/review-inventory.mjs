@@ -21,7 +21,7 @@ async function files(root) {
  */
 export async function reviewInventory(repo, designRoot, appRepo, connection, { connector = null, engineRoots = [join(repo, 'apps/web/src/review'), join(repo, 'apps/web/scripts')] } = {}) {
   const project = connection ?? loadProject(repo, { ...(appRepo ? { applicationRoot: appRepo } : {}) })
-  const profile = publicProject(project)
+  const profile = publicProject(project, connector?.capabilities)
   const kind = project.manifest.adapter.kind
   if (kind !== 'module' && (!connector || connector.kind !== undefined && connector.kind !== kind)) throw Error(`No connector is registered for adapter kind ${kind}`)
   // A connector with its own index (Laundry's) supplies it; one without is indexed from the scenario registry, like a module app.

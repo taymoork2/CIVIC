@@ -20,7 +20,7 @@ async function atomic(file, value) {
 
 // Connections and starters belong to the review host. Connecting never writes into an app checkout.
 // The host supplies the runtime that mounts discovered screens and the starter project it copies.
-export async function projectPicker(repo, current, { discoveredAdapter = join(repo, 'packages/canvas/src/discovered-adapter.tsx'), starterTemplate = join(repo, 'packages/canvas/examples/notebook'), sourceRoot = join(homedir(), 'Projects/civic-apps'), kinds = null, workspaces = [], syncConnections, openWindow, releaseWindow, windowOrigins = () => [], registry = {}, readInventory = (_project, content) => JSON.parse(content) } = {}) {
+export async function projectPicker(repo, current, { discoveredAdapter = join(repo, 'packages/canvas/src/discovered-adapter.tsx'), starterTemplate = join(repo, 'packages/canvas/examples/notebook'), sourceRoot = join(homedir(), 'Projects/civic-apps'), kinds = null, workspaces = [], syncConnections, openWindow, releaseWindow, windowOrigins = () => [], registry = {}, readInventory = (_project, content) => JSON.parse(content), capabilitiesFor = () => undefined } = {}) {
   for (const workspace of workspaces) {
     const url = new URL(workspace.origin)
     if (url.origin !== workspace.origin || url.protocol !== 'http:' || !['localhost', '127.0.0.1', '[::1]'].includes(url.hostname) || !isAbsolute(workspace.store)) bad('Linked CIVIC workspaces must use a loopback origin and absolute store')
@@ -48,8 +48,10 @@ export async function projectPicker(repo, current, { discoveredAdapter = join(re
     try {
       const p = host === repo && validateRegistry ? await validate(row.manifest, row.root) : loadProject(host, { manifest: row.manifest, applicationRoot: row.root })
       const kind = row.kind ?? kindOf(p)
-      return { ...publicProject(p), root: p.root, manifest: p.manifestPath, design: p.manifest.design, app: row.app ?? { id: p.manifest.id, name: p.manifest.name }, kind, ...await previewVersion(p, kind), refreshRequired: host === repo && p.key === current.key && (p.entry !== current.entry || p.runtimeEntry !== current.runtimeEntry), available: true }
-    } catch (error) { return { ...row, app: row.app ?? { id: row.key, name: row.root.split('/').at(-1) }, name: row.root.split('/').at(-1), available: false, error: error.message } }
+      const version = await previewVersion(p, kind)
+      const readiness = { state: p.entry ? 'unchecked' : 'unsupported', ...(version.version.id ? { source: version.version.id } : {}), reason: p.entry ? 'Preview configured; opening it checks whether it mounts.' : 'This connection has no preview adapter.' }
+      return { ...publicProject(p, capabilitiesFor(p.manifest.adapter.kind)), root: p.root, manifest: p.manifestPath, design: p.manifest.design, app: row.app ?? { id: p.manifest.id, name: p.manifest.name }, kind, ...version, readiness, refreshRequired: host === repo && p.key === current.key && (p.entry !== current.entry || p.runtimeEntry !== current.runtimeEntry), available: true }
+    } catch (error) { return { ...row, app: row.app ?? { id: row.key, name: row.root.split('/').at(-1) }, name: row.root.split('/').at(-1), available: false, error: error.message, readiness: { state: 'failed', reason: error.message } } }
   }
   const assign = (row, input) => {
     const app = input.app
@@ -109,8 +111,8 @@ export async function projectPicker(repo, current, { discoveredAdapter = join(re
     const projects = await bounded(saved, async ({ row, host }) => {
       try {
         const manifest = checkedProject(await json(row.manifest))
-        return { ...row, host, name: manifest.name, app: row.app ?? { id: manifest.id, name: manifest.name }, kind: row.kind ?? (manifest.adapter.mode ? 'live' : manifest.adapter.runtime ? 'isolated' : manifest.design ? 'design' : 'implementation'), preview: Boolean(manifest.adapter.entry), available: true }
-      } catch (error) { return { ...row, host, name: row.root.split('/').at(-1), app: row.app ?? { id: row.key, name: row.root.split('/').at(-1) }, preview: false, available: false, error: error.message } }
+        return { ...row, host, name: manifest.name, app: row.app ?? { id: manifest.id, name: manifest.name }, kind: row.kind ?? (manifest.adapter.mode ? 'live' : manifest.adapter.runtime ? 'isolated' : manifest.design ? 'design' : 'implementation'), preview: Boolean(manifest.adapter.entry), available: true, capabilities: capabilitiesFor(manifest.adapter.kind), readiness: { state: manifest.adapter.entry ? 'unchecked' : 'unsupported' } }
+      } catch (error) { return { ...row, host, name: row.root.split('/').at(-1), app: row.app ?? { id: row.key, name: row.root.split('/').at(-1) }, preview: false, available: false, error: error.message, readiness: { state: 'failed', reason: error.message } } }
     }, signal)
     return { projects, errors }
   }
@@ -169,7 +171,7 @@ export async function projectPicker(repo, current, { discoveredAdapter = join(re
           try {
             const project = loadProject(row.host, { manifest: row.manifest, applicationRoot: row.root })
             inventories[`${row.workspace ?? ''}:${row.key}`] = await screens(project, signal)
-          } catch (error) { signal?.throwIfAborted(); described.available = false; described.error = error.message; errors.push(`${described.name}: preview inventory unavailable. Retry to check again.`) }
+          } catch (error) { signal?.throwIfAborted(); described.available = false; described.error = error.message; described.readiness = { state: 'failed', reason: error.message }; errors.push(`${described.name}: preview inventory unavailable. Retry to check again.`) }
         }
         return described
       }, signal)

@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { defaultViewportHeight, presetOf, validViewport, type PreviewViewport } from './viewport-presets'
+import { supportsPreview } from './connection-readiness'
 
 type Options = {
   getFrame: () => HTMLIFrameElement | null
@@ -50,7 +51,7 @@ export function usePreviewViewport(options: Options) {
     const frame = getFrame()
     const preview = frame?.contentWindow?.reviewPreview
     if (liveOnly && !frame) { setError('Open a live preview first.'); return }
-    if (frame && !preview?.setViewport) { setError('Wait for the live preview to finish opening.'); return }
+    if (frame && !supportsPreview(preview, 'resize')) { setError(preview?.readiness?.state === 'ready' ? preview.capabilities?.reason ?? 'This preview does not support resizing.' : 'Wait for the live preview to finish opening.'); return }
     const unchanged = () => frame === latest.current.getFrame() && preview === frame?.contentWindow?.reviewPreview && storageKey === latest.current.storageKey
     pending.current = true; setBusy(true); setError(''); setViewport(next)
     try {

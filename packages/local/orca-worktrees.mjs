@@ -54,13 +54,24 @@ async function dependencies(snapshot, installed) {
     }
   }
 }
+/** Resolve exactly as the isolated runtime does, without loading application modules. */
+export async function checkRuntimeDependencies(source) {
+  const require = createRequire(join(source, 'apps/server/package.json'))
+  for (const name of ['effect/Effect', 'effect/Scope', 'effect/Schema']) {
+    try { require.resolve(name) }
+    catch (cause) { throw Error(`Preview dependency unavailable in this snapshot: ${name}. Install its pinned dependencies separately before reconnecting.`, { cause }) }
+  }
+}
 export async function buildWorktree(store, installed, tree) {
   const id = `orca-worktree-${createHash('sha256').update(tree.path).digest('hex').slice(0, 12)}`
   const folder = join(store, 'projects', id), hash = await worktreeHash(tree.path)
   let prior
   try { prior = await json(join(folder, 'receipt.json')) } catch (error) { if (error.code !== 'ENOENT') throw error }
   const connection = { root: tree.path, manifest: join(folder, 'civic.project.json'), app: { id: 'orca', name: 'Orca' }, kind: 'implementation' }
-  if (prior?.worktreeHash === hash && prior.ui === tree.revision && prior.dirty === tree.dirty) return connection
+  if (prior?.worktreeHash === hash && prior.ui === tree.revision && prior.dirty === tree.dirty) {
+    await checkRuntimeDependencies(prior.worktreeBuild ? join(folder, prior.worktreeBuild, 'source') : tree.path)
+    return connection
+  }
   await mkdir(join(folder, 'builds'), { recursive: true, mode: 0o700 })
   // Immutable build inputs and outputs are CIVIC-owned; the source checkout is never modified.
   const buildName = `builds/${hash.slice(0, 16)}-${randomUUID().slice(0, 8)}`, build = join(folder, buildName), snapshot = join(build, 'source')
@@ -71,6 +82,7 @@ export async function buildWorktree(store, installed, tree) {
     catch (error) { if (error.code !== 'ENOENT') throw error }
   }
   await dependencies(snapshot, installed)
+  await checkRuntimeDependencies(snapshot)
   const runtimeFile = join(snapshot, 'apps/server/src/runtime.ts'), runtimeCode = await readFile(runtimeFile, 'utf8')
   if (!/export (?:function|const) makeRuntime\b/.test(runtimeCode)) {
     if (!/^function makeRuntime\(/m.test(runtimeCode)) throw Error('This worktree has no supported isolated runtime entry')

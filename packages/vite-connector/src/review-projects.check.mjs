@@ -102,6 +102,27 @@ test('project host leases validate saved identities and forward only their owner
   await assert.rejects(picker.releaseWindow('unknown', undefined, lease), /Unknown saved connection/)
 })
 
+test('readable configuration stays unchecked and missing entries fail without executing app code', async () => {
+  const { host, current } = await fixture()
+  await writeFile(current.entry, 'throw Error("Static discovery must never execute app code")')
+  const picker = await projectPicker(host, current, { capabilitiesFor: () => ({ replay: false, reason: 'Fixture protocol has no replay' }) })
+  const configured = (await picker.list()).projects[0]
+  assert.equal(configured.available, true)
+  assert.equal(configured.readiness.state, 'unchecked')
+  assert.equal(configured.capabilities.replay, false)
+  await rename(current.entry, current.entry + '.saved')
+  const failed = (await picker.list()).projects[0]
+  assert.equal(failed.available, false)
+  assert.equal(failed.readiness.state, 'failed')
+  await rename(current.entry + '.saved', current.entry)
+  await writeFile(join(current.manifestRoot, 'receipt.json'), JSON.stringify({ ui: 'one', server: 'one', script: '/app.js', css: [] }))
+  const first = (await picker.list()).projects[0].readiness
+  await writeFile(join(current.manifestRoot, 'receipt.json'), JSON.stringify({ ui: 'two', server: 'two', script: '/app.js', css: [] }))
+  const next = (await picker.list()).projects[0].readiness
+  assert.equal(next.state, 'unchecked')
+  assert.notEqual(next.source, first.source)
+})
+
 test('project-window hosts share one connection registry instead of overwriting each other', async () => {
   const { base, host, root, current } = await fixture(), registry = {}
   const first = await projectPicker(host, current, { registry }), second = await projectPicker(host, current, { registry })

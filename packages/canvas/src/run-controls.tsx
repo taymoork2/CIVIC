@@ -6,6 +6,7 @@ import type { RunStatus } from './adapter'
 import { ViewportControls } from './viewport-controls'
 import type { PreviewViewport } from './viewport-presets'
 import type { ViewportController } from './use-preview-viewport'
+import { supportsPreview } from './connection-readiness'
 
 /** Controls for a live preview: its viewport, its run (account, connection, saved steps, reopening) and its recording. */
 /** `runSection` is off where a host page offers its own run controls. */
@@ -17,7 +18,7 @@ export function RunControls({ frame, onViewportChange, viewportController, runSe
   useEffect(() => {
     const win = frame?.contentWindow
     const update = () => {
-      setAvailable(Boolean(runtime()?.recording))
+      setAvailable(supportsPreview(runtime(), 'record'))
       try { setRun(win?.reviewRuntime?.status() ?? null) } catch { setRun(null) }
       const error = frame?.contentDocument?.getElementById('review-root')?.dataset.rehearsalRunError; if (error) setStatus(error)
       void runtime()?.recording?.().then((tape) => setCount(tape.steps.length)).catch(() => {})
@@ -37,9 +38,10 @@ export function RunControls({ frame, onViewportChange, viewportController, runSe
   })
   const perform = (action: 'save' | 'replay') => work(async () => {
     const bridge = runtime()
-    if (!bridge?.recording || !bridge.replay) throw Error('Play a connected application first.')
+    if (!supportsPreview(bridge, action === 'replay' ? 'replay' : 'record') || !bridge?.recording) throw Error(bridge?.capabilities?.reason ?? 'This action is unavailable until the preview supports it.')
     const tape = await bridge.recording()
     if (action === 'replay') {
+      if (!bridge.replay) throw Error('This preview does not support replay.')
       // Each finished replay is kept as run evidence CIVIC can import (decision 0009); a replay
       // refused before it starts, such as one for another source, proves nothing either way.
       let receipt: { verified: number }
@@ -74,7 +76,7 @@ export function RunControls({ frame, onViewportChange, viewportController, runSe
       <p className="rh-muted">{run.connected ? 'Connected to its isolated data.' : 'Offline. Nothing is resent by itself; review saved steps after reconnecting.'}</p>
       {run.pending.length > 0 && <section aria-label="Saved steps"><h4>Saved steps for {run.account ?? 'this account'}</h4><p>Check what was done before resending. These steps belong to this account.</p>{run.pending.map((row) => <div key={row.id}><strong>{row.name}</strong><Button variant="outline" disabled={busy || !run.connected} onClick={() => void command('applyPending', row.id)}>Resend saved step</Button><Button variant="outline" disabled={busy} onClick={() => void command('discardPending', row.id)}>Discard saved step</Button></div>)}</section>}
     </section>}
-    {available && <section aria-label="Application recording"><h3>Recorded run</h3><p>{count} actions · {observational ? 'live observation; changing backend' : 'isolated data'}</p>{!observational && <Button variant="outline" disabled={busy || count === 0} onClick={() => void perform('replay')}>{busy ? 'Working…' : 'Replay this run'}</Button>}<Button variant="outline" disabled={busy} onClick={() => void perform('save')}>Save recording</Button></section>}
+    {available && <section aria-label="Application recording"><h3>Recorded run</h3><p>{count} actions · {observational ? 'live observation; changing backend' : 'isolated data'}</p>{!observational && <><Button variant="outline" disabled={busy || count === 0 || !supportsPreview(runtime(), 'replay')} onClick={() => void perform('replay')}>{busy ? 'Working…' : 'Replay this run'}</Button>{!supportsPreview(runtime(), 'replay') && <small>{runtime()?.capabilities?.reason ?? 'This preview does not support replay.'}</small>}</>}<Button variant="outline" disabled={busy} onClick={() => void perform('save')}>Save recording</Button></section>}
     <p role="status">{status}</p>
   </>
 }

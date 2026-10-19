@@ -13,6 +13,7 @@ import { Skeleton } from '@civic/shell/ui/skeleton'
 import { Alert, AlertDescription } from '@civic/shell/ui/alert'
 import { projectShortcut, projectWindowHref, preferredConnection, versionCaption, versionDetails, checkoutGroup, type AppVersion, type DraftScreen } from './project-choice'
 import type { VersionChoice } from '@civic/shell/version-choices'
+import { readinessFor, type ConnectionReadiness, type PreviewCapabilities } from './connection-readiness'
 import { SourceBrowser } from './source-browser'
 import { VersionChanges, type VersionChange } from './version-changes'
 import { HistoryList, HistoryMeta, type VersionHistory } from './version-history'
@@ -20,7 +21,7 @@ import { VersionRow } from './version-row'
 import './project-picker.css'
 
 type App = { id: string; name: string }
-type Connection = { key: string; name: string; sourceName?: string; refreshRequired?: boolean; root: string; manifest: string; app: App; kind: string; design?: { id: string }; version?: { id?: string; name?: string; history?: VersionHistory }; workspace?: string; workspaceName?: string; preview?: boolean; available: boolean; error?: string }
+type Connection = { key: string; name: string; sourceName?: string; refreshRequired?: boolean; root: string; manifest: string; app: App; kind: string; design?: { id: string }; version?: { id?: string; name?: string; history?: VersionHistory }; workspace?: string; workspaceName?: string; preview?: boolean; available: boolean; error?: string; readiness?: ConnectionReadiness; capabilities?: PreviewCapabilities }
 type Connections = { active: string; projects: Connection[]; apps: (App & { connections: Connection[]; versions: AppVersion<Connection>[] })[]; workspaceErrors: string[]; canOpenWindow?: boolean }
 type VersionPage = { items: (VersionChoice<Connection> & { previewCount: number })[]; total: number; offset: number; limit: number; hasMore: boolean; errors: string[] }
 const versionLabel = (kind: string) => ({ design: 'Design reference', live: 'Running app', isolated: 'Test instance' })[kind] ?? 'Branch checkout'
@@ -30,7 +31,7 @@ async function request<T>(input?: unknown, signal?: AbortSignal): Promise<T> {
 }
 
 export type ProjectPickerHandle = { open: (mode: 'work' | 'sources' | 'existing' | 'new') => void }
-export function ProjectPicker({ blocked, activeRun, selectedScreen, focusScreen, onSearch, searchOpen, ref, hideTrigger = false, returnFocus, tabDirty = false }: { blocked: boolean; activeRun: boolean; selectedScreen?: DraftScreen; focusScreen: (id: string) => void; onSearch: () => void; searchOpen: boolean; ref?: Ref<ProjectPickerHandle>; hideTrigger?: boolean; returnFocus?: RefObject<HTMLButtonElement | null>; tabDirty?: boolean }) {
+export function ProjectPicker({ blocked, activeRun, selectedScreen, focusScreen, onSearch, searchOpen, ref, hideTrigger = false, returnFocus, tabDirty = false, readiness: activeReadiness }: { blocked: boolean; activeRun: boolean; selectedScreen?: DraftScreen; focusScreen: (id: string) => void; onSearch: () => void; searchOpen: boolean; ref?: Ref<ProjectPickerHandle>; hideTrigger?: boolean; returnFocus?: RefObject<HTMLButtonElement | null>; tabDirty?: boolean; readiness?: ConnectionReadiness }) {
   const trigger = useRef<HTMLButtonElement>(null)
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<'work' | 'sources' | 'existing' | 'new'>('work')
@@ -73,7 +74,7 @@ export function ProjectPicker({ blocked, activeRun, selectedScreen, focusScreen,
     { title: 'Design', icon: Pencil, items: visibleVersions.filter(item => item.kind === 'design') },
   ]
   const currentConnection = connections?.projects.find(row => !row.workspace && row.key === project.key)
-  const currentName = currentConnection?.sourceName ?? (error ? 'Version unavailable' : 'Loading version…')
+  const currentName = currentConnection?.sourceName ?? (currentConnection?.error || error ? 'Version unavailable' : 'Loading version…')
   const currentVersion = currentConnection?.version
   const currentKind = currentConnection?.kind ?? 'implementation'
   const CurrentIcon = versionIcon(currentKind)
@@ -189,9 +190,11 @@ export function ProjectPicker({ blocked, activeRun, selectedScreen, focusScreen,
   }
   const previewOption = (item: Preview, label: string, description: string, revision?: string) => {
     const current = isCurrent(item), details = versionDetails(item.row.sourceName ?? versionLabel(item.row.kind))
+    const health = readinessFor(!item.row.workspace && item.row.key === project.key && activeReadiness && activeReadiness.state !== 'unchecked' ? activeReadiness : item.row.readiness)
+    const healthLabel = { unchecked: 'Not opened', checking: 'Opening…', ready: 'Preview opened', stale: 'Earlier revision', failed: 'Preview unavailable', unsupported: 'No preview adapter' }[health.state]
     const SourceIcon = versionIcon(item.row.kind)
-    return <div className="civic-preview-option" aria-current={current ? 'true' : undefined}>
-      <SourceIcon className="civic-version-source-icon" role="img" aria-label={versionLabel(item.row.kind)} /><span className="civic-version-text"><strong>{label}</strong><span className="civic-version-meta"><span>{description}</span>{details.revision && !revision?.startsWith(details.revision) && <code>{details.revision.slice(0, 8)}</code>}{details.edited && <span>Local changes</span>}{item.row.refreshRequired && <span>Update available</span>}</span></span>
+    return <div className="civic-preview-option" data-readiness={health.state} aria-current={current ? 'true' : undefined}>
+      <SourceIcon className="civic-version-source-icon" role="img" aria-label={versionLabel(item.row.kind)} /><span className="civic-version-text"><strong>{label}</strong><span className="civic-version-meta"><span>{description}</span><span title={health.reason}>{healthLabel}</span>{details.revision && !revision?.startsWith(details.revision) && <code>{details.revision.slice(0, 8)}</code>}{details.edited && <span>Local changes</span>}{item.row.refreshRequired && <span>Update available</span>}</span></span>
       {current && !item.row.refreshRequired ? <span className="civic-version-viewing"><Check aria-hidden="true" />Viewing</span> : <Button variant={version === item.id ? 'secondary' : 'outline'} size="sm" aria-label={`${item.row.refreshRequired ? 'Update' : 'Open'} ${label} preview`} disabled={busy || loadingConnections || (blocked && !window.civicDesktop) || !item.row.available || !item.row.preview} onClick={() => choosePreview(item)}>{item.row.refreshRequired ? 'Update' : 'Open'}</Button>}
     </div>
   }
@@ -232,7 +235,7 @@ export function ProjectPicker({ blocked, activeRun, selectedScreen, focusScreen,
         </div><div className="civic-version-footer">{activeRun && version && chosen ? <section className="civic-version-confirm"><p>Open <strong>{versions.find(item => item.previews.some(preview => preview.id === chosen.id))?.name ?? versionDetails(chosen.row.sourceName ?? versionLabel(chosen.row.kind)).name}</strong>{chosen.screen ? ` · ${chosen.screen.label}` : ''}?</p><p>{chosenLocation}. Saved evidence stays with its version.</p><div><Button variant="ghost" disabled={busy} onClick={() => setVersion('')}>Cancel</Button><Button disabled={busy || blocked} onClick={() => void select(chosen.row.key, chosen.row.workspace, chosen.screen?.id)}>{busy ? 'Opening…' : 'Open version'}</Button></div></section> : <div className="civic-version-footer-actions">{browseAppId === (project.app?.id ?? project.id) ? <Button variant="ghost" size="sm" aria-label="Manage sources" disabled={busy} onClick={() => setMode('sources')}><Settings2 aria-hidden="true" />Manage connections</Button> : <span>Choose a version to open this project.</span>}</div>}</div>
       </section></div> : mode === 'sources' ? <><SourceBrowser connect={row => { start('existing', project.app?.id ?? project.id); setRoot(row.path ?? ''); setSource(row.source ?? 'src'); setName(row.title) }} /><div className="rh-project-actions"><Button variant="outline" onClick={() => setMode('work')}>Back to versions</Button><Button variant="outline" onClick={() => start('existing', project.app?.id ?? project.id)}>Add local folder</Button></div>
       </> : created ? <section className="rh-project-result">
-        <h3>{created.name} is ready</h3><p>{created.preview ? 'Your preview connection is ready to test. Play its real screens and check the declared paths; generated navigation is synthetic until verified.' : 'Your source inventory is connected. Screens, paths and personas need a scenario registry and synthetic adapter before they can be played.'}</p>
+        <h3>{created.name} connected</h3><p>{created.preview ? 'The preview is configured. Open it to check that it starts; generated navigation remains synthetic until verified.' : 'Your source inventory is connected. Screens, paths and personas need a scenario registry and synthetic adapter before they can be played.'}</p>
         <dl><dt>App folder</dt><dd>{connections?.projects.find((row) => row.key === created.key)?.root}</dd><dt>Project manifest</dt><dd>{connections?.projects.find((row) => row.key === created.key)?.manifest}</dd></dl>
         <p className="rh-project-copy">{mode === 'new' ? 'This starter has a note-writing journey, a review branch and synthetic state. Adapt its source files to build your app.' : 'The app checkout has not been changed. Connection files belong to CIVIC.'}</p>
         <div className="rh-project-actions"><Button variant="outline" onClick={() => { setMode('work'); setCreated(null) }} disabled={busy}>Back to versions</Button><Button variant="default" disabled={busy || !canSwitch} onClick={() => void select(created.key)}>{busy ? 'Opening…' : 'Open connected work'}</Button></div>

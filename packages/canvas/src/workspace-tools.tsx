@@ -22,7 +22,7 @@ export function DetailsMenu({ pane, setPane, proposals }: { pane: WorkspacePanel
   </DropdownMenu>
 }
 
-export function ViewportPicker({ viewport, busy, disabled, changeViewport }: { viewport: PreviewViewport; busy: boolean; disabled: boolean; changeViewport: (size: Pick<PreviewViewport, 'width' | 'height'>) => void }) {
+export function ViewportPicker({ viewport, busy, disabled, reason, changeViewport }: { viewport: PreviewViewport; busy: boolean; disabled: boolean; reason?: string; changeViewport: (size: Pick<PreviewViewport, 'width' | 'height'>) => void }) {
   const preset = presetOf(viewport), dimensions = `${viewport.width} × ${viewport.height}`
   const DeviceIcon = viewport.width < 600 ? Smartphone : viewport.width < 1000 ? Tablet : Monitor
   return <Popover><PopoverTrigger render={<Button variant="ghost" aria-label={`Viewport · ${preset?.name ?? 'Custom'} · ${dimensions}`} title={`${preset?.name ?? 'Custom viewport'} · ${dimensions}`} className="civic-view-trigger" />}><DeviceIcon aria-hidden="true" /><span className="cv:max-w-40 cv:truncate">{preset?.name ?? dimensions}</span><ChevronDown aria-hidden="true" /></PopoverTrigger>
@@ -37,6 +37,7 @@ export function ViewportPicker({ viewport, busy, disabled, changeViewport }: { v
         <Field className="cv:min-w-0 cv:gap-1"><FieldLabel htmlFor="civic-viewport-height" className="cv:text-xs cv:text-muted-foreground">Height (px)</FieldLabel><Input id="civic-viewport-height" name="height" type="number" min={200} max={1600} step={1} required defaultValue={viewport.height} disabled={disabled || busy} /></Field>
         <Button type="submit" variant="secondary" disabled={disabled || busy}>{busy ? 'Applying…' : 'Apply'}</Button>
       </FieldGroup></form>
+      {reason && <p role="status" className="cv:text-xs cv:text-muted-foreground">{reason}</p>}
     </PopoverContent>
   </Popover>
 }
