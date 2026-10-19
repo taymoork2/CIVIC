@@ -24,7 +24,7 @@ The report compares each observed state/control with scenario edges, explicit co
 
 Use **Draft interaction expectation** or **Draft state expectation** to prepare a binding in the existing expectation editor. Review its acceptance text before saving. `state` binds the observed state hash; an interaction's `control` binds `{ "tag": "button", "name": "Keyboard shortcuts", "index": 0 }`. An interaction binding does not declare the whole screen state covered. Discovery records only bounded control descriptions, never input values or full transcript snapshots. It persists in the project's `interaction-states.json`; the authenticated `/api/review/interactions` endpoint exposes the same report and scan progress.
 
-The journey outline groups repeated navigation by action, destination, condition and return context. Select a screen to reveal its outgoing arrows, or expand **Shared navigation** and choose an individual source path for review. Those source paths remain in the registry and keep their original review identities.
+The journey outline filters journeys and screens locally. Select a bundled arrow to reveal its individual source paths in the outline, then choose one for review. Bundling uses action, destination, condition and return context; each path retains its original review identity. Coverage remains in Details.
 
 ### Isolated dogfood instances
 
@@ -117,9 +117,11 @@ CIVIC_ELECTRON_BINARY=/path/to/Electron.app/Contents/MacOS/Electron \
   pnpm --dir packages/local desktop
 ```
 
-The installed Electron 44.9.0 in Orca's dependencies was used for verification. The renderer is sandboxed, context-isolated and has no Node API or preload bridge. The launcher opens the existing server; closing it does not stop the server. Server/client lifetime policy is owned by the separate architecture session. This is a usable launcher, not a signed or packaged application.
+The installed Electron 44.9.0 in Orca's dependencies was used for verification. Each checkout tab retains a sandboxed, context-isolated `WebContentsView` with no renderer Node API. A narrow preload bridge exposes project-tab actions only to the main frame; IPC verifies the owning view and main frame. Tabs are identified by project, connection and linked workspace, so different drafts of one project can stay open independently. Opening the same checkout reuses its tab. Up to eight tabs load on demand; narrow windows put extra tabs in an overflow menu. Inactive tabs pause coverage polling and new canvas captures. Live runs and unsaved review, coverage and proposal edits require confirmation before closing.
 
-The shell header is also the custom title bar: macOS keeps native traffic lights, Windows keeps native window controls through its title bar overlay, and Linux retains its system frame. Blank header space drags the window; buttons stay interactive. The launcher preserves its platform marker across project navigation so window controls do not overlap project/version controls. Browser tabs use the same shell without window-control insets.
+Closing a tab releases its host lease. CIVIC closes an owned host after its last tab releases it; the original host and hosts opened by browser windows remain running. The launcher opens an existing server and does not stop that server on exit. Restart the owned server after changing the project-window API. `CIVIC_DESKTOP_ORIGIN` selects another loopback CIVIC host for the launcher and desktop acceptance check. This is a usable launcher, not a signed or packaged application.
+
+The shell header is also the custom title bar: 40 px on desktop, with larger targets in narrow windows. macOS keeps native traffic lights, Windows keeps native window controls through its title bar overlay, and Linux retains its system frame. Blank header space drags the window; buttons stay interactive. The launcher preserves its platform marker across project navigation so window controls do not overlap checkout tabs. Browser windows retain their compact project picker and use ordinary browser tabs.
 
 ## Checks
 
