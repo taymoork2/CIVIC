@@ -10,6 +10,7 @@
     "./canvas-controls": "./src/canvas-controls.tsx",
     "./reveal-navigation": "./src/reveal-navigation.ts",
     "./contract": "./src/contract.ts",
+    "./version-choices": "./src/version-choices.mjs",
     "./capture": "./src/capture.ts",
     "./styles/*.css": "./styles/*.css",
     "./server": "./server/review-server.mjs",

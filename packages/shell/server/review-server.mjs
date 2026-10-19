@@ -346,13 +346,13 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
       }
       if (url.pathname === '/api/review/projects' && projects && ['GET', 'POST'].includes(req.method)) {
         const input = req.method === 'POST' ? await body(req) : null
-        const compare = async () => {
+        const readProject = async action => {
           const controller = new AbortController(), cancel = () => { if (!res.writableFinished) controller.abort() }
           res.once('close', cancel)
-          try { return await projects.changes(input, { signal: controller.signal }) }
+          try { return await projects[action](input, { signal: controller.signal }) }
           finally { res.off('close', cancel) }
         }
-        const result = input?.action === 'source-versions' ? await projects.sourceVersions(input) : input?.action === 'changes' ? await compare() : input?.action === 'open-window' ? await projects.openWindow(input.key, input.workspace, input.lease) : input?.action === 'release-window' ? await projects.releaseWindow(input.key, input.workspace, input.lease) : input?.action === 'window-origins' ? { origins: projects.windowOrigins() } : await serial(async () => {
+        const result = input?.action === 'catalog' ? await readProject('catalog') : input?.action === 'version-page' ? await readProject('versionPage') : input?.action === 'source-versions' ? await projects.sourceVersions(input) : input?.action === 'changes' ? await readProject('changes') : input?.action === 'open-window' ? await projects.openWindow(input.key, input.workspace, input.lease) : input?.action === 'release-window' ? await projects.releaseWindow(input.key, input.workspace, input.lease) : input?.action === 'window-origins' ? { origins: projects.windowOrigins() } : await serial(async () => {
           if (!input) return projects.list()
           if (input.action === 'add') return projects.add(input)
           if (input.action === 'discover') return projects.discover(input)

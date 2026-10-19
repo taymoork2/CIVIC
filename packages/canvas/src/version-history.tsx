@@ -1,21 +1,9 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { RailMarker } from '@civic/shell/ui/rail-marker'
 import { arrowPath } from './arrow-routing'
+import { historyOrder, type VersionHistory } from '@civic/shell/version-choices'
+export { historyOrder, type VersionHistory } from '@civic/shell/version-choices'
 
-export type VersionHistory = {
-  kind: 'code' | 'design' | 'pull-request'
-  status: string
-  key?: string
-  baseKey?: string
-  parentKey?: string
-  sharedBase?: string
-  revision?: string
-  main?: boolean
-  ahead?: number
-  behind?: number
-  updatedAt?: string
-  capturedAt?: string
-}
 type HistoryItem = { id: string; label: string; history?: VersionHistory; current?: boolean; marker?: ReactNode; content: ReactNode }
 
 export function historyStatus(history?: VersionHistory) {
@@ -65,28 +53,6 @@ export function historyConnections(items: Pick<HistoryItem, 'id' | 'label' | 'hi
   })
 }
 
-export function historyOrder<T extends { id: string; history?: VersionHistory }>(items: T[]) {
-  const remaining = new Set(items), ordered: T[] = []
-  const before = new Map(items.map(item => [item, new Set<T>()]))
-  for (const item of items) {
-    const h = item.history
-    const bases = items.filter(other => other !== item && h?.baseKey && other.history?.key === h.baseKey && h.key !== h.baseKey)
-    if (h?.status === 'ahead') for (const base of bases) before.get(base)!.add(item)
-    if (h?.status === 'included') for (const base of bases) before.get(item)!.add(base)
-  }
-  const time = (item: T) => {
-    const h = item.history, value = h?.updatedAt ?? (h?.kind !== 'code' ? h?.capturedAt : undefined)
-    const date = value ? Date.parse(value) : NaN
-    return Number.isFinite(date) ? date : -Infinity
-  }
-  while (remaining.size) {
-    const ready = [...remaining].filter(item => ![...before.get(item)!].some(parent => remaining.has(parent)))
-    // Contradictory imported relationships must not hang the picker.
-    const next = (ready.length ? ready : [...remaining]).sort((a, b) => time(b) - time(a))[0]!
-    ordered.push(next); remaining.delete(next)
-  }
-  return ordered
-}
 
 export function historyGraph(items: Pick<HistoryItem, 'id' | 'label' | 'history'>[]) {
   const links = historyConnections(items)

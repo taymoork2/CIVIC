@@ -16,6 +16,56 @@ async function fixture() {
   const current = loadProject(host, { manifest: join(root, 'civic.project.json'), applicationRoot: root })
   return { base, host, root, current }
 }
+
+test('catalog and version pages scope inventory work, cache unchanged registries and reach connection 119', async () => {
+  const { base, host, root, current } = await fixture()
+  const rows = []
+  for (let index = 0; index < 121; index++) {
+    const folder = index === 0 ? root : join(base, `copy-${index}`)
+    if (index) await cp(root, folder, { recursive: true })
+    const project = loadProject(host, { manifest: join(folder, 'civic.project.json'), applicationRoot: folder })
+    await writeFile(join(folder, 'receipt.json'), JSON.stringify({ ui: 'fixture', server: 'fixture', script: '/app.js', css: [], source: folder, worktreeName: `Draft ${index}` }))
+    await writeFile(project.scenariosPath, JSON.stringify([
+      { id: 'demo.home', label: 'Ready home', journey: 'Notes', targetId: 'notes.home', fixture: { state: 'ready' } },
+      { id: 'demo.empty', label: 'Empty home', journey: 'Notes', targetId: 'notes.home', fixture: { state: 'empty' } },
+    ]))
+    rows.push({ key: project.key, manifest: project.manifestPath, root: folder, kind: 'implementation', app: { id: index === 120 ? 'other' : 'notes', name: index === 120 ? 'Other app' : 'Notes' } })
+  }
+  const registry = { loading: Promise.resolve(rows) }
+  let reads = 0, active = 0, peak = 0
+  const picker = await projectPicker(host, current, { registry, readInventory: async (_project, content) => {
+    reads++; active++; peak = Math.max(peak, active)
+    await new Promise(resolve => setTimeout(resolve, 2))
+    active--
+    return JSON.parse(content)
+  } })
+  const catalog = await picker.catalog()
+  assert.equal(catalog.apps.length, 2)
+  assert.equal(reads, 0, 'Catalog does not parse any screen registry')
+  const selected = { id: 'demo.home', label: 'Home', targetId: 'notes.home', state: 'ready' }
+  const page = await picker.versionPage({ app: 'notes', selected, limit: 10 })
+  assert.equal(page.items.length, 10)
+  assert.equal(page.total, 120)
+  assert.equal(reads, 120, 'Cold matching reads only the selected app')
+  assert.ok(peak <= 4, `Inventory concurrency is bounded: ${peak}`)
+  const searched = await picker.versionPage({ app: 'notes', selected, query: 'draft 119' })
+  assert.equal(searched.items.length, 1)
+  assert.equal(searched.items[0].preview.row.key, rows[119].key)
+  assert.equal(searched.items[0].preview.screen.state, 'ready')
+  assert.equal(reads, 120, 'Search reuses unchanged inventory summaries')
+  await writeFile(join(rows[119].root, 'civic.scenarios.json'), JSON.stringify([{ id: 'demo.home', label: 'Updated home', journey: 'Notes', targetId: 'notes.home', fixture: { state: 'ready' } }]))
+  assert.equal((await picker.versionPage({ app: 'notes', selected, query: 'draft 119' })).items[0].preview.screen.label, 'Updated home')
+  assert.equal(reads, 121, 'A changed registry invalidates only its summary')
+  await writeFile(join(rows[119].root, 'civic.scenarios.json'), '{invalid')
+  for (let retry = 0; retry < 2; retry++) {
+    const failed = await picker.versionPage({ app: 'notes', selected, query: 'draft 119' })
+    assert.equal(failed.items.length, 0)
+    assert.equal(failed.errors.length, 1)
+  }
+  assert.equal(reads, 123, 'Failed reads are retried instead of cached as empty inventories')
+  await assert.rejects(picker.versionPage({ app: 'notes' }, { signal: AbortSignal.abort() }), { name: 'AbortError' })
+  for (const input of [{ app: 'unknown' }, { app: 'notes', limit: 11 }, { app: 'notes', offset: -1 }, { app: 'notes', query: 'x'.repeat(121) }, { app: 'notes', selected: { id: '../bad' } }, { app: 'notes', refresh: [] }]) await assert.rejects(picker.versionPage(input), { status: 400 })
+})
 test('independent project windows preserve selection, connection identities and evidence', async () => {
   const { base, host, root, current } = await fixture()
   const settings = join(host, '.review-data/application.json'), calls = []

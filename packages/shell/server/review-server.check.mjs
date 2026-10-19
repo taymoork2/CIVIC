@@ -119,6 +119,34 @@ test('screen comparisons are authenticated, project-bound and do not block the w
   assert.deepEqual(await (await comparison).json(), { scenario: 'home', comparisons: [] })
 })
 
+test('catalog and version pages retain authentication, project binding and cancellation outside the write queue', async t => {
+  const dataDir = await mkdtemp(join(tmpdir(), 'civic-version-api-'))
+  let started, aborted, linked = 0
+  const beginning = new Promise(resolve => { started = resolve }), cancellation = new Promise(resolve => { aborted = resolve })
+  const middleware = await reviewMiddleware({ dataDir, metadata: { ...snapshot, project: { key: 'selected-app' } }, adapter: adapter(), projects: {
+    catalog: async () => ({ active: 'selected-app', apps: [] }),
+    versionPage: async (_input, { signal }) => { started(); await new Promise(resolve => signal.addEventListener('abort', () => { aborted(); resolve() }, { once: true })); return { items: [] } },
+    linkFigma: async () => { linked++; return { linked: true } },
+  } })
+  const server = createServer((req, res) => middleware(req, res, () => res.end('Review')))
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
+  t.after(() => new Promise(resolve => server.close(resolve)))
+  const base = `http://127.0.0.1:${server.address().port}`, headers = { ...await localHeaders(base), 'x-rehearsal-project': 'selected-app' }
+  const post = (action, auth = headers, signal = AbortSignal.timeout(2000)) => fetch(base + '/api/review/projects', { method: 'POST', headers: auth, body: JSON.stringify({ action, app: 'notes' }), signal })
+  for (const action of ['catalog', 'version-page']) {
+    assert.equal((await post(action, { 'content-type': 'application/json' })).status, 401)
+    assert.equal((await post(action, { ...headers, 'x-rehearsal-project': 'other-app' })).status, 409)
+  }
+  assert.equal((await post('catalog')).status, 200)
+  const controller = new AbortController(), request = post('version-page', headers, controller.signal)
+  const rejected = assert.rejects(request, { name: 'AbortError' })
+  await beginning
+  assert.equal((await post('link-figma')).status, 200)
+  assert.equal(linked, 1)
+  controller.abort()
+  await Promise.all([rejected, cancellation])
+})
+
 test('live interaction inventory is authenticated, source-bound and scans only registered read-only fixtures', async () => {
   const dataDir = await mkdtemp(join(tmpdir(), 'civic-interaction-api-'))
   const project = { key: 'orca', mode: 'live-read-only', personas: [{ id: 'owner' }], roles: [{ id: 'browse' }], conditions: [{ id: 'live' }] }

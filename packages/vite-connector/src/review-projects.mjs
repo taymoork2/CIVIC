@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto'
+import { createHash, randomUUID } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import { existsSync, realpathSync, statSync } from 'node:fs'
 import { cp, mkdir, readFile, rename, writeFile } from 'node:fs/promises'
@@ -8,6 +8,7 @@ import { checkedProject, checkedScenarios, loadProject, manifestIn, projectPath,
 import { discoverScreens, generatedScenarios } from './review-discovery.mjs'
 import { discoverSourceVersions, figmaFile, previewVersion } from './review-source-versions.mjs'
 import { compareVersionScreens } from './review-version-changes.mjs'
+import { historyOrder, versionChoices } from '@civic/shell/version-choices'
 
 const bad = (message) => { throw Object.assign(Error(message), { status: 400 }) }
 const json = async (file) => JSON.parse(await readFile(file, 'utf8'))
@@ -19,7 +20,7 @@ async function atomic(file, value) {
 
 // Connections and starters belong to the review host. Connecting never writes into an app checkout.
 // The host supplies the runtime that mounts discovered screens and the starter project it copies.
-export async function projectPicker(repo, current, { discoveredAdapter = join(repo, 'packages/canvas/src/discovered-adapter.tsx'), starterTemplate = join(repo, 'packages/canvas/examples/notebook'), sourceRoot = join(homedir(), 'Projects/civic-apps'), kinds = null, workspaces = [], syncConnections, openWindow, releaseWindow, windowOrigins = () => [], registry = {} } = {}) {
+export async function projectPicker(repo, current, { discoveredAdapter = join(repo, 'packages/canvas/src/discovered-adapter.tsx'), starterTemplate = join(repo, 'packages/canvas/examples/notebook'), sourceRoot = join(homedir(), 'Projects/civic-apps'), kinds = null, workspaces = [], syncConnections, openWindow, releaseWindow, windowOrigins = () => [], registry = {}, readInventory = (_project, content) => JSON.parse(content) } = {}) {
   for (const workspace of workspaces) {
     const url = new URL(workspace.origin)
     if (url.origin !== workspace.origin || url.protocol !== 'http:' || !['localhost', '127.0.0.1', '[::1]'].includes(url.hostname) || !isAbsolute(workspace.store)) bad('Linked CIVIC workspaces must use a loopback origin and absolute store')
@@ -43,9 +44,9 @@ export async function projectPicker(repo, current, { discoveredAdapter = join(re
     return project
   }
   const kindOf = project => project.manifest.adapter.mode ? 'live' : project.runtimeEntry ? 'isolated' : project.manifest.design ? 'design' : 'implementation'
-  const describe = async (row, host = repo) => {
+  const describe = async (row, host = repo, validateRegistry = true) => {
     try {
-      const p = host === repo ? await validate(row.manifest, row.root) : loadProject(host, { manifest: row.manifest, applicationRoot: row.root })
+      const p = host === repo && validateRegistry ? await validate(row.manifest, row.root) : loadProject(host, { manifest: row.manifest, applicationRoot: row.root })
       const kind = row.kind ?? kindOf(p)
       return { ...publicProject(p), root: p.root, manifest: p.manifestPath, design: p.manifest.design, app: row.app ?? { id: p.manifest.id, name: p.manifest.name }, kind, ...await previewVersion(p, kind), refreshRequired: host === repo && p.key === current.key && (p.entry !== current.entry || p.runtimeEntry !== current.runtimeEntry), available: true }
     } catch (error) { return { ...row, app: row.app ?? { id: row.key, name: row.root.split('/').at(-1) }, name: row.root.split('/').at(-1), available: false, error: error.message } }
@@ -79,7 +80,104 @@ export async function projectPicker(repo, current, { discoveredAdapter = join(re
     if (changed) await persistRows()
     return result.errors
   }
+  const summaries = new Map()
+  let pageSync, lastRefresh
+  const summary = ({ personas, roles, conditions, navigation, host, ...row }) => row
+  const bounded = async (items, work, signal) => {
+    let index = 0
+    const results = new Array(items.length)
+    await Promise.all(Array.from({ length: Math.min(4, items.length) }, async () => {
+      while (index < items.length) {
+        signal?.throwIfAborted()
+        const at = index++
+        results[at] = await work(items[at])
+      }
+    }))
+    signal?.throwIfAborted()
+    return results
+  }
+  const savedConnections = async () => {
+    const saved = rows.map(row => ({ row, host: repo })), errors = []
+    for (const workspace of workspaces) {
+      try { saved.push(...(await json(join(workspace.store, '.review-data/project-picker.json'))).map(row => ({ row: { ...row, workspace: workspace.origin, workspaceName: workspace.name }, host: workspace.store }))) }
+      catch { errors.push(`${workspace.name ?? workspace.origin}: saved connections are unavailable. Local connections and evidence are retained.`) }
+    }
+    return { saved, errors }
+  }
+  const catalogRows = async signal => {
+    const { saved, errors } = await savedConnections()
+    const projects = await bounded(saved, async ({ row, host }) => {
+      try {
+        const manifest = checkedProject(await json(row.manifest))
+        return { ...row, host, name: manifest.name, app: row.app ?? { id: manifest.id, name: manifest.name }, kind: row.kind ?? (manifest.adapter.mode ? 'live' : manifest.adapter.runtime ? 'isolated' : manifest.design ? 'design' : 'implementation'), preview: Boolean(manifest.adapter.entry), available: true }
+      } catch (error) { return { ...row, host, name: row.root.split('/').at(-1), app: row.app ?? { id: row.key, name: row.root.split('/').at(-1) }, preview: false, available: false, error: error.message } }
+    }, signal)
+    return { projects, errors }
+  }
+  const groupedApps = projects => {
+    const apps = []
+    for (const row of projects) {
+      let app = apps.find(app => app.id === row.app.id)
+      if (!app) { app = { ...row.app, connections: [], versions: [] }; apps.push(app) }
+      app.connections.push(row)
+      const identity = { ...row.version, id: row.version?.id ?? `${row.workspace ?? ''}:${row.key}`, name: row.version?.name ?? row.sourceName ?? row.name, kind: row.kind === 'design' ? 'design' : 'implementation' }
+      let version = app.versions.find(version => version.id === identity.id)
+      if (!version) { version = { ...identity, connections: [] }; app.versions.push(version) }
+      version.connections.push(row)
+    }
+    return apps
+  }
+  const screens = async (project, signal) => {
+    signal?.throwIfAborted()
+    const [manifest, content, receipt] = await Promise.all([readFile(project.manifestPath, 'utf8'), readFile(project.scenariosPath, 'utf8'), readFile(join(project.manifestRoot, 'receipt.json'), 'utf8').catch(error => { if (error.code !== 'ENOENT') throw error; return '' })])
+    const fingerprint = createHash('sha256').update(JSON.stringify([manifest, content, receipt])).digest('hex')
+    const identity = `${project.manifestPath}:${project.root}`
+    const cached = summaries.get(identity)
+    if (cached?.fingerprint === fingerprint) return cached.screens
+    const rows = checkedScenarios(await readInventory(project, content), project).map(({ id, label, component, componentExport, route, targetId, componentId, fixture }) => ({ id, label, component, componentExport, route, ...(targetId ? { targetId } : {}), ...(componentId ? { componentId } : {}), ...(typeof fixture?.state === 'string' ? { state: fixture.state } : {}) }))
+    signal?.throwIfAborted()
+    summaries.set(identity, { fingerprint, screens: rows })
+    return rows
+  }
   return {
+    async catalog(_input, { signal } = {}) {
+      const { projects, errors } = await catalogRows(signal)
+      const active = projects.find(row => !row.workspace && row.key === current.key)
+      if (active) Object.assign(active, summary(await describe(active, repo, false)))
+      const publicRows = projects.map(summary)
+      return { active: current.key, projects: publicRows, apps: groupedApps(publicRows), workspaceErrors: errors, canOpenWindow: Boolean(openWindow) }
+    },
+    async versionPage(input = {}, { signal } = {}) {
+      signal?.throwIfAborted()
+      const { app, selected, query = '', offset = 0, limit = 10, version } = input
+      if (typeof app !== 'string' || app.length > 120 || typeof query !== 'string' || query.length > 120 || !Number.isSafeInteger(offset) || offset < 0 || !Number.isInteger(limit) || limit < 1 || limit > 10 || version !== undefined && (typeof version !== 'string' || version.length > 1000)) bad('Invalid version page')
+      if (selected !== undefined && (!selected || typeof selected !== 'object' || Array.isArray(selected) || !/^[a-z][a-z0-9.-]{0,119}$/.test(selected.id ?? '') || typeof selected.label !== 'string' || selected.label.length > 200 || Object.keys(selected).some(key => !['id', 'label', 'targetId', 'componentId', 'component', 'componentExport', 'route', 'state'].includes(key)) || Object.values(selected).some(value => typeof value !== 'string' || value.length > 500))) bad('Invalid selected screen identity')
+      if (input.refresh !== undefined && (typeof input.refresh !== 'string' || input.refresh !== '' && !/^[a-f0-9-]{36}$/.test(input.refresh))) bad('Invalid version refresh')
+      if (input.refresh && input.refresh !== lastRefresh) { summaries.clear(); pageSync = undefined; lastRefresh = input.refresh }
+      pageSync ??= sync().catch(error => [`Worktree previews could not refresh: ${error.message}. Saved versions are retained.`])
+      const syncErrors = await pageSync
+      signal?.throwIfAborted()
+      const { projects: catalog, errors } = await catalogRows(signal)
+      errors.push(...syncErrors)
+      const scoped = catalog.filter(row => row.app.id === app)
+      if (!scoped.length) bad('Unknown app identity')
+      const inventories = {}
+      const projects = await bounded(scoped, async row => {
+        const described = summary({ ...row, ...await describe(row, row.host, false) })
+        if (!described.available) errors.push(`${described.name}: ${described.error}. Retry to check again.`)
+        if (selected && described.available) {
+          try {
+            const project = loadProject(row.host, { manifest: row.manifest, applicationRoot: row.root })
+            inventories[`${row.workspace ?? ''}:${row.key}`] = await screens(project, signal)
+          } catch (error) { signal?.throwIfAborted(); described.available = false; described.error = error.message; errors.push(`${described.name}: preview inventory unavailable. Retry to check again.`) }
+        }
+        return described
+      }, signal)
+      const versions = groupedApps(projects)[0].versions
+      const matches = historyOrder(versionChoices(versions, inventories, selected, current.key, query)).filter(item => version === undefined || item.id === version)
+      const items = matches.slice(offset, offset + limit).map(item => ({ ...item, previewCount: item.previews.length, previews: version === undefined ? [item.preview] : item.previews.slice(0, 10) }))
+      return { app, items, total: matches.length, offset, limit, hasMore: offset + limit < matches.length, errors }
+    },
     windowOrigins() { return [...new Set([...windowOrigins(), ...openedOrigins])] },
     async openWindow(key, workspaceOrigin, lease) {
       if (lease !== undefined && !/^[a-f0-9-]{36}$/.test(lease)) bad('Invalid project host lease')
@@ -128,7 +226,7 @@ export async function projectPicker(repo, current, { discoveredAdapter = join(re
       return result
     },
     async sourceVersions(input = {}) {
-      const list = await this.list(), appId = rows.find(row => row.key === current.key)?.app?.id ?? current.manifest.id
+      const list = await this.catalog(), appId = rows.find(row => row.key === current.key)?.app?.id ?? current.manifest.id
       const connections = list.apps.find(app => app.id === appId)?.connections ?? []
       const projects = await Promise.all(connections.filter(row => row.available).map(row => connectedProject(row.key, row.workspace)))
       const links = new Map()
@@ -257,16 +355,7 @@ export async function projectPicker(repo, current, { discoveredAdapter = join(re
           projects.push(...await Promise.all(linked.map(async row => ({ ...await describe(row, workspace.store), workspace: workspace.origin, workspaceName: workspace.name }))))
         } catch { workspaceErrors.push(`${workspace.name ?? workspace.origin}: saved connections are unavailable. Local connections and evidence are retained.`) }
       }
-      const apps = []
-      for (const row of projects) {
-        let app = apps.find(app => app.id === row.app.id)
-        if (!app) { app = { ...row.app, connections: [], versions: [] }; apps.push(app) }
-        app.connections.push(row)
-        const identity = { ...row.version, id: row.version?.id ?? `${row.workspace ?? ''}:${row.key}`, name: row.version?.name ?? row.sourceName ?? row.name, kind: row.kind === 'design' ? 'design' : 'implementation' }
-        let version = app.versions.find(version => version.id === identity.id)
-        if (!version) { version = { ...identity, connections: [] }; app.versions.push(version) }
-        version.connections.push(row)
-      }
+      const apps = groupedApps(projects)
       return { active: current.key, projects, apps, workspaceErrors, canOpenWindow: Boolean(openWindow) }
     },
     async add(input, ownedOnly = false) {

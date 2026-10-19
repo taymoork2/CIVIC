@@ -11,16 +11,18 @@ import { Dialog, DialogContent, DialogTitle } from '@civic/shell/ui/dialog'
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent } from '@civic/shell/ui/empty'
 import { Skeleton } from '@civic/shell/ui/skeleton'
 import { Alert, AlertDescription } from '@civic/shell/ui/alert'
-import { projectShortcut, projectWindowHref, preferredConnection, versionCaption, versionDetails, versionChoices, checkoutGroup, type AppVersion, type DraftScreen } from './project-choice'
+import { projectShortcut, projectWindowHref, preferredConnection, versionCaption, versionDetails, checkoutGroup, type AppVersion, type DraftScreen } from './project-choice'
+import type { VersionChoice } from '@civic/shell/version-choices'
 import { SourceBrowser } from './source-browser'
 import { VersionChanges, type VersionChange } from './version-changes'
-import { HistoryList, HistoryMeta, historyOrder, type VersionHistory } from './version-history'
+import { HistoryList, HistoryMeta, type VersionHistory } from './version-history'
 import { VersionRow } from './version-row'
 import './project-picker.css'
 
 type App = { id: string; name: string }
-type Connection = { key: string; name: string; sourceName?: string; refreshRequired?: boolean; root: string; manifest: string; app: App; kind: string; design?: { id: string }; version?: { name?: string; history?: VersionHistory }; workspace?: string; workspaceName?: string; preview?: boolean; available: boolean; error?: string }
+type Connection = { key: string; name: string; sourceName?: string; refreshRequired?: boolean; root: string; manifest: string; app: App; kind: string; design?: { id: string }; version?: { id?: string; name?: string; history?: VersionHistory }; workspace?: string; workspaceName?: string; preview?: boolean; available: boolean; error?: string }
 type Connections = { active: string; projects: Connection[]; apps: (App & { connections: Connection[]; versions: AppVersion<Connection>[] })[]; workspaceErrors: string[]; canOpenWindow?: boolean }
+type VersionPage = { items: (VersionChoice<Connection> & { previewCount: number })[]; total: number; offset: number; limit: number; hasMore: boolean; errors: string[] }
 const versionLabel = (kind: string) => ({ design: 'Design reference', live: 'Running app', isolated: 'Test instance' })[kind] ?? 'Branch checkout'
 const versionIcon = (kind: string) => ({ design: Pencil, live: Monitor, isolated: Layers })[kind] ?? GitBranch
 async function request<T>(input?: unknown, signal?: AbortSignal): Promise<T> {
@@ -47,8 +49,10 @@ export function ProjectPicker({ blocked, activeRun, selectedScreen, focusScreen,
   const [version, setVersion] = useState('')
   const [versionQuery, setVersionQuery] = useState('')
   const [expandedVersion, setExpandedVersion] = useState('')
-  const [draftScreens, setDraftScreens] = useState<Record<string, DraftScreen[]>>({})
-  const [draftErrors, setDraftErrors] = useState<Record<string, string>>({})
+  const [page, setPage] = useState<(VersionPage & { scope: string }) | null>(null)
+  const [details, setDetails] = useState<Record<string, VersionPage['items'][number]>>({})
+  const [pageError, setPageError] = useState(''), [detailError, setDetailError] = useState('')
+  const [offset, setOffset] = useState(0), [refresh, setRefresh] = useState('')
   const [loadingScreens, setLoadingScreens] = useState(false)
   const [changes, setChanges] = useState<Record<string, VersionChange>>({})
   const [changeError, setChangeError] = useState('')
@@ -56,11 +60,13 @@ export function ProjectPicker({ blocked, activeRun, selectedScreen, focusScreen,
   const currentApp = connections?.apps.find(app => app.id === browseAppId)
   const canOpenWindow = connections?.canOpenWindow && ['localhost', '127.0.0.1', '[::1]'].includes(location.hostname)
   const target = browseAppId === (project.app?.id ?? project.id) ? selectedScreen : undefined
-  const versions = versionChoices(currentApp?.versions ?? [], draftScreens, target, connections?.active)
+  const selectedIdentity = target && { id: target.id, label: target.label, targetId: target.targetId, componentId: target.componentId, route: target.route, component: target.component, componentExport: target.componentExport, state: target.state ?? (target.fixture && typeof target.fixture === 'object' && 'state' in target.fixture && typeof target.fixture.state === 'string' ? target.fixture.state : undefined) }
+  const pageRequest = JSON.stringify({ app: browseAppId, selected: selectedIdentity, query: versionQuery, offset, refresh })
+  const versions = page?.scope === pageRequest ? page.items.map(item => details[item.id] ?? item) : []
   const chosen = versions.flatMap(item => item.previews).find(item => item.id === version)
   const chosenLocation = chosen?.row.kind === 'live' ? 'Live app · read only' : chosen?.row.kind === 'isolated' ? 'Test copy · isolated data' : 'Local preview'
-  const previewCount = versions.reduce((count, item) => count + item.previews.length, 0)
-  const visibleVersions = historyOrder(versionChoices(currentApp?.versions ?? [], draftScreens, target, connections?.active, versionQuery)).slice(0, 10)
+  const previewCount = page?.scope === pageRequest ? page.total : 0
+  const visibleVersions = versions
   const versionSections = [
     { title: 'Branches', icon: GitBranch, items: visibleVersions.filter(item => item.kind === 'implementation') },
     { title: 'Running & test instances', icon: Monitor, items: visibleVersions.filter(item => item.kind === 'instance') },
@@ -68,7 +74,7 @@ export function ProjectPicker({ blocked, activeRun, selectedScreen, focusScreen,
   ]
   const currentConnection = connections?.projects.find(row => !row.workspace && row.key === project.key)
   const currentName = currentConnection?.sourceName ?? (error ? 'Version unavailable' : 'Loading version…')
-  const currentVersion = connections?.apps.find(app => app.id === (project.app?.id ?? project.id))?.versions.find(item => item.connections.some(row => !row.workspace && row.key === project.key))
+  const currentVersion = currentConnection?.version
   const currentKind = currentConnection?.kind ?? 'implementation'
   const CurrentIcon = versionIcon(currentKind)
   const caption = { ...versionCaption(currentName), ...(currentConnection?.version?.name ? { name: currentConnection.version.name } : {}) }
@@ -76,29 +82,37 @@ export function ProjectPicker({ blocked, activeRun, selectedScreen, focusScreen,
     void window.civicDesktop?.register({ appId: project.app?.id ?? project.id, name: (project.app?.name ?? project.name).slice(0, 240), key: project.key, version: caption.name.slice(0, 240), dirty: tabDirty }).catch(error => setError(error.message))
   }, [caption.name, tabDirty])
   const comparisonPreviews = visibleVersions.filter(item => !item.current || item.preview.row.refreshRequired).map(item => item.preview).filter(item => item.screen)
-  const comparisonRequest = JSON.stringify({ scenario: target?.id, baseVersion: currentVersion?.id, candidates: comparisonPreviews.map(item => ({ id: item.id, key: item.row.key, workspace: item.row.workspace, scenario: item.screen!.id, version: currentApp?.versions.find(version => version.connections.includes(item.row))?.id })) })
+  const comparisonRequest = JSON.stringify({ scenario: target?.id, baseVersion: currentVersion?.id, candidates: comparisonPreviews.map(item => ({ id: item.id, key: item.row.key, workspace: item.row.workspace, scenario: item.screen!.id, version: item.row.version?.id })) })
   const appInput = () => { const app = connections?.apps.find(app => app.id === appId); return app ? { app: { id: app.id, name: app.name } } : {} }
   useEffect(() => { try { localStorage.setItem(`civic:${project.app?.id ?? project.id}:work`, JSON.stringify({ key: project.key })) } catch {} }, [])
   const hasConnections = connections !== null
   useEffect(() => {
     if (!open && hasConnections) return
+    const controller = new AbortController()
     setLoadingConnections(true); setError('')
-    void request<Connections>().then(setConnections).catch((error) => setError(error.message)).finally(() => setLoadingConnections(false))
+    void request<Connections>({ action: 'catalog' }, controller.signal).then(result => { if (!controller.signal.aborted) setConnections(result) }).catch(error => { if (!controller.signal.aborted) setError(error.message) }).finally(() => { if (!controller.signal.aborted) setLoadingConnections(false) })
+    return () => controller.abort()
   }, [open, hasConnections])
   useEffect(() => {
-    if (!open || mode !== 'work' || !currentApp) return
-    let cancelled = false
-    const missing = currentApp.connections.filter(row => row.available && !draftScreens[`${row.workspace ?? ''}:${row.key}`])
-    if (!missing.length) { setLoadingScreens(false); return }
-    setLoadingScreens(true)
-    void Promise.allSettled(missing.map(row => request<DraftScreen[]>({ action: 'scenarios', key: row.key, workspace: row.workspace }))).then(results => {
-      if (cancelled) return
-      const screens: Record<string, DraftScreen[]> = {}, errors: Record<string, string> = {}
-      results.forEach((result, index) => { const row = missing[index]!, id = `${row.workspace ?? ''}:${row.key}`; screens[id] = result.status === 'fulfilled' ? result.value : []; if (result.status === 'rejected') errors[id] = 'Preview inventory unavailable. Close and reopen the project picker to retry.' })
-      setDraftScreens(current => ({ ...current, ...screens })); setDraftErrors(current => ({ ...current, ...errors })); setLoadingScreens(false)
-    })
-    return () => { cancelled = true }
-  }, [open, mode, currentApp, draftScreens])
+    if (!open || mode !== 'work' || !hasConnections) return
+    const controller = new AbortController()
+    setLoadingScreens(true); setPageError(''); setDetails({}); setDetailError('')
+    const pending = setTimeout(() => { void request<VersionPage>({ ...JSON.parse(pageRequest), action: 'version-page' }, controller.signal).then(result => {
+      if (controller.signal.aborted) return
+      setPage({ ...result, scope: pageRequest })
+      setConnections(current => current && { ...current, projects: [...new Map([...current.projects, ...result.items.flatMap(item => item.connections)].map(row => [`${row.workspace ?? ''}:${row.key}`, row])).values()] })
+    }).catch(error => { if (!controller.signal.aborted) { setPage(null); setPageError(error.message) } }).finally(() => { if (!controller.signal.aborted) setLoadingScreens(false) }) }, 150)
+    return () => { clearTimeout(pending); controller.abort() }
+  }, [open, mode, hasConnections, pageRequest, refresh])
+  useEffect(() => {
+    if (!open || mode !== 'work' || !expandedVersion || loadingScreens) return
+    const controller = new AbortController()
+    setDetailError('')
+    void request<VersionPage>({ ...JSON.parse(pageRequest), action: 'version-page', version: expandedVersion, offset: 0, limit: 1 }, controller.signal).then(result => {
+      if (!controller.signal.aborted && result.items[0]) setDetails(current => ({ ...current, [expandedVersion]: result.items[0]! }))
+    }).catch(error => { if (!controller.signal.aborted) setDetailError(error.message) })
+    return () => controller.abort()
+  }, [open, mode, expandedVersion, loadingScreens, pageRequest])
   useEffect(() => {
     if (!open || mode !== 'work' || loadingScreens) return
     const input = JSON.parse(comparisonRequest)
@@ -119,15 +133,15 @@ export function ProjectPicker({ blocked, activeRun, selectedScreen, focusScreen,
       if (mode === 'existing') {
         const result = await request<{ connection?: { key: string; name: string; preview: boolean }; discovery?: Discovery }>({ action: 'discover', root, manifest, source, ...appInput() })
         if (result.discovery) { setDiscovery(result.discovery); if (!name.trim()) setName(root.split('/').filter(Boolean).at(-1) ?? 'Connected app') }
-        if (result.connection) { setCreated(result.connection); setConnections(await request()) }
-      } else { setCreated(await request({ action: 'add', kind: mode, name, root, manifest, source })); setConnections(await request()) }
+        if (result.connection) { setCreated(result.connection); setConnections(await request({ action: 'catalog' })) }
+      } else { setCreated(await request({ action: 'add', kind: mode, name, root, manifest, source })); setConnections(await request({ action: 'catalog' })) }
     }
     catch (error) { setError((error as Error).message) }
     finally { setBusy(false) }
   }
   const createConnection = async (input: Record<string, unknown>) => {
     setBusy(true); setError('')
-    try { setCreated(await request({ ...input, name, ...appInput() })); setConnections(await request()); setDiscovery(null) }
+    try { setCreated(await request({ ...input, name, ...appInput() })); setConnections(await request({ action: 'catalog' })); setDiscovery(null) }
     catch (error) { if (input.action !== 'generate') setError((error as Error).message); throw error }
     finally { setBusy(false) }
   }
@@ -161,10 +175,10 @@ export function ProjectPicker({ blocked, activeRun, selectedScreen, focusScreen,
   }
   const canSwitch = !blocked && (!activeRun || acknowledged)
   const openPicker = () => {
-    setMode('work'); setBrowseAppId(project.app?.id ?? project.id); setVersion(''); setExpandedVersion(''); setCreated(null); setDiscovery(null); setAcknowledged(false); setError(''); setDraftScreens({}); setDraftErrors({}); setChanges({}); setChangeError(''); setVersionQuery(''); setLoadingScreens(false); setOpen(true)
+    setMode('work'); setBrowseAppId(project.app?.id ?? project.id); setVersion(''); setExpandedVersion(''); setCreated(null); setDiscovery(null); setAcknowledged(false); setError(''); setPage(null); setDetails({}); setOffset(0); setChanges({}); setChangeError(''); setVersionQuery(''); setLoadingScreens(false); setOpen(true)
   }
   const chooseApp = (app: Connections['apps'][number]) => {
-    setBrowseAppId(app.id); setVersion(''); setExpandedVersion(''); setVersionQuery(''); setChanges({}); setChangeError('')
+    setBrowseAppId(app.id); setVersion(''); setExpandedVersion(''); setVersionQuery(''); setOffset(0); setChanges({}); setChangeError('')
   }
   type Preview = (typeof versions)[number]['preview']
   const isCurrent = (item: Preview) => !item.row.workspace && item.row.key === connections?.active && (!target || item.screen?.id === target.id)
@@ -190,7 +204,7 @@ export function ProjectPicker({ blocked, activeRun, selectedScreen, focusScreen,
         const connection = app.connections.find(row => !row.workspace && row.key === connections.active && row.available) ?? preferredConnection(app.connections.filter(row => row.preview))
         return <div key={app.id} className="civic-project-nav-row"><Button variant="ghost" className="cv:min-w-0 cv:flex-1 cv:justify-start cv:hover:bg-foreground/8 cv:dark:hover:bg-foreground/8 cv:aria-[current=true]:hover:bg-primary/15 cv:aria-[current=true]:hover:text-primary" aria-current={browseAppId === app.id ? 'true' : undefined} disabled={busy} onClick={() => chooseApp(app)}><FolderOpen aria-hidden="true" /><span>{app.name}</span>{app.id === (project.app?.id ?? project.id) && <span className="civic-project-open-mark" title="Open project">●</span>}</Button>{canOpenWindow && connection && <Button variant="ghost" size="icon-sm" className="cv:rounded-lg cv:hover:bg-foreground/8 cv:dark:hover:bg-foreground/8" nativeButton={false} disabled={busy} aria-label={`Open ${app.name} in a new window`} title={`Open ${app.name} in a new window`} render={<a href={projectWindowHref(connection.key, connection.workspace)} target="_blank" rel="noopener noreferrer" />}><ArrowUpRight className="cv:size-3.5" aria-hidden="true" /></Button>}</div>
       })}<div className="civic-project-nav-actions"><Button variant="ghost" size="sm" className="cv:justify-start" onClick={() => start('existing')} disabled={busy}>Connect app</Button><Button variant="ghost" size="sm" className="cv:justify-start" onClick={() => start('new')} disabled={busy}>New project</Button></div></nav><section className="civic-project-versions" aria-label={`${currentApp?.name ?? 'Project'} versions`}><div className="civic-project-version-heading"><p>{target ? `Versions of ${target.label}` : 'All screens and components'}</p></div>
-        <div className="civic-version-search"><Input type="search" aria-label="Search versions" value={versionQuery} onChange={event => { setVersionQuery(event.target.value); setVersion(''); setExpandedVersion('') }} placeholder="Find a branch, build or design…" />{previewCount > 10 && <small>Up to 10 matches · search to find more</small>}</div>
+        <div className="civic-version-search"><Input type="search" aria-label="Search versions" value={versionQuery} maxLength={120} onChange={event => { setVersionQuery(event.target.value); setVersion(''); setExpandedVersion(''); setOffset(0) }} placeholder="Find a branch, build or design…" /></div>
         <div className="civic-version-scroll" role="region" aria-label="Available versions" tabIndex={0}>
         {!loadingScreens && versionSections.filter(section => section.items.length).map(({ title, icon: Icon, items }) => <section className="civic-version-section" key={title} aria-label={title}><h3><Icon aria-hidden="true" />{title}</h3><HistoryList className="rh-version-options" items={items.map(item => {
           const group = checkoutGroup(item)
@@ -202,17 +216,18 @@ export function ProjectPicker({ blocked, activeRun, selectedScreen, focusScreen,
           const SourceIcon = versionIcon(item.preview.row.kind)
           return { id: item.id, label, history, marker: <SourceIcon />, current: item.current, content: <VersionRow id={item.id} label={label} expanded={expanded} current={item.current} disabled={busy} toggle={() => setExpandedVersion(expanded ? '' : item.id)} summary={<><strong>{label}</strong><span className="civic-version-meta"><span className={comparing ? 'civic-change-summary' : undefined}>{group.shared && !comparing ? `${group.branches.length} branch checkouts` : description === 'Branch draft' ? 'Branch checkout' : description}</span>{versionDetails(item.preview.row.sourceName ?? '').edited && <span>Local changes</span>}{item.preview.row.refreshRequired && <span>Update available</span>}</span>{group.shared && !expanded && <span className="civic-version-meta">{group.branches.join(' · ')}</span>}{history && <HistoryMeta history={history} />}</>}>
             {comparing && (changeError ? <p role="status">{changeError}</p> : <VersionChanges change={changes[item.preview.id]} scope={target!.label} />)}
-            <ul className="civic-version-previews" aria-label={`Previews for ${label}`}>{item.previews.slice(0, 10).map(preview => {
+            {!details[item.id] ? <p role="status">{detailError || 'Loading previews…'}{detailError && <Button variant="ghost" size="sm" onClick={() => { setExpandedVersion(''); setRefresh(crypto.randomUUID()) }}>Retry</Button>}</p> : <ul className="civic-version-previews" aria-label={`Previews for ${label}`}>{item.previews.slice(0, 10).map(preview => {
               const location = preview.row.kind === 'live' ? 'Live app' : preview.row.kind === 'isolated' ? 'Test copy' : group.branches.length === 1 && item.previews.length === 1 ? 'Local checkout' : versionDetails(preview.row.sourceName ?? preview.row.name).name
               return <li key={preview.id}>{previewOption(preview, `${location}${preview.screen?.state ? ` · ${preview.screen.state}` : ''}`, preview.row.kind === 'live' ? 'Read only' : preview.row.kind === 'isolated' ? 'Isolated data' : preview.row.workspaceName ?? 'Local worktree', history?.revision)}</li>
-            })}</ul>
+            })}</ul>}
           </VersionRow> }
         })} /></section>)}
-        {loadingConnections || loadingScreens ? <div className="civic-picker-loading" role="status"><Skeleton className="cv:h-12 cv:w-full" /><Skeleton className="cv:h-12 cv:w-full" /><p>Loading previews…</p></div> : !error && !visibleVersions.length ? <Empty role="status"><EmptyHeader><EmptyMedia variant="icon"><SearchX aria-hidden="true" /></EmptyMedia><EmptyTitle>No preview available</EmptyTitle><EmptyDescription>{versionQuery ? 'Try another search.' : 'Connect a version with a preview for this screen.'}</EmptyDescription></EmptyHeader>{versionQuery && <EmptyContent><Button variant="outline" onClick={() => setVersionQuery('')}>Clear search</Button></EmptyContent>}</Empty> : null}
+        {loadingConnections || loadingScreens ? <div className="civic-picker-loading" role="status"><Skeleton className="cv:h-12 cv:w-full" /><Skeleton className="cv:h-12 cv:w-full" /><p>Loading previews…</p></div> : pageError ? <Alert variant="destructive"><AlertDescription>{pageError}<Button variant="ghost" size="sm" onClick={() => setRefresh(crypto.randomUUID())}>Retry</Button></AlertDescription></Alert> : !error && !visibleVersions.length ? <Empty role="status"><EmptyHeader><EmptyMedia variant="icon"><SearchX aria-hidden="true" /></EmptyMedia><EmptyTitle>No preview available</EmptyTitle><EmptyDescription>{versionQuery ? 'Try another search.' : 'Connect a version with a preview for this screen.'}</EmptyDescription></EmptyHeader>{versionQuery && <EmptyContent><Button variant="outline" onClick={() => setVersionQuery('')}>Clear search</Button></EmptyContent>}</Empty> : null}
+        {!loadingScreens && page?.scope === pageRequest && (offset > 0 || page.hasMore) && <nav className="rh-project-actions" aria-label="Version pages"><Button variant="ghost" size="sm" disabled={offset === 0} onClick={() => { setOffset(value => Math.max(0, value - 10)); setExpandedVersion('') }}>Previous</Button><span>{offset + 1}–{Math.min(offset + page.limit, previewCount)} of {previewCount}</span><Button variant="ghost" size="sm" disabled={!page.hasMore} onClick={() => { setOffset(value => value + 10); setExpandedVersion('') }}>Next</Button></nav>}
         {blocked && !window.civicDesktop && <p role="status">Save edits and finish pending captures before switching versions.</p>}
         {target && !loadingScreens && versions.length > 0 && !versions.some(item => item.kind === 'design') && <p className="rh-project-copy">No design draft is registered for this item yet.</p>}
 
-        {Object.entries(draftErrors).map(([key, message]) => <p key={key} role="status">{message}</p>)}
+        {page?.scope === pageRequest && page.errors.length > 0 && <details className="civic-source-changes"><summary>{page.errors.length} previews unavailable</summary>{page.errors.map(message => <p key={message} role="status">{message}</p>)}<Button variant="ghost" size="sm" onClick={() => setRefresh(crypto.randomUUID())}>Retry unavailable previews</Button></details>}
         {Boolean(connections?.workspaceErrors.length) && <details className="civic-source-changes"><summary>{connections!.workspaceErrors.length} previews unavailable</summary>{connections!.workspaceErrors.map(message => <p key={message} className="rh-project-copy">{message}</p>)}</details>}
         </div><div className="civic-version-footer">{activeRun && version && chosen ? <section className="civic-version-confirm"><p>Open <strong>{versions.find(item => item.previews.some(preview => preview.id === chosen.id))?.name ?? versionDetails(chosen.row.sourceName ?? versionLabel(chosen.row.kind)).name}</strong>{chosen.screen ? ` · ${chosen.screen.label}` : ''}?</p><p>{chosenLocation}. Saved evidence stays with its version.</p><div><Button variant="ghost" disabled={busy} onClick={() => setVersion('')}>Cancel</Button><Button disabled={busy || blocked} onClick={() => void select(chosen.row.key, chosen.row.workspace, chosen.screen?.id)}>{busy ? 'Opening…' : 'Open version'}</Button></div></section> : <div className="civic-version-footer-actions">{browseAppId === (project.app?.id ?? project.id) ? <Button variant="ghost" size="sm" aria-label="Manage sources" disabled={busy} onClick={() => setMode('sources')}><Settings2 aria-hidden="true" />Manage connections</Button> : <span>Choose a version to open this project.</span>}</div>}</div>
       </section></div> : mode === 'sources' ? <><SourceBrowser connect={row => { start('existing', project.app?.id ?? project.id); setRoot(row.path ?? ''); setSource(row.source ?? 'src'); setName(row.title) }} /><div className="rh-project-actions"><Button variant="outline" onClick={() => setMode('work')}>Back to versions</Button><Button variant="outline" onClick={() => start('existing', project.app?.id ?? project.id)}>Add local folder</Button></div>
