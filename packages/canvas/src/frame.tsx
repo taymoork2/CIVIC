@@ -159,7 +159,7 @@ try {
       const publish = () => {
         const screen = ports.screen(), entry = index.scenarios.find((scenario) => scenario.id === screen)
         if (!entry) { state = { screen, dirty: false, pending: false, title: `Unmapped route: ${screen}`, fields: captured() }; at = screen; delete root.dataset.rehearsalReady; window.dispatchEvent(new CustomEvent('rehearsal-state', { detail: state })); throw Error(`Unmapped application route: ${screen}`) }
-        state = { screen, dirty: false, pending: false, ...ports.status?.(), title: entry.label, fields: captured() }
+        state = { screen, dirty: state?.screen === screen && state.dirty, pending: state?.screen === screen && state.pending, ...ports.status?.(), title: entry.label, fields: captured() }
         at = screen
         if (window.reviewPreview) window.reviewPreview.config = { ...config, scenario: screen }
         if (mounted && !restoring && !bridge.isReplaying()) root.dataset.rehearsalReady = 'true'
