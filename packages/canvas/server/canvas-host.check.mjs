@@ -119,7 +119,7 @@ test('an app on a function backend runs live against an isolated run of its func
   t.after(() => browser.close())
   const tab = await browser.newPage({ viewport: { width: 1280, height: 900 } })
   const errors = []
-  tab.on('pageerror', (error) => errors.push(error.message))
+  tab.on('pageerror', (error) => errors.push(error.stack))
   await tab.goto(origin + '/review')
   // The app's extension files each flow under the manifest's navigation, and draws the shopping flow first.
   await tab.locator('.app-nav-section').first().waitFor()
@@ -468,9 +468,10 @@ test('a live run switches account, goes offline and back, and changes viewport o
   await frame.getByText('Signed in as Sam Lee').waitFor()
   assert.equal(await frame.getByText('Sam Lee: Answer lost').count(), 1, 'the resend returned the first answer; one post')
   for (let index = 0; index < 2; index++) {
+    const count = await frame.locator('li').count()
     await frame.getByLabel('Message').fill('Same words')
     await frame.getByRole('button', { name: 'Post' }).click()
-    await tab.waitForFunction((count) => document.querySelector('iframe[title="Live Team board"]').contentDocument.querySelectorAll('li').length === count, (await frame.locator('li').count()) + 1)
+    await tab.waitForFunction((expected) => document.querySelector('iframe[title="Live Team board"]').contentDocument.querySelectorAll('li').length === expected, count + 1)
   }
   assert.equal(await frame.getByText('Sam Lee: Same words').count(), 2, 'two posts with the same words are two posts')
   await run.getByRole('button', { name: 'Reopen app' }).click()
