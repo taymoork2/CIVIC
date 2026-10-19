@@ -61,3 +61,13 @@ test('an app whose adapter kind has no registered connector is refused', async (
   const { repo, web } = await host({ adapter: { kind: 'laundry' } })
   assert.throws(() => civicReview({ host: web, repo }), /No connector is registered for adapter kind laundry/)
 })
+
+test('the installed shell state shim is pre-bundled without replacing host optimizations', async () => {
+  const { repo, web } = await host()
+  const plugin = civicReview({ host: web, repo })
+  const config = { optimizeDeps: { include: ['host-dependency'], exclude: ['host-source'] } }
+  plugin.config(config)
+  assert.ok(config.optimizeDeps.include.includes('host-dependency'))
+  assert.ok(config.optimizeDeps.exclude.includes('host-source'))
+  assert.ok(config.optimizeDeps.include.includes('@civic/shell > @base-ui/react > use-sync-external-store/shim'))
+})
