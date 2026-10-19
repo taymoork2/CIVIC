@@ -55,9 +55,4 @@
 .rh-canvas-detail { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
 .rh-canvas-detail > span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
 .rh-canvas-detail select { font: inherit; font-size: 12px; min-height: 36px; max-width: 132px; background: var(--civic-surface); border: 1px solid var(--civic-border); border-radius: 6px; padding: 4px 8px; }
-.rh-map-bar { flex-wrap: wrap; }
-@media (max-width: 600px) {
-  .app-rehearsal .rh-map-bar { flex-wrap: nowrap; }
-  .app-rehearsal .rh-map-bar .rh-breadcrumb { flex: 1; }
-}
 }

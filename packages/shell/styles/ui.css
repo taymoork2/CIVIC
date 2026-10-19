@@ -241,11 +241,6 @@
   .rh-inspector [data-slot=tabs] { min-width: 0; }
   .rh-inspector [data-slot=tabs-list] { min-height: 42px; flex-shrink: 0; }
   .rh-inspector [data-slot=tabs-trigger] { font-size: 12px; }
-  .rh-brand { min-height: 52px; padding-block: 4px; }
-  [data-civic-desktop] .rh-brand { min-height: 40px; padding-block: 0; -webkit-app-region: drag; user-select: none; }
-  [data-civic-desktop] .rh-brand :is(button,a,input,select) { -webkit-app-region: no-drag; }
-  [data-civic-desktop=darwin] .rh-brand { padding-left: 88px; }
-  [data-civic-desktop=win32] .rh-brand { padding-right: 144px; }
   @media (max-width: 480px) {
     .rh-project-version small { display: none; }
   }
@@ -278,7 +273,6 @@
     .civic-workspace-actions { gap: 4px; }
     .civic-source-changes summary { min-height: 44px; box-sizing: border-box; }
     .civic-play-label { display: none; }
-    .rh-brand { padding: 4px 8px; }
     .rh-inspector { padding: 12px; }
   }
 }

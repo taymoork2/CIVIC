@@ -34,6 +34,7 @@ try {
   let next
   for (let i = 0; i < Math.min(await summaries.count(), 10); i++) {
     await summaries.nth(i).click()
+    await picker.locator('.civic-version-previews').waitFor()
     const options = picker.locator('.civic-preview-option').getByRole('button', { name: /^Open .* preview$/ })
     if (await options.count() && await options.first().isEnabled()) { next = options.first(); break }
   }

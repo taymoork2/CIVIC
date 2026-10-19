@@ -4,16 +4,16 @@
 .rehearsal h1, .rehearsal h2, .rehearsal p { margin: 0; }
 .rehearsal h1 { font-size: 28px; line-height: 1.3; letter-spacing: -.025em; margin-bottom: 4px; }
 .rehearsal h2 { font-size: 19px; }
-.rehearsal button, .rehearsal input, .rehearsal select { font: inherit; }
-.rehearsal button { cursor: pointer; min-height: 44px; padding: 8px 16px; background: var(--civic-surface); border: 1px solid var(--rh-line); border-radius: 8px; color: var(--rh-ink); font-weight: 600; }
-.rehearsal button:disabled { cursor: default; opacity: .55; }
-.rehearsal button:focus-visible, .rehearsal a:focus-visible, .rehearsal input:focus-visible, .rehearsal select:focus-visible { outline: 3px solid var(--rh-accent); outline-offset: 3px; }
+.rehearsal button:not([data-civic-control]), .rehearsal input:not([data-slot]), .rehearsal select:not([data-slot]) { font: inherit; }
+.rehearsal button:not([data-civic-control]) { cursor: pointer; min-height: 44px; padding: 8px 16px; background: var(--civic-surface); border: 1px solid var(--rh-line); border-radius: 8px; color: var(--rh-ink); font-weight: 600; }
+.rehearsal button:not([data-civic-control]):disabled { cursor: default; opacity: .55; }
+.rehearsal button:not([data-civic-control]):focus-visible, .rehearsal a:focus-visible:not([data-slot]), .rehearsal input:not([data-slot]):focus-visible, .rehearsal select:not([data-slot]):focus-visible { outline: 3px solid var(--rh-accent); outline-offset: 3px; }
 .rehearsal a { color: #244a72; text-underline-offset: 3px; }
-.rh-brand { display: flex; align-items: center; gap: 20px; min-height: 66px; border-bottom: 1px solid var(--rh-line); }
-.rh-brand strong { font-size: 21px; letter-spacing: -.025em; }
-.rh-brand > span { border-left: 1px solid var(--rh-line); padding-left: 20px; }
-.rh-brand a { margin-left: auto; font-size: 13px; }
-.rh-brand .rh-app-return { margin-left: auto; font-size: 13px; }
+.rehearsal:not(.app-rehearsal) .rh-brand { display: flex; align-items: center; gap: 20px; min-height: 66px; border-bottom: 1px solid var(--rh-line); }
+.rehearsal:not(.app-rehearsal) .rh-brand strong { font-size: 21px; letter-spacing: -.025em; }
+.rehearsal:not(.app-rehearsal) .rh-brand > span { border-left: 1px solid var(--rh-line); padding-left: 20px; }
+.rehearsal:not(.app-rehearsal) .rh-brand a { margin-left: auto; font-size: 13px; }
+.rehearsal:not(.app-rehearsal) .rh-brand .rh-app-return { margin-left: auto; font-size: 13px; }
 .rh-structures { margin-left: auto; display: flex; align-items: center; gap: 6px; }
 .rh-structures button, .rh-structures a { font-size: 13px; padding: 9px 12px; min-height: 38px; }
 .rh-structures button[aria-pressed=true] { background: #fff0e8; color: #bd3907; border-color: #e9c3b2; }
@@ -50,9 +50,9 @@
 .rh-journeys li button[aria-current=step] { color: var(--rh-accent); background: #fff0e8; font-weight: 650; }
 .rh-journeys li button[aria-pressed=true] { border-color: var(--rh-line); }
 .rh-map-area { min-width: 0; background: var(--civic-surface); border: 1px solid var(--rh-line); border-radius: 12px; overflow: hidden; }
-.rh-map-bar { display: flex; align-items: center; gap: 18px; padding: 12px 18px; border-bottom: 1px solid var(--rh-line); }
-.rh-map-bar label { display: flex; gap: 10px; align-items: center; font-weight: 600; }
-.rehearsal select { border: 1px solid var(--rh-line); border-radius: 6px; background: var(--civic-surface); color: var(--rh-ink); padding: 8px; min-height: 44px; }
+.rehearsal:not(.app-rehearsal) .rh-map-bar { display: flex; align-items: center; gap: 18px; padding: 12px 18px; border-bottom: 1px solid var(--rh-line); }
+.rehearsal:not(.app-rehearsal) .rh-map-bar label { display: flex; gap: 10px; align-items: center; font-weight: 600; }
+.rehearsal select:not([data-slot]) { border: 1px solid var(--rh-line); border-radius: 6px; background: var(--civic-surface); color: var(--rh-ink); padding: 8px; min-height: 44px; }
 .rh-zoom { display: flex; align-items: center; gap: 8px; margin-left: auto; }
 .rh-zoom span { min-width: 40px; text-align: center; font-size: 13px; }
 .rh-zoom button { padding: 4px 12px; }
@@ -99,14 +99,14 @@
 .rh-history { padding: 0 0 0 18px; margin: 0; }
 .rh-history li { padding: 10px 0; border-top: 1px solid var(--rh-line); }
 .rh-history li > span, .rh-history li > small, .rh-history li > a { display: block; font-size: 12px; }
-@media (hover: hover) { .rehearsal button:not(:disabled):hover { border-color: #8294a9; } }
+@media (hover: hover) { .rehearsal button:not([data-civic-control]):not(:disabled):hover { border-color: #8294a9; } }
 @media (max-width: 850px) {
   .rehearsal { padding: 0 12px 12px; }
-  .rh-brand { gap: 12px; min-height: 56px; }
-  .rh-brand > span { padding-left: 12px; font-size: 12px; }
-  .rh-brand .rh-muted { display: none; }
-  .rh-brand a { font-size: 11px; max-width: 100px; }
-  .rh-brand { flex-wrap: wrap; padding: 10px 0; }
+  .rehearsal:not(.app-rehearsal) .rh-brand { gap: 12px; min-height: 56px; }
+  .rehearsal:not(.app-rehearsal) .rh-brand > span { padding-left: 12px; font-size: 12px; }
+  .rehearsal:not(.app-rehearsal) .rh-brand .rh-muted { display: none; }
+  .rehearsal:not(.app-rehearsal) .rh-brand a { font-size: 11px; max-width: 100px; }
+  .rehearsal:not(.app-rehearsal) .rh-brand { flex-wrap: wrap; padding: 10px 0; }
   .rh-structures { width: 100%; margin-left: 0; }
   .rh-structures a { max-width: none; font-size: 13px; }
   .rh-heading { align-items: start; flex-direction: column; gap: 14px; padding: 18px 4px; }
@@ -125,9 +125,9 @@
   .rh-journeys li { flex: 0 0 auto; }
   .rh-journeys > .rh-muted, .rh-journeys h3 { display: none; }
   .rh-inspector { position: fixed; inset: 140px 12px 12px; z-index: 20; max-height: none; box-shadow: 0 8px 36px #17233426; }
-  .rh-map-bar { padding: 8px 12px; gap: 8px; }
-  .rh-map-bar label { font-size: 12px; gap: 4px; }
-  .rh-map-bar > .rh-muted { display: none; }
+  .rehearsal:not(.app-rehearsal) .rh-map-bar { padding: 8px 12px; gap: 8px; }
+  .rehearsal:not(.app-rehearsal) .rh-map-bar label { font-size: 12px; gap: 4px; }
+  .rehearsal:not(.app-rehearsal) .rh-map-bar > .rh-muted { display: none; }
   .rh-zoom button { padding: 4px 8px; }
   .rh-zoom { gap: 2px; }
   .rh-zoom span { min-width: 32px; font-size: 11px; }
