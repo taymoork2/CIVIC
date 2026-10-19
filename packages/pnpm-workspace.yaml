@@ -4,6 +4,9 @@
 # installs them from git (decision 0010).
 packages:
   - '*'
+overrides:
+  # Watcher 2.6 removes braces (GHSA-vfj7-8cjw-p6xm); remove when the CLI updates its pin.
+  '@tailwindcss/cli@4.3.3>@parcel/watcher': 2.6.0
 allowBuilds:
   esbuild: true
   '@parcel/watcher': false
