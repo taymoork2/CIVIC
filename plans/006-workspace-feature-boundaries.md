@@ -4,7 +4,12 @@
 
 ## Status and drift
 
-- P3; effort L; change risk HIGH; category maintainability; status TODO.
+- P3; effort L; change risk HIGH; category maintainability; status DONE.
+- Root refreshed the implementation baseline to `b072d2c` after Plans 001–005. Characterization extends the existing real-browser host suite before extraction; no camera/routing algorithms or external adapter sources enter this unit.
+- Characterization found two prerequisite guard defects, repaired separately before extraction: queued replacement ignored failed captures, and the frame's runtime observer cleared adapter-published draft flags when no runtime status provider existed. `frame.tsx` joins only this bounded prerequisite fix; recording/runtime formats stay unchanged.
+- Extraction is committed through `e8c6639`: inspector, header/map bar, preview session, canvas selection, scene presentation and paged picker data retain their existing guards and shared helpers. All package typechecks/tests and isolated installed-Electron acceptance passed before final clean-checkout signoff.
+- Final manual notification acceptance found a prerequisite source-refresh defect: Vite's default HMR reloaded a mounted draft. `0a2da39` confines app source changes to the existing inventory refresh path; a real file-edit regression proves the toast, stale revision and draft/iframe retention. `605075c` repairs an existing browser assertion that measured its expected row count after submitting the post. No runtime protocol or authorization changed.
+- Exact-code `bin/signoff --no-post` passed at `605075c49e2384467477a003bfad1724601c7ec1`, including all 38 host/browser checks and the fresh Git-package installation gate. Browser/Electron evidence and explicit environment limits are recorded in [the acceptance report](../docs/dogfood-reports/2026-10-19-workspace-consolidation.md). The documentation commit also requires exact-head signoff before landing.
 - Planned at `b99d37b2`, 2026-10-18, plus viewport working edits. Depends on 005 and therefore all focused fixes/readiness.
 - Run `rtk git status --short` and `rtk git diff --stat b99d37b2 -- packages/canvas/src packages/canvas/server/canvas-host.check.mjs`. Prerequisite extraction changes are expected; root updates the live excerpts/baseline before this unit. Do not mechanically apply an old file split.
 
@@ -40,10 +45,10 @@ Tests in scope: the existing canvas test suites, `server/canvas-host.check.mjs` 
 
 ## Done / stop / maintenance
 
-- [ ] Workspace layout, selection, preview lifecycle, and picker data have explicit owners; AppCanvas composes them.
-- [ ] No duplicate viewport state, request helper, loader cache, permission model, or camera controller was introduced.
-- [ ] Existing exports, source identities, runtime journals, captured feedback and drafts remain intact.
-- [ ] Focus, pan/zoom arrows, replacement guards, listeners and replay behavior retain their characterization results.
-- [ ] Typecheck, all package tests, fresh-install signoff and promised browser/Electron acceptance are recorded for the final candidate.
+- [x] Workspace layout, selection, preview lifecycle, and picker data have explicit owners; AppCanvas composes them.
+- [x] No duplicate viewport state, request helper, loader cache, permission model, or camera controller was introduced.
+- [x] Existing exports, source identities, runtime journals, captured feedback and drafts remain intact.
+- [x] Focus, pan/zoom arrows, replacement guards, listeners and replay behavior retain their characterization results.
+- [x] Typecheck, all package tests, fresh-install signoff and promised browser/Electron acceptance are recorded for the code candidate, with existing-window reload and external-device limits explicit.
 
 Branch suggestion `refactor/workspace-feature-boundaries`; concern-based Conventional Commits such as `refactor(canvas): separate workspace pane composition` and `refactor(canvas): isolate preview lifecycle ownership`. No push/merge without execution authority. Stop if extraction requires a new framework, source/recording migration, auth change, import-boundary weakening, or a material behavior change. New features should enter their existing owner module; they should not rebuild a second workspace orchestrator.

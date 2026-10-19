@@ -4,7 +4,8 @@
 
 ## Status and drift
 
-- Priority P1; effort M; change risk MED; category correctness/tech debt; status TODO.
+- Priority P1; effort M; change risk MED; category correctness/tech debt; status DONE.
+- Reconciled execution baseline: `b757d34`, with the completed picker/navigation/Electron work retained. `server/viewport-controls.check.mjs` reproduces the intended stale-state failure (`393 !== 640`) against that baseline, after waiting for the header resize to settle.
 - Planned at `b99d37b2`, 2026-10-18, plus the viewport edits fingerprinted in `plans/README.md`.
 - Depends on: baseline only. May run alongside Plan 002; owns `app-canvas.tsx` until integrated.
 - First run `rtk git status --short` and `rtk git diff --stat b99d37b2 -- packages/canvas/src`. Confirm the current-state excerpts and baseline fingerprints. Root must reconcile unexpected drift before edits.
@@ -48,9 +49,13 @@ Do not change viewport bounds, recording schemas, frame/runtime authorization, s
 
 ## Done and maintenance
 
-- [ ] One active controller owns header/inspector/commands for a workspace; no independent inspector viewport copy.
-- [ ] New regression passes, draft contents and iframe identity survive resizing, and recorded viewport steps still replay in the existing host tests.
-- [ ] Typecheck and all canvas tests pass; desktop and 390px picker remain usable.
-- [ ] Root reviews scope and updates index status after integration.
+- [x] One active controller owns header/inspector/commands for a workspace; no independent inspector viewport copy.
+- [x] New regression passes, draft contents and iframe identity survive resizing, and recorded viewport steps still replay in the existing host tests.
+- [x] Typecheck and all canvas tests pass; desktop and 390px picker remain usable.
+- [x] Root reviewed scope and integrated `e808acc`.
+
+Evidence: all 26 host checks and 75 viewport-stage unit tests passed. Browser checks cover in-place resizing, Cmd+K, rotation/fold, persistence, invalid inputs, serialization, not-ready/replaced previews and exported standalone controls. Manual acceptance at 1280px and 390px confirmed the compact picker fits; local image `/private/tmp/civic-viewport-picker-390.png`. React Doctor's remaining diagnostics point to the trusted fixture's required same-origin/script capabilities and a busy reset already inside `finally`; no suppressions were added.
+
+Follow-up `18830a9` preserves an explicitly selected device identity through rotation, fold and reload; custom dimensions discard stale preset identity. The integrated 81-unit suite and viewport browser cases cover this alongside source-bound readiness.
 
 Use a task branch such as `fix/shared-viewport-controller`; scoped Conventional Commit example: `fix(canvas): share viewport state across workspace controls`. Do not commit/push unless the execution task authorizes it. Stop on a required public API break, source/evidence reset, unrelated dirty-file conflict, or two failures after a focused repair. Future device additions belong in the existing preset list; the shared controller must remain independent of any particular app.

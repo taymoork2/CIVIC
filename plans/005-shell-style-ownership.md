@@ -4,7 +4,8 @@
 
 ## Status and drift
 
-- P2; effort M; change risk MED; category tech debt/accessibility; status TODO.
+- P2; effort M; change risk MED; category tech debt/accessibility; status DONE.
+- Implemented at `b072d2c`. The two layout checks pass for Notebook and the guided Pantry extension at 1280×900, 768×900 and 390×844; the complete 36-test host suite and package typechecks pass. Manual CUA checks cover the picker, narrow viewport popover and command-menu focus return. Installed Electron 44.9.0 acceptance passes at 1440px, 480px and 360px using the owned 39051 host. Its existing runner now waits for lazy preview options before counting them. Screenshots remain in `.civic-canvas/electron-checkout-tabs-{desktop,narrow,titlebar}.png`; browser proof is in `/private/tmp/civic-project-picker-{desktop,narrow}.png` and `/private/tmp/civic-viewport-narrow-final.png`.
 - Planned at `b99d37b2`, 2026-10-18, plus viewport working edits. Depends on 004. A read-only style inventory can happen earlier, but writes wait for stable component contracts.
 - Run `rtk git status --short` and `rtk git diff --stat b99d37b2 -- packages/shell/styles packages/canvas/src`; root reconciles prerequisite changes and the generated-CSS baseline before edits.
 
@@ -27,6 +28,13 @@ Match `packages/shell/components.json`: Base UI, `base-nova`, Lucide, `cv` prefi
 
 ## Scope
 
+### Ownership map after the prerequisite changes
+
+- `shell/src/ui/*` and `styles/ui.css` own shared control colors, type, radius, focus, disabled states and 36px/44px targets. Feature selectors must not override those properties for marked primitives.
+- `styles/canvas-chrome.css` owns the current workspace header and map-bar layout, breakpoints, native title-bar insets and drag regions. `canvas.css` retains its exported legacy-host fallback without overriding the current workspace.
+- `project-picker.css` owns picker layout; `app-canvas.css` owns scene and outline geometry; canvas `shell.css` owns standalone run-control layout. Existing host-extension rules in `review.css` remain supported.
+- `ui.generated.css` remains derived from `ui.css`. Public stylesheet exports, safe-area handling, hidden panes and arrow geometry stay intact.
+
 Edit `packages/shell/styles/{ui.css,canvas.css,canvas-chrome.css,app-canvas.css}` and `packages/canvas/src/{shell.css,review.css,project-picker.css}`. Read the existing shell primitives to identify which properties they already own; preserve their source/APIs in this unit. Root integrates `ui.generated.css`. Change raw shell controls to existing primitives only in `app-canvas.tsx`, `viewport-controls.tsx`, `source-browser.tsx`, `coverage-panel.tsx`, `review-panel.tsx`, and `project-picker.tsx` when required to remove their legacy rule. A required primitive implementation change is a scope review for root rather than permission to edit arbitrary UI files.
 
 Add `packages/canvas/server/shell-layout.check.mjs` and root-owned test-runner registration. Do not change application preview styling, arrow geometry, navigation behavior, runtime code, public stylesheet export paths, connection state, or review data. Do not add a UI registry/library or rename every legacy class for cosmetics.
@@ -44,9 +52,9 @@ Add `packages/canvas/server/shell-layout.check.mjs` and root-owned test-runner r
 
 ## Done / stop / maintenance
 
-- [ ] Each migrated family has one declared styling owner and no superseded conflicting override.
-- [ ] Public stylesheet paths and unconverted host-extension fallbacks remain functional.
-- [ ] Typechecks, browser layout suite, keyboard/touch acceptance, and source/generated consistency pass.
-- [ ] Electron sandbox/context isolation and title-bar hit regions remain unchanged.
+- [x] Each migrated family has one declared styling owner and no superseded conflicting override.
+- [x] Public stylesheet paths and unconverted host-extension fallbacks remain functional.
+- [x] Typechecks, browser layout suite, keyboard/touch acceptance, and source/generated consistency pass. Touch sizing was checked through narrow browser emulation; no physical device was tested.
+- [x] Electron sandbox/context isolation and title-bar hit regions remain unchanged.
 
 Use `refactor/shell-style-ownership`; Conventional Commit example `refactor(shell): consolidate chrome styling ownership`. No commit/publication without execution authority. Stop if deletion requires editing an external adapter, if installed Electron is unavailable for promised acceptance, or if a visual change requires new product direction. Report incomplete acceptance honestly. Future primitives should own their states; feature CSS should not restyle every button globally.

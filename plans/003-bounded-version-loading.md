@@ -4,7 +4,8 @@
 
 ## Status and drift
 
-- P1; effort M; risk MED; category performance/correctness; status TODO.
+- P1; effort M; risk MED; category performance/correctness; status DONE.
+- Reconciled at `8629a50`, after Plans 001/002. Root extends scope to a pure `@civic/shell/version-choices` module and declarations so server pagination and the existing client use the same matching, grouping and history ordering. No React/server dependency is introduced into that module. The browser suite already registered by Plan 002 is extended in place.
 - Planned at `b99d37b2`, 2026-10-18; depends on 002. May overlap remaining 001 work because the owned source paths differ.
 - Run `rtk git status --short` and `rtk git diff --stat b99d37b2 -- packages/canvas/src/project-picker.tsx packages/canvas/src/project-choice.ts packages/vite-connector/src/review-projects.mjs packages/shell/server/review-server.mjs`. Plan 002's request migration is expected; root refreshes this plan's baseline before dispatch. Stop for unexplained drift.
 
@@ -38,9 +39,11 @@ Keep the existing project list/add/select/sources/scenarios APIs working for exi
 
 ## Done / stop / maintenance
 
-- [ ] 120-connection tests establish bounded concurrency and request/detail budgets, not just ten rendered rows.
-- [ ] Search and current preview work beyond the first page; design variants and instance grouping remain distinct.
-- [ ] Existing connector tests, shell server tests, canvas typecheck and browser suite pass.
-- [ ] Cache keys include source/registry identity; failed/cancelled work never overwrites a newer scope.
+- [x] 120-connection tests establish bounded concurrency and request/detail budgets, not just ten rendered rows.
+- [x] Search and current preview work beyond the first page; design variants and instance grouping remain distinct.
+- [x] Existing connector tests, shell server tests, canvas typecheck and browser suite pass.
+- [x] Cache keys include source/registry identity; failed/cancelled work never overwrites a newer scope.
+
+Evidence: 78 canvas unit tests, 29 host/browser checks, 17 connector project checks, 25 shell server checks and all package typechecks passed. The cold 120-connection fixture bounds inventory parsing to four concurrent reads in the chosen app; subsequent unchanged searches parse none. A changed registry invalidates its summary, failed parsing retries, and search finds connection 119 with its selected state. The browser issues one page request on open and one detail request on expansion, never the eager list or per-connection scenarios fan-out. Closing aborts pending work; a late result cannot replace reopened scope. Saved feedback/recording fixture bytes remain unchanged.
 
 Use `perf/bounded-version-picker`, with a scoped Conventional Commit such as `perf(canvas): load version details on demand`; publication requires execution authority. Stop if bounding requires deleting evidence, changing stable IDs, executing application code during discovery, or globally indexing other apps. New providers must use the same page contract and invalidate summaries when content changes.

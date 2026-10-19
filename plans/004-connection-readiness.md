@@ -4,7 +4,9 @@
 
 ## Status and drift
 
-- P2; effort M; change risk MED; category correctness/UX; status TODO.
+- P2; effort M; change risk MED; category correctness/UX; status DONE.
+- Implemented at `f5f80ea`. Canvas units (80), host/browser checks (34), connector checks (57), shell server checks (25), local checks (22 passed, two source-gated skips) and package typechecks passed. The installed Orca source resolves the required Effect imports without executing application code. React Doctor's five warnings were reviewed: ordered fixture operations, the four-worker inventory bound and small grouped-list lookups retain their intended behavior. No diagnostic suppressions were added.
+- Root reconciled Plans 001–003 before execution. The source-bound capability metadata also crosses `review-project.mjs`, `review-plugin.mjs` and `review-inventory.mjs`; these existing profile/connector seams join this unit's scope. No app-specific adapter names enter the canvas or generic connector. Static resolution checks use the exact runtime snapshot and never import application code or install dependencies.
 - Planned at `b99d37b2`, 2026-10-18, plus the recorded viewport working changes. Depends on 001 and 003 (which includes 002).
 - Run `rtk git status --short` and `rtk git diff --stat b99d37b2 -- packages/canvas/src packages/vite-connector/src/review-projects.mjs packages/local/orca-worktrees.mjs`. Changes from prerequisite plans are expected; root reconciles them before dispatch. Unexplained drift stops edits.
 
@@ -47,9 +49,9 @@ Do not merge read-only observation with isolated execution. A runtime entry alon
 
 ## Done / stop / maintenance
 
-- [ ] A configured but unstartable connection is never labelled verified/ready.
-- [ ] Readiness is source-bound; unsupported replay/resize is explained consistently at every entry point.
-- [ ] No eager list-wide runtime startup, external source write, production mutation, or new model call occurs.
-- [ ] Existing keys, review files, journals, connection grouping, and last successful build are retained byte-for-byte where applicable.
+- [x] A configured but unstartable connection is never labelled verified/ready.
+- [x] Readiness is source-bound; unsupported replay/resize is explained consistently at every entry point.
+- [x] No eager list-wide runtime startup, external source write, production mutation, or new model call occurs.
+- [x] Existing keys, review files, journals, connection grouping, and last successful build are retained byte-for-byte where applicable.
 
 Branch suggestion `fix/connection-readiness`; Conventional Commit example `fix(preview): report source-bound connection readiness`. No push/merge without execution authority. Stop if resolution requires installing into Orca, if a check would invoke providers/host commands, or if unknown capabilities can only be inferred by unsafe execution. Keep evidence of configuration, preview startup, and authored behavior verification as distinct claims.

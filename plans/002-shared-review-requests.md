@@ -4,7 +4,7 @@
 
 ## Status and drift
 
-- P1; effort S/M; change risk MED; category tech debt/correctness; status TODO.
+- P1; effort S/M; change risk MED; category tech debt/correctness; status DONE.
 - Planned at `b99d37b2`, 2026-10-18. Depends on: baseline only; parallel with 001. Plan 003 follows this unit because both edit the picker.
 - Run `rtk git status --short` and `rtk git diff --stat b99d37b2 -- packages/canvas/src/review-api.ts packages/canvas/src/project-request.ts packages/canvas/src/project-picker.tsx packages/canvas/src/source-browser.tsx packages/canvas/src/coverage-panel.tsx`. Reconcile changes against excerpts before editing.
 
@@ -54,9 +54,11 @@ Match Vitest and fake-fetch conventions in `runtime-session.test.ts`; its fixtur
 
 ## Done / stop / maintenance
 
-- [ ] All three normal JSON clients use the existing API helper; scoped headers and per-feature messages remain.
-- [ ] Focused tests and canvas typecheck/test suites pass; no automatic retry of writes is introduced.
-- [ ] Existing `reviewApi(path, data)` consumers and non-JSON fetch paths still work.
-- [ ] Only scoped paths changed; root updates the index.
+- [x] All three normal JSON clients use the existing API helper; scoped headers and per-feature messages remain.
+- [x] Focused tests and canvas typecheck/test suites pass; no automatic retry of writes is introduced.
+- [x] Existing `reviewApi(path, data)` consumers and non-JSON fetch paths still work.
+- [x] Root reviewed scope and integrated `8629a50`.
+
+Evidence: 78 canvas unit tests and all 26 pre-existing/viewport host checks passed. The registered `server/project-picker.check.mjs` additionally verifies that closing Sources aborts its actual request signal and that a coverage 409 takes precedence over a parallel 503 while retaining the live draft. Project-switch restart bootstrap requests remain explicitly unbound.
 
 Branch suggestion `refactor/shared-review-requests`; Conventional Commit example `refactor(canvas): share scoped review request handling`. Commit/publication needs execution authority. Stop on a required endpoint change, changed project-binding semantics, cross-project data leakage, source writes, or two failed repairs. New JSON callers should use this helper; binary/bootstrap callers keep explicit boundaries.

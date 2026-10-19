@@ -4,7 +4,7 @@ Prepared on 2026-10-18 against `b99d37b2` plus the viewport-picker working chang
 
 ## Ownership and authority
 
-Execution approved on 2026-10-19. Root is the sole writer and integrator on `fix/workspace-consolidation`; work runs sequentially. Current stage: review, exact-commit local signoff and landing of the completed viewport/picker/navigation/Electron slice, then Plans 001–006 in dependency order. The existing browser hosts and unrelated root `package.json` remain outside the candidate. No external app source or backend writes are authorized by this continuation.
+Execution approved on 2026-10-19. Root is the sole writer and integrator on `fix/workspace-consolidation`; work runs sequentially. The viewport/picker/navigation/Electron slice passed exact-commit `bin/signoff --no-post` at `b757d34` and was pushed to main. All six consolidation plans are implemented. Exact-code signoff passed at `605075c`, including 38 host/browser checks and the fresh Git-package installation gate. The documentation commit must pass the same exact-head gate before landing; [the acceptance report](../docs/dogfood-reports/2026-10-19-workspace-consolidation.md) records device evidence and remaining limits. The existing browser hosts and unrelated root `package.json` remain outside the candidate. No external app source or backend writes are authorized by this continuation.
 
 The root controller owns integration, this index, test-runner changes, generated CSS, final verification, and completion. One writer owns each execution checkout. Bounded workers own only their assigned plan's paths; they must preserve other work and report results to the root. Source checkouts outside CIVIC, saved reviews, connection keys, recordings, and runtime journals remain untouched.
 
@@ -16,7 +16,7 @@ Execution tooling observed in this session: local shell, pnpm, Node, Vitest/node
 
 The commit alone is insufficient. These four files already contain approved viewport work and must accompany the execution baseline:
 
-The digests include subsequent viewport polish, navigation cleanup and the approved Electron checkout-tab work. Preserve the accompanying picker, shared InputGroup, desktop bridge/controller, host-lease API, tests and shell CSS when establishing the execution baseline. The rail has local filtering; coverage remains in Details, and bundled paths appear only when selected. Electron tabs retain separate checkouts of the same project, while matching content remains grouped under one commit in the picker. Reconcile these changes with plans 003/005/006 before executing them; the broader plans remain TODO.
+The digests include subsequent viewport polish, navigation cleanup and the approved Electron checkout-tab work. Preserve the accompanying picker, shared InputGroup, desktop bridge/controller, host-lease API, tests and shell CSS when establishing the execution baseline. The rail has local filtering; coverage remains in Details, and bundled paths appear only when selected. Electron tabs retain separate checkouts of the same project, while matching content remains grouped under one commit in the picker. These historical baseline fingerprints were reconciled before executing the broader plans; they are not current file digests.
 
 | Path | SHA-256 at baseline refresh |
 |---|---|
@@ -33,12 +33,12 @@ Sizes: S = hours, M = roughly a day, L = several days, including verification; e
 
 | Plan | Outcome | Original finding | Stage | Depends on | Owner / status |
 |---|---|---|---|---|---|
-| [001](001-shared-viewport-controller.md) | One viewport controller | 1 | Focused | baseline | Viewport track / TODO |
-| [002](002-shared-review-requests.md) | Shared request handling | 3 | Focused | baseline | Data track / TODO |
-| [003](003-bounded-version-loading.md) | Bounded version loading | 2 | Focused | 002 | Data track / TODO |
-| [004](004-connection-readiness.md) | Honest readiness and capabilities | 4 | Broader | 001, 003 | Root-owned integration track / TODO |
-| [005](005-shell-style-ownership.md) | One owner for shell styles | 5 | Broader | 004 | Shell track / TODO |
-| [006](006-workspace-feature-boundaries.md) | Smaller workspace components/controllers | 6 | Broader | 005 | Workspace track / TODO |
+| [001](001-shared-viewport-controller.md) | One viewport controller | 1 | Focused | baseline | Root / DONE |
+| [002](002-shared-review-requests.md) | Shared request handling | 3 | Focused | baseline | Root / DONE |
+| [003](003-bounded-version-loading.md) | Bounded version loading | 2 | Focused | 002 | Root / DONE |
+| [004](004-connection-readiness.md) | Honest readiness and capabilities | 4 | Broader | 001, 003 | Root / DONE |
+| [005](005-shell-style-ownership.md) | One owner for shell styles | 5 | Broader | 004 | Root / DONE |
+| [006](006-workspace-feature-boundaries.md) | Smaller workspace components/controllers | 6 | Broader | 005 | Root / DONE |
 
 Status values: TODO, IN PROGRESS, DONE, BLOCKED with a reason, REJECTED with a reason. Root updates the index after reviewing evidence; workers do not concurrently edit it.
 
