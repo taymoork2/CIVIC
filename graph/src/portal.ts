@@ -22,7 +22,7 @@ export interface PortalOptions {
   /** Shown as the portal's heading. */
   title: string
   /**
-   * Where a running journey canvas serves its review frame, such as Laundry's review server.
+   * Where a running journey canvas serves its review frame, such as Example's review server.
    * Screens the journey engine read then get a live frame tier. Without it, they stay stills.
    */
   canvas?: string

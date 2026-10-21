@@ -36,7 +36,7 @@ export interface JourneyIndex {
 }
 
 export interface JourneyIndexOptions {
-  /** The ID segment every target gets, such as `laundry`: a scenario `intake.pack.type` becomes `target:laundry.intake.pack.type`. */
+  /** The ID segment every target gets, such as `example`: a scenario `intake.pack.type` becomes `target:example.intake.pack.type`. */
   prefix: string
   platform: Platform
   owners: Owner[]

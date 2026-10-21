@@ -2,7 +2,7 @@
   "schema": "civic.graph/0",
   "records": [
     { "id": "actor:person.taymoor", "kind": "actor", "title": "Taymoor", "type": "person", "handle": "taymoor" },
-    { "id": "actor:person.laundry-design", "kind": "actor", "title": "Laundry design owner", "type": "person", "handle": "laundry-design" },
+    { "id": "actor:person.example-design", "kind": "actor", "title": "Example design owner", "type": "person", "handle": "example-design" },
     { "id": "actor:agent.claude-code.taymoor", "kind": "actor", "title": "Claude Code for Taymoor", "type": "agent", "handle": "claude-code", "delegatedBy": "actor:person.taymoor" },
     { "id": "actor:civic", "kind": "actor", "title": "CIVIC re-capture and Auto lane", "type": "civic", "handle": "civic" },
 
@@ -26,7 +26,7 @@
       "title": "Pack label clips at 200% text",
       "comment": "The colour label on the pack step clips at 200% text size.",
       "anchor": {
-        "targetIds": ["target:laundry.intake.pack"],
+        "targetIds": ["target:example.intake.pack"],
         "locator": { "testId": "pack-color-label", "role": "heading", "name": "Pick a colour", "path": "main > section > h2" },
         "rect": { "x": 0.1, "y": 0.2, "width": 0.5, "height": 0.08, "label": "Colour label" }
       },
@@ -51,8 +51,8 @@
       "title": "Offline branch dead-ends",
       "comment": "Saving while offline should offer a retry branch back to the pack step.",
       "anchor": {
-        "targetIds": ["target:laundry.intake.save-error"],
-        "edges": [{ "from": "target:laundry.intake.save-error", "to": "target:laundry.intake.pack", "action": "Retry" }]
+        "targetIds": ["target:example.intake.save-error"],
+        "edges": [{ "from": "target:example.intake.save-error", "to": "target:example.intake.pack", "action": "Retry" }]
       },
       "seenOn": { "line": "line:git.main", "revision": "1111111111111111111111111111111111111111" },
       "at": "2026-10-11T03:06:00Z",
@@ -85,7 +85,7 @@
       "acceptance": [{ "command": "pnpm --dir apps/web exec playwright test e2e/text-scale.spec.ts", "writtenBy": "actor:person.taymoor" }],
       "repro": "civic repro request:intake.pack.label-clipped --url <preview>",
       "requestedBy": "actor:person.taymoor",
-      "owners": [{ "role": "design", "who": "laundry-design" }],
+      "owners": [{ "role": "design", "who": "example-design" }],
       "status": "resolved",
       "claim": { "by": "actor:agent.claude-code.taymoor", "line": "line:git.fix-intake-label", "at": "2026-10-11T03:10:00Z", "expires": "2026-10-11T05:10:00Z" },
       "fixes": [
@@ -141,7 +141,7 @@
       "acceptance": [],
       "repro": "civic repro request:intake.offline-retry --url <preview>",
       "requestedBy": "actor:person.taymoor",
-      "owners": [{ "role": "design", "who": "laundry-design" }],
+      "owners": [{ "role": "design", "who": "example-design" }],
       "status": "open",
       "fixes": [],
       "comments": [],

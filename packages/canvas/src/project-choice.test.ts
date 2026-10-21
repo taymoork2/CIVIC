@@ -29,13 +29,13 @@ test('new-window links encode registered identities and reject unsafe destinatio
 test('version captions keep the revision separate without dropping edited state or design dates', () => {
   expect(versionCaption('Draft h · model selection · edited · d5669ece')).toEqual({ name: 'Draft h · model selection · edited', revision: 'd5669ece' })
   expect(versionCaption('Running build · d1d9d02')).toEqual({ name: 'Running build', revision: 'd1d9d02' })
-  expect(versionCaption('orca-redesign · 2026-10-18')).toEqual({ name: 'orca-redesign · 2026-10-18', revision: undefined })
+  expect(versionCaption('example-redesign · 2026-10-18')).toEqual({ name: 'example-redesign · 2026-10-18', revision: undefined })
 })
 
 test('version rows separate their title, revision and uncommitted state without parsing design dates', () => {
   expect(versionDetails('Draft h · model selection · edited · d5669ece')).toEqual({ name: 'Draft h · model selection', revision: 'd5669ece', edited: true })
   expect(versionDetails('Main · d1d9d02e')).toEqual({ name: 'Main', revision: 'd1d9d02e', edited: false })
-  expect(versionDetails('orca-redesign · 2026-10-18')).toEqual({ name: 'orca-redesign · 2026-10-18', revision: undefined, edited: false })
+  expect(versionDetails('example-redesign · 2026-10-18')).toEqual({ name: 'example-redesign · 2026-10-18', revision: undefined, edited: false })
 })
 
 const rows = [
@@ -67,13 +67,13 @@ test('component drafts respect a recorded export, while a file scope can include
   expect(matchingDraftScreens(drafts, { id: 'live', label: 'Unknown' }, 'component')).toEqual([])
 })
 test('registered targets match across design and implementation and reject conflicting route guesses', () => {
-  const selected = { id: 'live.home', label: 'Home', route: '/', targetId: 'orca.screen.home' }
-  const drafts = [{ id: 'design.empty', label: 'Empty home', targetId: 'orca.screen.home' }, { id: 'other.home', label: 'Home', route: '/', targetId: 'other.screen.home' }]
+  const selected = { id: 'live.home', label: 'Home', route: '/', targetId: 'example.screen.home' }
+  const drafts = [{ id: 'design.empty', label: 'Empty home', targetId: 'example.screen.home' }, { id: 'other.home', label: 'Home', route: '/', targetId: 'other.screen.home' }]
   expect(matchingDraftScreens(drafts, selected, 'screen')).toEqual([drafts[0]])
 })
 test('component identity is library-scoped even when exports share a file or name', () => {
-  const selected = { id: 'live', label: 'Tabs', componentId: 'orca.web.tabs' }
-  const drafts = [{ id: 'work', label: 'Work', componentId: 'orca.web.tabs' }, { id: 'settings', label: 'Settings', componentId: 'orca.web.tabs' }, { id: 'foreign', label: 'Tabs', componentId: 'laundry.web.tabs' }]
+  const selected = { id: 'live', label: 'Tabs', componentId: 'example.web.tabs' }
+  const drafts = [{ id: 'work', label: 'Work', componentId: 'example.web.tabs' }, { id: 'settings', label: 'Settings', componentId: 'example.web.tabs' }, { id: 'foreign', label: 'Tabs', componentId: 'other.web.tabs' }]
   expect(matchingDraftScreens(drafts, selected, 'component')).toEqual(drafts.slice(0, 2))
 })
 

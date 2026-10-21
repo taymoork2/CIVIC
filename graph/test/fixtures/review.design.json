@@ -1,0 +1,8 @@
+{
+  "schema": "civic.design/0", "tool": "open-design", "key": "review", "name": "Synthetic review reference", "version": "2026-10-01T00:00:00Z",
+  "frames": [
+    { "node": "queue-light", "name": "Queue light", "page": "queue", "hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "designs": ["target:review.route.queue.ready"] },
+    { "node": "queue-dark", "name": "Queue dark", "page": "queue", "hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "designs": ["target:review.route.queue.ready"] },
+    { "node": "check", "name": "Check", "page": "check", "hash": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc", "designs": ["target:review.route.queue.check"] }
+  ]
+}

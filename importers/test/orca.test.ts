@@ -75,14 +75,3 @@ test('declared ties become shows links; names suggest the rest unless a person d
   assert.throws(bad({ targets: ['target:shop.help'], object: 'object:shop.order', attributes: ['colour'] }), /no attribute "colour"/)
   assert.throws(bad({ targets: ['target:shop.help', 'target:shop.help'], object: 'object:shop.order' }), /more than once/)
 })
-
-test("Laundry's stand-in object map: garments, loads and care, with the care steps waiting on a person", () => {
-  const graph = indexGraph(JSON.parse(readFileSync(new URL('../../projects/laundry/out/graph.json', import.meta.url), 'utf8')) as GraphDocument)
-  const map = objectMapOf(graph)
-  assert.deepEqual(map.objects.map((object) => object.title), ['Care routine', 'Garment', 'Load'])
-  assert.ok(map.objects.every((object) => object.source?.tool === 'stand-in' && object.owners?.every((owner) => owner.role === 'design')))
-  // The towel and pack intakes need care, and the only screens that name it are suggestions.
-  assert.deepEqual(map.gaps.filter((gap) => gap.kind === 'object-not-shown').map((gap) => gap.subjectId), ['target:laundry.journey.cotton-polyester-towel', 'target:laundry.journey.multicolor-pack'])
-  // Laundry is built for web only, so nothing is compared across platforms.
-  assert.ok(!map.gaps.some((gap) => gap.kind === 'object-action-platform'))
-})

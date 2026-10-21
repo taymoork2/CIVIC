@@ -103,12 +103,12 @@ test('when both sides change a request otherwise, the shared one stays and yours
 })
 
 test("a replay of a recorded run, kept in one clone with its tape, reaches the other through sync (decision 0009)", async () => {
-  const tape = JSON.stringify({ version: 1, project: 'laundry-app-0123456789ab', steps: [{ gesture: 'click' }] })
+  const tape = JSON.stringify({ version: 1, project: 'example-app-0123456789ab', steps: [{ gesture: 'click' }] })
   const sha = createHash('sha256').update(tape).digest('hex')
   const data = join(root, 'review-data')
   mkdirSync(join(data, 'replays', 'tapes'), { recursive: true })
   writeFileSync(join(data, 'replays', 'tapes', `${sha}.json`), tape)
-  const replay = { schema: 'civic.replay/0', project: 'laundry-app-0123456789ab', scenario: 'app.drying.empty', head: 'a'.repeat(40), source: 'b'.repeat(64), tape: sha, steps: 1, outcome: 'pass', replayedAt: '2026-10-13T06:00:00.000Z' }
+  const replay = { schema: 'civic.replay/0', project: 'example-app-0123456789ab', scenario: 'app.drying.empty', head: 'a'.repeat(40), source: 'b'.repeat(64), tape: sha, steps: 1, outcome: 'pass', replayedAt: '2026-10-13T06:00:00.000Z' }
   writeFileSync(join(data, 'replays', '0c1d2e3f-0000-4000-8000-000000000000.json'), JSON.stringify(replay))
 
   assert.match(await civic(theirs, sam, 'share-replays', data), /^Kept 1 replay\(s\) to share\. civic sync shares them\.$/)

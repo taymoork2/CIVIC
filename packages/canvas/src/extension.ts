@@ -4,7 +4,7 @@ import type { GraphFlow, MapScenario } from './app-map'
 
 /**
  * A guided run: one flow a host plays continuously in its own frame, with presentation proposals
- * and captured visits. Module projects have none; Laundry's towel journey is one.
+ * and captured visits. Module projects have none; Example's towel journey is one.
  */
 export type GuidedSession = {
   flowId: string | null
@@ -59,7 +59,7 @@ export type CanvasExtension = {
   frameParams?: (scenario: string) => string[]
   /** Storage key for unsent review notes, kept for hosts with existing drafts. */
   draftKey?: string
-  /** Host pages opened with `?<name>=1` in place of the canvas, such as Laundry's synthetic laundry day. */
+  /** Host pages opened with `?<name>=1` in place of the canvas, such as Example's synthetic example day. */
   pages?: Record<string, () => Promise<unknown>>
 }
 

@@ -7,7 +7,7 @@ import { join } from 'node:path'
 import { interactionStore, interactionReport, stateId, checkedState } from './review-interactions.mjs'
 
 const source = 'a'.repeat(64)
-const project = { key: 'orca', personas: [{ id: 'owner' }], roles: [{ id: 'browse' }], conditions: [{ id: 'live' }] }
+const project = { key: 'example', personas: [{ id: 'owner' }], roles: [{ id: 'browse' }], conditions: [{ id: 'live' }] }
 const control = { tag: 'button', role: 'button', name: 'Open menu', index: 0, count: 1, disabled: false }
 const state = (controls = [control]) => ({ scenario: 'home', persona: 'owner', role: 'browse', condition: 'live', viewport: { width: 1440, height: 900 }, controls, landmarks: [], truncated: false })
 const metadata = () => ({ project, revision: { source }, scenarios: [{ id: 'home', label: 'Home', edges: [{ destination: 'settings', action: 'Open settings' }] }, { id: 'settings', label: 'Settings' }], coverage: { targets: [] } })

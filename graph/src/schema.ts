@@ -2,7 +2,7 @@
 //
 // A graph document is a plain JSON file: records (the things CIVIC tracks) and links
 // (traceable claims between them, each with a status). Importers for any tool write
-// these shapes; nothing here knows about Figma, Playwright, Fluent, Laundry or the
+// these shapes; nothing here knows about Figma, Playwright, Fluent, Example or the
 // journey engine. The spec sections each type comes from are named in its comment.
 
 export const SCHEMA_VERSION = 'civic.graph/0'

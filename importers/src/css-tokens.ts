@@ -65,7 +65,7 @@ export interface TokenSide {
   tokens: ReadonlyMap<string, string>
   /** The evidence record that read this side; its ID is cited by each conflict. */
   evidence: Evidence
-  /** How a person names this side in a sentence, such as "Laundry's design reference". */
+  /** How a person names this side in a sentence, such as "Example's design reference". */
   label: string
 }
 

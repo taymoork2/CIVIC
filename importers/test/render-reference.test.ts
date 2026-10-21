@@ -6,17 +6,21 @@ import { readRenderReceipt, type RenderReceipt } from '../src/index.ts'
 // A design tool with no Figma-style export: Open Design's source-render receipt read as a
 // civic.design/0 file, one frame per rendered case.
 
-const receipt = JSON.parse(readFileSync(new URL('../../journey-engine/design/laundry-reference/source-reference/receipt.json', import.meta.url), 'utf8')) as RenderReceipt
-const options = { tool: 'open-design', key: 'laundry', name: 'Laundry design reference', designs: (screen: string) => (screen === 'missing' ? [] : [`target:laundry.legacy.${screen}`]) }
+const receipt: RenderReceipt = { version: 1, status: 'verified', generatedAt: '2026-10-01T00:00:00Z', baseline: 'a'.repeat(40), cases: [
+  { name: 'queue-phone-light', screen: 'queue', width: 393, height: 852, theme: 'light', scale: 1, htmlSha256: 'a'.repeat(64), referenceScreenshotSha256: 'b'.repeat(64), geometryMatches: true },
+  { name: 'check-invalid-phone-light', screen: 'check', state: 'invalid', width: 393, height: 852, theme: 'light', scale: 1, htmlSha256: 'c'.repeat(64), referenceScreenshotSha256: 'd'.repeat(64), geometryMatches: true },
+  { name: 'queue-large-text', screen: 'queue', width: 393, height: 852, theme: 'light', scale: 2, htmlSha256: 'e'.repeat(64), referenceScreenshotSha256: 'f'.repeat(64), geometryMatches: true },
+] }
+const options = { tool: 'open-design', key: 'review', name: 'Review design reference', designs: (screen: string) => (screen === 'missing' ? [] : [`target:review.route.${screen}`]) }
 
 test('each case of the receipt is a frame on its screen, designing that screen', () => {
   const design = readRenderReceipt(receipt, options)
-  assert.deepEqual({ schema: design.schema, tool: design.tool, key: design.key, version: design.version, frames: design.frames.length }, { schema: 'civic.design/0', tool: 'open-design', key: 'laundry', version: receipt.generatedAt, frames: receipt.cases.length })
+  assert.deepEqual({ schema: design.schema, tool: design.tool, key: design.key, version: design.version, frames: design.frames.length }, { schema: 'civic.design/0', tool: 'open-design', key: 'review', version: receipt.generatedAt, frames: receipt.cases.length })
   const first = design.frames[0]!
-  assert.deepEqual({ ...first, hash: undefined }, { node: 'drying-phone-light', name: 'drying-home · 393×852 light', page: 'drying-home', hash: undefined, designs: ['target:laundry.legacy.drying-home'] })
+  assert.deepEqual({ ...first, hash: undefined }, { node: 'queue-phone-light', name: 'queue · 393×852 light', page: 'queue', hash: undefined, designs: ['target:review.route.queue'] })
   assert.match(first.hash, /^sha256:[0-9a-f]{64}$/)
-  const invalid = design.frames.find((frame) => frame.node === 'signin-invalid-phone-light')!
-  assert.equal(invalid.name, 'sign-in (invalid) · 393×852 light')
+  const invalid = design.frames.find((frame) => frame.node === 'check-invalid-phone-light')!
+  assert.equal(invalid.name, 'check (invalid) · 393×852 light')
   assert.ok(design.frames.some((frame) => frame.name.endsWith('· text ×2')))
 })
 

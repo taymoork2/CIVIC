@@ -21,9 +21,9 @@ test('tab leases release owned hosts only after the last owner leaves', async ()
 
 test('windows reuse one host per connection, including concurrent opens, and close owned hosts', async () => {
   let created = 0, closed = 0
-  const windows = projectWindows({ current: 'orca', origin: 'http://127.0.0.1:3012', async createHost(project) { created++; return { url: `http://127.0.0.1:${4000 + created}/review`, close: async () => { closed++ } } } })
-  assert.equal(await windows.open({ key: 'orca' }), 'http://127.0.0.1:3012/review')
-  const results = await Promise.all([windows.open({ key: 'laundry' }), windows.open({ key: 'laundry' })])
+  const windows = projectWindows({ current: 'notebook', origin: 'http://127.0.0.1:3012', async createHost(project) { created++; return { url: `http://127.0.0.1:${4000 + created}/review`, close: async () => { closed++ } } } })
+  assert.equal(await windows.open({ key: 'notebook' }), 'http://127.0.0.1:3012/review')
+  const results = await Promise.all([windows.open({ key: 'pantry' }), windows.open({ key: 'pantry' })])
   assert.equal(results[0], results[1]); assert.equal(created, 1)
   assert.deepEqual(windows.origins(), ['http://127.0.0.1:3012', 'http://127.0.0.1:4001'])
   await windows.close(); assert.equal(closed, 1)
@@ -31,21 +31,21 @@ test('windows reuse one host per connection, including concurrent opens, and clo
 
 test('a failed project host can retry without occupying the window limit', async () => {
   let fail = true
-  const windows = projectWindows({ current: 'orca', origin: 'http://127.0.0.1:3012', limit: 2, async createHost() { if (fail) throw Error('Build failed'); return { url: 'http://127.0.0.1:4001/review' } } })
-  await assert.rejects(windows.open({ key: 'laundry' }), /Build failed/)
+  const windows = projectWindows({ current: 'notebook', origin: 'http://127.0.0.1:3012', limit: 2, async createHost() { if (fail) throw Error('Build failed'); return { url: 'http://127.0.0.1:4001/review' } } })
+  await assert.rejects(windows.open({ key: 'pantry' }), /Build failed/)
   fail = false
-  await windows.open({ key: 'laundry' })
+  await windows.open({ key: 'pantry' })
   await assert.rejects(windows.open({ key: 'third' }), /limit/)
 })
 
 test('refreshing an owned window replaces its host on the same origin', async () => {
   const ports = [], closed = []
-  const windows = projectWindows({ current: 'orca', origin: 'http://127.0.0.1:3012', async createHost(project, port = 4001) { ports.push(port); return { url: `http://127.0.0.1:${port}/review`, close: async () => { closed.push(project.key) } } } })
-  await windows.open({ key: 'laundry' })
-  await windows.refresh({ key: 'laundry' })
-  assert.deepEqual(ports, [4001, 4001]); assert.deepEqual(closed, ['laundry'])
-  assert.equal(await windows.open({ key: 'laundry' }), 'http://127.0.0.1:4001/review')
-  await assert.rejects(windows.refresh({ key: 'orca' }), /owned project host/)
+  const windows = projectWindows({ current: 'notebook', origin: 'http://127.0.0.1:3012', async createHost(project, port = 4001) { ports.push(port); return { url: `http://127.0.0.1:${port}/review`, close: async () => { closed.push(project.key) } } } })
+  await windows.open({ key: 'pantry' })
+  await windows.refresh({ key: 'pantry' })
+  assert.deepEqual(ports, [4001, 4001]); assert.deepEqual(closed, ['pantry'])
+  assert.equal(await windows.open({ key: 'pantry' }), 'http://127.0.0.1:4001/review')
+  await assert.rejects(windows.refresh({ key: 'notebook' }), /owned project host/)
 })
 
 test('Electron admits only local origins registered by its original CIVIC host', async () => {

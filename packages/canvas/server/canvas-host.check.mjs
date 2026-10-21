@@ -76,7 +76,7 @@ test('the standalone canvas opens a module app with no host workspace and draws 
   assert.deepEqual((await readdir(notebook)).sort(), ['civic.coverage.json', 'civic.project.json', 'civic.scenarios.json', 'src'])
   const canvas = await fetch(`${origin}/@fs${canvasRoot}/src/app-canvas.tsx`, { headers })
   assert.equal(canvas.status, 200)
-  assert.doesNotMatch((await canvas.text()).replaceAll(join(canvasRoot, '../..'), '<repo>'), /towel|laundry/i)
+  assert.doesNotMatch((await canvas.text()).replaceAll(join(canvasRoot, '../..'), '<repo>'), /towel|example/i)
   assert.equal((await fetch(`${origin}/@fs${canvasRoot}/src/extension.ts`, { headers })).status, 200)
 
   let browser

@@ -11,7 +11,7 @@ test('the search index contains only the supplied current-instance journeys and 
   expect(index.map(item => item.id)).toEqual(['flow:dialog', 'screen:open', 'screen:closed'])
   expect(workspaceResults(index, 'components OPEN').map(item => item.id)).toEqual(['screen:open'])
   expect(workspaceResults(index, 'screen open').map(item => item.id)).toEqual(['screen:open'])
-  expect(workspaceResults(index, 'laundry')).toEqual([])
+  expect(workspaceResults(index, 'example')).toEqual([])
   expect(workspaceIndex([])).toEqual([])
 })
 

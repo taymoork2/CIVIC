@@ -9,7 +9,7 @@ export type JourneyBridge = {
   setPresentation: (edits: Presentation, version: number | null) => void
   snapshot: ReviewSnapshot
 }
-// A host's guided run (such as Laundry's towel journey) publishes this bridge from its frame.
+// A host's guided run (such as Example's towel journey) publishes this bridge from its frame.
 declare global { interface Window { guidedJourney?: JourneyBridge } }
 
 export function readFixtureFields(doc: Document, scope: Document | HTMLElement = doc, allowed: (element: HTMLElement) => boolean = () => true): JourneyState['fields'] {

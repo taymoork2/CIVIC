@@ -8,7 +8,7 @@ import { indexGraph, renderPortal, renderStories, stepOutcome, storiesIn, STORIE
 
 const read = <T>(path: string) => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8')) as T
 const card = () => indexGraph(read<GraphDocument>('../../demo/card/out/resolved.graph.json'))
-const laundry = () => indexGraph(read<GraphDocument>('../../projects/laundry/out/graph.json'))
+const review = () => indexGraph(read<GraphDocument>('../../graph/test/fixtures/review.graph.json'))
 
 test('a story follows its journey from the entry along paths and only points at records', () => {
   const file = storiesIn(card(), 'card')
@@ -24,16 +24,16 @@ test('a story follows its journey from the entry along paths and only points at 
   assert.match(renderStories(file), /1\. Order Summary: 0 evidence, frame walk/)
 })
 
-test('Laundry gets a story per journey with screens, with its run evidence and open records, and no story for the specimen catalog', () => {
-  const graph = laundry()
-  const design = read<DesignExport>('../../projects/laundry/out/design.json')
-  const file = storiesIn(graph, 'laundry', { designs: [{ file: 'design.json', design }] })
-  assert.equal(file.stories.length, 12)
+test('Review fixture gets a story per journey with screens, with its run evidence and open records, and no story for the specimen catalog', () => {
+  const graph = review()
+  const design = read<DesignExport>('../../graph/test/fixtures/review.design.json')
+  const file = storiesIn(graph, 'review', { designs: [{ file: 'design.json', design }] })
+  assert.equal(file.stories.length, 1)
   assert.ok(!file.stories.some((story) => story.title === 'Existing specimens'))
-  const drying = file.stories.find((story) => story.id === 'story:laundry.journey.drying')!
+  const drying = file.stories.find((story) => story.id === 'story:review.journey.queue')!
   assert.deepEqual(drying.steps.map((step) => [step.title, stepOutcome(graph, step), step.recordIds.length]), [
-    ['Drying check · from hanging reminder', 'none', 1],
-    ['Drying · washed pieces queued', 'pass', 0],
+    ['Review pending item', 'none', 1],
+    ['Queue ready', 'pass', 0],
   ])
   assert.ok(file.stories.every((story) => story.steps.every((step) => !step.walk)))
 })
@@ -50,17 +50,17 @@ test('the portal renders each step as a still in a declarative shadow root, upgr
   assert.match(pages.get('walks/shop-checkout.html')!, /#frame=/)
   assert.match(pages.get('civic-story.js')!, /customElements\.define\('civic-story'/)
 
-  const live = renderPortal(laundry(), storiesIn(laundry(), 'laundry'), { title: 'Laundry', canvas: 'http://127.0.0.1:3010/' })
-  assert.match(live.get('stories/laundry-journey-drying.html')!, /&quot;src&quot;:&quot;http:\/\/127\.0\.0\.1:3010\/review-frame\.html\?scenario=route\.drying\.washer-queued&quot;/)
+  const live = renderPortal(review(), storiesIn(review(), 'review'), { title: 'Review fixture', canvas: 'http://127.0.0.1:3010/' })
+  assert.match(live.get('stories/review-journey-queue.html')!, /&quot;src&quot;:&quot;http:\/\/127\.0\.0\.1:3010\/review-frame\.html\?scenario=route\.queue\.ready&quot;/)
   // Without a canvas, journey-engine screens stay stills.
-  assert.doesNotMatch(renderPortal(laundry(), storiesIn(laundry(), 'laundry'), { title: 'Laundry' }).get('stories/laundry-journey-drying.html')!, /frames=/)
-  assert.match(live.get('index.html')!, /<a href="stories\/laundry-journey-drying\.html">Drying<\/a><\/th><td>2<\/td><td>1<\/td><td>0<\/td><td>1<\/td><td>1<\/td>/)
+  assert.doesNotMatch(renderPortal(review(), storiesIn(review(), 'review'), { title: 'Review fixture' }).get('stories/review-journey-queue.html')!, /frames=/)
+  assert.match(live.get('index.html')!, /<a href="stories\/review-journey-queue\.html">Queue<\/a><\/th><td>2<\/td><td>1<\/td><td>0<\/td><td>1<\/td><td>1<\/td>/)
 })
 
 test('with an island, a screen the journey engine read mounts its own code in the story, with the manifest\'s first presets and its fixture', () => {
-  const graph = laundry()
-  const island = { module: '../app/preview.js', styles: ['../app/preview.css'], personas: [{ id: 'family', label: 'Family' }, { id: 'solo' }], roles: [{ id: 'owner' }], conditions: [{ id: 'normal' }], scenarios: [{ id: 'route.drying.washer-queued', label: 'Washer queued', fixture: { pieces: 6 } }] }
-  const page = renderPortal(graph, storiesIn(graph, 'laundry'), { title: 'Laundry', island }).get('stories/laundry-journey-drying.html')!
+  const graph = review()
+  const island = { module: '../app/preview.js', styles: ['../app/preview.css'], personas: [{ id: 'family', label: 'Family' }, { id: 'solo' }], roles: [{ id: 'owner' }], conditions: [{ id: 'normal' }], scenarios: [{ id: 'route.queue.ready', label: 'Washer queued', fixture: { pieces: 6 } }] }
+  const page = renderPortal(graph, storiesIn(graph, 'review'), { title: 'Review fixture', island }).get('stories/review-journey-queue.html')!
   const islands = [...page.matchAll(/island="([^"]+)"/g)].map((match) => JSON.parse(match[1]!.replaceAll('&quot;', '"').replaceAll('&amp;', '&')) as Record<string, unknown>)
   assert.equal(islands.length, 2)
   assert.deepEqual(islands[1], {
@@ -68,7 +68,7 @@ test('with an island, a screen the journey engine read mounts its own code in th
     styles: ['../app/preview.css'],
     label: 'Run this screen here',
     note: "Mounts the screen's own code in this page as Family, with no backend and nothing recorded.",
-    scenario: { id: 'route.drying.washer-queued', label: 'Washer queued', fixture: { pieces: 6 } },
+    scenario: { id: 'route.queue.ready', label: 'Washer queued', fixture: { pieces: 6 } },
     persona: { id: 'family', label: 'Family' },
     role: { id: 'owner' },
     condition: { id: 'normal' },

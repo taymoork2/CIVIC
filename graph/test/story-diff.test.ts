@@ -32,14 +32,14 @@ test("a library change reaches every journey step that uses the component, and r
 })
 
 test('a step that newly fails points back to the journey, and a capture that only moves sources shows nothing', () => {
-  const base = read('../../projects/laundry/out/graph.json')
+  const base = read('../../graph/test/fixtures/review.graph.json')
   const head = structuredClone(base)
   for (const record of head.records) if (record.source) record.source = { ...record.source, revision: 'f'.repeat(40) }
-  assert.equal(hasDifferences(storyDifferences('laundry', indexGraph(base), indexGraph(head))), false)
-  const run = head.records.find((record) => record.kind === 'evidence' && record.method === 'playwright' && record.subjectIds.includes('target:laundry.route.drying.washer-queued'))!
+  assert.equal(hasDifferences(storyDifferences('review', indexGraph(base), indexGraph(head))), false)
+  const run = head.records.find((record) => record.kind === 'evidence' && record.method === 'playwright' && record.subjectIds.includes('target:review.route.queue.ready'))!
   if (run.kind !== 'evidence') throw new Error('expected a run')
   run.outcome = 'fail'
-  const differences = storyDifferences('laundry', indexGraph(base), indexGraph(head))
-  assert.deepEqual(differences.steps.filter((step) => step.storyTitle === 'Drying').map((step) => [step.index, step.change, step.from, step.to]), [[2, 'outcome', 'pass', 'fail']])
-  assert.match(renderStoryDifferences([differences]), /- Drying, step 2 \(Drying · washed pieces queued\) now fails \(was passing\)\./)
+  const differences = storyDifferences('review', indexGraph(base), indexGraph(head))
+  assert.deepEqual(differences.steps.filter((step) => step.storyTitle === 'Queue').map((step) => [step.index, step.change, step.from, step.to]), [[2, 'outcome', 'pass', 'fail']])
+  assert.match(renderStoryDifferences([differences]), /- Queue, step 2 \(Queue ready\) now fails \(was passing\)\./)
 })

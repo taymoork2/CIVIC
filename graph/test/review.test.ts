@@ -31,7 +31,7 @@ test('a person choosing between design drafts is valid', () => {
 
 test('a design line from a tool other than Figma records frames and the targets they design', () => {
   assert.deepEqual(errorCodes(edited('review-loop', (d) => {
-    d.records.push({ id: 'line:open-design.laundry', kind: 'line', title: 'Laundry', type: 'main', tool: 'open-design', ref: 'laundry', head: '1', status: 'open', frames: [{ node: 'drying-phone-light', name: 'Drying', page: 'drying-home', hash: `sha256:${'0'.repeat(64)}`, designs: ['target:laundry.intake.pack'] }] } as Line)
+    d.records.push({ id: 'line:open-design.example', kind: 'line', title: 'Example', type: 'main', tool: 'open-design', ref: 'example', head: '1', status: 'open', frames: [{ node: 'drying-phone-light', name: 'Drying', page: 'drying-home', hash: `sha256:${'0'.repeat(64)}`, designs: ['target:example.intake.pack'] }] } as Line)
   })), [])
 })
 
@@ -43,12 +43,12 @@ const cases: [string, (d: GraphDocument) => void, string][] = [
   ['an agent acting for another agent', (d) => {
     d.records.push({ id: 'actor:agent.helper', kind: 'actor', title: 'Helper', type: 'agent', handle: 'helper', delegatedBy: 'actor:agent.claude-code.taymoor' } as Actor)
   }, 'agent-delegation'],
-  ['a person who claims a delegation', (d) => { record(d, 'actor:person.taymoor').delegatedBy = 'actor:person.laundry-design' }, 'agent-delegation'],
+  ['a person who claims a delegation', (d) => { record(d, 'actor:person.taymoor').delegatedBy = 'actor:person.example-design' }, 'agent-delegation'],
   ['a branch with no base line', (d) => { delete record(d, 'line:git.fix-intake-label').base }, 'line-base'],
   ['main with a base line', (d) => { record(d, 'line:git.main').base = 'line:git.fix-intake-label' }, 'line-base'],
   ['frames on a code line', (d) => { record<Line>(d, 'line:git.main').frames = [{ node: 'a', name: 'A', page: 'P', hash: `sha256:${'0'.repeat(64)}` }] }, 'line-frames'],
   ['a design frame that designs something other than a target', (d) => {
-    d.records.push({ id: 'line:open-design.laundry', kind: 'line', title: 'Laundry', type: 'main', tool: 'open-design', ref: 'laundry', head: '1', status: 'open', frames: [{ node: 'a', name: 'A', page: 'P', hash: `sha256:${'0'.repeat(64)}`, designs: ['line:git.main'] }] } as Line)
+    d.records.push({ id: 'line:open-design.example', kind: 'line', title: 'Example', type: 'main', tool: 'open-design', ref: 'example', head: '1', status: 'open', frames: [{ node: 'a', name: 'A', page: 'P', hash: `sha256:${'0'.repeat(64)}`, designs: ['line:git.main'] }] } as Line)
   }, 'shape'],
   ['a merged line with no merge revision', (d) => { record(d, 'line:git.fix-intake-label').status = 'merged' }, 'line-merge'],
   ['an annotation on a line that is not in the graph', (d) => { record<Annotation>(d, 'annotation:intake.offline-branch').seenOn.line = 'line:git.gone' }, 'dangling-reference'],
@@ -118,7 +118,7 @@ test('an owner signs off a change, and a person may resolve a batch-review reque
   assert.deepEqual(errorCodes(edited('review-loop', (d) => {
     const r = request(d, OWNER)
     r.status = 'resolved'
-    r.history.push({ status: 'resolved', by: 'actor:person.laundry-design', at: '2026-10-11T04:00:00Z' })
+    r.history.push({ status: 'resolved', by: 'actor:person.example-design', at: '2026-10-11T04:00:00Z' })
   })), [])
   assert.deepEqual(errorCodes(edited('review-loop', (d) => {
     const r = request(d, BATCH)
@@ -131,11 +131,11 @@ test('on a high-risk target the person who delegated the fix cannot approve it a
   const highRisk = (resolver: string) => edited('review-loop', (d) => {
     const r = request(d, AUTO)
     r.risk = 'high'
-    r.owners = [{ role: 'design', who: 'taymoor' }, { role: 'design', who: 'laundry-design' }]
+    r.owners = [{ role: 'design', who: 'taymoor' }, { role: 'design', who: 'example-design' }]
     r.history.at(-1)!.by = resolver
   })
   assert.ok(errorCodes(highRisk('actor:person.taymoor')).includes('self-approval'))
-  assert.deepEqual(errorCodes(highRisk('actor:person.laundry-design')), [])
+  assert.deepEqual(errorCodes(highRisk('actor:person.example-design')), [])
 })
 
 test('laneFor sends each request to the lane D38 names', () => {
@@ -159,7 +159,7 @@ test('laneFor sends each request to the lane D38 names', () => {
 
 test('resolveAnchor finds by stable ID, then exact locator, and never the nearest element', () => {
   const anchor = record<Annotation>(example('review-loop'), 'annotation:intake.pack.label-clipped').anchor!
-  const label: ObservedElement = { civicIds: ['target:laundry.intake.pack'], testId: 'pack-color-label', role: 'heading', name: 'Pick a colour' }
+  const label: ObservedElement = { civicIds: ['target:example.intake.pack'], testId: 'pack-color-label', role: 'heading', name: 'Pick a colour' }
   const moved: ObservedElement = { civicIds: [], testId: 'pack-color-label', role: 'heading', name: 'Pick a colour' }
   const similar: ObservedElement = { civicIds: [], testId: 'pack-colour-label', role: 'heading', name: 'Pick a color' }
 

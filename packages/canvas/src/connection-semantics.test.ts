@@ -2,7 +2,7 @@ import { expect, test } from 'vitest'
 import { connectionDescription, connectionStyle, interactionOf } from './connection-semantics'
 
 test('interaction meaning uses an explicit type before conservative label inference', () => {
-  for (const action of ['Back to Laundry', 'Cancel', 'Return to list', 'Close dialog']) expect(interactionOf({ action })).toBe('return')
+  for (const action of ['Back to Example', 'Cancel', 'Return to list', 'Close dialog']) expect(interactionOf({ action })).toBe('return')
   for (const action of ['Save item; finish intake', 'Confirm selected pieces dry', 'Transfer washed pieces', 'Put away selected dry pieces', 'Dismiss reminder']) expect(interactionOf({ action })).toBe('update')
   for (const action of ['Open settings', 'Next', 'Add clothes', 'Start setup', 'Review returned items', 'Open cancel policy']) expect(interactionOf({ action })).toBe('navigate')
   expect(interactionOf({ action: 'Add project', interaction: 'navigate' })).toBe('navigate')

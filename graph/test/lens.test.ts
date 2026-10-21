@@ -7,7 +7,7 @@ import { indexGraph, lensView, parseLens, renderPortal, resolveLens, storiesIn, 
 
 const read = (path: string) => JSON.parse(readFileSync(new URL(path, import.meta.url), 'utf8')) as GraphDocument
 const card = () => indexGraph(read('../../demo/card/out/resolved.graph.json'))
-const laundry = () => indexGraph(read('../../projects/laundry/out/graph.json'))
+const review = () => indexGraph(read('../../graph/test/fixtures/review.graph.json'))
 const hash = (n: number) => `sha256:${String(n).repeat(64)}`
 
 // The Shop checkout file's main line, and a draft that changes the Promo applied frame and adds one.
@@ -23,13 +23,13 @@ test('through a design draft, each screen shows the draft frame that designs it 
 })
 
 test('through a code line, only runs on its head or its preview count, and the environment says whether it runs that head', () => {
-  const graph = laundry()
+  const graph = review()
   const head = graph.ofKind('evidence')[0]!.source.revision
   const mainLine: Line = { id: 'line:git.main', kind: 'line', title: 'main', type: 'main', tool: 'git', ref: 'main', head, status: 'open' }
   const branch: Line = { id: 'line:git.fix', kind: 'line', title: 'fix', type: 'branch', tool: 'git', ref: 'fix', base: mainLine.id, head: 'f'.repeat(40), status: 'open' }
   const staging: Environment = { id: 'environment:staging', kind: 'environment', title: 'Staging', url: 'https://staging.example.com', canvas: true, runs: [{ line: mainLine.id, revision: 'e'.repeat(40), observedAt: '2026-10-15T00:00:00Z' }] }
   const records: GraphRecord[] = [mainLine, branch, staging]
-  const screen = 'target:laundry.route.drying.washer-queued'
+  const screen = 'target:review.route.queue.ready'
   const onMain = lensView(graph, records, resolveLens(records, { code: mainLine.id, environment: staging.id }), screen)
   assert.ok(onMain.runs.length > 0)
   assert.deepEqual(onMain.deployed, { revision: 'e'.repeat(40), observedAt: '2026-10-15T00:00:00Z', current: false })
@@ -39,11 +39,11 @@ test('through a code line, only runs on its head or its preview count, and the e
   const previewed = lensView(graph, records, resolveLens([{ ...branch, previews: [{ url: 'https://pr.example.com', revision: head }] }], { code: branch.id }), screen)
   assert.equal(previewed.runs.length, onMain.runs.length)
 
-  const page = renderPortal(graph, storiesIn(graph, 'laundry'), { title: 'Laundry', lens: { resolved: resolveLens(records, { code: mainLine.id, environment: staging.id }), records } })
-  assert.match(page.get('index.html')!, /href="stories\/laundry-journey-drying\.html\?code=line:git\.main&amp;environment=environment:staging"/)
-  const story = page.get('stories/laundry-journey-drying.html')!
+  const page = renderPortal(graph, storiesIn(graph, 'review'), { title: 'Review fixture', lens: { resolved: resolveLens(records, { code: mainLine.id, environment: staging.id }), records } })
+  assert.match(page.get('index.html')!, /href="stories\/review-journey-queue\.html\?code=line:git\.main&amp;environment=environment:staging"/)
+  const story = page.get('stories/review-journey-queue.html')!
   assert.match(story, /lens="code=line:git\.main&amp;environment=environment:staging"/)
-  assert.match(story, /&quot;src&quot;:&quot;https:\/\/staging\.example\.com\/review-frame\.html\?scenario=route\.drying\.washer-queued&quot;,&quot;label&quot;:&quot;Play on Staging&quot;/)
+  assert.match(story, /&quot;src&quot;:&quot;https:\/\/staging\.example\.com\/review-frame\.html\?scenario=route\.queue\.ready&quot;,&quot;label&quot;:&quot;Play on Staging&quot;/)
   assert.match(story, /Staging: runs main at e{12}, behind its head/)
 })
 

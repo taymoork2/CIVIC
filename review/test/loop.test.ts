@@ -173,10 +173,10 @@ test('an imported screenshot is unanchored, waits in batch review, and only a pe
 
 test('a change to behavior needs its owner, and an agent check counts only once a person accepts it', async () => {
   const annotation = (await civic(main, person, 'annotate', 'Offline save dead-ends.', '--edge', 'target:demo.intake.save-error>target:demo.intake.pack:Retry')).split(' ')[0]!
-  const owned = (await civic(main, person, 'request', annotation, '--ask', 'Add a Retry branch.', '--change', '--owner', 'design:laundry-design')).split(' ')[0]!
+  const owned = (await civic(main, person, 'request', annotation, '--ask', 'Add a Retry branch.', '--change', '--owner', 'design:example-design')).split(' ')[0]!
   assert.match(await civic(main, person, 'show', owned), /Lane: Owner sign-off/)
   await assert.rejects(run(['resolve', owned, '--note', 'Looks fine'], main, { ...process.env, ...person }, () => {}), /not an owner/)
-  await civic(main, { CIVIC_PERSON: 'laundry-design' }, 'resolve', owned, '--note', 'Not doing this yet.')
+  await civic(main, { CIVIC_PERSON: 'example-design' }, 'resolve', owned, '--note', 'Not doing this yet.')
 
   const anchored = (await civic(main, person, 'annotate', 'Label clips.', '--target', 'target:demo.intake.pack')).split(' ')[0]!
   const id = (await civic(main, person, 'request', anchored, '--ask', 'Wrap it.')).split(' ')[0]!

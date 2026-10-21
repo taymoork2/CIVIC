@@ -6,8 +6,8 @@ import { assemble, fragment, readReplays, type ReplayRecord } from '../src/index
 // Decision 0009: the engine's tape stays the recording, and a replay of it is run evidence.
 
 const head = 'a'.repeat(40)
-const replay = (fields: Partial<ReplayRecord> = {}): ReplayRecord => ({ schema: 'civic.replay/0', project: 'laundry', scenario: 'family.drying', head, source: 'b'.repeat(64), tape: 'c'.repeat(64), steps: 4, outcome: 'pass', replayedAt: '2026-10-13T05:00:00.000Z', ...fields })
-const options = { prefix: 'laundry', platform: 'web' as const, path: 'inputs/replays.json', targetIds: new Set(['target:laundry.family.drying']) }
+const replay = (fields: Partial<ReplayRecord> = {}): ReplayRecord => ({ schema: 'civic.replay/0', project: 'example', scenario: 'family.drying', head, source: 'b'.repeat(64), tape: 'c'.repeat(64), steps: 4, outcome: 'pass', replayedAt: '2026-10-13T05:00:00.000Z', ...fields })
+const options = { prefix: 'example', platform: 'web' as const, path: 'inputs/replays.json', targetIds: new Set(['target:example.family.drying']) }
 
 test('a replay that verified every step passes, about the screen the run starts from, at the commit it ran at', () => {
   const [evidence] = readReplays([replay()], options)
@@ -15,7 +15,7 @@ test('a replay that verified every step passes, about the screen the run starts 
     id: `evidence:runtime.${'c'.repeat(16)}`,
     kind: 'evidence',
     title: 'Recorded run from family.drying, 4 steps',
-    subjectIds: ['target:laundry.family.drying'],
+    subjectIds: ['target:example.family.drying'],
     tier: 'working-preview',
     method: 'runtime',
     platform: 'web',
@@ -24,7 +24,7 @@ test('a replay that verified every step passes, about the screen the run starts 
     capturedAt: '2026-10-13T05:00:00.000Z',
     source: { tool: 'journey-engine', importer: 'replay', revision: head, contentHash: `sha256:${'c'.repeat(64)}`, path: 'inputs/replays.json' },
   })
-  const graph = assemble(fragment([{ id: 'target:laundry.family.drying', kind: 'target', title: 'Drying', scale: 'screen', presence: 'expected', owners: [{ role: 'qa', who: 'qa' }] }]), fragment([evidence!]))
+  const graph = assemble(fragment([{ id: 'target:example.family.drying', kind: 'target', title: 'Drying', scale: 'screen', presence: 'expected', owners: [{ role: 'qa', who: 'qa' }] }]), fragment([evidence!]))
   assert.deepEqual(validateGraph(graph).filter((issue) => issue.severity === 'error'), [])
 })
 

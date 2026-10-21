@@ -1,0 +1,19 @@
+{
+  "schema": "civic.graph/0",
+  "records": [
+    { "id": "target:review.journey.queue", "kind": "target", "title": "Queue", "scale": "journey", "presence": "expected", "platforms": ["web"] },
+    { "id": "target:review.route.queue.check", "kind": "target", "title": "Review pending item", "scale": "screen", "presence": "expected", "platforms": ["web"], "source": { "tool": "journey-engine", "importer": "journey-index", "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "anchor": "route.queue.check" } },
+    { "id": "target:review.route.queue.ready", "kind": "target", "title": "Queue ready", "scale": "screen", "presence": "expected", "platforms": ["web"], "source": { "tool": "journey-engine", "importer": "journey-index", "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "anchor": "route.queue.ready" } },
+    { "id": "evidence:review.ready", "kind": "evidence", "title": "Synthetic ready check", "subjectIds": ["target:review.route.queue.ready"], "tier": "working-preview", "method": "playwright", "platform": "web", "outcome": "pass", "capturedAt": "2026-10-01T00:00:00Z", "source": { "tool": "playwright", "importer": "journey-index", "revision": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" } },
+    { "id": "collab:review.pending", "kind": "collaboration", "type": "ambiguity", "title": "Pending review", "subjectIds": ["target:review.route.queue.check"], "summary": "Review the pending item", "perspectives": ["design"], "owners": [{ "role": "design", "who": "reviewer" }], "raisedBy": { "role": "qa", "who": "reviewer" }, "at": "2026-10-01T00:00:00Z", "status": "open" },
+    { "id": "actor:reviewer", "kind": "actor", "title": "Synthetic reviewer", "type": "person", "handle": "reviewer" },
+    { "id": "semantic:review.answer-row", "kind": "semantic-component", "title": "Answer row", "purpose": "Display one answer", "variants": [], "states": [], "rules": [] },
+    { "id": "platform:review.answer-row", "kind": "platform-component", "title": "Answer row implementation", "platform": "web", "library": { "package": "synthetic-ui" }, "symbol": "AnswerRow", "variants": [] }
+  ],
+  "links": [
+    { "from": "target:review.journey.queue", "relation": "contains", "to": "target:review.route.queue.check", "status": "declared" },
+    { "from": "target:review.journey.queue", "relation": "contains", "to": "target:review.route.queue.ready", "status": "declared" },
+    { "from": "target:review.route.queue.check", "relation": "navigates", "to": "target:review.route.queue.ready", "status": "declared", "action": "Continue" },
+    { "from": "platform:review.answer-row", "relation": "implements", "to": "semantic:review.answer-row", "status": "inferred" }
+  ]
+}

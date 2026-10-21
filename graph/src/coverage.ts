@@ -36,7 +36,7 @@ const RUN_TIERS = new Set(['automated', 'physical-device'])
 
 /**
  * Compares a run's evidence with the graph. A subject fails when any test on it failed and
- * passes when every test on it passed, the same reading the Laundry runs table uses. `scope`
+ * passes when every test on it passed, the same reading the Example runs table uses. `scope`
  * narrows the expected subjects, for a run that is meant to cover only part of the graph.
  */
 export function runCoverage(document: GraphDocument, run: Evidence[], platform: Platform, scope?: (id: string) => boolean): RunCoverage {

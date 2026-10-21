@@ -13,7 +13,7 @@ const EFFECTS = ['mutation', 'identity', 'recover', 'time']
  * Isolated live runs for a project's runtime entry (`adapter.runtime` in its manifest): one worker
  * and in-memory backend per run, with a fixed clock and no network. The entry is trusted project
  * code, never supplied by a request. It exports one of:
- *   createRuntime(seed)       -> { seed, state(actor?), recover?(), execute(kind, name, args, actor?), identity?(account), inspect?() }   function backends (Laundry's Convex)
+ *   createRuntime(seed)       -> { seed, state(actor?), recover?(), execute(kind, name, args, actor?), identity?(account), inspect?() }   function backends
  *   createFetchRuntime(seed)  -> { seed?, state?(), fetch(request) }                       fetch-handler backends (HTTP APIs)
  *   createServerFnRuntime(seed) -> { seed?, state?(), context?(), fetch?(request) }     TanStack Start server functions
  * Apps with sign-in declare synthetic identities on their personas (`identity` in the manifest). Each run gets a

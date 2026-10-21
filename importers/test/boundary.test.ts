@@ -3,7 +3,7 @@ import { readdirSync, readFileSync } from 'node:fs'
 import { test } from 'node:test'
 
 // Importers read tool output into the graph. They depend on the graph package and Node
-// built-ins only: never on the journey engine or Laundry (decision 0004), and never on a
+// built-ins only: never on the journey engine or Example (decision 0004), and never on a
 // model provider (decision 0006).
 const sourceDir = new URL('../src/', import.meta.url)
 const files = readdirSync(sourceDir).filter((name) => name.endsWith('.ts'))

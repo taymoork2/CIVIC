@@ -1,25 +1,27 @@
 import { spawn } from 'node:child_process'
-import { open, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, open, readFile, writeFile } from 'node:fs/promises'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createServer } from 'node:net'
-import { store } from './onboard.mjs'
+import { store } from './store.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
-const config = JSON.parse(await readFile(join(store, 'local-config.json'), 'utf8'))
+await mkdir(store, { recursive: true, mode: 0o700 })
+const config = await readFile(join(store, 'local-config.json'), 'utf8').then(JSON.parse).catch(error => { if (error.code === 'ENOENT') return {}; throw error })
 const port = Number(process.env.CIVIC_LOCAL_PORT ?? 3012)
-if (!Number.isInteger(port) || port < 1024 || port > 65535 || process.env.CIVIC_LOCAL_STORE && port === 3012) throw Error('An isolated store needs its own valid port')
+if (!Number.isInteger(port) || port < 0 || port > 65535 || port > 0 && port < 1024 || process.env.CIVIC_LOCAL_STORE && port === 3012 || !process.argv.includes('--serve') && port === 0) throw Error('An isolated store needs its own valid port')
 if (process.argv.includes('--serve')) {
   const { createServer } = await import('vite')
-  const server = await createServer({ configFile: join(here, 'vite.config.mjs'), root: join(config.laundry, 'apps/web'), cacheDir: join(store, '.vite') })
+  process.env.CIVIC_STORE = store
+  const server = await createServer({ configFile: config.hostConfig ?? join(here, 'vite.config.mjs'), cacheDir: join(store, '.vite'), server: { host: '127.0.0.1', port, strictPort: true } })
   await server.listen(); server.printUrls()
+  process.once('SIGTERM', () => void server.close().finally(() => process.exit()))
 } else {
   const probe = createServer()
   await new Promise((resolve, reject) => { probe.once('error', reject); probe.listen(port, '127.0.0.1', resolve) })
   await new Promise(resolve => probe.close(resolve))
   const log = await open(join(store, 'server.log'), 'a', 0o600)
-  const env = { ...process.env, CIVIC_STORE: store, CIVIC_PUBLIC_ORIGIN: config.origin ?? '', AMP_ORB: '', PUBLIC_URL: '', VITE_CONVEX_URL: 'http://127.0.0.1:1', VITE_CONVEX_SITE_URL: 'http://127.0.0.1:1' }
-  delete env.CIVIC_PROJECT; delete env.CIVIC_APP_ROOT
+  const env = { ...process.env, CIVIC_STORE: store, CIVIC_PUBLIC_ORIGIN: config.origin ?? '' }
   const child = spawn(process.execPath, [fileURLToPath(import.meta.url), '--serve'], { detached: true, stdio: ['ignore', log.fd, log.fd], env })
   await new Promise((resolve, reject) => { child.once('spawn', resolve); child.once('error', reject) })
   child.unref(); await log.close()

@@ -114,7 +114,7 @@ test('matching actions share trunks without merging different conditions, return
 
 test('adjacent navigation buses stop at their shared line instead of overshooting and hooking back', () => {
   const destinations = [[1, 5, 6], [0, 2, 4, 5, 6], [0, 1, 5, 6], [0, 1, 2, 5, 6], [0, 1, 5, 6], [0, 1, 6], [0, 1, 5]]
-  const [journey] = appFlows(destinations.map((rows, index) => ({ id: String(index), label: String(index), journey: 'Orca', section: 'Web', renderer: 'adapter',
+  const [journey] = appFlows(destinations.map((rows, index) => ({ id: String(index), label: String(index), journey: 'Example', section: 'Web', renderer: 'adapter',
     viewport: { width: 1440, height: 900 }, edges: rows.map(to => ({ action: `Open ${to}`, destination: String(to) })),
   })), { adapter: 'module', navigation: ['Web'] })
   const edges = flowEdges(journey!)
@@ -149,10 +149,10 @@ test('stacked states share the bottom exit while a self-return keeps a separate 
 })
 
 const flow = (id: string, x: number, y: number, edges: { action: string; destination: string; when?: string }[] = []): AppFlow => ({ id, x, y, width: 340, height: 260, label: id, section: id, screens: [{ id, scenario: id, label: id, partial: false, edges }] })
-test('overview follows declared app navigation even when the registry starts in Laundry', () => {
-  const flows = appFlows(['Laundry', 'Start', 'Home'].map(section => ({ id: section, label: section, journey: section, section, renderer: 'adapter' })), { adapter: 'module', navigation: ['Start', 'Home', 'Laundry'] })
+test('overview follows declared app navigation even when the registry starts in Example', () => {
+  const flows = appFlows(['Example', 'Start', 'Home'].map(section => ({ id: section, label: section, journey: section, section, renderer: 'adapter' })), { adapter: 'module', navigation: ['Start', 'Home', 'Example'] })
   const overview = overviewFlows(flows)
-  expect([...overview].sort((a, b) => a.x - b.x).map(flow => flow.section)).toEqual(['Start', 'Home', 'Laundry'])
+  expect([...overview].sort((a, b) => a.x - b.x).map(flow => flow.section)).toEqual(['Start', 'Home', 'Example'])
 })
 
 test('spatial backtracking never changes navigation or update meaning in any canvas view', () => {

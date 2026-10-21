@@ -23,16 +23,16 @@ test('worktree refresh follows the requested project and caches each app indepen
   const next = loadProject(host, { manifest: join(other, 'civic.project.json'), applicationRoot: other })
   const picker = await projectPicker(host, current, { syncConnections: async app => {
     calls.push(app)
-    return { connections: app === 'laundry' ? [{ root: other, manifest: next.manifestPath, app: { id: 'laundry', name: 'Laundry' }, kind: 'implementation' }] : [], errors: [] }
+    return { connections: app === 'pantry' ? [{ root: other, manifest: next.manifestPath, app: { id: 'pantry', name: 'Pantry' }, kind: 'implementation' }] : [], errors: [] }
   } })
-  await picker.organize({ key: current.key, app: { id: 'orca', name: 'Orca' }, kind: 'implementation' })
-  await picker.versionPage({ app: 'orca' })
-  assert.equal((await picker.versionPage({ app: 'laundry' })).items.length, 1)
-  await picker.versionPage({ app: 'orca' })
-  await picker.versionPage({ app: 'laundry' })
-  assert.deepEqual(calls, ['orca', 'laundry'])
-  await picker.versionPage({ app: 'laundry', refresh: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' })
-  assert.deepEqual(calls, ['orca', 'laundry', 'laundry'])
+  await picker.organize({ key: current.key, app: { id: 'notebook', name: 'Notebook' }, kind: 'implementation' })
+  await picker.versionPage({ app: 'notebook' })
+  assert.equal((await picker.versionPage({ app: 'pantry' })).items.length, 1)
+  await picker.versionPage({ app: 'notebook' })
+  await picker.versionPage({ app: 'pantry' })
+  assert.deepEqual(calls, ['notebook', 'pantry'])
+  await picker.versionPage({ app: 'pantry', refresh: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' })
+  assert.deepEqual(calls, ['notebook', 'pantry', 'pantry'])
 })
 
 test('catalog and version pages scope inventory work, cache unchanged registries and reach connection 119', async () => {
@@ -223,14 +223,14 @@ test('worktree versions use recorded content rather than commit or dirty labels'
 test('automatic worktree connections retain selection and evidence and report build failures', async () => {
   const { base, host, root, current } = await fixture()
   const initial = await projectPicker(host, current)
-  await initial.organize({ key: current.key, app: { id: 'orca', name: 'Orca' }, kind: 'live' })
+  await initial.organize({ key: current.key, app: { id: 'notebook', name: 'Notebook' }, kind: 'live' })
   await initial.select(current.key)
   const selection = await readFile(join(host, '.review-data/application.json'), 'utf8')
   const evidence = join(host, '.review-data/projects', current.key)
   await mkdir(evidence, { recursive: true }); await writeFile(join(evidence, 'reviews.json'), '[{"id":"keep"}]')
   const other = join(base, 'worktree'); await cp(root, other, { recursive: true })
   let calls = 0
-  const picker = await projectPicker(host, current, { syncConnections: async () => { calls++; return { connections: [{ root: other, manifest: join(other, 'civic.project.json'), app: { id: 'orca', name: 'Orca' }, kind: 'implementation' }], errors: ['One unavailable draft'] } } })
+  const picker = await projectPicker(host, current, { syncConnections: async () => { calls++; return { connections: [{ root: other, manifest: join(other, 'civic.project.json'), app: { id: 'notebook', name: 'Notebook' }, kind: 'implementation' }], errors: ['One unavailable draft'] } } })
   const lists = await Promise.all([picker.list(), picker.list()])
   assert.equal(calls, 1)
   assert.equal(lists[0].projects.length, 2)
@@ -333,8 +333,8 @@ test('linking design sources preserves established keys, selected app and saved 
   await picker.select(current.key)
   const before = await readFile(join(host, '.review-data/application.json'), 'utf8')
   await assert.rejects(picker.linkFigma({ url: 'https://figma.com.evil.test/design/Ab123' }), { status: 400 })
-  await picker.linkFigma({ url: 'https://figma.com/design/Ab123/Orca' })
-  await picker.linkFigma({ url: 'https://www.figma.com/design/Ab123/Orca?node-id=1-2' })
+  await picker.linkFigma({ url: 'https://figma.com/design/Ab123/Notebook' })
+  await picker.linkFigma({ url: 'https://www.figma.com/design/Ab123/Notebook?node-id=1-2' })
   assert.equal((await picker.list()).projects[0].key, current.key)
   assert.equal(await readFile(join(evidence, 'reviews.json'), 'utf8'), '[{"id":"original-review"}]')
   assert.equal(await readFile(join(host, '.review-data/application.json'), 'utf8'), before)

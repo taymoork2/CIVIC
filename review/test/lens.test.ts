@@ -104,10 +104,10 @@ test('lines --json says which open lines change each target: drafts through thei
   }, 'resolved requests and closed lines change nothing')
 })
 
-test("a design tool with no Figma export: Laundry's Open Design reference is a design line, and a proposal's lens reads Laundry's screens", async () => {
-  const design = JSON.parse(readFileSync(new URL('../../projects/laundry/out/design.json', import.meta.url), 'utf8')) as DesignExport
-  const laundryGraph = fileURLToPath(new URL('../../projects/laundry/out/graph.json', import.meta.url))
-  const main = join(exports, 'laundry.design.json')
+test("a design tool with no Figma export: Review fixture's Open Design reference is a design line, and a proposal's lens reads Review fixture's screens", async () => {
+  const design = JSON.parse(readFileSync(new URL('../../graph/test/fixtures/review.design.json', import.meta.url), 'utf8')) as DesignExport
+  const reviewGraph = fileURLToPath(new URL('../../graph/test/fixtures/review.graph.json', import.meta.url))
+  const main = join(exports, 'review.design.json')
   writeFileSync(main, JSON.stringify(design))
   const registered = await civic('design', main)
   const base = `line:open-design.${design.key}`
@@ -116,27 +116,27 @@ test("a design tool with no Figma export: Laundry's Open Design reference is a d
   // A proposal re-renders two drying frames and drops one sign-in case.
   const proposal = structuredClone(design)
   proposal.version = '2026-10-12T00:00:00.000Z'
-  const changed = proposal.frames.filter((frame) => frame.page === 'drying-home').slice(0, 2)
+  const changed = proposal.frames.filter((frame) => frame.page === 'queue').slice(0, 2)
   for (const frame of changed) frame.hash = `sha256:${'1'.repeat(64)}`
-  const dropped = proposal.frames.findIndex((frame) => frame.page === 'sign-in')
+  const dropped = proposal.frames.findIndex((frame) => frame.page === 'check')
   const [removed] = proposal.frames.splice(dropped, 1)
-  const file = join(exports, 'laundry.proposal.json')
+  const file = join(exports, 'review.proposal.json')
   writeFileSync(file, JSON.stringify(proposal))
-  await civic('draft', file, '--name', 'Calmer drying')
-  const draftLine = `${base}.draft.calmer-drying`
+  await civic('draft', file, '--name', 'Calmer queue')
+  const draftLine = `${base}.draft.calmer-queue`
   const note = (await civic('annotate', 'The wait copy is too long at 320.', '--line', draftLine, '--figma-node', changed[0]!.node)).split(' ')[0]!
 
-  const lens = JSON.parse(await civic('lens', draftLine, '--graph', laundryGraph, '--json')) as DesignLens
+  const lens = JSON.parse(await civic('lens', draftLine, '--graph', reviewGraph, '--json')) as DesignLens
   assert.deepEqual(lens.base, { id: base, title: design.name, head: design.version })
   assert.equal(lens.unchanged, design.frames.length - 3)
   assert.deepEqual(lens.changes.map((item) => [item.change, item.node, item.targets.map((target) => target.id), item.annotations.map((a) => a.id)]), [
-    ['changed', changed[0]!.node, ['target:laundry.legacy.drying-home'], [note]],
-    ['changed', changed[1]!.node, ['target:laundry.legacy.drying-home'], []],
-    ['removed', removed!.node, ['target:laundry.legacy.sign-in'], []],
+    ['changed', changed[0]!.node, ['target:review.route.queue.ready'], [note]],
+    ['changed', changed[1]!.node, ['target:review.route.queue.ready'], []],
+    ['removed', removed!.node, ['target:review.route.queue.check'], []],
   ])
 
   // Registering the proposal again finds the note by its frame, and a Figma key is refused.
-  assert.match(await civic('draft', file, '--name', 'Calmer drying'), new RegExp(`${note} found on this version`))
+  assert.match(await civic('draft', file, '--name', 'Calmer queue'), new RegExp(`${note} found on this version`))
   await assert.rejects(civic('design', main, '--file', 'other'), /not other/)
   assert.deepEqual(validateGraph(Store.forCommonDir(readCheckout(repo).commonDir).read()).filter((issue) => issue.severity === 'error'), [])
 })

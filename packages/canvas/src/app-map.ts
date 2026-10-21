@@ -19,7 +19,7 @@ export function screenSize(screen: Pick<MapScreen, 'viewport'>) {
 const previewBox = (screen: MapScreen) => ({ x: screen.x!, y: screen.y! + screenHeadingHeight, width: screenSize(screen).width, height: screenSize(screen).previewHeight })
 /**
  * Lays out the journey graph. Module projects group screens by their declared flow and section; a
- * host's canvas extension may supply its own graph, flow order and sections (Laundry does).
+ * host's canvas extension may supply its own graph, flow order and sections.
  */
 export function appFlows(scenarios: MapScenario[], project?: { adapter: string; navigation: string[] }): AppFlow[] {
   const sections = project?.navigation ?? extension.sections ?? []

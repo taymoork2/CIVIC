@@ -2,30 +2,11 @@
   "graphs": [
     "demo/fluent-button/out/resolved.graph.json",
     "demo/card/out/resolved.graph.json",
-    "projects/laundry/out/graph.json",
     "projects/discovery-app/out/graph.json"
   ],
   "baseline": "civic.baseline.json",
-  "designs": [
-    "projects/laundry/out/design.json"
-  ],
-  "freshness": [
-    {
-      "graph": "projects/laundry/out/graph.json",
-      "tools": [
-        "playwright"
-      ],
-      "watch": [
-        "apps/web",
-        "convex",
-        "packages"
-      ],
-      "checkout": {
-        "repository": "taymoork2/washcloset",
-        "env": "LAUNDRY_CHECKOUT"
-      }
-    }
-  ],
+  "designs": [],
+  "freshness": [],
   "methods": [
     {
       "graph": "demo/fluent-button/out/resolved.graph.json",
@@ -37,12 +18,6 @@
       "graph": "demo/card/out/resolved.graph.json",
       "profiles": [
         "demo/card/contract/method.json"
-      ]
-    },
-    {
-      "graph": "projects/laundry/out/graph.json",
-      "profiles": [
-        "projects/laundry/method.json"
       ]
     }
   ]

@@ -27,8 +27,8 @@ test('the Card joins its four implementations, its uses in design and code, its 
 })
 
 test('an inferred implementation shows as unconfirmed, and the portal links components and story steps both ways', () => {
-  const graph = read('../../projects/laundry/out/graph.json')
-  const facts = componentFacts(graph, 'semantic:laundry.answer-row')
+  const graph = read('../../graph/test/fixtures/review.graph.json')
+  const facts = componentFacts(graph, 'semantic:review.answer-row')
   assert.deepEqual(facts.implementations.map((item) => [item.symbol, item.status, item.confirmed]), [['AnswerRow', 'inferred', false]])
 
   const card = read('../../demo/card/out/resolved.graph.json')

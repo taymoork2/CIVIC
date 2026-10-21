@@ -7,7 +7,7 @@ import { slug } from './fragment.ts'
 // ties file or by confirming a tie CIVIC suggested from names. No model calls (D30).
 
 export interface OrcaGridOptions {
-  /** The ID segment the product's other records use, such as `laundry`. */
+  /** The ID segment the product's other records use, such as `example`. */
   prefix: string
   /** Design owns the object map. */
   owners: Owner[]

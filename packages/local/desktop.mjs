@@ -1,6 +1,6 @@
 import { app, BaseWindow, WebContentsView, ipcMain, shell, dialog, Menu, nativeTheme } from 'electron'
 import { fileURLToPath } from 'node:url'
-import { store } from './onboard.mjs'
+import { store } from './store.mjs'
 import { localReviewOrigin, trustedWindow } from './desktop-windows.mjs'
 import { projectTabs } from './desktop-tabs.mjs'
 import { readAppearance, saveAppearance } from './desktop-appearance.mjs'

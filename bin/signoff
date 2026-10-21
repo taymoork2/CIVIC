@@ -2,25 +2,16 @@
 # Local signoff: run CIVIC's checks on this machine instead of paid CI minutes, then
 # record a green "signoff" commit status on GitHub for the exact commit that passed.
 #
-#   bin/signoff            graph, review loop, crawl, importer, Fluent Button, Card, rebrand, Laundry and discovery example checks, the
-#                          civic check gate, and CIVIC's packages with their install check. Laundry's own
-#                          checks run in Laundry's repository (decision 0010). Posts the "signoff" and
-#                          "civic" statuses, and on an open pull request a comment listing the findings
-#                          this change introduced, with who is asked and who is told (step 10).
-#   bin/signoff --browser  also the Fluent Button web evidence (needs Chrome)
-#   bin/signoff --capture  first recapture Laundry's evidence if the gate finds it stale (needs
-#                          LAUNDRY_CHECKOUT, a clean Laundry checkout, Chrome, and Laundry's review
-#                          server started there at its HEAD); a recapture stops the signoff so
-#                          the new evidence can be reviewed and committed
-#   bin/signoff --no-post  run everything but do not post a status
+#   bin/signoff           run public engine and synthetic example checks; post statuses
+#   bin/signoff --browser include browser evidence for the public demo
+#   bin/signoff --no-post run without posting a status
 set -euo pipefail
 
-browser=0 post=1 capture=0
+browser=0 post=1
 for arg in "$@"; do
   case "$arg" in
     --browser) browser=1 ;;
     --no-post) post=0 ;;
-    --capture) capture=1 ;;
     *) echo "Unknown option: $arg" >&2; exit 2 ;;
   esac
 done
@@ -31,7 +22,6 @@ graph_dir="$repo_root/graph"
 importers_dir="$repo_root/importers"
 demo_dir="$repo_root/demo/fluent-button"
 card_dir="$repo_root/demo/card"
-laundry_dir="$repo_root/projects/laundry"
 review_dir="$repo_root/review"
 crawl_dir="$repo_root/crawl"
 discovery_dir="$repo_root/projects/discovery-app"
@@ -43,34 +33,6 @@ if [ -n "$(git -C "$repo_root" status --porcelain)" ]; then
   exit 1
 fi
 sha="$(git -C "$repo_root" rev-parse HEAD)"
-
-# Fixture capture (roadmap step 6): evidence whose code changed since it was captured is
-# stale. Recapturing changes the committed inputs, so it ends the signoff for review.
-if [ "$capture" = 1 ]; then
-  step "Stale evidence: Laundry"
-  if [ -z "${LAUNDRY_CHECKOUT:-}" ]; then
-    echo "--capture compares Laundry's evidence with Laundry's code: set LAUNDRY_CHECKOUT to a Laundry checkout." >&2
-    exit 2
-  fi
-  pnpm --dir "$graph_dir" install --frozen-lockfile
-  stale="$({ "$repo_root/bin/civic" check --config "$repo_root/civic.check.json" --json || true; } | node -e '
-    let text = ""; process.stdin.on("data", (chunk) => (text += chunk)).on("end", () => {
-      const report = JSON.parse(text)
-      const all = [...report.fresh, ...report.baselined, ...report.advisory]
-      console.log(all.filter((item) => item.kind === "stale-evidence" && item.graph === "projects/laundry/out/graph.json").length)
-    })')"
-  if [ "$stale" = 0 ]; then
-    echo "Laundry's evidence is fresh; nothing to recapture."
-  else
-    echo "$stale piece(s) of Laundry's evidence are stale; recapturing."
-    pnpm --dir "$review_dir" install --frozen-lockfile
-    node "$laundry_dir/capture.ts" --checkout "$LAUNDRY_CHECKOUT" "${WASHCLOSET_E2E_BASE_URL:-http://127.0.0.1:3010}"
-    node "$laundry_dir/build.ts"
-    git -C "$repo_root" status --short -- projects/laundry
-    echo "Recaptured Laundry's evidence at $(git -C "$LAUNDRY_CHECKOUT" rev-parse --short=12 HEAD). Review the diff, commit projects/laundry, and sign off again." >&2
-    exit 1
-  fi
-fi
 
 step "CIVIC graph: types, tests and example graphs"
 pnpm --dir "$graph_dir" install --frozen-lockfile
@@ -88,14 +50,13 @@ pnpm --dir "$crawl_dir" install --frozen-lockfile
 pnpm --dir "$crawl_dir" run check
 pnpm --dir "$crawl_dir" test
 
-step "CIVIC importers, the Fluent Button and Card demo graphs, and the Laundry and discovery example graphs"
+step "CIVIC importers, the Fluent Button and Card demo graphs, and the discovery example graph"
 pnpm --dir "$importers_dir" install --frozen-lockfile
 pnpm --dir "$importers_dir" run check
 pnpm --dir "$importers_dir" test
 node "$demo_dir/build.ts" --check
 node "$card_dir/build.ts" --check
 node "$repo_root/demo/rebrand/build.ts" --check
-node "$laundry_dir/build.ts" --check
 node "$discovery_dir/build.ts" --check
 
 # Roadmap step 10: findings are raised at the change that caused it. The gate also compares
@@ -138,7 +99,7 @@ if [ -n "$(git -C "$repo_root" status --porcelain)" ] || [ "$(git -C "$repo_root
   exit 1
 fi
 
-scope="graph, review loop, importers, Button, Card and rebrand demos, Laundry and discovery graphs, civic gate, CIVIC packages and their install check"
+scope="graph, review loop, importers, Button, Card and rebrand demos, discovery graph, civic gate, CIVIC packages and their install check"
 [ "$browser" = 1 ] && scope="$scope + Button web evidence"
 if [ "$post" = 0 ]; then step "Passed for $sha ($scope); status not posted"; exit 0; fi
 if ! command -v gh >/dev/null; then step "Passed for $sha ($scope). Install the GitHub CLI (gh) to post the signoff status."; exit 0; fi

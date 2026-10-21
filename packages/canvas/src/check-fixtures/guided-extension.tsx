@@ -3,7 +3,7 @@ import type { AdapterState } from '../adapter.ts'
 import type { CanvasExtension, GuidedSession } from '../extension.ts'
 
 // A connector's guided run, for the canvas's own checks: the Pantry example's "Keep the pantry" flow played
-// continuously in one frame, following the frame's standard state and transition events. Laundry's towel
+// continuously in one frame, following the frame's standard state and transition events. Example's towel
 // run is the full version, with presentation proposals; this proves the seam without it.
 const flowId = 'flow:Keep the pantry'
 const labels: Record<string, string> = { 'pantry.shelf': 'Shelf', 'pantry.add': 'Add an item' }

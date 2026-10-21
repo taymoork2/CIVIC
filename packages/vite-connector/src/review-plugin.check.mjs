@@ -58,8 +58,8 @@ test('a plain module app connects through the connector alone, with no app conne
 })
 
 test('an app whose adapter kind has no registered connector is refused', async () => {
-  const { repo, web } = await host({ adapter: { kind: 'laundry' } })
-  assert.throws(() => civicReview({ host: web, repo }), /No connector is registered for adapter kind laundry/)
+  const { repo, web } = await host({ adapter: { kind: 'example' } })
+  assert.throws(() => civicReview({ host: web, repo }), /No connector is registered for adapter kind example/)
 })
 
 test('app hot updates retain mounted runs while engine updates keep normal HMR', async () => {

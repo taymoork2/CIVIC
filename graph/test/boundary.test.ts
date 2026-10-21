@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { readdirSync, readFileSync } from 'node:fs'
 import { test } from 'node:test'
 
-// Decision 0004: the graph never depends on the journey engine or Laundry.
+// Decision 0004: the graph never depends on the journey engine or Example.
 // Decision 0006: CIVIC makes no model calls.
 const sourceDir = new URL('../src/', import.meta.url)
 const files = readdirSync(sourceDir).filter((name) => name.endsWith('.ts'))
