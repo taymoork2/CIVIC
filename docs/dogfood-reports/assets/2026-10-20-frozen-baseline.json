@@ -1,0 +1,21 @@
+{
+  "origin": "http://127.0.0.1:59853",
+  "controller": 19901,
+  "runner": 23611,
+  "metrics": {
+    "tag": "one",
+    "startedAt": "2026-10-21T02:16:22.942Z",
+    "phases": {
+      "bootReadyMs": 702.5780829999999,
+      "copyAndFreezeMs": 7523.2123329999995,
+      "serverReadyMs": 12907.529042
+    },
+    "readonly": "sh: can't create /work/project/laundry/package.json: Permission denied\n",
+    "readonlyRoot": "/bin/sh: can't create /work/project/laundry/package.json: Read-only file system\n",
+    "egress": {
+      "exitCode": 1,
+      "stderr": "Connecting to example.com (192.0.2.1:443)\n  HTTP/1.1 403 Forbidden\nwget: server returned error: HTTP/1.1 403 Forbidden\n"
+    },
+    "marker": ":root { --civic-snapshot: 1; }\n"
+  }
+}

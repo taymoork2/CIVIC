@@ -1,0 +1,43 @@
+import assert from 'node:assert/strict'
+import {execFileSync} from 'node:child_process'
+import {readFile,writeFile,mkdir,copyFile,lstat} from 'node:fs/promises'
+import {join,dirname} from 'node:path'
+import {createHash} from 'node:crypto'
+const root=new URL('.',import.meta.url).pathname
+const civic='/Users/taymoor/Projects/CIVIC'
+const laundry='/Users/taymoor/.codex/worktrees/c15d/laundry-app'
+const adapter='/Users/taymoor/Projects/civic-instances/laundry'
+const git=(path,...args)=>execFileSync('git',['-C',path,...args],{encoding:'utf8'}).trim()
+const before={head:git(laundry,'rev-parse','HEAD'),status:git(laundry,'status','--porcelain=v1')}
+assert.equal(before.status,'','Spike expects an unchanged clean Laundry baseline')
+let files=0
+const digest=createHash('sha256')
+async function copy(source,destination,filter,extra=[]){
+  const paths=[...new Set([...execFileSync('git',['-C',source,'ls-files','-z'],{encoding:'utf8'}).split('\0').filter(Boolean),...extra])]
+  for(const path of paths.filter(filter)){
+    if(/(^|\/)\.(?:env[^/]*|git|npmrc)(\/|$)/.test(path))continue
+    if(!(await lstat(join(source,path))).isFile())continue
+    const to=join(root,'source',destination,path)
+    await mkdir(dirname(to),{recursive:true});await copyFile(join(source,path),to)
+    digest.update(destination+'/'+path+'\0').update(await readFile(to));files++
+  }
+}
+await copy(civic,'civic',path=>/^packages\/(?:canvas|shell|vite-connector)\//.test(path)||['packages/local/laundry-runtime.mjs','packages/local/worktree-dependencies.mjs'].includes(path),['packages/local/laundry-runtime.mjs','packages/local/worktree-dependencies.mjs'])
+await copy(civic,'',path=>path.startsWith('journey-engine/design/laundry-reference/'))
+await copy(laundry,'laundry',path=>/^(?:apps\/web\/(?:src|public)\/|packages\/|convex\/)/.test(path)||['package.json','pnpm-lock.yaml','apps/web/package.json'].includes(path))
+await copy(adapter,'adapter',path=>/^(?:apps\/web\/(?:src|public|scripts)\/|apps\/web\/[^/]+$|packages\/(?:planner|icons)\/|convex\/|docs\/design\/)/.test(path)||['package.json','pnpm-lock.yaml','civic.project.json'].includes(path))
+const workspaces=['civic/packages/canvas','civic/packages/shell','civic/packages/vite-connector','adapter/apps/web','adapter/convex','adapter/packages/planner','adapter/packages/icons']
+for(const workspace of [...workspaces,'laundry/apps/web','laundry/convex','laundry/packages/planner','laundry/packages/icons']){
+  const path=join(root,'source',workspace,'package.json')
+  const data=JSON.parse(await readFile(path,'utf8'))
+  delete data.devEngines;delete data.packageManager
+  data.devDependencies=Object.fromEntries(Object.entries(data.devDependencies??{}).filter(([key])=>key.startsWith('@civic/')||key==='convex-test'))
+  for(const section of ['dependencies','devDependencies'])for(const key of Object.keys(data[section]??{}))if(key.startsWith('@civic/'))data[section][key]='workspace:*'
+  await writeFile(path,JSON.stringify(data,null,2))
+}
+await writeFile(join(root,'source/package.json'),JSON.stringify({private:true,type:'module',workspaces,dependencies:{'@civic/canvas':'workspace:*','@civic/shell':'workspace:*','@civic/vite-connector':'workspace:*',react:'19.3.0','react-dom':'19.3.0',vite:'8.3.1','@tailwindcss/vite':'4.3.3',tailwindcss:'4.3.3',obscenity:'0.4.6','use-sync-external-store':'1.6.0'}},null,2))
+await writeFile(join(root,'source/pnpm-workspace.yaml'),'packages:\n'+workspaces.map(path=>'  - '+path).join('\n')+'\n')
+await writeFile(join(root,'source/.npmrc'),'link-workspace-packages=true\nauto-install-peers=false\nstrict-peer-dependencies=false\nmanage-package-manager-versions=false\npackage-manager-strict=false\n')
+assert.deepEqual({head:git(laundry,'rev-parse','HEAD'),status:git(laundry,'status','--porcelain=v1')},before)
+await writeFile(root+'source.json',JSON.stringify({...before,laundry,civicHead:git(civic,'rev-parse','HEAD'),files,readDigest:digest.digest('hex'),workspaces},null,2))
+console.log({files,...before})

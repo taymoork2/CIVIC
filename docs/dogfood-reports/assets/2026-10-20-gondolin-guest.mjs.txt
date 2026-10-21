@@ -1,0 +1,44 @@
+import { createServer } from 'vite'
+import tailwindcss from '@tailwindcss/vite'
+import { canvasPlugins } from '@civic/canvas'
+import { moduleReviewAdapter } from '@civic/canvas/module-adapter'
+import { laundryConnector } from './adapter/apps/web/scripts/review-laundry-connector.mjs'
+import { laundryReviewAdapter } from './adapter/apps/web/scripts/review-adapter.mjs'
+import { laundryRuntime } from './civic/packages/local/laundry-runtime.mjs'
+import { dependencyAliases, previewDependencies } from './civic/packages/local/worktree-dependencies.mjs'
+import { hostPlaywright } from '@civic/shell/server'
+const { chromium } = await hostPlaywright()
+const adapter = '/work/project/adapter', source = '/work/project/laundry'
+process.env.WASHCLOSET_REVIEW_DESIGN = '/work/project/design'
+const connection = { manifest: adapter + '/civic.project.json', applicationRoot: source }
+const dependencies = await dependencyAliases(source, adapter, ['apps/web', 'convex', 'packages/planner', 'packages/icons'])
+const server = await createServer({
+  configFile: false, root: adapter + '/apps/web', cacheDir: '/work/project/node_modules/.vite',
+  resolve: { alias: { '@civic/canvas/styles/review.css': '/work/project/civic/packages/shell/styles/ui.generated.css' } },
+  optimizeDeps: { noDiscovery: true, include: ['react', 'react-dom', 'react-dom/client', 'react/jsx-runtime', 'react/jsx-dev-runtime', '@tanstack/react-router', 'sonner', 'convex/react', 'convex/browser', 'convex/server', 'convex/values', 'use-sync-external-store/shim/with-selector', 'use-sync-external-store/shim', 'obscenity'] },
+  server: { host: '127.0.0.1', port: 8470, strictPort: true, watch: { usePolling: true, interval: 250 }, fs: { allow: ['/source', '/work'] } },
+  plugins: [previewDependencies(dependencies, source), tailwindcss(), ...canvasPlugins({
+    store: '/work/store', project: connection, designRoot: '/work/project/design',
+    connectors: { laundry: { ...laundryConnector, sharedStore: () => false,
+      inventory: async (_store, designRoot, appRoot) => {
+        const result = await laundryConnector.inventory(adapter, designRoot, appRoot)
+        result.metadata.scenarios = result.metadata.scenarios.filter(scenario => scenario.id === 'app.home')
+        result.metadata.surfaces = result.metadata.surfaces.filter(surface => surface.scenarios.includes('app.home'))
+        return result
+      },
+      shellStyle: project => laundryConnector.shellStyle(project) + '; import "/@fs/work/project/laundry/apps/web/src/gondolin-refresh.css"',
+    } },
+    runtime: (project, revision, options) => laundryRuntime(project, revision, { ...options, installed: adapter, dependencies }),
+    review: async () => ({ adapter: { ...laundryReviewAdapter, screens: [], exploreFixture: moduleReviewAdapter.exploreFixture,
+      launchFixtureBrowser: () => chromium.launch({ executablePath: '/usr/bin/chromium-browser', headless: true }),
+      captureFixture: async (node, options) => {
+        const browser = await chromium.launch({ executablePath: '/usr/bin/chromium-browser', headless: true })
+        try { return await laundryReviewAdapter.captureFixture(node, { ...options, browser, origin: 'http://127.0.0.1:8470' }) }
+        finally { await browser.close() }
+      },
+    } }),
+  })],
+})
+await server.listen()
+console.log('CIVIC_GONDOLIN_READY')
+console.log('CACHE', server.config.cacheDir)

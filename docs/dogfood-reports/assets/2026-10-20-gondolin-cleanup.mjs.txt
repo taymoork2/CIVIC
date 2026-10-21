@@ -1,0 +1,49 @@
+import assert from 'node:assert/strict'
+import { readFile, writeFile, readdir } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
+import { execFileSync } from 'node:child_process'
+import { performance } from 'node:perf_hooks'
+import { VmCheckpoint, ReadonlyProvider, RealFSProvider, createHttpHooks } from '@earendil-works/gondolin'
+const root = new URL('.', import.meta.url).pathname
+const running = JSON.parse(await readFile(root + 'running.json', 'utf8'))
+const command = execFileSync('ps', ['-p', String(running.runner), '-o', 'command='], {encoding:'utf8'})
+assert(command.startsWith('/opt/homebrew/bin/qemu-system-aarch64 ') && command.includes(root + 'cache/'))
+const ownedPaths = [...command.matchAll(/(?:file=|path=|unix:)(\/tmp\/gondolin-[^,\s]+)/g)].map(match => match[1])
+assert(ownedPaths.length >= 6)
+const footprint = {}
+for (const pid of [running.controller, running.runner]) {
+  const output = execFileSync('vmmap', ['-summary', String(pid)], {encoding:'utf8'})
+  await writeFile(root + `footprint-${pid}.txt`, output)
+  footprint[pid] = output.match(/Physical footprint:.*\nPhysical footprint \(peak\):.*/)?.[0]
+}
+const start = performance.now()
+process.kill(running.controller, 'SIGTERM')
+const alive = pid => {try {process.kill(pid,0);return true}catch{return false}}
+while ((alive(running.controller) || alive(running.runner)) && performance.now()-start < 10000) await new Promise(resolve=>setTimeout(resolve,100))
+const shutdownMs = performance.now()-start
+assert(!alive(running.controller) && !alive(running.runner), 'Owned preview processes stop')
+assert(ownedPaths.every(path=>!existsSync(path)), 'Disposable disk and sockets are removed')
+let portClosed = false
+try {await fetch(running.origin + '/review', {signal:AbortSignal.timeout(1000)})} catch {portClosed = true}
+assert(portClosed)
+const {httpHooks} = createHttpHooks({allowedHosts:[],blockInternalRanges:true})
+let vm
+const checkStart = performance.now()
+let checks
+try {
+  vm = await VmCheckpoint.load(root + 'ready.qcow2').resume({memory:'3G',cpus:2,vfs:{mounts:{'/source':new ReadonlyProvider(new RealFSProvider(root+'source'))}},httpHooks,sandbox:{qemuPath:'/opt/homebrew/bin/qemu-system-aarch64'}})
+  const result = await vm.exec(`test ! -d /work/store/.review-data && node --input-type=module -e 'let r=await fetch("https://example.com",{signal:AbortSignal.timeout(5000)});if(r.status!==403)throw Error("unexpected egress status "+r.status);console.log("FRESH_STORE EGRESS_DENIED_403")'`)
+  assert.equal(result.exitCode,0,result.stderr)
+  assert.match(result.stdout,/FRESH_STORE EGRESS_DENIED_403/)
+  const readonly = await vm.exec('echo forbidden >> /source/laundry/package.json')
+  assert.notEqual(readonly.exitCode,0)
+  checks = {stdout:result.stdout,readonly:readonly.stderr,elapsedMs:performance.now()-checkStart}
+} finally {if(vm) await vm.close()}
+const source = JSON.parse(await readFile(root+'source.json','utf8'))
+const git = args=>execFileSync('git',['-C',source.laundry,...args],{encoding:'utf8'}).trim()
+assert.equal(git(['rev-parse','HEAD']),source.head)
+assert.equal(git(['status','--porcelain=v1']),source.status)
+const sessions = await readdir(root+'sessions').catch(()=>[])
+const result = {shutdownMs,portClosed,ownedProcessesGone:true,removedPaths:ownedPaths,footprint,freshGuest:checks,sourceHead:source.head,sourceStatus:source.status,sessions}
+await writeFile(root+'cleanup.json',JSON.stringify(result,null,2))
+console.log(JSON.stringify(result,null,2))

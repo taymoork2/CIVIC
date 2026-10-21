@@ -1,0 +1,18 @@
+{
+  "frames": 179,
+  "p50": 25,
+  "p95": 41.80000000000018,
+  "max": 74.89999999999964,
+  "over25ms": 73,
+  "longTasks": [
+    69,
+    61,
+    72,
+    77,
+    70
+  ],
+  "cameraUpdates": 151,
+  "outlineChanges": 35,
+  "screenNodes": 232,
+  "paths": 14
+}

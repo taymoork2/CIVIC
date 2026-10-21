@@ -1,0 +1,17 @@
+{
+  "head": "8ec1724605f733043feac1c708b827ecf408992b",
+  "status": "",
+  "laundry": "/Users/taymoor/.codex/worktrees/c15d/laundry-app",
+  "civicHead": "9124dbf8791d6d39fb59c27270f70fb05ace1dd0",
+  "files": 3898,
+  "readDigest": "dd1ea4c3e7fff4b402674766d57fef5af84908e3e0c12386f24fe28a27c57281",
+  "workspaces": [
+    "civic/packages/canvas",
+    "civic/packages/shell",
+    "civic/packages/vite-connector",
+    "adapter/apps/web",
+    "adapter/convex",
+    "adapter/packages/planner",
+    "adapter/packages/icons"
+  ]
+}

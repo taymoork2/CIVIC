@@ -1,0 +1,22 @@
+{
+  "tag": "one",
+  "shellMs": 3156.422333,
+  "renderedMs": 7638.873125,
+  "totalFromVmStartMs": 20546.402167,
+  "reloadMs": [
+    1778.4220829999995,
+    1664.7449589999997,
+    1723.8043749999997
+  ],
+  "revision": {
+    "head": "0000000000000000000000000000000000000000",
+    "source": "5882475ec3373558dee8ddfdd1e380ba847ca4f8fec39fb86daecf86ae6974b2",
+    "capturedAt": "2026-10-21T02:16:34.294Z"
+  },
+  "errors": [],
+  "failures": [],
+  "ps": [
+    "19901 19880  93296 /Users/taymoor/.vite-plus/js_runtime/node/24.22.0/bin/node /private/tmp/civic-gondolin-frozen-seAkVh/preview.mjs one",
+    "23611 19901 761264 /opt/homebrew/bin/qemu-system-aarch64 -nodefaults -no-reboot -m 3G -smp 2 -kernel /Users/taymoor/.cache/gondolin/images/objects/e490f153-9700-596d-bb59-9ebf69c725dc/vmlinuz-virt -initrd /Users/taymoor/.cache/gondolin/images/objects/e490f153-9700-596d-bb59-9ebf69c725dc/initramfs.cpio.lz4 -append console=ttyAMA0 initramfs_async=1 gondolin.tmpfs=/tmp:size=256m sandboxfs.mount=/data sandboxfs.bind=/etc/gondolin,/etc/gondolin/mitm,/incoming -nographic -drive file=/tmp/gondolin-disk-4bdf6c45.qcow2,format=qcow2,if=none,id=drive0 -device virtio-blk-pci,drive=drive0 -machine virt -accel hvf -cpu host -serial stdio -object rng-random,filename=/dev/urandom,id=rng0 -device virtio-rng-pci,rng=rng0 -chardev socket,id=virtiocon0,path=/tmp/gondolin-virtio-36539a8c.sock,server=off -chardev socket,id=virtiofs0,path=/tmp/gondolin-virtio-fs-972453de.sock,server=off -chardev socket,id=virtiossh0,path=/tmp/gondolin-virtio-ssh-d9130655.sock,server=off -chardev socket,id=virtioingress0,path=/tmp/gondolin-virtio-ingress-f3aed8c8.sock,server=off -device virtio-serial-pci,id=virtio-serial0 -device virtserialport,chardev=virtiocon0,name=virtio-port,bus=virtio-serial0.0 -device virtserialport,chardev=virtiofs0,name=virtio-fs,bus=virtio-serial0.0 -device virtserialport,chardev=virtiossh0,name=virtio-ssh,bus=virtio-serial0.0 -device virtserialport,chardev=virtioingress0,name=virtio-ingress,bus=virtio-serial0.0 -netdev stream,id=net0,server=off,addr.type=unix,addr.path=/tmp/gondolin-net-81f123f4.sock -device virtio-net-pci,netdev=net0,mac=02:00:00:00:00:01 -qmp unix:/tmp/gondolin-qmp-5455694b.sock,server=on,wait=off"
+  ]
+}

@@ -1,0 +1,32 @@
+import {createServer} from 'vite'
+import tailwindcss from '@tailwindcss/vite'
+import {readFile} from 'node:fs/promises'
+import {canvasPlugins} from '@civic/canvas'
+import {moduleReviewAdapter} from '@civic/canvas/module-adapter'
+import {hostPlaywright} from '@civic/shell/server'
+import {laundryConnector} from './adapter/apps/web/scripts/review-laundry-connector.mjs'
+import {laundryReviewAdapter} from './adapter/apps/web/scripts/review-adapter.mjs'
+import {laundryRuntime} from './civic/packages/local/laundry-runtime.mjs'
+import {dependencyAliases,previewDependencies} from './civic/packages/local/worktree-dependencies.mjs'
+const adapter='/work/project/adapter',source='/work/project/laundry'
+const dependencies=await dependencyAliases(source,adapter,['apps/web','convex','packages/planner','packages/icons'])
+const {chromium}=await hostPlaywright()
+const browser=()=>chromium.launch({executablePath:'/usr/bin/chromium-browser',headless:true,env:{...process.env,XDG_CONFIG_HOME:'/tmp/chromium-config',XDG_CACHE_HOME:'/tmp/chromium-cache'}}).catch(error=>{console.error('CAPTURE_BROWSER',error);throw error})
+process.env.WASHCLOSET_REVIEW_DESIGN='/work/project/journey-engine/design/laundry-reference'
+const ui=['alert-dialog','button','checkbox','checkbox-group','collapsible','dialog','drawer','merge-props','popover','radio-group','radio','separator','tabs','toggle','toggle-group','tooltip','toast','use-render']
+const server=await createServer({
+  configFile:false,root:adapter+'/apps/web',cacheDir:'/work/project/node_modules/.vite',
+  resolve:{alias:{'@civic/canvas/styles/review.css':'/work/project/civic/packages/shell/styles/ui.generated.css'}},
+  optimizeDeps:{noDiscovery:true,include:['lucide-react','@civic/shell > lucide-react',...ui.flatMap(name=>[`@base-ui/react/${name}`,`@civic/shell > @base-ui/react/${name}`]),'react','react-dom','react-dom/client','react/jsx-runtime','react/jsx-dev-runtime','@tanstack/react-router','sonner','class-variance-authority','clsx','@civic/shell > cn','convex/react','convex/browser','convex/server','convex/values','obscenity','tailwind-merge','use-sync-external-store/shim','use-sync-external-store/shim/with-selector']},
+  server:{host:'127.0.0.1',port:8470,strictPort:true,watch:null,hmr:false,fs:{allow:['/work/project']}},
+  plugins:[previewDependencies(dependencies,source),tailwindcss(),...canvasPlugins({
+    store:'/work/store',project:{manifest:adapter+'/civic.project.json',applicationRoot:source},designRoot:process.env.WASHCLOSET_REVIEW_DESIGN,
+    connectors:{laundry:{...laundryConnector,canvasExtension:()=>'/work/project/civic/packages/canvas/src/spike-extension.ts',sharedStore:()=>false,
+      inventory:async(_store,designRoot,appRoot)=>{const result=await laundryConnector.inventory(adapter,designRoot,appRoot);result.metadata.scenarios=result.metadata.scenarios.filter(s=>s.id==='app.home');result.metadata.surfaces=result.metadata.surfaces.filter(s=>s.scenarios.includes('app.home'));return result},
+      shellStyle:project=>laundryConnector.shellStyle(project)+'; import "/@fs/work/project/laundry/apps/web/src/civic-snapshot.css"',
+    }},runtime:(project,revision,options)=>laundryRuntime(project,revision,{...options,installed:adapter,dependencies}),
+    review:async()=>({adapter:{...moduleReviewAdapter,launchFixtureBrowser:browser,captureFixture:async(node,options)=>{const instance=await browser();try{return await laundryReviewAdapter.captureFixture(node,{...options,browser:instance,origin:'http://127.0.0.1:8470'})}catch(error){console.error('CAPTURE_FIXTURE',error);throw error}finally{await instance.close()}}}}),
+  })],
+})
+await server.listen()
+console.log('CIVIC_GONDOLIN_READY')
