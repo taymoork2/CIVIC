@@ -31,7 +31,7 @@ async function captureFixture(node, { origin, cookie, browser: sharedBrowser, vi
   const runs = []
   try {
     const viewport = node.viewport ?? { width: 393, height: 852 }
-    context = await browser.newContext({ viewport })
+    context = await browser.newContext({ viewport, deviceScaleFactor: node.pixelRatio ?? 1 })
     await context.addCookies([{ name: 'review_session', value: cookie.slice('review_session='.length), url: origin }])
     if (context.routeWebSocket) await context.routeWebSocket('**/*', socket => {
       const url = new URL(socket.url())

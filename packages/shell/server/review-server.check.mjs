@@ -29,6 +29,55 @@ const coverage = async () => {
 
 const snapshot = { revision: { head: '0'.repeat(40), source: '1'.repeat(64), capturedAt: new Date().toISOString() }, design: { project: 'synthetic-test-design', hashes: {} } }
 
+test('a comment reuses its saved screen capture and refuses a different source or viewport', async t => {
+  const dataDir = await mkdtemp(join(tmpdir(), 'civic-screen-capture-'))
+  let captures = 0
+  const middleware = await reviewMiddleware({ dataDir, metadata: { ...snapshot, scenarios: [{ id: 'screen' }] }, adapter: adapter(), capture: async () => { captures++; return Buffer.from('original-png') } })
+  const server = createServer((req, res) => middleware(req, res, () => res.end('Review')))
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
+  t.after(() => new Promise(resolve => server.close(resolve)))
+  const origin = `http://127.0.0.1:${server.address().port}`, headers = await localHeaders(origin)
+  const context = { scenario: 'screen', persona: 'single', role: 'owner', condition: 'normal', theme: 'light', textScale: 1, viewport: { width: 393, height: 852 }, state: { dialogs: [], tabs: [], fields: [] } }
+  const input = { requestId: '12345678-1234-4234-8234-123456789abc', kind: 'other', message: 'Screen capture', context, snapshot, html: '<html></html>', anchor: { label: 'Whole screen', x: 0, y: 0, width: 1, height: 1 } }
+  const post = (path, value) => fetch(origin + '/api/review/' + path, { method: 'POST', headers, body: JSON.stringify(value) })
+  const captureResponse = await post('capture', input)
+  assert.equal(captureResponse.status, 200)
+  const receipt = await captureResponse.json()
+  assert.equal(receipt.id, input.requestId)
+  const note = { ...input, html: undefined, capture: receipt.id, requestId: '22345678-1234-4234-8234-123456789abc', kind: 'bug', message: 'Check this region', anchor: { label: 'Heading', x: .1, y: .1, width: .5, height: .1 } }
+  const response = await post('feedback', note)
+  assert.equal(response.status, 201)
+  const saved = await response.json()
+  const image = await fetch(origin + saved.screenshot, { headers })
+  assert.equal(image.status, 200)
+  assert.equal(await image.text(), 'original-png')
+  assert.equal(captures, 1, 'The exact saved image is annotated without rendering it again')
+  for (const patch of [{ capture: '../other' }, { context: { ...context, viewport: { width: 800, height: 600 } } }, { snapshot: { ...snapshot, revision: { ...snapshot.revision, source: '3'.repeat(64) } } }]) {
+    assert.equal((await post('feedback', { ...note, requestId: '32345678-1234-4234-8234-123456789abc', ...patch })).status, 400)
+  }
+})
+
+test('explicit high resolution fixtures retain their viewport and use a separate image cache', async t => {
+  const dataDir = await mkdtemp(join(tmpdir(), 'civic-retina-capture-'))
+  const contexts = []
+  let closed = 0
+  const custom = adapter(async (node, { browser }) => { if (browser) await browser.newContext({ viewport: { width: 393, height: 852 } }); return Buffer.from(node.pixelRatio === 2 ? 'retina' : 'standard') })
+  custom.launchFixtureBrowser = async () => ({ newContext: async options => { contexts.push(options) }, close: async () => { closed++ } })
+  const middleware = await reviewMiddleware({ dataDir, metadata: { ...snapshot, scenarios: [{ id: 'screen' }] }, adapter: custom })
+  const server = createServer((req, res) => middleware(req, res, () => res.end('Review')))
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
+  t.after(() => new Promise(resolve => server.close(resolve)))
+  const origin = `http://127.0.0.1:${server.address().port}`, headers = await localHeaders(origin)
+  const get = query => fetch(origin + '/api/review/fixture.png?screen=screen' + query, { headers })
+  assert.equal(await (await get('&width=800&height=600&pixelRatio=2')).text(), 'retina')
+  assert.deepEqual(contexts, [{ viewport: { width: 800, height: 600 }, deviceScaleFactor: 2 }])
+  assert.equal(closed, 1)
+  assert.equal(await (await get('')).text(), 'standard')
+  assert.equal((await get('&pixelRatio=8')).status, 400)
+  assert.equal(await (await get('&width=800&height=600&pixelRatio=2')).text(), 'retina')
+  assert.equal(closed, 1, 'A matching high resolution image is reused')
+})
+
 test('parallel CIVIC ports keep independent browser sessions on the same hostname', async t => {
   const servers = []
   for (let index = 0; index < 2; index++) {

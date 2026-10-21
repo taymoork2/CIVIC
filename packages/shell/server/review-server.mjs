@@ -16,7 +16,7 @@ const fixtureViewport = value => {
   if (!value || !Number.isInteger(value.width) || !Number.isInteger(value.height) || value.width < 200 || value.width > 1920 || value.height < 200 || value.height > 1600) bad('Invalid snapshot viewport')
   return { width: value.width, height: value.height }
 }
-const fixtureName = (id, viewport) => id.replace(':', '-') + (viewport ? `-${viewport.width}x${viewport.height}` : '')
+const fixtureName = (id, viewport, pixelRatio = 1) => id.replace(':', '-') + (viewport ? `-${viewport.width}x${viewport.height}` : '') + (pixelRatio === 2 ? '@2x' : '')
 
 // An element locator read at capture time (D37): ARIA role and accessible name, matched exactly or not at all.
 function checkedLocator(locator) {
@@ -92,11 +92,13 @@ function checkedFeedback(input, metadata, adapter) {
   }
   const target = checkedTarget(input.target, c, metadata, adapter)
   if (input.recording !== undefined && !uuid.test(input.recording)) bad('Invalid recording identity')
+  if (input.capture !== undefined && !uuid.test(input.capture)) bad('Invalid saved capture identity')
   const simulation = c.simulation === undefined ? undefined : { pieces: choice(c.simulation?.pieces, [100, 500, 1000]), stage: choice(c.simulation?.stage, ['planning', 'washing', 'drying', 'putaway']) }
   if (simulation && !c.scenario.startsWith('family.')) bad('Family simulation requires a family scenario')
   const evidenceKind = input.evidence?.kind === undefined ? 'live' : choice(input.evidence.kind, ['live', 'fixture', 'map'])
   if (evidenceKind === 'fixture' && (!c.screen || !/^[0-9a-f]{64}$/.test(input.evidence.fixtureSource) || !['screen', 'region'].includes(target?.kind))) bad('Invalid fixture evidence')
   const capturedViewport = evidenceKind === 'fixture' ? fixtureViewport(input.evidence.viewport) : undefined
+  const pixelRatio = evidenceKind === 'fixture' && input.evidence.pixelRatio !== undefined ? choice(input.evidence.pixelRatio, [1, 2]) : 1
   if (capturedViewport && (capturedViewport.width !== viewport.width || capturedViewport.height !== viewport.height)) bad('Fixture viewport does not match the captured screen')
   if (evidenceKind === 'map' && !['app', 'flow', 'path'].includes(target?.kind)) bad('Invalid map evidence')
   return {
@@ -105,8 +107,9 @@ function checkedFeedback(input, metadata, adapter) {
     anchor: { label: text(anchor.label, 300), x: anchor.x, y: anchor.y, width: anchor.width, height: anchor.height, ...(anchor.locator === undefined ? {} : { locator: checkedLocator(anchor.locator) }) },
     ...(target ? { target } : {}),
     ...(input.recording ? { recording: input.recording } : {}),
-    evidence: { kind: evidenceKind, ...(evidenceKind === 'fixture' ? { fixtureSource: input.evidence.fixtureSource, ...(capturedViewport ? { viewport: capturedViewport } : {}) } : {}) },
-    html: evidenceKind === 'fixture' ? null : text(input.html, 2_500_000),
+    ...(input.capture ? { capture: input.capture } : {}),
+    evidence: { kind: evidenceKind, ...(evidenceKind === 'fixture' ? { fixtureSource: input.evidence.fixtureSource, ...(capturedViewport ? { viewport: capturedViewport } : {}), ...(pixelRatio === 2 ? { pixelRatio } : {}) } : {}) },
+    html: evidenceKind === 'fixture' || input.capture ? null : text(input.html, 2_500_000),
     snapshot: { revision: { head: snapshot.revision.head, source: snapshot.revision.source, capturedAt: snapshot.revision.capturedAt }, design: { project: metadata.design.project, hashes: designHashes } },
   }
 }
@@ -160,14 +163,21 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
   const fixtureDir = join(dataDir, 'fixtures')
   await mkdir(fixtureDir, { recursive: true, mode: 0o700 })
   const feedbackImage = async (input, host) => {
+    if (input.capture) {
+      let receipt
+      try { receipt = JSON.parse(await readFile(join(dataDir, `capture-${input.capture}.json`), 'utf8')) }
+      catch (error) { if (error.code !== 'ENOENT') throw error; bad('The saved screen capture is unavailable.') }
+      if (receipt.revision.source !== input.snapshot.revision.source || JSON.stringify(receipt.context) !== JSON.stringify(input.context)) bad('The saved capture belongs to a different screen, viewport or source.')
+      return readFile(join(dataDir, `capture-${input.capture}.png`))
+    }
     if (input.evidence.kind !== 'fixture') return capture(input.html, input.context.viewport, { origin: `http://${host}`, cookie: `review_session=${session}` })
-    try { return await readFile(join(fixtureDir, `${input.evidence.fixtureSource}-${fixtureName(input.context.screen, input.evidence.viewport)}.png`)) }
+    try { return await readFile(join(fixtureDir, `${input.evidence.fixtureSource}-${fixtureName(input.context.screen, input.evidence.viewport, input.evidence.pixelRatio)}.png`)) }
     catch (error) { if (error.code !== 'ENOENT') throw error; bad('The frozen fixture is unavailable. Refresh snapshots and try again; your note is retained.') }
   }
-  const thumbnail = (node, host, browser, signal, viewport) => {
+  const thumbnail = (node, host, browser, signal, viewport, pixelRatio = 1) => {
     const source = metadata.fixtureSource ?? metadata.revision.source
     const fingerprint = metadata.fixtureHashes?.[node.id] ?? source
-    const variant = fixtureName(node.id, viewport)
+    const variant = fixtureName(node.id, viewport, pixelRatio)
     const cacheKey = `${source}:${variant}`
     fixtureDemand.set(cacheKey, (fixtureDemand.get(cacheKey) ?? 0) + 1)
     let released = false
@@ -194,7 +204,12 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
           try { const png = await readFile(contentFile); await writeFile(file, png, { mode: 0o600 }); await remember(); return png }
           catch (error) { if (error.code !== 'ENOENT') throw error }
         }
-        const png = await captureFixture(viewport ? { ...node, viewport } : node, { origin: `http://${host}`, cookie: `review_session=${session}`, browser })
+        const renderer = browser ?? (viewport || pixelRatio === 2 ? await launchFixtureBrowser?.() : undefined)
+        // Legacy adapters choose their own context defaults; explicit captures must keep the requested viewport and density.
+        const captureBrowser = renderer && (viewport || pixelRatio === 2) ? { newContext: options => renderer.newContext({ ...options, ...(viewport ? { viewport } : {}), deviceScaleFactor: pixelRatio }) } : renderer
+        let png
+        try { png = await captureFixture({ ...node, ...(viewport ? { viewport } : {}), pixelRatio }, { origin: `http://${host}`, cookie: `review_session=${session}`, browser: captureBrowser }) }
+        finally { if (renderer && !browser) await renderer.close() }
         if (source !== (metadata.fixtureSource ?? metadata.revision.source)) throw Object.assign(new Error('Source changed during capture. Retry snapshots.'), { status: 409 })
         await writeFile(file + '.tmp', png, { mode: 0o600 }); await rename(file + '.tmp', file)
         if (contentFile !== file) { await writeFile(contentFile + '.tmp', png, { mode: 0o600 }); await rename(contentFile + '.tmp', contentFile) }
@@ -432,7 +447,8 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
         const node = declaredNode ? { ...metadata.scenarios.find((entry) => entry.id === declaredNode.scenario), ...declaredNode } : scenario ? { ...scenario, scenario: scenario.id } : null
         if (!node) bad('Unknown registered screen')
         const viewport = url.searchParams.has('width') || url.searchParams.has('height') ? fixtureViewport({ width: Number(url.searchParams.get('width')), height: Number(url.searchParams.get('height')) }) : undefined
-        const variant = fixtureName(node.id, viewport)
+        const pixelRatio = url.searchParams.has('pixelRatio') ? choice(Number(url.searchParams.get('pixelRatio')), [1, 2]) : 1
+        const variant = fixtureName(node.id, viewport, pixelRatio)
         const requested = url.searchParams.get('source')
         if (requested !== null && !/^[0-9a-f]{64}$/.test(requested)) bad('Invalid snapshot source')
         if (url.searchParams.get('cached') === '1') {
@@ -461,7 +477,7 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
         const disconnected = () => controller.abort()
         res.once('close', disconnected)
         let png
-        try { png = await thumbnail(node, captureHost, undefined, controller.signal, viewport) }
+        try { png = await thumbnail(node, captureHost, undefined, controller.signal, viewport, pixelRatio) }
         finally { res.off('close', disconnected) }
         if (controller.signal.aborted) return
         res.writeHead(200, { 'content-type': 'image/png', 'cache-control': 'private, max-age=3600', 'x-review-source': metadata.fixtureSource ?? metadata.revision.source }); res.end(png); return
@@ -617,7 +633,7 @@ export async function captureReview(html, viewport, { origin, cookie }) {
   const { chromium } = await hostPlaywright()
   const browser = await chromium.launch({ channel: 'chrome', headless: true })
   try {
-    const context = await browser.newContext({ viewport, javaScriptEnabled: false })
+    const context = await browser.newContext({ viewport, deviceScaleFactor: 2, javaScriptEnabled: false })
     await context.addCookies([{ name: 'review_session', value: cookie.slice('review_session='.length), url: origin, httpOnly: true, sameSite: 'Strict' }])
     await context.route('**/*', async (route) => {
       const request = route.request()
@@ -629,6 +645,7 @@ export async function captureReview(html, viewport, { origin, cookie }) {
     // A real local document origin lets Strict cookies authenticate frozen images.
     await page.goto(`${origin}/review`, { waitUntil: 'domcontentloaded', timeout: 15000 })
     await page.setContent(html, { waitUntil: 'load', timeout: 15000 })
+    await page.evaluate(async () => { await document.fonts.ready; await Promise.all([...document.images].map(image => image.decode().catch(() => {}))) })
     await page.evaluate(() => { for (const element of document.querySelectorAll('[data-review-scroll]')) element.scrollTop = Number(element.getAttribute('data-review-scroll')) })
     return await page.screenshot({ type: 'png', timeout: 15000 })
   } finally { await browser.close() }
