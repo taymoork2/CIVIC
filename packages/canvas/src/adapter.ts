@@ -1,13 +1,13 @@
 import type { RuntimeBridge, RuntimePorts, RuntimeRecording } from './runtime-bridge'
 import type { OpenRuntimeSession, PendingIntent } from './runtime-session'
-import type { PreviewViewport } from './viewport-presets'
+import type { PreviewViewport, PreviewAppearance } from './viewport-presets'
 import type { Interaction } from './connection-semantics'
 import type { ConnectionReadiness, PreviewCapabilities } from './connection-readiness'
 
-export type ReviewConfig = { scenario: string; persona: string; role: string; condition: string; theme: 'light' | 'dark'; textScale: 1 | 2; width: number; height?: number; preset?: string; simulation?: { pieces: 100 | 500 | 1000; stage: 'planning' | 'washing' | 'drying' | 'putaway' } }
+export type ReviewConfig = PreviewAppearance & { scenario: string; persona: string; role: string; condition: string; textScale: 1 | 2; width: number; height?: number; preset?: string; simulation?: { pieces: 100 | 500 | 1000; stage: 'planning' | 'washing' | 'drying' | 'putaway' } }
 export type ReviewSnapshot = { revision: { head: string; source: string; capturedAt: string }; design: { project: string; hashes: Record<string, string | null> } }
 export type ProjectChoice = { id: string; label: string; description?: string; seed?: unknown }
-export type ProjectProfile = { id: string; key: string; name: string; app?: { id: string; name: string }; connectionKind?: string; adapter: string; mode?: 'live-read-only'; preview: boolean; runtime?: boolean; capabilities?: PreviewCapabilities; personas: ProjectChoice[]; roles: ProjectChoice[]; conditions: ProjectChoice[]; navigation: string[] }
+export type ProjectProfile = { id: string; key: string; name: string; app?: { id: string; name: string }; appearance?: { themes: { id: string; label: string }[]; defaultTheme?: string }; connectionKind?: string; adapter: string; mode?: 'live-read-only'; preview: boolean; runtime?: boolean; capabilities?: PreviewCapabilities; personas: ProjectChoice[]; roles: ProjectChoice[]; conditions: ProjectChoice[]; navigation: string[] }
 export type AdapterScenario = { id: string; label: string; journey: string; renderer?: string; route?: string; viewport?: { width: number; height: number }; fixture?: unknown; captureFields?: string[]; edges?: { action: string; destination: string; when?: string; returnTo?: string; interaction?: Interaction }[] }
 export type AdapterState = { screen: string; dirty: boolean; pending: boolean; title: string; fields: { label: string; value: string }[] }
 export type Presentation = Record<string, { title?: string; action?: string; color?: string }>

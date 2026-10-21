@@ -44,15 +44,38 @@ try {
   const persona = pick('persona', project.personas), role = pick('role', project.roles), condition = pick('condition', project.conditions)
   const preset = params.get('preset') ?? undefined
   const config: ReviewConfig = savedConfig ? structuredClone(savedConfig) : { scenario: scenario.id, persona: persona.id, role: role.id, condition: condition.id, theme: params.get('theme') === 'dark' ? 'dark' : 'light', textScale: params.get('scale') === '2' ? 2 : 1, width: Number(params.get('width')) || scenario.viewport?.width || 393, height: Number(params.get('height')) || scenario.viewport?.height || defaultViewportHeight, ...(preset ? { preset } : {}) }
+  if (!savedConfig) {
+    const appearance = params.get('appearance')
+    if (appearance && !['system', 'light', 'dark'].includes(appearance)) throw Error('Invalid preview appearance')
+    if (appearance) config.appearance = appearance as ReviewConfig['appearance']
+    const appTheme = params.get('appTheme') ?? project.appearance?.defaultTheme ?? project.appearance?.themes[0]?.id
+    if (appTheme) config.appTheme = appTheme
+  }
   const snapshot = { revision: index.revision, design: index.design }
   // Recordings made before viewports had a height keep none in their seed, so they still replay; they show at the default height.
-  const initialViewport: PreviewViewport = { width: config.width, height: config.height ?? defaultViewportHeight, theme: config.theme, textScale: config.textScale, ...(config.preset ? { preset: config.preset } : {}) }
+  const initialViewport: PreviewViewport = { width: config.width, height: config.height ?? defaultViewportHeight, theme: config.theme, textScale: config.textScale, ...(config.preset ? { preset: config.preset } : {}), ...(config.appearance ? { appearance: config.appearance } : {}), ...(config.appTheme ? { appTheme: config.appTheme } : {}) }
   if (!validViewport(initialViewport)) throw Error('Invalid preview viewport')
+  const { mount, setAppearance } = await import('virtual:civic-preview')
+  const applyAppearance = async (value: Pick<ReviewConfig, 'theme' | 'appTheme'>) => {
+    if (value.appTheme && !project.appearance?.themes.some(theme => theme.id === value.appTheme)) throw Error('Unknown application theme')
+    if (value.appTheme && typeof setAppearance !== 'function') throw Error('The project declares themes but its preview adapter has no setAppearance hook')
+    await setAppearance?.({ theme: value.theme, appTheme: value.appTheme })
+    document.documentElement.dataset.theme = value.theme
+    document.documentElement.classList.toggle('dark', value.theme === 'dark')
+    document.documentElement.style.colorScheme = value.theme
+    if (window.frameElement instanceof HTMLElement) window.frameElement.style.colorScheme = value.theme
+  }
   /** Resizes the live frame in place: the app, its run and its inputs stay; only the viewport, appearance and text size change. */
   const resize = async (value: unknown) => {
     if (!validViewport(value)) throw Error('Invalid preview viewport')
     const iframe = window.frameElement as HTMLIFrameElement | null
     if (!iframe) throw Error('Viewport changes need an embedded live preview.')
+    try { await applyAppearance(value) }
+    catch (error) {
+      try { await applyAppearance(config) }
+      catch { throw Error('The app could not restore its previous appearance. The run is retained; retry its theme or reopen the preview.') }
+      throw error
+    }
     const scroll = { left: scrollX, top: scrollY }
     iframe.style.width = `${value.width}px`; iframe.style.height = `${value.height}px`
     const box = iframe.closest<HTMLElement>('.app-live-screen')
@@ -60,12 +83,14 @@ try {
     document.documentElement.dataset.theme = value.theme
     document.documentElement.style.fontSize = value.textScale === 2 ? '200%' : '100%'
     config.width = value.width; config.height = value.height; config.theme = value.theme; config.textScale = value.textScale
+    if (value.appearance) config.appearance = value.appearance; else delete config.appearance
+    if (value.appTheme) config.appTheme = value.appTheme; else delete config.appTheme
     if (value.preset) config.preset = value.preset; else delete config.preset
     await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()))
     window.scrollTo(scroll)
   }
-  const { mount } = await import('virtual:civic-preview')
   if (typeof mount !== 'function') throw Error('The project preview entry must export mount(container, context).')
+  await applyAppearance(config)
   let state: AdapterState | null = null
   // The screen the app is on as far as it has told the frame: each publish, and each transition the moment it is reported.
   // A transition is checked from here, not from the last published state, which follows only after the app settles.

@@ -13,7 +13,7 @@
     "./civic": "./src/review-civic.mjs"
   },
   "scripts": {
-    "test": "node --test src/review-plugin.check.mjs src/review-coverage.check.mjs src/review-discovery.check.mjs src/review-civic.check.mjs src/review-projects.check.mjs src/review-source-versions.check.mjs src/review-version-changes.check.mjs"
+    "test": "node --test src/review-appearance.check.mjs src/review-plugin.check.mjs src/review-coverage.check.mjs src/review-discovery.check.mjs src/review-civic.check.mjs src/review-projects.check.mjs src/review-source-versions.check.mjs src/review-version-changes.check.mjs"
   },
   "peerDependencies": {
     "@civic/shell": "*",

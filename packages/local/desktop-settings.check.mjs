@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { createRequire } from 'node:module'
-import { cp, mkdtemp, readFile, realpath } from 'node:fs/promises'
+import { cp, mkdtemp, readFile, realpath, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -16,6 +16,10 @@ const { _electron } = createRequire(new URL('../canvas/package.json', import.met
 const store = await realpath(await mkdtemp(join(tmpdir(), 'civic-electron-settings-')))
 const historyRoot = join(store, 'history-main')
 await cp(join(canvasRoot, 'examples/notebook'), historyRoot, { recursive: true })
+const themeManifest = join(historyRoot, 'civic.project.json')
+const themed = JSON.parse(await readFile(themeManifest, 'utf8'))
+themed.appearance = { themes: [{ id: 'paper', label: 'Paper' }, { id: 'ocean', label: 'Ocean' }], defaultTheme: 'paper' }
+await writeFile(themeManifest, JSON.stringify(themed))
 const git = (...args) => execFileSync('git', ['-C', historyRoot, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
 git('init', '--initial-branch=main'); git('add', '.')
 git('-c', 'user.name=History Test', '-c', 'user.email=history@example.invalid', 'commit', '-m', 'main')
@@ -61,7 +65,7 @@ try {
   let modal = page.getByRole('dialog', { name: 'CIVIC settings', exact: true })
   await modal.getByRole('button', { name: 'Dark', exact: true }).click()
   await page.waitForFunction(() => document.documentElement.dataset.civicTheme === 'dark')
-  assert.equal(await app.evaluate(({ nativeTheme }) => nativeTheme.themeSource), 'dark')
+  assert.equal(await app.evaluate(({ nativeTheme }) => nativeTheme.themeSource), 'system', 'Shell overrides do not replace the system preference used by previews')
   await modal.getByRole('button', { name: 'All screens', exact: true }).click()
   assert.equal(await page.evaluate(() => localStorage.getItem('rehearsal-canvas-detail')), 'all')
   await page.screenshot({ path: join(store, 'settings-electron-desktop-dark.png') })
@@ -215,7 +219,32 @@ try {
     return { sandbox: preferences.sandbox, contextIsolation: preferences.contextIsolation, nodeIntegration: preferences.nodeIntegration }
   })
   assert.deepEqual(security, { sandbox: true, contextIsolation: true, nodeIntegration: false })
-  console.log(`Electron settings passed: sections, canvas defaults, runtime, project connections, native menu, cross-origin tabs, live themes, persistence, desktop/390px checkout switching, cancellation, explicit new tabs and sandbox. Evidence: ${store}`)
+  await extra.getByLabel('Canvas appearance', { exact: true }).selectOption('light')
+  await extra.getByLabel('App theme', { exact: true }).selectOption('ocean')
+  await extra.locator('.app-screen-heading > button:first-child', { hasText: 'Notebook home' }).click()
+  await extra.getByRole('button', { name: /^Play \d\d / }).click()
+  const live = extra.locator('iframe[title="Live Notebook home"]')
+  const frame = extra.frameLocator('iframe[title="Live Notebook home"]')
+  await frame.getByRole('button', { name: 'New note', exact: true }).click()
+  await frame.getByLabel('Title', { exact: true }).fill('Electron retained draft')
+  assert.equal(await frame.locator('.notebook-screen').evaluate(element => getComputedStyle(element).backgroundColor), 'rgb(237, 247, 252)')
+  await app.evaluate(({ nativeTheme }) => { nativeTheme.themeSource = 'dark' })
+  assert.equal(await live.evaluate(element => element.contentWindow.reviewPreview.config.theme), 'light')
+  await extra.getByLabel('Canvas appearance', { exact: true }).selectOption('system')
+  await extra.waitForFunction(() => document.querySelector('iframe[title="Live Notebook home"]').contentWindow.reviewPreview.config.theme === 'dark')
+  await app.evaluate(({ nativeTheme }) => { nativeTheme.themeSource = 'light' })
+  await extra.waitForFunction(() => document.querySelector('iframe[title="Live Notebook home"]').contentWindow.reviewPreview.config.theme === 'light')
+  assert.equal(await extra.evaluate(() => document.documentElement.dataset.civicTheme), 'dark')
+  const extraWindow = await app.browserWindow(extra)
+  for (const width of [1440, 390]) {
+    await extraWindow.evaluate((window, width) => window.setSize(width, 900), width)
+    assert.equal(await extra.getByLabel('Canvas appearance', { exact: true }).isVisible(), true)
+    assert.equal(await extra.getByLabel('App theme', { exact: true }).isVisible(), true)
+    assert.equal(await extra.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true)
+    await extra.screenshot({ path: join(store, `preview-theme-electron-${width}.png`) })
+  }
+  assert.equal(await frame.getByLabel('Title', { exact: true }).inputValue(), 'Electron retained draft')
+  console.log(`Electron settings and preview themes passed: shell independence, system updates, named themes, retained drafts, desktop/390px, settings, checkout switching and sandbox. Evidence: ${store}`)
 } catch (error) {
   for (const page of app?.windows() ?? []) {
     console.error('Failed Electron settings window:', page.url(), (await page.locator('body').innerText().catch(() => '')).slice(0, 2000))

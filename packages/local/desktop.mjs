@@ -13,9 +13,10 @@ app.setName('CIVIC')
 app.setPath('userData', store + '/desktop')
 const appearanceFile = join(app.getPath('userData'), 'appearance.json')
 let themePreference = readAppearance(appearanceFile)
-nativeTheme.themeSource = themePreference
-const appearance = () => ({ preference: themePreference, resolved: nativeTheme.shouldUseDarkColors ? 'dark' : 'light' })
-const windowColors = () => nativeTheme.shouldUseDarkColors ? { color: '#191b20', symbolColor: '#eceef3' } : { color: '#ffffff', symbolColor: '#25272c' }
+// Shell appearance is CSS-owned; Chromium's system preference stays available to reviewed apps.
+nativeTheme.themeSource = 'system'
+const appearance = () => ({ preference: themePreference, resolved: themePreference === 'system' ? nativeTheme.shouldUseDarkColors ? 'dark' : 'light' : themePreference, system: nativeTheme.shouldUseDarkColors ? 'dark' : 'light' })
+const windowColors = () => appearance().resolved === 'dark' ? { color: '#191b20', symbolColor: '#eceef3' } : { color: '#ffffff', symbolColor: '#25272c' }
 const publishAppearance = () => {
   for (const context of windows) {
     const colors = windowColors()
@@ -116,7 +117,6 @@ for (const action of ['state', 'register', 'open', 'replace', 'select', 'close',
   if (action === 'set-appearance') {
     saveAppearance(appearanceFile, input)
     themePreference = input
-    nativeTheme.themeSource = input
     publishAppearance()
   }
   if (action === 'appearance' || action === 'set-appearance') return appearance()

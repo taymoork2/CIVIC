@@ -1,3 +1,4 @@
+import { checkedAppearance } from './review-appearance.mjs'
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto'
 import { mkdir, readFile, readdir, rename, stat, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
@@ -16,7 +17,7 @@ const fixtureViewport = value => {
   if (!value || !Number.isInteger(value.width) || !Number.isInteger(value.height) || value.width < 200 || value.width > 1920 || value.height < 200 || value.height > 1600) bad('Invalid snapshot viewport')
   return { width: value.width, height: value.height }
 }
-const fixtureName = (id, viewport, pixelRatio = 1) => id.replace(':', '-') + (viewport ? `-${viewport.width}x${viewport.height}` : '') + (pixelRatio === 2 ? '@2x' : '')
+const fixtureName = (id, viewport, pixelRatio = 1, appearance = {}) => id.replace(':', '-') + (viewport ? `-${viewport.width}x${viewport.height}` : '') + (pixelRatio === 2 ? '@2x' : '') + (appearance.theme ? `-theme-${appearance.theme}` : '') + (appearance.appTheme ? `-app-${appearance.appTheme}` : '')
 
 // An element locator read at capture time (D37): ARIA role and accessible name, matched exactly or not at all.
 function checkedLocator(locator) {
@@ -37,7 +38,7 @@ function checkedTarget(target, context, metadata, adapter) {
   const flows = adapter.journeyGraph(metadata.scenarios, metadata.project)
   if (kind === 'app') {
     if (target.id !== 'app') bad('Unknown application target')
-    return { kind, id: 'app', label: metadata.project?.name ?? 'Laundry App', screens: flows.flatMap((flow) => flow.screens.map((screen) => screen.id)) }
+    return { kind, id: 'app', label: metadata.project?.name ?? 'App', screens: flows.flatMap((flow) => flow.screens.map((screen) => screen.id)) }
   }
   const flow = flows.find((flow) => flow.id === target.flow)
   if (!flow) bad('Unknown journey target')
@@ -99,16 +100,20 @@ function checkedFeedback(input, metadata, adapter) {
   if (evidenceKind === 'fixture' && (!c.screen || !/^[0-9a-f]{64}$/.test(input.evidence.fixtureSource) || !['screen', 'region'].includes(target?.kind))) bad('Invalid fixture evidence')
   const capturedViewport = evidenceKind === 'fixture' ? fixtureViewport(input.evidence.viewport) : undefined
   const pixelRatio = evidenceKind === 'fixture' && input.evidence.pixelRatio !== undefined ? choice(input.evidence.pixelRatio, [1, 2]) : 1
+  if (evidenceKind === 'fixture' && input.evidence.appearance) {
+    const appearance = checkedAppearance(input.evidence.appearance, metadata.project)
+    if (appearance.theme !== c.theme || appearance.appTheme !== c.appTheme) bad('Fixture theme does not match the captured screen')
+  }
   if (capturedViewport && (capturedViewport.width !== viewport.width || capturedViewport.height !== viewport.height)) bad('Fixture viewport does not match the captured screen')
   if (evidenceKind === 'map' && !['app', 'flow', 'path'].includes(target?.kind)) bad('Invalid map evidence')
   return {
     id: input.requestId, kind: choice(input.kind, ['bug', 'confusing', 'idea', 'other']), message: text(input.message, 4000),
-    context: { scenario: c.scenario, ...(simulation ? { simulation } : {}), ...(c.screen === undefined ? {} : { screen: c.screen }), persona: choice(c.persona, metadata.project?.personas.map((p) => p.id) ?? ['single', 'student', 'parent']), role: choice(c.role, metadata.project?.roles.map((p) => p.id) ?? ['owner', 'member']), condition: choice(c.condition, metadata.project?.conditions.map((p) => p.id) ?? ['normal', 'save-error', 'offline', 'missing-care']), theme: choice(c.theme, ['light', 'dark']), textScale: choice(c.textScale, [1, 2]), viewport: { width: viewport.width, height: viewport.height }, state: { dialogs: state.dialogs.map((s) => text(s, 300)), tabs: state.tabs.map((s) => text(s, 300)), fields: state.fields.map((field) => ({ label: text(field.label, 300), value: typeof field.value === 'string' && field.value.length <= 4000 ? field.value : bad('Invalid draft value') })) } },
+    context: { scenario: c.scenario, ...(simulation ? { simulation } : {}), ...(c.screen === undefined ? {} : { screen: c.screen }), persona: choice(c.persona, metadata.project?.personas.map((p) => p.id) ?? ['single', 'student', 'parent']), role: choice(c.role, metadata.project?.roles.map((p) => p.id) ?? ['owner', 'member']), condition: choice(c.condition, metadata.project?.conditions.map((p) => p.id) ?? ['normal', 'save-error', 'offline', 'missing-care']), ...checkedAppearance(c, metadata.project), ...(c.appearance ? { appearance: c.appearance } : {}), theme: choice(c.theme, ['light', 'dark']), textScale: choice(c.textScale, [1, 2]), viewport: { width: viewport.width, height: viewport.height }, state: { dialogs: state.dialogs.map((s) => text(s, 300)), tabs: state.tabs.map((s) => text(s, 300)), fields: state.fields.map((field) => ({ label: text(field.label, 300), value: typeof field.value === 'string' && field.value.length <= 4000 ? field.value : bad('Invalid draft value') })) } },
     anchor: { label: text(anchor.label, 300), x: anchor.x, y: anchor.y, width: anchor.width, height: anchor.height, ...(anchor.locator === undefined ? {} : { locator: checkedLocator(anchor.locator) }) },
     ...(target ? { target } : {}),
     ...(input.recording ? { recording: input.recording } : {}),
     ...(input.capture ? { capture: input.capture } : {}),
-    evidence: { kind: evidenceKind, ...(evidenceKind === 'fixture' ? { fixtureSource: input.evidence.fixtureSource, ...(capturedViewport ? { viewport: capturedViewport } : {}), ...(pixelRatio === 2 ? { pixelRatio } : {}) } : {}) },
+    evidence: { kind: evidenceKind, ...(evidenceKind === 'fixture' ? { fixtureSource: input.evidence.fixtureSource, ...(capturedViewport ? { viewport: capturedViewport } : {}), ...(pixelRatio === 2 ? { pixelRatio } : {}), ...(input.evidence.appearance ? { appearance: checkedAppearance(input.evidence.appearance, metadata.project) } : {}) } : {}) },
     html: evidenceKind === 'fixture' || input.capture ? null : text(input.html, 2_500_000),
     snapshot: { revision: { head: snapshot.revision.head, source: snapshot.revision.source, capturedAt: snapshot.revision.capturedAt }, design: { project: metadata.design.project, hashes: designHashes } },
   }
@@ -192,13 +197,13 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
       return readFile(join(dataDir, `capture-${input.capture}.png`))
     }
     if (input.evidence.kind !== 'fixture') return capture(input.html, input.context.viewport, { origin: `http://${host}`, cookie: `review_session=${session}` })
-    try { return await readFile(join(fixtureDir, `${input.evidence.fixtureSource}-${fixtureName(input.context.screen, input.evidence.viewport, input.evidence.pixelRatio)}.png`)) }
+    try { return await readFile(join(fixtureDir, `${input.evidence.fixtureSource}-${fixtureName(input.context.screen, input.evidence.viewport, input.evidence.pixelRatio, input.evidence.appearance)}.png`)) }
     catch (error) { if (error.code !== 'ENOENT') throw error; bad('The frozen fixture is unavailable. Refresh snapshots and try again; your note is retained.') }
   }
-  const thumbnail = (node, host, browser, signal, viewport, pixelRatio = 1) => {
+  const thumbnail = (node, host, browser, signal, viewport, pixelRatio = 1, appearance = {}) => {
     const source = metadata.fixtureSource ?? metadata.revision.source
     const fingerprint = metadata.fixtureHashes?.[node.id] ?? source
-    const variant = fixtureName(node.id, viewport, pixelRatio)
+    const variant = fixtureName(node.id, viewport, pixelRatio, appearance)
     const cacheKey = `${source}:${variant}`
     fixtureDemand.set(cacheKey, (fixtureDemand.get(cacheKey) ?? 0) + 1)
     let released = false
@@ -229,7 +234,7 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
         // Legacy adapters choose their own context defaults; explicit captures must keep the requested viewport and density.
         const captureBrowser = renderer && (viewport || pixelRatio === 2) ? { newContext: options => renderer.newContext({ ...options, ...(viewport ? { viewport } : {}), deviceScaleFactor: pixelRatio }) } : renderer
         let png
-        try { png = await captureFixture({ ...node, ...(viewport ? { viewport } : {}), pixelRatio }, { origin: `http://${host}`, cookie: `review_session=${session}`, browser: captureBrowser }) }
+        try { png = await captureFixture({ ...node, ...(viewport ? { viewport } : {}), pixelRatio, ...appearance }, { origin: `http://${host}`, cookie: `review_session=${session}`, browser: captureBrowser }) }
         finally { if (renderer && !browser) releaseFixtureBrowser() }
         if (source !== (metadata.fixtureSource ?? metadata.revision.source)) throw Object.assign(new Error('Source changed during capture. Retry snapshots.'), { status: 409 })
         await writeFile(file + '.tmp', png, { mode: 0o600 }); await rename(file + '.tmp', file)
@@ -348,7 +353,7 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
         json(201, await saveRecording(await body(req))); return
       }
       if (url.pathname === '/api/review/replays' && req.method === 'POST') {
-        if (metadata.project?.mode === 'live-read-only') { json(409, { error: 'Live Orca recordings are observational; replay verification requires an isolated runtime.' }); return }
+        if (metadata.project?.mode === 'live-read-only') { json(409, { error: 'Live app recordings are observational; replay verification requires an isolated runtime.' }); return }
         const input = await body(req)
         const tapeText = JSON.stringify(input?.tape ?? null), sha = createHash('sha256').update(tapeText).digest('hex')
         const replay = replayRecord(input, metadata.project, metadata.revision, new Date().toISOString(), sha)
@@ -468,8 +473,9 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
         const node = declaredNode ? { ...metadata.scenarios.find((entry) => entry.id === declaredNode.scenario), ...declaredNode } : scenario ? { ...scenario, scenario: scenario.id } : null
         if (!node) bad('Unknown registered screen')
         const viewport = url.searchParams.has('width') || url.searchParams.has('height') ? fixtureViewport({ width: Number(url.searchParams.get('width')), height: Number(url.searchParams.get('height')) }) : undefined
+        const appearance = checkedAppearance(Object.fromEntries(['theme', 'appTheme'].filter(key => url.searchParams.has(key)).map(key => [key, url.searchParams.get(key)])), metadata.project)
         const pixelRatio = url.searchParams.has('pixelRatio') ? choice(Number(url.searchParams.get('pixelRatio')), [1, 2]) : 1
-        const variant = fixtureName(node.id, viewport, pixelRatio)
+        const variant = fixtureName(node.id, viewport, pixelRatio, appearance)
         const requested = url.searchParams.get('source')
         if (requested !== null && !/^[0-9a-f]{64}$/.test(requested)) bad('Invalid snapshot source')
         if (url.searchParams.get('cached') === '1') {
@@ -498,7 +504,7 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
         const disconnected = () => controller.abort()
         res.once('close', disconnected)
         let png
-        try { png = await thumbnail(node, captureHost, undefined, controller.signal, viewport, pixelRatio) }
+        try { png = await thumbnail(node, captureHost, undefined, controller.signal, viewport, pixelRatio, appearance) }
         finally { res.off('close', disconnected) }
         if (controller.signal.aborted) return
         res.writeHead(200, { 'content-type': 'image/png', 'cache-control': 'private, max-age=3600', 'x-review-source': metadata.fixtureSource ?? metadata.revision.source }); res.end(png); return
@@ -546,7 +552,9 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
           if (previous) return { row: previous, duplicate: true }
           if (input.recording) {
             const tape = checkedRecording(JSON.parse(await readFile(join(dataDir, 'runs', input.recording + '.json'), 'utf8')), metadata.project)
-            if (tape.source !== input.snapshot.revision.source || ['persona', 'role', 'condition', 'theme', 'textScale'].some((key) => tape.seed.context[key] !== input.context[key])) bad('Recording does not match this review evidence')
+            const rendered = { ...tape.seed.context }
+            for (const step of tape.steps) if (step.gesture.kind === 'command' && step.gesture.target?.name === 'viewport') Object.assign(rendered, JSON.parse(step.gesture.value))
+            if (tape.source !== input.snapshot.revision.source || ['persona', 'role', 'condition', 'theme', 'textScale', 'appTheme'].some((key) => rendered[key] !== input.context[key])) bad('Recording does not match this review evidence')
           }
           const serverRevision = structuredClone(metadata.revision)
           const screenshot = await feedbackImage(input, captureHost)
@@ -556,7 +564,7 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
           const graph = adapter.journeyGraph(metadata.scenarios, metadata.project).flatMap((flow) => flow.screens)
           const sourceContext = metadata.scenarios.filter((scenario) => ids.some((id) => (graph.find((node) => node.id === id)?.scenario ?? id) === scenario.id)).map((scenario) => ({ id: scenario.id, component: scenario.component, checks: scenario.checks, design: scenario.design, edges: scenario.edges, routeActions: scenario.routeActions }))
           const familyParams = data.context.simulation ? `&familySize=${data.context.simulation.pieces}&familyStage=${data.context.simulation.stage}` : ''
-          const reproduction = `/review?scenario=${encodeURIComponent(input.context.scenario)}&persona=${input.context.persona}&role=${input.context.role}&condition=${input.context.condition}&theme=${input.context.theme}&scale=${input.context.textScale}&width=${input.context.viewport.width}${familyParams}&feedback=${input.id}`
+          const reproduction = `/review?scenario=${encodeURIComponent(input.context.scenario)}&persona=${input.context.persona}&role=${input.context.role}&condition=${input.context.condition}&theme=${input.context.theme}&scale=${input.context.textScale}&width=${input.context.viewport.width}${input.context.appTheme ? '&appTheme=' + encodeURIComponent(input.context.appTheme) : ''}${familyParams}&feedback=${input.id}`
           // Sharing is best-effort: the note is kept locally even when the shared store is unavailable.
           let annotationId, sharedError
           if (shared) {

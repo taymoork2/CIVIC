@@ -15,6 +15,19 @@ export const workspacePanels = [
 ] as const
 export type WorkspacePanel = typeof workspacePanels[number]['value']
 
+export function PreviewThemeControls({ viewport, themes, disabled, change }: {
+  viewport: PreviewViewport; themes?: { id: string; label: string }[]; disabled: boolean; change: (patch: Partial<PreviewViewport>) => void
+}) {
+  return <div className="civic-preview-themes">
+    <NativeSelect size="sm" aria-label="Canvas appearance" title="Preview appearance" disabled={disabled} value={viewport.appearance ?? viewport.theme} onChange={event => change({ appearance: event.target.value as PreviewViewport['appearance'] })}>
+      <option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option>
+    </NativeSelect>
+    {themes?.length ? <NativeSelect size="sm" className="cv:max-w-36" aria-label="App theme" title="Application theme" disabled={disabled} value={viewport.appTheme ?? themes[0]!.id} onChange={event => change({ appTheme: event.target.value })}>
+      {themes.map(theme => <option key={theme.id} value={theme.id}>{theme.label}</option>)}
+    </NativeSelect> : null}
+  </div>
+}
+
 export function DetailsMenu({ pane, setPane, proposals, onSettings }: { pane: WorkspacePanel | null; setPane: (pane: WorkspacePanel | null) => void; proposals: number; onSettings?: () => void }) {
   return <DropdownMenu>
     <DropdownMenuTrigger render={<Button className="civic-details-trigger" variant="ghost" aria-label={pane ? `${pane[0]!.toUpperCase()}${pane.slice(1)} details` : 'Open details'} aria-controls="civic-details-panel" />}><PanelRight aria-hidden="true" /><span className="civic-details-label">{workspacePanels.find(item => item.value === pane)?.label ?? 'Details'}</span>{proposals > 0 && <small aria-label={`${proposals} new proposals`}>{proposals}</small>}<ChevronDown aria-hidden="true" /></DropdownMenuTrigger>

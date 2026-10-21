@@ -1,3 +1,4 @@
+import type { PreviewAppearance } from './viewport-presets'
 import { Button } from '@civic/shell/ui/button'
 import { crossFlowConnections, type AppFlow } from './app-map'
 import { connectionBundles, routeConnections, type Connection, type ConnectionBundle, type RoutedConnection } from './connection-routing'
@@ -28,8 +29,8 @@ export function overviewConnections(flows: AppFlow[]) {
   })
 }
 
-export function AppOverview({ flows, connections, source, active, focused, pan, focus, reviewConnection, selectBundle, selectedBundle }: {
-  flows: AppFlow[]; connections: RoutedConnection[]; source: string; active: boolean; focused: string;
+export function AppOverview({ appearance, flows, connections, source, active, focused, pan, focus, reviewConnection, selectBundle, selectedBundle }: {
+  appearance?: Pick<PreviewAppearance, 'theme' | 'appTheme'>; flows: AppFlow[]; connections: RoutedConnection[]; source: string; active: boolean; focused: string;
   pan: boolean; focus: (id: string) => void; reviewConnection: (edge: RoutedConnection) => void; selectBundle: (bundle: ConnectionBundle) => void; selectedBundle: string | null;
 }) {
   const groups = connectionBundles(connections)
@@ -41,7 +42,7 @@ export function AppOverview({ flows, connections, source, active, focused, pan, 
       {flow.y === 40 && <h2 className="app-overview-area">{flow.section}</h2>}
       <Button variant="outline" className="cv:block cv:h-full cv:w-full cv:rounded-xl cv:p-5 cv:text-left cv:whitespace-normal cv:aria-[current=location]:border-primary" aria-current={focused === flow.id ? 'location' : undefined} aria-label={`Open ${flow.label} flow`} disabled={pan} onClick={() => focus(flow.id)}>
         <strong>{flow.label}</strong><span>{flow.screens.length} screens{flow.screens.every((screen) => screen.partial) ? ' · partial' : ''}</span>
-        <div className="app-overview-filmstrip" aria-hidden="true">{flow.screens.slice(0, 3).map((screen) => <FixturePicture key={screen.id} viewport={screen.viewport} active={active} src={fixtureURL(screen.id, source, screen.viewport)} alt="" />)}<span className="app-overview-more">+{Math.max(0, flow.screens.length - 3)}</span></div>
+        <div className="app-overview-filmstrip" aria-hidden="true">{flow.screens.slice(0, 3).map((screen) => <FixturePicture key={screen.id} viewport={screen.viewport} active={active} src={fixtureURL(screen.id, source, screen.viewport, 1, appearance)} alt="" />)}<span className="app-overview-more">+{Math.max(0, flow.screens.length - 3)}</span></div>
       </Button>
     </section>)}
   </div>

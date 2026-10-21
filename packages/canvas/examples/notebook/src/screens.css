@@ -1,7 +1,11 @@
-.notebook-screen { min-height: 100vh; padding: 32px 24px; font: 16px/1.5 system-ui, sans-serif; background: #faf9f6; color: #243126; box-sizing: border-box; }
+:root { --note-bg: #faf9f6; --note-ink: #243126; --note-control: #fff; --note-accent: #254b33; }
+:root[data-theme=dark] { --note-bg: #19201b; --note-ink: #e5eee7; --note-control: #29332c; --note-accent: #365d43; }
+:root[data-notebook-theme=ocean] { --note-bg: #edf7fc; --note-ink: #183348; --note-accent: #125b88; }
+:root[data-theme=dark][data-notebook-theme=ocean] { --note-bg: #112635; --note-ink: #e0f2ff; --note-accent: #205c80; }
+.notebook-screen { min-height: 100vh; padding: 32px 24px; font: 16px/1.5 system-ui, sans-serif; background: var(--note-bg); color: var(--note-ink); box-sizing: border-box; }
 .notebook-screen h1 { margin: 0 0 32px; font-size: 28px; }
 .notebook-screen label { display: grid; gap: 8px; margin-bottom: 24px; }
 .notebook-screen input { box-sizing: border-box; width: 100%; padding: 12px; border: 1px solid #89988a; border-radius: 8px; font: inherit; }
-.notebook-screen button { display: block; width: 100%; margin: 12px 0; padding: 12px; border: 1px solid #657965; border-radius: 8px; background: #fff; color: inherit; font: inherit; cursor: pointer; }
-.notebook-screen button:first-of-type { background: #254b33; color: white; }
+.notebook-screen button { display: block; width: 100%; margin: 12px 0; padding: 12px; border: 1px solid #657965; border-radius: 8px; background: var(--note-control); color: inherit; font: inherit; cursor: pointer; }
+.notebook-screen button:first-of-type { background: var(--note-accent); color: white; }
 .notebook-screen [role=status] { min-height: 24px; }

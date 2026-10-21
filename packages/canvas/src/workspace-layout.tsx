@@ -4,7 +4,7 @@ import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbSeparator } from 
 import { Button } from '@civic/shell/ui/button'
 import { IconButton } from '@civic/shell/ui/icon-button'
 import { DesktopProjectTabs, type useDesktopProjects } from './desktop-project-tabs'
-import { DetailsMenu, ViewportPicker, type WorkspacePanel } from './workspace-tools'
+import { DetailsMenu, ViewportPicker, PreviewThemeControls, type WorkspacePanel } from './workspace-tools'
 import type { PreviewViewport } from './viewport-presets'
 
 type HeaderProps = {
@@ -30,15 +30,17 @@ export function WorkspaceHeader({ desktop, openPicker, projects, searchTrigger, 
   </header>
 }
 
-export function WorkspaceMapBar({ outline, toggleOutline, onApp, flowLabel, onFlow, selectedLabel, onSelection, viewport, busy, disabled, reason, changeViewport, resumeLabel, onResume }: {
+export function WorkspaceMapBar({ outline, toggleOutline, onApp, flowLabel, onFlow, selectedLabel, onSelection, viewport, busy, disabled, reason, changeViewport, themes, changeAppearance, themeDisabled, resumeLabel, onResume }: {
   outline: boolean; toggleOutline: () => void; onApp: () => void; flowLabel: string; onFlow: () => void; selectedLabel?: string; onSelection: () => void
   viewport: PreviewViewport; busy: boolean; disabled: boolean; reason?: string; changeViewport: (size: Pick<PreviewViewport, 'width' | 'height' | 'preset'>) => void
+  themes?: { id: string; label: string }[]; changeAppearance: (patch: Partial<PreviewViewport>) => void; themeDisabled: boolean
   resumeLabel?: string; onResume: () => void
 }) {
   return <div className="rh-map-bar">
     <IconButton icon={PanelLeft} label="Toggle journey outline" aria-controls="civic-journey-outline" aria-expanded={outline} onClick={toggleOutline} />
     <Breadcrumb className="rh-breadcrumb" aria-label="Canvas location"><BreadcrumbList className="cv:flex-nowrap cv:gap-0"><BreadcrumbItem><Button variant="ghost" size="sm" onClick={onApp}>App</Button></BreadcrumbItem><BreadcrumbSeparator /><BreadcrumbItem><Button variant="ghost" size="sm" onClick={onFlow}>{flowLabel}</Button></BreadcrumbItem>{selectedLabel && <><BreadcrumbSeparator /><BreadcrumbItem><Button variant="ghost" size="sm" onClick={onSelection}>{selectedLabel}</Button></BreadcrumbItem></>}</BreadcrumbList></Breadcrumb>
     <ViewportPicker viewport={viewport} busy={busy} disabled={disabled} reason={reason} changeViewport={changeViewport} />
+    <PreviewThemeControls viewport={viewport} themes={themes} disabled={busy || themeDisabled} change={changeAppearance} />
     {resumeLabel && <Button variant="outline" className="rh-resume" onClick={onResume}>{resumeLabel}</Button>}
   </div>
 }

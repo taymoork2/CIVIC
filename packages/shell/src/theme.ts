@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from 'react'
 
 export type ThemePreference = 'system' | 'light' | 'dark'
-export type Appearance = { preference: ThemePreference; resolved: 'light' | 'dark' }
+export type Appearance = { preference: ThemePreference; resolved: 'light' | 'dark'; system?: 'light' | 'dark' }
 export type AppearanceBridge = {
   appearance: () => Promise<Appearance>
   setAppearance: (preference: ThemePreference) => Promise<Appearance>
@@ -14,7 +14,7 @@ let bridge: AppearanceBridge | undefined
 const listeners = new Set<() => void>()
 const subscribe = (listener: () => void) => { listeners.add(listener); return () => { listeners.delete(listener) } }
 const preference = (value: unknown): ThemePreference => value === 'light' || value === 'dark' ? value : 'system'
-const browserAppearance = (value: ThemePreference): Appearance => ({ preference: value, resolved: value === 'system' ? media.matches ? 'dark' : 'light' : value })
+const browserAppearance = (value: ThemePreference): Appearance => ({ preference: value, resolved: value === 'system' ? media.matches ? 'dark' : 'light' : value, system: media.matches ? 'dark' : 'light' })
 const publish = (value: typeof state) => {
   state = value
   document.documentElement.dataset.civicTheme = value.resolved
@@ -34,7 +34,7 @@ export async function initializeTheme(desktop?: AppearanceBridge) {
     let stored: string | null = null
     try { stored = localStorage.getItem(key) } catch { /* Blocked storage uses this window's preference. */ }
     publish(browserAppearance(preference(stored)))
-    media.addEventListener('change', () => { if (state.preference === 'system') publish(browserAppearance('system')) })
+    media.addEventListener('change', () => publish(browserAppearance(state.preference)))
     window.addEventListener('storage', event => { if (event.storageArea === localStorage && (event.key === key || event.key === null)) publish(browserAppearance(preference(event.newValue))) })
   }
 }

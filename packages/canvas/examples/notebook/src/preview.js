@@ -1,5 +1,10 @@
 import { renderScreen } from './screens.js'
 
+export function setAppearance({ theme, appTheme }) {
+  document.documentElement.dataset.notebookTheme = appTheme ?? 'paper'
+  document.documentElement.dataset.theme = theme
+}
+
 // Synthetic state and effects live in the project adapter, never in the shared workspace.
 export function mount(container, context) {
   const seed = { screen: context.scenario.id, title: context.scenario.fixture?.title ?? context.persona.seed?.title ?? '', error: '' }

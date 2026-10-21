@@ -1,3 +1,4 @@
+import type { PreviewAppearance } from './viewport-presets'
 import { Alert, AlertDescription } from '@civic/shell/ui/alert'
 import { Disclosure } from '@civic/shell/ui/disclosure'
 import { Field, FieldLabel, FieldGroup } from '@civic/shell/ui/field'
@@ -29,7 +30,7 @@ type ElementTarget = { label: string; selector: string; tag: string; anchor: Anc
 export type Feedback = {
   recording?: string
   id: string; kind: FeedbackKind; message: string; status: string; screenshot: string; reproduction: string; sourceStale?: boolean; target?: ReviewTarget
-  evidence?: { kind: 'live' | 'fixture' | 'map'; fixtureSource?: string; viewport?: { width: number; height: number }; pixelRatio?: 1 | 2 }
+  evidence?: { kind: 'live' | 'fixture' | 'map'; fixtureSource?: string; viewport?: { width: number; height: number }; pixelRatio?: 1 | 2; appearance?: Pick<PreviewAppearance, 'theme' | 'appTheme'> }
   context: ReviewConfig & { screen?: string; viewport: { width: number; height: number }; state: { dialogs: string[]; tabs: string[]; fields: { label: string; value: string }[] } }
   anchor: Anchor; revision: ReviewSnapshot['revision']; resolution?: { evidence: string }
   deliveries?: Delivery[]
@@ -108,7 +109,7 @@ function FrozenAnnotation({ draft, update, disabled }: { draft: NoteDraft; updat
 export function ReviewPanel({ project, selected, flowScreens, allScreens, frame, target, canvas, fixture, focus, navigationReady, ref }: {
   project: ProjectProfile
   selected: MapScreen | null; flowScreens: MapScreen[]; allScreens: MapScreen[]; frame: HTMLIFrameElement | null; target: ReviewTarget; canvas: HTMLElement | null
-  fixture: { source: string; snapshot: ReviewSnapshot | null; viewport?: { width: number; height: number } }; focus: (target: ReviewTarget) => void; navigationReady: boolean
+  fixture: { appearance?: Pick<PreviewAppearance, 'theme' | 'appTheme'>; source: string; snapshot: ReviewSnapshot | null; viewport?: { width: number; height: number } }; focus: (target: ReviewTarget) => void; navigationReady: boolean
   ref?: Ref<ReviewPanelHandle>
 }) {
   const noteKey = extension.draftKey ?? `rehearsal:${project.key}:review:draft:v1`
@@ -170,9 +171,9 @@ export function ReviewPanel({ project, selected, flowScreens, allScreens, frame,
       } else if (['screen', 'region'].includes(captureTarget.kind)) {
         if (!fixture.source || !fixture.snapshot) throw Error('The starting screen snapshot is still preparing. Play the screen or wait and retry.')
         viewport = fixture.viewport ?? viewport
-        config = { ...config, width: viewport.width, height: viewport.height }
-        snapshot = fixture.snapshot; evidence = { kind: 'fixture', fixtureSource: fixture.source, viewport, pixelRatio: 2 }
-        image = fixtureURL(representative.id, fixture.source, viewport, 2)
+        config = { ...config, ...fixture.appearance, width: viewport.width, height: viewport.height }
+        snapshot = fixture.snapshot; evidence = { kind: 'fixture', fixtureSource: fixture.source, viewport, pixelRatio: 2, ...(fixture.appearance ? { appearance: fixture.appearance } : {}) }
+        image = fixtureURL(representative.id, fixture.source, viewport, 2, fixture.appearance)
         const response = await projectFetch(image)
         if (!response.ok) throw Error('The starting screen snapshot is unavailable. Play this screen to capture it.')
       } else {

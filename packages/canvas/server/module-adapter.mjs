@@ -31,11 +31,11 @@ async function captureFixture(node, { origin, cookie, browser: sharedBrowser, vi
   const runs = []
   try {
     const viewport = node.viewport ?? { width: 393, height: 852 }
-    context = await browser.newContext({ viewport, deviceScaleFactor: node.pixelRatio ?? 1 })
+    context = await browser.newContext({ viewport, deviceScaleFactor: node.pixelRatio ?? 1, colorScheme: node.theme ?? 'light' })
     await context.addCookies([{ name: 'review_session', value: cookie.slice('review_session='.length), url: origin }])
     if (context.routeWebSocket) await context.routeWebSocket('**/*', socket => {
       const url = new URL(socket.url())
-      if (url.origin === origin.replace('http:', 'ws:') && url.pathname === '/__orca/ws') socket.connectToServer()
+      if (url.origin === origin.replace('http:', 'ws:') && url.pathname.startsWith('/api/review/')) socket.connectToServer()
       else socket.close()
     })
     // Reads only: page assets, and an isolated run's start, reads and close. Its writes are refused.
@@ -52,7 +52,8 @@ async function captureFixture(node, { origin, cookie, browser: sharedBrowser, vi
       else await route.abort()
     })
     const page = await context.newPage()
-    await page.goto(`${origin}/review-frame.html?scenario=${encodeURIComponent(node.scenario ?? node.id)}&width=${viewport.width}&height=${viewport.height}${node.condition ? '&condition=' + encodeURIComponent(node.condition) : ''}`, { waitUntil: 'domcontentloaded', timeout: 20000 })
+    const params = new URLSearchParams({ scenario: node.scenario ?? node.id, width: String(viewport.width), height: String(viewport.height), theme: node.theme ?? 'light', ...(node.appTheme ? { appTheme: node.appTheme } : {}), ...(node.condition ? { condition: node.condition } : {}) })
+    await page.goto(`${origin}/review-frame.html?${params}`, { waitUntil: 'domcontentloaded', timeout: 20000 })
     await page.locator('[data-rehearsal-ready="true"], #review-root:has(> h1:text-is("Preview unavailable"))').waitFor({ state: 'attached', timeout: 10000 })
     if (await page.getByRole('heading', { name: 'Preview unavailable', exact: true }).count()) throw Error((await page.getByRole('alert').first().textContent())?.slice(0, 300) || 'Fixture did not render')
     if (visit) {

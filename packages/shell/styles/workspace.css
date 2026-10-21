@@ -36,6 +36,12 @@
   .rh-map-area { min-width: 0; min-height: 0; display: flex; flex-direction: column; position: relative; overflow: hidden; background: var(--civic-surface); }
   .rh-map-bar { display: flex; align-items: center; flex-shrink: 0; min-height: 44px; gap: 8px; padding: 4px 12px; border-bottom: 1px solid var(--civic-border); }
   .rh-breadcrumb { flex: 1; min-width: 0; overflow: auto; }
+  .civic-preview-themes { display: flex; gap: 6px; flex-shrink: 0; }
+  @media (max-width: 600px) {
+    .rh-map-bar { flex-wrap: wrap; }
+    .rh-breadcrumb { min-width: calc(100% - 48px); }
+    .civic-preview-themes { margin-left: auto; }
+  }
   .rh-canvas { flex: 1; min-height: 0; position: relative; overflow: hidden; overscroll-behavior: contain; background: var(--civic-canvas); }
   .rh-infinite-canvas { touch-action: none; cursor: grab; background-image: radial-gradient(var(--civic-canvas-dot) 1px, transparent 1px); background-size: 24px 24px; }
   .rh-infinite-canvas:active { cursor: grabbing; }

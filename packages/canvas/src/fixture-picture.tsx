@@ -2,9 +2,10 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { ImageOff } from '@civic/shell/icons'
 import { Skeleton } from '@civic/shell/ui/skeleton'
 import { projectFetch } from './project-request'
+import type { PreviewAppearance } from './viewport-presets'
 
-export function fixtureURL(screen: string, source: string, viewport?: { width: number; height: number }, pixelRatio = 1) {
-  return `/api/review/fixture.png?${new URLSearchParams({ screen, source, ...(viewport ? { width: String(viewport.width), height: String(viewport.height) } : {}), ...(pixelRatio === 2 ? { pixelRatio: '2' } : {}) })}`
+export function fixtureURL(screen: string, source: string, viewport?: { width: number; height: number }, pixelRatio = 1, appearance?: Pick<PreviewAppearance, 'theme' | 'appTheme'>) {
+  return `/api/review/fixture.png?${new URLSearchParams({ screen, source, ...(viewport ? { width: String(viewport.width), height: String(viewport.height) } : {}), ...(pixelRatio === 2 ? { pixelRatio: '2' } : {}), ...(appearance ? { theme: appearance.theme, ...(appearance.appTheme ? { appTheme: appearance.appTheme } : {}) } : {}) })}`
 }
 
 function afterNavigation(element: HTMLElement, signal: AbortSignal, action: () => void) {

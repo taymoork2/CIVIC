@@ -53,6 +53,64 @@ async function size(tab, width, height) {
   await tab.getByRole('button', { name: 'Apply', exact: true }).click()
 }
 
+test('canvas themes apply consistently without replacing a live draft, at desktop and narrow widths', { timeout: 90000 }, async t => {
+  const { tab } = await workspace(t, false, { prepare: async app => {
+    const file = join(app, 'civic.project.json'), manifest = JSON.parse(await readFile(file, 'utf8'))
+    manifest.appearance = { themes: [{ id: 'paper', label: 'Paper' }, { id: 'ocean', label: 'Ocean' }], defaultTheme: 'paper' }
+    await writeFile(file, JSON.stringify(manifest))
+    const entry = join(app, 'src/preview.js')
+    await writeFile(entry, (await readFile(entry, 'utf8')).replace('export function setAppearance({ theme, appTheme }) {', 'export function setAppearance({ theme, appTheme }) { if (window.failTheme && appTheme === "ocean") throw Error("Theme rejected");'))
+  } })
+  await tab.emulateMedia({ colorScheme: 'light' })
+  const { live, frame } = await draft(tab)
+  await live.evaluate(element => { element.contentWindow.__themeIdentity = 'retained' })
+  await tab.getByLabel('Canvas appearance', { exact: true }).selectOption('dark')
+  await tab.waitForFunction(() => document.querySelector('iframe[title="Live Notebook home"]').contentWindow.reviewPreview.config.theme === 'dark')
+  await live.evaluate(element => { element.contentWindow.failTheme = true })
+  await tab.getByLabel('App theme', { exact: true }).selectOption('ocean')
+  await tab.getByRole('alert').filter({ hasText: 'Theme rejected' }).waitFor()
+  assert.equal(await tab.getByLabel('App theme', { exact: true }).inputValue(), 'paper')
+  assert.equal(await frame.getByLabel('Title', { exact: true }).inputValue(), 'Keep this draft')
+  await live.evaluate(element => { element.contentWindow.failTheme = false })
+  await tab.getByLabel('App theme', { exact: true }).selectOption('ocean')
+  await tab.waitForFunction(() => document.querySelector('iframe[title="Live Notebook home"]').contentDocument.documentElement.dataset.notebookTheme === 'ocean')
+  assert.equal(await frame.getByLabel('Title', { exact: true }).inputValue(), 'Keep this draft')
+  assert.equal(await live.evaluate(element => element.contentWindow.__themeIdentity), 'retained')
+  assert.equal(await frame.locator('.notebook-screen').evaluate(element => getComputedStyle(element).backgroundColor), 'rgb(17, 38, 53)')
+  for (const [theme, expected] of [['dark', [17, 38, 53]], ['light', [237, 247, 252]]]) {
+    const pixel = await tab.evaluate(async theme => {
+      const response = await fetch(`/api/review/fixture.png?screen=demo.home&theme=${theme}&appTheme=ocean`)
+      if (!response.ok) throw Error(await response.text())
+      const bitmap = await createImageBitmap(await response.blob()), canvas = new OffscreenCanvas(bitmap.width, bitmap.height), context = canvas.getContext('2d')
+      context.drawImage(bitmap, 0, 0); bitmap.close()
+      return [...context.getImageData(10, 10, 1, 1).data].slice(0, 3)
+    }, theme)
+    assert.deepEqual(pixel, expected)
+  }
+  await tab.getByLabel('Canvas appearance', { exact: true }).selectOption('system')
+  await tab.waitForFunction(() => document.querySelector('iframe[title="Live Notebook home"]').contentWindow.reviewPreview.config.theme === 'light')
+  await tab.emulateMedia({ colorScheme: 'dark' })
+  await tab.waitForFunction(() => document.querySelector('iframe[title="Live Notebook home"]').contentWindow.reviewPreview.config.theme === 'dark')
+  const tape = await live.evaluate(element => element.contentWindow.reviewPreview.recording())
+  assert.ok(tape.steps.some(step => step.gesture.target?.name === 'viewport' && JSON.parse(step.gesture.value).appTheme === 'ocean'))
+  for (const width of [1440, 390]) {
+    await tab.setViewportSize({ width, height: 900 })
+    assert.equal(await tab.getByLabel('Canvas appearance', { exact: true }).isVisible(), true)
+    assert.equal(await tab.getByLabel('App theme', { exact: true }).isVisible(), true)
+    assert.equal(await tab.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true)
+  }
+  assert.equal(await frame.getByLabel('Title', { exact: true }).inputValue(), 'Keep this draft')
+  const replayed = await live.evaluate(async (element, tape) => {
+    const response = await fetch('/api/review/runs', { method: 'POST', headers: { 'content-type': 'application/json', 'x-rehearsal-project': tape.project }, body: JSON.stringify(tape) })
+    if (!response.ok) throw Error(await response.text())
+    const saved = await response.json(), result = await element.contentWindow.reviewPreview.replay(tape)
+    return { saved: saved.id, verified: result.verified }
+  }, tape)
+  assert.equal(typeof replayed.saved, 'string')
+  assert.equal(replayed.verified, tape.steps.length)
+  assert.equal(await frame.getByLabel('Title', { exact: true }).inputValue(), 'Keep this draft')
+})
+
 test('header, inspector and commands share the viewport without replacing the live draft', { timeout: 90000 }, async t => {
   const { tab, origin } = await workspace(t)
   const { live, frame } = await draft(tab)

@@ -1,5 +1,12 @@
 import { expect, test } from 'vitest'
-import { presetOf } from './viewport-presets'
+import { presetOf, validViewport } from './viewport-presets'
+
+test('viewport preferences retain resolved appearance and an optional app theme', () => {
+  const value = { width: 393, height: 852, theme: 'dark', appearance: 'system', appTheme: 'ocean', textScale: 1 }
+  expect(validViewport(value)).toBe(true)
+  expect(validViewport({ ...value, appearance: 'automatic' })).toBe(false)
+  expect(validViewport({ ...value, appTheme: '../private' })).toBe(false)
+})
 
 test('exact dimensions take precedence over a rotated match', () => {
   expect(presetOf({ width: 1024, height: 768 })?.id).toBe('desktop')

@@ -22,7 +22,7 @@ const packaged = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
  * CLI isn't there, and review works without the shared store.
  */
 export function civicShared({ repo, product, civicRoot = process.env.CIVIC_ROOT || packaged }) {
-  if (!/^[a-z0-9-]+$/.test(product ?? '')) throw new Error('civicShared needs the product ID its graph targets use, like "laundry"')
+  if (!/^[a-z0-9-]+$/.test(product ?? '')) throw new Error('civicShared needs the product ID its graph targets use, like "example"')
   const cli = join(civicRoot, 'review', 'src', 'cli.ts')
   if (!existsSync(cli)) return null
   // A person makes every canvas note, even when an agent started this server.
@@ -43,6 +43,7 @@ export function civicShared({ repo, product, civicRoot = process.env.CIVIC_ROOT 
         await writeFile(image, screenshot, { mode: 0o600 })
         const c = feedback.context
         const scenario = new URLSearchParams({ scenario: c.scenario, persona: c.persona, role: c.role, condition: c.condition, theme: c.theme, scale: String(c.textScale), width: String(c.viewport.width) })
+        if (c.appTheme) scenario.set('appTheme', c.appTheme)
         const { anchor } = feedback
         const args = ['annotate', feedback.message, '--image', image, '--url', `${origin}/review-frame.html?${scenario}`, '--viewport', `${c.viewport.width}x${c.viewport.height}`, '--rect', [anchor.x, anchor.y, Math.min(anchor.width, 1 - anchor.x), Math.min(anchor.height, 1 - anchor.y)].map((n) => Math.max(0, n).toFixed(4)).join(','), '--rect-label', anchor.label]
         // A whole-screen note anchors to the scenario's target, which the frame carries as data-civic-id.

@@ -2,7 +2,8 @@
  * A live preview's viewport: CSS pixels, appearance and text size. `preset` names the device it imitates. These are
  * browser viewports, never evidence of a physical device, its hinge, browser engine or hardware.
  */
-export type PreviewViewport = { width: number; height: number; theme: 'light' | 'dark'; textScale: 1 | 2; preset?: string }
+export type PreviewAppearance = { theme: 'light' | 'dark'; appearance?: 'system' | 'light' | 'dark'; appTheme?: string }
+export type PreviewViewport = PreviewAppearance & { width: number; height: number; textScale: 1 | 2; preset?: string }
 export type ViewportPreset = { id: string; group: 'phone' | 'tablet' | 'desktop'; name: string; width: number; height: number }
 // Named dimensions are CSS viewports from Playwright's device catalog; the fold pair is one device folded and open.
 export const viewportPresets: readonly ViewportPreset[] = [
@@ -30,5 +31,7 @@ export function presetOf(viewport: { width: number; height: number; preset?: str
 export function validViewport(value: unknown): value is PreviewViewport {
   const v = value as PreviewViewport
   return !!v && typeof v === 'object' && Number.isInteger(v.width) && Number.isInteger(v.height) && v.width >= 200 && v.width <= 1920 && v.height >= 200 && v.height <= 1600 && ['light', 'dark'].includes(v.theme) && [1, 2].includes(v.textScale)
-    && (v.preset === undefined || viewportPresets.some((p) => p.id === v.preset)) && Object.keys(v).every((key) => ['width', 'height', 'theme', 'textScale', 'preset'].includes(key))
+    && (v.appearance === undefined || ['system', 'light', 'dark'].includes(v.appearance))
+    && (v.appTheme === undefined || typeof v.appTheme === 'string' && /^[a-z][a-z0-9.-]{0,79}$/.test(v.appTheme))
+    && (v.preset === undefined || viewportPresets.some((p) => p.id === v.preset)) && Object.keys(v).every((key) => ['width', 'height', 'theme', 'textScale', 'preset', 'appearance', 'appTheme'].includes(key))
 }

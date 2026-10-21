@@ -29,6 +29,27 @@ const coverage = async () => {
 
 const snapshot = { revision: { head: '0'.repeat(40), source: '1'.repeat(64), capturedAt: new Date().toISOString() }, design: { project: 'synthetic-test-design', hashes: {} } }
 
+test('fixture cache separates resolved schemes and declared app themes', async t => {
+  const dataDir = await mkdtemp(join(tmpdir(), 'civic-theme-capture-'))
+  const captured = []
+  const project = { key: 'themed', appearance: { themes: [{ id: 'paper', label: 'Paper' }, { id: 'ocean', label: 'Ocean' }] } }
+  const middleware = await reviewMiddleware({ dataDir, metadata: { ...snapshot, project, scenarios: [{ id: 'screen' }] }, adapter: adapter(async node => { captured.push(node); return Buffer.from(`${node.theme}:${node.appTheme}`) }) })
+  const server = createServer((req, res) => middleware(req, res, () => res.end('Review')))
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
+  t.after(() => new Promise(resolve => server.close(resolve)))
+  const origin = `http://127.0.0.1:${server.address().port}`, headers = await localHeaders(origin)
+  const get = query => fetch(origin + '/api/review/fixture.png?screen=screen&' + query, { headers })
+  for (const query of ['theme=light&appTheme=paper', 'theme=dark&appTheme=paper', 'theme=dark&appTheme=ocean']) {
+    const response = await get(query)
+    assert.equal(response.status, 200)
+    assert.equal(await response.text(), query.replace('theme=', '').replace('&appTheme=', ':'))
+  }
+  await get('theme=dark&appTheme=ocean')
+  assert.equal(captured.length, 3)
+  assert.equal((await get('theme=dark&appTheme=missing')).status, 400)
+  assert.equal((await get('theme=automatic')).status, 400)
+})
+
 test('a comment reuses its saved screen capture and refuses a different source or viewport', async t => {
   const dataDir = await mkdtemp(join(tmpdir(), 'civic-screen-capture-'))
   let captures = 0
@@ -170,11 +191,11 @@ test('project-window requests require authentication and retain the originating 
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
   t.after(() => new Promise(resolve => server.close(resolve)))
   const base = `http://127.0.0.1:${server.address().port}`, headers = { ...await localHeaders(base), 'x-rehearsal-project': 'source-app' }
-  const post = (action, auth = headers) => fetch(base + '/api/review/projects', { method: 'POST', headers: auth, body: JSON.stringify({ action, key: 'laundry' }) })
+  const post = (action, auth = headers) => fetch(base + '/api/review/projects', { method: 'POST', headers: auth, body: JSON.stringify({ action, key: 'example' }) })
   assert.equal((await post('open-window', { 'content-type': 'application/json' })).status, 401)
   assert.equal((await post('open-window', { ...headers, 'x-rehearsal-project': 'other-app' })).status, 409)
   assert.deepEqual(await (await post('open-window')).json(), { url: 'http://127.0.0.1:4001/review' })
-  assert.deepEqual(calls, [{ key: 'laundry', workspace: undefined }])
+  assert.deepEqual(calls, [{ key: 'example', workspace: undefined }])
   assert.deepEqual(await (await post('window-origins')).json(), { origins: ['http://127.0.0.1:4001'] })
 })
 test('screen comparisons are authenticated, project-bound and do not block the write queue', async t => {
@@ -229,7 +250,7 @@ test('catalog and version pages retain authentication, project binding and cance
 
 test('live interaction inventory is authenticated, source-bound and scans only registered read-only fixtures', async () => {
   const dataDir = await mkdtemp(join(tmpdir(), 'civic-interaction-api-'))
-  const project = { key: 'orca', mode: 'live-read-only', personas: [{ id: 'owner' }], roles: [{ id: 'browse' }], conditions: [{ id: 'live' }] }
+  const project = { key: 'example', mode: 'live-read-only', personas: [{ id: 'owner' }], roles: [{ id: 'browse' }], conditions: [{ id: 'live' }] }
   const metadata = { ...snapshot, project, coverage: { targets: [] }, scenarios: [{ id: 'home', label: 'Home' }, { id: 'settings', label: 'Settings' }] }
   const captured = []
   let closed = false

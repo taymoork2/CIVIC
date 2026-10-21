@@ -27,7 +27,7 @@ export function projectPath(root, path, required = true, strict = true) {
 }
 export function checkedProject(input) {
   if (!input || input.version !== 1 || !id(input.id) || !words(input.name)) fail('use version 1, a stable id and a name')
-  // `module` is the portable preview contract. Any other kind names a connector the host registers (Laundry's is `laundry`).
+  // `module` is the portable preview contract. Any other kind names a connector the host registers (Example's is `example`).
   if (!id(input.adapter?.kind) || input.adapter.entry !== undefined && !words(input.adapter.entry)) fail('unsupported adapter or entry')
   if (input.adapter.mode !== undefined && input.adapter.mode !== 'live-read-only') fail('unsupported live review mode')
   if (input.adapter.runtime !== undefined && !words(input.adapter.runtime, 500)) fail('invalid isolated runtime entry')
@@ -38,6 +38,10 @@ export function checkedProject(input) {
     if (!Array.isArray(rows) || !rows.length || rows.length > 50 || rows.some((row) => !row || !id(row.id) || !words(row.label) || row.description !== undefined && !words(row.description, 2000)) || new Set(rows.map((row) => row.id)).size !== rows.length) fail(`invalid or duplicate ${field}`)
   }
   if (input.identity !== undefined || input.personas.some((persona) => persona.identity !== undefined)) checkedIdentity(input)
+  if (input.appearance !== undefined) {
+    const appearance = input.appearance
+    if (!appearance || typeof appearance !== 'object' || Array.isArray(appearance) || Object.keys(appearance).some(key => !['themes', 'defaultTheme'].includes(key)) || !Array.isArray(appearance.themes) || !appearance.themes.length || appearance.themes.length > 30 || appearance.themes.some(theme => !theme || typeof theme.id !== 'string' || !/^[a-z][a-z0-9.-]{0,79}$/.test(theme.id) || !words(theme.label) || Object.keys(theme).some(key => !['id', 'label'].includes(key))) || new Set(appearance.themes.map(theme => theme.id)).size !== appearance.themes.length || appearance.defaultTheme !== undefined && !appearance.themes.some(theme => theme.id === appearance.defaultTheme)) fail('invalid appearance themes or default theme')
+  }
   if (input.aliases !== undefined && (!input.aliases || typeof input.aliases !== 'object' || Array.isArray(input.aliases) || Object.entries(input.aliases).some(([name, path]) => !/^[@a-z][@a-z0-9/_-]*$/i.test(name) || !words(path, 500)))) fail('invalid aliases')
   if (input.design !== undefined && (!input.design || !words(input.design.id) || !Array.isArray(input.design.files) || input.design.files.some((path) => !words(path, 500)))) fail('invalid design references')
   if (JSON.stringify(input).length > 250_000) fail('manifest too large; keep fixtures in the preview adapter')
@@ -98,7 +102,7 @@ export function loadProject(repo, options = {}) {
 }
 export function publicProject(project, capabilities) {
   const { manifest: m, key } = project
-  return { id: m.id, key, name: m.name, ...(project.app ? { app: project.app } : {}), ...(project.connectionKind ? { connectionKind: project.connectionKind } : {}), adapter: m.adapter.kind, ...(m.adapter.mode ? { mode: m.adapter.mode } : {}), ...(capabilities ? { capabilities } : {}), preview: Boolean(project.entry), runtime: Boolean(project.runtimeEntry), personas: m.personas, roles: m.roles, conditions: m.conditions, navigation: m.navigation }
+  return { id: m.id, key, name: m.name, ...(project.app ? { app: project.app } : {}), ...(project.connectionKind ? { connectionKind: project.connectionKind } : {}), adapter: m.adapter.kind, ...(m.adapter.mode ? { mode: m.adapter.mode } : {}), ...(capabilities ? { capabilities } : {}), ...(m.appearance ? { appearance: m.appearance } : {}), preview: Boolean(project.entry), runtime: Boolean(project.runtimeEntry), personas: m.personas, roles: m.roles, conditions: m.conditions, navigation: m.navigation }
 }
 export function checkedScenarios(rows, project) {
   if (!Array.isArray(rows) || rows.length > 2000) fail('invalid scenario registry')

@@ -1,4 +1,5 @@
 import { checkedState } from './review-interactions.mjs'
+import { checkedAppearance } from './review-appearance.mjs'
 
 const refuse = (message) => { throw Object.assign(Error(message), { status: 400 }) }
 const sensitive = /password|secret|token|credential|one.time.code|credit.card/i
@@ -7,8 +8,9 @@ export function sensitivePayload(value, depth = 0) {
   return Boolean(value && typeof value === 'object' && Object.entries(value).some(([key, child]) => sensitive.test(key) || sensitivePayload(child, depth + 1)))
 }
 /** The run's own recorded steps have fixed shapes; an adapter's other commands are its own. */
-function runStep(name, value) {
-  if (name === 'viewport') return Boolean(value) && typeof value === 'object' && Number.isInteger(value.width) && value.width >= 200 && value.width <= 1920 && Number.isInteger(value.height) && value.height >= 200 && value.height <= 1600 && ['light', 'dark'].includes(value.theme) && [1, 2].includes(value.textScale) && (value.preset === undefined || typeof value.preset === 'string' && /^[a-z0-9-]{1,40}$/.test(value.preset)) && Object.keys(value).every((key) => ['width', 'height', 'theme', 'textScale', 'preset'].includes(key))
+function runStep(name, value, project) {
+  if (name === 'viewport' && value && typeof value === 'object') checkedAppearance(value, project)
+  if (name === 'viewport') return Boolean(value) && typeof value === 'object' && Number.isInteger(value.width) && value.width >= 200 && value.width <= 1920 && Number.isInteger(value.height) && value.height >= 200 && value.height <= 1600 && ['light', 'dark'].includes(value.theme) && [1, 2].includes(value.textScale) && (value.preset === undefined || typeof value.preset === 'string' && /^[a-z0-9-]{1,40}$/.test(value.preset)) && Object.keys(value).every((key) => ['width', 'height', 'theme', 'textScale', 'preset', 'appearance', 'appTheme'].includes(key))
   if (name === 'identity') return typeof value === 'string' && /^[\w.-]{1,80}$/.test(value)
   if (name === 'connection') return typeof value === 'boolean'
   if (name === 'time') return Number.isInteger(value) && value > 0 && value <= 1440
@@ -18,6 +20,7 @@ function runStep(name, value) {
 export function checkedRecording(input, project) {
   if (!input || input.version !== 1 || input.project !== project?.key || !/^[0-9a-f]{64}$/.test(input.source) || !Number.isSafeInteger(input.now) || input.now < 0 || typeof input.initialRoute !== 'string' || input.initialRoute.length > 2000 || !Array.isArray(input.steps) || input.steps.length > 1000 || JSON.stringify(input).length > 2_000_000) refuse('Invalid or oversized project recording')
   const config = input.seed?.context
+  if (config) checkedAppearance(config, project)
   if (sensitivePayload(input.seed)) refuse('Sensitive or deeply nested recording seed')
   if (!config || typeof config.scenario !== 'string' || !project.personas.some((preset) => preset.id === config.persona) || !project.roles.some((preset) => preset.id === config.role) || !project.conditions.some((preset) => preset.id === config.condition) || !['light', 'dark'].includes(config.theme) || ![1, 2].includes(config.textScale) || !Number.isInteger(config.width) || config.width < 200 || config.width > 1920) refuse('Invalid recording context')
   // Height and preset came later; recordings without them are still valid.
@@ -27,7 +30,7 @@ export function checkedRecording(input, project) {
     const gesture = step?.gesture, target = gesture?.target
     const escape = gesture?.kind === 'key' && gesture.value === 'Escape' && target?.tag === 'document' && target.name === 'Escape'
     const command = gesture?.kind === 'command' && target?.tag === 'adapter'
-    if (command) { try { if (sensitivePayload(JSON.parse(gesture.value)) || !runStep(target.name, JSON.parse(gesture.value))) refuse('Sensitive command') } catch { refuse('Invalid or sensitive adapter command') } }
+    if (command) { try { if (sensitivePayload(JSON.parse(gesture.value)) || !runStep(target.name, JSON.parse(gesture.value), project)) refuse('Sensitive command') } catch { refuse('Invalid or sensitive adapter command') } }
     if (!escape && !command && (!['click', 'input'].includes(gesture?.kind) || !target || !/^[a-z][a-z0-9-]{0,39}$/.test(target.tag)) || !target || typeof target.name !== 'string' || !target.name || target.name.length > 2000 || sensitive.test(target.name) || !Number.isSafeInteger(target.index) || !Number.isSafeInteger(target.count) || target.index < 0 || target.count <= target.index || target.count > 1000 || gesture.value !== undefined && (typeof gesture.value !== 'string' || gesture.value.length > (command ? 32000 : 4000))) refuse('Invalid or sensitive recorded gesture')
     if (typeof step.route !== 'string' || step.route.length > 2000 || typeof step.view !== 'string' || step.view.length > 100_000 || !Array.isArray(step.fields) || step.fields.length > 250 || !Array.isArray(step.operations) || step.operations.length > 100) refuse('Invalid recorded state')
     if (step.discovery !== undefined && (!step.discovery || Object.keys(step.discovery).some(key => !['before', 'after'].includes(key)) || !step.discovery.before || !step.discovery.after)) refuse('Invalid interaction evidence')
