@@ -77,8 +77,8 @@ test('closing project sources aborts its pending scoped search', { timeout: 6000
 
 test('coverage keeps the project-conflict message and live draft when another poll fails', { timeout: 60000 }, async t => {
   const { tab } = await workspace(t)
-  await tab.locator('.app-screen > button', { hasText: 'Notebook home' }).click()
-  await tab.getByRole('button', { name: 'Play this screen' }).click()
+  await tab.locator('.app-screen-heading > button:first-child', { hasText: 'Notebook home' }).click()
+  await tab.getByRole('button', { name: /^Play \d\d / }).click()
   const frame = tab.frameLocator('iframe[title="Live Notebook home"]')
   await frame.getByRole('button', { name: 'New note' }).click()
   await frame.getByLabel('Title', { exact: true }).fill('Keep during conflict')
@@ -106,7 +106,7 @@ test('version loading is paged, scoped and lazy across 120 checkouts without cha
   await tab.getByRole('region', { name: 'Previews for Draft 0', exact: true }).getByText('Viewing', { exact: true }).waitFor()
   assert.equal(requests.filter(input => input?.action === 'version-page' && input.version).length, 1, 'Expansion loads only its selected version')
   await tab.getByRole('button', { name: 'Close project picker', exact: true }).click()
-  await tab.locator('.app-screen > button', { hasText: 'Notebook home' }).click()
+  await tab.locator('.app-screen-heading > button:first-child', { hasText: 'Notebook home' }).click()
   await tab.locator('.rh-project-trigger').click()
   await tab.getByRole('button', { name: 'Preview options for Draft 0', exact: true }).waitFor()
   const comparison = tab.waitForRequest(request => { const input = request.url().endsWith('/api/review/projects') && request.postDataJSON(); return input?.action === 'changes' && input.candidates.some(row => row.key === rows[119].key) })

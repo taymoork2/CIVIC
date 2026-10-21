@@ -3,8 +3,17 @@ import { ImageOff } from '@civic/shell/icons'
 import { Skeleton } from '@civic/shell/ui/skeleton'
 import { projectFetch } from './project-request'
 
-export function fixtureURL(screen: string, source: string, viewport?: { width: number; height: number }) {
-  return `/api/review/fixture.png?${new URLSearchParams({ screen, source, ...(viewport ? { width: String(viewport.width), height: String(viewport.height) } : {}) })}`
+export function fixtureURL(screen: string, source: string, viewport?: { width: number; height: number }, pixelRatio = 1) {
+  return `/api/review/fixture.png?${new URLSearchParams({ screen, source, ...(viewport ? { width: String(viewport.width), height: String(viewport.height) } : {}), ...(pixelRatio === 2 ? { pixelRatio: '2' } : {}) })}`
+}
+
+function afterNavigation(element: HTMLElement, signal: AbortSignal, action: () => void) {
+  if (signal.aborted) return
+  const stage = element.closest('.rh-canvas')
+  const settle = () => { cleanup(); if (!signal.aborted) action() }
+  const cleanup = () => { stage?.removeEventListener('civic-camera-settled', settle); signal.removeEventListener('abort', cleanup) }
+  if (!stage?.classList.contains('is-navigating')) { action(); return }
+  stage.addEventListener('civic-camera-settled', settle, { once: true }); signal.addEventListener('abort', cleanup, { once: true })
 }
 
 /** Observe the transformed canvas, rather than relying on browser lazy-loading distance. */
@@ -18,11 +27,12 @@ export function FixturePicture({ src, alt, active = true, viewport }: { src: str
     setVisible(false); setFailed(false)
     if (!active) return
     const element = target.current!
+    const controller = new AbortController()
     const observer = new IntersectionObserver(([entry]) => {
-      setVisible(!!entry?.isIntersecting)
+      afterNavigation(element, controller.signal, () => setVisible(!!entry?.isIntersecting))
     }, { root: element.closest('.rh-canvas'), rootMargin: '80px' })
     observer.observe(element)
-    return () => observer.disconnect()
+    return () => { controller.abort(); observer.disconnect() }
   }, [active])
   useEffect(() => { setAttempt(0); setFailed(false) }, [src])
   useEffect(() => {
@@ -34,7 +44,7 @@ export function FixturePicture({ src, alt, active = true, viewport }: { src: str
         if (!response.ok) return
         const cached = new URL(src, location.origin); cached.searchParams.set('source', response.headers.get('x-review-source') ?? '')
         const blob = await response.blob()
-        if (!controller.signal.aborted) setPicture((prior) => prior ?? { source: cached.pathname + cached.search, url: URL.createObjectURL(blob) })
+        afterNavigation(target.current!, controller.signal, () => setPicture((prior) => prior ?? { source: cached.pathname + cached.search, url: URL.createObjectURL(blob) }))
       }).catch(() => {})
     }
     setFailed(false)
@@ -44,7 +54,7 @@ export function FixturePicture({ src, alt, active = true, viewport }: { src: str
       if (!response.ok) throw Error('Snapshot unavailable')
       return response.blob()
     }).then((blob) => {
-      if (!controller.signal.aborted) setPicture({ source: src, url: URL.createObjectURL(blob) })
+      afterNavigation(target.current!, controller.signal, () => setPicture({ source: src, url: URL.createObjectURL(blob) }))
     }).catch(() => { if (!controller.signal.aborted) { setFailed(true); retry = setTimeout(() => setAttempt((value) => value + 1), Math.min(30_000, 1000 * 2 ** Math.min(attempt, 5))) } })
     return () => { controller.abort(); clearTimeout(retry) }
   }, [src, active, visible, picture?.source, attempt])

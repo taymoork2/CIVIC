@@ -48,7 +48,7 @@ export function useCoverage(onIndex: (index: ReviewSnapshot & { scenarios: MapSc
             const changed = lastSource.current !== next.source
             if (lastSource.current && changed) notifications.add({ id: 'source-updated', title: 'Source updated', description: 'Refreshing snapshots. Your live draft is unchanged.', timeout: 4000, priority: 'low' })
             lastSource.current = next.source
-            setData(next); if (changed) callback.current(index); setError('')
+            setData(previous => JSON.stringify(previous) === JSON.stringify(next) ? previous : next); if (changed) callback.current(index); setError('')
           }
         }
       } catch (caught) { if (!controller.signal.aborted) setError(caught instanceof ReviewRequestError && caught.status === 409 ? 'The active project changed in another tab. Reload this tab; previous drafts are retained.' : (caught as Error).message) }

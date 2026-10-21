@@ -8,7 +8,7 @@ import { Textarea } from '@civic/shell/ui/textarea'
 import { useDesktopDraft } from './desktop-project-tabs'
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@civic/shell/ui/empty'
 import { MessageSquare } from '@civic/shell/icons'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useImperativeHandle, useRef, useState, type Ref } from 'react'
 import { feedbackText, type FeedbackKind } from './feedback-copy'
 import type { MapScreen } from './app-map'
 import type { ReviewConfig, ReviewSnapshot } from './adapter'
@@ -29,7 +29,7 @@ type ElementTarget = { label: string; selector: string; tag: string; anchor: Anc
 export type Feedback = {
   recording?: string
   id: string; kind: FeedbackKind; message: string; status: string; screenshot: string; reproduction: string; sourceStale?: boolean; target?: ReviewTarget
-  evidence?: { kind: 'live' | 'fixture' | 'map'; fixtureSource?: string; viewport?: { width: number; height: number } }
+  evidence?: { kind: 'live' | 'fixture' | 'map'; fixtureSource?: string; viewport?: { width: number; height: number }; pixelRatio?: 1 | 2 }
   context: ReviewConfig & { screen?: string; viewport: { width: number; height: number }; state: { dialogs: string[]; tabs: string[]; fields: { label: string; value: string }[] } }
   anchor: Anchor; revision: ReviewSnapshot['revision']; resolution?: { evidence: string }
   deliveries?: Delivery[]
@@ -38,7 +38,8 @@ export function feedbackOnScreen(comment: Feedback, screen: MapScreen) {
   if (comment.target && !['screen', 'region'].includes(comment.target.kind)) return false
   return comment.context.screen ? comment.context.screen === screen.id : comment.context.scenario === screen.scenario
 }
-type Capture = { requestId: string; recording?: string; context: Feedback['context']; anchor: Anchor; snapshot: ReviewSnapshot; html?: string; target: ReviewTarget; evidence: NonNullable<Feedback['evidence']> }
+type Capture = { requestId: string; capture?: string; recording?: string; context: Feedback['context']; anchor: Anchor; snapshot: ReviewSnapshot; html?: string; target: ReviewTarget; evidence: NonNullable<Feedback['evidence']> }
+export type ReviewPanelHandle = { capture: (target: ReviewTarget, frame: HTMLIFrameElement | null) => void }
 type NoteDraft = { message: string; kind: FeedbackKind; capture: Capture; elements?: ElementTarget[]; image?: string }
 const whole = { label: 'Whole target', x: 0, y: 0, width: 1, height: 1 }
 
@@ -72,7 +73,7 @@ function FrozenAnnotation({ draft, update, disabled }: { draft: NoteDraft; updat
   return <>
     <p className="rh-muted">Drag a rectangle, click a control, or select one below. This frozen evidence stays attached while you navigate.</p>
     <div ref={container} className="rh-annotation-preview" style={{ aspectRatio: `${viewport.width} / ${viewport.height}` }}>
-      {draft.image ? <img src={draft.image} alt="Frozen synthetic starting screen" /> : <iframe title="Frozen annotation evidence" sandbox="allow-same-origin" srcDoc={draft.capture.html} onLoad={(event) => { event.currentTarget.contentDocument?.querySelectorAll<HTMLElement>('[data-review-scroll]').forEach((element) => { element.scrollTop = Number(element.dataset.reviewScroll) }) }} style={{ width: viewport.width, height: viewport.height, transform: `scale(${width / viewport.width})` }} />}
+      {draft.image ? <img src={draft.image} alt="Saved screen evidence" /> : <iframe title="Frozen annotation evidence" sandbox="allow-same-origin" srcDoc={draft.capture.html} onLoad={(event) => { event.currentTarget.contentDocument?.querySelectorAll<HTMLElement>('[data-review-scroll]').forEach((element) => { element.scrollTop = Number(element.dataset.reviewScroll) }) }} style={{ width: viewport.width, height: viewport.height, transform: `scale(${width / viewport.width})` }} />}
       <div className="rh-annotation-surface" aria-label="Drag to highlight a region in the frozen evidence" onPointerDown={(event) => {
         if (disabled || event.button !== 0) return
         const rect = event.currentTarget.getBoundingClientRect()
@@ -104,10 +105,11 @@ function FrozenAnnotation({ draft, update, disabled }: { draft: NoteDraft; updat
   </>
 }
 
-export function ReviewPanel({ project, selected, flowScreens, allScreens, frame, target, canvas, fixture, focus, navigationReady }: {
+export function ReviewPanel({ project, selected, flowScreens, allScreens, frame, target, canvas, fixture, focus, navigationReady, ref }: {
   project: ProjectProfile
   selected: MapScreen | null; flowScreens: MapScreen[]; allScreens: MapScreen[]; frame: HTMLIFrameElement | null; target: ReviewTarget; canvas: HTMLElement | null
   fixture: { source: string; snapshot: ReviewSnapshot | null; viewport?: { width: number; height: number } }; focus: (target: ReviewTarget) => void; navigationReady: boolean
+  ref?: Ref<ReviewPanelHandle>
 }) {
   const noteKey = extension.draftKey ?? `rehearsal:${project.key}:review:draft:v1`
   const [loaded, setLoaded] = useState(false)
@@ -144,33 +146,33 @@ export function ReviewPanel({ project, selected, flowScreens, allScreens, frame,
     const target = linked && targetOf(linked)
     if (target && allScreens.length && navigationReady) { linkedReview.current = null; focus(target) }
   }, [comments, allScreens, navigationReady])
-  const begin = async () => {
-    if (pending) return
+  const begin = async (captureTarget = target, captureFrame = frame) => {
+    if (pending || draft) { setStatus('Finish or discard the current annotation before capturing another screen.'); return }
     setPending(true); setError(''); setStatus('')
     try {
-      const representative = allScreens.find((screen) => screen.id === target.screen) ?? selected ?? flowScreens[0] ?? allScreens[0]
+      const representative = allScreens.find((screen) => screen.id === captureTarget.screen) ?? selected ?? flowScreens[0] ?? allScreens[0]
       if (!representative) throw Error('Wait for the application inventory.')
       let snapshot: ReviewSnapshot, html: string | undefined, image: string | undefined, elements: ElementTarget[] = []
       let evidence: Capture['evidence'], config: ReviewConfig = { scenario: representative.scenario, persona: project.personas[0]!.id, role: project.roles[0]!.id, condition: project.conditions[0]!.id, theme: 'light', textScale: 1, width: 393 }
       let viewport = { width: 393, height: 852 }, state: Feedback['context']['state'] = { dialogs: [], tabs: [], fields: [] }
       let recording: string | undefined
-      if (['screen', 'region'].includes(target.kind) && frame) {
-        const doc = frame.contentDocument, bridge = frame.contentWindow?.reviewPreview
+      if (['screen', 'region'].includes(captureTarget.kind) && captureFrame) {
+        const doc = captureFrame.contentDocument, bridge = captureFrame.contentWindow?.reviewPreview
         if (!doc || !bridge || !doc.querySelector('[role="dialog"],h1')) throw Error('The live screen is still loading. Wait and retry.')
-        const runtime = frame.contentWindow?.reviewPreview?.state?.() ?? frame.contentWindow?.guidedJourney?.state()
+        const runtime = captureFrame.contentWindow?.reviewPreview?.state?.() ?? captureFrame.contentWindow?.guidedJourney?.state()
         if (bridge.recording && runtime?.screen !== representative.scenario) throw Error('The application reached another or unmapped screen. Focus its current screen before capturing a review.')
         snapshot = bridge.snapshot; html = captureScreen(doc); evidence = { kind: 'live' }
         config = { ...bridge.config, condition: bridge.recording ? bridge.config.condition : doc.documentElement.dataset.reviewCondition as ReviewConfig['condition'] ?? bridge.config.condition }
-        viewport = { width: frame.clientWidth, height: frame.clientHeight }
+        viewport = { width: captureFrame.clientWidth, height: captureFrame.clientHeight }
         state = { dialogs: [runtime?.title ?? representative.label], tabs: [...doc.querySelectorAll('[role=tab][aria-selected=true]')].map((element) => element.textContent?.trim() || 'Tab'), fields: runtime?.fields ?? readFixtureFields(doc) }
         elements = elementTargets(doc, viewport.width, viewport.height)
         if (bridge.recording) recording = (await reviewApi<{ id: string }>('runs', await bridge.recording())).id
-      } else if (['screen', 'region'].includes(target.kind)) {
+      } else if (['screen', 'region'].includes(captureTarget.kind)) {
         if (!fixture.source || !fixture.snapshot) throw Error('The starting screen snapshot is still preparing. Play the screen or wait and retry.')
         viewport = fixture.viewport ?? viewport
         config = { ...config, width: viewport.width, height: viewport.height }
-        snapshot = fixture.snapshot; evidence = { kind: 'fixture', fixtureSource: fixture.source, ...(fixture.viewport ? { viewport } : {}) }
-        image = fixtureURL(representative.id, fixture.source, fixture.viewport)
+        snapshot = fixture.snapshot; evidence = { kind: 'fixture', fixtureSource: fixture.source, viewport, pixelRatio: 2 }
+        image = fixtureURL(representative.id, fixture.source, viewport, 2)
         const response = await projectFetch(image)
         if (!response.ok) throw Error('The starting screen snapshot is unavailable. Play this screen to capture it.')
       } else {
@@ -178,11 +180,18 @@ export function ReviewPanel({ project, selected, flowScreens, allScreens, frame,
         snapshot = await reviewApi<ReviewSnapshot>('index'); html = captureScreen(document, canvas); evidence = { kind: 'map' }
         viewport = { width: Math.max(200, Math.min(1920, canvas.clientWidth)), height: Math.max(200, Math.min(1600, canvas.clientHeight)) }
       }
-      const capture: Capture = { requestId: crypto.randomUUID(), ...(recording ? { recording } : {}), ...(html ? { html } : {}), snapshot, target, evidence, anchor: whole, context: { ...config, scenario: representative.scenario, ...(target.screen ? { screen: target.screen } : {}), viewport, state } }
+      const capture: Capture = { requestId: crypto.randomUUID(), ...(recording ? { recording } : {}), ...(html ? { html } : {}), snapshot, target: captureTarget, evidence, anchor: whole, context: { ...config, scenario: representative.scenario, ...(captureTarget.screen ? { screen: captureTarget.screen } : {}), viewport, state } }
+      if (['screen', 'region'].includes(captureTarget.kind)) {
+        const saved = await reviewApi<{ id: string; screenshot: string }>('capture', { ...capture, kind: 'other', message: `Screenshot of ${representative.label}` })
+        capture.capture = saved.id; capture.requestId = crypto.randomUUID(); delete capture.html
+        image = saved.screenshot
+        setStatus('Screenshot saved at 2× resolution. Download it or add a comment below.')
+      }
       setDraft({ message: '', kind: 'confusing', capture, elements, image }); setOpened(null)
     } catch (caught) { setError((caught as Error).message) }
     finally { setPending(false) }
   }
+  useImperativeHandle(ref, () => ({ capture: begin }))
   const updateAnchor = (anchor: Anchor, element?: ElementTarget) => {
     if (!draft) return
     if (!draft.capture.target) { setDraft({ ...draft, capture: { ...draft.capture, anchor } }); return }
@@ -214,10 +223,10 @@ export function ReviewPanel({ project, selected, flowScreens, allScreens, frame,
     <div className="rh-review-filters"><Field><FieldLabel className="cv:grid cv:w-full cv:gap-2">Show reviews<NativeSelect className="cv:w-full" value={scope} onChange={(e) => setScope(e.target.value)}><option value="selection">Selected target</option><option value="flow">Selected flow</option><option value="all">All reviews</option></NativeSelect></FieldLabel></Field><Field><FieldLabel className="cv:grid cv:w-full cv:gap-2">Status<NativeSelect className="cv:w-full" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}><option value="all">All statuses</option><option value="open">Open</option><option value="resolved">Resolved</option></NativeSelect></FieldLabel></Field></div>
     <Button variant="outline" onClick={() => void refresh().catch((error) => setError(error.message))}>Refresh reviews</Button>
     {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}<p role="status">{status}</p>
-    {draft ? <form onSubmit={(event) => { event.preventDefault(); void submit() }}><FieldGroup><h3>New review</h3><p className="rh-muted">Frozen {draft.capture.target?.label ?? draft.capture.context.screen} · {draft.capture.evidence?.kind ?? 'live'} evidence · source {draft.capture.snapshot.revision.source.slice(0, 12)}.</p>{draft.capture.evidence?.kind === 'fixture' && <p className="rh-muted">Synthetic starting state. Inputs from an earlier run are not included; play a screen to capture its current inputs.</p>}<FrozenAnnotation draft={draft} update={updateAnchor} disabled={pending} /><Field><FieldLabel className="cv:grid cv:w-full cv:gap-2">Kind<NativeSelect className="cv:w-full" value={draft.kind} disabled={pending} onChange={(e) => setDraft({ ...draft, kind: e.target.value as FeedbackKind })}>{Object.entries(feedbackText.kinds).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</NativeSelect></FieldLabel></Field><Field><FieldLabel className="cv:grid cv:w-full cv:gap-2">What should change?<Textarea maxLength={4000} value={draft.message} disabled={pending} onChange={(e) => setDraft({ ...draft, message: e.target.value })} /></FieldLabel></Field><Button variant="default" type="submit"  disabled={pending || !draft.message.trim() || !draft.capture.anchor.label.trim()}>{pending ? 'Capturing and saving…' : 'Save review'}</Button><Button variant="outline" type="button" disabled={pending} onClick={() => setDiscard(true)}>Discard review…</Button>{discard && <Alert><AlertDescription>Discard this unsent review and its capture?</AlertDescription><Button variant="outline" type="button" onClick={() => { setDiscard(false); setDraft(null) }}>Discard review</Button><Button variant="outline" type="button" onClick={() => setDiscard(false)}>Keep writing</Button></Alert>}</FieldGroup></form> : <><Button variant="default" onClick={() => void begin()} disabled={pending}>{pending ? 'Freezing evidence…' : 'Comment on selection'}</Button><p className="rh-muted">Select a flow, screen, or arrow. Use App in the breadcrumb to comment on the entire journey.</p></>}
+    {draft ? <form onSubmit={(event) => { event.preventDefault(); void submit() }}><FieldGroup><h3>Screenshot & comment</h3>{draft.image && <Button variant="outline" render={<a aria-label="Download PNG" href={draft.image} download={`${draft.capture.context.screen ?? 'screen'}.png`} />}>Download PNG</Button>}<p className="rh-muted">Frozen {draft.capture.target?.label ?? draft.capture.context.screen} · {draft.capture.evidence?.kind ?? 'live'} evidence · source {draft.capture.snapshot.revision.source.slice(0, 12)}.</p>{draft.capture.evidence?.kind === 'fixture' && <p className="rh-muted">Synthetic starting state. Inputs from an earlier run are not included; play a screen to capture its current inputs.</p>}<FrozenAnnotation draft={draft} update={updateAnchor} disabled={pending} /><Field><FieldLabel className="cv:grid cv:w-full cv:gap-2">Kind<NativeSelect className="cv:w-full" value={draft.kind} disabled={pending} onChange={(e) => setDraft({ ...draft, kind: e.target.value as FeedbackKind })}>{Object.entries(feedbackText.kinds).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</NativeSelect></FieldLabel></Field><Field><FieldLabel className="cv:grid cv:w-full cv:gap-2">What should change?<Textarea maxLength={4000} value={draft.message} disabled={pending} onChange={(e) => setDraft({ ...draft, message: e.target.value })} /></FieldLabel></Field><Button variant="default" type="submit"  disabled={pending || !draft.message.trim() || !draft.capture.anchor.label.trim()}>{pending ? 'Capturing and saving…' : 'Save review'}</Button><Button variant="outline" type="button" disabled={pending} onClick={() => setDiscard(true)}>Discard review…</Button>{discard && <Alert><AlertDescription>Discard this unsent comment? The saved screenshot remains available.</AlertDescription><Button variant="outline" type="button" onClick={() => { setDiscard(false); setDraft(null) }}>Discard review</Button><Button variant="outline" type="button" onClick={() => setDiscard(false)}>Keep writing</Button></Alert>}</FieldGroup></form> : <><Button variant="default" onClick={() => void begin()} disabled={pending}>{pending ? 'Freezing evidence…' : 'Comment on selection'}</Button><p className="rh-muted">Select a flow, screen, or arrow. Use App in the breadcrumb to comment on the entire journey.</p></>}
     <ul className="rh-review-list">{filtered.map((comment) => <li key={comment.id}><Button variant="ghost" className="cv:h-auto cv:w-full cv:block cv:text-left cv:whitespace-normal" aria-pressed={opened === comment.id} onClick={() => choose(comment)}><strong>{comment.message}</strong><small>{comment.status === 'resolved' ? 'Resolved' : 'Open'} · {comment.target?.label ?? comment.context.screen ?? comment.context.scenario}</small></Button></li>)}</ul>
     {!loaded && !error && <p role="status">Loading reviews…</p>}{loaded && !filtered.length && !error && <Empty role="status"><EmptyHeader><EmptyMedia variant="icon"><MessageSquare aria-hidden="true" /></EmptyMedia><EmptyTitle>No reviews for this selection</EmptyTitle><EmptyDescription>Select a screen or path, then use Comment on selection to save feedback with evidence.</EmptyDescription></EmptyHeader></Empty>}
-    {current && <section className="rh-review-evidence"><div className="rh-inspector-title"><h3>Captured review</h3><Button variant="outline" onClick={() => setOpened(null)}>Close review</Button></div><p>{current.message}</p><p className="rh-muted">{current.target?.label ?? current.context.screen ?? current.context.scenario} · {current.status === 'resolved' ? 'Resolved' : 'Open'} · source {current.revision.source.slice(0, 12)}</p>{current.sourceStale && <Alert variant="destructive"><AlertDescription>Source changed since this capture. An agent must check the current implementation.</AlertDescription></Alert>}<div className="rh-review-image"><img src={current.screenshot} alt={`Frozen evidence: ${current.anchor.label}`} /><div className="rh-annotation-box" style={{ left: `${current.anchor.x * 100}%`, top: `${current.anchor.y * 100}%`, width: `${current.anchor.width * 100}%`, height: `${current.anchor.height * 100}%` }} /></div><Button variant="outline" disabled={!targetOf(current)} onClick={() => { const target = targetOf(current); if (target) focus(target) }}>Focus target on canvas</Button><p className="rh-muted">Focus preserves your run. The screenshot is historical evidence.</p>{current.recording && <p><a href={`/api/review/runs/${current.recording}`} download>Download recorded run</a> · <a href={`/review-frame.html?recording=${current.recording}`} target="_blank" rel="noreferrer">Replay in a new preview</a></p>}<Disclosure title={<>Captured inputs ({current.context.state.fields.length})</>}><dl className="rh-fields">{current.context.state.fields.map((field, i) => <div key={i}><dt>{field.label}</dt><dd>{field.value || '(empty)'}</dd></div>)}</dl></Disclosure><a href={`/api/review/feedback/${current.id}/handoff`} download>Download agent brief</a><Button variant="outline" onClick={() => {
+    {current && <section className="rh-review-evidence"><div className="rh-inspector-title"><h3>Captured review</h3><Button variant="outline" onClick={() => setOpened(null)}>Close review</Button></div><p>{current.message}</p><p className="rh-muted">{current.target?.label ?? current.context.screen ?? current.context.scenario} · {current.status === 'resolved' ? 'Resolved' : 'Open'} · source {current.revision.source.slice(0, 12)}</p>{current.sourceStale && <Alert variant="destructive"><AlertDescription>Source changed since this capture. An agent must check the current implementation.</AlertDescription></Alert>}<div className="rh-review-image"><img src={current.screenshot} alt={`Frozen evidence: ${current.anchor.label}`} /><div className="rh-annotation-box" style={{ left: `${current.anchor.x * 100}%`, top: `${current.anchor.y * 100}%`, width: `${current.anchor.width * 100}%`, height: `${current.anchor.height * 100}%` }} /></div><Button variant="outline" render={<a aria-label="Download PNG" href={current.screenshot} download={`${current.context.screen ?? 'screen'}.png`} />}>Download PNG</Button><Button variant="outline" disabled={!targetOf(current)} onClick={() => { const target = targetOf(current); if (target) focus(target) }}>Focus target on canvas</Button><p className="rh-muted">Focus preserves your run. The screenshot is historical evidence.</p>{current.recording && <p><a href={`/api/review/runs/${current.recording}`} download>Download recorded run</a> · <a href={`/review-frame.html?recording=${current.recording}`} target="_blank" rel="noreferrer">Replay in a new preview</a></p>}<Disclosure title={<>Captured inputs ({current.context.state.fields.length})</>}><dl className="rh-fields">{current.context.state.fields.map((field, i) => <div key={i}><dt>{field.label}</dt><dd>{field.value || '(empty)'}</dd></div>)}</dl></Disclosure><a href={`/api/review/feedback/${current.id}/handoff`} download>Download agent brief</a><Button variant="outline" onClick={() => {
       void projectFetch(`/api/review/feedback/${current.id}/handoff`).then(async (response) => { if (!response.ok) throw Error('The agent brief could not be loaded.'); await navigator.clipboard.writeText(await response.text()); setStatus('Agent brief copied. Give it to the agent working on this correction.') }).catch((error) => setError(error.message))
     }}>Copy agent brief</Button><AgentDelivery key={current.id} review={current} saved={(saved) => setComments((rows) => rows.map((row) => row.id === saved.id ? saved : row))} />{current.resolution ? <p>Resolution evidence: {current.resolution.evidence}</p> : <form onSubmit={(event) => { event.preventDefault(); setPending(true); setError(''); void reviewApi<Feedback>(`feedback/${current.id}/resolve`, { evidence: resolution.trim() }).then((saved) => { setComments((rows) => rows.map((row) => row.id === saved.id ? saved : row)); setResolution(''); setStatus('Review resolved with evidence.') }).catch((error) => setError(error.message)).finally(() => setPending(false)) }}><FieldGroup><Field><FieldLabel className="cv:grid cv:w-full cv:gap-2">Resolution evidence<Input value={resolution} maxLength={2000} disabled={pending} onChange={(e) => setResolution(e.target.value)} placeholder="Passing check or correction receipt" /></FieldLabel></Field><Button variant="outline" type="submit" disabled={pending || !resolution.trim()}>Resolve with evidence</Button></FieldGroup></form>}</section>}
     <a href="/api/review/feedback" target="_blank" rel="noreferrer">Agent-readable feedback</a>

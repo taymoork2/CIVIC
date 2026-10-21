@@ -36,8 +36,8 @@ async function workspace(t, standalone = false, { prepare, template = 'notebook'
 
 async function draft(tab) {
   await tab.locator('.app-nav-section button', { hasText: 'Write a note' }).click()
-  await tab.locator('.app-screen > button', { hasText: 'Notebook home' }).click()
-  await tab.getByRole('button', { name: 'Play this screen' }).click()
+  await tab.locator('.app-screen-heading > button:first-child', { hasText: 'Notebook home' }).click()
+  await tab.getByRole('button', { name: /^Play \d\d / }).click()
   const live = tab.locator('iframe[title="Live Notebook home"]')
   const frame = tab.frameLocator('iframe[title="Live Notebook home"]')
   await frame.locator('[data-rehearsal-ready="true"]').waitFor({ state: 'attached' })
@@ -196,8 +196,8 @@ test('failed startup can retry while configured versions remain distinct from mo
     await cp(join(app, 'src/preview.js'), join(app, 'src/original-preview.js'))
     await writeFile(join(app, 'src/preview.js'), `import { mount as original } from './original-preview.js'; export function mount(root, context) { if (!sessionStorage.getItem('civic-retry-fixture')) { sessionStorage.setItem('civic-retry-fixture', '1'); throw Error('Fixture boot failed') } return original(root, context) }`)
   } })
-  await tab.locator('.app-screen > button', { hasText: 'Notebook home' }).click()
-  await tab.getByRole('button', { name: 'Play this screen' }).click()
+  await tab.locator('.app-screen-heading > button:first-child', { hasText: 'Notebook home' }).click()
+  await tab.getByRole('button', { name: /^Play \d\d / }).click()
   const frame = tab.frameLocator('iframe[title="Live Notebook home"]')
   await frame.getByRole('alert').filter({ hasText: 'Fixture boot failed' }).waitFor()
   await tab.getByRole('button', { name: 'Retry preview', exact: true }).waitFor()
@@ -215,8 +215,8 @@ test('failed startup can retry while configured versions remain distinct from mo
 test('a callable replay or resize method does not override an explicit unsupported capability', { timeout: 90000 }, async t => {
   const { tab } = await workspace(t, false, { template: 'team-board', capabilities: { resize: false, record: true, replay: false, reason: 'Fixture protocol does not support resize or replay.' } })
   await tab.locator('.app-nav-section button', { hasText: 'Use the board' }).click()
-  await tab.locator('.app-screen > button', { hasText: 'Team board' }).click()
-  await tab.getByRole('button', { name: 'Play this screen' }).click()
+  await tab.locator('.app-screen-heading > button:first-child', { hasText: 'Team board' }).click()
+  await tab.getByRole('button', { name: /^Play \d\d / }).click()
   const frame = tab.frameLocator('iframe[title="Live Team board"]')
   await frame.getByText('Signed in as Alex Rivera').waitFor()
   await frame.getByLabel('Message', { exact: true }).fill('Capability check')
@@ -286,8 +286,8 @@ test('returning from mount without a ready screen stays unchecked until the adap
   const { tab } = await workspace(t, false, { capabilities: {}, prepare: async app => {
     await writeFile(join(app, 'src/preview.js'), `export function mount(root, context) { root.textContent = 'Waiting for adapter readiness'; window.fixturePublish = () => context.publish({ screen: context.scenario.id }); return () => delete window.fixturePublish }`)
   } })
-  await tab.locator('.app-screen > button', { hasText: 'Notebook home' }).click()
-  await tab.getByRole('button', { name: 'Play this screen' }).click()
+  await tab.locator('.app-screen-heading > button:first-child', { hasText: 'Notebook home' }).click()
+  await tab.getByRole('button', { name: /^Play \d\d / }).click()
   const live = tab.locator('iframe[title="Live Notebook home"]')
   await tab.frameLocator('iframe[title="Live Notebook home"]').getByText('Waiting for adapter readiness').waitFor()
   await tab.waitForFunction(() => document.querySelector('iframe[title="Live Notebook home"]').contentWindow.reviewPreview?.readiness?.state === 'unchecked')

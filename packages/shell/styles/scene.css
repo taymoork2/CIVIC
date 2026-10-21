@@ -2,35 +2,45 @@
 .rehearsal[hidden], .rehearsal ~ div[hidden] { display: none; }
 .app-camera-layer { position: absolute; inset: 0; }
 .app-scene { position: absolute; left: 0; top: 0; transform-origin: top left; }
-.app-flow { position: absolute; background: var(--civic-background); border: 2px solid var(--civic-border); border-radius: 10px; padding: 28px 36px; }
+.rh-canvas.is-navigating :is(button, iframe, .rh-path-hit) { pointer-events: none; }
+.rh-canvas.is-navigating .rh-path-hit { display: none; }
+.app-flow { position: absolute; contain: layout paint; transform: translateZ(0); background: var(--civic-background); border: 2px solid var(--civic-border); border-radius: 10px; padding: 28px 36px; }
 .app-flow.is-focused { border-color: var(--civic-primary); }
 .app-flow > header { display: flex; align-items: center; gap: 20px; margin-bottom: 34px; min-height: 70px; max-width: 1660px; }
 .app-flow h2 { font-size: 30px; }
 .app-flow header p { color: var(--civic-muted); font-size: 16px; }
 .app-flow header button:first-of-type { margin-left: auto; }
-.app-screen-grid { position: relative; }
-.app-flow-edges, .app-cross-flow-edges, .app-overview-edges { pointer-events: none; overflow: visible; }
-.app-flow-edges { position: absolute; left: 36px; top: 132px; z-index: 1; }
-.app-cross-flow-edges { position: absolute; inset: 0; }
-.app-screen { position: absolute; width: 271px; height: 665px; }
-.app-screen > button { width: 100%; min-height: 72px; margin-bottom: 12px; }
+.app-screen-grid { position: absolute; left: 36px; top: 132px; }
+.app-flow-edges, .app-connection-edges, .app-overview-edges { pointer-events: none; overflow: visible; }
+.rh-selectable-path { pointer-events: none; }
+.rh-selectable-path .rh-path-hit { pointer-events: stroke; }
+.civic-connection-label { opacity: 0; pointer-events: none; paint-order: stroke; stroke: var(--civic-background); stroke-width: 6px; stroke-linejoin: round; }
+.rh-selectable-path:is(:hover,:focus-within,.is-selected) > .civic-connection-label { opacity: 1; }
+.rh-selectable-path:is(:hover,:focus-within,.is-selected) > path:not(.rh-path-hit) { opacity: 1; }
+.app-connection-edges { position: absolute; inset: 0; width: 100%; height: 100%; overflow: hidden; }
+.app-screen { position: absolute; width: var(--screen-width, 271px); height: calc(var(--screen-preview-height, 588px) + 84px); }
+.app-screen-heading { display: flex; align-items: start; gap: 8px; height: 72px; margin-bottom: 12px; }
+.app-screen-heading > button:first-child { flex: 1; min-width: 0; height: 72px; justify-content: start; padding: 0; white-space: normal; text-align: left; }
+.app-screen-heading > button:first-child > span { display: block; width: 100%; }
+.app-screen .app-screen-heading strong { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.app-screen .app-screen-heading small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; line-height: 16px; margin-top: 4px; }
+.app-screen-heading > button:not(:first-child) { flex: none; }
 .app-screen strong { display: block; font-size: 20px; line-height: 1.3; }
 .app-screen small { color: var(--civic-muted); display: block; font-size: 15px; margin-top: 6px; }
-.app-screen .app-screen-picture { min-height: 0; display: block; width: var(--screen-width, 271px); padding: 0; border: 1px solid var(--civic-border); border-radius: 10px; overflow: hidden; }
+.app-screen .app-screen-picture { min-height: 0; display: block; width: var(--screen-width, 271px); height: var(--screen-preview-height, 588px); padding: 0; border: 0; outline: 1px solid var(--civic-border); border-radius: 10px; overflow: hidden; }
 .app-screen-picture img { width: 100%; height: 100%; object-fit: contain; display: block; background: var(--civic-surface); }
-.rh-fixture-picture { display: block; width: var(--screen-width, 271px); height: var(--screen-preview-height, 588px); overflow: hidden; background: var(--civic-background); }
+.rh-fixture-picture { display: block; width: 100%; height: 100%; overflow: hidden; background: var(--civic-background); }
 .rh-fixture-picture { position: relative; }
 .rh-fixture-picture > .rh-snapshot-state { position: absolute; inset: auto 0 0; height: auto; padding: 4px; background: color-mix(in srgb, var(--civic-surface) 92%, transparent); font-size: 10px; }
 .rh-fixture-picture > span { display: grid; height: 100%; place-content: center; padding: 12px; color: var(--civic-muted); font-size: 12px; }
-.app-live-screen { position: relative; width: var(--screen-width, 271px); height: var(--screen-preview-height, 588px); border: 2px solid var(--civic-positive); border-radius: 10px; overflow: hidden; background: var(--civic-surface); }
+.app-live-screen { position: relative; width: var(--screen-width, 271px); height: var(--screen-preview-height, 588px); border: 0; outline: 2px solid var(--civic-positive); border-radius: 10px; overflow: hidden; background: var(--civic-surface); }
 .app-live-screen iframe { width: 393px; height: 852px; border: 0; transform: scale(.69); transform-origin: top left; }
 .app-screen-placeholder { width: var(--screen-width, 271px); height: var(--screen-preview-height, 588px); display: grid; place-items: center; text-align: center; padding: 20px; color: var(--civic-muted); background: var(--civic-surface); font-size: 16px; border-radius: 10px; }
-.app-screen.is-viewed .app-screen-picture { border: 2px solid var(--civic-primary); }
-.app-screen > .app-play-screen { min-height: 44px; }
+.app-screen.is-viewed .app-screen-picture { outline: 2px solid var(--civic-primary); }
 .app-detail-scene[hidden] { display: none; }
 .app-overview { position: absolute; inset: 0; }
 .app-overview-edges { position: absolute; inset: 0; width: 100%; height: 100%; }
-.app-overview-flow { position: absolute; }
+.app-overview-flow { position: absolute; transform: translateZ(0); }
 .app-overview-area { position: absolute; top: -34px; left: 0; font-size: 20px; color: var(--civic-muted); }
 .app-overview-flow > button { width: 100%; height: 100%; overflow: hidden; }
 .app-overview-flow.is-focused > button { border-color: var(--civic-primary); }

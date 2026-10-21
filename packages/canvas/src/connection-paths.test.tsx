@@ -36,6 +36,10 @@ test('the shared renderer draws one trunk and label while retaining each selecta
   const panning = renderToStaticMarkup(<svg><ConnectionPaths edges={edges} markerId="test-arrow" disabled select={() => {}} selectBundle={() => {}} /></svg>)
   expect(panning.match(/tabindex="-1"/g)).toHaveLength(3)
   expect(panning.match(/data-path-id=/g)).toHaveLength(3)
+  edges[0]!.bundle!.label = 'Home → Details'
+  const overview = renderToStaticMarkup(<svg><ConnectionPaths edges={edges} markerId="overview" disabled={false} select={() => {}} selectBundle={() => {}} /></svg>)
+  expect(overview).toContain('>2 paths</text>')
+  expect(overview).toContain('aria-label="Review path: Home → Details · 2 paths"')
 })
 
 test('bus branches round into the shared line without leaving a square corner or a dead stub', () => {

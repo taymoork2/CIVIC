@@ -15,20 +15,22 @@ export function ConnectionPaths({ edges, markerId, disabled, selectedPath, selec
   edges: RoutedConnection[]; markerId: string; disabled: boolean; selectedPath?: string; selectedBundle?: string | null
   observed?: (edge: RoutedConnection) => boolean; select: (edge: RoutedConnection) => void; selectBundle: (bundle: ConnectionBundle) => void
 }) {
-  const paint = (edge: RoutedConnection, recorded = observed(edge)) => { const style = connectionStyle(edge); return { fill: 'none', stroke: style.stroke, strokeDasharray: style.strokeDasharray, strokeWidth: recorded ? 3 : 1.5, vectorEffect: 'non-scaling-stroke' } }
+  const paint = (edge: RoutedConnection, recorded = observed(edge)) => { const style = connectionStyle(edge); return { fill: 'none', stroke: style.stroke, strokeDasharray: style.strokeDasharray, strokeWidth: recorded ? 3 : 1.5, opacity: recorded ? 1 : style.interaction === 'return' ? .65 : .9, strokeLinecap: 'round' as const, strokeLinejoin: 'round' as const, vectorEffect: 'non-scaling-stroke' } }
   const marker = (edge: RoutedConnection) => `url(#${markerId}-${interactionOf(edge)})`
   return <>
     <defs>{(['navigate', 'update', 'return'] as const).map(interaction => <ConnectionMarker key={interaction} id={`${markerId}-${interaction}`} interaction={interaction} />)}</defs>
     {connectionBundles(edges).map(group => {
       const edge = group.members[0]!, bundle = edge.bundle!, style = paint(edge, group.members.every(observed))
-      return <SelectablePath key={group.id} id={`bundle:${group.id}`} action={`${group.action} · ${group.members.length} paths`} description={connectionDescription(edge)} d={`${bundle.d} ${bundle.arrowD}`} disabled={disabled} selected={selectedBundle === group.id} select={() => selectBundle(group)}>
+      const description = new Set(group.members.map(member => member.when)).size > 1 ? `${connectionStyle(edge).label} · Multiple conditions; select a path for details` : connectionDescription(edge)
+      const count = `${group.members.length} ${group.members.length === 1 ? 'path' : 'paths'}`
+      return <SelectablePath key={group.id} id={`bundle:${group.id}`} action={`${group.action} · ${count}`} description={description} d={`${bundle.d} ${bundle.arrowD}`} disabled={disabled} selected={selectedBundle === group.id} select={() => selectBundle(group)}>
         <path d={bundle.d} {...style} />{bundle.arrowD && <path d={bundle.arrowD} {...style} markerEnd={marker(edge)} />}
-        <text x={bundle.x} y={bundle.y} textAnchor="middle" fontSize="18" fill="var(--civic-muted, #526880)">{group.action} · {group.members.length} paths</text>
+        <text className="civic-connection-label" x={bundle.x} y={bundle.y} textAnchor="middle" fontSize="18" fill="var(--civic-foreground)">{bundle.label ? count : `${group.action} · ${count}`}</text>
       </SelectablePath>
     })}
-    {edges.map(edge => <SelectablePath key={edge.id} id={edge.id} action={edge.action} description={`${connectionDescription(edge)}${observed(edge) ? ' · Captured visit' : ''}`} d={edge.d} hitD={edge.branchD} disabled={disabled} selected={selectedPath === edge.id} select={() => select(edge)}>
+    {edges.filter(edge => edge.branchD !== '').map(edge => <SelectablePath key={edge.id} id={edge.id} action={edge.action} description={`${connectionDescription(edge)}${observed(edge) ? ' · Captured visit' : ''}`} d={edge.d} hitD={edge.branchD} disabled={disabled} selected={selectedPath === edge.id} select={() => select(edge)}>
       <path d={edge.branchD ?? edge.d} {...paint(edge)} markerEnd={edge.branchArrow ? marker(edge) : undefined} />
-      {!edge.bundle && <text x={edge.x} y={edge.y} textAnchor="middle" fontSize="18" fill="var(--civic-muted, #526880)">{edge.action}</text>}
+      {!edge.bundle && <text className="civic-connection-label" x={edge.x} y={edge.y} textAnchor="middle" fontSize="18" fill="var(--civic-foreground)">{edge.action}</text>}
     </SelectablePath>)}
   </>
 }

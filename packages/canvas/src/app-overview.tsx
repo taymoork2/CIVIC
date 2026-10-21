@@ -3,17 +3,29 @@ import { crossFlowConnections, type AppFlow } from './app-map'
 import { connectionBundles, routeConnections, type Connection, type ConnectionBundle, type RoutedConnection } from './connection-routing'
 import { ConnectionPaths } from './connection-paths'
 import { FixturePicture, fixtureURL } from './fixture-picture'
+import { interactionOf } from './connection-semantics'
 
 export function overviewConnections(flows: AppFlow[]) {
-  const raw = crossFlowConnections(flows).map<Connection>(edge => {
+  const groups = new Map<string, { from: AppFlow; to: AppFlow; members: Connection[] }>()
+  for (const edge of crossFlowConnections(flows)) {
     const from = flows.find(flow => flow.screens.some(screen => screen.id === edge.from))!, to = flows.find(flow => flow.screens.some(screen => screen.id === edge.to))!
+    const id = `overview:${JSON.stringify([from.id, to.id, interactionOf(edge), Boolean(edge.when)])}`
+    const group = groups.get(id) ?? { from, to, members: [] }
+    group.members.push(edge); groups.set(id, group)
+  }
+  const raw = [...groups].map<Connection>(([id, { from, to, members }]) => {
     const vertical = from.x === to.x, forward = vertical ? to.y > from.y : to.x > from.x
-    return { ...edge,
+    return { ...members[0]!, id, from: from.id, to: to.id, action: id, returning: false, branch: false,
       source: { box: from, node: from.id, side: vertical ? forward ? 'bottom' : 'top' : forward ? 'right' : 'left' },
       target: { box: to, node: to.id, side: vertical ? forward ? 'top' : 'bottom' : forward ? 'left' : 'right' },
     }
   })
-  return routeConnections(raw, flows)
+  return routeConnections(raw, flows).flatMap(route => {
+    const { from, to, members } = groups.get(route.id)!
+    const bundle = { id: route.id, label: `${from.label} → ${to.label}`, d: '', arrowD: route.d, x: route.x, y: route.y }
+    // Journey-scale geometry is shared; review selection keeps every original screen path.
+    return members.map(edge => ({ ...route, ...edge, bundle, branchD: '', branchArrow: false }))
+  })
 }
 
 export function AppOverview({ flows, connections, source, active, focused, pan, focus, reviewConnection, selectBundle, selectedBundle }: {

@@ -1,9 +1,20 @@
 import { expect, test } from 'vitest'
 import { overviewConnections } from './app-overview'
 import type { AppFlow } from './app-map'
-import { appFlows, flowEdges, crossFlowEdges, overviewFlows, screenSize, screenAtCenter } from './app-map'
+import { appFlows, flowEdges, crossFlowEdges, overviewFlows, screenSize, screenAtCenter, flowContent } from './app-map'
 import { connectionStyle, interactionOf } from './connection-semantics'
 import { connectionBounds, connectionBundles } from './connection-routing'
+
+test('screen arrows meet the preview surface rather than the title or unused card padding', () => {
+  const [flow] = appFlows(['a', 'b'].map(id => ({ id, label: id, journey: 'Screens', renderer: 'adapter', section: 'Web', edges: [{ action: id === 'a' ? 'Next' : 'Back', destination: id === 'a' ? 'b' : 'a' }] })), { adapter: 'module', navigation: ['Web'] })
+  const edges = flowEdges(flow!)
+  expect(edges).toHaveLength(2)
+  const forward = edges.find(edge => edge.from === 'a')!
+  expect(forward.points[0]!.y).toBe(84 + 588 / 2)
+  const back = edges.find(edge => edge.from === 'b')!
+  expect(back.points[0]!.y).toBe(84 + 588)
+  expect(back.points.at(-1)!.y).toBe(84 + 588)
+})
 
 test('shared navigation combines only matching actions, destinations and conditions and keeps every source', () => {
   const [journey] = appFlows(['a', 'b', 'c', 'd'].map(id => ({ id, label: id, journey: 'Nav', renderer: 'adapter', section: 'Web', edges: id === 'd' ? [] : [{ action: 'Settings', destination: id === 'c' ? 'b' : 'd' }] })), { adapter: 'module', navigation: ['Web'] })
@@ -49,10 +60,10 @@ test('desktop screens retain their landscape geometry and do not overlap adjacen
   const scenarios = ['a', 'b'].map(id => ({ id, label: id, journey: 'Desktop', renderer: 'adapter', section: 'Web', viewport: { width: 1440, height: 900 }, edges: [] }))
   const [desktop] = appFlows(scenarios, { adapter: 'module', navigation: ['Web'] })
   const first = desktop!.screens[0]!, next = desktop!.screens[1]!
-  expect(screenSize(first)).toEqual({ width: 800, height: 649, previewHeight: 500 })
+  expect(screenSize(first)).toEqual({ width: 800, height: 584, previewHeight: 500 })
   expect(next.x!).toBeGreaterThan(first.x! + screenSize(first).width)
   expect(screenAtCenter(desktop!, desktop!.x + 36 + first.x! + 700, desktop!.y + 132 + first.y! + 200)?.id).toBe('a')
-  expect(screenSize({})).toEqual({ width: 271, height: 737, previewHeight: 588 })
+  expect(screenSize({})).toEqual({ width: 271, height: 672, previewHeight: 588 })
 })
 
 test('dense navigation keeps every declared path and fits its return gutters inside the flow', () => {
@@ -182,6 +193,24 @@ test('overview shares outgoing anchors while keeping opposing arrows distinct', 
   }
 })
 
+test('overview summarizes journey pairs without dropping actions, conditions or interaction types', () => {
+  const flows = [flow('home', 40, 40, [
+    { action: 'Open wash', destination: 'wash' }, { action: 'Inspect wash', destination: 'wash' },
+    { action: 'Open eligible wash', destination: 'wash', when: 'Eligible' },
+    { action: 'Save wash', destination: 'wash' },
+  ]), flow('wash', 500, 40, [{ action: 'Back home', destination: 'home' }])]
+  const edges = overviewConnections(flows), groups = connectionBundles(edges)
+  expect(edges).toHaveLength(5)
+  expect(new Set(edges.map(edge => edge.id)).size).toBe(5)
+  expect(groups).toHaveLength(4)
+  const navigation = groups.find(group => group.members.some(edge => edge.action === 'Inspect wash'))!
+  expect(navigation.members.map(edge => edge.action)).toEqual(['Open wash', 'Inspect wash'])
+  expect(navigation.members.every(edge => !edge.when && interactionOf(edge) === 'navigate')).toBe(true)
+  expect(groups.find(group => group.members.some(edge => edge.when))!.members).toHaveLength(1)
+  expect(edges.every(edge => edge.branchD === '' && edge.bundle?.arrowD)).toBe(true)
+  expect(Math.max(...edges.flatMap(edge => edge.points.map(point => point.y)))).toBeLessThan(300)
+})
+
 test('cross-journey fan-in, fan-out and returns share trunks without losing identities or crossing screens', () => {
   for (const viewport of [{ width: 1440, height: 900 }, { width: 393, height: 852 }]) {
     const routes = [
@@ -203,7 +232,7 @@ test('cross-journey fan-in, fan-out and returns share trunks without losing iden
     const bounds = connectionBounds(flows, edges)
     expect(Math.max(...edges.flatMap(edge => edge.points.map(point => point.x)))).toBeLessThan(bounds.width)
     expect(Math.max(...edges.flatMap(edge => edge.points.map(point => point.y)))).toBeLessThan(bounds.height)
-    const boxes = flows.flatMap(flow => [{ x: flow.x, y: flow.y, width: flow.width, height: 104 }, ...flow.screens.map(screen => ({ x: flow.x + 36 + screen.x!, y: flow.y + 132 + screen.y!, ...screenSize(screen) }))])
+    const boxes = flows.flatMap(flow => [{ x: flow.x, y: flow.y, width: flow.width, height: 104 }, ...flow.screens.map(screen => ({ x: flow.x + flowContent.x + screen.x!, y: flow.y + flowContent.y + screen.y!, ...screenSize(screen) }))])
     for (const edge of edges) for (let i = 1; i < edge.points.length; i++) {
       const a = edge.points[i - 1]!, b = edge.points[i]!
       expect(a.x === b.x || a.y === b.y).toBe(true)
@@ -213,7 +242,8 @@ test('cross-journey fan-in, fan-out and returns share trunks without losing iden
     }
     const overview = overviewConnections(flows)
     expect(new Set(overview.map(edge => edge.id))).toEqual(new Set(edges.map(edge => edge.id)))
-    expect(connectionBundles(overview).some(group => group.action === 'Inspect')).toBe(true)
-    expect(overview.find(edge => edge.when === 'Blocked')!.bundle).toBeUndefined()
+    expect(connectionBundles(overview).some(group => group.members.some(edge => edge.action === 'Inspect'))).toBe(true)
+    const conditional = connectionBundles(overview).find(group => group.members.some(edge => edge.when === 'Blocked'))!
+    expect(conditional.members.every(edge => edge.when === 'Blocked')).toBe(true)
   }
 })

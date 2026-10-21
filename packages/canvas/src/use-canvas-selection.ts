@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import { useCanvasCamera } from '@civic/shell/use-canvas-camera'
 import { revealNavigation } from '@civic/shell/reveal-navigation'
-import { crossFlowEdges, flowEdges, flowAtCenter, screenAtCenter, overviewFlows, screenSize, type AppFlow, type MapScreen } from './app-map'
+import { crossFlowEdges, flowEdges, flowAtCenter, screenAtCenter, overviewFlows, flowContent, screenSize, type AppFlow, type MapScreen } from './app-map'
 import { overviewConnections } from './app-overview'
 import { connectionBounds, connectionBundles } from './connection-routing'
 import type { ReviewTarget } from './review-panel'
@@ -24,11 +24,11 @@ export function useCanvasSelection({ flows, initialFlow, outline, initialized, v
   const sharedPaths = useMemo(() => connectionBundles(overview ? overviewEdges : [...Object.values(internalEdges).flat(), ...crossEdges]), [overview, overviewEdges, internalEdges, crossEdges])
   const [bundleSelection, setBundleSelection] = useState<string | null>(null)
   const displayedFlows = overview ? compactFlows : flows
-  const { width: detailWidth, height: detailHeight } = connectionBounds(flows, crossEdges)
-  const { width: overviewWidth, height: overviewHeight } = connectionBounds(compactFlows, overviewEdges)
+  const { width: detailWidth, height: detailHeight } = useMemo(() => connectionBounds(flows, crossEdges), [flows, crossEdges])
+  const { width: overviewWidth, height: overviewHeight } = useMemo(() => connectionBounds(compactFlows, overviewEdges), [compactFlows, overviewEdges])
   const worldHeight = overview ? overviewHeight : detailHeight
   const worldWidth = overview ? overviewWidth : detailWidth
-  const { stage, camera, setCamera, pan, setPan, panning, changeZoom, controls, size } = useCanvasCamera({ x: 20, y: 20, zoom: .25 }, { width: worldWidth, height: worldHeight })
+  const { stage, scene, edgeScene, motion, camera, setCamera, pan, setPan, panning, changeZoom, controls, size } = useCanvasCamera({ x: 20, y: 20, zoom: .25 }, { width: worldWidth, height: worldHeight })
   const zoom = camera.zoom
 
   const navigator = useRef<HTMLDivElement>(null)
@@ -63,7 +63,7 @@ export function useCanvasSelection({ flows, initialFlow, outline, initialized, v
     stopFollowing()
     const flow = flows.find((entry) => entry.screens.some((node) => node.id === screen.id)); if (!flow) return
     setOverview(false); setFocused(flow.id); setExpanded(flow.id); setViewed(screen.id)
-    fit(flow.x + 36 + screen.x!, flow.y + 132 + screen.y!, screenSize(screen).width, screenSize(screen).height)
+    fit(flow.x + flowContent.x + screen.x!, flow.y + flowContent.y + screen.y!, screenSize(screen).width, screenSize(screen).height)
   }
 
   const focusedFlow = flows.find((flow) => flow.id === focused)
@@ -88,8 +88,8 @@ export function useCanvasSelection({ flows, initialFlow, outline, initialized, v
   const interactScreen = (screen: MapScreen) => {
     focusScreen(screen)
     const flow = flows.find((entry) => entry.screens.some((node) => node.id === screen.id)), element = stage.current
-    if (flow && element) setCamera({ x: element.clientWidth / 2 - 135.5 - flow.x - 36 - screen.x!, y: 20 - flow.y - 132 - screen.y!, zoom: 1 })
+    if (flow && element) setCamera({ x: element.clientWidth / 2 - screenSize(screen).width / 2 - flow.x - flowContent.x - screen.x!, y: 20 - flow.y - flowContent.y - screen.y!, zoom: 1 })
   }
 
-  return { pathTarget, setPathTarget, appSelected, focused, setFocused, expanded, setExpanded, viewed, overview, canvasDetail, setCanvasDetail, compactFlows, crossEdges, internalEdges, overviewEdges, sharedPaths, bundleSelection, setBundleSelection, worldHeight, worldWidth, stage, camera, pan, setPan, panning, changeZoom, controls, size, zoom, navigator, cameraNavigation, focus, focusScreen, fit, fitApp, fitSelected, interactScreen, focusedFlow, selectedScreen }
+  return { pathTarget, setPathTarget, appSelected, focused, setFocused, expanded, setExpanded, viewed, overview, canvasDetail, setCanvasDetail, compactFlows, crossEdges, internalEdges, overviewEdges, sharedPaths, bundleSelection, setBundleSelection, worldHeight, worldWidth, stage, scene, edgeScene, motion, pan, setPan, panning, changeZoom, controls, size, zoom, navigator, cameraNavigation, focus, focusScreen, fit, fitApp, fitSelected, interactScreen, focusedFlow, selectedScreen }
 }

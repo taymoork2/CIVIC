@@ -8,7 +8,7 @@ export type Connection = {
   id: string; from: string; to: string; action: string; when?: string; returnTo?: string; interaction?: Interaction
   returning: boolean; branch: boolean; source: Endpoint; target: Endpoint
 }
-type Trunk = { id: string; d: string; arrowD: string; x: number; y: number }
+type Trunk = { id: string; d: string; arrowD: string; x: number; y: number; label?: string }
 export type RoutedConnection = Connection & {
   points: Point[]; d: string; branchD?: string; branchArrow: boolean; bundle?: Trunk; x: number; y: number
 }
@@ -26,7 +26,7 @@ export function connectionBundles(edges: RoutedConnection[]): ConnectionBundle[]
     const members = groups.get(edge.bundle.id) ?? []
     members.push(edge); groups.set(edge.bundle.id, members)
   }
-  return [...groups].map(([id, members]) => ({ id, action: members[0]!.action, members }))
+  return [...groups].map(([id, members]) => ({ id, action: members[0]!.bundle?.label ?? members[0]!.action, members }))
 }
 
 export function routeConnections(edges: Connection[], boxes: Obstacle[], innerBoxes = boxes): RoutedConnection[] {

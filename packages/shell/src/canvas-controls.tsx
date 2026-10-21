@@ -1,4 +1,5 @@
-import { useCallback, useEffect, type RefObject } from 'react'
+import { useCallback, useEffect, useSyncExternalStore, type RefObject } from 'react'
+import type { CameraZoom } from './use-canvas-camera'
 import { ChevronDown, Hand, Maximize, Minus, MousePointer2, Plus } from './icons'
 import { Button } from './ui/button'
 import { IconButton } from './ui/icon-button'
@@ -13,10 +14,11 @@ export function canvasShortcut(event: { key: string; shiftKey: boolean; metaKey:
   return ({ v: 'select', h: 'hand', Escape: 'select', '+': 'in', '=': 'in', '-': 'out' } as Record<string, 'select' | 'hand' | 'in' | 'out'>)[event.key] ?? null
 }
 
-export function CanvasControls({ stage, pan, setPan, zoom, changeZoom, fitApp, fitSelection, fitFlow }: {
-  stage: RefObject<HTMLDivElement | null>; pan: boolean; setPan: (pan: boolean) => void; zoom: number;
+export function CanvasControls({ stage, pan, setPan, motion, changeZoom, fitApp, fitSelection, fitFlow }: {
+  stage: RefObject<HTMLDivElement | null>; pan: boolean; setPan: (pan: boolean) => void; motion: CameraZoom;
   changeZoom: (zoom: number) => void; fitApp: () => void; fitSelection: () => void; fitFlow: () => void;
 }) {
+  const zoom = useSyncExternalStore(motion.subscribe, motion.getSnapshot, motion.getSnapshot)
   const tool = useCallback((hand: boolean) => { setPan(hand); stage.current?.focus({ preventScroll: true }) }, [setPan, stage])
   useEffect(() => {
     const root = stage.current?.closest('main'); if (!root) return
