@@ -1,0 +1,19 @@
+{
+  "revision": "c19e0b1fa7208a73eff25dff7cf3ae850668593b",
+  "source": "34662c298f43530dd239c85d7ffa54315a20771380ea78f2f9356880d742161e",
+  "screens": [
+    "Home",
+    "Project and assistant",
+    "Work detail and implementation evidence",
+    "Session transcript",
+    "Project settings",
+    "App settings",
+    "Add project",
+    "Projects",
+    "Learning",
+    "Project learning",
+    "Problems"
+  ],
+  "review": "90c0c479-a428-4f0b-ba6b-8069b6c23f7b",
+  "errors": []
+}
