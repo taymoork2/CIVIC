@@ -56,13 +56,21 @@ export function sourcePage(items, { query = '', inactive = false, offset = 0 } =
   return { items: unique.slice(offset, offset + 10), total: unique.length, hiddenInactive: items.filter(row => row.active === false).length, offset, limit: 10, hasMore: offset + 10 < unique.length }
 }
 export async function previewVersion(project, kind) {
-  let receipt = {}
-  try { receipt = JSON.parse(await readFile(join(project.manifestRoot, 'receipt.json'), 'utf8')) } catch {}
+  let receipt = {}, checkout = false
+  try { receipt = JSON.parse(await readFile(join(project.manifestRoot, 'receipt.json'), 'utf8')) }
+  catch (error) { checkout = error.code === 'ENOENT' && kind === 'implementation' }
+  // Source checkouts have no build receipt; running instances must keep their recorded revision.
+  if (checkout) {
+    try {
+      if (await realpath(await git(project.root, ['rev-parse', '--show-toplevel'])) !== await realpath(project.root)) throw Error('Not a source checkout')
+      receipt = { source: project.root, sourceHead: await git(project.root, ['rev-parse', 'HEAD']), dirty: Boolean(await git(project.root, ['status', '--porcelain'])) }
+    } catch { checkout = false }
+  }
   const revision = String(receipt.ui ?? receipt.sourceHead ?? '').slice(0, 8)
   let branch
   if (!receipt.worktreeName && kind !== 'design') try { branch = await git(project.root, ['symbolic-ref', '--short', '-q', 'HEAD']) } catch {}
   const name = kind === 'design' ? `${project.manifest.design?.id ?? project.manifest.name}${receipt.capturedAt ? ` · ${receipt.capturedAt.slice(0, 10)}` : ''}`
-    : receipt.worktreeName?.trim() || (kind === 'live' ? 'Running build' : kind === 'isolated' ? 'Test copy' : branch || project.root.split('/').at(-1))
+    : receipt.worktreeName?.trim() || (kind === 'live' ? 'Running build' : kind === 'isolated' ? 'Test copy' : checkout && branch === 'main' ? 'Main' : branch || (checkout ? 'Detached checkout' : project.root.split('/').at(-1)))
   const sourceName = `${name}${receipt.dirty ? ' · edited' : ''}${revision && kind !== 'design' ? ` · ${revision}` : ''}`
   let id = null
   // A commit alone cannot identify local edits or a running build. Require a recorded content identity.
@@ -72,11 +80,12 @@ export async function previewVersion(project, kind) {
     id = createHash('sha256').update(JSON.stringify([namespace, receipt.worktreeHash ?? null, receipt.ui, receipt.server, receipt.script, [...receipt.css].sort()])).digest('hex')
   }
   const title = receipt.worktreeName?.trim().replace(/^Draft [a-z] · /i, '') || name
-  const versionName = kind === 'live' ? 'Running app' : receipt.worktreeName === 'Main' ? 'Main branch' : title[0]?.toUpperCase() + title.slice(1)
-  const description = kind === 'design' ? 'Design reference' : kind === 'live' ? 'Currently running · read only' : receipt.worktreeName === 'Main' ? 'Preview of local main' : receipt.worktreeName ? 'Branch draft' : kind === 'isolated' ? 'Isolated test copy' : 'Local code preview'
+  const main = receipt.worktreeName === 'Main' || checkout && branch === 'main'
+  const versionName = kind === 'live' ? 'Running app' : main ? 'Main branch' : title[0]?.toUpperCase() + title.slice(1)
+  const description = kind === 'design' ? 'Design reference' : kind === 'live' ? 'Currently running · read only' : main ? 'Preview of local main' : receipt.worktreeName || checkout ? 'Branch draft' : kind === 'isolated' ? 'Isolated test copy' : 'Local code preview'
   const history = kind === 'design' ? { kind: 'design', status: 'reference' } : await gitHistory(receipt.source ?? project.root, receipt.ui ?? receipt.sourceHead)
   history.capturedAt = date(receipt.builtAt ?? receipt.capturedAt)
-  history.main = receipt.worktreeName === 'Main' && history.status === 'same'
+  history.main = main && history.status === 'same'
   return { sourceName, version: { id, name: versionName, description, kind: kind === 'design' ? 'design' : 'implementation', history } }
 }
 export async function gitSources(root, source, connectedRoots, command = git, query = '') {

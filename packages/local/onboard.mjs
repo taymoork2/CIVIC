@@ -67,9 +67,9 @@ export async function onboard(config) {
   return { orcaFamilies: rows.length, orcaStates: scenarios.length, declaredJourneyCases: journeys.length, laundry: config.laundry, store }
 }
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  const { values } = parseArgs({ options: { 'orca-source': { type: 'string' }, 'orca-design': { type: 'string' }, laundry: { type: 'string' }, origin: { type: 'string' } } })
+  const { values } = parseArgs({ options: { 'orca-source': { type: 'string' }, 'orca-design': { type: 'string' }, laundry: { type: 'string' }, 'laundry-source': { type: 'string' }, origin: { type: 'string' } } })
   let config = await readFile(join(store, 'local-config.json'), 'utf8').then(JSON.parse).catch(error => { if (error.code === 'ENOENT') return {}; throw error })
-  for (const [flag, key] of [['orca-source', 'orcaSource'], ['orca-design', 'orcaDesign'], ['laundry', 'laundry']]) if (values[flag]) config[key] = resolve(values[flag])
+  for (const [flag, key] of [['orca-source', 'orcaSource'], ['orca-design', 'orcaDesign'], ['laundry', 'laundry'], ['laundry-source', 'laundrySource']]) if (values[flag]) config[key] = resolve(values[flag])
   if (values.origin) { const origin = new URL(values.origin); if (origin.origin !== values.origin || origin.protocol !== 'https:' || !origin.hostname.endsWith('.ts.net')) throw Error('Use an exact HTTPS Tailscale origin'); config.origin = values.origin }
   if (!config.orcaSource || !config.orcaDesign || !config.laundry) throw Error('Use --orca-source PATH --orca-design PATH --laundry PATH on the first onboarding')
   console.log(await onboard(config))

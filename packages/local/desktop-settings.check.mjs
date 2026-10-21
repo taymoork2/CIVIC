@@ -4,6 +4,7 @@ import { cp, mkdtemp, readFile, realpath } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { execFileSync } from 'node:child_process'
 import { createServer } from 'vite'
 import { canvasPlugins } from '../canvas/server/canvas-host.mjs'
 import { canvasRoot } from '../canvas/server/canvas-root.mjs'
@@ -13,13 +14,20 @@ import { projectWindows } from './project-windows.mjs'
 
 const { _electron } = createRequire(new URL('../canvas/package.json', import.meta.url))('@playwright/test')
 const store = await realpath(await mkdtemp(join(tmpdir(), 'civic-electron-settings-')))
-const manifest = join(canvasRoot, 'examples/notebook/civic.project.json')
+const historyRoot = join(store, 'history-main')
+await cp(join(canvasRoot, 'examples/notebook'), historyRoot, { recursive: true })
+const git = (...args) => execFileSync('git', ['-C', historyRoot, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+git('init', '--initial-branch=main'); git('add', '.')
+git('-c', 'user.name=History Test', '-c', 'user.email=history@example.invalid', 'commit', '-m', 'main')
+const manifest = join(historyRoot, 'civic.project.json')
 const current = loadProject(store, { manifest }), registry = {}
 const copy = join(store, 'second-checkout')
-await cp(join(canvasRoot, 'examples/notebook'), copy, { recursive: true })
+git('worktree', 'add', '-b', 'fix/history-display', copy)
+execFileSync('git', ['-C', copy, '-c', 'user.name=History Test', '-c', 'user.email=history@example.invalid', 'commit', '--allow-empty', '-m', 'draft'], { stdio: 'pipe' })
 const secondProject = loadProject(store, { manifest: join(copy, 'civic.project.json') })
 const catalog = await projectPicker(store, current, { registry })
-await catalog.add({ kind: 'existing', root: copy, manifest: 'civic.project.json' })
+await catalog.organize({ key: current.key, app: { id: 'notebook-demo', name: 'Notebook' }, kind: 'implementation' })
+await catalog.add({ kind: 'existing', root: copy, manifest: 'civic.project.json', app: { id: 'notebook-demo', name: 'Notebook' }, connectionKind: 'implementation' })
 let windows
 const host = async project => {
   const server = await createServer({ configFile: false, root: canvasRoot, cacheDir: join(store, '.vite', project.key), logLevel: 'silent', server: { host: '127.0.0.1', port: 0 }, plugins: canvasPlugins({ store, project: { manifest: project.manifestPath }, picker: { registry, openWindow: (project, lease) => windows.open(project, lease), releaseWindow: (project, lease) => windows.release(project.key, lease), windowOrigins: () => windows.origins() } }) })
@@ -112,6 +120,11 @@ try {
     await page.getByRole('button', { name: 'Open project or checkout', exact: true }).click()
     const picker = page.getByRole('dialog', { name: 'Projects & versions', exact: true })
     await picker.locator('.civic-version-toggle').first().waitFor()
+    await picker.getByRole('button', { name: 'Preview options for Main branch', exact: true }).waitFor()
+    await picker.getByRole('button', { name: 'Preview options for Fix/history-display', exact: true }).waitFor()
+    assert.equal(await picker.getByRole('img', { name: /Fix\/history-display descends from Main branch/ }).count(), 1)
+    assert.ok((await picker.innerText()).includes('1 ahead of main'))
+    assert.equal((await picker.innerText()).includes('Captured'), false, 'Checkout history must not invent build capture age')
     assert.equal(await picker.evaluate(element => element.scrollWidth <= element.clientWidth), true)
     const bounds = await picker.boundingBox()
     assert.ok(bounds && bounds.x >= 0 && bounds.y >= 0 && bounds.x + bounds.width <= width + 1 && bounds.y + bounds.height <= 900)

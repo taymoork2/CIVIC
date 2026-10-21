@@ -9,7 +9,8 @@ const virtual = workerData.virtual ?? {}
 const server = await createServer({
   configFile: false, root: workerData.root, appType: 'custom', logLevel: 'error',
   server: { middlewareMode: true, watch: null, hmr: false, ws: false }, optimizeDeps: { noDiscovery: true, include: [] },
-  resolve: { alias: workerData.aliases },
+  resolve: { alias: workerData.aliases, dedupe: workerData.dedupe },
+  ssr: { noExternal: workerData.noExternal },
   plugins: [serverFunctionsPlugin({ appRoot: () => workerData.appRoot, side: 'server' }), { name: 'civic-runtime-modules', resolveId: (id) => id in virtual ? '\0' + id : undefined, load: (id) => id.startsWith('\0') && id.slice(1) in virtual ? virtual[id.slice(1)] : undefined }],
 })
 const entry = await server.ssrLoadModule(workerData.entry)

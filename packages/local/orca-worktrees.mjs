@@ -3,25 +3,12 @@ import { createRequire } from 'node:module'
 import { access, cp, mkdir, readFile, readdir, realpath, rename, symlink, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import { gitSources } from '../vite-connector/src/review-source-versions.mjs'
 import { liveScenarios } from './orca-live.mjs'
 import { registerComponents } from './orca-drafts.mjs'
+import { checkDependencyLock } from './worktree-dependencies.mjs'
 
 const inputs = ['apps/web/src', 'apps/web/public', 'apps/web/index.html', 'apps/web/package.json', 'apps/server/src', 'apps/server/package.json', 'packages/contracts/src', 'packages/contracts/package.json', 'scripts', 'package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml']
 const json = async file => JSON.parse(await readFile(file, 'utf8'))
-export function checkDependencyLock(expected, installed) {
-  // pnpm's version-9 package blocks are content/peer-version pins; extra installed packages are fine.
-  if (![expected, installed].every(text => /^lockfileVersion: ['"]?9\.0['"]?$/m.test(text))) throw Error('Unsupported Orca dependency lock format')
-  for (const section of ['packages', 'snapshots']) {
-    const blocks = text => {
-      const body = text.split(`\n${section}:\n`)[1]?.split(/\n[^\s]/)[0]
-      if (!body) throw Error(`Missing ${section} dependency pins`)
-      return new Map(body.split(/\n(?=  \S)/).filter(block => block.trim()).map(block => [block.split('\n')[0].trim(), block.trim()]))
-    }
-    const available = blocks(installed)
-    for (const [key, value] of blocks(expected)) if (available.get(key) !== value) throw Error(`Install the worktree's pinned dependencies separately before connecting it: ${key}`)
-  }
-}
 export async function worktreeHash(source) {
   const hash = createHash('sha256')
   async function visit(relative) {
@@ -129,22 +116,4 @@ export async function buildWorktree(store, installed, tree) {
   await writeFile(temporary, JSON.stringify(published, null, 2) + '\n', { mode: 0o600 })
   await rename(temporary, connection.manifest)
   return connection
-}
-export function worktreeConnections(store, installed) {
-  let pending, checked = 0, result = { connections: [], errors: [] }
-  return async () => {
-    if (pending) return pending
-    if (Date.now() - checked < 10000) return result
-    pending = (async () => {
-      const discovered = await gitSources(installed, 'apps/web/src', new Set([installed]))
-      const next = { connections: [], errors: [] }
-      if (discovered.limited) next.errors.push('Some worktree statuses are unavailable. Those checkouts have not been built automatically.')
-      for (const tree of discovered.items.filter(row => row.type === 'worktree' && row.active && row.path !== installed && row.detail !== 'Status unavailable')) {
-        try { next.connections.push(await buildWorktree(store, installed, tree)) }
-        catch (error) { next.errors.push(`${tree.title}: preview unavailable. ${error.message}`) }
-      }
-      checked = Date.now(); result = next; return next
-    })().finally(() => { pending = null })
-    return pending
-  }
 }

@@ -1,13 +1,40 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { mkdir, mkdtemp, readFile, writeFile } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, writeFile, realpath } from 'node:fs/promises'
+import { execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { createHash } from 'node:crypto'
-import { buildWorktree, checkDependencyLock, worktreeHash } from './orca-worktrees.mjs'
+import { buildWorktree, worktreeHash } from './orca-worktrees.mjs'
+import { checkDependencyLock, dependencyAliases, previewDependencies } from './worktree-dependencies.mjs'
 import { loadProject, checkedScenarios } from '../vite-connector/src/review-project.mjs'
 import { isolatedOrcaAssets } from './orca-isolated.mjs'
+import { worktreeConnections } from './worktree-connections.mjs'
+
+test('shared worktree refresh includes source branches on demand, bounds retries and preserves source files', async () => {
+  const base = await realpath(await mkdtemp(join(tmpdir(), 'civic-worktree-discovery-'))), source = join(base, 'main'), draft = join(base, 'draft')
+  await mkdir(source)
+  const git = (...args) => execFileSync('git', ['-C', source, ...args], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+  git('init', '--initial-branch=main')
+  await writeFile(join(source, 'screen.tsx'), 'main')
+  git('add', 'screen.tsx'); git('-c', 'user.name=Preview Test', '-c', 'user.email=preview@example.invalid', 'commit', '-m', 'main')
+  git('worktree', 'add', '-b', 'draft', draft)
+  await writeFile(join(draft, 'screen.tsx'), 'local changes')
+  const before = git('status', '--porcelain'), calls = []
+  const connect = async tree => { calls.push(tree.path); return { root: tree.path } }
+  const refresh = worktreeConnections(source, connect, { includeSource: true })
+  const [first, concurrent] = await Promise.all([refresh(), refresh()])
+  assert.deepEqual(first, concurrent)
+  assert.deepEqual(first.connections.map(row => row.root), [source, draft])
+  assert.deepEqual(calls, [source, draft])
+  await refresh(); assert.equal(calls.length, 2, 'Repeated picker reads reuse discovery')
+  assert.deepEqual((await worktreeConnections(source, connect)()).connections, [{ root: draft }], 'Orca can exclude its separately connected running source')
+  const failed = await worktreeConnections(source, async () => { throw Error('Adapter unavailable') })()
+  assert.equal(failed.connections.length, 0); assert.match(failed.errors[0], /Adapter unavailable/)
+  assert.equal(git('status', '--porcelain'), before)
+  assert.equal(await readFile(join(draft, 'screen.tsx'), 'utf8'), 'local changes')
+})
 
 test('worktree freshness tracks source and ignores unrelated docs without writing to the source', async () => {
   const source = await mkdtemp(join(tmpdir(), 'civic-worktree-hash-'))
@@ -24,6 +51,38 @@ test('dependency reuse accepts extra installed pins and rejects changed resoluti
   checkDependencyLock(lock, lock.replace('snapshots:', '  extra@2: {}\n\nsnapshots:').replace('  lib@1: {}', '  lib@1: {}\n\n  extra@2: {}'))
   assert.throws(() => checkDependencyLock(lock, lock.replace('abc', 'wrong')), /pinned dependencies/)
   assert.throws(() => checkDependencyLock(lock, lock.replace('9.0', '8.0')), /format/)
+})
+
+test('dependency aliases reuse only matching pins and leave source checkouts untouched', async () => {
+  const base = await mkdtemp(join(tmpdir(), 'civic-preview-deps-')), source = join(base, 'source'), installed = join(base, 'installed')
+  const lock = "lockfileVersion: '9.0'\n\npackages:\n\n  lib@1:\n    resolution: {integrity: abc}\n\nsnapshots:\n\n  lib@1: {}\n"
+  for (const root of [source, installed]) {
+    await mkdir(join(root, 'web'), { recursive: true })
+    await writeFile(join(root, 'pnpm-lock.yaml'), lock)
+    await writeFile(join(root, 'web/package.json'), JSON.stringify({ dependencies: { lib: '1', workspace: 'workspace:*' } }))
+  }
+  const dependency = join(installed, 'web/node_modules/lib'); await mkdir(dependency, { recursive: true })
+  await writeFile(join(dependency, 'index.js'), 'throw Error("Discovery must never import dependencies")')
+  assert.deepEqual(await dependencyAliases(source, installed, ['web']), { lib: await realpath(dependency) })
+  const plugin = previewDependencies({ lib: dependency }, source), resolved = []
+  const resolver = { resolve: async (...args) => { resolved.push(args); return { id: 'resolved' } } }
+  await plugin.resolveId.call(resolver, 'lib/subpath', join(source, 'web/screen.tsx'))
+  assert.equal(await plugin.resolveId.call(resolver, 'lib/subpath', '/civic/shell/button.tsx'), undefined)
+  assert.equal(resolved[0][0], 'lib/subpath')
+  assert.equal(resolved[0][1], join(dependency, 'package.json'))
+  assert.equal(resolved.length, 1, 'App dependency reuse cannot replace CIVIC shell dependencies')
+  await writeFile(join(dependency, 'package.json'), JSON.stringify({ name: 'lib', exports: { './subpath': './index.js' } }))
+  const { createServer } = await import('vite')
+  const server = await createServer({ configFile: false, root: source, logLevel: 'silent', plugins: [plugin] })
+  try {
+    const found = await server.environments.client.pluginContainer.resolveId('lib/subpath', join(source, 'web/screen.tsx'))
+    assert.equal(await realpath(found.id.split('?')[0]), await realpath(join(dependency, 'index.js')), 'Vite honors package exports from the matching installation')
+  } finally { await server.close() }
+  await assert.rejects(readFile(join(source, 'web/node_modules/lib/index.js')), { code: 'ENOENT' })
+  await writeFile(join(source, 'web/package.json'), JSON.stringify({ dependencies: { lib: '2' } }))
+  await assert.rejects(dependencyAliases(source, installed, ['web']), /dependency differs/)
+  await writeFile(join(source, 'pnpm-lock.yaml'), lock.replace('abc', 'changed'))
+  await assert.rejects(dependencyAliases(source, installed, ['web']), /pinned dependencies/)
 })
 test('runtime dependency checks resolve the exact snapshot without importing application code', async () => {
   const { checkRuntimeDependencies } = await import('./orca-worktrees.mjs')

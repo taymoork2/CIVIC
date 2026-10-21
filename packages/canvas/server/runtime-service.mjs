@@ -27,9 +27,10 @@ const EFFECTS = ['mutation', 'identity', 'recover', 'time']
  * expired run can be reopened (`resume`) on the same source revision with the same seed and effects.
  * The journal holds no credential: a reopened run mints fresh ones and its page signs in again.
  * A host adds what its backend needs to load: `root` (where modules resolve), extra `aliases`,
+ * `dedupe` (shared installed packages), `noExternal` (packages needing Vite transformation),
  * and `modules(project)`, generated virtual modules such as a backend's function index.
  */
-export function runtimeService(project, source, { root = project.manifestRoot, aliases = {}, modules = async () => ({}), dataDir } = {}) {
+export function runtimeService(project, source, { root = project.manifestRoot, aliases = {}, dedupe = [], noExternal = [], modules = async () => ({}), dataDir } = {}) {
   const runs = new Map(), restoring = new Map()
   let virtual
   const path = (id) => join(dataDir, 'runtime', `${id}.json`)
@@ -67,7 +68,7 @@ export function runtimeService(project, source, { root = project.manifestRoot, a
     if (saved.source !== source()) reject('Saved run belongs to another source revision. Keep its evidence and start a run on the current source.', 409)
     if (runs.size >= 8) reject('Eight isolated runs are active. Close a preview before starting another.', 429)
     const identity = identities.identity
-    const worker = new Worker(new URL('./runtime-worker.mjs', import.meta.url), { workerData: { entry: project.runtimeEntry, appRoot: project.root, aliases: { ...project.aliases, ...aliases }, root, virtual: await virtual, namespace: saved.id, ...saved.options, persona, identity, identities: identities.identities, signIn: project.manifest.identity?.signIn ?? null }, resourceLimits: { maxOldGenerationSizeMb: 256 } })
+    const worker = new Worker(new URL('./runtime-worker.mjs', import.meta.url), { workerData: { entry: project.runtimeEntry, appRoot: project.root, aliases: { ...project.aliases, ...aliases }, dedupe, noExternal, root, virtual: await virtual, namespace: saved.id, ...saved.options, persona, identity, identities: identities.identities, signIn: project.manifest.identity?.signIn ?? null }, resourceLimits: { maxOldGenerationSizeMb: 256 } })
     const run = { id: saved.id, worker, source: saved.source, saved, identity, lease: randomUUID(), used: Date.now(), queue: Promise.resolve() }
     runs.set(run.id, run)
     return run

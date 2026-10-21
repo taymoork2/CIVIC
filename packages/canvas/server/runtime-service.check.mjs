@@ -3,12 +3,26 @@ import { test } from 'node:test'
 import { checkedProject, loadProject } from '@civic/vite-connector/project'
 import { canvasRoot } from './canvas-root.mjs'
 import { runtimeService } from './runtime-service.mjs'
-import { mkdtemp, readFile, rm } from 'node:fs/promises'
+import { mkdtemp, readFile, rm, mkdir, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 const tasks = loadProject(canvasRoot, { manifest: `${canvasRoot}/examples/tasks/civic.project.json` })
 const now = Date.UTC(2026, 9, 12, 9)
+
+test('shared dependency subpaths retain exports and TypeScript transformation in separate workers', async t => {
+  const root = await mkdtemp(join(tmpdir(), 'civic-runtime-exports-')), dependency = join(root, 'node_modules/preview-ts')
+  await mkdir(dependency, { recursive: true })
+  await writeFile(join(dependency, 'package.json'), JSON.stringify({ name: 'preview-ts', type: 'module', exports: { './helper': './helper.ts' } }))
+  await writeFile(join(dependency, 'helper.ts'), 'let count: number = 0; export const next = () => ++count')
+  const entry = join(root, 'runtime.ts')
+  await writeFile(entry, 'import { next } from "preview-ts/helper"; export function createRuntime() { return { seed: { value: next() } } }')
+  const service = runtimeService({ ...tasks, root, runtimeEntry: entry, aliases: {} }, () => 'source-one', { root, dedupe: ['preview-ts'], noExternal: ['preview-ts'] })
+  t.after(() => service.close())
+  const start = () => service.handle({ action: 'start', scenario: 'tasks.list', persona: 'planner', role: 'member', condition: 'normal', now })
+  assert.deepEqual((await start()).seed, { value: 1 })
+  assert.deepEqual((await start()).seed, { value: 1 }, 'The dependency module state stays inside its own run')
+})
 
 test('a fetch-handler backend runs per run with its persona, role and condition, and only writes are mutations', async (t) => {
   const service = runtimeService(tasks, () => 'source-one')

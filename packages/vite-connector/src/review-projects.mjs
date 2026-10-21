@@ -70,9 +70,9 @@ export async function projectPicker(repo, current, { discoveredAdapter = join(re
   }
   let syncing
   const openedOrigins = new Set()
-  const sync = async () => {
-    if (!syncConnections || (rows.find(row => row.key === current.key)?.app?.id ?? current.manifest.id) !== 'orca') return []
-    const result = await syncConnections()
+  const sync = async (app = rows.find(row => row.key === current.key)?.app?.id ?? current.manifest.id) => {
+    if (!syncConnections) return []
+    const result = await syncConnections(app)
     // Merge into the live registry after compilation; edits made during the build stay in it.
     let changed = false
     for (const input of result.connections) {
@@ -83,7 +83,8 @@ export async function projectPicker(repo, current, { discoveredAdapter = join(re
     return result.errors
   }
   const summaries = new Map()
-  let pageSync, lastRefresh
+  const pageSync = new Map()
+  let lastRefresh
   const summary = ({ personas, roles, conditions, navigation, host, ...row }) => row
   const bounded = async (items, work, signal) => {
     let index = 0
@@ -155,9 +156,9 @@ export async function projectPicker(repo, current, { discoveredAdapter = join(re
       if (typeof app !== 'string' || app.length > 120 || typeof query !== 'string' || query.length > 120 || !Number.isSafeInteger(offset) || offset < 0 || !Number.isInteger(limit) || limit < 1 || limit > 10 || version !== undefined && (typeof version !== 'string' || version.length > 1000)) bad('Invalid version page')
       if (selected !== undefined && (!selected || typeof selected !== 'object' || Array.isArray(selected) || !/^[a-z][a-z0-9.-]{0,119}$/.test(selected.id ?? '') || typeof selected.label !== 'string' || selected.label.length > 200 || Object.keys(selected).some(key => !['id', 'label', 'targetId', 'componentId', 'component', 'componentExport', 'route', 'state'].includes(key)) || Object.values(selected).some(value => typeof value !== 'string' || value.length > 500))) bad('Invalid selected screen identity')
       if (input.refresh !== undefined && (typeof input.refresh !== 'string' || input.refresh !== '' && !/^[a-f0-9-]{36}$/.test(input.refresh))) bad('Invalid version refresh')
-      if (input.refresh && input.refresh !== lastRefresh) { summaries.clear(); pageSync = undefined; lastRefresh = input.refresh }
-      pageSync ??= sync().catch(error => [`Worktree previews could not refresh: ${error.message}. Saved versions are retained.`])
-      const syncErrors = await pageSync
+      if (input.refresh && input.refresh !== lastRefresh) { summaries.clear(); pageSync.clear(); lastRefresh = input.refresh }
+      if (!pageSync.has(app)) pageSync.set(app, sync(app).catch(error => [`Worktree previews could not refresh: ${error.message}. Saved versions are retained.`]))
+      const syncErrors = await pageSync.get(app)
       signal?.throwIfAborted()
       const { projects: catalog, errors } = await catalogRows(signal)
       errors.push(...syncErrors)

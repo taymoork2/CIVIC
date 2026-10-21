@@ -17,6 +17,24 @@ async function fixture() {
   return { base, host, root, current }
 }
 
+test('worktree refresh follows the requested project and caches each app independently', async () => {
+  const { base, host, root, current } = await fixture(), calls = []
+  const other = join(base, 'other'); await cp(root, other, { recursive: true })
+  const next = loadProject(host, { manifest: join(other, 'civic.project.json'), applicationRoot: other })
+  const picker = await projectPicker(host, current, { syncConnections: async app => {
+    calls.push(app)
+    return { connections: app === 'laundry' ? [{ root: other, manifest: next.manifestPath, app: { id: 'laundry', name: 'Laundry' }, kind: 'implementation' }] : [], errors: [] }
+  } })
+  await picker.organize({ key: current.key, app: { id: 'orca', name: 'Orca' }, kind: 'implementation' })
+  await picker.versionPage({ app: 'orca' })
+  assert.equal((await picker.versionPage({ app: 'laundry' })).items.length, 1)
+  await picker.versionPage({ app: 'orca' })
+  await picker.versionPage({ app: 'laundry' })
+  assert.deepEqual(calls, ['orca', 'laundry'])
+  await picker.versionPage({ app: 'laundry', refresh: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa' })
+  assert.deepEqual(calls, ['orca', 'laundry', 'laundry'])
+})
+
 test('catalog and version pages scope inventory work, cache unchanged registries and reach connection 119', async () => {
   const { base, host, root, current } = await fixture()
   const rows = []
