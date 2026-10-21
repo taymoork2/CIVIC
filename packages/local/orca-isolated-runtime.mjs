@@ -47,14 +47,15 @@ export async function createRuntime() {
       if (name === 'transcript' && kind === 'query') return run(store.transcript(input.sessionId))
       if (name !== 'command') throw Error('Unknown isolated Orca operation')
       const command = Schema.decodeUnknownSync(ClientMessage)({ _tag: 'Command', id: 'civic', command: input }).command
-      const writes = ['CreateProject', 'SaveDraft', 'SaveAppSettings', 'SaveProjectSettings']
-      const reads = ['GetAppSettings', 'GetProjectSettings', 'InspectInterruptedWork', 'SessionActivity', 'ListPreviews']
+      const writes = ['CreateProject', 'SaveDraft', 'SaveAppSettings', 'SaveProjectSettings', 'MarkSeen']
+      const reads = ['GetAppSettings', 'GetProjectSettings', 'InspectInterruptedWork', 'SessionActivity', 'ListPreviews', 'GetLearning', 'GetIncidents', 'GetHarnessCatalog', 'GetGuidance']
       if (!(kind === 'mutation' ? writes : reads).includes(command._tag)) throw Error('This isolated run cannot execute models, host commands, approvals, updates or external services')
       switch (command._tag) {
         case 'CreateProject':
           if (command.path !== projectPath) throw Error('Project path must be this run’s disposable project directory')
           return runtime.createProject(command.name, command.path)
         case 'SaveDraft': return run(store.append({ _tag: 'DraftSaved', draft: { key: command.key, text: command.text, updatedAt: new Date().toISOString() } }, { log: false }))
+        case 'MarkSeen': return runtime.markSeen(command.workItemId, command.at)
         case 'GetAppSettings': return { settings: settings.parseApp(run(store.kvGet(settings.APP_SETTINGS_KEY))), remote: { owner: null, url: null } }
         case 'SaveAppSettings': return run(store.kvSet(settings.APP_SETTINGS_KEY, JSON.stringify(command.settings)))
         case 'GetProjectSettings': return projectSettings(command.projectId)
@@ -65,6 +66,11 @@ export async function createRuntime() {
         case 'InspectInterruptedWork': return runtime.inspectInterruptedWork(command.projectId)
         case 'SessionActivity': return runtime.sessionActivity(command.workItemId)
         case 'ListPreviews': return runtime.previewStatus(command.sessionId)
+        case 'GetLearning': return runtime.learning(command)
+        case 'GetIncidents': return runtime.incidents(command, 'civic-read')
+        case 'GetGuidance': return runtime.guidanceView()
+        // The preview has no providers; catalog discovery must never probe this Mac's harnesses.
+        case 'GetHarnessCatalog': return { harnesses: [], accounts: [], fetchedAt: new Date().toISOString() }
       }
     },
   }

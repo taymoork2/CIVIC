@@ -1,12 +1,12 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { mkdir, mkdtemp, readFile, writeFile, realpath } from 'node:fs/promises'
+import { mkdir, mkdtemp, readFile, readdir, writeFile, realpath } from 'node:fs/promises'
 import { execFileSync } from 'node:child_process'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { createHash } from 'node:crypto'
-import { buildWorktree, worktreeHash } from './orca-worktrees.mjs'
+import { buildWorktree, worktreeHash, reactScreens } from './orca-worktrees.mjs'
 import { checkDependencyLock, dependencyAliases, previewDependencies } from './worktree-dependencies.mjs'
 import { loadProject, checkedScenarios } from '../vite-connector/src/review-project.mjs'
 import { isolatedOrcaAssets } from './orca-isolated.mjs'
@@ -34,6 +34,19 @@ test('shared worktree refresh includes source branches on demand, bounds retries
   assert.equal(failed.connections.length, 0); assert.match(failed.errors[0], /Adapter unavailable/)
   assert.equal(git('status', '--porcelain'), before)
   assert.equal(await readFile(join(draft, 'screen.tsx'), 'utf8'), 'local changes')
+  assert.deepEqual((await worktreeConnections(source, connect, { includeSource: true, paths: [draft] })()).connections, [{ root: draft }], 'Explicit preview sources avoid compiling unrelated branches')
+})
+
+test('React screen registration uses declared file routes and actual route exports', async () => {
+  const source = await mkdtemp(join(tmpdir(), 'civic-react-routes-')), routes = join(source, 'apps/web/src/routes')
+  await mkdir(routes, { recursive: true })
+  for (const [name, path] of [['index', '/'], ['project', '/p/$projectId/'], ['settings', '/p/$projectId/settings/'], ['learning', '/learning']]) await writeFile(join(routes, `${name}.tsx`), `export const Route = createFileRoute('${path}')({ component: Page })`)
+  await writeFile(join(routes, 'unsupported.tsx'), 'export const NotARoute = () => null')
+  const screens = await reactScreens(source)
+  assert.deepEqual(screens.map(row => row.route), ['/', '/p/:projectId', '/p/:projectId/settings', '/learning'])
+  assert.ok(screens.every(row => row.componentExport === 'Route'))
+  assert.equal(screens.find(row => row.fixture.name === 'project').component, 'apps/web/src/routes/project.tsx')
+  assert.equal(screens.find(row => row.fixture.name === 'home').targetId, 'orca.screen.home')
 })
 
 test('worktree freshness tracks source and ignores unrelated docs without writing to the source', async () => {
@@ -104,6 +117,20 @@ test('a cached build with missing runtime dependencies is refused without changi
   for (const [file, content] of Object.entries(values)) await writeFile(join(folder, file), content)
   await assert.rejects(buildWorktree(store, source, { path: source, revision: 'test', dirty: false }), /effect\/Effect/)
   for (const [file, content] of Object.entries(values)) assert.equal(await readFile(join(folder, file), 'utf8'), content)
+})
+
+test('a failed new build removes only its disposable directory and retains the published preview', async () => {
+  const store = await mkdtemp(join(tmpdir(), 'civic-build-cleanup-')), source = join(store, 'checkout')
+  await mkdir(join(source, 'apps/web'), { recursive: true })
+  await writeFile(join(source, 'apps/web/package.json'), '{"dependencies":{}}')
+  const folder = join(store, 'projects', `orca-worktree-${createHash('sha256').update(source).digest('hex').slice(0, 12)}`)
+  await mkdir(folder, { recursive: true })
+  await writeFile(join(folder, 'receipt.json'), '{"previous":"receipt"}')
+  await writeFile(join(folder, 'civic.project.json'), '{"previous":"manifest"}')
+  await assert.rejects(buildWorktree(store, source, { path: source, revision: 'test', dirty: true }), /ENOENT/)
+  assert.deepEqual(await readdir(join(folder, 'builds')), [])
+  assert.equal(await readFile(join(folder, 'receipt.json'), 'utf8'), '{"previous":"receipt"}')
+  assert.equal(await readFile(join(folder, 'civic.project.json'), 'utf8'), '{"previous":"manifest"}')
 })
 test('an actual worktree builds real screens/components, retains stable identity and isolated writes', { skip: !process.env.CIVIC_ORCA_SOURCE }, async () => {
   const store = await mkdtemp(join(tmpdir(), 'civic-worktree-build-')), source = process.env.CIVIC_ORCA_SOURCE

@@ -82,8 +82,7 @@ export async function connectOrca(store, source) {
 }
 export const orcaConnector = {
   kind: 'orca-live', sharedStore: () => false,
-  async inventory(store, designRoot, appRoot) {
-    const project = loadProject(store)
+  async inventory(store, designRoot, appRoot, project = loadProject(store)) {
     const result = await reviewInventory(store, designRoot, appRoot, project, { connector: { kind: 'orca-live' }, engineRoots: [new URL('.', import.meta.url).pathname] })
     await componentBuildStatus(result, project)
     const [entry, state] = await Promise.all([upstreamIndex({}), readOrca(project.root, {})])

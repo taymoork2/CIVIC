@@ -26,7 +26,7 @@ export async function reviewInventory(repo, designRoot, appRepo, connection, { c
   if (kind !== 'module' && (!connector || connector.kind !== undefined && connector.kind !== kind)) throw Error(`No connector is registered for adapter kind ${kind}`)
   // A connector with its own index (Laundry's) supplies it; one without is indexed from the scenario registry, like a module app.
   if (kind !== 'module' && connector.inventory) {
-    const result = await connector.inventory(repo, designRoot, project.root)
+    const result = await connector.inventory(repo, designRoot, project.root, project)
     result.metadata.project = profile
     result.metadata.revision.source = sha(result.metadata.revision.source + JSON.stringify(project.manifest))
     result.metadata.fixtureSource = sha(result.metadata.fixtureSource + JSON.stringify(project.manifest))

@@ -4,14 +4,15 @@ import { openRuntimeSession } from '@civic/canvas/runtime-session'
 
 export async function mount(container, context) {
   if (context.scenario.fixture.componentError) throw Error(context.scenario.fixture.componentError)
-  if (context.scenario.fixture.component) return (await import('./component-preview.mjs')).mount(container, context)
+  const componentEntry = './component-preview.mjs'
+  if (context.scenario.fixture.component) return (await import(/* @vite-ignore */ componentEntry)).mount(container, context)
   const run = await openRuntimeSession(context)
-  const routes = { home: '/', project: `/p/${run.session.seed.projectId}`, work: `/w/${run.session.seed.workItemId}`, session: `/s/${run.session.seed.sessionId}`, settings: '/settings', 'project-settings': `/p/${run.session.seed.projectId}/settings`, 'new-project': '/projects/new' }
+  const routes = { home: '/', project: `/p/${run.session.seed.projectId}`, work: `/w/${run.session.seed.workItemId}`, session: `/s/${run.session.seed.sessionId}`, settings: '/settings', 'project-settings': `/p/${run.session.seed.projectId}/settings`, 'new-project': '/projects/new', projects: '/projects', learning: '/learning', 'project-learning': `/p/${run.session.seed.projectId}/learning`, problems: '/problems' }
   const classify = () => scenarios.find(row => row.route && new RegExp('^' + row.route.replace(/:[a-zA-Z]+/g, '[^/]+') + '/?$').test(location.pathname))?.id ?? 'unmapped'
   const originalSocket = window.WebSocket
   const sockets = new Set()
   let state, pending = new Set()
-  const reads = new Set(['GetAppSettings', 'GetProjectSettings', 'InspectInterruptedWork', 'ListHarnesses', 'SessionActivity', 'ListPreviews'])
+  const reads = new Set(['GetAppSettings', 'GetProjectSettings', 'InspectInterruptedWork', 'ListHarnesses', 'SessionActivity', 'ListPreviews', 'GetLearning', 'GetIncidents', 'GetHarnessCatalog', 'GetGuidance'])
   // The app keeps its own protocol and handlers; only its transport points at this run's backend.
   class IsolatedSocket extends EventTarget {
     static CONNECTING = 0; static OPEN = 1; static CLOSING = 2; static CLOSED = 3
@@ -25,11 +26,13 @@ export async function mount(container, context) {
         else if (message._tag === 'LoadTranscript') this.emit({ _tag: 'Transcript', sessionId: message.sessionId, entries: await run.transport.request('query', 'transcript', { sessionId: message.sessionId }) })
         else if (message._tag === 'Command') {
           try {
-            const result = await run.transport.request(reads.has(message.command._tag) ? 'query' : 'mutation', 'command', message.command)
+            const read = reads.has(message.command._tag)
+            const result = await run.transport.request(read ? 'query' : 'mutation', 'command', message.command)
             this.emit({ _tag: 'CommandResult', id: message.id, ok: true, result })
-            this.emit({ _tag: 'Snapshot', snapshot: await run.transport.request('query', 'snapshot', {}) })
+            if (!read) this.emit({ _tag: 'Snapshot', snapshot: await run.transport.request('query', 'snapshot', {}) })
           } catch (error) { this.emit({ _tag: 'CommandResult', id: message.id, ok: false, error: error.message }) }
         }
+        else if (message._tag?.startsWith('Terminal')) this.emit({ _tag: 'TerminalError', workItemId: message.workItemId, message: 'Terminals are unavailable in this isolated preview. Verify terminal behavior in Orca’s own tests.' })
       })()
       pending.add(task); void task.finally(() => pending.delete(task)).catch(() => {})
     }
