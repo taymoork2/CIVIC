@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { discoverSourceVersions, figmaFile, githubRepository, sourcePage, gitHistory, previewVersion } from './review-source-versions.mjs'
+import { discoverSourceVersions, figmaFile, githubRepository, sourcePage, gitHistory, previewVersion, gitSources } from './review-source-versions.mjs'
 import { mkdtemp, writeFile, mkdir, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -77,6 +77,23 @@ test('worktrees beyond the first hundred remain discoverable without rendering t
   const searched = await discoverSourceVersions([project], [], { query: 'draft-149' }, { command: commandMany, github: async () => '[]' })
   assert.equal(searched.total, 1)
   assert.equal(searched.items[0].path, '/draft-149')
+})
+
+test('explicit preview discovery inspects only selected worktrees before running status commands', async () => {
+  const inspected = [], calls = []
+  const selected = async (root, args) => {
+    calls.push(args[0])
+    if (args[0] === 'worktree') return Array.from({ length: 150 }, (_, i) => `worktree /draft-${i}\0HEAD base\0branch refs/heads/draft-${i}\0\0`).join('')
+    if (args[0] === 'status') inspected.push(root)
+    return command(root, args)
+  }
+  const result = await gitSources('/app', 'src', new Set(), selected, '', { paths: ['/draft-149'] })
+  assert.deepEqual(inspected, ['/draft-149'])
+  assert.deepEqual(result.items.map(row => row.path), ['/draft-149'])
+  assert.equal(calls.includes('for-each-ref'), false, 'Connecting selected previews does not enumerate unrelated branches')
+  inspected.length = 0
+  assert.deepEqual((await gitSources('/app', 'src', new Set(), selected, '', { paths: [] })).items, [])
+  assert.deepEqual(inspected, [])
 })
 
 test('history compares the recorded commit with main, including divergence and a later merge', async () => {

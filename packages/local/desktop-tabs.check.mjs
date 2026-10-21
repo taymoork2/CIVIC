@@ -59,6 +59,44 @@ test('failed opens release their lease and malformed tab requests are rejected',
   assert.equal(events.includes('release:a'), false, 'The original shared host stays running')
 })
 
+test('switching a checkout replaces its tab in place at the tab limit and releases the old host', async () => {
+  const { tabs, events } = fixture()
+  await tabs.open({ appId: 'a', name: 'App A', key: 'main' })
+  const main = tabs.snapshot().active
+  await tabs.open({ appId: 'b', name: 'App B', key: 'other-app' })
+  const other = tabs.snapshot().active
+  await tabs.open({ appId: 'a', name: 'App A', key: 'branch' }, main)
+  const state = tabs.snapshot()
+  assert.equal(state.tabs.length, 2)
+  assert.equal(state.tabs[0].id, state.active)
+  assert.equal(state.tabs[1].id, other)
+  assert.ok(events.includes('destroy:main'))
+  assert.ok(events.includes('release:main'))
+  assert.equal(events.includes('destroy:other-app'), false)
+  await tabs.open({ appId: 'b', name: 'App B', key: 'other-app' }, state.active)
+  assert.equal(tabs.snapshot().active, other)
+  assert.equal(tabs.snapshot().tabs.length, 2, 'An already open checkout is focused without discarding either view')
+})
+
+test('cancelled or failed checkout switches preserve the current view and its edits', async () => {
+  const { tabs, events, views, allow } = fixture()
+  await tabs.open({ appId: 'a', name: 'App A', key: 'main' })
+  const main = tabs.snapshot().active
+  tabs.register(views[0].id, { appId: 'a', name: 'App A', key: 'main', version: 'Main', dirty: true })
+  await tabs.open({ appId: 'a', name: 'App A', key: 'branch' }, main)
+  assert.equal(tabs.snapshot().active, main)
+  assert.equal(tabs.snapshot().tabs.length, 1)
+  assert.equal(tabs.snapshot().tabs[0].dirty, true)
+  assert.ok(events.includes('release:branch'))
+  assert.equal(events.includes('destroy:main'), false)
+  await assert.rejects(tabs.open({ appId: 'a', name: 'App A', key: 'fail' }, main), /Unavailable/)
+  assert.equal(tabs.snapshot().active, main)
+  allow()
+  await tabs.open({ appId: 'a', name: 'App A', key: 'branch' }, main)
+  assert.equal(tabs.snapshot().tabs.length, 1)
+  assert.ok(events.includes('destroy:main'))
+})
+
 test('a failed renderer load removes its pending tab and preserves the active view', async () => {
   const changed = [], released = []
   let controller
@@ -68,19 +106,30 @@ test('a failed renderer load removes its pending tab and preserves the active vi
   await controller.open({ appId: 'app', name: 'App', key: 'main' })
   const active = controller.snapshot().active
   await assert.rejects(controller.open({ appId: 'app', name: 'App', key: 'broken' }), /Load failed/)
+  await assert.rejects(controller.open({ appId: 'app', name: 'App', key: 'broken' }, active), /Load failed/)
   assert.equal(controller.snapshot().active, active)
   assert.equal(changed.at(-1), 1)
-  assert.deepEqual(released, ['broken'])
+  assert.deepEqual(released, ['broken', 'broken'])
 })
 
 test('preload combines independent draft guards and exposes no bridge to embedded frames', async () => {
   const source = await readFile(new URL('desktop-preload.cjs', import.meta.url), 'utf8')
-  const calls = [], exposed = []
-  const require = name => { assert.equal(name, 'electron'); return { contextBridge: { exposeInMainWorld: (name, api) => exposed.push(api) }, ipcRenderer: { on() {}, invoke: async (name, input) => calls.push({ name, input }) } } }
+  const calls = [], exposed = [], events = new Map()
+  const require = name => { assert.equal(name, 'electron'); return { contextBridge: { exposeInMainWorld: (name, api) => exposed.push(api) }, ipcRenderer: { on: (name, listener) => events.set(name, listener), invoke: async (name, input) => calls.push({ name, input }) } } }
   runInNewContext(source, { require, process: { isMainFrame: false } })
   assert.equal(exposed.length, 0)
   runInNewContext(source, { require, process: { isMainFrame: true, versions: { electron: '44.9.0', chrome: '152.0.0', node: '26.0.0' } } })
   const api = exposed[0]
+  let opened = 0
+  events.get('civic-desktop:settings')()
+  events.get('civic-desktop:settings')()
+  const unsubscribe = api.onSettings(() => opened++)
+  assert.equal(opened, 1, 'Settings requested during workspace loading opens once after subscribing')
+  events.get('civic-desktop:settings')()
+  assert.equal(opened, 2)
+  unsubscribe()
+  api.onSettings(() => opened++)
+  assert.equal(opened, 2, 'A delivered request is never replayed')
   assert.equal(JSON.stringify(api.runtime), JSON.stringify({ electron: '44.9.0', chrome: '152.0.0' }))
   await api.setDraft('review', true)
   await api.register({ key: 'main', dirty: false })

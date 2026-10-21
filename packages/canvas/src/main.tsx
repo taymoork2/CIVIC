@@ -5,7 +5,7 @@ import { bindProjectRequests } from './project-request'
 import 'virtual:civic-shell-style'
 import { TooltipProvider } from '@civic/shell/ui/tooltip'
 import { Notifications } from '@civic/shell/ui/notifications'
-import { AppCanvas } from './app-canvas'
+import { Workspace } from './workspace'
 import { extension } from './extension'
 import { ProjectWindow } from './project-window'
 import { initializeTheme } from '@civic/shell/theme'
@@ -18,4 +18,4 @@ if (params.has('desktop')) document.documentElement.dataset.civicDesktop = param
 const page = Object.entries(extension.pages ?? {}).find(([name]) => params.get(name) === '1')
 if (params.has('openProject')) createRoot(document.getElementById('review-root')!).render(<ProjectWindow />)
 else if (page) await page[1]()
-else createRoot(document.getElementById('review-root')!).render(<Notifications><TooltipProvider delay={350}><AppCanvas /></TooltipProvider></Notifications>)
+else createRoot(document.getElementById('review-root')!).render(<Notifications><TooltipProvider delay={350}><Workspace /></TooltipProvider></Notifications>)

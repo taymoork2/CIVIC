@@ -158,6 +158,27 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
   const storePath = join(dataDir, 'feedback.json')
   const proposalPath = join(dataDir, 'proposals.json')
   const thumbnails = new Map()
+  let fixtureBrowser, fixtureBrowserTimer, closed = false
+  const closeFixtureBrowser = async () => {
+    clearTimeout(fixtureBrowserTimer)
+    const pending = fixtureBrowser; fixtureBrowser = null
+    try { await (await pending)?.close() } catch {}
+  }
+  const fixtureRenderer = async () => {
+    clearTimeout(fixtureBrowserTimer)
+    if (closed) throw Error('Snapshot host is closed')
+    if (fixtureBrowser && (await fixtureBrowser).isConnected?.() === false) await closeFixtureBrowser()
+    fixtureBrowser ??= Promise.resolve().then(() => launchFixtureBrowser())
+    try { return await fixtureBrowser }
+    catch (error) { fixtureBrowser = null; throw error }
+  }
+  const releaseFixtureBrowser = () => {
+    if (closed) return
+    clearTimeout(fixtureBrowserTimer)
+    // Reuse Chrome across the visible capture queue; each screen still gets a fresh context.
+    fixtureBrowserTimer = setTimeout(() => void closeFixtureBrowser(), 1000)
+    fixtureBrowserTimer.unref?.()
+  }
   const fixtureDemand = new Map()
   let fixtureQueue = Promise.resolve()
   const fixtureDir = join(dataDir, 'fixtures')
@@ -204,12 +225,12 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
           try { const png = await readFile(contentFile); await writeFile(file, png, { mode: 0o600 }); await remember(); return png }
           catch (error) { if (error.code !== 'ENOENT') throw error }
         }
-        const renderer = browser ?? (viewport || pixelRatio === 2 ? await launchFixtureBrowser?.() : undefined)
+        const renderer = browser ?? (launchFixtureBrowser ? await fixtureRenderer() : undefined)
         // Legacy adapters choose their own context defaults; explicit captures must keep the requested viewport and density.
         const captureBrowser = renderer && (viewport || pixelRatio === 2) ? { newContext: options => renderer.newContext({ ...options, ...(viewport ? { viewport } : {}), deviceScaleFactor: pixelRatio }) } : renderer
         let png
         try { png = await captureFixture({ ...node, ...(viewport ? { viewport } : {}), pixelRatio }, { origin: `http://${host}`, cookie: `review_session=${session}`, browser: captureBrowser }) }
-        finally { if (renderer && !browser) await renderer.close() }
+        finally { if (renderer && !browser) releaseFixtureBrowser() }
         if (source !== (metadata.fixtureSource ?? metadata.revision.source)) throw Object.assign(new Error('Source changed during capture. Retry snapshots.'), { status: 409 })
         await writeFile(file + '.tmp', png, { mode: 0o600 }); await rename(file + '.tmp', file)
         if (contentFile !== file) { await writeFile(contentFile + '.tmp', png, { mode: 0o600 }); await rename(contentFile + '.tmp', contentFile) }
@@ -617,7 +638,7 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
       else json(error.status ?? 503, { error: error.status ? error.message : 'Could not save or load review feedback. Your unsent note is retained; retry.' })
     }
   }
-  return Object.assign(middleware, { refreshCoverage: () => bridge?.get() })
+  return Object.assign(middleware, { refreshCoverage: () => bridge?.get(), close: async () => { closed = true; await closeFixtureBrowser() } })
 }
 
 /** Use the installed automation API without initializing another project's test runner. */

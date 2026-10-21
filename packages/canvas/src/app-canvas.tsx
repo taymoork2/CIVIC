@@ -1,4 +1,4 @@
-import { useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
 import { appFlows, flowContent, screenSize, type MapScenario, type MapScreen } from './app-map'
 import { extension, useGuidedSession } from './extension'
 import project from 'virtual:civic-project'
@@ -54,6 +54,10 @@ export function AppCanvas() {
   const projectPicker = useRef<ProjectPickerHandle>(null)
   const desktop = useDesktopProjects()
   const desktopPickerTrigger = useRef<HTMLButtonElement>(null)
+  const openProjectPicker = useCallback((replace: boolean, trigger: HTMLButtonElement) => {
+    desktopPickerTrigger.current = trigger
+    projectPicker.current?.open('work', replace)
+  }, [])
   const searchTrigger = useRef<HTMLButtonElement>(null)
   const [outline, setOutline] = useState(() => window.innerWidth >= 1180)
   const [outlineQuery, setOutlineQuery] = useState('')
@@ -174,7 +178,7 @@ export function AppCanvas() {
   return <main className="rehearsal app-rehearsal civic-workspace" data-application-root={applicationRoot} data-preview-state={frameReadiness.state} data-preview-source={frameReadiness.source}>
       <WorkspaceSettings open={settingsOpen} setOpen={setSettingsOpen} frame={selectedLiveFrame} canvasDetail={canvasDetail} changeDetail={changeDetail} projectName={project.app?.name ?? project.name} onConnections={() => projectPicker.current?.open('sources')} />
       <WorkspaceSearch open={searchOpen} setOpen={setSearchOpen} name={project.app?.name ?? project.name} flows={flows} actions={searchActions} loading={!bridge.data && !bridge.error} frame={selectedLiveFrame} canvas={stage} trigger={searchTrigger} focusFlow={id => { setOutlineQuery(''); focus(id); if (window.innerWidth < 1180) setOutline(false) }} focusScreen={screen => { setOutlineQuery(''); focusScreen(screen); if (window.innerWidth < 1180) setOutline(false) }} />
-      <WorkspaceHeader desktop={desktop} pickerTrigger={desktopPickerTrigger} openPicker={() => projectPicker.current?.open('work')} projects={<ProjectPicker ref={projectPicker} readiness={frameReadiness} hideTrigger={Boolean(window.civicDesktop)} returnFocus={desktopPickerTrigger} tabDirty={blocked || guided.running || !!preview} onSearch={() => setSearchOpen(true)} searchOpen={searchOpen} selectedScreen={scenarios.find(row => row.id === selectedScreen?.scenario)} focusScreen={id => { const screen = flows.flatMap(flow => flow.screens).find(screen => screen.scenario === id); if (screen) { focusScreen(screen); session.start(screen, true) } }} blocked={blocked} activeRun={guided.running || !!preview} />}
+      <WorkspaceHeader desktop={desktop} openPicker={openProjectPicker} projects={<ProjectPicker ref={projectPicker} readiness={frameReadiness} hideTrigger={Boolean(window.civicDesktop)} returnFocus={desktopPickerTrigger} tabDirty={blocked || guided.running || !!preview} onSearch={() => setSearchOpen(true)} searchOpen={searchOpen} selectedScreen={scenarios.find(row => row.id === selectedScreen?.scenario)} focusScreen={id => { const screen = flows.flatMap(flow => flow.screens).find(screen => screen.scenario === id); if (screen) { focusScreen(screen); session.start(screen, true) } }} blocked={blocked} activeRun={guided.running || !!preview} />}
         searchTrigger={searchTrigger} onSearch={() => setSearchOpen(true)} onSettings={() => setSettingsOpen(true)} playLabel={failedPreview ? 'Retry preview' : 'Play'} playPressed={!guidedSelected || guided.mode === 'play'} playDisabled={guided.saving || generic && !project.preview || failedPreview && blocked} onPlay={playSelection}
         showEdit={guidedSelected || guided.mode === 'edit'} editPressed={guidedSelected && guided.mode === 'edit'} editDisabled={!guidedSelected} onEdit={() => { guided.setMode('edit'); setPane('inspect') }}
         pane={pane} setPane={setPane} proposals={proposals} />

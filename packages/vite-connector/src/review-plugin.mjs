@@ -71,7 +71,8 @@ export function civicReview({ host, canvas = host, repo = resolve(host, '../..')
       const exclude = [...new Set([...(config.optimizeDeps?.exclude ?? []), '@civic/canvas', '@civic/shell', '@civic/vite-connector'])]
       // Installed canvas entries are inside node_modules; Vite's source crawl misses these CommonJS shims.
       const include = [...new Set([...(config.optimizeDeps?.include ?? []), '@civic/shell > @base-ui/react > use-sync-external-store/shim', '@civic/shell > @base-ui/react > use-sync-external-store/shim/with-selector'])]
-      config.optimizeDeps = { ...config.optimizeDeps, entries: [join(canvas, 'src/main.tsx'), join(canvas, 'src/frame.tsx')], include, exclude }
+      // Scan the lazy workspace up front so cold starts never replace React's dependency bundle mid-render.
+      config.optimizeDeps = { ...config.optimizeDeps, entries: [join(canvas, 'src/main.tsx'), join(canvas, 'src/app-canvas.tsx'), join(canvas, 'src/frame.tsx'), join(canvasRoots[1], 'src/ui/*.tsx')], include, exclude }
     },
     hotUpdate({ file }) {
       // Source refresh updates inventory; mounted runs keep their document and draft.
@@ -138,7 +139,7 @@ export function civicReview({ host, canvas = host, repo = resolve(host, '../..')
       })
       await auth.refreshCoverage()
       server.watcher.add(watchPaths())
-      server.httpServer?.once('close', () => { clearTimeout(debounce); void runs?.close() })
+      server.httpServer?.once('close', () => { clearTimeout(debounce); void auth.close(); void runs?.close() })
       server.middlewares.use(async (req, res, next) => { let pending; do { pending = refreshing; await pending } while (pending !== refreshing); return auth(req, res, next) })
       // These entries never mount the app's live providers.
       server.middlewares.use(async (req, res, next) => {

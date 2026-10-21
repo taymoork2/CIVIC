@@ -25,19 +25,22 @@ export function projectTabs({ acquire, release, createView, confirm, changed = (
       Object.assign(tab, { appId: input.appId, name: input.name, version: input.version, key: input.key, dirty: input.dirty }); publish()
     },
     select,
-    open(selection) { return serial(async () => {
+    open(selection, replaceId) { return serial(async () => {
       if (!selection || !['appId', 'name', 'key'].every(key => typeof selection[key] === 'string' && selection[key].length > 0 && selection[key].length <= 240) || selection.workspace !== undefined && typeof selection.workspace !== 'string' || selection.scenario !== undefined && (typeof selection.scenario !== 'string' || selection.scenario.length > 240)) throw Error('Invalid project tab')
       const previous = tabs.find(tab => tab.appId === selection.appId && tab.key === selection.key && tab.selection.workspace === selection.workspace)
       if (previous) { select(previous.id); if (selection.scenario) previous.view.focusScenario(selection.scenario); return snapshot() }
-      if (tabs.length >= limit) throw Error(`Close a project tab before opening another (${limit} maximum).`)
+      const replaced = replaceId === undefined ? null : tabs.find(tab => tab.id === replaceId)
+      if (replaceId !== undefined && !replaced) throw Error('Unknown project tab')
+      if (!replaced && tabs.length >= limit) throw Error(`Close a project tab before opening another (${limit} maximum).`)
       const lease = randomUUID(), initial = Boolean(selection.initial)
-      let view, tab
+      let view, tab, allowed = true
       try {
         const url = await acquire(selection, lease)
         view = await createView(url, selection)
         tab = { id: randomUUID(), appId: selection.appId, name: selection.name, key: selection.key, version: '', selection, lease, initial, view }
         tabs.push(tab)
         await view.load?.()
+        if (replaced?.dirty) allowed = await confirm(replaced.name, 'switch checkout')
       } catch (error) {
         if (tab) tabs.splice(tabs.indexOf(tab), 1)
         view?.destroy()
@@ -45,7 +48,15 @@ export function projectTabs({ acquire, release, createView, confirm, changed = (
         publish()
         throw error
       }
+      if (replaced) {
+        if (!allowed) {
+          tabs.splice(tabs.indexOf(tab), 1); await dispose(tab); publish(); return snapshot()
+        }
+        tabs.splice(tabs.indexOf(tab), 1)
+        tabs.splice(tabs.indexOf(replaced), 1, tab)
+      }
       select(tab.id)
+      if (replaced) await dispose(replaced)
       return snapshot()
     }) },
     close(id) { return serial(async () => {

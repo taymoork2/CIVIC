@@ -71,11 +71,42 @@ test('explicit high resolution fixtures retain their viewport and use a separate
   const get = query => fetch(origin + '/api/review/fixture.png?screen=screen' + query, { headers })
   assert.equal(await (await get('&width=800&height=600&pixelRatio=2')).text(), 'retina')
   assert.deepEqual(contexts, [{ viewport: { width: 800, height: 600 }, deviceScaleFactor: 2 }])
-  assert.equal(closed, 1)
+  assert.equal(closed, 0, 'Queued captures retain their browser while every context stays isolated')
   assert.equal(await (await get('')).text(), 'standard')
   assert.equal((await get('&pixelRatio=8')).status, 400)
   assert.equal(await (await get('&width=800&height=600&pixelRatio=2')).text(), 'retina')
-  assert.equal(closed, 1, 'A matching high resolution image is reused')
+  assert.equal(closed, 0, 'A matching high resolution image is reused')
+  await middleware.close()
+  assert.equal(closed, 1, 'Closing the host releases its retained browser')
+})
+
+test('visible snapshots reuse one browser, retain fresh contexts and recover a disconnected renderer', async t => {
+  const dataDir = await mkdtemp(join(tmpdir(), 'civic-browser-reuse-'))
+  let launches = 0, contexts = 0, closed = 0, disconnected = false
+  const custom = adapter(async (node, { browser }) => {
+    const context = await browser.newContext({ viewport: node.viewport })
+    await context.close()
+    return Buffer.from(String(context.id))
+  })
+  custom.launchFixtureBrowser = async () => {
+    launches++; disconnected = false
+    return { isConnected: () => !disconnected, newContext: async () => ({ id: ++contexts, close: async () => {} }), close: async () => { closed++ } }
+  }
+  const middleware = await reviewMiddleware({ dataDir, metadata: { ...snapshot, scenarios: [{ id: 'screen' }] }, adapter: custom })
+  const server = createServer((req, res) => middleware(req, res, () => res.end('Review')))
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
+  t.after(async () => { await middleware.close(); await new Promise(resolve => server.close(resolve)) })
+  const origin = `http://127.0.0.1:${server.address().port}`, headers = await localHeaders(origin)
+  const get = width => fetch(origin + `/api/review/fixture.png?screen=screen&width=${width}&height=852`, { headers })
+  assert.equal(await (await get(393)).text(), '1')
+  assert.equal(await (await get(394)).text(), '2')
+  assert.equal(launches, 1)
+  assert.equal(contexts, 2, 'A browser process is shared, never a screen context or its storage')
+  disconnected = true
+  assert.equal(await (await get(395)).text(), '3')
+  assert.equal(launches, 2)
+  await new Promise(resolve => setTimeout(resolve, 1100))
+  assert.equal(closed, 2, 'An idle snapshot browser closes without retaining background work')
 })
 
 test('parallel CIVIC ports keep independent browser sessions on the same hostname', async t => {

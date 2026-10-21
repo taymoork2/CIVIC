@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type RefObject } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { ChevronDown, Plus, X } from '@civic/shell/icons'
 import { IconButton } from '@civic/shell/ui/icon-button'
 import { Tabs, TabsList, TabsTrigger } from '@civic/shell/ui/tabs'
@@ -21,6 +21,7 @@ declare global {
       register: (input: { appId: string; name: string; key: string; version: string; dirty: boolean }) => Promise<unknown>
       setDraft: (name: string, dirty: boolean) => Promise<unknown> | undefined
       openProject: (input: DesktopSelection) => Promise<unknown>
+      replaceProject: (input: DesktopSelection) => Promise<unknown>
       select: (id: string) => Promise<unknown>
       close: (id: string) => Promise<unknown>
     }
@@ -47,7 +48,7 @@ export function useDesktopProjects() {
   return state
 }
 
-export function DesktopProjectTabs({ state, openPicker, pickerTrigger }: { state: DesktopState; openPicker: () => void; pickerTrigger: RefObject<HTMLButtonElement | null> }) {
+export function DesktopProjectTabs({ state, openPicker }: { state: DesktopState; openPicker: (replace: boolean, trigger: HTMLButtonElement) => void }) {
   const root = useRef<HTMLDivElement>(null)
   const [limit, setLimit] = useState(1)
   useEffect(() => {
@@ -63,10 +64,10 @@ export function DesktopProjectTabs({ state, openPicker, pickerTrigger }: { state
   return <div ref={root} className="civic-desktop-tabs">
     <Tabs value={state.active ?? ''} onValueChange={id => { void window.civicDesktop?.select(id).catch(failure) }} className="cv:min-w-0 cv:flex-1">
       <TabsList variant="line" aria-label="Open project checkouts" className="cv:h-auto cv:min-h-12 cv:w-full cv:justify-start cv:p-0">
-        {visible.map(tab => <div key={tab.id} className="civic-desktop-tab"><TabsTrigger value={tab.id} title={`${tab.name} · ${tab.version}`} className="cv:h-12 cv:min-w-0 cv:flex-1 cv:justify-start"><span className="cv:grid cv:min-w-0 cv:gap-0.5 cv:text-left"><span className="cv:truncate">{tab.name}</span><small className="cv:truncate">{tab.version || 'Opening…'}</small></span>{tab.dirty && <span aria-label="Live run or unsaved edits">●</span>}</TabsTrigger><IconButton icon={X} label={`Close ${tab.name} · ${tab.version || 'project'}`} onClick={() => { void window.civicDesktop?.close(tab.id).catch(failure) }} /></div>)}
+        {visible.map(tab => <div key={tab.id} className="civic-desktop-tab"><TabsTrigger value={tab.id} title={`${tab.name} · ${tab.version}${tab.id === state.active ? ' · Switch branch or version' : ''}`} aria-haspopup={tab.id === state.active ? 'dialog' : undefined} onClick={event => { if (tab.id === state.active) openPicker(true, event.currentTarget) }} className="cv:h-12 cv:min-w-0 cv:flex-1 cv:justify-start"><span className="cv:grid cv:min-w-0 cv:gap-0.5 cv:text-left"><span className="cv:truncate">{tab.name}</span><small className="cv:truncate">{tab.version || 'Opening…'}</small></span>{tab.dirty && <span aria-label="Live run or unsaved edits">●</span>}{tab.id === state.active && <ChevronDown data-icon="inline-end" aria-hidden="true" />}</TabsTrigger><IconButton icon={X} label={`Close ${tab.name} · ${tab.version || 'project'}`} onClick={() => { void window.civicDesktop?.close(tab.id).catch(failure) }} /></div>)}
       </TabsList>
     </Tabs>
     {hidden.length > 0 && <DropdownMenu><DropdownMenuTrigger render={<IconButton icon={ChevronDown} label="More project tabs" />} /><DropdownMenuContent align="end"><DropdownMenuGroup><DropdownMenuLabel>Open checkouts</DropdownMenuLabel>{hidden.map(tab => <DropdownMenuItem key={tab.id} onClick={() => { void window.civicDesktop?.select(tab.id).catch(failure) }}><span>{tab.name} · {tab.version}</span></DropdownMenuItem>)}</DropdownMenuGroup></DropdownMenuContent></DropdownMenu>}
-    <IconButton ref={pickerTrigger} icon={Plus} label="Open project or checkout" onClick={openPicker} />
+    <IconButton icon={Plus} label="Open project or checkout" onClick={event => openPicker(false, event.currentTarget)} />
   </div>
 }

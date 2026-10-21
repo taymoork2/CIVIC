@@ -25,10 +25,11 @@ import { VersionRow } from './version-row'
 const versionLabel = (kind: string) => ({ design: 'Design reference', live: 'Running app', isolated: 'Test instance' })[kind] ?? 'Branch checkout'
 const versionIcon = (kind: string) => ({ design: Pencil, live: Monitor, isolated: Layers })[kind] ?? GitBranch
 
-export type ProjectPickerHandle = { open: (mode: 'work' | 'sources' | 'existing' | 'new') => void }
+export type ProjectPickerHandle = { open: (mode: 'work' | 'sources' | 'existing' | 'new', replaceTab?: boolean) => void }
 export function ProjectPicker({ blocked, activeRun, selectedScreen, focusScreen, onSearch, searchOpen, ref, hideTrigger = false, returnFocus, tabDirty = false, readiness: activeReadiness }: { blocked: boolean; activeRun: boolean; selectedScreen?: DraftScreen; focusScreen: (id: string) => void; onSearch: () => void; searchOpen: boolean; ref?: Ref<ProjectPickerHandle>; hideTrigger?: boolean; returnFocus?: RefObject<HTMLButtonElement | null>; tabDirty?: boolean; readiness?: ConnectionReadiness }) {
   const trigger = useRef<HTMLButtonElement>(null)
   const [open, setOpen] = useState(false)
+  const [replaceTab, setReplaceTab] = useState(false)
   const [mode, setMode] = useState<'work' | 'sources' | 'existing' | 'new'>('work')
   const [name, setName] = useState('')
   const [root, setRoot] = useState('')
@@ -94,7 +95,7 @@ export function ProjectPicker({ blocked, activeRun, selectedScreen, focusScreen,
     try {
       const target = connections?.projects.find(row => row.key === key && row.workspace === workspace)
       if (window.civicDesktop && target && !target.refreshRequired) {
-        await window.civicDesktop.openProject({ appId: target.app.id, name: target.app.name, key, workspace, scenario })
+        await window.civicDesktop[replaceTab ? 'replaceProject' : 'openProject']({ appId: target.app.id, name: target.app.name, key, workspace, scenario })
         setBusy(false); close(); return
       }
       const result = await request<{ redirect?: string }>({ action: 'select', key, workspace })
@@ -117,7 +118,8 @@ export function ProjectPicker({ blocked, activeRun, selectedScreen, focusScreen,
     } catch (error) { setError((error as Error).message); setBusy(false) }
   }
   const canSwitch = !blocked && (!activeRun || acknowledged)
-  const openPicker = () => {
+  const openPicker = (replace = false) => {
+    setReplaceTab(replace)
     setMode('work'); setBrowseAppId(project.app?.id ?? project.id); setVersion(''); setExpandedVersion(''); setCreated(null); setDiscovery(null); setAcknowledged(false); setError(''); versionsData.reset(); setOffset(0); setVersionQuery(''); setOpen(true)
   }
   const chooseApp = (app: Connections['apps'][number]) => {
@@ -137,11 +139,11 @@ export function ProjectPicker({ blocked, activeRun, selectedScreen, focusScreen,
     const SourceIcon = versionIcon(item.row.kind)
     return <div className="civic-preview-option" data-readiness={health.state} aria-current={current ? 'true' : undefined}>
       <SourceIcon className="civic-version-source-icon" role="img" aria-label={versionLabel(item.row.kind)} /><span className="civic-version-text"><strong>{label}</strong><span className="civic-version-meta"><span>{description}</span><span title={health.reason}>{healthLabel}</span>{details.revision && !revision?.startsWith(details.revision) && <code>{details.revision.slice(0, 8)}</code>}{details.edited && <span>Local changes</span>}{item.row.refreshRequired && <span>Update available</span>}</span></span>
-      {current && !item.row.refreshRequired ? <span className="civic-version-viewing"><Check aria-hidden="true" />Viewing</span> : <Button variant={version === item.id ? 'secondary' : 'outline'} size="sm" aria-label={`${item.row.refreshRequired ? 'Update' : 'Open'} ${label} preview`} disabled={busy || loadingConnections || (blocked && !window.civicDesktop) || !item.row.available || !item.row.preview} onClick={() => choosePreview(item)}>{item.row.refreshRequired ? 'Update' : 'Open'}</Button>}
+      {current && !item.row.refreshRequired ? <span className="civic-version-viewing"><Check aria-hidden="true" />Viewing</span> : <Button variant={version === item.id ? 'secondary' : 'outline'} size="sm" aria-label={`${item.row.refreshRequired ? 'Update' : replaceTab ? 'Switch to' : 'Open'} ${label} preview`} disabled={busy || loadingConnections || (blocked && (!window.civicDesktop || replaceTab)) || !item.row.available || !item.row.preview} onClick={() => choosePreview(item)}>{item.row.refreshRequired ? 'Update' : replaceTab ? 'Switch' : window.civicDesktop ? 'Open tab' : 'Open'}</Button>}
     </div>
   }
   const openCommand = () => { setOpen(false); onSearch() }
-  useImperativeHandle(ref, () => ({ open: next => { if (busy) return; openPicker(); if (next === 'sources') setMode('sources'); else if (next !== 'work') start(next) } }))
+  useImperativeHandle(ref, () => ({ open: (next, replace = false) => { if (busy) return; openPicker(replace); if (next === 'sources') setMode('sources'); else if (next !== 'work') start(next) } }))
   const content = <>
       <header><div><DialogTitle>{mode === 'work' ? 'Projects & versions' : mode === 'sources' ? `${project.app?.name ?? project.name} · Connections` : mode === 'existing' ? 'Connect an existing app' : 'Start a new project'}</DialogTitle></div><div className="civic-project-header-actions">{mode === 'work' && <Button variant="ghost" size="sm" onClick={openCommand}><Search aria-hidden="true" />Search<kbd>⌘K</kbd></Button>}<IconButton icon={X} label="Close project picker" disabled={busy} onClick={close} /></div></header>
       {error && <Alert variant="destructive" className="rh-project-error"><AlertDescription>{error}</AlertDescription></Alert>}
@@ -192,7 +194,7 @@ export function ProjectPicker({ blocked, activeRun, selectedScreen, focusScreen,
       {mode !== 'work' && <footer><p>Saved reviews and recordings stay with their versions.</p>{mode !== 'sources' && (blocked ? <p role="status">Save proposal edits and finish or retry pending captures before switching.</p> : activeRun && created && <Field orientation="horizontal" className="rh-project-ack"><FieldLabel className="cv:flex cv:min-h-11 cv:w-full cv:items-center cv:gap-2"><Checkbox checked={acknowledged} onCheckedChange={checked => setAcknowledged(checked)} />Start a fresh preview. Keep saved evidence.</FieldLabel></Field>)}</footer>}
   </>
   return <>
-      <Button ref={trigger} variant="ghost" className={`rh-project-trigger cv:grid cv:h-11 cv:gap-x-2 cv:gap-y-0.5 cv:px-2 cv:py-1${hideTrigger ? ' cv:hidden' : ''}`} aria-haspopup="dialog" aria-expanded={open} onClick={openPicker} title={`Project · ${project.app?.name ?? project.name}\n${versionLabel(currentKind)} · ${currentName}`}>
+      <Button ref={trigger} variant="ghost" className={`rh-project-trigger cv:grid cv:h-11 cv:gap-x-2 cv:gap-y-0.5 cv:px-2 cv:py-1${hideTrigger ? ' cv:hidden' : ''}`} aria-haspopup="dialog" aria-expanded={open} onClick={() => openPicker()} title={`Project · ${project.app?.name ?? project.name}\n${versionLabel(currentKind)} · ${currentName}`}>
         <span className="rh-project-name cv:leading-tight">{project.app?.name ?? project.name}</span><ChevronDown className="cv:size-3.5" aria-hidden="true" /><span className="rh-project-version cv:leading-4"><CurrentIcon className="cv:size-3" role="img" aria-label={versionLabel(currentKind)} /><span>{caption.name}</span>{caption.revision && <small>{caption.revision}</small>}</span>
       </Button>
     <Dialog open={open} onOpenChange={value => { if (!value && !busy) close() }}><DialogContent onKeyDown={event => { if (mode === 'work' && !busy && projectShortcut(event.nativeEvent)) { event.preventDefault(); openCommand() } }} showCloseButton={false} finalFocus={searchOpen ? false : hideTrigger ? returnFocus : trigger} className={`rh-project-dialog cv:gap-0 cv:p-0 cv:max-w-[calc(100vw-2rem)] cv:sm:max-w-[calc(100vw-2rem)] ${mode === 'work' ? 'civic-project-modal cv:flex cv:flex-col cv:w-[920px]' : 'cv:block cv:w-[640px]'}`}>{open && content}</DialogContent></Dialog>

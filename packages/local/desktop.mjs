@@ -47,7 +47,7 @@ async function open(initialURL = origin + '/review') {
   const trusted = url => trustedWindow(url, origin, (url, options) => reviewSession.fetch(url, options))
   context.tabs = projectTabs({
     changed: publish,
-    confirm: async name => (await dialog.showMessageBox(window, { type: 'question', message: 'Close ' + name + '?', detail: 'This checkout has a live run or unsaved edits. Saved reviews and recordings are retained.', buttons: ['Keep tab open', 'Close tab'], defaultId: 0, cancelId: 0 })).response === 1,
+    confirm: async (name, action) => (await dialog.showMessageBox(window, { type: 'question', message: action === 'switch checkout' ? 'Switch checkout for ' + name + '?' : 'Close ' + name + '?', detail: 'This checkout has a live run or unsaved edits. Saved reviews and recordings are retained.', buttons: action === 'switch checkout' ? ['Keep checkout', 'Switch checkout'] : ['Keep tab open', 'Close tab'], defaultId: 0, cancelId: 0 })).response === 1,
     acquire: async (selection, lease) => {
       if (selection.initial) return initialURL
       const result = await request({ action: 'open-window', key: selection.key, workspace: selection.workspace, lease })
@@ -110,7 +110,7 @@ async function open(initialURL = origin + '/review') {
   return context
 }
 
-for (const action of ['state', 'register', 'open', 'select', 'close', 'appearance', 'set-appearance']) ipcMain.handle('civic-desktop:' + action, async (event, input) => {
+for (const action of ['state', 'register', 'open', 'replace', 'select', 'close', 'appearance', 'set-appearance']) ipcMain.handle('civic-desktop:' + action, async (event, input) => {
   const context = [...windows].find(context => context.tabs.owns(event.sender.id))
   if (!context || event.senderFrame !== event.sender.mainFrame || !localReviewOrigin(event.senderFrame.url) || new URL(event.senderFrame.url).pathname !== '/review') throw Error('Untrusted desktop sender')
   if (action === 'set-appearance') {
@@ -122,9 +122,10 @@ for (const action of ['state', 'register', 'open', 'select', 'close', 'appearanc
   if (action === 'appearance' || action === 'set-appearance') return appearance()
   if (action === 'state') return context.stateFor(event.sender.id)
   if (action === 'register') context.tabs.register(event.sender.id, input)
-  if (action === 'open') {
+  if (action === 'open' || action === 'replace') {
     if (!input || input.initial !== undefined) throw Error('Invalid project tab request')
-    await context.tabs.open({ appId: input.appId, name: input.name, key: input.key, workspace: input.workspace, scenario: input.scenario })
+    if (action === 'replace' && context.tabs.snapshot().active !== context.tabs.idForView(event.sender.id)) throw Error('Only the active project tab can switch checkouts')
+    await context.tabs.open({ appId: input.appId, name: input.name, key: input.key, workspace: input.workspace, scenario: input.scenario }, action === 'replace' ? context.tabs.idForView(event.sender.id) : undefined)
   }
   if (action === 'select') context.tabs.select(input)
   if (action === 'close') { await context.tabs.close(input); if (!context.tabs.snapshot().tabs.length) context.window.close() }

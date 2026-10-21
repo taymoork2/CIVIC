@@ -8,7 +8,7 @@ import { DetailsMenu, ViewportPicker, type WorkspacePanel } from './workspace-to
 import type { PreviewViewport } from './viewport-presets'
 
 type HeaderProps = {
-  desktop: ReturnType<typeof useDesktopProjects>; pickerTrigger: RefObject<HTMLButtonElement | null>; openPicker: () => void; projects: ReactNode
+  desktop: ReturnType<typeof useDesktopProjects>; openPicker: (replace: boolean, trigger: HTMLButtonElement) => void; projects: ReactNode
   searchTrigger: RefObject<HTMLButtonElement | null>; onSearch: () => void
   onSettings: () => void
   playLabel: string; playPressed: boolean; playDisabled: boolean; onPlay: () => void
@@ -16,10 +16,10 @@ type HeaderProps = {
   pane: WorkspacePanel | null; setPane: (pane: WorkspacePanel | null) => void; proposals: number
 }
 
-export function WorkspaceHeader({ desktop, pickerTrigger, openPicker, projects, searchTrigger, onSearch, onSettings, playLabel, playPressed, playDisabled, onPlay, showEdit, editPressed, editDisabled, onEdit, pane, setPane, proposals }: HeaderProps) {
+export function WorkspaceHeader({ desktop, openPicker, projects, searchTrigger, onSearch, onSettings, playLabel, playPressed, playDisabled, onPlay, showEdit, editPressed, editDisabled, onEdit, pane, setPane, proposals }: HeaderProps) {
   return <header className="rh-brand">
     {!window.civicDesktop && <strong>CIVIC</strong>}
-    {window.civicDesktop && <DesktopProjectTabs state={desktop} pickerTrigger={pickerTrigger} openPicker={openPicker} />}
+    {window.civicDesktop && <DesktopProjectTabs state={desktop} openPicker={openPicker} />}
     {projects}
     <div className="civic-workspace-actions">
       <IconButton ref={searchTrigger} icon={Search} label="Search this project" shortcut="⌘K" onClick={onSearch} />

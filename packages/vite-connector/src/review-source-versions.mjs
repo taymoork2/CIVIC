@@ -88,10 +88,10 @@ export async function previewVersion(project, kind) {
   history.main = main && history.status === 'same'
   return { sourceName, version: { id, name: versionName, description, kind: kind === 'design' ? 'design' : 'implementation', history } }
 }
-export async function gitSources(root, source, connectedRoots, command = git, query = '') {
+export async function gitSources(root, source, connectedRoots, command = git, query = '', { paths } = {}) {
   const base = await command(root, ['rev-parse', '--verify', 'refs/heads/main']).catch(() => command(root, ['rev-parse', '--verify', 'HEAD']))
   const blocks = (await command(root, ['worktree', 'list', '--porcelain', '-z'])).split('\0\0').filter(Boolean)
-  const trees = blocks.map(block => Object.fromEntries(block.split('\0').filter(Boolean).map(line => { const i = line.indexOf(' '); return i < 0 ? [line, true] : [line.slice(0, i), line.slice(i + 1)] })))
+  const trees = blocks.map(block => Object.fromEntries(block.split('\0').filter(Boolean).map(line => { const i = line.indexOf(' '); return i < 0 ? [line, true] : [line.slice(0, i), line.slice(i + 1)] }))).filter(tree => !paths || paths.includes(tree.worktree))
   const needle = query.trim().toLowerCase(), matches = tree => `${tree.branch ?? ''} ${tree.worktree}`.toLowerCase().includes(needle)
   if (needle) trees.sort((a, b) => Number(matches(b)) - Number(matches(a)))
   const items = []
@@ -109,6 +109,7 @@ export async function gitSources(root, source, connectedRoots, command = git, qu
     const connected = connectedRoots.has(tree.worktree)
     items.push({ id: `worktree:${tree.worktree}`, type: 'worktree', title: branch ?? (connected ? 'Installed app source' : dirty ? `Uncommitted work · ${tree.worktree.split('/').at(-2)}` : `Detached checkout · ${tree.HEAD.slice(0, 8)}`), detail: unknown ? 'Status unavailable' : dirty ? 'Uncommitted changes' : 'Clean checkout', path: tree.worktree, source, branch, revision: tree.HEAD, updatedAt, dirty, connected, active: unknown || connected || dirty || ahead > 0 || branch === 'main' })
   }))
+  if (paths) return { items, limited }
   const branches = await command(root, ['for-each-ref', `--no-merged=${base}`, '--sort=-committerdate', '--format=%(refname:short)%00%(objectname)%00%(committerdate:iso-strict)', 'refs/heads']).catch(() => '')
   for (const line of branches.split('\n').filter(Boolean)) {
     const [branch, revision, updatedAt] = line.split('\0')

@@ -21,7 +21,7 @@ import { projectWindows } from './project-windows.mjs'
 const config = JSON.parse(await readFile(join(store, 'local-config.json'), 'utf8'))
 // Linked isolated workspaces reuse the main workspace's worktree builds.
 const orcaSource = config.orcaRuntimeSource ?? '/Users/taymoor/.orca-dogfood/app'
-const refreshOrca = worktreeConnections(orcaSource, tree => buildWorktree(store, orcaSource, tree))
+const refreshOrca = worktreeConnections(orcaSource, tree => buildWorktree(store, orcaSource, tree), { paths: config.orcaPreviewSources })
 const refreshLaundry = config.laundrySource && worktreeConnections(config.laundrySource, async tree => {
   // Reuse Laundry's synthetic adapter; source checkouts and their dependencies are never modified.
   const project = loadProject(store, { manifest: join(config.laundry, 'civic.project.json'), applicationRoot: tree.path })

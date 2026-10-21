@@ -20,6 +20,43 @@ test('the canvas imports only React, the CIVIC shell, its virtual modules and it
   }
 })
 
+test('cold workspace startup shows Suspense feedback, recovers from a failed chunk and compiles the screen tree', { timeout: 90000 }, async t => {
+  const store = await realpath(await mkdtemp(join(tmpdir(), 'civic-workspace-loading-')))
+  const server = await startCanvas({ project: join(notebook, 'civic.project.json'), store, port: 0, logLevel: 'silent' })
+  t.after(() => server.close())
+  const origin = `http://127.0.0.1:${server.httpServer.address().port}`
+  const browser = await moduleReviewAdapter.launchFixtureBrowser()
+  t.after(() => browser.close())
+  const tab = await browser.newPage({ viewport: { width: 390, height: 844 } })
+  const errors = []
+  tab.on('pageerror', error => errors.push(error.message))
+  tab.on('response', response => { if (response.status() === 504) errors.push(`Cold dependency reload: ${response.url()}`) })
+  let release
+  const held = new Promise(resolve => { release = resolve })
+  await tab.route('**/src/app-canvas.tsx*', async route => { await held; await route.continue() })
+  t.after(() => release())
+  await tab.goto(origin + '/review', { waitUntil: 'domcontentloaded' })
+  const loading = tab.getByRole('status', { name: 'Loading workspace', exact: true })
+  await loading.waitFor()
+  assert.equal(await tab.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true)
+  release()
+  await tab.locator('.app-nav-section button', { hasText: 'Write a note' }).waitFor({ state: 'attached' })
+  assert.equal(await loading.count(), 0)
+  const code = await (await tab.request.get(`${origin}/@fs${canvasRoot}/src/fixture-picture.tsx`)).text()
+  assert.match(code, /react.compiler.runtime/, 'the actual Vite host emits compiler memoization for screen snapshots')
+  await tab.close()
+
+  const failed = await browser.newPage()
+  failed.on('pageerror', error => errors.push(error.message))
+  await failed.route('**/src/app-canvas.tsx*', route => route.abort('failed'))
+  await failed.goto(origin + '/review')
+  await failed.getByRole('alert', { name: 'Workspace unavailable', exact: true }).waitFor()
+  await failed.unroute('**/src/app-canvas.tsx*')
+  await failed.getByRole('button', { name: 'Reload workspace', exact: true }).click()
+  await failed.locator('.app-nav-section button', { hasText: 'Write a note' }).waitFor()
+  assert.deepEqual(errors, [])
+})
+
 test('the standalone canvas opens a module app with no host workspace and draws its journey', async (t) => {
   const store = await realpath(await mkdtemp(join(tmpdir(), 'civic-canvas-')))
   const server = await startCanvas({ project: join(notebook, 'civic.project.json'), store, port: 0, logLevel: 'silent' })

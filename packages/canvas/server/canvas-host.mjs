@@ -23,7 +23,8 @@ export const defaultStore = () => resolve(process.env.CIVIC_STORE ?? join(homedi
  */
 export function canvasPlugins({ store = defaultStore(), connectors = {}, runtime = runtimeService, review = () => ({}), picker = {}, project: connection = {}, designRoot, restart } = {}) {
   let appRoot
-  return [react(), serverFunctionsPlugin({ appRoot: () => { try { return appRoot ??= loadProject(store, connection).root } catch { return null } }, side: 'client' }), civicReview({
+  // Compile CIVIC's UI only; connected projects own their build configuration.
+  return [react({ compiler: true, include: [join(canvasRoot, 'src/**/*.{js,jsx,ts,tsx}'), resolve(canvasRoot, '../shell/src/**/*.{js,jsx,ts,tsx}')], exclude: [] }), serverFunctionsPlugin({ appRoot: () => { try { return appRoot ??= loadProject(store, connection).root } catch { return null } }, side: 'client' }), civicReview({
     host: canvasRoot,
     canvas: canvasRoot,
     repo: store,
