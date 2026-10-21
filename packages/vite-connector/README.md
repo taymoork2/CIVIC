@@ -30,14 +30,14 @@ civicReview({
 })
 ```
 
-`review` returns the shell's options; `runtime` starts the isolated backend when the app declares one. An adapter kind other than `module` needs a connector. A connector without its own `inventory` is indexed from the scenario registry, like a module app. Laundry's (`apps/web/scripts/review-laundry-connector.mjs`) shows the whole interface: its own index and fixture fingerprint inputs, module substitutes for app boot, auth and server routes, a checked in-memory source overlay, the packages the app and review must share, the app's CSS for review frames, and a canvas extension (`canvasExtension`) with its flow layout and guided towel run. The connector itself names nothing from Laundry, and its checks enforce that it imports only Node, Vite and the shell. A module app can name its own canvas extension in its manifest (`adapter.extension`); a connector's `canvasExtension` takes its place.
+`review` returns the shell's options; `runtime` starts the isolated backend when the app declares one. An adapter kind other than `module` needs a connector. A connector without its own `inventory` is indexed from the scenario registry, like a module app. Example's (`apps/web/scripts/review-example-connector.mjs`) shows the whole interface: its own index and fixture fingerprint inputs, module substitutes for app boot, auth and server routes, a checked in-memory source overlay, the packages the app and review must share, the app's CSS for review frames, and a canvas extension (`canvasExtension`) with its flow layout and guided towel run. The connector itself names nothing from Example, and its checks enforce that it imports only Node, Vite and the shell. A module app can name its own canvas extension in its manifest (`adapter.extension`); a connector's `canvasExtension` takes its place.
 
 ## CIVIC's shared store
 
 ```js
 import { civicShared } from '@civic/vite-connector/civic'
 
-review: () => ({ adapter, shared: civicShared({ repo, product: 'laundry' }) })
+review: () => ({ adapter, shared: civicShared({ repo, product: 'example' }) })
 ```
 
 `civicShared` runs CIVIC's `civic` CLI, so canvas notes become annotations in the reviewed repository's git common directory and can be handed to agents as work requests (decision 0007). It finds the CLI through `CIVIC_ROOT`, or else in the CIVIC checkout this package came from, and returns null when there is none. `product` is the app's product ID in CIVIC's graphs: a whole-screen note anchors to `target:<product>.<scenario>`, and the Contract panel reads that target with `civic screen`.

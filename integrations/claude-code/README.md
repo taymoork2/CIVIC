@@ -16,7 +16,7 @@ The MCP server runs with `CIVIC_AGENT=claude-code`. `CIVIC_FOR` defaults to the 
 /plugin install civic@civic
 ```
 
-The plugin is copied into Claude Code's plugin cache, so it finds CIVIC through `CIVIC_HOME`, or through the project itself when you work inside the CIVIC repository. For a product repository such as Laundry, set `CIVIC_HOME` to a CIVIC checkout before starting Claude Code. Each tool takes a `cwd` argument, so a claim or fix is recorded on the line of the worktree Claude is actually working in. CIVIC makes no model calls.
+The plugin is copied into Claude Code's plugin cache, so it finds CIVIC through `CIVIC_HOME`, or through the project itself when you work inside the CIVIC repository. For a product repository such as Example, set `CIVIC_HOME` to a CIVIC checkout before starting Claude Code. Each tool takes a `cwd` argument, so a claim or fix is recorded on the line of the worktree Claude is actually working in. CIVIC makes no model calls.
 
 ## Codex
 

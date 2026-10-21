@@ -43,6 +43,9 @@ README and architecture decisions before changing its boundaries.
   installed-app checks, and real-device/deployment acceptance. Report limits.
 - Keep access keys and credentials out of logs, screenshots, exports, and commits.
   Preserve authentication, origin checks, loopback defaults, and Electron sandboxing.
+- Keep connected-project adapters, designs, screenshots, and real-project validation
+  reports in ignored local storage. Tracked examples and checks must be synthetic
+  and must not require a named private project or a developer-specific checkout.
 - Delete only verified, owned, regenerable artifacts within a checked boundary.
   Preserve source and evidence; respect deletion guards and external ownership.
 
@@ -56,7 +59,7 @@ README and architecture decisions before changing its boundaries.
 | Local app adapters, preview hosts, Electron lifecycle | `packages/local/` |
 | Graph, import, review records, discovery | `graph/`, `importers/`, `review/`, `crawl/` |
 
-- Fix shared behavior in its owner rather than duplicating Orca/Laundry or
+- Fix shared behavior in its owner rather than duplicating project-specific or
   browser/Electron implementations. Keep app-specific behavior in adapters.
 - Use shared shadcn/Base UI components and semantic tokens for shell UI. Preserve
   accessibility, focus, keyboard behavior, contrast, and narrow-window usability.
@@ -81,7 +84,7 @@ README and architecture decisions before changing its boundaries.
 - Commit, merge, push, publish statuses, or dispatch GitHub CI only within the
   user's authorization. Preserve unrelated work when grouping commits.
 - Report what changed, the checks actually run, and material remaining risks.
-  Keep detailed evidence in `docs/dogfood-reports/`; keep these instructions short.
+  Keep private validation evidence in ignored local storage; keep these instructions short.
 
 See [README.md](README.md), [architecture decisions](docs/decisions), and the
 [local runtime guide](packages/local/README.md) for details. Machine paths,

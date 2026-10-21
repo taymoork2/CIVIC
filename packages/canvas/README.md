@@ -30,11 +30,36 @@ Then `pnpm exec civic-canvas --project ./civic.project.json`. Signoff proves thi
 
 ## Hosting it elsewhere
 
-`canvasPlugins({ store, connectors, runtime, review })` returns the Vite plugins for a host of your own: React, and `civicReview` from `@civic/vite-connector` pointed at this package. A host that already has its own Vite config, like Laundry's `apps/web`, passes `canvas: canvasRoot` (from `@civic/canvas/root`) to `civicReview` instead.
+`canvasPlugins({ store, connectors, runtime, review })` returns the Vite plugins for a host of your own: React, and `civicReview` from `@civic/vite-connector` pointed at this package. A host that already has its own Vite config, like Example's `apps/web`, passes `canvas: canvasRoot` (from `@civic/canvas/root`) to `civicReview` instead.
 
 ## Extending the canvas
 
-A connector's `canvasExtension(project)` names a module whose default export is a `CanvasExtension` (`src/extension.ts`). Every field is optional: its own journey graph, flow order and sections, a guided run (a flow played continuously in its own frame, with presentation proposals), the scenarios that run through the preview adapter, extra frame parameters, and an older workspace. Laundry's extension is `apps/web/src/review/canvas-extension.ts`. An app without a connector names its own in its manifest (`"adapter": { "extension": "src/canvas-extension.js" }`); `examples/pantry` files its flows under the manifest's navigation and orders them. Without either, the canvas uses CIVIC's own layout. A guided run (`guidedFlow` and `useGuidedSession`) is offered only to connector apps; the canvas's checks drive one with a check fixture (`src/check-fixtures/guided-extension.tsx`) on the Pantry app under a connector of its own.
+### Preview appearance
+
+Preview appearance is independent of CIVIC's shell. System follows the operating
+system; captures and recordings retain the resolved light or dark scheme. The
+frame supplies `data-theme`, the `dark` class, and `color-scheme`.
+
+For apps with named themes, declare their choices in `civic.project.json`:
+
+```json
+"appearance": {
+  "themes": [{ "id": "paper", "label": "Paper" }, { "id": "ocean", "label": "Ocean" }],
+  "defaultTheme": "paper"
+}
+```
+
+Export `setAppearance({ theme, appTheme })` from the preview entry and call the
+app's own theme API. It runs before mount and on live changes, and may return a
+promise. Declared themes require this hook; unknown themes are refused. Keep it
+reversible: if an update fails, CIVIC reapplies the previous appearance without
+remounting the app. Projects without named themes need no manifest change.
+
+The Vite plugin owns serving, transforms, and the virtual preview entry. The
+browser adapter owns screen mounting, synthetic state, and the app's theme API.
+Existing manifests and recordings remain valid.
+
+A connector's `canvasExtension(project)` names a module whose default export is a `CanvasExtension` (`src/extension.ts`). Every field is optional: its own journey graph, flow order and sections, a guided run (a flow played continuously in its own frame, with presentation proposals), the scenarios that run through the preview adapter, extra frame parameters, and an older workspace. Example's extension is `apps/web/src/review/canvas-extension.ts`. An app without a connector names its own in its manifest (`"adapter": { "extension": "src/canvas-extension.js" }`); `examples/pantry` files its flows under the manifest's navigation and orders them. Without either, the canvas uses CIVIC's own layout. A guided run (`guidedFlow` and `useGuidedSession`) is offered only to connector apps; the canvas's checks drive one with a check fixture (`src/check-fixtures/guided-extension.tsx`) on the Pantry app under a connector of its own.
 
 The canvas imports only React, `@civic/shell`, its own virtual modules and itself; its checks enforce that.
 
@@ -56,7 +81,7 @@ An app with a runtime entry (`adapter.runtime`) runs live in an isolated worker 
 
 - **HTTP APIs** (`createFetchRuntime(seed)` returning `{ fetch(request) }`): the preview calls `context.startRuntime({ routes: ['/api/'], ... })`, and the page's own `fetch` calls go to the run. Writes are recorded with their requests and responses and checked on replay. See `examples/tasks`.
 - **TanStack Start server functions** (`createServerFnRuntime(seed)` returning `{ seed?, state?(), context?(), fetch?(request) }`): the canvas rewrites each app module's `@tanstack/react-start` import (`server/server-functions.mjs`). In the preview, `createServerFn(...)` calls go to the run, GET functions as queries and POST functions as recorded mutations named `serverFn:<file>:<name>`; handler and `.server()` bodies are removed, with the imports only they used, so server-only modules never load in the page. In the run's worker the same module runs its real validators, function middleware and handlers, against module state that belongs to that run alone; the entry seeds it and `context()` stands in for what the app's auth middleware would add. Dates, maps, sets and bigints survive the trip. See `examples/reading-list`.
-- **Function backends** (`createRuntime(seed)` returning `{ seed, state(), execute(kind, name, args) }`): the backend's named queries and mutations. The preview calls them through `query(name, args)` and `mutation(name, args)` from `context.startRuntime`, usually behind the app's own client; mutations are recorded and checked on replay. See `examples/pantry`. Laundry's Convex functions use the same entry through its own client.
+- **Function backends** (`createRuntime(seed)` returning `{ seed, state(), execute(kind, name, args) }`): the backend's named queries and mutations. The preview calls them through `query(name, args)` and `mutation(name, args)` from `context.startRuntime`, usually behind the app's own client; mutations are recorded and checked on replay. See `examples/pantry`. Example's Convex functions use the same entry through its own client.
 
 Either way the run's clock, random IDs and browser storage are pinned (`src/runtime-session.ts`).
 

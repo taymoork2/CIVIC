@@ -1,6 +1,6 @@
 # @civic/shell
 
-The parts of the CIVIƆ review shell that know nothing about the application under review. Laundry App (`apps/web`) is the first adapter that consumes them.
+The parts of the CIVIƆ review shell that know nothing about the application under review. Example app (`apps/web`) is the first adapter that consumes them.
 
 | Export | Responsibility |
 |---|---|
@@ -24,13 +24,13 @@ The parts of the CIVIƆ review shell that know nothing about the application und
 
 It also takes an optional `coverage({ dataDir, metadata })` factory that opens the app's coverage bridge. The shell guards access, origin and stale inventory for `/api/review/coverage`; the bridge owns expectations, candidates and their versions.
 
-## Still inside the Laundry adapter
+## Still inside the Example adapter
 
-The canvas UI itself is now [`@civic/canvas`](../canvas), and the Vite plugin, manifest, picker, discovery, inventory and coverage bridge are [`@civic/vite-connector`](../vite-connector). These remain in `apps/web` because they import Laundry components, fixtures or vocabulary:
+The canvas UI itself is now [`@civic/canvas`](../canvas), and the Vite plugin, manifest, picker, discovery, inventory and coverage bridge are [`@civic/vite-connector`](../vite-connector). These remain in `apps/web` because they import Example components, fixtures or vocabulary:
 
-- Laundry's connector (`apps/web/scripts/review-laundry-connector.mjs`) and its canvas extension (`apps/web/src/review/canvas-extension.ts`): the flow layout, the towel journey's guided run (`towel-session.tsx`) and the older workspace.
-- The fixture frames, synthetic store and Convex runtime adapter (`laundry-frame.tsx`, `store.ts`, `adapters/`, and `scripts/review-runtime.mjs`, which indexes its Convex functions for CIVIC's run service), and the cross-route bindings (`route-actions.json`).
-- The feedback context vocabulary in `server/review-server.mjs` (personas, roles and conditions) is still Laundry's.
+- Example's connector (`apps/web/scripts/review-example-connector.mjs`) and its canvas extension (`apps/web/src/review/canvas-extension.ts`): the flow layout, the towel journey's guided run (`towel-session.tsx`) and the older workspace.
+- The fixture frames, synthetic store and Convex runtime adapter (`example-frame.tsx`, `store.ts`, `adapters/`, and `scripts/review-runtime.mjs`, which indexes its Convex functions for CIVIC's run service), and the cross-route bindings (`route-actions.json`).
+- The feedback context vocabulary in `server/review-server.mjs` (personas, roles and conditions) is still Example's.
 
 ## Checks
 

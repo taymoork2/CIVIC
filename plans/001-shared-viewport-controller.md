@@ -28,7 +28,7 @@ const changeViewport = async (size: Pick<PreviewViewport, 'width' | 'height'>) =
 
 `packages/canvas/src/viewport-controls.tsx:8-24` separately initializes state and uses `useEffect(..., [frame])`, then calls `preview.setViewport(value)`. `run-controls.tsx:67` always renders those controls. `app-canvas.tsx:352` passes only `onViewportChange={rememberViewport}` back up.
 
-`viewport-presets.ts` already owns all twelve presets, `presetOf`, and validation. Valid dimensions are integer width 200–1920 and height 200–1600; theme is light/dark; text scale is 1/2. `frame.tsx` owns actual resize and runtime recording. Match `workspace-tools.tsx`'s existing Base UI/shadcn composition and `workspace-tools.test.tsx`'s Vitest style. ADR 0010's boundary is: “Laundry depends on CIVIC”; external app source is not an edit target.
+`viewport-presets.ts` already owns all twelve presets, `presetOf`, and validation. Valid dimensions are integer width 200–1920 and height 200–1600; theme is light/dark; text scale is 1/2. `frame.tsx` owns actual resize and runtime recording. Match `workspace-tools.tsx`'s existing Base UI/shadcn composition and `workspace-tools.test.tsx`'s Vitest style. ADR 0010's boundary is: “Example depends on CIVIC”; external app source is not an edit target.
 
 ## Scope
 

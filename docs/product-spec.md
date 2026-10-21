@@ -12,8 +12,6 @@ This document preserves the founding product discussion. It is a product directi
 
 In all text, including docs, code, package names, and search, the name is plain **CIVIC**. The reversed final C (D1) belongs to the wordmark only. The wordmark is drawn by mirroring a real "C" in the same font, for example `CIVI<span class="rev" aria-hidden="true">C</span>` inside an element labelled "CIVIC", with `.rev { display: inline-block; transform: scaleX(-1) }`. A logo is exported as an SVG of that same wordmark.
 
-**Rehearsal** is only an internal codename for the journey engine, meaning the canvas, scenario player, and review that came from the v0 build, and for the `journey-engine/` source folder. Another project chose that name for another purpose, so it never appears as a product or feature name.
-
 Don't use the Unicode lookalikes. `Ɔ` (U+0186) is "Latin capital open O", not a reversed C. Many fonts lack it, screen readers read it as "open O", and it breaks search and copy-paste. The true reversed C, `Ↄ` (U+2183), has even less font support.
 
 ## Source and decision status
@@ -44,7 +42,7 @@ The source is the Amp discussion in [thread T-01a0dc96-9004-70a8-92a7-d7364d854a
 | D12 | The model must work for startups, mid-size companies, and enterprises. | M11 |
 | D13 | The product starts as the Amp-hosted `tay/CIVIC` project, followed by a GitHub repository. | M13, M15 |
 | D14 | The full discussion must be documented and stored safely. | M25 |
-| D15 | The artifact graph is CIVIC's core. The journey engine is one viewer and the first web adapter, and the Fluent 2 Button conflict demo comes before more Laundry work. | [Decision 0004](decisions/0004-graph-first-journey-engine-as-viewer.md) |
+| D15 | The artifact graph is CIVIC's core. The journey engine is one viewer and the first web adapter, and the Fluent 2 Button conflict demo comes before more Example work. | [Decision 0004](decisions/0004-graph-first-journey-engine-as-viewer.md) |
 | D16 | CIVIC's shell has its own interface and does not inherit the reviewed app's design system. Real app components appear only inside the preview. | v0 Codex thread, 02:16 |
 | D17 | One persistent canvas. Explore, play, and review are capabilities reached by selecting and zooming, not separate views. Review shares the right pane with Inspect and Edit. | v0 Codex thread, 05:47 |
 | D18 | The canvas shows real, cached screen snapshots across the whole app by default. Clicking a screen makes it live in place. | v0 Codex thread, 03:19, 03:52 |
@@ -60,7 +58,7 @@ The source is the Amp discussion in [thread T-01a0dc96-9004-70a8-92a7-d7364d854a
 | D29 | The graph schema includes Component instance, Override, and Extension point. CIVIC forecasts at design time, for each platform, whether a product team's override of a library component is supported, needs a library change, or is forbidden. A design-system Card changed by a product team is the second demo after Button. | [Component change flow](component-change-flow.md) |
 | D30 | CIVIC makes no model calls (agents' write path amended by D35). It works from existing non-AI tools and static analysis of designs and codebases. Agents a team uses sit outside CIVIC, and their code arrives like anyone else's. An interface for agents (MCP, CLI, or similar) is expected eventually. | [Decision 0006](decisions/0006-deterministic-civic-for-agentic-teams.md) |
 | D31 | A read-only, deterministic contract export (`civic context`, `civic gaps`) gives any person or tool a target's full contract and the stable IDs to put in code. It ships with the Button demo. | [Decision 0006](decisions/0006-deterministic-civic-for-agentic-teams.md) |
-| D32 | A static design completeness check finds missing states, dead ends, and missing accessibility intent in designs before any code exists. It starts with component-contract and journey-shape rules on the Card demo and Laundry. | [Decision 0006](decisions/0006-deterministic-civic-for-agentic-teams.md) |
+| D32 | A static design completeness check finds missing states, dead ends, and missing accessibility intent in designs before any code exists. It starts with component-contract and journey-shape rules on the Card demo and Example. | [Decision 0006](decisions/0006-deterministic-civic-for-agentic-teams.md) |
 | D33 | The scenario player can walk design frames joined by their prototype links, labelled as design intent. Prototypes come later, and CIVIC doesn't become a WYSIWYG or no-code builder. | [Decision 0006](decisions/0006-deterministic-civic-for-agentic-teams.md) |
 | D34 | Existing products are discovered by crawling first: one CIVIC crawl loop on Playwright for web and Appium for native, with crawled states confirmed by a person. An adapter is added only where a crawl isn't enough. | [Decision 0006](decisions/0006-deterministic-civic-for-agentic-teams.md) |
 | D35 | Agents get a narrow write path through a CLI and an MCP server: claim a work request, comment, report a fix, and record an annotation. Each agent is an attributed actor acting for a named person and can't approve, decide, resolve, or write evidence. CIVIC still makes no model calls and doesn't launch agents. Amends D30. | [Decision 0007](decisions/0007-review-to-agent-loop.md) |

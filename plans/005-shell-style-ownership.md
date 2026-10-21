@@ -24,7 +24,7 @@ The live shell loads `shell.css`, `review.css`, generated shadcn CSS, and the th
 
 `ui.css` defines semantic `--civic-*` tokens, 36px control and 44px touch targets, title-bar insets, and component rules. `project-picker.css` also styles the project trigger. Existing layers make this a deliberate compatibility cascade, not proof of an active bug; removal must follow migrated consumers.
 
-Match `packages/shell/components.json`: Base UI, `base-nova`, Lucide, `cv` prefix. `ui.generated.css` is generated from `styles/ui.css`; never edit it manually. ADR 0010 keeps external app adapters in their own repositories, so do not import/edit Laundry source to simplify CIVIC's stylesheet ownership.
+Match `packages/shell/components.json`: Base UI, `base-nova`, Lucide, `cv` prefix. `ui.generated.css` is generated from `styles/ui.css`; never edit it manually. ADR 0010 keeps external app adapters in their own repositories, so do not import/edit Example source to simplify CIVIC's stylesheet ownership.
 
 ## Scope
 
@@ -47,7 +47,7 @@ Add `packages/canvas/server/shell-layout.check.mjs` and root-owned test-runner r
    - Gate: `rtk node --test packages/canvas/server/shell-layout.check.mjs` passes against the baseline or reports an explicit existing defect separately.
 3. Consolidate one component family at a time. Replace its raw controls through installed primitives, remove only now-obsolete global overrides, and retain public stylesheet paths plus functional legacy fallbacks. Keep mobile safe areas, non-drag button regions, native window controls, and portal tokens. Keep return/branch connection styles intact.
    - Gate after each family: `rtk pnpm --dir packages/shell run build:styles`, `rtk pnpm --dir packages check`, and the shell-layout browser suite pass. Regenerate once more only after additional source-class/style changes.
-4. Root dogfoods the installed Electron launcher at desktop and roughly 500px native width: header/project trigger, viewport picker, Cmd+K, modal scrolling, right pane, toast placement, and window controls. Recheck the actual runtime/launcher path first. Run `rtk pnpm --dir packages/local test:desktop` only on a prepared owned local host with a verified `CIVIC_ELECTRON_BINARY`; the current script expects Orca/Laundry registrations and writes a screenshot into its store. Do not run it against someone else's active session. Use native browser/app controls for manual UI checks.
+4. Root dogfoods the installed Electron launcher at desktop and roughly 500px native width: header/project trigger, viewport picker, Cmd+K, modal scrolling, right pane, toast placement, and window controls. Recheck the actual runtime/launcher path first. Run `rtk pnpm --dir packages/local test:desktop` only on a prepared owned local host with a verified `CIVIC_ELECTRON_BINARY`; the current script expects Example/Example registrations and writes a screenshot into its store. Do not run it against someone else's active session. Use native browser/app controls for manual UI checks.
    - Gate: root records successful desktop/narrow browser and Electron screenshots plus failures/skips. `rtk pnpm --dir packages/canvas run test:host` passes with the new suite registered.
 
 ## Done / stop / maintenance

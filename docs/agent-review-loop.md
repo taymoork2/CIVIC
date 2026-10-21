@@ -181,7 +181,7 @@ Request captures are returned as images, so the agent sees exactly what the pers
 
 **3. Screenshot and comment, as today.** `civic annotate --image shot.png --url <preview URL> "comment"`, or the MCP `annotate` call an agent makes when you paste a screenshot into the harness, stores an **unanchored** annotation: the image, the comment, the URL, and the revision when the URL is a known preview. It's tracked, handed off and resolved like any other, but it has no target, so it can't follow the product to another revision until someone anchors it on the canvas. Annotations made with a harness's own browser tools come in the same way, along with any element details the harness gives the agent.
 
-Recommended order: screenshot import and the CLI first, because they're the cheapest; then the overlay and the MCP server with the Claude Code plugin, in the Laundry slice; then Codex packaging.
+Recommended order: screenshot import and the CLI first, because they're the cheapest; then the overlay and the MCP server with the Claude Code plugin, in the Example slice; then Codex packaging.
 
 ## What changes in decision 0006
 
@@ -212,7 +212,7 @@ Annotations and work requests are collaboration records, so they start step 3's 
 This is the next build, ahead of the Card demo:
 
 1. **Records.** Line, Annotation, WorkRequest and Actor go into the graph as the start of step 3.
-2. **A first slice on the journey engine with Laundry.** Move `.review-data` into the git common directory, add layered anchors and screenshot import, add the lens switch between worktrees, and add the CLI (`civic annotate`, `civic requests`, `civic claim`, `civic report-fix`, `civic repro`) with the resolution policy. Then the capture overlay, the MCP server, and the Claude Code plugin.
+2. **A first slice on the journey engine with Example.** Move `.review-data` into the git common directory, add layered anchors and screenshot import, add the lens switch between worktrees, and add the CLI (`civic annotate`, `civic requests`, `civic claim`, `civic report-fix`, `civic repro`) with the resolution policy. Then the capture overlay, the MCP server, and the Claude Code plugin.
 3. **PR previews and design drafts** follow, once the Figma import (D27) brings drafts in. Codex packaging comes with them.
 4. **Step 5** moves the records to the shared store for teams.
 
@@ -224,6 +224,6 @@ This is the next build, ahead of the Card demo:
 | 2 | How annotations follow a change | **Approved** (founder, 2026-10-11): stable target IDs, then exact locator, otherwise "not found on this revision". Never nearest-element matching. (D37) |
 | 3 | Who can close a request | **Approved** (founder, 2026-10-11): agents never resolve, and a person decides. The founder asked that review not become a bottleneck, so a person decides through the resolution policy's three lanes, which the founder approved the same day. (D38) |
 | 4 | Where local records live | **Approved** (founder, 2026-10-11): the git common directory, shared by all worktrees. (D39) |
-| 5 | When to build it | **Approved** (founder, 2026-10-11): the next build, ahead of the Card demo. Records start step 3, then the Laundry slice. |
+| 5 | When to build it | **Approved** (founder, 2026-10-11): the next build, ahead of the Card demo. Records start step 3, then the Example slice. |
 | 6 | Lines and the design-and-code lens | **Approved** (founder, 2026-10-11) with the proposal. (D36) |
 | 7 | Harness integration | **Approved** (founder, 2026-10-11): a capture overlay in previews, an MCP server with thin packages per harness, and screenshot import. (D40) |

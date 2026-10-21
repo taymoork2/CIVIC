@@ -1,7 +1,5 @@
 # CIVIC graph schema
 
-Roadmap step 1. This package is the CIVIC-owned schema that every importer writes and every view reads ([decision 0004](../docs/decisions/0004-graph-first-journey-engine-as-viewer.md)). It lives outside `journey-engine/` and imports nothing from the journey engine or Laundry. It has no runtime dependencies and makes no model calls ([decision 0006](../docs/decisions/0006-deterministic-civic-for-agentic-teams.md)). A test enforces both.
-
 Storage is plain JSON files until the Button demo shows what storage it needs. The event log from [onboarding and ingestion](../docs/onboarding-and-ingestion.md#4b-how-data-gets-back-to-the-engine) comes later; a graph document here is the current state that log would produce.
 
 ## A graph document
@@ -14,7 +12,7 @@ Types are in [`src/schema.ts`](src/schema.ts). Two worked examples validate clea
 
 - [`examples/fluent-button.graph.json`](examples/fluent-button.graph.json) is the decision 0001 Button: one semantic Button, its React v9, iOS and Compose components with each variant's mapping, and an open Contract Conflict for the Android kit's Neutral default. It is hand-entered from decision 0001's table, so its source revision is `decision-0001` and its evidence is static. It stays as a small test fixture; the [Fluent Button demo](../demo/fluent-button) builds the same Button from read data with the [importers](../importers).
 - [`examples/card-override.graph.json`](examples/card-override.graph.json) is an illustrative Card with web and iOS libraries, a product screen, an instance on it, and two overrides to forecast. The [Card demo](../demo/card) builds a fuller Card from Fluent's source and Figma exports.
-- [`examples/review-loop.graph.json`](examples/review-loop.graph.json) is an illustrative review to agent loop on Laundry: a person, their agent and CIVIC as actors, main and a worktree line, three annotations (anchored, a path, and an unanchored screenshot), and one work request in each lane.
+- [`examples/review-loop.graph.json`](examples/review-loop.graph.json) is an illustrative review to agent loop on Example: a person, their agent and CIVIC as actors, main and a worktree line, three annotations (anchored, a path, and an unanchored screenshot), and one work request in each lane.
 
 ## Records
 
@@ -212,15 +210,6 @@ A component page also lists the component's code stories per platform ([`src/com
 
 A portal can be read through a lens ([`src/lens.ts`](src/lens.ts), decision 0013 point 3): one design line, one code line and one environment, from the review store (`civic lines --json` prints them). With `--lens "design=<line>&code=<line>&environment=<id>" --lines <file>`, each step adds what it looks like through the lens: the design line's frames that design the screen and whether each changed from the line's base, the run evidence taken on the code line's head or one of its previews (runs from other lines are set aside and counted), and whether the environment runs the code line at its head or behind it. An environment that serves the journey canvas gives each screen a frame to play it there. The lens goes into each story's link and each `<civic-story>`'s `lens` attribute. A library release is a line too (`civic release-line`), so a code line can be a package version.
 
-Laundry's and the Card demo's portals are built with their graphs: [`projects/laundry/out/portal`](../projects/laundry/out/portal/index.html) and [`demo/card/out/portal`](../demo/card/out/portal/index.html).
-
-```sh
-bin/civic stories projects/laundry/out/graph.json                         # the stories as text, or --json
-bin/civic portal demo/card/out/resolved.graph.json --out portal --title "Shop"
-bin/civic portal projects/laundry/out/graph.json --out portal --canvas http://127.0.0.1:3010 --design projects/laundry/out/design.json --tapes projects/laundry/inputs/tapes
-bin/civic portal projects/laundry/out/graph.json --out portal --lens "code=line:git.main&environment=environment:laundry.review-server" --lines projects/laundry/out/lines.json
-```
-
 ## The object map: `civic objects`
 
 The object map ([decision 0014](../docs/decisions/0014-design-methodologies-are-profiles.md), point 8, [`src/objects.ts`](src/objects.ts)) asks a designer's object-first questions of what was built, from object records and the `shows` links that tie targets to them. Only declared and observed ties count; a tie CIVIC suggested from a screen's name waits for a person to confirm or dismiss it.
@@ -248,8 +237,6 @@ All three are advisory in the gate, to the target's owners and the profile's, si
 { "methods": [{ "graph": "demo/card/out/resolved.graph.json", "profiles": ["demo/card/contract/method.json"] }] }
 ```
 
-`civic method <file> <profile>...` prints each profile's tiers with their members, then its findings. The Card demo declares Atomic Design for Shop ([`out/method.md`](../demo/card/out/method.md)), the Fluent Button demo places Fluent's tokens in token tiers ([`out/token-tiers.md`](../demo/fluent-button/out/token-tiers.md)), and Laundry has a stand-in Atomic declaration ([`out/method.md`](../projects/laundry/out/method.md)).
-
 ## Contract export
 
 Two read-only queries over a graph (D31). Both are deterministic and print Markdown, or JSON with `--json`.
@@ -259,7 +246,7 @@ Two read-only queries over a graph (D31). Both are deterministic and print Markd
 
 ## One screen: `civic screen`
 
-`civic screen <target-id> [<file>...] [--json]` answers what the graphs know about one screen ([`src/screen.ts`](src/screen.ts)): the journeys that contain it, its paths on and whether they count, the evidence about it, and the gate's findings on it, its evidence or an open [collaboration record](#collaboration-records) about it (such as a coverage gap), each marked as blocking, advisory or held by the baseline, and which evidence is stale. With no files it reads the graphs and baseline in `civic.check.json` and uses the first graph that has the screen. It is how a viewer reads the graph: the journey canvas's Contract panel shows it for the selected screen (decision 0004). A `designs` list in `civic.check.json` names design files (`civic.design/0`), and the frames that name the screen are listed under Design: the viewports, themes and text scales the design shows it at. They are design intent, shown beside the runs and never counted as evidence. Laundry's Open Design reference is configured this way.
+`civic screen <target-id> [<file>...] [--json]` answers what the graphs know about one screen ([`src/screen.ts`](src/screen.ts)): the journeys that contain it, its paths on and whether they count, the evidence about it, and the gate's findings on it, its evidence or an open [collaboration record](#collaboration-records) about it (such as a coverage gap), each marked as blocking, advisory or held by the baseline, and which evidence is stale. With no files it reads the graphs and baseline in `civic.check.json` and uses the first graph that has the screen. It is how a viewer reads the graph: the journey canvas's Contract panel shows it for the selected screen (decision 0004). A `designs` list in `civic.check.json` names design files (`civic.design/0`), and the frames that name the screen are listed under Design: the viewports, themes and text scales the design shows it at. They are design intent, shown beside the runs and never counted as evidence. Example's Open Design reference is configured this way.
 
 ## The gate: `civic check`
 
@@ -273,11 +260,7 @@ Two read-only queries over a graph (D31). Both are deterministic and print Markd
 - **Baseline.** Each finding has a stable key (kind, subject, platform and what tells it apart, such as the state). A baselined finding doesn't block, so old debt doesn't stop a change, and a new one is raised at the change that caused it. `--update-baseline` writes every current blocking finding to the baseline, which shows up in review as a diff. Findings that are gone are listed as fixed until the baseline is updated. An invalid graph can't be baselined.
 - **Counts.** The report gives each check's count with its denominator, such as 1 of 4 conflicts open, never a score.
 - **Status.** `--post` records the result as a `civic` commit status through the GitHub CLI, from a clean working tree, the way `bin/signoff` records `signoff`. There are no GitHub Actions.
-- **Stale evidence.** Evidence proves the code at the revision it was captured at (roadmap step 6). A `freshness` rule in `civic.check.json` names a graph, the tools whose evidence proves code in this repository, and where that code lives. Evidence is stale when git shows a change there since its revision, uncommitted edits included, or when git doesn't know the revision. It's reported as advisory with a count, such as 0 of 27, and `civic screen` and the Contract panel mark it. Evidence pinned to an upstream release, such as Fluent's source, has no rule. When the code is in another repository, as Laundry's is ([decision 0010](../docs/decisions/0010-laundry-depends-on-civic.md)), the rule names it under `checkout`, with an environment variable that holds the path to a checkout of it; `watch` is then relative to that checkout. With the variable unset there's nothing to compare with, so no evidence is called stale, and the gate prints how old the newest capture is and which variable to set.
-
-  ```json
-  { "freshness": [{ "graph": "projects/laundry/out/graph.json", "tools": ["playwright"], "watch": ["apps/web", "convex", "packages"], "checkout": { "repository": "taymoork2/washcloset", "env": "LAUNDRY_CHECKOUT" } }] }
-  ```
+- **Stale evidence.** Evidence proves the code at the revision it was captured at (roadmap step 6). A `freshness` rule in `civic.check.json` names a graph, the tools whose evidence proves code in this repository, and where that code lives. Evidence is stale when git shows a change there since its revision, uncommitted edits included, or when git doesn't know the revision. It's reported as advisory with a count, such as 0 of 27, and `civic screen` and the Contract panel mark it. Evidence pinned to an upstream release, such as Fluent's source, has no rule. When the code is in another repository, as Example's is ([decision 0010](../docs/decisions/0010-project-dependency-boundary.md)), the rule names it under `checkout`, with an environment variable that holds the path to a checkout of it; `watch` is then relative to that checkout. With the variable unset there's nothing to compare with, so no evidence is called stale, and the gate prints how old the newest capture is and which variable to set.
 
 - **The change and the side that moved** (roadmap step 10, [`src/change.ts`](src/change.ts)). `--since <ref>` also runs the checks on the graphs as they were at the merge base of `<ref>` and HEAD, the last revision both shared, and lists only the findings this change introduced or resolved. Each introduced finding is traced to the side that moved: the records each side of a conflict rests on (its record and its evidence) are compared between the two revisions. The owners of the side that moved are **asked**, since the change is theirs to fix or decide; the other sides' owners are **told**. A side with no owners of its own, such as a design kit side backed only by a Figma export, takes the conflict's owners no other side claims. Recapturing evidence with the same result moves nothing. When neither side moved, as when a decision is withdrawn, everyone the finding names is asked. Stale evidence is left out of the comparison, since it is measured against the working tree. `--json` adds the result as `change`.
 - **Story differences** (decision 0013 point 4, [`src/story-diff.ts`](src/story-diff.ts)). With `--since`, the summary also shows the change as differences in the stories each role reads. A component that moved (its contract, an implementation, an extension point, a product use or an override) lists every journey step whose screen uses it and the code stories it adds or removes. A journey step lists when it is new or gone, when its outcome changed (it now fails, or now passes), or when its screen or a component it uses moved. Sources are ignored, so a recapture with the same results shows nothing. `--json` adds them as `change.stories`.
@@ -293,26 +276,5 @@ Two read-only queries over a graph (D31). Both are deterministic and print Markd
 A conflict counts as decided only when a Decision record is in force on it ([Decisions](#decisions)). An agent-written decision makes the graph invalid, so it never clears a finding.
 
 ## Commands
-
-```sh
-cd graph
-pnpm install --frozen-lockfile
-pnpm run check      # types
-pnpm test           # validation, forecast, review, completeness, gate and boundary tests
-pnpm run validate   # validate the example graphs
-node src/cli.ts forecast examples/card-override.graph.json override:shop.order-summary.card.price-badge
-node src/cli.ts overrides examples/card-override.graph.json instance:shop.order-summary.card
-node src/cli.ts completeness examples/card-override.graph.json target:shop.checkout
-node src/cli.ts gaps examples/fluent-button.graph.json
-cd .. && bin/civic objects projects/laundry/out/graph.json           # Laundry's stand-in object map and its findings
-bin/civic method demo/card/out/resolved.graph.json demo/card/contract/method.json   # Shop's Atomic Design tiers and findings
-cd graph
-node src/cli.ts context examples/fluent-button.graph.json semantic:button --platform android --variant neutral-default
-node src/cli.ts check ../demo/fluent-button/out/raised.graph.json     # fails: the brand outline conflict is undecided
-node src/cli.ts fixes ../demo/fluent-button/out/resolved.graph.json   # the brand outline fix awaits adoption
-cd .. && bin/civic screen target:laundry.intake.appliance                # one screen's journeys, paths, evidence and findings
-cd graph
-cd .. && bin/civic check                                             # the repository's gate
-```
 
 The package runs its TypeScript directly on Node 22.18 or later, with no build step. `bin/signoff` runs all of the above before the journey engine checks.

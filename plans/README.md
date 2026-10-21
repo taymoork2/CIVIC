@@ -4,7 +4,6 @@ Prepared on 2026-10-18 against `b99d37b2` plus the viewport-picker working chang
 
 ## Ownership and authority
 
-Execution approved on 2026-10-19. Root is the sole writer and integrator on `fix/workspace-consolidation`; work runs sequentially. The viewport/picker/navigation/Electron slice passed exact-commit `bin/signoff --no-post` at `b757d34` and was pushed to main. All six consolidation plans are implemented. Exact-code signoff passed at `605075c`, including 38 host/browser checks and the fresh Git-package installation gate. The documentation commit must pass the same exact-head gate before landing; [the acceptance report](../docs/dogfood-reports/2026-10-19-workspace-consolidation.md) records device evidence and remaining limits. The existing browser hosts and unrelated root `package.json` remain outside the candidate. No external app source or backend writes are authorized by this continuation.
 
 The root controller owns integration, this index, test-runner changes, generated CSS, final verification, and completion. One writer owns each execution checkout. Bounded workers own only their assigned plan's paths; they must preserve other work and report results to the root. Source checkouts outside CIVIC, saved reviews, connection keys, recordings, and runtime journals remain untouched.
 
@@ -70,7 +69,7 @@ When the final tree is committed under the execution task's authority, use a cle
 
 Final human-facing acceptance covers 1280px desktop, 768px narrow window, 390px phone window, and the installed Electron launcher at desktop and a narrow native window. Check focus return, keyboard search, disclosure versus selection, preview resize without draft loss, arrows during pan/zoom, notifications, and independent project windows. A skipped device/browser is a recorded limit, not a pass. Preserve Electron sandbox, context isolation, and disabled renderer Node integration.
 
-Known environment gap: the selected Orca worktree failed to resolve `effect/Effect` during the preceding viewport dogfood. That does not authorize modifying Orca's checkout or production backend. Recheck it at execution time; use owned Notebook/Tasks fixtures to distinguish CIVIC regressions from external dependency readiness, and keep actual Orca acceptance separate.
+Known environment gap: the selected Example worktree failed to resolve `effect/Effect` during the preceding viewport dogfood. That does not authorize modifying Example's checkout or production backend. Recheck it at execution time; use owned Notebook/Tasks fixtures to distinguish CIVIC regressions from external dependency readiness, and keep actual Example acceptance separate.
 
 Stop the affected stage on conflicting ownership, unexplained baseline drift, source/evidence identity changes, required external-source writes, broadened permissions, or repeated failures after one focused repair. Unaffected read-only work may continue. Prerequisite-plan changes are expected drift: root refreshes downstream excerpts and scopes before dispatch, then records the new baseline.
 

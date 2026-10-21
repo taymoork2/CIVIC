@@ -23,5 +23,5 @@ Decision 0006 kept agents entirely outside CIVIC and deferred any agent interfac
 ## Consequences
 
 - 0006's "the graph has no agent actor" is replaced by D35's attributed agent actor. Segregation of duties gains one rule: for a high-risk target, the person who delegated the fix can't be its only approver.
-- The agent interface moves from "Later, not scheduled" to the next build, ahead of the Card demo. Line, Annotation, WorkRequest, and Actor start step 3's typed records, and the first slice runs on the journey engine with Laundry.
+- The agent interface moves from "Later, not scheduled" to the next build, ahead of the Card demo. Line, Annotation, WorkRequest, and Actor start step 3's typed records, and the first slice runs on the journey engine with Example.
 - Everything else in 0006 is unchanged: no model calls inside CIVIC, no agent-drafted designs, adapters, or prototypes, and no model-suggested states.

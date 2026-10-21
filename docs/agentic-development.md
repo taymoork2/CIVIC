@@ -93,7 +93,7 @@ Every rule is static: it reads the design export, the component contracts, and t
 
 Why it matters for agentic teams: an engineer or agent given an incomplete design invents the missing states, each one differently. The completeness check moves that decision back to Design *before* building starts, and anything still missing shows up in the contract export as an explicit "not designed: ask, don't invent".
 
-Laundry's five unmapped destination states (roadmap step 4) are already a validation case for this from the implementation side. The Card demo could add the design side: a product Card mock with no empty or error state.
+Example's five unmapped destination states (roadmap step 4) are already a validation case for this from the implementation side. The Card demo could add the design side: a product Card mock with no empty or error state.
 
 ---
 
@@ -135,12 +135,6 @@ Each TV operating system is its own platform target with its own alignment state
 
 ## 5. How does CIVIC turn designs and mockups into an interactive experience before any implementation exists?
 
-**Already in the spec**
-- CIVIC isn't a drawing or authoring tool (D24). Drawing stays in design tools.
-- The scenario player plays the intended experience. Edit changes a real, versioned, testable proposal, and testing it isn't adopting it (D21).
-- Fixture jumps are labelled as jumps, evidence tiers stay separate, and a fixture jump or old screenshot is never runtime evidence.
-- The journey engine already generates a durable candidate per coverage gap: an editable prototype plus a React form scaffold (`journey-engine/REPORT.md`). It's labelled as not implementing the feature.
-
 **New proposal: three levels of "walkable", and a firm line before no-code**
 
 | Level | What plays | Built by | Labelled as |
@@ -159,7 +153,7 @@ The line: CIVIC shouldn't become a WYSIWYG or no-code builder. That's a differen
 
 **Already in the spec and roadmap**
 - Onboarding: a local manifest plus one adapter per platform. URL-only observation works without an adapter. Playwright reports, Codegen, and traces are the first QA lane (D26).
-- The adapter supplies stable state IDs, seed and reset, real-render preview, and confirmed transitions. Laundry is the working example.
+- The adapter supplies stable state IDs, seed and reset, real-render preview, and confirmed transitions. Example is the working example.
 - Cached snapshots on the canvas carry their revision, only the focused screen runs live, and replay from start is a separate capability (roadmap step 6).
 
 **New proposal: crawl first with existing tools, adapter only where a crawl isn't enough, and guided journeys from three sources**
@@ -284,7 +278,7 @@ These would change or extend the roadmap. Nothing has been changed in the repo.
 |---|---|---|---|
 | A | ~~Make agents first-class actors~~ | **Withdrawn** (founder, 2026-10-11): no agents inside CIVIC | None |
 | B | A read-only, deterministic contract export (`civic context`, `civic gaps`) | **Approved** (founder, 2026-10-11), in the Button demo | Step 2 |
-| C | Add a static design completeness check (section 3) | **Approved** (founder, 2026-10-11), starting with component-contract and journey-shape rules | Card demo (step 2) and Laundry validation (step 4) |
+| C | Add a static design completeness check (section 3) | **Approved** (founder, 2026-10-11), starting with component-contract and journey-shape rules | Card demo (step 2) and Example validation (step 4) |
 | D | ~~Add surface profiles to the schema for TV and other surfaces~~ | **Skipped** (founder, 2026-10-11): TV was an example; devices not yet researched | None |
 | H | Discover existing products by importing output from existing crawlers (section 6), with the adapter only where a crawl isn't enough | **Approved** (founder, 2026-10-11): one CIVIC crawl loop on Playwright (web) and Appium (native) | Step 4 (onboarding) |
 | E | Add the frame-walk player; prototypes later | **Approved** (founder, 2026-10-11): frame walk now, prototypes later. A deterministic assembled preview is the non-AI option to weigh when prototypes come up. Not WYSIWYG or no-code. | Step 4 |

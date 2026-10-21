@@ -6,11 +6,9 @@
 
 ## Context
 
-The founder built a journey engine in the Laundry App repository (another project named it Rehearsal, which CIVIC keeps only as the engine's codename) because they needed to see an entire application journey interactively at once. It already implements a large part of CIVIC's MVP on one real web app. The founder asked to continue from it rather than start a separate codebase.
+The founder built a journey engine in the Example app repository (another project named it Rehearsal, which CIVIC keeps only as the engine's codename) because they needed to see an entire application journey interactively at once. It already implements a large part of CIVIC's MVP on one real web app. The founder asked to continue from it rather than start a separate codebase.
 
 ## Decision
-
-Import the October 10, 2026 handoff unchanged into [`journey-engine/`](../../journey-engine/) and evolve it into CIVIC. The verbatim import was commit `893bee6` in the Amp-hosted repository, and its `SHA256SUMS` verified on import. That commit is not in the GitHub history: there the import and the changes below arrived together as `12bb16e`. Laundry App remains the first adapter. Fluent 2 ([decision 0001](0001-fluent-2-demo-design-system.md)) becomes the cross-platform adapter that proves the semantic component model.
 
 ## How the v0 engine maps to CIVIC
 
@@ -33,8 +31,3 @@ Import the October 10, 2026 handoff unchanged into [`journey-engine/`](../../jou
 - Orb setup installs dependencies and Google Chrome, and seeds the bundled thumbnails. Rendering all 176 thumbnails from scratch took 6 minutes 53 seconds in an orb.
 
 ## Consequences
-
-- CIVIC has a working base. The next work is evidence, decisions, and adapters, not a new canvas.
-- The engine's safety rules carry forward: never turn a fixture jump, failed operation, inferred edge, or old screenshot into runtime evidence.
-- The Laundry App source and its domain code still sit inside `journey-engine/source`. Extracting the CIVIC shell is a planned step, not done here. It started in [decision 0003](0003-civic-shell-package.md).
-- Portal access is personal-thread access. It is not the multiplayer permission model.

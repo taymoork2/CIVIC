@@ -1,7 +1,5 @@
 # How a project gets into CIVIC, and how CIVIC connects it
 
-Proposal, 2026-10-10, with the decisions in section 5 approved the same day. It is put together from the product spec, decision 0001 (the Fluent 2 demo), and the v4 journey engine report ([`journey-engine/REPORT.md`](../journey-engine/REPORT.md)). Today only the Laundry web adapter exists. Everything else here is a plan, not a built feature.
-
 ## Short answer
 
 Each role keeps working in its own tool. CIVIC does not copy their files. It reads each source into one graph, gives each item a stable identity, and links items across sources at shared **targets**. A target is a token, component, variant, screen, state, or journey. Where two sources disagree about the same target, CIVIC raises a **Contract Conflict** with owners. It never quietly picks a winner.
@@ -27,7 +25,7 @@ These steps follow the v4 report's onboarding proposal, adapted to all four lane
 6. **Confirm the map.** CIVIC suggests groupings and links between sources. A person confirms them and declares states that are expected but not built yet.
 7. **Stay current.** Sources are hashed. When one changes, only the affected evidence goes stale and is re-run, and open drafts are kept.
 
-The result is a local project manifest (one file) plus one adapter per platform. The acceptance bar is a second small app that connects without any Laundry code.
+The result is a local project manifest (one file) plus one adapter per platform. The acceptance bar is a second small app that connects without any Example code.
 
 ## 2. What each role connects
 
@@ -56,7 +54,7 @@ How deep each lane goes depends on its inputs (from the v4 report). Design files
 ### Engineering (app code)
 
 - Cheap discovery comes first: framework route metadata and a source scan for candidates. Syntax-aware parsing is added only where it pays for itself.
-- A small adapter gives stable state IDs, seeding and reset, a real-render preview and confirmed transitions. The Laundry adapter is the working example.
+- A small adapter gives stable state IDs, seeding and reset, a real-render preview and confirmed transitions. The Example adapter is the working example.
 - URL-only observation still works without an adapter, but it can't distinguish tabs or dialogs that share a URL.
 
 ### QA
@@ -203,11 +201,11 @@ For a full walk-through of a product team changing a design system component, se
 Two cases test the onboarding from opposite directions:
 
 - **Fluent Button** starts from design and code across three platforms, with a known mismatch between design and code. It proves that importers, linking, and Contract Conflicts work across platforms.
-- **Laundry's five unmapped destination states** start from an existing app with expected states that don't exist yet. These are Add clothes from the empty home, a garment's running wash, a hamper item in Laundry, moving washed pieces to Drying, and a garment's care history. Onboard Laundry through the manifest as if it were new. The five states should appear as owned coverage gaps, then turn observed as seeds and transitions land, with no Laundry-specific code in CIVIC.
+- **Example's five unmapped destination states** start from an existing app with expected states that don't exist yet. These are Add clothes from the empty home, a garment's running wash, a hamper item in Example, moving washed pieces to Drying, and a garment's care history. Onboard Example through the manifest as if it were new. The five states should appear as owned coverage gaps, then turn observed as seeds and transitions land, with no Example-specific code in CIVIC.
 
 ## 7. What exists today
 
-- **Built (Laundry, web only):** a curated scenario registry, a source scan, real-render preview through the adapter, observed towel transitions, revision-tied thumbnails, the Contract panel, a coverage contract with write-back, and 17 curated cross-route bindings.
+- **Built (Example, web only):** a curated scenario registry, a source scan, real-render preview through the adapter, observed towel transitions, revision-tied thumbnails, the Contract panel, a coverage contract with write-back, and 17 curated cross-route bindings.
 - **Not built:** workflow plugins, the shared event pipeline, the ownership map and routing, remediation drafts, revisit triggers and the variance budget, the graph schema, any design-tool import, token or component library import, a test-report importer, native adapters, the project manifest and onboarding UI, and conflict records.
 
 ## 8. Decided

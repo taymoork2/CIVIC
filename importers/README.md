@@ -41,8 +41,6 @@ Importers read what each role's tools already produce and turn it into [CIVIC gr
 - **Pinned.** Every record carries the tool, importer, exact revision and, for files, a content hash.
 - **Deterministic.** The same inputs give byte-identical output.
 
-The [Fluent Button demo](../demo/fluent-button), the [Card demo](../demo/card) and [Laundry's graph](../projects/laundry) and the [discovery example](../projects/discovery-app) use the importers here.
-
 ```sh
 cd importers
 pnpm install --frozen-lockfile
