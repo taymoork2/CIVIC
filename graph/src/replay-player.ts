@@ -24,6 +24,8 @@ export interface RecordedStep {
   /** The components the step showed, as the app marks them (D31), when it does. */
   components?: { component: string; variant?: string; state?: string; props?: Record<string, string> }[]
   operations: { kind: string; name: string; actor?: string; error?: string }[]
+  /** What the step offered once it settled, when the run was recorded with discovery on. */
+  discovery?: { after: { controls: { role: string; name: string; disabled: boolean; pressed?: string; selected?: string; checked?: string; expanded?: string }[]; landmarks: string[] } }
 }
 
 export interface ReplayPlayback {

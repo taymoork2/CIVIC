@@ -17,6 +17,7 @@ export { renderCoverage, runCoverage, type CoverageSubject, type OutcomeChange, 
 export { releaseBreaks, releasesBetween, renderReleases, type OverrideImpact, type ReleaseImpact, type UnmappedVariant } from './release.ts'
 export { DESIGN_INTENT, frameWalk, renderWalk, renderWalkPage, walkPath, type FrameWalk, type WalkAction, type WalkComponent, type WalkFrame } from './walk.ts'
 export { renderStories, storiesIn, STORIES_SCHEMA, type StoriesFile, type Story, type StoryOptions, type StoryStep } from './story.ts'
+export { checkExpectations, EXPECTATIONS_SCHEMA, readExpectations, renderExpectationFailures, type Expected, type ExpectationFailure, type ExpectationsFile, type ScenarioExpectations, type StepExpectation, type StepSelector } from './expectations.ts'
 export { describeGesture, readTape, RECORDING_LABEL, renderReplayPage, viewOf, type RecordedStep, type RecordedTape, type ReplayPlayback } from './replay-player.ts'
 export { componentFacts, type ComponentFacts } from './component-page.ts'
 export { componentStoriesIn, usageFromTapes, type ComponentStory, type StorybookRef } from './component-story.ts'

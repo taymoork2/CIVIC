@@ -15,6 +15,7 @@
 //   civic stories <file> [--design <design.json>]... [--json]
 //   civic objects <file> [--json]
 //   civic method <file> <civic.method/0 file>... [--json]
+//   civic expect <expectations.json> <tape.json> [--scenario <id>] [--json]
 //   civic portal <file> --out <dir> [--title <t>] [--canvas <url>] [--design <design.json>]... [--tapes <dir>]
 //                [--lens "design=<line>&code=<line>&environment=<id>" --lines <civic lines --json output>]
 //                [--island <module-url> [--island-style <css-url>]... [--manifest civic.project.json]]
@@ -48,6 +49,7 @@ import { methodCheck, renderMethod, type ResolvedProfile } from './method.ts'
 import { renderPortal, type IslandOptions, type PortalOptions } from './portal.ts'
 import { parseLens, resolveLens } from './lens.ts'
 import { hasDifferences, renderStoryDifferences, storyDifferences } from './story-diff.ts'
+import { checkExpectations, readExpectations, renderExpectationFailures } from './expectations.ts'
 import { readTape, type RecordedTape } from './replay-player.ts'
 import {
   ALIGNMENT_FOR,
@@ -158,6 +160,18 @@ async function main(): Promise<number> {
     const map = objectMapOf(await loadGraph(args[0]!), resolveVocabulary(vocabulary))
     console.log(args.includes('--json') ? JSON.stringify(map, null, 2) : renderObjectMap(map))
     return 0
+  }
+  if (command === 'expect' && args.length >= 2) {
+    const files = args.filter((arg, index) => !arg.startsWith('--') && args[index - 1] !== '--scenario')
+    const expectations = readExpectations(JSON.parse(readFileSync(files[0]!, 'utf8')))
+    const tape = readTape(JSON.parse(readFileSync(files[1]!, 'utf8')))
+    const scenario = option('--scenario')
+    const entries = expectations.scenarios.filter((entry) => scenario === undefined || entry.scenario === scenario)
+    if (entries.length === 0) return usage(scenario ? `No scenario ${scenario} in ${files[0]}.` : `${files[0]} has no scenarios.`)
+    if (entries.length > 1) return usage(`${files[0]} has ${entries.length} scenarios; name the one this run started from with --scenario (${entries.map((entry) => entry.scenario).join(', ')}).`)
+    const failures = checkExpectations(tape, entries[0]!)
+    console.log(args.includes('--json') ? JSON.stringify(failures, null, 2) : failures.length === 0 ? `Every expectation held (${entries[0]!.steps.reduce((total, step) => total + step.expect.length, 0)}).` : renderExpectationFailures(failures))
+    return failures.length > 0 ? 1 : 0
   }
   if (command === 'overrides' && args.length >= 2) {
     const graph = await loadGraph(args[0]!)
@@ -818,6 +832,7 @@ function usage(problem?: string): number {
       '  civic stories <file> [--design <design.json>]... [--json]',
       '  civic objects <file> [--json]',
       '  civic method <file> <civic.method/0 file>... [--json]',
+      '  civic expect <expectations.json> <tape.json> [--scenario <id>] [--json]',
       '  civic portal <file> --out <dir> [--title <t>] [--canvas <url>] [--design <design.json>]... [--tapes <dir>]',
       '               [--island <module-url> [--island-style <css-url>]... [--manifest civic.project.json]]',
       '               [--lens "design=<line>&code=<line>&environment=<id>" --lines <civic lines --json output>]',
