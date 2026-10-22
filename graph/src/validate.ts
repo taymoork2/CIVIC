@@ -560,6 +560,13 @@ function checkRecordShape(raw: unknown, at: string, error: Report) {
       field.optionalList('platforms', (value, path) => checkEnum(value, PLATFORMS, path, error))
       field.optionalList('entry', (value, path) => checkString(value, path, error))
       field.optionalList('exits', (value, path) => checkString(value, path, error))
+      field.optionalList('controls', (control, path) => {
+        if (!isObject(control)) return error('shape', path, 'Must be an object.')
+        const c = fieldChecker(control, path, error)
+        c.string('role')
+        c.string('name')
+        c.oneOf('outcome', ['taken', 'blocked', 'unreached'])
+      })
       field.optionalList('builtWith', (library, path) => {
         if (!isObject(library)) return error('shape', path, 'Must be an object.')
         const l = fieldChecker(library, path, error)
@@ -764,7 +771,16 @@ function checkRecordShape(raw: unknown, at: string, error: Report) {
         return f
       }
       field.list('attributes', (item, path) => keyed(item, path)?.oneOf('kind', ['core', 'metadata']))
-      field.list('actions', (item, path) => keyed(item, path))
+      field.list('actions', (item, path) => {
+        const f = keyed(item, path)
+        f?.optional('kind', (value, at) => checkString(value, at, error))
+        f?.optional('oneWay', (value, at) => {
+          if (!isObject(value)) return error('shape', at, 'Must be an object.')
+          const w = fieldChecker(value, at, error)
+          w.string('reason')
+          w.string('decision')
+        })
+      })
       field.list('relationships', (item, path) => {
         if (!isObject(item)) return error('shape', path, 'Must be an object.')
         const f = fieldChecker(item, path, error)

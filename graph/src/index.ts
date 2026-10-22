@@ -23,6 +23,7 @@ export { componentStoriesIn, usageFromTapes, type ComponentStory, type Storybook
 export { describeLens, lensView, parseLens, resolveLens, type LensView, type ResolvedLens, type StoryLens } from './lens.ts'
 export { hasDifferences, renderStoryDifferences, storyDifferences, type ComponentDifference, type StepDifference, type StoryDifferences } from './story-diff.ts'
 export { renderPortal, stepOutcome, STORY_ELEMENT, type HarnessOptions, type IslandOptions, type PortalOptions } from './portal.ts'
+export { DEFAULT_INVERSES, DEFAULT_LABELS, kindOfLabel, resolveVocabulary, vocabularyErrors, type ActionVocabulary, type ResolvedVocabulary } from './inverses.ts'
 export { OBJECT_GAP_KINDS, objectMapOf, renderObjectMap, type ObjectGap, type ObjectGapKind, type ObjectMap, type ObjectTie } from './objects.ts'
 export { evidenceAge, freshnessRoot, staleEvidence, type FreshnessRule } from './freshness.ts'
 export { baselineFrom, checkDocument, checkGraph, compareToBaseline, DEFAULT_BLOCKING, FINDING_KINDS, renderCheck, statusLine, type Baseline, type BaselineEntry, type CheckOptions, type CheckReport, type Finding, type FindingKind, type GraphCheck, type Measure } from './check.ts'

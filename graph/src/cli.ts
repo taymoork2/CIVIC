@@ -42,6 +42,7 @@ import { completenessOf, renderCompleteness } from './completeness.ts'
 import { releaseBreaks, releasesBetween, renderReleases } from './release.ts'
 import { frameWalk, renderWalk, renderWalkPage, walkPath } from './walk.ts'
 import { renderStories, storiesIn } from './story.ts'
+import { resolveVocabulary, vocabularyErrors, type ActionVocabulary } from './inverses.ts'
 import { objectMapOf, renderObjectMap } from './objects.ts'
 import { methodCheck, renderMethod, type ResolvedProfile } from './method.ts'
 import { renderPortal, type IslandOptions, type PortalOptions } from './portal.ts'
@@ -150,7 +151,11 @@ async function main(): Promise<number> {
     return checks.some((result) => result.errors.length > 0) ? 1 : 0
   }
   if (command === 'objects' && args.length >= 1) {
-    const map = objectMapOf(await loadGraph(args[0]!))
+    const config = option('--config')
+    const vocabulary: ActionVocabulary | undefined = config ? (JSON.parse(readFileSync(resolve(config), 'utf8')) as CheckConfig).actions : undefined
+    const problems = vocabularyErrors(vocabulary ?? {})
+    if (problems.length > 0) return usage(problems.join('\n'))
+    const map = objectMapOf(await loadGraph(args[0]!), resolveVocabulary(vocabulary))
     console.log(args.includes('--json') ? JSON.stringify(map, null, 2) : renderObjectMap(map))
     return 0
   }
@@ -504,6 +509,8 @@ interface CheckConfig {
   designs?: string[]
   /** The methodology profiles (`civic.method/0`) each graph's team declared (decision 0014). */
   methods?: { graph: string; profiles: string[] }[]
+  /** The project's action vocabulary for the inverse check (decision 0015); it extends the defaults. */
+  actions?: ActionVocabulary
 }
 
 /** The resolved profiles the config declares for one graph. */
@@ -633,6 +640,8 @@ async function check(): Promise<number> {
   if (unknown.length > 0) return usage(`Unknown finding kind in blocking: ${unknown.join(', ')}`)
   const today = option('--today') ?? new Date().toISOString().slice(0, 10)
   if (!/^\d{4}-\d{2}-\d{2}$/.test(today)) return usage('--today takes a date like 2026-10-11.')
+  const vocabulary = vocabularyErrors(config.actions ?? {})
+  if (vocabulary.length > 0) return usage(vocabulary.join('\n'))
 
   const unwatched = (config.freshness ?? []).filter((rule) => !config.graphs.includes(rule.graph))
   if (unwatched.length > 0) return usage(`A freshness rule names a graph the gate doesn't check: ${unwatched.map((rule) => rule.graph).join(', ')}`)
@@ -642,7 +651,7 @@ async function check(): Promise<number> {
   const methods = config.graphs.map((file) => methodsFor(config, root, file))
   const checks = config.graphs.map((file, index) => {
     const stale = staleIn(config, root, file, documents[index]!)
-    return checkDocument(file, documents[index], { today, methods: methods[index]!, ...(stale ? { stale } : {}) })
+    return checkDocument(file, documents[index], { today, methods: methods[index]!, ...(config.actions ? { actions: config.actions } : {}), ...(stale ? { stale } : {}) })
   })
   const since = option('--since')
   const comment = option('--comment')
@@ -659,7 +668,7 @@ async function check(): Promise<number> {
       config.graphs.map((file, index): GraphAtRevisions => {
         const head = { document: documents[index]!, check: checks[index]! }
         const before = base.documents[index]
-        return before ? { graph: file, base: { document: before, check: checkDocument(file, before, { today, methods: methods[index]! }) }, head } : { graph: file, head }
+        return before ? { graph: file, base: { document: before, check: checkDocument(file, before, { today, methods: methods[index]!, ...(config.actions ? { actions: config.actions } : {}) }) }, head } : { graph: file, head }
       }),
     )
   }

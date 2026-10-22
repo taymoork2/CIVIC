@@ -36,7 +36,8 @@ export const objectId = (prefix: string, title: string) => `object:${prefix}.${s
  * and one row per item, labelled in its first cell with the section it belongs to
  * (description, also called, core content, metadata, nested objects, calls to action).
  * A section may span as many rows as it needs, and a blank cell is no item. A nested
- * object names another column, with its cardinality in brackets: `Load (many)`. Several
+ * object names another column, with its cardinality in brackets: `Load (many)`. A call to
+ * action may declare its kind, `Add project [add]`, which the inverse check reads. Several
  * other names go in one cell, separated by semicolons.
  */
 export function readOrcaGrid(csv: string, options: OrcaGridOptions): DomainObject[] {
@@ -68,7 +69,7 @@ export function readOrcaGrid(csv: string, options: OrcaGridOptions): DomainObjec
       if (section === 'description') object.description = object.description ? `${object.description} ${cell}` : cell
       else if (section === 'synonyms') object.synonyms = [...(object.synonyms ?? []), ...cell.split(';').map((name) => name.trim()).filter(Boolean)]
       else if (section === 'core' || section === 'metadata') add(object.attributes, { key: slug(cell), title: cell, kind: section } satisfies ObjectAttribute, object)
-      else if (section === 'actions') add(object.actions, { key: slug(cell), title: cell } satisfies ObjectAction, object)
+      else if (section === 'actions') add(object.actions, readAction(cell, object), object)
       else {
         const match = /^(.*?)\s*(?:\(([^)]*)\))?$/.exec(cell)!
         const nested = byTitle.get(match[1]!.trim().toLowerCase())
@@ -78,6 +79,20 @@ export function readOrcaGrid(csv: string, options: OrcaGridOptions): DomainObjec
     })
   }
   return objects
+}
+
+/**
+ * A call to action, with its kind in brackets when the team declares one: `Add project [add]`.
+ * A decision that makes it one-way follows the kind: `Add project [add; one-way docs/decisions/0042.md: Projects are permanent]`.
+ */
+function readAction(cell: string, object: DomainObject): ObjectAction {
+  const match = /^(.*?)\s*\[([^\];]*)(?:;\s*one-way\s+([^:\]]+):\s*([^\]]+))?\]$/.exec(cell)
+  if (!match) {
+    if (cell.includes('[')) throw new Error(`${object.title}'s call to action "${cell}" has a bracket CIVIC can't read; use [kind] or [kind; one-way <decision>: <reason>].`)
+    return { key: slug(cell), title: cell }
+  }
+  const kind = match[2]!.trim()
+  return { key: slug(match[1]!), title: match[1]!, ...(kind ? { kind } : {}), ...(match[3] ? { oneWay: { decision: match[3].trim(), reason: match[4]!.trim() } } : {}) }
 }
 
 function add<T extends { key: string; title: string }>(list: T[], item: T, object: DomainObject) {

@@ -15,7 +15,7 @@ The loop ([`src/explore.ts`](src/explore.ts)) knows no platform. A driver opens 
 
 ## Output
 
-A `civic.crawl/0` file: the seed, the driver, the revision it ran against, every state with the actions that reach it, every transition, and every action blocked or not reached. The importers' `readCrawl` turns it into discovered screens and proposed `navigates` links, and `applyConfirmations` applies a person's confirmations ([`importers/`](../importers)).
+A `civic.crawl/0` file: the seed, the driver, the revision it ran against, every state with the actions that reach it, every transition, and every action blocked or not reached. The importer keeps all three as the controls on each discovered screen (`controls`, with their outcome), so a blocked "Remove project" still proves the app offers a way to remove one ([decision 0015](../docs/decisions/0015-actions-need-a-way-back.md)). The importers' `readCrawl` turns it into discovered screens and proposed `navigates` links, and `applyConfirmations` applies a person's confirmations ([`importers/`](../importers)).
 
 ```sh
 cd crawl

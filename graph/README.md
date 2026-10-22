@@ -217,9 +217,14 @@ The object map ([decision 0014](../docs/decisions/0014-design-methodologies-are-
 - **An object a journey needs that none of its screens shows** (`object-not-shown`), naming any suggested tie on those screens that would answer it once confirmed.
 - **An attribute shown on one screen of an object and missing from another** (`object-attribute-missing`). Screens are compared only with screens of the same view, since a card shows less than a detail screen on purpose, and only where they declare their attributes.
 - **A call to action one platform offers on an object and another doesn't** (`object-action-platform`), once screens on two or more platforms declare the object's actions.
+- **An action with no way back** (`object-action-no-inverse`, [decision 0015](../docs/decisions/0015-actions-need-a-way-back.md), [`src/inverses.ts`](src/inverses.ts)). An action that makes or starts something needs one that undoes it: add needs remove or archive, archive needs restore, send or queue needs cancel or edit, start needs stop, and so on for pin, open, connect, install, sign in and enable. An action declares its `kind` (the ORCA grid writes `Add project [add]`), so the check works in any language; with none, the title's words are read from a bundled English list. The inverse may be another action of the object or a control a crawl saw on a screen that shows it, even one the crawl blocked as destructive, since "Remove project" never clicked still proves it exists. An action a decision made deliberately one-way carries `oneWay: { decision, reason }` (in the grid, `Add forever [add; one-way docs/decisions/0042.md: Permanent records]`) and isn't a finding. A project teaches CIVIC its words and changes what a kind needs under `actions` in `civic.check.json`:
+
+  ```json
+  { "actions": { "labels": { "ta bort": "remove" }, "inverses": { "start": ["pause", "stop"] } } }
+  ```
 - **A suggested tie waiting for a person** (`unconfirmed-object-tie`).
 
-The gate reports all four as advisory, to the object's Design owners with the screens' or platform's owners told, and counts each against what was compared. `civic objects <file>` prints the map: each object with how many screens show it, how many ties are suggested and how many journeys need it, then the findings.
+The gate reports all five as advisory, to the object's Design owners with the screens' or platform's owners told, and counts each against what was compared. `civic objects <file>` prints the map: each object with how many screens show it, how many ties are suggested and how many journeys need it, then the findings.
 
 ## Methodology profiles: `civic method`
 
