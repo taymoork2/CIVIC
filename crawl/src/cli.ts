@@ -6,7 +6,7 @@
 //   node src/cli.ts --folder <static site> --seed index.html --revision <rev> ...
 //   node src/cli.ts --appium http://127.0.0.1:4723 --platform android --capabilities caps.json --revision <rev> ...
 //
-// --max-states and --max-depth bound the crawl; --block <regex> blocks more action names.
+// --max-states and --max-depth bound the crawl; --block <regex> blocks more action names; --noop <regex> declares actions that change nothing on purpose.
 
 import { readFileSync, writeFileSync } from 'node:fs'
 import { parseArgs } from 'node:util'
@@ -27,6 +27,7 @@ const { values, positionals } = parseArgs({
     out: { type: 'string' },
     input: { type: 'string', multiple: true },
     block: { type: 'string', multiple: true },
+    noop: { type: 'string', multiple: true },
     'max-states': { type: 'string' },
     'max-depth': { type: 'string' },
   },
@@ -41,6 +42,7 @@ const inputs = Object.fromEntries((values.input ?? []).map((pair) => {
 const limits: Partial<CrawlOptions> = {
   inputs,
   ...(values.block ? { block: values.block } : {}),
+  ...(values.noop ? { noop: values.noop } : {}),
   ...(values['max-states'] ? { maxStates: Number(values['max-states']) } : {}),
   ...(values['max-depth'] ? { maxDepth: Number(values['max-depth']) } : {}),
 }
@@ -48,7 +50,7 @@ const report = (result: Awaited<ReturnType<typeof crawl>>) => {
   const body = `${JSON.stringify(result, null, 2)}\n`
   if (values.out) writeFileSync(values.out, body)
   else process.stdout.write(body)
-  console.error(`${result.states.length} state(s), ${result.transitions.length} transition(s), ${result.blocked.length} blocked, ${result.unreached.length} unreached${result.truncated ? ', truncated by a limit' : ''}.`)
+  console.error(`${result.states.length} state(s), ${result.transitions.length} transition(s), ${result.blocked.length} blocked, ${result.noEffect.length} changed nothing, ${result.unreached.length} unreached${result.truncated ? ', truncated by a limit' : ''}.`)
 }
 
 if (values.appium) {

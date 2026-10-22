@@ -82,6 +82,7 @@ export function webDriver(browser: Browser, seed: string): Driver {
   const base = new URL('.', seed).pathname
   let context: Context | undefined
   let page: Page | undefined
+  let writes = 0
   const settle = async () => {
     await page!.waitForLoadState('load')
     await page!.waitForLoadState('networkidle')
@@ -89,11 +90,16 @@ export function webDriver(browser: Browser, seed: string): Driver {
   return {
     async reset() {
       await context?.close()
+      writes = 0
       context = await browser.newContext({ viewport: { width: 393, height: 852 } })
       await context.route('**/*', async (route) => {
         const request = route.request()
         if (new URL(request.url()).origin === origin && request.method() === 'GET') await route.continue()
-        else await route.abort()
+        else {
+          // An aborted write is an effect the crawl chose not to let through, not a dead control.
+          if (request.method() !== 'GET') writes += 1
+          await route.abort()
+        }
       })
       page = await context.newPage()
       await page.goto(seed, { waitUntil: 'networkidle' })
@@ -110,9 +116,10 @@ export function webDriver(browser: Browser, seed: string): Driver {
         if (requires.length > 0) action.requires = requires
       }
       const location = url.origin === origin && url.pathname.startsWith(base) ? url.pathname.slice(base.length) : url.href
-      return { location: location || 'index', title: await page!.title(), tree, actions }
+      return { location: location || 'index', title: await page!.title(), tree, actions, writes }
     },
     async act(action, inputs) {
+      writes = 0
       for (const [label, value] of Object.entries(inputs)) {
         const field = page!.getByLabel(label, { exact: true })
         if ((await field.count()) > 0) await field.first().fill(value)

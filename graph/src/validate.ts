@@ -565,7 +565,7 @@ function checkRecordShape(raw: unknown, at: string, error: Report) {
         const c = fieldChecker(control, path, error)
         c.string('role')
         c.string('name')
-        c.oneOf('outcome', ['taken', 'blocked', 'unreached'])
+        c.oneOf('outcome', ['taken', 'no-effect', 'blocked', 'unreached'])
       })
       field.optionalList('builtWith', (library, path) => {
         if (!isObject(library)) return error('shape', path, 'Must be an object.')

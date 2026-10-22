@@ -129,8 +129,11 @@ export interface Target extends RecordBase {
 export interface ObservedControl {
   role: string
   name: string
-  /** `taken` led somewhere, `blocked` was left alone as destructive, `unreached` couldn't complete. */
-  outcome: 'taken' | 'blocked' | 'unreached'
+  /**
+   * `taken` led somewhere, `no-effect` was taken and left the screen as it was (decision 0016),
+   * `blocked` was left alone as destructive, `unreached` couldn't complete.
+   */
+  outcome: 'taken' | 'no-effect' | 'blocked' | 'unreached'
 }
 
 /** A code library a product builds with: its platform, framework and package, with an optional version range. */

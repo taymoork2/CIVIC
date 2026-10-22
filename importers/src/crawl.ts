@@ -12,6 +12,7 @@ interface CrawlFile {
   states: { id: string; location: string; title: string; hash: string }[]
   transitions: { from: string; to: string; action: { role: string; name: string } }[]
   blocked?: { from: string; action: { role: string; name: string } }[]
+  noEffect?: { from: string; action: { role: string; name: string } }[]
   unreached?: { from: string; action: { role: string; name: string } }[]
 }
 
@@ -46,6 +47,8 @@ export function readCrawl(crawl: unknown, options: CrawlImportOptions): Fragment
         if (from === state && !seen.has(key) && seen.add(key)) found.push({ role: action.role, name: action.name, outcome })
       }
     }
+    // An action that changed nothing is a control that was taken, not one that led somewhere.
+    add('no-effect', file.noEffect ?? [])
     add('taken', file.transitions)
     add('blocked', file.blocked ?? [])
     add('unreached', file.unreached ?? [])

@@ -31,6 +31,7 @@ export const FINDING_KINDS = [
   'no-run-evidence',
   'unconfirmed-link',
   'unconfirmed-target',
+  'control-no-effect',
   'unconfirmed-fork',
   'approved-exception',
   'open-proposal',
@@ -237,6 +238,12 @@ export function checkGraph(label: string, graph: Graph, options: CheckOptions): 
   const discovered = targets.filter((target) => target.presence === 'discovered')
   for (const target of discovered) add('unconfirmed-target', target.id, `${target.title} was discovered${target.source ? ` by ${target.source.importer}` : ''}; a person confirms it before it counts.`, target.owners ?? [])
   measure('Screens awaiting confirmation', discovered.length, targets.length)
+
+  // Controls a crawl took that left the screen as it was: dead or stale (decision 0016).
+  const controls = targets.flatMap((target) => (target.controls ?? []).map((control) => ({ target, control })))
+  const inert = controls.filter(({ control }) => control.outcome === 'no-effect')
+  for (const { target, control } of inert) add('control-no-effect', target.id, `${control.role === 'link' ? 'The link' : 'The button'} "${control.name}" on ${target.title} changed nothing when taken: the screen was the same afterwards and the app tried no write. It is dead, stale, or a no-op to declare.`, target.owners ?? [], undefined, `${control.role} ${control.name}`)
+  measure('Controls taken that changed nothing', inert.length, controls.filter(({ control }) => control.outcome === 'taken' || control.outcome === 'no-effect').length)
 
   // Forks CIVIC inferred by name and structure, or by import (decision 0011), wait for a person too.
   const forks = graph.ofKind('component-instance').filter((instance) => instance.fork)
