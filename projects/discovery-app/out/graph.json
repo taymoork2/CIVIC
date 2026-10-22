@@ -16,6 +16,13 @@
           "who": "taymoork2"
         }
       ],
+      "controls": [
+        {
+          "role": "link",
+          "name": "Back home",
+          "outcome": "taken"
+        }
+      ],
       "source": {
         "tool": "playwright-core",
         "importer": "crawl",
@@ -37,6 +44,18 @@
         {
           "role": "engineering",
           "who": "taymoork2"
+        }
+      ],
+      "controls": [
+        {
+          "role": "button",
+          "name": "Save note",
+          "outcome": "taken"
+        },
+        {
+          "role": "link",
+          "name": "Back home",
+          "outcome": "taken"
         }
       ],
       "source": {
@@ -62,6 +81,18 @@
           "who": "taymoork2"
         }
       ],
+      "controls": [
+        {
+          "role": "link",
+          "name": "Write note",
+          "outcome": "taken"
+        },
+        {
+          "role": "link",
+          "name": "Browse archive",
+          "outcome": "taken"
+        }
+      ],
       "source": {
         "tool": "playwright-core",
         "importer": "crawl",
@@ -83,6 +114,13 @@
         {
           "role": "engineering",
           "who": "taymoork2"
+        }
+      ],
+      "controls": [
+        {
+          "role": "link",
+          "name": "Back home",
+          "outcome": "taken"
         }
       ],
       "source": {
