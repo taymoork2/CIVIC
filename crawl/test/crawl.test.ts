@@ -27,6 +27,8 @@ function fakeApp(screens: Record<string, { actions: (Action & { to?: string })[]
   }
 }
 
+const noEffectOf = (result: Awaited<ReturnType<typeof crawl>>) => result.noEffect.map((skip) => `${skip.from} ${skip.action.name}`)
+
 const options = { seed: 'home.html', platform: 'web', driver: 'fake', revision: 'r1' }
 
 test('explores breadth first, groups states by tree and records each transition once', async () => {
@@ -98,7 +100,9 @@ test('reads actions and strips input values from an accessibility snapshot', () 
   const tree = '- main:\n  - heading "Compose" [level=1]\n  - textbox "Title": my secret draft\n  - button "Save note"\n  - link "Back home":\n    - /url: index.html\n  - link "Say \\"hi\\""'
   assert.equal(stripValues(tree).includes('secret'), false)
   assert.ok(stripValues(tree).includes('- textbox "Title"'))
-  assert.deepEqual(actionsIn(tree), [{ role: 'button', name: 'Save note' }, { role: 'link', name: 'Back home' }, { role: 'link', name: 'Say "hi"' }])
+  assert.deepEqual(actionsIn(tree), [{ role: 'textbox', name: 'Title' }, { role: 'button', name: 'Save note' }, { role: 'link', name: 'Back home' }, { role: 'link', name: 'Say "hi"' }])
+  const wide = '- tablist:\n  - tab "Overview" [selected]\n  - tab "Activity"\n- menu:\n  - menuitem "Rename"\n  - menuitem "Delete note"'
+  assert.deepEqual(actionsIn(wide), [{ role: 'tab', name: 'Activity' }, { role: 'menuitem', name: 'Rename' }, { role: 'menuitem', name: 'Delete note' }])
 })
 
 test('crawls a real static app in a browser, without writing anything', async () => {
@@ -120,6 +124,84 @@ test('crawls a real static app in a browser, without writing anything', async ()
     assert.ok(result.transitions.some((edge) => edge.from === 'draft' && edge.to === 'saved' && edge.action.name === 'Save note'))
     assert.deepEqual(readdirSync(site).sort(), ['draft.html', 'index.html', 'saved.html'])
     assert.equal(readFileSync(join(site, 'index.html'), 'utf8').includes('Delete all'), true)
+  } finally {
+    await browser.close()
+    await server.close()
+    rmSync(site, { recursive: true, force: true })
+  }
+})
+
+test('an action that leaves the screen as it was is reported, unless it is declared a no-op or the app tried to write', async () => {
+  const app = fakeApp({
+    home: { actions: [{ role: 'button', name: 'Dead button', to: 'home' }, { role: 'button', name: 'Copy link', to: 'home' }, { role: 'button', name: 'Pin note', to: 'home' }, { role: 'link', name: 'Next', to: 'next' }] },
+    next: { actions: [{ role: 'link', name: 'Back', to: 'home' }] },
+  })
+  const result = await crawl(app, { ...options, noop: ['^pin'] })
+  // "Copy link" is a default no-op and "Pin note" is declared one; the dead button is the finding.
+  assert.deepEqual(noEffectOf(result), ['home Dead button'])
+  assert.equal(result.noEffect[0]!.reason, 'the screen did not change')
+  assert.deepEqual(noEffectOf(await crawl(fakeApp({ home: { actions: [{ role: 'button', name: 'Dead button', to: 'home' }] } }), { ...options, noop: ['dead button'] })), [])
+  // A write the driver stopped counts as an effect.
+  const writing: Driver = { ...app, observe: async () => ({ ...(await app.observe()), writes: 1 }) }
+  assert.deepEqual(noEffectOf(await crawl(writing, options)), [])
+})
+
+test('in a real browser, a dead button is reported and a button whose write was stopped is not', async () => {
+  const site = mkdtempSync(join(tmpdir(), 'civic-crawl-'))
+  writeFileSync(join(site, 'index.html'), '<!doctype html><html lang="en"><head><title>Notes</title></head><body><main><h1>Notes</h1><button type="button">Dead</button><button type="button" onclick="fetch(\'/api\', { method: \'POST\' })">Save note</button><button type="button" onclick="document.querySelector(\'h1\').textContent=\'Changed\'">Rename</button></main></body></html>')
+  const server = await serveFolder(site)
+  const browser = await launchBrowser()
+  try {
+    const result = await crawl(webDriver(browser, `${server.url}index.html`), { ...options, seed: 'index.html' })
+    // "Save note" tried to write, and "Rename" changed the screen, where "Dead" and a second "Rename" do nothing.
+    assert.deepEqual(noEffectOf(result), ['index Dead', 'index.notes Dead', 'index.notes Rename'])
+    assert.equal(result.states.length, 2)
+  } finally {
+    await browser.close()
+    await server.close()
+    rmSync(site, { recursive: true, force: true })
+  }
+})
+
+test('tabs and menu items are explored, a field is typed into only with an allowlisted value, and a menu item named like a destructive action is blocked', async () => {
+  const screens = {
+    home: { actions: [{ role: 'tab' as const, name: 'Activity', to: 'activity' }, { role: 'textbox' as const, name: 'Search', to: 'found' }, { role: 'textbox' as const, name: 'Card number', to: 'found' }] },
+    activity: { actions: [{ role: 'menuitem' as const, name: 'Rename', to: 'renamed' }, { role: 'menuitem' as const, name: 'Delete note', to: 'gone' }] },
+    found: { actions: [] },
+    renamed: { actions: [] },
+    gone: { actions: [] },
+  }
+  const result = await crawl(fakeApp(screens), { ...options, inputs: { Search: 'sync' } })
+  assert.deepEqual(result.states.map((state) => state.id), ['home', 'activity', 'found', 'renamed'])
+  assert.deepEqual(result.transitions.map((edge) => `${edge.action.role} ${edge.action.name}`), ['tab Activity', 'textbox Search', 'menuitem Rename'])
+  assert.deepEqual(result.blocked.map((skip) => skip.action.name), ['Delete note'])
+  assert.deepEqual(result.unreached, [], 'a field with no value is left alone, not reported as unreached')
+  // Typing, and selecting a passage, that change nothing visible are not dead controls.
+  const quiet = fakeApp({ home: { actions: [{ role: 'textbox', name: 'Search', to: 'home' }, { role: 'text', name: 'a passage', to: 'home' }] } })
+  assert.deepEqual((await crawl(quiet, { ...options, inputs: { Search: 'x' } })).noEffect, [])
+})
+
+test('in a real browser, a tab, a menu, a typed search and a text selection each reach a state a link-and-button crawl never sees', async () => {
+  const site = mkdtempSync(join(tmpdir(), 'civic-crawl-'))
+  writeFileSync(join(site, 'index.html'), `<!doctype html><html lang="en"><head><title>Notes</title></head><body><main>
+    <h1>Notes</h1>
+    <div role="tablist"><button role="tab" aria-selected="true" id="t1">Notes</button><button role="tab" aria-selected="false" id="t2" onclick="document.getElementById('panel').textContent='Activity feed'">Activity</button></div>
+    <p id="panel">Note list</p>
+    <button aria-haspopup="menu" aria-expanded="false" id="m" onclick="this.setAttribute('aria-expanded','true');document.getElementById('menu').hidden=false">Options</button>
+    <div role="menu" id="menu" hidden><button role="menuitem" onclick="document.getElementById('panel').textContent='Renamed'">Rename</button><button role="menuitem" onclick="document.getElementById('panel').textContent='Gone'">Delete note</button></div>
+    <label for="q">Search</label><input id="q" oninput="document.getElementById('hits').textContent = this.value ? 'Results for ' + this.value : ''"><p id="hits"></p>
+    <p id="quote">Remember to sync the notes</p><div id="bar" hidden><button type="button" onclick="document.getElementById('panel').textContent='Quoted'">Add to note</button></div>
+    <script>document.addEventListener('selectionchange', () => { document.getElementById('bar').hidden = !String(getSelection()).includes('sync') })</script>
+  </main></body></html>`)
+  const server = await serveFolder(site)
+  const browser = await launchBrowser()
+  try {
+    const seed = `${server.url}index.html`
+    const wide = await crawl(webDriver(browser, seed, { select: ['sync the notes'] }), { ...options, seed: 'index.html', inputs: { Search: 'sync' }, maxDepth: 2 })
+    const names = wide.transitions.map((edge) => `${edge.action.role} ${edge.action.name}`)
+    for (const reached of ['tab Activity', 'button Options', 'menuitem Rename', 'textbox Search', 'text sync the notes', 'button Add to note']) assert.ok(names.includes(reached), `${reached} in ${names.join(', ')}`)
+    assert.deepEqual([...new Set(wide.blocked.map((skip) => skip.action.name))], ['Delete note'])
+    assert.ok(!names.includes('menuitem Delete note'))
   } finally {
     await browser.close()
     await server.close()

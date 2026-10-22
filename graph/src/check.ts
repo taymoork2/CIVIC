@@ -4,6 +4,7 @@ import { conflictStates, describeFix, openProposals, type FixStage } from './dec
 import { gapsIn, screensOf } from './gaps.ts'
 import { indexGraph, type Graph } from './graph.ts'
 import { methodCheck, type ResolvedProfile } from './method.ts'
+import { resolveVocabulary, type ActionVocabulary } from './inverses.ts'
 import { objectMapOf } from './objects.ts'
 import type { GraphDocument, Owner, Platform } from './schema.ts'
 import { validateGraph } from './validate.ts'
@@ -30,6 +31,7 @@ export const FINDING_KINDS = [
   'no-run-evidence',
   'unconfirmed-link',
   'unconfirmed-target',
+  'control-no-effect',
   'unconfirmed-fork',
   'approved-exception',
   'open-proposal',
@@ -39,6 +41,7 @@ export const FINDING_KINDS = [
   'object-not-shown',
   'object-attribute-missing',
   'object-action-platform',
+  'object-action-no-inverse',
   'unconfirmed-object-tie',
   'tier-composition',
   'token-tier',
@@ -103,6 +106,8 @@ export interface CheckOptions {
    * Without any, no methodology check runs.
    */
   methods?: readonly ResolvedProfile[]
+  /** The project's action vocabulary (decision 0015), which extends the defaults the inverse check reads. */
+  actions?: ActionVocabulary
 }
 
 /** Validates one graph document and, if it is valid, runs every check on it. */
@@ -234,6 +239,12 @@ export function checkGraph(label: string, graph: Graph, options: CheckOptions): 
   for (const target of discovered) add('unconfirmed-target', target.id, `${target.title} was discovered${target.source ? ` by ${target.source.importer}` : ''}; a person confirms it before it counts.`, target.owners ?? [])
   measure('Screens awaiting confirmation', discovered.length, targets.length)
 
+  // Controls a crawl took that left the screen as it was: dead or stale (decision 0016).
+  const controls = targets.flatMap((target) => (target.controls ?? []).map((control) => ({ target, control })))
+  const inert = controls.filter(({ control }) => control.outcome === 'no-effect')
+  for (const { target, control } of inert) add('control-no-effect', target.id, `${control.role === 'link' ? 'The link' : 'The button'} "${control.name}" on ${target.title} changed nothing when taken: the screen was the same afterwards and the app tried no write. It is dead, stale, or a no-op to declare.`, target.owners ?? [], undefined, `${control.role} ${control.name}`)
+  measure('Controls taken that changed nothing', inert.length, controls.filter(({ control }) => control.outcome === 'taken' || control.outcome === 'no-effect').length)
+
   // Forks CIVIC inferred by name and structure, or by import (decision 0011), wait for a person too.
   const forks = graph.ofKind('component-instance').filter((instance) => instance.fork)
   const inferred = forks.filter((instance) => instance.fork!.status === 'inferred')
@@ -252,12 +263,13 @@ export function checkGraph(label: string, graph: Graph, options: CheckOptions): 
 
   // The object map (decision 0014, point 8): the designer's questions of what was built.
   // Advisory by default, since what a screen leaves out of an object is often on purpose.
-  const objects = objectMapOf(graph)
+  const objects = objectMapOf(graph, resolveVocabulary(options.actions))
   for (const gap of objects.gaps) add(gap.kind, gap.subjectId, gap.summary, gap.owners, gap.platform, gap.detail)
   const gapCount = (kind: FindingKind) => objects.gaps.filter((gap) => gap.kind === kind).length
   measure('Objects a journey needs that no screen of it shows', gapCount('object-not-shown'), objects.counts.needs)
   measure('Object attributes missing from a screen of the same view', gapCount('object-attribute-missing'), objects.counts.attributeChecks)
   measure('Object calls to action missing on a platform', gapCount('object-action-platform'), objects.counts.actionChecks)
+  measure('Object actions with no way back', gapCount('object-action-no-inverse'), objects.counts.inverseChecks)
   measure('Object ties awaiting confirmation', gapCount('unconfirmed-object-tie'), objects.counts.ties)
 
   // Methodology profiles (decision 0014): composition, token tiers and targets with no tier,

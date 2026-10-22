@@ -1,4 +1,4 @@
-import type { Evidence, Platform } from '../../graph/src/index.ts'
+import { checkExpectations, renderExpectationFailures, type Evidence, type ExpectationsFile, type Platform, type RecordedTape } from '../../graph/src/index.ts'
 
 /**
  * A replay of a recorded run, as the journey engine's review server keeps it (decision 0009):
@@ -29,6 +29,12 @@ export interface ReplayOptions {
   path?: string
   /** The scenario targets the graph has. A replay whose scenario isn't one of them is refused. */
   targetIds: ReadonlySet<string>
+  /**
+   * What each scenario's journey expects after its steps (decision 0017), and the tapes to read
+   * them against, by sha256. A replay that verified fails if its tape misses an expectation.
+   */
+  expectations?: ExpectationsFile
+  tapes?: ReadonlyMap<string, RecordedTape>
 }
 
 /**
@@ -51,7 +57,12 @@ export function readReplays(replays: readonly ReplayRecord[], options: ReplayOpt
     .map((replay): Evidence => {
       const subject = `target:${options.prefix}.${replay.scenario}`
       if (!options.targetIds.has(subject)) throw new Error(`The replay of tape ${replay.tape.slice(0, 12)} starts from ${replay.scenario}, which isn't a screen in this graph.`)
-      const passed = replay.outcome === 'pass'
+      const expected = options.expectations?.scenarios.find((entry) => entry.scenario === replay.scenario)
+      const tape = options.tapes?.get(replay.tape)
+      // An expectation is read from the tape, so it can't be checked without it; say so rather than pass quietly.
+      const failures = expected && tape ? checkExpectations(tape, expected) : []
+      const unchecked = expected && !tape ? ' Its journey\'s expectations were not checked: the tape is not on hand.' : ''
+      const passed = replay.outcome === 'pass' && failures.length === 0
       return {
         id: `evidence:runtime.${replay.tape.slice(0, 16)}`,
         kind: 'evidence',
@@ -61,7 +72,9 @@ export function readReplays(replays: readonly ReplayRecord[], options: ReplayOpt
         method: 'runtime',
         platform: options.platform,
         outcome: passed ? 'pass' : 'fail',
-        finding: passed ? `Every step verified on replay, at source ${replay.source.slice(0, 12)}.` : `Replay diverged at step ${replay.divergedAt} of ${replay.steps}, at source ${replay.source.slice(0, 12)}.`,
+        finding: replay.outcome === 'fail'
+          ? `Replay diverged at step ${replay.divergedAt} of ${replay.steps}, at source ${replay.source.slice(0, 12)}.`
+          : `Every step verified on replay, at source ${replay.source.slice(0, 12)}.${failures.length > 0 ? ` But ${failures.length} expectation${failures.length === 1 ? '' : 's'} of the journey did not hold:\n${renderExpectationFailures(failures)}` : expected && tape ? ` Every expectation of the journey held (${expected.steps.reduce((total, step) => total + step.expect.length, 0)}).` : unchecked}`,
         capturedAt: replay.replayedAt,
         source: { tool: 'journey-engine', importer: 'replay', revision: replay.head, contentHash: `sha256:${replay.tape}`, ...(options.path ? { path: options.path } : {}) },
       }

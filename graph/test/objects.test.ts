@@ -90,7 +90,7 @@ test('the three comparisons and suggested ties, each with Design as owner', () =
   // Design is asked, and the platform's owners are told.
   assert.deepEqual(action!.owners, [design, ios])
   assert.deepEqual(attribute!.owners, [design, ios])
-  assert.deepEqual(map.counts, { needs: 2, attributeChecks: 3, actionChecks: 2, ties: 4 })
+  assert.deepEqual(map.counts, { needs: 2, attributeChecks: 3, actionChecks: 2, inverseChecks: 0, ties: 4 })
   assert.match(renderObjectMap(map), /\| Order \| 3 \| 2 \| 3 \| 1 \| 1 \|/)
 })
 
@@ -117,6 +117,7 @@ test('confirming the suggestion clears the journey finding, and the gate reports
       ['Objects a journey needs that no screen of it shows', 2, 2],
       ['Object attributes missing from a screen of the same view', 1, 3],
       ['Object calls to action missing on a platform', 1, 2],
+      ['Object actions with no way back', 0, 0],
       ['Object ties awaiting confirmation', 1, 4],
     ],
   )

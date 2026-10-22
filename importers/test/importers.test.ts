@@ -374,3 +374,14 @@ test('a conflict an adopted fix removed is settled: its loop records stay in the
   // Without the adoption, a vanished conflict's decision is stale.
   assert.throws(() => applyDecisions(after, { ...file, adoptions: [] }), /record the revision that carries it with civic adopt/)
 })
+
+test('actions a crawl found that changed nothing come in as controls with no effect, ahead of the taken one', () => {
+  const crawl = {
+    schema: 'civic.crawl/0', seed: 'index.html', platform: 'web', driver: 'playwright-core', revision: 'abc123',
+    states: [{ id: 'index', location: 'index.html', title: 'Notes', hash: 'h1' }],
+    transitions: [{ from: 'index', to: 'index', action: { role: 'button', name: 'Save' } }, { from: 'index', to: 'index', action: { role: 'button', name: 'Copy link' } }],
+    noEffect: [{ from: 'index', action: { role: 'button', name: 'Save' } }],
+  }
+  const target = readCrawl(crawl, { prefix: 'notes', owners: [], path: 'crawl.json' }).records[0] as { controls: unknown }
+  assert.deepEqual(target.controls, [{ role: 'button', name: 'Save', outcome: 'no-effect' }, { role: 'button', name: 'Copy link', outcome: 'taken' }])
+})

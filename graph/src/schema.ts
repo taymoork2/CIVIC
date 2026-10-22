@@ -121,6 +121,19 @@ export interface Target extends RecordBase {
    * The forecast answers once for each, from the platform components in its package.
    */
   builtWith?: CodeLibrary[]
+  /** A screen a crawl discovered: the controls it saw on it, including the ones it never touched (D34). */
+  controls?: ObservedControl[]
+}
+
+/** A control a crawl saw on a screen, named the way assistive technology names it. */
+export interface ObservedControl {
+  role: string
+  name: string
+  /**
+   * `taken` led somewhere, `no-effect` was taken and left the screen as it was (decision 0016),
+   * `blocked` was left alone as destructive, `unreached` couldn't complete.
+   */
+  outcome: 'taken' | 'no-effect' | 'blocked' | 'unreached'
 }
 
 /** A code library a product builds with: its platform, framework and package, with an optional version range. */
@@ -818,6 +831,14 @@ export interface ObjectAttribute {
 export interface ObjectAction {
   key: string
   title: string
+  /**
+   * What kind of action it is, such as `add` or `remove`, in the team's vocabulary (decision
+   * 0015). The inverse check matches kinds, so it works in any language. Without one, the
+   * kind is read from the title's words.
+   */
+  kind?: string
+  /** Set when a decision made this action deliberately one-way, so nothing is expected to undo it. */
+  oneWay?: { reason: string; decision: string }
 }
 
 /** One object nested in another, as the grid's nested-object rows name it. */

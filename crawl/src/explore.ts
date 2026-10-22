@@ -10,7 +10,12 @@ export const CRAWL_SCHEMA = 'civic.crawl/0'
 
 /** Something a person can act on, named the way assistive technology names it. */
 export interface Action {
-  role: 'link' | 'button'
+  /**
+   * `tab` and `menuitem` are clicked like buttons. A `textbox` is typed into with its allowlisted
+   * value and left unsubmitted. `text` selects the passage of that name, as a person drags
+   * across it, to show what the app offers on a selection (decision 0018).
+   */
+  role: 'link' | 'button' | 'tab' | 'menuitem' | 'textbox' | 'text'
   name: string
   /** For a button that submits a form: the form's required fields, by accessible name. */
   requires?: string[]
@@ -25,6 +30,8 @@ export interface Observation {
   tree: string
   /** Actionable elements in document order. */
   actions: Action[]
+  /** Writes the app tried since the last action and the driver stopped, such as a POST on the web. */
+  writes?: number
 }
 
 export interface Driver {
@@ -68,6 +75,8 @@ export interface CrawlResult {
   transitions: CrawlTransition[]
   /** Actions not taken because they could destroy or send something. */
   blocked: Skipped[]
+  /** Actions taken that changed nothing: same state, no write attempted. A dead or stale control, unless declared a no-op. */
+  noEffect: Skipped[]
   /** Actions taken that couldn't complete, such as a form with a field the allowlist has no value for. */
   unreached: Skipped[]
   /** True when a limit stopped the crawl before every action was tried. */
@@ -85,10 +94,15 @@ export interface CrawlOptions {
   maxDepth?: number
   /** Extra action names to block, as regular expressions. */
   block?: string[]
+  /** Action names declared to change nothing on purpose, as regular expressions, added to {@link NO_EFFECT_OK}. */
+  noop?: string[]
 }
 
 /** Names that could destroy, pay, send or end a session. Matched on the accessible name, case-insensitive. */
 export const DESTRUCTIVE = ['delete', 'remove', 'discard', 'erase', 'destroy', 'pay', 'purchase', 'buy', 'checkout', 'place order', 'send', 'submit payment', 'sign out', 'log out', 'logout', 'unsubscribe', 'cancel subscription', 'reset']
+
+/** Actions that leave the screen as it was by design: they act on the clipboard, not the app. */
+export const NO_EFFECT_OK = ['copy']
 
 export const stateHash = (tree: string) => createHash('sha256').update(tree).digest('hex').slice(0, 16)
 
@@ -97,11 +111,13 @@ export async function crawl(driver: Driver, options: CrawlOptions): Promise<Craw
   const maxStates = options.maxStates ?? 50
   const maxDepth = options.maxDepth ?? 8
   const blockers = [...DESTRUCTIVE.map((word) => new RegExp(`\\b${word}\\b`, 'i')), ...(options.block ?? []).map((pattern) => new RegExp(pattern, 'i'))]
+  const harmless = [...NO_EFFECT_OK, ...(options.noop ?? [])].map((pattern) => new RegExp(`\\b${pattern}\\b`, 'i'))
   const states: CrawlState[] = []
   const byHash = new Map<string, CrawlState>()
   const transitions: CrawlTransition[] = []
   const blocked: Skipped[] = []
   const unreached: Skipped[] = []
+  const noEffect: Skipped[] = []
   const ids = new Set<string>()
   let truncated = false
 
@@ -126,6 +142,8 @@ export async function crawl(driver: Driver, options: CrawlOptions): Promise<Craw
     const seen = await reach(state.path)
     for (const found of seen.actions) {
       const action: Action = { role: found.role, name: found.name }
+      // A field with no allowlisted value is not something to type into; it is not an unreached action.
+      if (found.role === 'textbox' && !(found.name in inputs)) continue
       if (blockers.some((pattern) => pattern.test(action.name))) {
         blocked.push({ from: state.id, action, reason: 'destructive action' })
         continue
@@ -139,6 +157,8 @@ export async function crawl(driver: Driver, options: CrawlOptions): Promise<Craw
       await driver.act(action, inputs)
       const landed = await driver.observe()
       const hash = stateHash(landed.tree)
+      // Typed text is left out of a state, and most passages offer nothing when selected, so neither is a dead control.
+      if (hash === state.hash && !landed.writes && action.role !== 'textbox' && action.role !== 'text' && !harmless.some((pattern) => pattern.test(action.name))) noEffect.push({ from: state.id, action, reason: 'the screen did not change' })
       if (!byHash.has(hash) && (states.length >= maxStates || state.depth + 1 > maxDepth)) {
         truncated = true
         unreached.push({ from: state.id, action, reason: states.length >= maxStates ? `state limit ${maxStates}` : `depth limit ${maxDepth}` })
@@ -150,7 +170,7 @@ export async function crawl(driver: Driver, options: CrawlOptions): Promise<Craw
       if (!transitions.some((edge) => edge.from === state.id && edge.to === target.id && sameAction(edge.action, action))) transitions.push({ from: state.id, to: target.id, action })
     }
   }
-  return { schema: CRAWL_SCHEMA, seed: options.seed, platform: options.platform, driver: options.driver, revision: options.revision, states, transitions, blocked, unreached, truncated }
+  return { schema: CRAWL_SCHEMA, seed: options.seed, platform: options.platform, driver: options.driver, revision: options.revision, states, transitions, blocked, noEffect, unreached, truncated }
 }
 
 const sameAction = (a: Action, b: Action) => a.role === b.role && a.name === b.name

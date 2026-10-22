@@ -6,7 +6,7 @@
 //   node src/cli.ts --folder <static site> --seed index.html --revision <rev> ...
 //   node src/cli.ts --appium http://127.0.0.1:4723 --platform android --capabilities caps.json --revision <rev> ...
 //
-// --max-states and --max-depth bound the crawl; --block <regex> blocks more action names.
+// --max-states and --max-depth bound the crawl; --block <regex> blocks more action names; --noop <regex> declares actions that change nothing on purpose; --select <text> selects that passage to see what the app offers.
 
 import { readFileSync, writeFileSync } from 'node:fs'
 import { parseArgs } from 'node:util'
@@ -27,6 +27,8 @@ const { values, positionals } = parseArgs({
     out: { type: 'string' },
     input: { type: 'string', multiple: true },
     block: { type: 'string', multiple: true },
+    noop: { type: 'string', multiple: true },
+    select: { type: 'string', multiple: true },
     'max-states': { type: 'string' },
     'max-depth': { type: 'string' },
   },
@@ -41,6 +43,7 @@ const inputs = Object.fromEntries((values.input ?? []).map((pair) => {
 const limits: Partial<CrawlOptions> = {
   inputs,
   ...(values.block ? { block: values.block } : {}),
+  ...(values.noop ? { noop: values.noop } : {}),
   ...(values['max-states'] ? { maxStates: Number(values['max-states']) } : {}),
   ...(values['max-depth'] ? { maxDepth: Number(values['max-depth']) } : {}),
 }
@@ -48,7 +51,7 @@ const report = (result: Awaited<ReturnType<typeof crawl>>) => {
   const body = `${JSON.stringify(result, null, 2)}\n`
   if (values.out) writeFileSync(values.out, body)
   else process.stdout.write(body)
-  console.error(`${result.states.length} state(s), ${result.transitions.length} transition(s), ${result.blocked.length} blocked, ${result.unreached.length} unreached${result.truncated ? ', truncated by a limit' : ''}.`)
+  console.error(`${result.states.length} state(s), ${result.transitions.length} transition(s), ${result.blocked.length} blocked, ${result.noEffect.length} changed nothing, ${result.unreached.length} unreached${result.truncated ? ', truncated by a limit' : ''}.`)
 }
 
 if (values.appium) {
@@ -69,7 +72,7 @@ if (values.appium) {
   if (!seed) throw new Error('Give a seed URL, or --folder with --seed, or --appium for a native app.')
   const browser = await launchBrowser()
   try {
-    const driver: Driver = webDriver(browser, seed)
+    const driver: Driver = webDriver(browser, seed, { select: values.select ?? [] })
     report(await crawl(driver, {
       // A served folder's port changes each run, so the seed is recorded relative to it.
       seed: server ? (values.seed ?? 'index.html') : seed,

@@ -1,4 +1,4 @@
-import type { GraphDocument, Link, Owner, Platform, SourceRef, Target } from '../../graph/src/index.ts'
+import type { GraphDocument, Link, ObservedControl, Owner, Platform, SourceRef, Target } from '../../graph/src/index.ts'
 import { applyForkConfirmations, type ForkConfirmations } from './forks.ts'
 import { contentHash, fragment, type Fragment } from './fragment.ts'
 
@@ -11,6 +11,9 @@ interface CrawlFile {
   revision: string
   states: { id: string; location: string; title: string; hash: string }[]
   transitions: { from: string; to: string; action: { role: string; name: string } }[]
+  blocked?: { from: string; action: { role: string; name: string } }[]
+  noEffect?: { from: string; action: { role: string; name: string } }[]
+  unreached?: { from: string; action: { role: string; name: string } }[]
 }
 
 export interface CrawlImportOptions {
@@ -33,16 +36,38 @@ export function readCrawl(crawl: unknown, options: CrawlImportOptions): Fragment
   const { prefix, owners } = options
   const source = (anchor: string): SourceRef => ({ tool: file.driver, importer: 'crawl', revision: file.revision, path: options.path, anchor })
   const id = (state: string) => `target:${prefix}.${state}`
-  const targets: Target[] = file.states.map((state) => ({
-    id: id(state.id),
-    kind: 'target',
-    title: state.title || state.location,
-    scale: 'screen',
-    presence: 'discovered',
-    platforms: [file.platform as Platform],
-    owners,
-    source: source(`${state.location} ${state.hash}`),
-  }))
+  // The controls on each screen, including the ones the crawl never touched: a blocked "Remove
+  // project" still proves the app offers a way to remove one (decision 0015).
+  const controlsOn = (state: string): ObservedControl[] => {
+    const seen = new Set<string>()
+    const found: ObservedControl[] = []
+    const add = (outcome: ObservedControl['outcome'], skips: { from: string; action: { role: string; name: string } }[]) => {
+      for (const { from, action } of skips) {
+        const key = `${action.role}\u0000${action.name}`
+        if (from === state && !seen.has(key) && seen.add(key)) found.push({ role: action.role, name: action.name, outcome })
+      }
+    }
+    // An action that changed nothing is a control that was taken, not one that led somewhere.
+    add('no-effect', file.noEffect ?? [])
+    add('taken', file.transitions)
+    add('blocked', file.blocked ?? [])
+    add('unreached', file.unreached ?? [])
+    return found
+  }
+  const targets: Target[] = file.states.map((state) => {
+    const controls = controlsOn(state.id)
+    return {
+      id: id(state.id),
+      kind: 'target',
+      title: state.title || state.location,
+      scale: 'screen',
+      presence: 'discovered',
+      platforms: [file.platform as Platform],
+      owners,
+      ...(controls.length > 0 ? { controls } : {}),
+      source: source(`${state.location} ${state.hash}`),
+    }
+  })
   const links: Link[] = file.transitions.map((edge) => ({
     from: id(edge.from),
     relation: 'navigates',

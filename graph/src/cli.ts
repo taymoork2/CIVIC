@@ -15,6 +15,7 @@
 //   civic stories <file> [--design <design.json>]... [--json]
 //   civic objects <file> [--json]
 //   civic method <file> <civic.method/0 file>... [--json]
+//   civic expect <expectations.json> <tape.json> [--scenario <id>] [--json]
 //   civic portal <file> --out <dir> [--title <t>] [--canvas <url>] [--design <design.json>]... [--tapes <dir>]
 //                [--lens "design=<line>&code=<line>&environment=<id>" --lines <civic lines --json output>]
 //                [--island <module-url> [--island-style <css-url>]... [--manifest civic.project.json]]
@@ -42,11 +43,13 @@ import { completenessOf, renderCompleteness } from './completeness.ts'
 import { releaseBreaks, releasesBetween, renderReleases } from './release.ts'
 import { frameWalk, renderWalk, renderWalkPage, walkPath } from './walk.ts'
 import { renderStories, storiesIn } from './story.ts'
+import { resolveVocabulary, vocabularyErrors, type ActionVocabulary } from './inverses.ts'
 import { objectMapOf, renderObjectMap } from './objects.ts'
 import { methodCheck, renderMethod, type ResolvedProfile } from './method.ts'
 import { renderPortal, type IslandOptions, type PortalOptions } from './portal.ts'
 import { parseLens, resolveLens } from './lens.ts'
 import { hasDifferences, renderStoryDifferences, storyDifferences } from './story-diff.ts'
+import { checkExpectations, readExpectations, renderExpectationFailures } from './expectations.ts'
 import { readTape, type RecordedTape } from './replay-player.ts'
 import {
   ALIGNMENT_FOR,
@@ -150,9 +153,25 @@ async function main(): Promise<number> {
     return checks.some((result) => result.errors.length > 0) ? 1 : 0
   }
   if (command === 'objects' && args.length >= 1) {
-    const map = objectMapOf(await loadGraph(args[0]!))
+    const config = option('--config')
+    const vocabulary: ActionVocabulary | undefined = config ? (JSON.parse(readFileSync(resolve(config), 'utf8')) as CheckConfig).actions : undefined
+    const problems = vocabularyErrors(vocabulary ?? {})
+    if (problems.length > 0) return usage(problems.join('\n'))
+    const map = objectMapOf(await loadGraph(args[0]!), resolveVocabulary(vocabulary))
     console.log(args.includes('--json') ? JSON.stringify(map, null, 2) : renderObjectMap(map))
     return 0
+  }
+  if (command === 'expect' && args.length >= 2) {
+    const files = args.filter((arg, index) => !arg.startsWith('--') && args[index - 1] !== '--scenario')
+    const expectations = readExpectations(JSON.parse(readFileSync(files[0]!, 'utf8')))
+    const tape = readTape(JSON.parse(readFileSync(files[1]!, 'utf8')))
+    const scenario = option('--scenario')
+    const entries = expectations.scenarios.filter((entry) => scenario === undefined || entry.scenario === scenario)
+    if (entries.length === 0) return usage(scenario ? `No scenario ${scenario} in ${files[0]}.` : `${files[0]} has no scenarios.`)
+    if (entries.length > 1) return usage(`${files[0]} has ${entries.length} scenarios; name the one this run started from with --scenario (${entries.map((entry) => entry.scenario).join(', ')}).`)
+    const failures = checkExpectations(tape, entries[0]!)
+    console.log(args.includes('--json') ? JSON.stringify(failures, null, 2) : failures.length === 0 ? `Every expectation held (${entries[0]!.steps.reduce((total, step) => total + step.expect.length, 0)}).` : renderExpectationFailures(failures))
+    return failures.length > 0 ? 1 : 0
   }
   if (command === 'overrides' && args.length >= 2) {
     const graph = await loadGraph(args[0]!)
@@ -504,6 +523,8 @@ interface CheckConfig {
   designs?: string[]
   /** The methodology profiles (`civic.method/0`) each graph's team declared (decision 0014). */
   methods?: { graph: string; profiles: string[] }[]
+  /** The project's action vocabulary for the inverse check (decision 0015); it extends the defaults. */
+  actions?: ActionVocabulary
 }
 
 /** The resolved profiles the config declares for one graph. */
@@ -633,6 +654,8 @@ async function check(): Promise<number> {
   if (unknown.length > 0) return usage(`Unknown finding kind in blocking: ${unknown.join(', ')}`)
   const today = option('--today') ?? new Date().toISOString().slice(0, 10)
   if (!/^\d{4}-\d{2}-\d{2}$/.test(today)) return usage('--today takes a date like 2026-10-11.')
+  const vocabulary = vocabularyErrors(config.actions ?? {})
+  if (vocabulary.length > 0) return usage(vocabulary.join('\n'))
 
   const unwatched = (config.freshness ?? []).filter((rule) => !config.graphs.includes(rule.graph))
   if (unwatched.length > 0) return usage(`A freshness rule names a graph the gate doesn't check: ${unwatched.map((rule) => rule.graph).join(', ')}`)
@@ -642,7 +665,7 @@ async function check(): Promise<number> {
   const methods = config.graphs.map((file) => methodsFor(config, root, file))
   const checks = config.graphs.map((file, index) => {
     const stale = staleIn(config, root, file, documents[index]!)
-    return checkDocument(file, documents[index], { today, methods: methods[index]!, ...(stale ? { stale } : {}) })
+    return checkDocument(file, documents[index], { today, methods: methods[index]!, ...(config.actions ? { actions: config.actions } : {}), ...(stale ? { stale } : {}) })
   })
   const since = option('--since')
   const comment = option('--comment')
@@ -659,7 +682,7 @@ async function check(): Promise<number> {
       config.graphs.map((file, index): GraphAtRevisions => {
         const head = { document: documents[index]!, check: checks[index]! }
         const before = base.documents[index]
-        return before ? { graph: file, base: { document: before, check: checkDocument(file, before, { today, methods: methods[index]! }) }, head } : { graph: file, head }
+        return before ? { graph: file, base: { document: before, check: checkDocument(file, before, { today, methods: methods[index]!, ...(config.actions ? { actions: config.actions } : {}) }) }, head } : { graph: file, head }
       }),
     )
   }
@@ -809,6 +832,7 @@ function usage(problem?: string): number {
       '  civic stories <file> [--design <design.json>]... [--json]',
       '  civic objects <file> [--json]',
       '  civic method <file> <civic.method/0 file>... [--json]',
+      '  civic expect <expectations.json> <tape.json> [--scenario <id>] [--json]',
       '  civic portal <file> --out <dir> [--title <t>] [--canvas <url>] [--design <design.json>]... [--tapes <dir>]',
       '               [--island <module-url> [--island-style <css-url>]... [--manifest civic.project.json]]',
       '               [--lens "design=<line>&code=<line>&environment=<id>" --lines <civic lines --json output>]',

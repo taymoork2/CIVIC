@@ -39,3 +39,24 @@ test('a replay from a screen the graph lacks, or a record of another shape, is r
   assert.throws(() => readReplays([replay({ scenario: 'gone' })], options), /isn't a screen in this graph/)
   assert.throws(() => readReplays([replay({ head: 'HEAD' })], options), /not a civic\.replay\/0 record/)
 })
+
+test('a replay that verified still fails when its tape misses what the journey expects (decision 0017)', () => {
+  const tape = {
+    version: 1 as const, project: 'example', source: 'b'.repeat(64), initialRoute: '/',
+    steps: [{ gesture: { kind: 'click', target: { tag: 'button', name: 'Hold', index: 0, count: 1 } }, route: '/', fields: [], view: '[]', operations: [], discovery: { after: { controls: [{ role: 'button', name: 'Add to chat', disabled: false }], landmarks: [] } } }],
+  }
+  const expectations = { schema: 'civic.expectations/0' as const, scenarios: [{ scenario: 'family.drying', steps: [{ after: { step: 1 }, expect: [{ role: 'button', name: 'Add to queued message' }] }] }] }
+  const [failed] = readReplays([replay()], { ...options, expectations, tapes: new Map([['c'.repeat(64), tape]]) })
+  assert.equal(failed!.outcome, 'fail')
+  assert.match(failed!.finding!, /^Every step verified on replay.*But 1 expectation of the journey did not hold:\nStep 1 \(Clicked button “Hold”\):\n {2}expected a button named “Add to queued message”\n {2}but {5}the step offered button “Add to chat”/s)
+  const fixed = { ...tape, steps: [{ ...tape.steps[0]!, discovery: { after: { controls: [{ role: 'button', name: 'Add to queued message', disabled: false }], landmarks: [] } } }] }
+  const [passed] = readReplays([replay()], { ...options, expectations, tapes: new Map([['c'.repeat(64), fixed]]) })
+  assert.equal(passed!.outcome, 'pass')
+  assert.match(passed!.finding!, /Every expectation of the journey held \(1\)/)
+  // Without the tape, the run keeps its replay outcome and says the expectations went unchecked.
+  const [unread] = readReplays([replay()], { ...options, expectations })
+  assert.equal(unread!.outcome, 'pass')
+  assert.match(unread!.finding!, /expectations were not checked: the tape is not on hand/)
+  // Scenarios the file doesn't mention are untouched.
+  assert.equal(readReplays([replay()], { ...options, expectations: { ...expectations, scenarios: [] } })[0]!.finding, `Every step verified on replay, at source ${'b'.repeat(12)}.`)
+})
