@@ -163,7 +163,7 @@ function inverseGaps(graph: Graph, object: DomainObject, ties: ObjectTie[], voca
   const kindOf = (action: DomainObject['actions'][number]) => action.kind ?? kindOfLabel(action.title, vocabulary)
   const seen = ties.filter(counts).flatMap((tie) => {
     const record = graph.get(tie.targetId)
-    return record?.kind === 'target' ? (record.controls ?? []).map((control) => ({ ...control, kind: kindOfLabel(control.name, vocabulary), screen: tie.targetId })) : []
+    return record?.kind === 'target' ? (record.controls ?? []).filter((control) => control.role !== 'text' && control.role !== 'textbox').map((control) => ({ ...control, kind: kindOfLabel(control.name, vocabulary), screen: tie.targetId })) : []
   })
   const present = new Set([...object.actions.map(kindOf), ...seen.map((control) => control.kind)])
   const forward = [

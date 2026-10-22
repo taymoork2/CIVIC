@@ -52,6 +52,8 @@ test('a control the crawl saw, even one it blocked as destructive, proves the in
   assert.deepEqual(gapsOf(document([projects, blocked], links)), [])
   // A suggested tie doesn't count until a person confirms it, so its controls don't either.
   assert.equal(gapsOf(document([projects, blocked], [shows('projects', projects.id, 'inferred')])).length, 1)
+  // A passage the crawl selected, or a field it typed into, has a name that is data, not a verb.
+  assert.equal(gapsOf(document([projects, screen('projects', [{ role: 'text', name: 'Remove the old ones', outcome: 'taken' }])], links)).length, 1)
   // A control seen on a screen is checked too, though the grid never listed it.
   const queue = object('Message', [])
   const seen = screen('chat', [{ role: 'button', name: 'Queue message', outcome: 'taken' }])

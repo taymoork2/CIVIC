@@ -12,7 +12,8 @@ The loop ([`src/explore.ts`](src/explore.ts)) knows no platform. A driver opens 
 - **Nothing happened.** An action taken from a state that lands on the same state is listed as `noEffect`: a dead or stale control. Copying is exempt by default and `--noop <regex>` declares more. The web driver counts the writes it aborted, so a button whose only effect is a POST isn't reported ([decision 0016](../docs/decisions/0016-a-control-that-changed-nothing-is-reported.md)).
 - **Inputs are allowlisted.** The crawl fills only the fields you give it values for. It doesn't submit a form with a required field it has no value for, and records that action as unreached.
 - **Limits.** `--max-states` (50) and `--max-depth` (8) bound a crawl, and the result says when one stopped it.
-- **Not yet.** It doesn't take screenshots, and it acts only on links and buttons, not on menus, tabs or text it would have to type.
+- **Tabs, menus, typing and selection** ([decision 0018](../docs/decisions/0018-crawl-reach-tabs-menus-typing-selection.md)). The web driver also clicks tabs (not the selected one) and menu items, which appear once their button has opened the menu. It types into a text field only when `--input "Label=value"` gives it a value, and never submits. `--select "some text"` selects that passage the way a person does, so the toolbar an app raises on a selection is reached; passages inside a link, button or field are not offered. The destructive names, the GET-only rule and the limits apply to all of it.
+- **Not yet.** It doesn't take screenshots, and the native driver acts only on what it did before.
 
 ## Output
 

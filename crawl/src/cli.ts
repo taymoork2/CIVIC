@@ -6,7 +6,7 @@
 //   node src/cli.ts --folder <static site> --seed index.html --revision <rev> ...
 //   node src/cli.ts --appium http://127.0.0.1:4723 --platform android --capabilities caps.json --revision <rev> ...
 //
-// --max-states and --max-depth bound the crawl; --block <regex> blocks more action names; --noop <regex> declares actions that change nothing on purpose.
+// --max-states and --max-depth bound the crawl; --block <regex> blocks more action names; --noop <regex> declares actions that change nothing on purpose; --select <text> selects that passage to see what the app offers.
 
 import { readFileSync, writeFileSync } from 'node:fs'
 import { parseArgs } from 'node:util'
@@ -28,6 +28,7 @@ const { values, positionals } = parseArgs({
     input: { type: 'string', multiple: true },
     block: { type: 'string', multiple: true },
     noop: { type: 'string', multiple: true },
+    select: { type: 'string', multiple: true },
     'max-states': { type: 'string' },
     'max-depth': { type: 'string' },
   },
@@ -71,7 +72,7 @@ if (values.appium) {
   if (!seed) throw new Error('Give a seed URL, or --folder with --seed, or --appium for a native app.')
   const browser = await launchBrowser()
   try {
-    const driver: Driver = webDriver(browser, seed)
+    const driver: Driver = webDriver(browser, seed, { select: values.select ?? [] })
     report(await crawl(driver, {
       // A served folder's port changes each run, so the seed is recorded relative to it.
       seed: server ? (values.seed ?? 'index.html') : seed,

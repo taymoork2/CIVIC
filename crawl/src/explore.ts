@@ -10,7 +10,12 @@ export const CRAWL_SCHEMA = 'civic.crawl/0'
 
 /** Something a person can act on, named the way assistive technology names it. */
 export interface Action {
-  role: 'link' | 'button'
+  /**
+   * `tab` and `menuitem` are clicked like buttons. A `textbox` is typed into with its allowlisted
+   * value and left unsubmitted. `text` selects the passage of that name, as a person drags
+   * across it, to show what the app offers on a selection (decision 0018).
+   */
+  role: 'link' | 'button' | 'tab' | 'menuitem' | 'textbox' | 'text'
   name: string
   /** For a button that submits a form: the form's required fields, by accessible name. */
   requires?: string[]
@@ -137,6 +142,8 @@ export async function crawl(driver: Driver, options: CrawlOptions): Promise<Craw
     const seen = await reach(state.path)
     for (const found of seen.actions) {
       const action: Action = { role: found.role, name: found.name }
+      // A field with no allowlisted value is not something to type into; it is not an unreached action.
+      if (found.role === 'textbox' && !(found.name in inputs)) continue
       if (blockers.some((pattern) => pattern.test(action.name))) {
         blocked.push({ from: state.id, action, reason: 'destructive action' })
         continue
@@ -150,7 +157,8 @@ export async function crawl(driver: Driver, options: CrawlOptions): Promise<Craw
       await driver.act(action, inputs)
       const landed = await driver.observe()
       const hash = stateHash(landed.tree)
-      if (hash === state.hash && !landed.writes && !harmless.some((pattern) => pattern.test(action.name))) noEffect.push({ from: state.id, action, reason: 'the screen did not change' })
+      // Typed text is left out of a state, and most passages offer nothing when selected, so neither is a dead control.
+      if (hash === state.hash && !landed.writes && action.role !== 'textbox' && action.role !== 'text' && !harmless.some((pattern) => pattern.test(action.name))) noEffect.push({ from: state.id, action, reason: 'the screen did not change' })
       if (!byHash.has(hash) && (states.length >= maxStates || state.depth + 1 > maxDepth)) {
         truncated = true
         unreached.push({ from: state.id, action, reason: states.length >= maxStates ? `state limit ${maxStates}` : `depth limit ${maxDepth}` })
