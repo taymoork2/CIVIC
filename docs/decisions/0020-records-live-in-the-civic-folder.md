@@ -18,7 +18,6 @@ Decision 0007 (D39) put local review records in the git common directory, `<repo
 4. **The project manifest is `civic.json`**, found at the app's root and then in `.civic/civic.json`. Paths inside a manifest in `.civic/` start from the app's root, the folder above `.civic`. `civic.project.json` and `rehearsal.project.json` are still read after those, with a deprecation note. `init` writes the new name.
 5. **`civic move-store` moves an earlier store out of `.git`.** It copies each file of `<git dir>/civic/` into `.civic/`, checks every copy byte for byte, deletes the old file, then the empty folders. Running it again finds nothing. It stops, changing nothing, if both stores hold a file of the same name with different bytes, if a civic command holds the old store's lock, or if the old folder holds anything but plain files.
 6. **What stays in git.** `civic sync` still shares records on `refs/civic/records`, and `civic pr` still fetches into `refs/civic/pulls/`. These are git references that git writes at a person's request. This decision is about CIVIC's own working files.
-7. **Bare repositories** have no working tree, so their store is `.civic/` beside `HEAD`.
 
 ## Consequences
 

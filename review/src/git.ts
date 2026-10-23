@@ -37,7 +37,7 @@ export function readCheckout(cwd: string): Checkout {
   return { root, commonDir, mainRoot: mainRootOf(root, commonDir), isWorktree: gitDir !== commonDir, branch, defaultBranch: defaultBranch(root), head }
 }
 
-/** The first worktree git lists is the one that owns the repository; a bare repository lists itself. */
+/** The first worktree git lists is the one that owns the repository. */
 function mainRootOf(root: string, commonDir: string): string {
   const first = tryGit(root, 'worktree', 'list', '--porcelain')?.split('\n')[0]
   return first?.startsWith('worktree ') ? first.slice('worktree '.length) : dirname(commonDir)

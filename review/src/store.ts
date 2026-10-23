@@ -210,8 +210,7 @@ export class Store {
   /** Refuses a folder that git tracks, since a checked-out branch could then supply records or a sign-in file. Asked once. */
   private trust() {
     if (this.checked || !this.root) return
-    let tracked: string[]
-    try { tracked = git(this.root, 'ls-files', '--', STORE_FOLDER).split('\n').filter(Boolean) } catch { return }
+    const tracked = git(this.root, 'ls-files', '--', STORE_FOLDER).split('\n').filter(Boolean)
     const foreign = tracked.filter((path) => path !== `${STORE_FOLDER}/civic.json`)
     if (foreign.length) throw new Error(`Git tracks ${foreign.slice(0, 3).join(', ')}${foreign.length > 3 ? ' and more' : ''} in ${this.dir}, which could have come from another branch. Only civic.json may be committed there. Untrack the rest with "git rm -r --cached ${STORE_FOLDER}" and commit, then retry.`)
     this.checked = true
