@@ -1,6 +1,6 @@
 # CIVIC reviewing CIVIC: the self-dogfood loop
 
-Plan, 2026-10-23. It adapts the Orca self-development handoff (22 October 2026) to this repository, after checking each of its findings against CIVIC's code. Nothing here is built yet. The one trial it relies on is described under [What the trial showed](#what-the-trial-showed).
+Plan, 2026-10-23. It adapts the Orca self-development handoff (22 October 2026) to this repository, after checking each of its findings against CIVIC's code. The command described under [The command](#the-command) is built as `civic preview` ([decision 0021](decisions/0021-civic-preview-reviews-a-worktree-of-civic.md)); where this plan and that decision differ, the decision wins. The first trial is described under [What the trial showed](#what-the-trial-showed).
 
 ## Outcome
 

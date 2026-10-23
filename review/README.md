@@ -129,6 +129,19 @@ Annotations land on the checkout's line and revision. When the app runs from a d
 
 CIVIC doesn't start the app. If it checks the browser's origin, such as a sign-in or WebSocket origin check, give it the proxy's origin: pick a free port, pass it as `--port`, and use `http://127.0.0.1:<port>` as the origin. The records are written to the main working tree's `.civic/`: `records.graph.json` and `captures/<sha>.png`, plus a short-lived `lock` while writing. Nothing is committed and nothing is written inside `.git`. The people who review use `civic requests`, `civic show` and `civic resolve` from any worktree of that repository.
 
+## Previewing CIVIC itself
+
+`civic preview` ([decision 0021](../docs/decisions/0021-civic-preview-reviews-a-worktree-of-civic.md)) previews the CIVIC worktree you are in, so CIVIC can review CIVIC ([plan](../docs/self-dogfood.md)). It follows Orca's `pnpm preview`:
+
+```sh
+civic preview             # this worktree: its canvas and the overlay, on free ports, with a throwaway store; Ctrl+C stops it
+civic preview list        # what is running
+civic preview link        # the address again (for another branch: link <branch>)
+civic preview stop        # this worktree's preview, or stop <branch>, or stop all
+```
+
+`--keep` keeps the data after a stop, `--no-open` prints the address instead of opening a browser, `--project <manifest or folder>` previews another project than the Notebook example, and `--allow-dirty` previews uncommitted edits. Annotations are filed on the worktree's line and revision in CIVIC's `.civic/` and not on the edits, so a preview with edits is marked in `list`. It installs `packages/` and `review/` with `pnpm install --frozen-lockfile` when they are missing or out of date, except in the main working tree, where it prints the command. It never touches the instance on port 3012 or its `.civic-canvas/`. `--desktop` is not built. A running preview serves the code in the worktree it was started from.
+
 ## MCP server
 
 `node review/src/mcp.ts` (the `civic-mcp` bin) speaks MCP over stdio, and any harness that speaks MCP can use it. It offers D35's write path and nothing more. An agent can list and read requests (captures come back as images), claim, release, comment, get repro URLs, report a fix, add a check, record an annotation, and run `context` and `gaps`. When a fix is reported with a preview, CIVIC's re-capture runs straight away. On the CLI, the same thing is `civic report-fix --recapture`. The server acts as `CIVIC_AGENT` (default `mcp-agent`) for `CIVIC_FOR`. Each tool takes the agent's `cwd`, so its line is the worktree it's working in.
