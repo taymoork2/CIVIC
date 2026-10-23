@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { execFileSync, spawn, type ChildProcess } from 'node:child_process'
-import { chmodSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, symlinkSync, writeFileSync } from 'node:fs'
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { once } from 'node:events'
 import { createServer, type Server } from 'node:http'
 import { tmpdir } from 'node:os'
@@ -16,7 +16,12 @@ const CIVIC = join(dirname(fileURLToPath(import.meta.url)), '../..')
 const scratch = mkdtempSync(join(tmpdir(), 'civic-preview-test-'))
 const servers: Server[] = []
 const children: ChildProcess[] = []
-after(() => { for (const server of servers) { server.closeAllConnections(); server.close() }; for (const child of children) child.kill() })
+after(() => {
+  for (const server of servers) { server.closeAllConnections(); server.close() }
+  for (const child of children) child.kill()
+  // The fixtures hold links into this checkout; removing a link leaves what it points at alone.
+  rmSync(scratch, { recursive: true, force: true })
+})
 
 const proc = (marker = `--store /t/civic-preview/x-1/store`): Proc => ({ pid: 4242, group: true, marker, started: 'Thu Oct 22 10:00:00 2026' })
 const preview = (over: Partial<Preview> = {}): Preview => ({
@@ -99,7 +104,7 @@ test('state is read only from a private folder, and only for a preview\'s own da
 function fixture() {
   const repo = mkdtempSync(join(scratch, 'repo-'))
   const git = (...args: string[]) => execFileSync('git', args, { cwd: repo, encoding: 'utf8' }).trim()
-  git('init', '-q', '-b', 'main'); git('config', 'user.email', 'reviewer@example.com')
+  git('init', '-q', '-b', 'main'); git('config', 'user.email', 'reviewer@example.com'); git('config', 'commit.gpgsign', 'false')
   for (const name of ['packages', 'review', 'graph']) symlinkSync(join(CIVIC, name), join(repo, name))
   git('add', '.'); git('commit', '-q', '-m', 'init')
   const env = { ...process.env, TMPDIR: scratch, CIVIC_PERSON: 'reviewer' }
@@ -110,7 +115,7 @@ function fixture() {
 test('refuses, before starting anything, outside a CIVIC worktree, with uncommitted changes, and for --desktop', async () => {
   const { repo, env } = fixture()
   const plain = mkdtempSync(join(scratch, 'plain-'))
-  for (const args of [['init', '-q'], ['-c', 'user.email=a@example.com', '-c', 'user.name=a', 'commit', '-q', '--allow-empty', '-m', 'init']]) execFileSync('git', args, { cwd: plain })
+  for (const args of [['init', '-q'], ['-c', 'user.email=a@example.com', '-c', 'user.name=a', '-c', 'commit.gpgsign=false', 'commit', '-q', '--allow-empty', '-m', 'init']]) execFileSync('git', args, { cwd: plain })
   await assert.rejects(run(['preview'], plain, env, () => {}), /not a CIVIC worktree/)
   writeFileSync(join(repo, 'edit'), 'x')
   await assert.rejects(run(['preview'], repo, env, () => {}), /uncommitted changes.*--allow-dirty/)

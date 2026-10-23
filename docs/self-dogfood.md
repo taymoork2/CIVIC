@@ -100,6 +100,17 @@ Each row is proved with current evidence, not by a past run.
 
 Record every step the owner or the agent had to do in a terminal. The target is none for routine runs.
 
+## Follow-ups after `civic preview`
+
+`civic preview` is built ([decision 0021](decisions/0021-civic-preview-reviews-a-worktree-of-civic.md)). Slices 2, 4 and part of 3 are done: start, attach, list, link and stop; setup from a fresh worktree; and hot reload through the proxy (S06). Still open:
+
+1. **`--desktop`.** CIVIC's Electron shell needs the branch in its window title and its own profile (`packages/local/desktop.mjs`), and an Electron binary to verify them.
+2. **The full agent loop (S11).** An external agent claims a request in its own worktree, reports a fix with a preview of its own copy, `civic recapture` checks it there, and the owner resolves it. The launcher passes the preview's access key file when it finds exactly one, but no recapture has been run through a preview.
+3. **S12.** Merging to main and seeing the change in the owner's live instance on port 3012, only when the owner asks for it.
+4. **Sign-in.** The preview has none (decision 0021, point 7).
+5. **Fixture signing.** Only the preview, store-location and review-app tests turn off `commit.gpgsign` in their throwaway repositories. The other test files that commit in a temp repository still ask the owner's signing key for every fixture commit, and fail whenever it is locked. Set `commit.gpgsign` to `false` in each of their fixtures.
+6. **The remaining rows of the table** that no test or trial has covered: S07 (host edit with unsaved drafts), S09 beyond the one `ps` comparison, and the rest of S10 across several worktrees.
+
 ## Open decisions
 
 1. The command's name. Follow Orca's final contract.

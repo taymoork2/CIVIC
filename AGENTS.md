@@ -83,6 +83,10 @@ README and architecture decisions before changing its boundaries.
   reason to rerun every suite during each edit. Do not stash someone else's work.
 - Commit, merge, push, publish statuses, or dispatch GitHub CI only within the
   user's authorization. Preserve unrelated work when grouping commits.
+- CIVIC merges its own branches: a CIVIC session makes a signed merge after
+  `bin/signoff` on the result. A coordinator in another tool must not request
+  integration into this repository (for example Orca's `orca_integrate`), and
+  must leave `.civic/` and the owner's untracked root `package.json` alone.
 - Report what changed, the checks actually run, and material remaining risks.
   Keep private validation evidence in ignored local storage; keep these instructions short.
 
