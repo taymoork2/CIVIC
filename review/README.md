@@ -117,6 +117,14 @@ When the review server starts, it registers itself as its line's preview, with `
 
 Example's dev build adds the tag only when `VITE_CIVIC_OVERLAY` names the overlay server, for example `VITE_CIVIC_OVERLAY=http://127.0.0.1:4777`. A production build never includes it.
 
+## Reviewing a running app
+
+`civic review-app --upstream <url> [--checkout <dir>] [--branch <name>] [--port <n>] [--overlay-port <n>]` ([decision 0019](../docs/decisions/0019-review-a-running-app-through-a-proxy.md)) serves any loopback app with the overlay in its pages, without changing the app. It starts the overlay server and a proxy in front of `--upstream`, registers the proxy as the preview of `--checkout` (default: the current directory), and prints the address to open. Stop it with Ctrl+C or SIGTERM, which also unregisters the preview.
+
+Annotations land on the checkout's line and revision. When the app runs from a detached copy of a branch's head (`git worktree add --detach <dir> <branch>`), `--branch <name>` files them under that branch, and is refused unless the copy is at the branch's head. A checkout with uncommitted changes is refused.
+
+CIVIC doesn't start the app. If it checks the browser's origin, such as a sign-in or WebSocket origin check, give it the proxy's origin: pick a free port, pass it as `--port`, and use `http://127.0.0.1:<port>` as the origin. The records are written to the checkout's git common directory under `civic/`: `records.graph.json` and `captures/<sha>.png`, plus a short-lived `lock` while writing. Nothing is committed. The people who review use `civic requests`, `civic show` and `civic resolve` from any worktree of that repository.
+
 ## MCP server
 
 `node review/src/mcp.ts` (the `civic-mcp` bin) speaks MCP over stdio, and any harness that speaks MCP can use it. It offers D35's write path and nothing more. An agent can list and read requests (captures come back as images), claim, release, comment, get repro URLs, report a fix, add a check, record an annotation, and run `context` and `gaps`. When a fix is reported with a preview, CIVIC's re-capture runs straight away. On the CLI, the same thing is `civic report-fix --recapture`. The server acts as `CIVIC_AGENT` (default `mcp-agent`) for `CIVIC_FOR`. Each tool takes the agent's `cwd`, so its line is the worktree it's working in.

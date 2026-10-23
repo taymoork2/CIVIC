@@ -112,6 +112,15 @@ export function registerPreview(context: Context, url: string, bearerFile?: stri
   })
 }
 
+/** Says a preview no longer serves this line, so a later app on the same port isn't taken for it. */
+export function unregisterPreview(context: Context, url: string): void {
+  const origin = new URL(url).origin
+  context.store.transact((document) => {
+    const line = document.records.find((record): record is Line => record.kind === 'line' && record.id === lineIdFor(context.checkout))
+    if (line?.previews) line.previews = line.previews.filter((preview) => new URL(preview.url).origin !== origin)
+  })
+}
+
 export interface PullRequestInput {
   number: number
   /** Where the PR's head runs, such as a hosted preview deploy. */

@@ -40,6 +40,7 @@ import {
 import { chooseDraft, designLens, isDesignExport, linesChanging, registerDesignDraft, registerDesignFile, renderDesignLens, type DesignFile, type DesignLens, type DesignLineResult } from './drafts.ts'
 import { bearerFor, captureScenario, launchBrowser, recapture, reproductionUrl } from './recapture.ts'
 import { createOverlayServer } from './overlay/server.ts'
+import { startReviewApp } from './review-app.ts'
 import { renderList, renderRequest } from './render.ts'
 import { Store } from './store.ts'
 import { DEFAULT_REF, GitRefRemote } from './remote.ts'
@@ -61,6 +62,8 @@ const USAGE = `Usage (records are shared by every worktree of this repository):
   civic reopen <request> --note "<text>"          civic escalate <request> --lane batch-review|owner-sign-off
   civic add-check <request> "<command>"           civic accept-check <request> <number>
   civic overlay [--port 4777]                     serves the capture overlay for dev and preview pages
+  civic review-app --upstream <url> [--checkout <dir>] [--branch <name>] [--port <n>] [--overlay-port <n>]
+                 serves a running loopback app with the overlay in its pages and registers it as the checkout's preview
   civic preview <url> [--bearer-file <file>]      civic lines [--json] | annotations [--line <id>] [--json] | whoami
   civic pr <number> [--preview <url>] [--remote origin]   a pull request as its own line, with its hosted preview
   civic release-line <package>@<version> [--tool npm|figma] [--from <line>]   a library release as its own line
@@ -362,6 +365,21 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
       print(`CIVIC overlay server on http://127.0.0.1:${port} for ${actorId(person)}. Add this to a dev or preview page, never to production:`)
       print(`<script src="http://127.0.0.1:${port}/overlay.js" data-civic-line="${lineIdFor(checkout)}" data-civic-revision="${checkout.head}" defer></script>`)
       await new Promise<void>((resolve) => server.once('close', () => resolve()))
+      return 0
+    }
+    case 'review-app': {
+      const upstream = one('--upstream')
+      if (!upstream) throw new UsageError('review-app needs --upstream <url> of the running app.')
+      const dir = resolvePath(cwd, one('--checkout') ?? '.')
+      const at = readCheckout(dir)
+      const person = identityFromEnv({ ...env, CIVIC_AGENT: undefined }, at.root)
+      const records = Store.forCommonDir(at.commonDir)
+      const app = await startReviewApp({ store: records, checkout: at, identity: person }, { upstream, ...(one('--branch') ? { branch: one('--branch')! } : {}), ...(one('--port') ? { port: Number(one('--port')) } : {}), ...(one('--overlay-port') ? { overlayPort: Number(one('--overlay-port')) } : {}) })
+      print(`Review ${app.origin} (the app at ${upstream}, with the overlay) as ${actorId(person)}. Annotations land on ${app.line} at ${app.revision}.\nRecords: ${records.dir}`)
+      const stop = () => void app.close().then(() => process.exit(0))
+      process.once('SIGINT', stop)
+      process.once('SIGTERM', stop)
+      await new Promise<void>(() => {})
       return 0
     }
     case 'sync': {
