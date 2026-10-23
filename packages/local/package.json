@@ -5,9 +5,9 @@
   "scripts": {
     "start": "node start.mjs",
     "check": "node --check start.mjs && node --check store.mjs && node --check vite.config.mjs && node --check worktree-connections.mjs && node --check worktree-dependencies.mjs && node --check desktop.mjs && node --check desktop-preload.cjs && node --check desktop-tabs.mjs && node --check desktop-launch.mjs && node --check desktop-windows.mjs && node --check project-windows.mjs && node --check desktop-appearance.mjs",
-    "test": "node --test start.check.mjs project-windows.check.mjs desktop-tabs.check.mjs desktop-appearance.check.mjs",
+    "test": "node ../../bin/with-temp-root.mjs node --test start.check.mjs project-windows.check.mjs desktop-tabs.check.mjs desktop-appearance.check.mjs",
     "desktop": "node desktop-launch.mjs",
-    "test:desktop-settings": "node desktop-settings.check.mjs"
+    "test:desktop-settings": "node ../../bin/with-temp-root.mjs node desktop-settings.check.mjs"
   },
   "dependencies": {
     "@civic/canvas": "workspace:*",

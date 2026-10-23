@@ -27,7 +27,7 @@
   "scripts": {
     "check": "tsc --noEmit",
     "test": "vitest run && pnpm run test:host",
-    "test:host": "node --test --test-concurrency=2 server/server-functions.check.mjs server/runtime-service.check.mjs server/canvas-host.check.mjs server/module-adapter.check.mjs server/viewport-controls.check.mjs server/project-picker.check.mjs server/shell-layout.check.mjs server/theme-settings.check.mjs server/shell-design.check.mjs"
+    "test:host": "node ../../bin/with-temp-root.mjs node --test --test-concurrency=2 server/server-functions.check.mjs server/runtime-service.check.mjs server/canvas-host.check.mjs server/module-adapter.check.mjs server/viewport-controls.check.mjs server/project-picker.check.mjs server/shell-layout.check.mjs server/theme-settings.check.mjs server/shell-design.check.mjs"
   },
   "dependencies": {
     "@playwright/test": "1.63.0",

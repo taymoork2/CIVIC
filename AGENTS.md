@@ -76,6 +76,11 @@ README and architecture decisions before changing its boundaries.
 - Start with the affected package's `check` and focused tests. For shell changes,
   verify the changed flow at desktop and narrow widths; verify Electron when its
   shared UI or lifecycle changes. Reuse existing acceptance scripts and fixtures.
+- Every check runs under `bin/with-temp-root.mjs` (package `test` scripts and
+  `bin/signoff` already do): its temp folder is removed afterwards, since one
+  Electron profile is up to 110 MB. A new script that runs checks must go
+  through it; `review/test/temp-root.test.ts` fails if one does not. Set
+  `CIVIC_KEEP_TEMP=1` to keep a run's folder as evidence.
 - Use temporary stores, profiles, ports, and synthetic data for acceptance.
   Do not disturb installed dogfood sessions or another owner's backend.
 - When landing is authorized, sign off the exact committed candidate with

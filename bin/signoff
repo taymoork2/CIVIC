@@ -7,6 +7,11 @@
 #   bin/signoff --no-post run without posting a status
 set -euo pipefail
 
+# The whole gate runs in one temporary folder that is removed afterwards (bin/with-temp-root.mjs).
+if [ -z "${CIVIC_TEMP_ROOT:-}" ]; then
+  exec node "$(dirname "${BASH_SOURCE[0]}")/with-temp-root.mjs" bash "${BASH_SOURCE[0]}" "$@"
+fi
+
 browser=0 post=1
 for arg in "$@"; do
   case "$arg" in
