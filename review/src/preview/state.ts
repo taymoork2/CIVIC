@@ -89,7 +89,7 @@ export function parsePreview(value: unknown): Preview | undefined {
   if (!p || typeof p !== 'object' || keys(p) !== PREVIEW_KEYS) return undefined
   const text = [p.id, p.branch, p.worktree, p.root, p.head, p.origin, p.startedAt].every((field) => typeof field === 'string')
   const ok = text && /^[\w.-]+$/.test(p.id) && typeof p.keep === 'boolean' && typeof p.dirty === 'boolean'
-    && isPort(p.canvasPort) && isPort(p.port) && isProc(p.launcher) && p.launcher.marker === LAUNCHER_MARKER && Array.isArray(p.children) && p.children.every(isProc)
+    && isPort(p.canvasPort) && isPort(p.port) && p.origin === `http://127.0.0.1:${p.port}` && p.branch.length <= 200 && !/[\x00-\x1f]/.test(p.branch) && isProc(p.launcher) && p.launcher.marker === LAUNCHER_MARKER && Array.isArray(p.children) && p.children.every(isProc)
   return ok ? p : undefined
 }
 
@@ -134,12 +134,20 @@ export async function stopProcess(proc: Proc, { look = inspect, kill = (pid, sig
   return true
 }
 
-/** Makes `dir` if needed, and refuses it unless it is a real folder of ours that nobody else can enter. */
+/** A real folder (not a link) of ours that nobody else can enter. The low six mode bits are group and other access. */
+function isPrivateDir(dir: string) {
+  try {
+    const info = lstatSync(dir)
+    return info.isDirectory() && info.uid === process.getuid?.() && info.mode % 0o100 === 0
+  } catch {
+    return false
+  }
+}
+
+/** Makes `dir` if needed, and refuses it unless it is a private folder of ours. */
 export function privateDir(dir: string) {
   mkdirSync(dir, { recursive: true, mode: 0o700 })
-  const info = lstatSync(dir)
-  // The low six mode bits are group and other access.
-  if (!info.isDirectory() || info.uid !== process.getuid?.() || info.mode % 0o100 !== 0) throw new Error(`Refusing ${dir}: it is not a private folder of yours.`)
+  if (!isPrivateDir(dir)) throw new Error(`Refusing ${dir}: it is not a private folder of yours.`)
 }
 
 const stateFile = (id: string, dir: string) => join(dir, `${id}.json`)
@@ -154,14 +162,17 @@ export function writePreview(preview: Preview, dir = previewsDir()) {
 }
 
 export function readPreviews(dir = previewsDir()): Preview[] {
+  // State is only read from a folder nobody else could have written to.
+  if (!isPrivateDir(dir)) return []
   let names: string[]
   try { names = readdirSync(dir) } catch { return [] }
   const found: Preview[] = []
   for (const name of names.filter((n) => n.endsWith('.json'))) {
     try {
       const parsed = parsePreview(JSON.parse(readFileSync(join(dir, name), 'utf8')))
-      // The file name is the id, so a state file can't point one preview at another's entry.
-      if (parsed && `${parsed.id}.json` === name) found.push(parsed)
+      // The file name is the id, so a state file can't point one preview at another's entry, and its data
+      // folder can only be its own folder in this one.
+      if (parsed && `${parsed.id}.json` === name && parsed.root === join(dir, parsed.id)) found.push(parsed)
     } catch { /* unreadable: ignore */ }
   }
   return found
@@ -171,7 +182,7 @@ export const forgetPreview = (id: string, dir = previewsDir()) => rmSync(stateFi
 
 /** Deletes a preview's temp folder: it must sit directly inside the previews folder and carry the marker this tool wrote. */
 export function removeOwnedRoot(root: string, dir = previewsDir()): boolean {
-  if (root === '') return false
+  if (root === '' || !isPrivateDir(dir)) return false
   let real: string
   let base: string
   try { real = realpathSync(root); base = realpathSync(dir) } catch { return false }

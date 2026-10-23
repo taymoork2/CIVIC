@@ -9,7 +9,7 @@ import { after, test } from 'node:test'
 import { fileURLToPath } from 'node:url'
 import type { Annotation, Line } from '../../graph/src/index.ts'
 import { run, readCheckout, Store } from '../src/index.ts'
-import { LAUNCHER_MARKER, parsePreview, pickPorts, privateDir, removeOwnedRoot, ROOT_MARK, reservedPort, sameProcess, select, stopProcess, type Preview, type Proc } from '../src/preview/state.ts'
+import { LAUNCHER_MARKER, parsePreview, pickPorts, privateDir, readPreviews, removeOwnedRoot, ROOT_MARK, reservedPort, sameProcess, select, stopProcess, writePreview, type Preview, type Proc } from '../src/preview/state.ts'
 
 // `civic preview`: the contract is Orca's `pnpm preview` (docs/self-dogfood.md).
 const CIVIC = join(dirname(fileURLToPath(import.meta.url)), '../..')
@@ -33,6 +33,8 @@ test('ports: the OS picks them, and none of the reserved ones is ever used', asy
 test('a state file is parsed, never trusted', () => {
   assert.ok(parsePreview(preview()))
   assert.equal(parsePreview({ ...preview(), extra: 1 }), undefined, 'unknown fields')
+  assert.equal(parsePreview(preview({ origin: 'http://127.0.0.1:50999' })), undefined, 'an origin that is not its port')
+  assert.equal(parsePreview(preview({ branch: 'main\nInjected line' })), undefined, 'a branch with control characters')
   assert.equal(parsePreview(preview({ port: 3012 })), undefined, 'a reserved port')
   assert.equal(parsePreview(preview({ children: [proc('rm -rf /')] })), undefined, 'a command the launcher never starts')
   assert.equal(parsePreview(preview({ launcher: proc('--store /t/civic-preview/x/store') })), undefined, 'a launcher that is not the launcher')
@@ -76,6 +78,20 @@ test('a private folder refuses links and loose permissions; only a marked folder
   assert.equal(removeOwnedRoot(marked, base), true)
   assert.ok(existsSync(unmarked) && !existsSync(marked))
   assert.deepEqual(select([preview(), preview({ id: 'x-2', branch: 'x', worktree: '/other' })], undefined, '/w').map((p) => p.branch), ['main'])
+})
+
+test('state is read only from a private folder, and only for a preview\'s own data folder', () => {
+  const dir = join(scratch, 'states')
+  const own = preview({ root: join(dir, 'main-1a2b3c4d') })
+  writePreview(own, dir)
+  assert.deepEqual(readPreviews(dir).map((p) => p.id), [own.id])
+  writeFileSync(join(dir, 'other-2.json'), JSON.stringify(preview({ id: 'other-2', root: '/Users/someone/important' })))
+  assert.deepEqual(readPreviews(dir).map((p) => p.id), [own.id], 'a data folder that is not its own is ignored')
+  chmodSync(dir, 0o755)
+  assert.deepEqual(readPreviews(dir), [], 'a folder others can enter is not believed')
+  mkdirSync(join(dir, 'main-1a2b3c4d'), { recursive: true })
+  writeFileSync(join(dir, 'main-1a2b3c4d', ROOT_MARK), 'x')
+  assert.equal(removeOwnedRoot(join(dir, 'main-1a2b3c4d'), dir), false, 'and nothing in it is deleted')
 })
 
 // A repository shaped like CIVIC, whose code is this checkout's, so a preview runs the real launcher and canvas
