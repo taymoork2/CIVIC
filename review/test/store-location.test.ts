@@ -12,7 +12,7 @@ const ignored = (cwd: string, path: string) => { try { git(cwd, 'check-ignore', 
 
 function repository() {
   const main = mkdtempSync(join(tmpdir(), 'civic-folder-'))
-  git(main, 'init', '-q', '-b', 'main'); git(main, 'config', 'user.email', 'reviewer@example.com')
+  git(main, 'init', '-q', '-b', 'main'); git(main, 'config', 'user.email', 'reviewer@example.com'); git(main, 'config', 'commit.gpgsign', 'false')
   writeFileSync(join(main, 'README'), 'x'); git(main, 'add', '.'); git(main, 'commit', '-q', '-m', 'init')
   const worktree = `${main}-fix`
   git(main, 'worktree', 'add', '-q', '-b', 'fix/label', worktree)

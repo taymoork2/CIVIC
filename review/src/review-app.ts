@@ -20,6 +20,10 @@ export interface ReviewAppInput {
   upstream: string
   /** Files the annotations under this branch when the app runs from a detached copy of its head. */
   branch?: string
+  /** Review a checkout with uncommitted changes. Annotations are still filed on its committed head. */
+  allowDirty?: boolean
+  /** The file holding the app's access key, so CIVIC's re-capture can sign in to the preview. The key is never copied. */
+  bearerFile?: string
   port?: number
   overlayPort?: number
   rasterize?: Rasterize
@@ -39,7 +43,7 @@ const listen = async (server: Server, port = 0) => {
  */
 export async function startReviewApp(context: Context, input: ReviewAppInput): Promise<ReviewApp> {
   const { checkout } = context
-  if (git(checkout.root, 'status', '--porcelain') !== '') throw new Error(`${checkout.root} has uncommitted changes, so its revision would not describe what is on screen.`)
+  if (!input.allowDirty && git(checkout.root, 'status', '--porcelain') !== '') throw new Error(`${checkout.root} has uncommitted changes, so its revision would not describe what is on screen.`)
   const named: Checkout = input.branch ? { ...checkout, branch: input.branch } : checkout
   if (input.branch && revisionOf(checkout.root, input.branch) !== checkout.head) throw new Error(`${checkout.root} is not at the head of ${input.branch}, so annotations would not be on that branch's revision.`)
   const scoped: Context = { ...context, checkout: named }
@@ -57,7 +61,7 @@ export async function startReviewApp(context: Context, input: ReviewAppInput): P
     overlayServer.close()
     throw error
   }
-  registerPreview(scoped, origin)
+  registerPreview(scoped, origin, input.bearerFile)
   return {
     origin,
     overlay,
@@ -65,6 +69,7 @@ export async function startReviewApp(context: Context, input: ReviewAppInput): P
     revision: named.head,
     close: async () => {
       unregisterPreview(scoped, origin)
+      if (input.bearerFile) scoped.store.setPreviewAuth(origin, undefined)
       for (const server of [proxy, overlayServer]) {
         server.closeAllConnections()
         await new Promise<void>((resolve) => server.close(() => resolve()))

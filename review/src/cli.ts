@@ -42,6 +42,7 @@ import { bearerFor, captureScenario, launchBrowser, recapture, reproductionUrl }
 import { createOverlayServer } from './overlay/server.ts'
 import { startReviewApp } from './review-app.ts'
 import { moveStore } from './move-store.ts'
+import { linkPreview, listPreviews, startPreview, stopPreviews } from './preview/launcher.ts'
 import { renderList, renderRequest } from './render.ts'
 import { Store } from './store.ts'
 import { DEFAULT_REF, GitRefRemote } from './remote.ts'
@@ -66,6 +67,9 @@ const USAGE = `Usage (records are shared by every worktree of this repository):
   civic move-store                                moves records an earlier CIVIC kept in .git/civic to this repository's .civic/ folder
   civic review-app --upstream <url> [--checkout <dir>] [--branch <name>] [--port <n>] [--overlay-port <n>]
                  serves a running loopback app with the overlay in its pages and registers it as the checkout's preview
+  civic preview [--keep] [--no-open] [--allow-dirty] [--project <manifest>]   previews this CIVIC worktree's own canvas, with the overlay,
+                 on free ports and a throwaway store; Ctrl+C stops it and deletes the data (--keep to keep it)
+  civic preview list | link [branch] | stop [branch|all]
   civic preview <url> [--bearer-file <file>]      civic lines [--json] | annotations [--line <id>] [--json] | whoami
   civic pr <number> [--preview <url>] [--remote origin]   a pull request as its own line, with its hosted preview
   civic release-line <package>@<version> [--tool npm|figma] [--from <line>]   a library release as its own line
@@ -91,7 +95,7 @@ const MEDIA: Record<string, CaptureRef['mediaType']> = { '.png': 'image/png', '.
 
 export async function run(argv: string[], cwd = process.cwd(), env = process.env, print = (text: string) => console.log(text)): Promise<number> {
   const [command, ...rest] = argv
-  const { positional, flags, has } = parse(rest)
+  const { positional, flags, has } = parse(rest, command)
   const one = (name: string) => flags.get(name)?.at(-1)
   const checkout = readCheckout(cwd)
   const store = Store.forCheckout(checkout)
@@ -325,6 +329,11 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
       return 0
     }
     case 'preview': {
+      if (positional[0] === 'list') { await listPreviews(print); return 0 }
+      if (positional[0] === 'link') { await linkPreview(positional[1], cwd, print); return 0 }
+      if (positional[0] === 'stop') { await stopPreviews(positional[1], cwd, print); return 0 }
+      if (has('--desktop')) throw new UsageError('civic preview --desktop is not built yet: CIVIC\'s Electron shell needs a branch title and its own profile first.')
+      if (positional.length === 0) return await startPreview({ cwd, env, print, keep: has('--keep'), noOpen: has('--no-open'), allowDirty: has('--allow-dirty'), ...(one('--project') ? { project: one('--project')! } : {}) })
       need(1)
       const bearer = one('--bearer-file')
       const line = registerPreview(context, positional[0]!, bearer ? resolvePath(cwd, bearer) : undefined)
@@ -467,10 +476,12 @@ function gitConfig(root: string, key: string): string | undefined {
   }
 }
 
-function parse(args: string[]) {
+function parse(args: string[], command: string | undefined) {
   const positional: string[] = []
   const flags = new Map<string, string[]>()
-  const booleans = new Set(['--canvas', '--change', '--high-risk', '--json', '--no-checks', '--recapture'])
+  const booleans = new Set(['--allow-dirty', '--canvas', '--change', '--desktop', '--high-risk', '--json', '--no-checks', '--no-open', '--recapture'])
+  // `settle` takes --keep mine|theirs; `preview` takes it alone.
+  if (command === 'preview') booleans.add('--keep')
   for (let index = 0; index < args.length; index++) {
     const arg = args[index]!
     if (!arg.startsWith('--')) positional.push(arg)

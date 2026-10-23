@@ -27,7 +27,7 @@ let upstream = ''
 let context: Context
 
 before(async () => {
-  git('init', '-q', '-b', 'main'); git('config', 'user.email', 'reviewer@example.com')
+  git('init', '-q', '-b', 'main'); git('config', 'user.email', 'reviewer@example.com'); git('config', 'commit.gpgsign', 'false')
   writeFileSync(join(repo, 'README'), 'x'); git('add', '.'); git('commit', '-q', '-m', 'init')
   git('checkout', '-q', '-b', 'feat/screens')
   writeFileSync(join(repo, 'README'), 'y'); git('commit', '-q', '-am', 'screens')
