@@ -35,7 +35,7 @@ function pushPr(file: string): string {
   return sh(author, 'rev-parse', 'HEAD')
 }
 
-const records = () => Store.forCommonDir(readCheckout(reviewer).commonDir).read()
+const records = () => Store.forCheckout(readCheckout(reviewer)).read()
 const prLine = () => records().records.find((record): record is Line => record.id === 'line:github.pr.7')!
 
 before(() => {

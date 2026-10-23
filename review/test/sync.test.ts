@@ -29,7 +29,7 @@ async function civic(cwd: string, who: Record<string, string>, ...args: string[]
   return out.join('\n')
 }
 
-const storeOf = (checkout: string) => Store.forCommonDir(readCheckout(checkout).commonDir)
+const storeOf = (checkout: string) => Store.forCheckout(readCheckout(checkout))
 const requestIn = (checkout: string, id: string) => storeOf(checkout).read().records.find((record): record is WorkRequest => record.id === id)!
 
 before(() => {
@@ -145,5 +145,5 @@ test('a shared change its person may not make is refused, and nothing is merged'
     return true
   })
   assert.equal(JSON.stringify(storeOf(mine).read()), before)
-  assert.ok(existsSync(join(readCheckout(mine).commonDir, 'civic', 'records.graph.json')))
+  assert.ok(existsSync(join(readCheckout(mine).mainRoot, '.civic', 'records.graph.json')))
 })

@@ -53,7 +53,7 @@ async function serve(dir: string): Promise<string> {
   return `http://127.0.0.1:${typeof address === 'object' && address ? address.port : 0}`
 }
 
-const store = () => Store.forCommonDir(readCheckout(main).commonDir)
+const store = () => Store.forCheckout(readCheckout(main))
 const request = (id: string) => store().read().records.find((record): record is WorkRequest => record.id === id)!
 
 before(async () => {
@@ -78,14 +78,15 @@ after(async () => {
   for (const server of servers) server.close()
 })
 
-test('both worktrees share one store in the git common directory', async () => {
+test("both worktrees share one store in the main checkout's .civic folder", async () => {
   const fromMain = await civic(main, person, 'whoami')
   const fromWorktree = await civic(worktree, agent, 'whoami')
   const storeLine = (text: string) => text.split('\n').find((line) => line.startsWith('Store: '))
   assert.equal(storeLine(fromMain), storeLine(fromWorktree))
   assert.match(fromMain, /actor:person\.taymoor on line:git\.main/)
   assert.match(fromWorktree, /actor:agent\.claude-code\.taymoor on line:git\.fix\.pack-label/)
-  assert.ok(storeLine(fromMain)!.endsWith(join('.git', 'civic')))
+  assert.equal(storeLine(fromMain), `Store: ${join(readCheckout(main).mainRoot, '.civic')}`)
+  assert.ok(!existsSync(join(readCheckout(main).commonDir, 'civic')), 'nothing is written inside .git')
 })
 
 test('an annotation in one worktree is claimed in another, re-captured on its preview and resolved in the Auto lane', async (t) => {

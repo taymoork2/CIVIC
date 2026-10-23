@@ -1,8 +1,10 @@
 import { createHash } from 'node:crypto'
 import { mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { git, type Checkout } from './git.ts'
 import { SCHEMA_VERSION, validateGraph, type CaptureRef, type GraphDocument } from '../../graph/src/index.ts'
 
+export const STORE_FOLDER = '.civic'
 const STALE_LOCK_MS = 30_000
 const LOCK_WAIT_MS = 10_000
 const NAME = /^([0-9a-f]{64})\.(png|jpg|webp|tape\.json|replay\.json)$/
@@ -10,26 +12,34 @@ const SHA256 = /^[0-9a-f]{64}$/
 const EXTENSIONS: Record<CaptureRef['mediaType'], string> = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' }
 
 /**
- * CIVIC's local collaboration records (D39). One graph document and its content-addressed
- * captures, kept in the git common directory so every worktree and every local agent of a
- * repository sees the same annotations, requests and claims, and nothing is committed to a
- * product branch. The team-wide store is roadmap step 5; it holds the same record shapes.
+ * CIVIC's local collaboration records (decision 0020). One graph document and its content-addressed
+ * captures, kept in the main working tree's `.civic/` folder so every worktree and every local
+ * agent of a repository sees the same annotations, requests and claims. The folder ignores
+ * itself, so nothing is committed to a product branch, and nothing is written inside `.git`.
+ * A working tree can be checked out from someone else's branch, so the store refuses to be used
+ * while git tracks anything in the folder but `civic.json`. The team-wide store is roadmap step 5;
+ * it holds the same record shapes.
  */
 export class Store {
   readonly dir: string
   readonly file: string
+  /** The working tree that holds `dir`, when there is one to ask git about. */
+  private readonly root: string | undefined
+  private checked = false
 
-  constructor(dir: string) {
+  constructor(dir: string, root?: string) {
     this.dir = dir
     this.file = join(dir, 'records.graph.json')
+    this.root = root
   }
 
-  /** The store for a repository, from its git common directory. */
-  static forCommonDir(commonDir: string): Store {
-    return new Store(join(commonDir, 'civic'))
+  /** The store for a repository: the `.civic/` folder of its main working tree. */
+  static forCheckout(checkout: Pick<Checkout, 'mainRoot'>): Store {
+    return new Store(join(checkout.mainRoot, STORE_FOLDER), checkout.mainRoot)
   }
 
   read(): GraphDocument {
+    this.trust()
     try {
       return JSON.parse(readFileSync(this.file, 'utf8')) as GraphDocument
     } catch (error) {
@@ -44,7 +54,7 @@ export class Store {
    * change the graph's rules refuse (an agent resolving, say) is never stored.
    */
   transact<T>(change: (document: GraphDocument) => T): T {
-    mkdirSync(this.dir, { recursive: true, mode: 0o700 })
+    this.ensure()
     const release = this.lock()
     try {
       const document = this.read()
@@ -63,6 +73,7 @@ export class Store {
   putCapture(bytes: Uint8Array, mediaType: CaptureRef['mediaType']): CaptureRef {
     const sha256 = createHash('sha256').update(bytes).digest('hex')
     mkdirSync(join(this.dir, 'captures'), { recursive: true, mode: 0o700 })
+    this.ensure()
     const path = this.capturePath({ sha256, mediaType })
     try {
       writeFileSync(path, bytes, { mode: 0o600, flag: 'wx' })
@@ -74,6 +85,7 @@ export class Store {
 
   /** Where the access key for a preview origin is kept, if the preview needs one. */
   previewAuth(origin: string): string | undefined {
+    this.trust()
     try {
       return (JSON.parse(readFileSync(join(this.dir, 'preview-auth.json'), 'utf8')) as Record<string, string>)[origin]
     } catch {
@@ -82,7 +94,7 @@ export class Store {
   }
 
   setPreviewAuth(origin: string, bearerFile: string | undefined) {
-    mkdirSync(this.dir, { recursive: true, mode: 0o700 })
+    this.ensure()
     const release = this.lock()
     try {
       const path = join(this.dir, 'preview-auth.json')
@@ -135,6 +147,7 @@ export class Store {
 
   /** Every capture's file name, `<sha256>.<ext>`, for sharing them (roadmap step 5). Replays and their tapes are among them. */
   captureNames(): string[] {
+    this.trust()
     try {
       return readdirSync(join(this.dir, 'captures')).filter((name) => NAME.test(name)).sort()
     } catch {
@@ -144,6 +157,7 @@ export class Store {
 
   readCapture(name: string): Uint8Array {
     if (!NAME.test(name)) throw new Error(`Not a capture: ${name}`)
+    this.trust()
     return readFileSync(join(this.dir, 'captures', name))
   }
 
@@ -167,12 +181,39 @@ export class Store {
     const match = NAME.exec(name)
     if (!match) throw new Error(`Not a capture: ${name}`)
     if (sha256(bytes) !== match[1]) throw new Error(`The shared capture ${name} doesn't match its SHA-256; it was not kept.`)
+    this.ensure()
     mkdirSync(join(this.dir, 'captures'), { recursive: true, mode: 0o700 })
     try {
       writeFileSync(join(this.dir, 'captures', name), bytes, { mode: 0o600, flag: 'wx' })
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error
     }
+  }
+
+  /** Makes the folder, with a `.gitignore` that hides everything in it but a committed `civic.json`. */
+  ensure() {
+    this.trust()
+    mkdirSync(this.dir, { recursive: true, mode: 0o700 })
+    try {
+      writeFileSync(join(this.dir, '.gitignore'), '*\n!civic.json\n', { flag: 'wx' })
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error
+    }
+    // A .gitignore that was already there may not hide the records; ask git rather than assume.
+    if (this.root) {
+      try { git(this.root, 'check-ignore', '-q', '--', join(STORE_FOLDER, 'records.graph.json')) } catch {
+        throw new Error(`${this.dir} would not be ignored by git, so its records could be committed. Make ${join(this.dir, '.gitignore')} contain "*" and "!civic.json", or add ".civic/*" and "!.civic/civic.json" to the repository's .gitignore.`)
+      }
+    }
+  }
+
+  /** Refuses a folder that git tracks, since a checked-out branch could then supply records or a sign-in file. Asked once. */
+  private trust() {
+    if (this.checked || !this.root) return
+    const tracked = git(this.root, 'ls-files', '--', STORE_FOLDER).split('\n').filter(Boolean)
+    const foreign = tracked.filter((path) => path !== `${STORE_FOLDER}/civic.json`)
+    if (foreign.length) throw new Error(`Git tracks ${foreign.slice(0, 3).join(', ')}${foreign.length > 3 ? ' and more' : ''} in ${this.dir}, which could have come from another branch. Only civic.json may be committed there. Untrack the rest with "git rm -r --cached ${STORE_FOLDER}" and commit, then retry.`)
+    this.checked = true
   }
 
   private lock(): () => void {

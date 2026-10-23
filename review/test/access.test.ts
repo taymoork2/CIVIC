@@ -31,7 +31,7 @@ async function civic(cwd: string, who: Record<string, string>, ...args: string[]
 const refused = (cwd: string, who: Record<string, string>, ...args: string[]) =>
   run(args, cwd, { ...process.env, CIVIC_AGENT: undefined, CIVIC_FOR: undefined, CIVIC_PERSON: undefined, ...who }, () => {})
 
-const records = () => Store.forCommonDir(readCheckout(main).commonDir).read()
+const records = () => Store.forCheckout(readCheckout(main)).read()
 const request = (id: string) => records().records.find((record): record is WorkRequest => record.id === id)!
 
 before(() => {

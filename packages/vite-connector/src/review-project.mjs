@@ -1,15 +1,28 @@
 import { createHash } from 'node:crypto'
 import { readFileSync, realpathSync, statSync, existsSync } from 'node:fs'
 import { readFile, writeFile } from 'node:fs/promises'
-import { dirname, isAbsolute, join, resolve } from 'node:path'
+import { basename, dirname, isAbsolute, join, resolve } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
 
 const fail = (message) => { throw Error(`CIVIC project: ${message}`) }
-/** An app's manifest file. Apps connected before the rename keep their `rehearsal.project.json`. */
+/**
+ * An app's manifest file: `civic.json` at its root, else `.civic/civic.json`. Apps connected earlier keep
+ * their `civic.project.json` (deprecated) or `rehearsal.project.json`.
+ */
 export function manifestIn(root) {
-  const current = join(root, 'civic.project.json'), legacy = join(root, 'rehearsal.project.json')
-  return !existsSync(current) && existsSync(legacy) ? legacy : current
+  return ['civic.json', '.civic/civic.json', 'civic.project.json', 'rehearsal.project.json'].map((name) => join(root, name)).find(existsSync) ?? join(root, 'civic.json')
+}
+/** The folder a manifest's relative paths start from: the app's root, which for `.civic/civic.json` is the folder above `.civic`. */
+export function manifestRootOf(manifestPath) {
+  const folder = dirname(manifestPath)
+  return basename(manifestPath) === 'civic.json' && basename(folder) === '.civic' ? dirname(folder) : folder
+}
+const warned = new Set()
+function warnIfDeprecated(manifestPath) {
+  if (!['civic.project.json', 'rehearsal.project.json'].includes(basename(manifestPath)) || warned.has(manifestPath)) return
+  warned.add(manifestPath)
+  process.emitWarning(`${manifestPath} still works, but the manifest is now civic.json at the app root or .civic/civic.json. Rename it.`, { type: 'DeprecationWarning', code: 'CIVIC_MANIFEST_NAME' })
 }
 const id = (value) => typeof value === 'string' && /^[a-z][a-z0-9.-]{0,119}$/.test(value)
 const words = (value, max = 200) => typeof value === 'string' && value.trim() && value.length <= max
@@ -70,8 +83,10 @@ export function loadProject(repo, options = {}) {
   let local = {}
   try { local = JSON.parse(readFileSync(join(repo, '.review-data/application.json'), 'utf8')) } catch (error) { if (error.code !== 'ENOENT') throw error }
   const selected = options.manifest ?? process.env.CIVIC_PROJECT ?? process.env.REHEARSAL_PROJECT ?? local.project
-  const manifestPath = realpathSync(selected ? resolve(repo, selected) : manifestIn(repo))
-  const manifestRoot = dirname(manifestPath)
+  const chosen = selected && resolve(repo, selected)
+  const manifestPath = realpathSync(chosen ? (statSync(chosen).isDirectory() ? manifestIn(chosen) : chosen) : manifestIn(repo))
+  warnIfDeprecated(manifestPath)
+  const manifestRoot = manifestRootOf(manifestPath)
   const manifest = checkedProject(JSON.parse(readFileSync(manifestPath, 'utf8')))
   const root = realpathSync(resolve(repo, options.applicationRoot ?? process.env.CIVIC_APP_ROOT ?? process.env.REHEARSAL_APP_ROOT ?? (!options.manifest && !process.env.CIVIC_PROJECT && !process.env.REHEARSAL_PROJECT ? local.root : undefined) ?? manifestRoot))
   // Connector-owned projects may resolve through workspace links; portable modules stay inside their checkout.
@@ -136,7 +151,8 @@ async function cli() {
     const root = realpathSync(values.root)
     const manifest = checkedProject({ version: 1, id: values.id, name: values.name, adapter: { kind: 'module', ...(values.preview ? { entry: values.preview } : {}) }, sources: values.source, scenarios: 'civic.scenarios.json', coverage: 'civic.coverage.json', personas: [{ id: 'default', label: 'Default synthetic situation' }], roles: [{ id: 'reviewer', label: 'Reviewer' }], conditions: [{ id: 'normal', label: 'Normal' }], navigation: ['Start', 'Main'] })
     for (const path of [...manifest.sources, ...(values.preview ? [values.preview] : [])]) projectPath(root, path)
-    const outputs = { 'civic.project.json': manifest, 'civic.scenarios.json': [], 'civic.coverage.json': { version: 1, targets: [] } }
+    if (existsSync(manifestIn(root))) fail(`refusing to overwrite ${manifestIn(root)}`)
+    const outputs = { 'civic.json': manifest, 'civic.scenarios.json': [], 'civic.coverage.json': { version: 1, targets: [] } }
     for (const name of Object.keys(outputs)) if (existsSync(join(root, name))) fail(`refusing to overwrite ${name}`)
     if (values.write) for (const [name, data] of Object.entries(outputs)) await writeFile(join(root, name), JSON.stringify(data, null, 2) + '\n', { flag: 'wx' })
     console.log(JSON.stringify({ written: values.write, root, files: outputs }, null, 2))

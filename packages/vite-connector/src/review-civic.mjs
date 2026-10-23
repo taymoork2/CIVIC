@@ -13,7 +13,7 @@ const packaged = resolve(dirname(fileURLToPath(import.meta.url)), '../../..')
 
 /**
  * Connects a host's review to CIVIC's shared store (decision 0007). Each saved note becomes
- * a CIVIC annotation in the reviewed repository's git common directory, which every worktree
+ * a CIVIC annotation in the reviewed repository's `.civic/` folder, which every worktree
  * and local agent reads, and selected annotations become work requests. It runs CIVIC's own
  * `civic` CLI (review/ at the CIVIC repository root), so the app imports nothing from CIVIC and
  * CIVIC imports nothing from the app (decision 0010). The CLI is found through CIVIC_ROOT, or

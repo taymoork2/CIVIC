@@ -38,7 +38,7 @@ function exportVersion(name: string, version: string, without: string[] = []): s
   return path
 }
 
-const records = () => Store.forCommonDir(readCheckout(repo).commonDir).read()
+const records = () => Store.forCheckout(readCheckout(repo)).read()
 const line = (id: string) => records().records.find((record): record is Line => record.id === id && record.kind === 'line')!
 
 before(() => {

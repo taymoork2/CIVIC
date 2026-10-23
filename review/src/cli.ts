@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // civic: the review to agent loop (decision 0007). Annotations, work requests, claims and
-// fix reports live in the git common directory, shared by every worktree (D39). CIVIC
+// fix reports live in the main working tree's .civic/ folder, shared by every worktree (decision 0020). CIVIC
 // re-captures reported fixes with Playwright and makes no model calls (D30).
 //
 // Agents run with CIVIC_AGENT=<harness> and CIVIC_FOR=<person>; everyone else is a person.
@@ -41,6 +41,7 @@ import { chooseDraft, designLens, isDesignExport, linesChanging, registerDesignD
 import { bearerFor, captureScenario, launchBrowser, recapture, reproductionUrl } from './recapture.ts'
 import { createOverlayServer } from './overlay/server.ts'
 import { startReviewApp } from './review-app.ts'
+import { moveStore } from './move-store.ts'
 import { renderList, renderRequest } from './render.ts'
 import { Store } from './store.ts'
 import { DEFAULT_REF, GitRefRemote } from './remote.ts'
@@ -62,6 +63,7 @@ const USAGE = `Usage (records are shared by every worktree of this repository):
   civic reopen <request> --note "<text>"          civic escalate <request> --lane batch-review|owner-sign-off
   civic add-check <request> "<command>"           civic accept-check <request> <number>
   civic overlay [--port 4777]                     serves the capture overlay for dev and preview pages
+  civic move-store                                moves records an earlier CIVIC kept in .git/civic to this repository's .civic/ folder
   civic review-app --upstream <url> [--checkout <dir>] [--branch <name>] [--port <n>] [--overlay-port <n>]
                  serves a running loopback app with the overlay in its pages and registers it as the checkout's preview
   civic preview <url> [--bearer-file <file>]      civic lines [--json] | annotations [--line <id>] [--json] | whoami
@@ -92,7 +94,7 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
   const { positional, flags, has } = parse(rest)
   const one = (name: string) => flags.get(name)?.at(-1)
   const checkout = readCheckout(cwd)
-  const store = Store.forCommonDir(checkout.commonDir)
+  const store = Store.forCheckout(checkout)
   const context: Context = { store, checkout, identity: identityFromEnv(env, checkout.root) }
   const need = (count: number) => {
     if (positional.length < count) throw new UsageError(`${command} needs ${count === 1 ? 'an argument' : `${count} arguments`}.`)
@@ -367,13 +369,18 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
       await new Promise<void>((resolve) => server.once('close', () => resolve()))
       return 0
     }
+    case 'move-store': {
+      const moved = moveStore(checkout)
+      print(moved.moved.length === 0 && moved.left.length === 0 ? `Nothing to move: ${moved.from} holds no records.` : `Moved ${moved.moved.length} file(s) from ${moved.from} to ${moved.to}.${moved.left.length ? ` Left in place, not CIVIC's: ${moved.left.join(', ')}.` : ''}`)
+      return 0
+    }
     case 'review-app': {
       const upstream = one('--upstream')
       if (!upstream) throw new UsageError('review-app needs --upstream <url> of the running app.')
       const dir = resolvePath(cwd, one('--checkout') ?? '.')
       const at = readCheckout(dir)
       const person = identityFromEnv({ ...env, CIVIC_AGENT: undefined }, at.root)
-      const records = Store.forCommonDir(at.commonDir)
+      const records = Store.forCheckout(at)
       const app = await startReviewApp({ store: records, checkout: at, identity: person }, { upstream, ...(one('--branch') ? { branch: one('--branch')! } : {}), ...(one('--port') ? { port: Number(one('--port')) } : {}), ...(one('--overlay-port') ? { overlayPort: Number(one('--overlay-port')) } : {}) })
       print(`Review ${app.origin} (the app at ${upstream}, with the overlay) as ${actorId(person)}. Annotations land on ${app.line} at ${app.revision}.\nRecords: ${records.dir}`)
       const stop = () => void app.close().then(() => process.exit(0))

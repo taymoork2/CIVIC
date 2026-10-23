@@ -33,8 +33,8 @@ const listen = async (server: Server, port = 0) => {
 /**
  * Serves a running app for review (decision 0019): a loopback proxy puts the capture overlay
  * into its pages, and the checkout it runs from is registered as that preview, so an annotation
- * made on it lands on that line at that revision (D36). Records go to the checkout's git common
- * directory (D39); nothing is committed. A checkout with uncommitted changes is refused, since
+ * made on it lands on that line at that revision (D36). Records go to the repository's `.civic/`
+ * (decision 0020); nothing is committed. A checkout with uncommitted changes is refused, since
  * its revision would not describe what is on screen.
  */
 export async function startReviewApp(context: Context, input: ReviewAppInput): Promise<ReviewApp> {
