@@ -62,3 +62,26 @@ test('move-store refuses, changing nothing, when stores differ or one is in use'
   mkdirSync(join(old.dir, 'lock'))
   assert.throws(() => moveStore(checkout), /civic command is running/)
 })
+
+test('a branch cannot supply records: git-tracked files in .civic stop the store, but civic.json is fine', () => {
+  const { main, context } = repository()
+  mkdirSync(join(main, '.civic'))
+  writeFileSync(join(main, '.civic/civic.json'), '{}')
+  git(main, 'add', '-f', '.civic/civic.json'); git(main, 'commit', '-q', '-m', 'project file')
+  assert.doesNotThrow(() => annotate(context(main), { comment: 'Fine.', image: { bytes: Buffer.from('a'), mediaType: 'image/png' } }))
+
+  writeFileSync(join(main, '.civic/preview-auth.json'), '{"http://127.0.0.1:1":"/etc/hosts"}')
+  git(main, 'add', '-f', '.civic/preview-auth.json'); git(main, 'commit', '-q', '-m', 'from another branch')
+  const store = context(main).store
+  assert.throws(() => store.read(), /Git tracks \.civic\/preview-auth\.json in .*could have come from another branch/)
+  assert.throws(() => store.previewAuth('http://127.0.0.1:1'), /Git tracks/)
+  assert.throws(() => annotate(context(main), { comment: 'Refused.', image: { bytes: Buffer.from('b'), mediaType: 'image/png' } }), /Git tracks/)
+})
+
+test('a .gitignore that does not hide the records stops writes', () => {
+  const { main, context } = repository()
+  mkdirSync(join(main, '.civic'))
+  writeFileSync(join(main, '.civic/.gitignore'), '# nothing hidden\n')
+  assert.throws(() => annotate(context(main), { comment: 'Refused.', image: { bytes: Buffer.from('c'), mediaType: 'image/png' } }), /would not be ignored by git/)
+  assert.ok(!existsSync(join(main, '.civic/records.graph.json')))
+})
