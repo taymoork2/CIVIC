@@ -1,6 +1,6 @@
 # @civic/vite-connector
 
-CIVIC's build connector for Vite apps. It is the dev-only Vite plugin that turns a review host into the journey canvas for one connected app, plus the modules it needs: the project manifest (`civic.project.json`) and its `init`/`check` CLI, the project picker, static discovery, the review index, per-screen fixture fingerprints and the coverage bridge.
+CIVIC's build connector for Vite apps. It is the dev-only Vite plugin that turns a review host into the journey canvas for one connected app, plus the modules it needs: the project manifest (`civic.json` at the app's root or `.civic/civic.json`; the older `civic.project.json` still loads, with a deprecation note) and its `init`/`check` CLI, the project picker, static discovery, the review index, per-screen fixture fingerprints and the coverage bridge.
 
 An app connects read-only through its manifest. The connector indexes the screens the manifest's scenario registry names, fingerprints each one by its own import closure, serves the review entries and the app's sources to them, refreshes on change, and mounts the [`@civic/shell`](../shell) review server. Nothing is written into the app's checkout, and routine indexing, refresh and serving make no model calls.
 
@@ -10,10 +10,10 @@ A `module` app needs only its manifest and a preview entry that exports `mount(c
 
 ```sh
 node packages/vite-connector/src/review-project.mjs init --root /path/to/app --id my-app --name "My app" --source src --preview src/preview.ts --write
-node packages/vite-connector/src/review-project.mjs check --project /path/to/app/civic.project.json
+node packages/vite-connector/src/review-project.mjs check --project /path/to/app/civic.json
 ```
 
-Then open it with the standalone canvas (`node packages/canvas/bin/civic-canvas.mjs --project /path/to/app/civic.project.json`, see [`@civic/canvas`](../canvas)), select it in a host's project picker, or start a host with `CIVIC_PROJECT=/path/to/app/civic.project.json`.
+Then open it with the standalone canvas (`node packages/canvas/bin/civic-canvas.mjs --project /path/to/app/civic.json`, see [`@civic/canvas`](../canvas)), select it in a host's project picker, or start a host with `CIVIC_PROJECT=/path/to/app/civic.json`. `--project` and `CIVIC_PROJECT` also take the app's folder.
 
 ## Hosting the canvas
 
@@ -40,7 +40,7 @@ import { civicShared } from '@civic/vite-connector/civic'
 review: () => ({ adapter, shared: civicShared({ repo, product: 'example' }) })
 ```
 
-`civicShared` runs CIVIC's `civic` CLI, so canvas notes become annotations in the reviewed repository's git common directory and can be handed to agents as work requests (decision 0007). It finds the CLI through `CIVIC_ROOT`, or else in the CIVIC checkout this package came from, and returns null when there is none. `product` is the app's product ID in CIVIC's graphs: a whole-screen note anchors to `target:<product>.<scenario>`, and the Contract panel reads that target with `civic screen`.
+`civicShared` runs CIVIC's `civic` CLI, so canvas notes become annotations in the reviewed repository's `.civic/` folder and can be handed to agents as work requests (decision 0007). It finds the CLI through `CIVIC_ROOT`, or else in the CIVIC checkout this package came from, and returns null when there is none. `product` is the app's product ID in CIVIC's graphs: a whole-screen note anchors to `target:<product>.<scenario>`, and the Contract panel reads that target with `civic screen`.
 
 ## Not covered yet
 

@@ -6,7 +6,11 @@ CIVIC makes no model calls (D30). Agents run in their own harness and talk to CI
 
 ## Where the records live
 
-In the git common directory, under `civic/` (D39): `records.graph.json` holds the graph document, and `captures/` holds images named by their SHA-256. Every worktree of a repository shares the common directory, so an annotation made in one worktree is visible to an agent in another. Nothing is committed to a product branch.
+In the `.civic/` folder of the repository's main working tree ([decision 0020](../docs/decisions/0020-records-live-in-the-civic-folder.md), replacing D39): `records.graph.json` holds the graph document, and `captures/` holds images named by their SHA-256. Every worktree of a repository reads and writes that one folder, so an annotation made in one worktree is visible to an agent in another. Nothing is written inside `.git`. The folder ignores itself (`.civic/.gitignore` is `*` and `!civic.json`), so nothing is committed to a product branch. A sandboxed agent in a linked worktree needs write access to the main working tree's `.civic/`.
+
+Records an earlier CIVIC kept in `<git dir>/civic/` move with `civic move-store`: it copies each file, checks the copy, removes the old file and then the empty folders, and can be run again. It stops, changing nothing, if both stores hold a file of the same name with different bytes, if a civic command is running, or if the old folder holds anything but plain files. `git clean -x` in the main working tree would delete `.civic/`; `civic sync` keeps a shared copy.
+
+An app's project manifest is `civic.json` at its root or `.civic/civic.json`, read before the older `civic.project.json`, which still works with a deprecation note.
 
 Each write takes a lock, re-reads the store, applies the change, validates the whole document against the graph's rules, and replaces the file atomically. A write the rules refuse, such as an agent resolving a request, is never stored. `civic sync` shares the store with the team ([below](#sharing-records-with-the-team)).
 
@@ -123,7 +127,7 @@ Example's dev build adds the tag only when `VITE_CIVIC_OVERLAY` names the overla
 
 Annotations land on the checkout's line and revision. When the app runs from a detached copy of a branch's head (`git worktree add --detach <dir> <branch>`), `--branch <name>` files them under that branch, and is refused unless the copy is at the branch's head. A checkout with uncommitted changes is refused.
 
-CIVIC doesn't start the app. If it checks the browser's origin, such as a sign-in or WebSocket origin check, give it the proxy's origin: pick a free port, pass it as `--port`, and use `http://127.0.0.1:<port>` as the origin. The records are written to the checkout's git common directory under `civic/`: `records.graph.json` and `captures/<sha>.png`, plus a short-lived `lock` while writing. Nothing is committed. The people who review use `civic requests`, `civic show` and `civic resolve` from any worktree of that repository.
+CIVIC doesn't start the app. If it checks the browser's origin, such as a sign-in or WebSocket origin check, give it the proxy's origin: pick a free port, pass it as `--port`, and use `http://127.0.0.1:<port>` as the origin. The records are written to the main working tree's `.civic/`: `records.graph.json` and `captures/<sha>.png`, plus a short-lived `lock` while writing. Nothing is committed and nothing is written inside `.git`. The people who review use `civic requests`, `civic show` and `civic resolve` from any worktree of that repository.
 
 ## MCP server
 
