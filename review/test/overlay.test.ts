@@ -28,7 +28,7 @@ before(async () => {
   git('init', '-q', '-b', 'main'); git('config', 'user.email', 'reviewer@example.com')
   writeFileSync(join(repo, 'README'), 'x'); git('add', '.'); git('commit', '-q', '-m', 'init')
   const checkout = readCheckout(repo)
-  store = Store.forCommonDir(checkout.commonDir)
+  store = Store.forCheckout(checkout)
   overlay = await listen(createOverlayServer(() => ({ store, checkout: readCheckout(repo), identity: { type: 'person', handle: 'reviewer' } })))
 })
 

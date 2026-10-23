@@ -97,7 +97,7 @@ function forge(signature: (base: string, document: GraphDocument) => string | un
 }
 
 async function refusedFor(pattern: RegExp) {
-  const store = Store.forCommonDir(readCheckout(mine).commonDir)
+  const store = Store.forCheckout(readCheckout(mine))
   const before = JSON.stringify(store.read())
   await assert.rejects(run(['sync'], mine, env(taymoor), () => {}), (error: Error) => {
     assert.ok(error instanceof UntrustedChangeError, error.message)

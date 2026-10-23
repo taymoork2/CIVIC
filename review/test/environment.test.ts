@@ -20,7 +20,7 @@ async function civic(...args: string[]): Promise<string> {
   return out.join('\n')
 }
 
-const records = () => Store.forCommonDir(readCheckout(root).commonDir).read()
+const records = () => Store.forCheckout(readCheckout(root)).read()
 
 before(() => {
   sh('init', '-q', '-b', 'main')

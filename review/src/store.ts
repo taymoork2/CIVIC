@@ -1,8 +1,10 @@
 import { createHash } from 'node:crypto'
 import { mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import type { Checkout } from './git.ts'
 import { SCHEMA_VERSION, validateGraph, type CaptureRef, type GraphDocument } from '../../graph/src/index.ts'
 
+export const STORE_FOLDER = '.civic'
 const STALE_LOCK_MS = 30_000
 const LOCK_WAIT_MS = 10_000
 const NAME = /^([0-9a-f]{64})\.(png|jpg|webp|tape\.json|replay\.json)$/
@@ -10,10 +12,10 @@ const SHA256 = /^[0-9a-f]{64}$/
 const EXTENSIONS: Record<CaptureRef['mediaType'], string> = { 'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp' }
 
 /**
- * CIVIC's local collaboration records (D39). One graph document and its content-addressed
- * captures, kept in the git common directory so every worktree and every local agent of a
- * repository sees the same annotations, requests and claims, and nothing is committed to a
- * product branch. The team-wide store is roadmap step 5; it holds the same record shapes.
+ * CIVIC's local collaboration records (decision 0020). One graph document and its content-addressed
+ * captures, kept in the main working tree's `.civic/` folder so every worktree and every local
+ * agent of a repository sees the same annotations, requests and claims. The folder ignores
+ * itself, so nothing is committed to a product branch, and nothing is written inside `.git`. The team-wide store is roadmap step 5; it holds the same record shapes.
  */
 export class Store {
   readonly dir: string
@@ -24,9 +26,9 @@ export class Store {
     this.file = join(dir, 'records.graph.json')
   }
 
-  /** The store for a repository, from its git common directory. */
-  static forCommonDir(commonDir: string): Store {
-    return new Store(join(commonDir, 'civic'))
+  /** The store for a repository: the `.civic/` folder of its main working tree. */
+  static forCheckout(checkout: Pick<Checkout, 'mainRoot'>): Store {
+    return new Store(join(checkout.mainRoot, STORE_FOLDER))
   }
 
   read(): GraphDocument {
@@ -44,7 +46,7 @@ export class Store {
    * change the graph's rules refuse (an agent resolving, say) is never stored.
    */
   transact<T>(change: (document: GraphDocument) => T): T {
-    mkdirSync(this.dir, { recursive: true, mode: 0o700 })
+    this.ensure()
     const release = this.lock()
     try {
       const document = this.read()
@@ -63,6 +65,7 @@ export class Store {
   putCapture(bytes: Uint8Array, mediaType: CaptureRef['mediaType']): CaptureRef {
     const sha256 = createHash('sha256').update(bytes).digest('hex')
     mkdirSync(join(this.dir, 'captures'), { recursive: true, mode: 0o700 })
+    this.ensure()
     const path = this.capturePath({ sha256, mediaType })
     try {
       writeFileSync(path, bytes, { mode: 0o600, flag: 'wx' })
@@ -82,7 +85,7 @@ export class Store {
   }
 
   setPreviewAuth(origin: string, bearerFile: string | undefined) {
-    mkdirSync(this.dir, { recursive: true, mode: 0o700 })
+    this.ensure()
     const release = this.lock()
     try {
       const path = join(this.dir, 'preview-auth.json')
@@ -167,9 +170,20 @@ export class Store {
     const match = NAME.exec(name)
     if (!match) throw new Error(`Not a capture: ${name}`)
     if (sha256(bytes) !== match[1]) throw new Error(`The shared capture ${name} doesn't match its SHA-256; it was not kept.`)
+    this.ensure()
     mkdirSync(join(this.dir, 'captures'), { recursive: true, mode: 0o700 })
     try {
       writeFileSync(join(this.dir, 'captures', name), bytes, { mode: 0o600, flag: 'wx' })
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error
+    }
+  }
+
+  /** Makes the folder, with a `.gitignore` that hides everything in it but a committed `civic.json`. */
+  ensure() {
+    mkdirSync(this.dir, { recursive: true, mode: 0o700 })
+    try {
+      writeFileSync(join(this.dir, '.gitignore'), '*\n!civic.json\n', { flag: 'wx' })
     } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error
     }

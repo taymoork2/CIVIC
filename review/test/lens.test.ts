@@ -42,7 +42,7 @@ before(() => {
 
 test('a design line records its frames with a fingerprint of each', async () => {
   await civic('design', exportVersion('main', '100'), '--file', 'SHOPfile123')
-  const line = Store.forCommonDir(readCheckout(repo).commonDir).read().records.find((record): record is Line => record.id === 'line:figma.SHOPfile123')!
+  const line = Store.forCheckout(readCheckout(repo)).read().records.find((record): record is Line => record.id === 'line:figma.SHOPfile123')!
   assert.deepEqual(line.frames!.map((frame) => [frame.node, frame.name, frame.page]), [['40:1', 'Order Summary', 'Checkout'], ['40:5', 'Order Summary / Loading', 'Checkout'], ['40:10', 'Promo applied', 'Checkout'], ['40:20', 'Gift options', 'Checkout'], ['50:1', 'Gift option', 'Components']])
   assert.ok(line.frames!.every((frame) => /^sha256:[0-9a-f]{64}$/.test(frame.hash)))
 })
@@ -71,7 +71,7 @@ test('the lens says what a draft adds, changes and removes, and what each frame 
   assert.match(text, /^Draft: Gift wrap \(line:figma\.SHOPfile123\.draft\.gift-wrap\) at version d-1, against .* at version 100, read on line:git\.main\.\n4 frame\(s\) changed, 2 unchanged\./)
   assert.match(text, /added +41:1 +Checkout \/ Gift wrap picker\n +code: no target on line:git\.main is designed by this frame/)
   assert.match(text, /note: Put the note under the wrap choice\./)
-  assert.deepEqual(validateGraph(Store.forCommonDir(readCheckout(repo).commonDir).read()).filter((issue) => issue.severity === 'error'), [])
+  assert.deepEqual(validateGraph(Store.forCheckout(readCheckout(repo)).read()).filter((issue) => issue.severity === 'error'), [])
 })
 
 test('the lens refuses a line that is not a draft', async () => {
@@ -138,5 +138,5 @@ test("a design tool with no Figma export: Review fixture's Open Design reference
   // Registering the proposal again finds the note by its frame, and a Figma key is refused.
   assert.match(await civic('draft', file, '--name', 'Calmer queue'), new RegExp(`${note} found on this version`))
   await assert.rejects(civic('design', main, '--file', 'other'), /not other/)
-  assert.deepEqual(validateGraph(Store.forCommonDir(readCheckout(repo).commonDir).read()).filter((issue) => issue.severity === 'error'), [])
+  assert.deepEqual(validateGraph(Store.forCheckout(readCheckout(repo)).read()).filter((issue) => issue.severity === 'error'), [])
 })

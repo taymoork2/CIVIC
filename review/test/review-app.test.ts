@@ -33,7 +33,7 @@ before(async () => {
   writeFileSync(join(repo, 'README'), 'y'); git('commit', '-q', '-am', 'screens')
   git('checkout', '-q', '--detach', 'feat/screens')
   const checkout = readCheckout(repo)
-  store = Store.forCommonDir(checkout.commonDir)
+  store = Store.forCheckout(checkout)
   context = { store, checkout, identity: { type: 'person', handle: 'reviewer' } }
   upstream = await listen(createServer((req, res) => {
     if (req.url === '/app.json') return void res.writeHead(200, { 'content-type': 'application/json' }).end('{"head":"</head>"}')

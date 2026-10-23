@@ -13,3 +13,4 @@ export { checkChange, checkSignature, listConflicts, merge3, settleConflict, syn
 export { canonical, generateKey, publicKeyText, readKey, signedBy, signedPayload, signPayload } from './signing.ts'
 export { startReviewApp, type ReviewApp, type ReviewAppInput } from './review-app.ts'
 export { createInjectingProxy } from './overlay/proxy.ts'
+export { moveStore, type MoveResult } from './move-store.ts'

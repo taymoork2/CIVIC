@@ -1,11 +1,13 @@
 import { execFileSync } from 'node:child_process'
-import { resolve } from 'node:path'
+import { dirname, resolve } from 'node:path'
 
 /** What CIVIC needs to know about the checkout a command runs in. */
 export interface Checkout {
   root: string
-  /** Shared by every worktree of the repository (D39). */
+  /** The git directory shared by every worktree of the repository. */
   commonDir: string
+  /** The working tree that owns `commonDir`. Every worktree keeps its records in this one's `.civic/` (decision 0020). */
+  mainRoot: string
   /** A linked worktree has its own git directory inside the common one. */
   isWorktree: boolean
   /** Undefined on a detached HEAD. */
@@ -32,7 +34,13 @@ export function readCheckout(cwd: string): Checkout {
   const gitDir = resolve(root, git(root, 'rev-parse', '--git-dir'))
   const branch = tryGit(root, 'symbolic-ref', '--quiet', '--short', 'HEAD')
   const head = git(root, 'rev-parse', 'HEAD')
-  return { root, commonDir, isWorktree: gitDir !== commonDir, branch, defaultBranch: defaultBranch(root), head }
+  return { root, commonDir, mainRoot: mainRootOf(root, commonDir), isWorktree: gitDir !== commonDir, branch, defaultBranch: defaultBranch(root), head }
+}
+
+/** The first worktree git lists is the one that owns the repository; a bare repository lists itself. */
+function mainRootOf(root: string, commonDir: string): string {
+  const first = tryGit(root, 'worktree', 'list', '--porcelain')?.split('\n')[0]
+  return first?.startsWith('worktree ') ? first.slice('worktree '.length) : dirname(commonDir)
 }
 
 function defaultBranch(root: string): string {

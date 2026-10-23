@@ -47,7 +47,7 @@ export async function callTool(name: string, args: Args, env: NodeJS.ProcessEnv 
   const need = (key: string) => str(key) ?? fail(`${key} is required.`)
   const context = (): Context => {
     const checkout = readCheckout(str('cwd') ?? env.CIVIC_REPO ?? process.cwd())
-    return { store: Store.forCommonDir(checkout.commonDir), checkout, identity: identityFromEnv({ ...env, CIVIC_AGENT: env.CIVIC_AGENT || 'mcp-agent' }, checkout.root) }
+    return { store: Store.forCheckout(checkout), checkout, identity: identityFromEnv({ ...env, CIVIC_AGENT: env.CIVIC_AGENT || 'mcp-agent' }, checkout.root) }
   }
   const text = (value: string): Content[] => [{ type: 'text', text: value }]
 

@@ -5,3 +5,6 @@
 /node_modules/
 # Preserved ignored state from the retired local v4 setup; its code is in a named stash.
 rehearsal/
+
+.civic/*
+!.civic/civic.json
