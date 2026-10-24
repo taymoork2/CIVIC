@@ -39,6 +39,13 @@ test('the command sees the folder as TMPDIR, and it is one the tool made', () =>
   assert.match(root!, new RegExp(`^${scratch}/civic-run-[0-9a-f]{8}$`))
 })
 
+test('git inside the command does not sign, and settings already in the environment still apply', () => {
+  const { wrap } = sandbox()
+  const ask = "const {execFileSync}=require('child_process');const g=(k)=>execFileSync('git',['config','--get',k]).toString().trim();console.log([g('commit.gpgsign'),g('tag.gpgsign'),g('civic.test')].join(','))"
+  const result = wrap(node(ask), { GIT_CONFIG_COUNT: '1', GIT_CONFIG_KEY_0: 'civic.test', GIT_CONFIG_VALUE_0: 'kept' })
+  assert.equal(result.stdout.trim(), 'false,false,kept')
+})
+
 test('CIVIC_KEEP_TEMP keeps the folder and says where, and a later run leaves it alone', () => {
   const { scratch, wrap, runs } = sandbox()
   const kept = wrap(node("require('fs').writeFileSync(require('path').join(process.env.TMPDIR, 'evidence'), 'x')"), { CIVIC_KEEP_TEMP: '1' })

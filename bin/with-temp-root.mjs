@@ -6,7 +6,9 @@
 // CIVIC's checks make temp folders, and an Electron run leaves a 30-110 MB profile in each, so
 // without this a day of checks fills the disk. The command sees the folder as TMPDIR (and as
 // CIVIC_TEMP_ROOT), so every mkdtemp inside it, in any package, lands there. Set CIVIC_KEEP_TEMP=1
-// to keep the folder and print its path. A run killed before it could clean up leaves its folder
+// to keep the folder and print its path. Git inside the command never signs commits or tags, because
+// checks commit to throwaway repositories and must not ask the owner's signing key (1Password) for
+// each one; commits made outside this tool are unaffected. A run killed before it could clean up leaves its folder
 // behind; the next run removes those, but only when the process that made one is no longer running.
 //
 // Deletion is recursive, so a folder is removed only if it is a real folder of ours, directly inside
@@ -73,7 +75,10 @@ function finish(code) {
   process.exit(code)
 }
 
-const child = spawn(command, args, { stdio: 'inherit', env: { ...process.env, TMPDIR: root, CIVIC_TEMP_ROOT: root } })
+// Added after any GIT_CONFIG_* entries already set, which still apply.
+const used = Number(process.env.GIT_CONFIG_COUNT ?? 0)
+const noSigning = { GIT_CONFIG_COUNT: String(used + 2), [`GIT_CONFIG_KEY_${used}`]: 'commit.gpgsign', [`GIT_CONFIG_VALUE_${used}`]: 'false', [`GIT_CONFIG_KEY_${used + 1}`]: 'tag.gpgsign', [`GIT_CONFIG_VALUE_${used + 1}`]: 'false' }
+const child = spawn(command, args, { stdio: 'inherit', env: { ...process.env, ...noSigning, TMPDIR: root, CIVIC_TEMP_ROOT: root } })
 for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) process.on(signal, () => child.kill(signal))
 child.on('error', (error) => {
   console.error(`Could not run ${command}: ${error.message}`)

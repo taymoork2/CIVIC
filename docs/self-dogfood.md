@@ -108,7 +108,7 @@ Record every step the owner or the agent had to do in a terminal. The target is 
 2. **The full agent loop (S11).** An external agent claims a request in its own worktree, reports a fix with a preview of its own copy, `civic recapture` checks it there, and the owner resolves it. The launcher passes the preview's access key file when it finds exactly one, but no recapture has been run through a preview.
 3. **S12.** Merging to main and seeing the change in the owner's live instance on port 3012, only when the owner asks for it.
 4. **Sign-in.** The preview has none (decision 0021, point 7).
-5. **Fixture signing.** Only the preview, store-location and review-app tests turn off `commit.gpgsign` in their throwaway repositories. The other test files that commit in a temp repository still ask the owner's signing key for every fixture commit, and fail whenever it is locked. Set `commit.gpgsign` to `false` in each of their fixtures.
+5. **Fixture signing (done).** `bin/with-temp-root.mjs` tells git inside every check not to sign commits or tags, so no test file needs its own `commit.gpgsign` setting and checks no longer ask the owner's signing key.
 6. **The remaining rows of the table** that no test or trial has covered: S07 (host edit with unsaved drafts), S09 beyond the one `ps` comparison, and the rest of S10 across several worktrees.
 
 ## Open decisions
