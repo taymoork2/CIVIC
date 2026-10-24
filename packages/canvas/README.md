@@ -26,7 +26,7 @@ The packages aren't published. An app installs all three from git, pinned to one
 }
 ```
 
-Then `pnpm exec civic-canvas --project ./civic.project.json`. Signoff proves this on every commit with `packages/install.check.mjs`.
+Then `pnpm exec civic-canvas --project ./civic.json`. Signoff proves this on every commit with `packages/install.check.mjs`.
 
 ## Hosting it elsewhere
 

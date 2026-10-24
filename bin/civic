@@ -5,7 +5,7 @@
 set -euo pipefail
 repo_root="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.." && pwd)"
 case "${1:-}" in
-  doctor|demo) exec node "$repo_root/bin/civic-start.mjs" "$@" ;;
+  doctor|demo|desktop) exec node "$repo_root/bin/civic-start.mjs" "$@" ;;
   validate|forecast|overrides|context|gaps|alignment|completeness|walk|objects|method|check|release|screen|stories|portal|propose|decide|adopt|verify|fixes|raise|close) exec node "$repo_root/graph/src/cli.ts" "$@" ;;
   *) exec node "$repo_root/review/src/cli.ts" "$@" ;;
 esac
