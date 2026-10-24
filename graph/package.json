@@ -12,7 +12,7 @@
   },
   "scripts": {
     "check": "tsc --noEmit",
-    "test": "node --test \"test/**/*.test.ts\"",
+    "test": "node ../bin/with-temp-root.mjs node --test \"test/**/*.test.ts\"",
     "validate": "node src/cli.ts validate examples/fluent-button.graph.json examples/card-override.graph.json examples/review-loop.graph.json"
   },
   "devDependencies": {
