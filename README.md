@@ -36,12 +36,19 @@ Architecture decisions live in [docs/decisions](docs/decisions). The first demo 
 
 CIVIC provides a generic journey canvas, review shell, and artifact graph. Connect a project through its manifest and Vite integration. Public examples cover synthetic Notebook, Tasks, Team board, Reading list, and Pantry apps; real-project adapters and evidence remain local.
 
-The canvas runs on its own for any app with a `civic.project.json`. To try it locally you need Node.js 26 (22 works), pnpm 12.5.1 and Google Chrome:
+### Try it in ten minutes
+
+You need a Mac or Linux terminal with [git](https://git-scm.com), [Node.js](https://nodejs.org) 26 (22.18 or newer works) and [pnpm](https://pnpm.io) (`corepack enable pnpm`). Google Chrome is recommended for screen snapshots.
 
 ```sh
-(cd packages && pnpm install --frozen-lockfile)
-packages/canvas/bin/civic-canvas.mjs --project packages/canvas/examples/notebook/civic.project.json
+git clone https://github.com/taymoork2/CIVIC.git && cd CIVIC
+bin/civic doctor   # checks your machine and says how to fix anything missing
+bin/civic demo     # installs on first run, then opens the Notebook example at http://127.0.0.1:3020/review
 ```
+
+In the canvas you can play the example's journeys, open a screen, and leave a comment on it. To review your own app, give it a `civic.json` and run `bin/civic demo --project /path/to/your-app/civic.json`. Everything CIVIC saves goes to `~/.civic/canvas`, not into your app. To make `civic` available anywhere, run `ln -s "$PWD/bin/civic" /usr/local/bin/civic`. Press Ctrl+C to stop.
+
+The commands below it do the same by hand: `(cd packages && pnpm install --frozen-lockfile)` then `packages/canvas/bin/civic-canvas.mjs --project packages/canvas/examples/notebook/civic.project.json`.
 
 Before a pull request merges, run [`bin/signoff`](bin/signoff) from a clean checkout of its branch. It runs the [graph](graph), [review loop](review), [crawl](crawl), [importer](importers), Button demo, Card demo, and discovery example checks, the `civic check` gate, and CIVIC's [packages](packages) with a check that installs them from git into an empty app, then posts a green `signoff` commit status and a `civic` gate status on GitHub through the GitHub CLI. `bin/civic check --post` posts the `civic` status on its own, red or green. On a branch with an open pull request, signoff also comments the findings that branch introduced, each with the owners it asks (the side that moved) and the owners it tells (roadmap step 10). Add `--browser` to include the Button demo's web evidence. CIVIC uses local signoffs instead of GitHub Actions to keep CI costs down.
 
