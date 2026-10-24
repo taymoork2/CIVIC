@@ -90,15 +90,11 @@ async function desktop(args) {
     if (got.status !== 0) return got.status ?? 1
   }
   const binary = createRequire(join(folder, 'x.js'))('electron')
-  const running = await fetch(`http://127.0.0.1:${port}/review`, { signal: AbortSignal.timeout(2000) }).then((response) => response.ok, () => false)
-  if (!running) {
-    const started = spawnSync(process.execPath, [join(packages, 'local/start.mjs')], { env, stdio: 'inherit' })
-    if (started.status !== 0) return started.status ?? 1
-  }
+  // Always start our own server: whatever already answers on the port is not trusted, and start.mjs refuses a taken port.
+  const started = spawnSync(process.execPath, [join(packages, 'local/start.mjs')], { env, stdio: 'inherit' })
+  if (started.status !== 0) return (console.error(`The CIVIC server did not start. If port ${port} is in use (another civic desktop?), close it or set CIVIC_LOCAL_PORT.`), started.status ?? 1)
   const window = spawnSync(binary, [join(packages, 'local/desktop.mjs')], { env: { ...env, CIVIC_DESKTOP_ORIGIN: `http://127.0.0.1:${port}` }, stdio: 'inherit' })
-  if (!running) {
-    try { process.kill(JSON.parse(readFileSync(join(store, 'runtime.json'), 'utf8')).pid, 'SIGTERM') } catch (error) { console.error(`Could not stop the CIVIC server; see ${join(store, 'runtime.json')}: ${error.message}`) }
-  }
+  try { process.kill(JSON.parse(readFileSync(join(store, 'runtime.json'), 'utf8')).pid, 'SIGTERM') } catch (error) { console.error(`Could not stop the CIVIC server; see ${join(store, 'runtime.json')}: ${error.message}`) }
   return window.status ?? 1
 }
 

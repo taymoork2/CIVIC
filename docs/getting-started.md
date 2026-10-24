@@ -66,6 +66,6 @@ Not yet:
 ## If something goes wrong
 
 - `civic doctor` first.
-- A port is busy: pass `--port` to `demo`, or set `CIVIC_LOCAL_PORT` for `desktop`.
+- A port is busy: pass `--port` to `demo`, or set `CIVIC_LOCAL_PORT` for `desktop`. Only one `desktop` window can run at a time per port.
 - The Electron download failed: run `bin/civic desktop` again, or delete `~/.civic/desktop/electron` and retry.
 - Anything else: send the output and `~/.civic/desktop/server.log`.
