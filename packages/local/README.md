@@ -4,8 +4,12 @@ The local launcher serves the generic canvas and opens it in Electron. Projects
 are selected through their manifests; no connected application is required by
 CIVIC's source or startup.
 
+From a clone, `bin/civic desktop` does all of this for you: it downloads Electron on first run, starts a
+server on its own port and store, opens the window, and stops the server when the window closes. The
+commands below are the manual route.
+
 ```sh
-CIVIC_PROJECT=/absolute/project/civic.project.json pnpm --dir packages/local start
+CIVIC_PROJECT=/absolute/project/civic.json pnpm --dir packages/local start
 CIVIC_ELECTRON_BINARY=/absolute/Electron pnpm --dir packages/local desktop
 ```
 
