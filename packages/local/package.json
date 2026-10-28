@@ -13,6 +13,6 @@
     "@civic/canvas": "workspace:*",
     "@civic/vite-connector": "workspace:*",
     "@tailwindcss/vite": "4.3.3",
-    "vite": "8.3.1"
+    "vite": "8.3.3"
   }
 }
