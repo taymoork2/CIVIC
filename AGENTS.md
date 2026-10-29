@@ -99,3 +99,8 @@ README and architecture decisions before changing its boundaries.
 See [README.md](README.md), [architecture decisions](docs/decisions), and the
 [local runtime guide](packages/local/README.md) for details. Machine paths,
 process IDs, ports, and historical signoffs are evidence, not current defaults.
+
+<!-- entire-agent:begin -->
+Read .entire/agent-guide.md for this repository's workflow, source inspection, and verification guidance.
+@.entire/agent-guide.md
+<!-- entire-agent:end -->
