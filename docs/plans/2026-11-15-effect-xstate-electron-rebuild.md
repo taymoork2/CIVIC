@@ -6,7 +6,7 @@ The owner asked for four things: CIVIC built the way Orca is (Effect, XState, El
 
 CIVIC is not rewritten from scratch. Most of it is pure data code (the graph, importers, records) that works and is tested; it stays plain functions. What changes is the part that starts, watches and stops things: previews, the review server, the app server, the desktop window, the MCP server and the request lifecycle. Those move onto Effect (resources that always clean up) and XState (one place that says which move is allowed next).
 
-The order is: first the checks that stop old mistakes coming back, then one install for all of CIVIC, then the shared state-machine kernel and the request machine, then the MCP server, then CIVIC as a project in its own picker, then the two features, then the preview, app-server and desktop lifecycles. Each step lands on its own after its checks pass.
+The order is: first the checks that stop old mistakes coming back, then one install for all of CIVIC, then the shared state-machine kernel and the request machine, then the MCP server, then CIVIC as a project in its own picker, then the two features, then the preview, app-server and desktop lifecycles, then the hand-off between CIVIC and Orca in both directions. Everything moves to Effect 4.1 and XState v6, with every dependency updated, in the first step. Each step lands on its own after its checks pass.
 
 One thing needs the owner (listed at the end): whether the stale Orca preview builds in the live store may be deleted.
 
@@ -33,13 +33,13 @@ Grounded at `f749b770` (this branch). Counts are from `grep` over tracked source
 
 ## 2. Foundations and pins
 
-Match Orca's current `pnpm-workspace.yaml` (read 15 Nov), not the 18 Oct pins:
+Owner, 15 Nov: CIVIC targets **Effect 4.1** and **XState v6 beta**, the versions Orca is moving to on its `w/effect-41` branch. That branch did not exist yet when this was written; once it lands, its findings are reused here rather than found again.
 
-- `effect` `~4.0.5` and `@effect/platform-node` `~4.0.5`, with `@effect/platform-node-shared` overridden to `4.0.5` (Orca's reason: 4.1 needs Effect 4.1). Tilde, not caret, for that reason only.
-- `xstate` `6.0.0-alpha.73`, `@xstate/effect` `1.0.0-alpha.12` (exact: prereleases), listed in `minimumReleaseAgeExclude`.
+- `effect` and `@effect/platform-node` `^4.1` (no 4.0 tilde pin and no `platform-node-shared` override; Orca kept those only while it stayed on 4.0). The 4.1 breaking changes that touch CIVIC: crypto moves to `effect/crypto`; `ChildProcess` templates reject shell syntax (preview and signoff process code passes arguments, never a shell string); `KeyValueStore` key format; `NodeCrypto`/`NodeFileSystem` layers. `sql.insert` and `MigratorFileSystem` do not apply (CIVIC has no SQL).
+- `xstate@beta` (v6) and the matching `@xstate/effect`, exact versions (prereleases), listed in `minimumReleaseAgeExclude`. v6 rules: actions are `(args, enq)` functions, guards are plain functions, no typegen. Any persisted snapshot (for example the desktop window's) goes through `createSnapshotCodec` and `machineVersions`/`migrateSnapshot`; durable request state is the record's own status field, so it needs no snapshot.
 - `vite-plus` `^1.6.0`, with `vite` aliased to `npm:@voidzero-dev/vite-plus-core@1.6.0` so every plugin sees one Vite.
 - `electron` `^45.3.2` (dev dependency of `packages/local`), `allowBuilds: electron: true`.
-- Caret ranges elsewhere; `pnpx taze major -r -l` and `pnpm audit` before each dependency slice; installs only in worktrees.
+- All dependencies updated in the foundation (S1b): `NODE_USE_ENV_PROXY=1 pnpm dlx taze major -r -l`, caret ranges, `pnpm audit` clean or each remaining advisory named; installs only in worktrees. Repeated before each later dependency change.
 
 Where each tool is used:
 
@@ -90,6 +90,69 @@ That adapter is ignored local storage in the owner's live copy, so it is not edi
 - **Reached, derived.** Tapes already record the operations each step made (decision 0009). An importer reads saved tapes and replays into "journey → operations reached".
 - **Report.** The coverage panel gets a server section: per journey, the operations it reaches; overall, the operations no journey reaches. `civic coverage --backend` and an MCP tool give the same. Only replays that passed count; a diverged tape counts up to the step it diverged at.
 
+## 5b. CIVIC and Orca, both ways (S11b)
+
+Owner, 15 Nov. Orca treats CIVIC as an outside integration it hands work to, as it treats Gui. CIVIC side: generic tools any coordinator can use, so CIVIC holds no Orca internals and names no Orca type. Orca is the first coordinator. CIVIC still makes no model calls and starts no agents; starting its own preview of a worktree is CIVIC's own work, as `civic preview` already does.
+
+### Shared shapes
+
+```ts
+// A coordinator's work item, opaque to CIVIC. `system` is whatever the coordinator calls itself.
+type WorkRef = { system: string; id: string; url?: string }
+
+type ScreenRef = { project: string; scenario: string; journey?: string; route?: string }
+type Shot = { viewport: 1440 | 390 | number; theme: 'light' | 'dark' }
+
+type ChangedScreens = {
+  revision: string; base: string
+  screens: Array<ScreenRef & { because: Array<{ file: string; lines?: [number, number] }> }>
+  limits: string[]          // e.g. files no capture renders, so no screen could be named
+}
+
+type ReviewSession = {
+  id: string; workRef: WorkRef; line: string; revision: string
+  link: string              // what the owner opens; loopback /review of that worktree's preview
+  screens: Array<ScreenRef & { shots: Shot[] }>
+}
+
+type Coverage = {
+  project: string; revision: string; evidenceAt: string
+  screens: { total: number; covered: number; uncovered: ScreenRef[] }
+  journeys: Array<{ id: string; screens: string[]; lastReplay: 'passed' | 'diverged' | 'none'; divergedAt?: number }>
+  backend: {
+    operations: Array<{ id: string; file: string; export: string; kind: 'server-function' | 'route' | 'rpc'; reachedBy: string[] }>
+    unreached: string[]     // operation ids no passing replay reaches
+  }
+}
+```
+
+Work requests gain `links: WorkRef[]`. An annotation made in a review session carries that session's `workRef`, so the request it becomes is linked from birth.
+
+### MCP surface
+
+| Kind | Name | Input | Returns | Writes |
+|---|---|---|---|---|
+| tool | `changed_screens` | `cwd`, `base` | `ChangedScreens` (source-to-element reverse map over the diff, plus journeys through those screens) | nothing |
+| tool | `open_review` | `cwd`, `workRef`, `screens?` (default: `changed_screens`), `shots?` (default 1440 and 390, light and dark) | `ReviewSession` | starts or attaches that worktree's preview; no record |
+| tool | `close_review` | `id` | — | stops the preview it started, by recorded process only |
+| tool | `link_request` | request `id@version`, `workRef` | the request | adds one link; nothing else |
+| tool | `list_requests` (existing) | adds `workRef?` filter | as today | nothing |
+| tool | `coverage` | `cwd` or `project` | `Coverage` | nothing |
+| resource | `civic://requests?system=…&id=…` | subscribable | requests linked to that work item | — |
+| resource | `civic://coverage/{project}` | subscribable | `Coverage` | — |
+
+Resource changes go out as `notifications/resources/updated`, so a coordinator waits on a notice instead of polling. The D35 write path is unchanged: `open_review` and `link_request` write no review outcome, and no coordinator or agent can resolve a request, accept a check or annotate on the owner's behalf.
+
+### The three flows
+
+1. **Orca asks for a review.** Orca calls `open_review` for a work item's worktree. The owner opens the link, comments, and each comment becomes a request linked to that work item. Orca hears it through the `civic://requests` resource and puts it on the work item.
+2. **A CIVIC request becomes Orca work.** For a project Orca manages, Orca lists open requests, creates a work item from `get_request`'s work order, and calls `link_request`. Its agent then claims and reports through the existing tools.
+3. **Orca's agents read coverage.** Through Orca's MCP gateway, agents call `coverage` (screens, journeys and backend) for the worktree they are in.
+
+### Proposal for the Orca controller
+
+Not built here; Orca is read-only for this work. In Orca's integration settings, register CIVIC's MCP server (`civic-mcp` over stdio, or the plugin's launcher). Add a "Review in CIVIC" action on a work item that calls `open_review` with the item's copy and shows `link` to the owner. Subscribe to `civic://requests` per open item, and turn new requests into notices or inputs on that item through Orca's own attention rules. Offer "Make a work item" on unlinked CIVIC requests for managed projects (flow 2). Pass `coverage` and `changed_screens` through the gateway to agents. Orca calls CIVIC; CIVIC never calls Orca.
+
 ## 6. Slices
 
 Each slice: its own worktree and branch, its own checks plus the full suites, `bin/signoff --no-post` on the exact commit, then a signed merge into this controller branch. Nothing is pushed.
@@ -98,6 +161,7 @@ Each slice: its own worktree and branch, its own checks plus the full suites, `b
 |---|---|---|
 | S0 | This plan and decision 0022 | Committed |
 | S1 | Vite+ in the `packages/` workspace: `vp test` replaces vitest, `vp lint` with Ultracite presets, `vp fmt --check` on staged files, `vp run` tasks, `.vite-hooks`, `scripts/commit-type.ts`, signoff refuses untyped commits, test lists by glob | All existing suites pass under the new runner; a typed-commit test; hooks chain `.git/hooks` |
+| S1b | All dependencies to their latest majors (§2): taze, caret ranges, `pnpm audit`; Effect 4.1 and XState v6 beta enter here | Every suite green on the new versions; audit clean or each advisory named |
 | S2 | The rule table in §3 with baselines | Each rule has a failing fixture and a passing one; baselines committed |
 | S3 | One install for all of CIVIC: `packages/pnpm-workspace.yaml` lists `../graph`, `../review`, `../importers`, `../crawl` (spike 15 Nov: pnpm links out-of-root members, one lockfile, no root `package.json`) | One lockfile; signoff installs once |
 | S4 | `@civic/core` kernel + graph-test helper; request machine in `review/` replaces the `if` checks; arch test forbids status writes outside the machine | Graph test covers every event; existing review tests unchanged and green |
@@ -108,9 +172,10 @@ Each slice: its own worktree and branch, its own checks plus the full suites, `b
 | S9 | Preview lifecycle on Effect + XState; S9b store retention helper | Decision 0021's acceptance rows still pass; retention test on a temporary store |
 | S10 | App server and Electron (18 Oct plan, pins from §2) in its six units | That plan's AE1–AE8 |
 | S11 | Harness integrations: Claude Code plugin, Codex, OpenCode, and any ACP agent through the same MCP server; behaviour test drives the server the way a harness does | A misbehaving-agent test (wrong version, foreign claim, resolve attempt) is refused before any real-agent run |
+| S11b | Coordinator integration, CIVIC side (§5b): `changed_screens`, `open_review`, `link_request`, `coverage`, request resources with update notifications, `work_ref` on records | A test plays the coordinator against the real MCP server on a temporary repository: opens a review, an owner annotation arrives as a request on the work item, a linked request lists under its work item, coverage reads the backend section |
 | S12 | Cleanup passes found by S2's baselines and fallow (largest files, duplicated helpers) | Baselines shrink |
 
-S1, S6 and S9b touch different paths and may run in parallel workers. S4 waits for S3. S7 and S8 wait for S5 and S6.
+S1, S6 and S9b touch different paths and may run in parallel workers. S1b follows S1 (same lockfile) and comes before S3. S4 waits for S3. S7 and S8 wait for S5 and S6. S11b waits for S5, S7 and S8.
 
 ## 7. Safety and pacing
 

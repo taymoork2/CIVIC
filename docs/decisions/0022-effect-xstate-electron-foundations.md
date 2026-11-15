@@ -17,7 +17,7 @@ CIVIC's graph, importers and records are pure, tested functions. Its weak spots 
 3. **Every machine has a graph test** whose event list covers every event the machine declares.
 4. **The data core stays plain.** `graph/` and `importers/` import neither Effect nor XState; a check enforces it. Effect `Schema` may replace hand validation there only where it deletes code.
 5. **`@civic/core`** (`packages/core`) holds the kernel, the graph-test helper and shared Effect services. This replaces the 18 Oct plan's choice to keep everything in `@civic/canvas`, because `review/` and `packages/canvas` both need the kernel.
-6. Pins follow Orca's workspace: `effect` and `@effect/platform-node` `~4.0.5`, `xstate` `6.0.0-alpha.73`, `@xstate/effect` `1.0.0-alpha.12`, `electron` `^45.3.2`, `vite-plus` `^1.6.0`.
+6. Versions (owner, 15 Nov): Effect 4.1 (`effect`, `@effect/platform-node`), XState v6 beta with its matching `@xstate/effect`, `electron` `^45.3.2`, `vite-plus` `^1.6.0`. Persisted machine snapshots carry a version and a migration (`machineVersions`).
 
 CIVIC still makes no model calls and launches no agents. Integrations are the MCP server, skills and plugins that harnesses use.
 
