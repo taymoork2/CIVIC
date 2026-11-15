@@ -111,13 +111,22 @@ Record every step the owner or the agent had to do in a terminal. The target is 
 5. **Fixture signing (done).** `bin/with-temp-root.mjs` tells git inside every check not to sign commits or tags, so no test file needs its own `commit.gpgsign` setting and checks no longer ask the owner's signing key.
 6. **The remaining rows of the table** that no test or trial has covered: S07 (host edit with unsaved drafts), S09 beyond the one `ps` comparison, and the rest of S10 across several worktrees.
 
+## Still to build: source-to-element and backend coverage
+
+Owner, 15 November 2026. Both come after the follow-ups above, when CIVIC is the focus again.
+
+1. **Source-to-element.** From an element selected on the canvas or through the review overlay, CIVIC finds the source file and line that rendered it. The reverse also works: from a source file or diff hunk, CIVIC highlights the elements it renders. Comments and work requests carry that location, so the agent starts in the right file. Try it on CIVIC's own screens first, then on Orca and the Laundry app. CIVIC stays model-free ([decision 0006](decisions/0006-deterministic-civic-for-agentic-teams.md)): it records the location, and the external agent makes the change.
+2. **Backend coverage.** Coverage today means screens and journeys. Add the server side: which routes, handlers and RPCs each journey exercises, and which ones no journey reaches, so a covered screen cannot hide an untested backend path. Derive it from recorded runs ([decision 0009](decisions/0009-recorded-runs-as-evidence.md)) and the graph, not from hand-written lists.
+
+Reference: [Gui](https://usegui.com) (open source, Apache 2.0, alpha) lets you select an element in a running React (Vite, Next.js) or Astro app and hands the change to your own agent, including ACP agents. Read how it maps elements to source; do not depend on it. Orca treats Gui as an outside integration, the way it treats CIVIC.
+
 ## Open decisions
 
 1. The command's name. Follow Orca's final contract.
 2. May the command install dependencies into CIVIC's own worktrees?
 3. The default project: Notebook example, or a manifest for CIVIC itself.
 4. Whether `civic` should eventually own the 3012 instance. Separate approval; nothing here touches it.
-5. Canvas-level review of CIVIC (CIVIC as a project in its own picker, with a scenario registry for its screens) is not needed for this loop and is not planned here.
+5. CIVIC already reviews itself as a workspace ("Isolated CIVIC", through `civic preview`). Making CIVIC a project in its own picker, with a scenario registry for its screens, is now needed so that source-to-element works on CIVIC's own UI.
 
 ## The brief to hand an executing session
 
