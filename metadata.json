@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.13.3",
+  "checkpoint_id": "01M7GT7AY5C7QV1DPF9X5K1S3C",
+  "strategy": "manual-commit",
+  "branch": "build/vite-plus",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".vite-hooks/commit-msg",
+    ".vite-hooks/commit-msg.pre-entire",
+    ".vite-hooks/pre-commit",
+    "AGENTS.md",
+    "bin/check-syntax.mjs",
+    "packages/vite.config.ts",
+    "scripts/commit-type.test.ts",
+    "scripts/commit-type.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "redaction": {
+    "replacements": 40,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 35,
+      "key_context": 5,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
