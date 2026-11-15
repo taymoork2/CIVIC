@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { expect, test } from 'vite-plus/test'
 import { overviewConnections } from './app-overview'
 import type { AppFlow } from './app-map'
 import { appFlows, flowEdges, crossFlowEdges, overviewFlows, screenSize, screenAtCenter, flowContent } from './app-map'

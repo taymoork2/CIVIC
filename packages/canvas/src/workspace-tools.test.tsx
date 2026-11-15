@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { expect, test } from 'vite-plus/test'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { CanvasControls } from '@civic/shell/canvas-controls'
 import { TooltipProvider } from '@civic/shell/ui/tooltip'

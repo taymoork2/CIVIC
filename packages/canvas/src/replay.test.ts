@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { expect, test } from 'vite-plus/test'
 import type { MapScreen } from './app-map'
 import { findControl, replay, replayPath } from './replay'
 

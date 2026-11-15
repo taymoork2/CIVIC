@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { expect, test } from 'vite-plus/test'
 import { canvasShortcut } from './canvas-controls'
 
 test('canvas shortcuts leave typing and browser commands alone', () => {

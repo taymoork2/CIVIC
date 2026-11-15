@@ -4,15 +4,15 @@
   "type": "module",
   "scripts": {
     "start": "node start.mjs",
-    "check": "node --check start.mjs && node --check store.mjs && node --check vite.config.mjs && node --check worktree-connections.mjs && node --check worktree-dependencies.mjs && node --check desktop.mjs && node --check desktop-preload.cjs && node --check desktop-tabs.mjs && node --check desktop-launch.mjs && node --check desktop-windows.mjs && node --check project-windows.mjs && node --check desktop-appearance.mjs",
-    "test": "node ../../bin/with-temp-root.mjs node --test start.check.mjs project-windows.check.mjs desktop-tabs.check.mjs desktop-appearance.check.mjs",
+    "check": "node ../../bin/with-temp-root.mjs node ../../bin/check-syntax.mjs .",
+    "test": "node ../../bin/with-temp-root.mjs node --test --test-concurrency=2 \"*.check.mjs\"",
     "desktop": "node desktop-launch.mjs",
-    "test:desktop-settings": "node ../../bin/with-temp-root.mjs node desktop-settings.check.mjs"
+    "test:electron": "node ../../bin/with-temp-root.mjs node --test --test-concurrency=1 \"*.electron.mjs\""
   },
   "dependencies": {
     "@civic/canvas": "workspace:*",
     "@civic/vite-connector": "workspace:*",
     "@tailwindcss/vite": "4.3.3",
-    "vite": "8.3.1"
+    "vite": "catalog:"
   }
 }

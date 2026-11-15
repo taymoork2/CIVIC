@@ -1,0 +1,2 @@
+# Entire wraps the dispatcher's commit-msg and chains to this name.
+. "$(dirname "$0")/commit-msg"

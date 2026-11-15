@@ -38,6 +38,7 @@ if [ -n "$(git -C "$repo_root" status --porcelain)" ]; then
   exit 1
 fi
 sha="$(git -C "$repo_root" rev-parse HEAD)"
+node "$repo_root/scripts/commit-type.ts"
 
 step "CIVIC graph: types, tests and example graphs"
 pnpm --dir "$graph_dir" install --frozen-lockfile

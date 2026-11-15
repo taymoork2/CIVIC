@@ -20,8 +20,8 @@
   "scripts": {
     "build:styles": "tailwindcss -i styles/ui.css -o styles/ui.generated.css --minify",
     "check": "tsc --noEmit",
-    "test": "vitest run && pnpm run test:server",
-    "test:server": "node ../../bin/with-temp-root.mjs node --test server/review-server.check.mjs server/review-recording.check.mjs server/review-interactions.check.mjs"
+    "test": "node ../../bin/with-temp-root.mjs vp test run --maxWorkers=2 && pnpm run test:server",
+    "test:server": "node ../../bin/with-temp-root.mjs node --test --test-concurrency=2 \"server/*.check.mjs\""
   },
   "peerDependencies": {
     "react": "19.3.0"
@@ -42,6 +42,6 @@
     "react": "19.3.0",
     "tailwindcss": "4.3.3",
     "typescript": "7.0.2",
-    "vitest": "5.0.1"
+    "vite-plus": "catalog:"
   }
 }

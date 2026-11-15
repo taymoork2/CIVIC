@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { expect, test } from 'vite-plus/test'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { SharedNavigation } from './shared-navigation'
 import { appFlows, flowEdges } from './app-map'

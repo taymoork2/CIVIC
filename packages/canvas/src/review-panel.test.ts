@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { expect, test } from 'vite-plus/test'
 import { feedbackOnScreen, type Feedback } from './review-panel'
 import type { MapScreen } from './app-map'
 

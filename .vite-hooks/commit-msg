@@ -1,0 +1,1 @@
+node "$(git rev-parse --show-toplevel)/scripts/commit-type.ts" "$1"

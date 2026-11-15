@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { expect, test } from 'vite-plus/test'
 import { readinessFor, supportsPreview } from './connection-readiness'
 
 test('configuration and missing metadata never certify a mounted preview or its capabilities', () => {

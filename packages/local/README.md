@@ -32,5 +32,5 @@ loopback hosts. Window closing and checkout replacement preserve existing draft
 confirmation guards.
 
 Run `pnpm --dir packages/local test` for launcher and lifecycle checks. The
-optional `test:desktop-settings` script uses synthetic projects and a temporary
-Electron profile. Private integrations have separate local validation.
+optional `test:electron` script runs every `*.electron.mjs` check, which drives
+Electron with synthetic projects and a temporary profile. Private integrations have separate local validation.
