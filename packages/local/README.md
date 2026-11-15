@@ -34,3 +34,24 @@ confirmation guards.
 Run `pnpm --dir packages/local test` for launcher and lifecycle checks. The
 optional `test:electron` script runs every `*.electron.mjs` check, which drives
 Electron with synthetic projects and a temporary profile. Private integrations have separate local validation.
+
+`retainPreviewBuilds(store, { live, inUse })` in `preview-retention.mjs` is an
+opt-in helper for adapters. `live` contains absolute worktree roots; `inUse`
+contains absolute build directories under the store's `projects/`. The adapter
+must serialize the call with builds, receipt publication, and preview lease
+changes, and supply every connected root and running build.
+
+An adapter-owned project has a regular `receipt.json` with an absolute `root`
+(new required retention field), a nonempty `worktreeHash`, and `worktreeBuild`
+matching `builds/<16 lowercase hex>-<8 lowercase hex>`. Writing this receipt
+asserts that the project's contents are disposable CIVIC preview artifacts.
+Legacy receipts without `root` and foreign folders are left alone. Live projects
+keep their published build and leased builds; disconnected projects stay while
+any build is leased. No source root is traversed or deleted.
+
+The helper refuses a linked store, project, receipt or build folder and paths
+outside the real `projects/` boundary. Links inside a build (such as linked
+`node_modules`) are removed as links, never followed. It inspects at most
+500,000 entries per call; past that it deletes nothing. Results contain `removed: [{ path, bytes }]`, total
+`bytes` (logical file sizes, not reclaimed disk blocks), and `refused` reasons.
+It never starts automatically; adopting it in private adapters is separate work.
