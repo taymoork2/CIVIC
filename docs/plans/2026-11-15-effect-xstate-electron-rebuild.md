@@ -8,7 +8,7 @@ CIVIC is not rewritten from scratch. Most of it is pure data code (the graph, im
 
 The order is: first the checks that stop old mistakes coming back, then one install for all of CIVIC, then the shared state-machine kernel and the request machine, then the MCP server, then CIVIC as a project in its own picker, then the two features, then the preview, app-server and desktop lifecycles. Each step lands on its own after its checks pass.
 
-Two things need the owner (listed at the end): whether the stale Orca preview builds in the live store may be deleted, and whether CIVIC may have one install at the repository root.
+One thing needs the owner (listed at the end): whether the stale Orca preview builds in the live store may be deleted.
 
 ## 1. Audit: where CIVIC is today
 
@@ -99,7 +99,7 @@ Each slice: its own worktree and branch, its own checks plus the full suites, `b
 | S0 | This plan and decision 0022 | Committed |
 | S1 | Vite+ in the `packages/` workspace: `vp test` replaces vitest, `vp lint` with Ultracite presets, `vp fmt --check` on staged files, `vp run` tasks, `.vite-hooks`, `scripts/commit-type.ts`, signoff refuses untyped commits, test lists by glob | All existing suites pass under the new runner; a typed-commit test; hooks chain `.git/hooks` |
 | S2 | The rule table in §3 with baselines | Each rule has a failing fixture and a passing one; baselines committed |
-| S3 | One install for all of CIVIC (spike first: a workspace that includes `graph/`, `review/`, `importers/`, `crawl/` without a tracked root `package.json`) | One lockfile; signoff installs once; owner call if a root `package.json` is required |
+| S3 | One install for all of CIVIC: `packages/pnpm-workspace.yaml` lists `../graph`, `../review`, `../importers`, `../crawl` (spike 15 Nov: pnpm links out-of-root members, one lockfile, no root `package.json`) | One lockfile; signoff installs once |
 | S4 | `@civic/core` kernel + graph-test helper; request machine in `review/` replaces the `if` checks; arch test forbids status writes outside the machine | Graph test covers every event; existing review tests unchanged and green |
 | S5 | MCP server on Effect: one tool table with `Schema` inputs, JSON schemas derived; stdio transport scoped | Same tool names and answers; a test starts the real server and lists tools |
 | S6 | CIVIC as a project in its own picker: tracked manifest, scenario registry for CIVIC's screens | `civic preview` opens CIVIC's own screens as a project; Playwright check |
@@ -119,4 +119,3 @@ AGENTS.md holds throughout: HOME never changes; ephemeral ports only (never 3012
 ## 8. Owner calls
 
 1. May the 79 stale `orca-worktree-*` folders (1.4 GB) in `.civic-canvas/projects` be deleted, and may the private Orca adapter adopt the retention helper?
-2. If S3's spike shows one install needs a tracked root `package.json`, it would collide with the untracked one in the main checkout. Keep separate installs, or replace the untracked file?
