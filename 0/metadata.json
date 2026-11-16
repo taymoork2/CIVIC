@@ -1,0 +1,60 @@
+{
+  "cli_version": "0.13.3",
+  "checkpoint_id": "01M7HEWK5W1NXFX8A437TD9JJA",
+  "session_id": "8f3b2eca-0508-4f5d-8344-d9ed70c2da42",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-16T05:57:13.307036Z",
+  "branch": "feat/managed-host",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "packages/canvas/package.json",
+    "packages/canvas/server/app-server-main.mjs",
+    "packages/canvas/server/app-server.check.mjs",
+    "packages/canvas/server/app-server.ts",
+    "packages/canvas/server/canvas-host.mjs",
+    "packages/canvas/server/client-presence.test.ts",
+    "packages/canvas/server/client-presence.ts",
+    "packages/canvas/server/service-registration.check.mjs",
+    "packages/canvas/server/service-registration.ts",
+    "packages/pnpm-lock.yaml",
+    "packages/shell/server/review-server.mjs",
+    "packages/vite-connector/src/review-plugin.mjs"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "30cec0967dcb",
+  "checkpoint_transcript_start": 4039,
+  "transcript_lines_at_start": 4039,
+  "compact_transcript_start": 550,
+  "token_usage": {
+    "input_tokens": 10,
+    "cache_creation_tokens": 4951,
+    "cache_read_tokens": 2603879,
+    "output_tokens": 2407,
+    "api_call_count": 4
+  },
+  "session_token_usage": {
+    "input_tokens": 940,
+    "cache_creation_tokens": 627568,
+    "cache_read_tokens": 165471895,
+    "output_tokens": 253898,
+    "api_call_count": 415
+  },
+  "redaction": {
+    "replacements": 353,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 326,
+      "key_context": 27,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 52
+  }
+}
