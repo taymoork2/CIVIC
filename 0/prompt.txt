@@ -1,0 +1,13 @@
+Delegated task node:delegated-task:command%3Amcp%3A9f43cd31-b115-413f-821e-100bc7675bb1%3Adelegate-task%3A3c7b703e-b608-4b92-b9e3-146c46dcf800 (Outside-project fixes + finish Laundry trial) [completed]:
+Implemented Part A; CIVIC changes remain uncommitted. Regression tests, package checks and lint passed.
+
+Laundry trial results:
+
+- **Elements:** 176/176 spot-checked locations matched source across three captures.
+- **Replays:** new and pre-owned towel branches passed 11 and 10 steps.
+- **Coverage readers:** load Laundry successfully.
+- **Changed screens:** recent range runs; broader history exposes an `ENOBUFS` gap.
+
+[Full report and evidence]( /var/folders/fd/hz_x5rk15t31rk4cv4mx047w0000gn/T/laundry-trial/FIX-REPORT.md). All owned servers and browsers stopped.
+
+Full backend coverage remains unproven: Laundry lacks a Convex operation inventory. Shared replay counting, production, device and full-scale acceptance remain unchecked.
