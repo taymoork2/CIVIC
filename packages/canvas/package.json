@@ -33,6 +33,7 @@
     "effect": "^4.1.4",
     "xstate": "6.0.0-beta.3",
     "@xstate/effect": "1.0.0-beta.2",
+    "ws": "^8.23.0",
     "@playwright/test": "^1.65.1",
     "@vitejs/plugin-react": "^6.3.0",
     "oxc-transform-react": "^0.156.0",
@@ -42,6 +43,7 @@
   },
   "devDependencies": {
     "@civic/core": "workspace:*",
+    "@types/ws": "8.18.2",
     "@civic/shell": "workspace:*",
     "@civic/vite-connector": "workspace:*",
     "@types/node": "catalog:",
