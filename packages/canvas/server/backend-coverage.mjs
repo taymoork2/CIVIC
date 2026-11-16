@@ -2,10 +2,12 @@ import { readFile, readdir, realpath } from 'node:fs/promises'
 import nodePath from 'node:path'
 import { createHash } from 'node:crypto'
 import { backendCoverage } from '../../shell/server/backend-coverage.mjs'
-import { serverFunctionOperations } from './server-functions.mjs'
+import { tanstackDetector } from './server-functions.mjs'
+import { convexDetector } from './convex-functions.mjs'
 import { projectPath } from '@civic/vite-connector/project'
 
 const { relative, join } = nodePath
+const detectors = [tanstackDetector, convexDetector]
 
 // JSON values cannot contain boxed strings or custom Symbol.toStringTag values.
 const isInventoryString = value => Object.prototype.toString.call(value) === '[object String]'
@@ -19,9 +21,12 @@ export async function backendInventory(project) {
     for (const entry of await readdir(directory, { withFileTypes: true })) {
       const path = join(directory, entry.name)
       // oxlint-disable-next-line eslint/no-await-in-loop -- Preserve depth-first inventory order and bounded file reads.
-      if (entry.isDirectory() && !entry.name.startsWith('.') && entry.name !== 'node_modules') await scan(path)
-      // oxlint-disable-next-line eslint/no-await-in-loop -- Preserve depth-first inventory order and bounded file reads.
-      else if (entry.isFile() && /\.[cm]?[jt]sx?$/u.test(entry.name)) operations.push(...serverFunctionOperations(await readFile(path, 'utf8'), relative(project.root, path)))
+      if (entry.isDirectory() && !entry.name.startsWith('.') && !['node_modules', '_generated'].includes(entry.name)) await scan(path)
+      else if (entry.isFile() && /\.[cm]?[jt]sx?$/u.test(entry.name)) {
+        // oxlint-disable-next-line eslint/no-await-in-loop -- Preserve depth-first inventory order and bounded file reads.
+        const code = await readFile(path, 'utf8'), file = relative(project.root, path)
+        for (const detector of detectors) operations.push(...detector.detect(code, file).map(row => ({ ...row, detector: detector.name })))
+      }
     }
   }
   // oxlint-disable-next-line eslint/no-await-in-loop -- Source roots share visited state and ordered inventory output.

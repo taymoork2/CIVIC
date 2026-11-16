@@ -1,6 +1,22 @@
 import { readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { allow, type Context } from './loop.ts'
+import type { StoredReplay } from './store.ts'
+import { isDeepStrictEqual } from 'node:util'
+
+export function unsharedPassingReplays(dataDir: string, project: string, source: string, shared: StoredReplay[]): number {
+  let files: string[]
+  try { files = readdirSync(join(dataDir, 'replays')) } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return 0
+    throw error
+  }
+  if (files.length > 1001) throw new Error('Replay scan limit reached')
+  return files.filter(file => /^[0-9a-f-]{36}\.json$/.test(file)).filter(file => {
+    const replay = JSON.parse(readFileSync(join(dataDir, 'replays', file), 'utf8')) as StoredReplay
+    return replay.schema === 'civic.replay/0' && replay.project === project && replay.source === source && replay.outcome === 'pass'
+      && !shared.some(row => isDeepStrictEqual(row, replay))
+  }).length
+}
 
 /**
  * Decision 0009: a replay of a recorded run is run evidence, and its tape is shared by

@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
+import { createHash, randomUUID } from 'node:crypto'
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { delimiter, join } from 'node:path'
@@ -38,6 +39,22 @@ test('outside checkout discovery, explicit projects and declared connectors', as
     assert.equal((await changedScreens(root, base, selection)).screens[0]?.scenario, 'home')
   }
   assert.deepEqual((await readBackendCoverage(root)).unreached, [])
+  const dataDir = join(root, '.review-data/projects', project.key)
+  mkdirSync(join(dataDir, 'replays/tapes'), { recursive: true })
+  const tape = Buffer.from(JSON.stringify({ project: project.key, source: metadata.revision.source, seed: { context: { scenario: 'home' } }, steps: [] }))
+  const hash = createHash('sha256').update(tape).digest('hex')
+  const replay = Buffer.from(JSON.stringify({ schema: 'civic.replay/0', project: project.key, source: metadata.revision.source, head: git('rev-parse', 'HEAD'), scenario: 'home', steps: 0, tape: hash, outcome: 'pass', replayedAt: new Date().toISOString() }))
+  writeFileSync(join(dataDir, 'replays/tapes', hash + '.json'), tape)
+  writeFileSync(join(dataDir, 'replays', randomUUID() + '.json'), replay)
+  const unshared = await coverage(root)
+  assert.equal(unshared.screens.covered, 0)
+  assert.equal(unshared.unsharedReplays, 1)
+  assert.match(unshared.hints[0]!, /1 passing replays recorded but not shared yet; run `civic share-replays /)
+  Store.forCheckout(readCheckout(root)).putReplay(replay, tape)
+  const shared = await coverage(root)
+  assert.equal(shared.screens.covered, 1)
+  assert.equal(shared.unsharedReplays, 0)
+  assert.deepEqual(shared.hints, [])
   writeFileSync(join(root, 'owned.mjs'), `
     import assert from 'node:assert/strict'
     export default {

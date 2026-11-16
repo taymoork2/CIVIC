@@ -34,5 +34,5 @@ export function backendCoverage(operations, tapes, replays, { project, source, j
     }
   }
   const rows = operations.map(operation => ({ ...operation, reachedBy: [...reached.get(operation.id)].toSorted() })).toSorted((a, b) => a.id.localeCompare(b.id))
-  return { operations: rows, unreached: rows.filter(row => !row.reachedBy.length).map(row => row.id) }
+  return { operations: rows, unreached: rows.filter(row => !row.reachedBy.length && row.visibility !== 'internal').map(row => row.id), unreachedInternal: rows.filter(row => !row.reachedBy.length && row.visibility === 'internal').map(row => row.id) }
 }
