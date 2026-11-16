@@ -1,6 +1,14 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
-import { architecture, compare, count } from '../bin/lint-baseline.mjs'
+import { architecture, compare, count, effectFindings } from '../bin/lint-baseline.mjs'
+import { fileURLToPath } from 'node:url'
+
+test('Effect diagnostics retain rule/file counts and fail closed without the plugin', () => {
+  const report = { diagnostics: [{ name: 'floatingEffect', file: fileURLToPath(new URL('../review/src/mcp.ts', import.meta.url)) }], summary: { filesChecked: 1, filesWithoutPlugin: 0 } }
+  assert.deepEqual(count(effectFindings(report)), { 'effect/floatingEffect:review/src/mcp.ts': 1 })
+  assert.throws(() => effectFindings({ ...report, summary: { filesChecked: 0 } }), /inactive/)
+  assert.throws(() => effectFindings({ ...report, diagnostics: [{}] }), /Unclassified/)
+})
 
 const cases = [
   ['useEffect', 'packages/canvas/src/a.tsx', 'useEffect(() => {})', 'useExternalSync()'],

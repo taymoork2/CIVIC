@@ -1,5 +1,6 @@
 import { journeyGraph, pathId } from '../src/journey-graph.mjs'
 import { hostPlaywright } from '@civic/shell/server'
+import { Effect } from 'effect'
 
 /**
  * The review server's side of a module project: CIVIC's own journey graph, no guided run or
@@ -57,9 +58,10 @@ async function captureFixture(node, { origin, cookie, browser: sharedBrowser, vi
     await page.locator('[data-rehearsal-ready="true"], #review-root:has(> h1:text-is("Preview unavailable"))').waitFor({ state: 'attached', timeout: 10000 })
     if (await page.getByRole('heading', { name: 'Preview unavailable', exact: true }).count()) throw Error((await page.getByRole('alert').first().textContent())?.slice(0, 300) || 'Fixture did not render')
     if (visit) {
-      let timer
-      try { return await Promise.race([visit(page), new Promise((_, reject) => { timer = setTimeout(() => reject(Error('Fixture exploration exceeded its 20 second action budget')), 20000) })]) }
-      finally { clearTimeout(timer) }
+      return await Effect.runPromise(Effect.timeoutOrElse(Effect.promise(() => visit(page)), {
+        duration: '20 seconds',
+        orElse: () => Effect.die(Error('Fixture exploration exceeded its 20 second action budget')),
+      }))
     }
     await page.evaluate(async () => { await window.reviewPreview?.flushDiscovery?.(); const error = document.getElementById('review-root')?.dataset.discoveryError; if (error) throw Error(error) })
     return await page.screenshot({ type: 'png', animations: 'disabled', timeout: 10000 })

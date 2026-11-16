@@ -1,4 +1,5 @@
 import type { Action, Driver, Observation } from './explore.ts'
+import { Effect } from 'effect'
 
 // The native driver for CIVIC's crawl loop, on Appium (D34). It speaks the W3C WebDriver
 // protocol to an Appium server over HTTP, so it needs no client library. It reads each state
@@ -231,7 +232,7 @@ export function appiumDriver(options: AppiumOptions): Driver & { close(): Promis
       const tree = treeOf(await read())
       if (tree === last) return
       last = tree
-      await new Promise((done) => setTimeout(done, settle.interval))
+      await Effect.runPromise(Effect.sleep(settle.interval))
     }
   }
 }

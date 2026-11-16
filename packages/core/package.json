@@ -4,7 +4,7 @@
   "type": "module",
   "exports": { ".": "./src/kernel.ts", "./testing": "./src/testing.ts" },
   "scripts": {
-    "check": "tsc --noEmit",
+    "check": "tsc --noEmit && node ../../bin/lint-baseline.mjs --effect-project packages/core/tsconfig.json",
     "test": "node ../../bin/with-temp-root.mjs vp test run --maxWorkers=2"
   },
   "dependencies": { "effect": "^4.1.4", "xstate": "6.0.0-beta.3" },

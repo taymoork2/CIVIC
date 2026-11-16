@@ -1,4 +1,5 @@
 import { checkedAppearance } from './review-appearance.mjs'
+import { Effect, Fiber } from 'effect'
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto'
 import { mkdir, readFile, readdir, rename, stat, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
@@ -167,12 +168,12 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
   const thumbnails = new Map()
   let fixtureBrowser, fixtureBrowserTimer, closed = false
   const closeFixtureBrowser = async () => {
-    clearTimeout(fixtureBrowserTimer)
+    if (fixtureBrowserTimer) Effect.runFork(Fiber.interrupt(fixtureBrowserTimer))
     const pending = fixtureBrowser; fixtureBrowser = null
     try { await (await pending)?.close() } catch {}
   }
   const fixtureRenderer = async () => {
-    clearTimeout(fixtureBrowserTimer)
+    if (fixtureBrowserTimer) Effect.runFork(Fiber.interrupt(fixtureBrowserTimer))
     if (closed) throw Error('Snapshot host is closed')
     if (fixtureBrowser && (await fixtureBrowser).isConnected?.() === false) await closeFixtureBrowser()
     fixtureBrowser ??= Promise.resolve().then(() => launchFixtureBrowser())
@@ -181,10 +182,12 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
   }
   const releaseFixtureBrowser = () => {
     if (closed) return
-    clearTimeout(fixtureBrowserTimer)
+    if (fixtureBrowserTimer) Effect.runFork(Fiber.interrupt(fixtureBrowserTimer))
     // Reuse Chrome across the visible capture queue; each screen still gets a fresh context.
-    fixtureBrowserTimer = setTimeout(() => void closeFixtureBrowser(), 1000)
-    fixtureBrowserTimer.unref?.()
+    fixtureBrowserTimer = Effect.runFork(Effect.andThen(Effect.sleep(1000), Effect.promise(async () => {
+      fixtureBrowserTimer = undefined
+      await closeFixtureBrowser()
+    })))
   }
   const fixtureDemand = new Map()
   let fixtureQueue = Promise.resolve()
@@ -414,7 +417,7 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
           if ((await read()).some((row) => row.deliveries?.some((delivery) => ['pending', 'accepted'].includes(delivery.status)))) throw Object.assign(Error('An agent delivery is active. Wait for its final receipt before switching projects.'), { status: 409 })
           return projects.select(input.key, input.workspace)
         })
-        if (result.restarting) res.once('finish', () => setTimeout(restart, 100))
+        if (result.restarting) res.once('finish', () => Effect.runFork(Effect.andThen(Effect.sleep(100), Effect.sync(restart))))
         json(200, result); return
       }
       if (url.pathname === '/api/review/agents' && req.method === 'GET') { json(200, (await destinations()).map((target) => agents.publicDestination(target))); return }

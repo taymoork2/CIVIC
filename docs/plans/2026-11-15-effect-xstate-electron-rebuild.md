@@ -12,22 +12,6 @@ One thing needs the owner (listed at the end): whether the stale Orca preview bu
 
 ## 1. Audit: where CIVIC is today
 
-### Status, 16 Nov
-
-Merged: tooling and dependency updates (S1/S1b), baseline checks (S2), the single
-workspace (S3), core and request machine (S4), Effect MCP (S5), self-review picker
-(S6), source-to-element (S7), backend coverage (S8), preview lifecycle and bounded
-retention (S9/S9b), harness integrations (S11, `8375aea2`), and coordinator tools
-(S11b, `267d4563`, base fix `94875c8d`). S10 U1/U2 landed in `8bade120`; run
-supervision in `e61e6847` with corrections `24d35503` and `62739c80`; managed
-hosting in `dc55e5b3`; browser/Electron attachment in `613fb176`. Checkbox replay
-was corrected in `8aed9b23`; layering cleanup landed in `050fc5d5`.
-
-Remaining: U6's installed-consumer candidate and final acceptance/signoff,
-including macOS sleep/wake, further S12 baseline cleanup, adoption of the shared
-signoff package when available, and the owner decision about private-store
-retention adoption/deletion. This list records merges, not fresh suite results.
-
 Grounded at `f749b770` (this branch). Counts are from `grep` over tracked source, not lint output.
 
 | Area | Today | Target | Verdict |
@@ -218,3 +202,28 @@ AGENTS.md holds throughout: HOME never changes; ephemeral ports only (never 3012
 ## 8. Owner calls
 
 1. May the 79 stale `orca-worktree-*` folders (1.4 GB) in `.civic-canvas/projects` be deleted, and may the private Orca adapter adopt the retention helper?
+
+## Status, 16 Nov
+
+Merged: tooling and dependency updates (S1/S1b), baseline checks (S2), the single
+workspace (S3), core and request machine (S4), Effect MCP (S5), self-review picker
+(S6), source-to-element (S7), backend coverage (S8), preview lifecycle and bounded
+retention (S9/S9b), harness integrations (S11, `8375aea2`), and coordinator tools
+(S11b, `267d4563`, base fix `94875c8d`). S10 U1/U2 landed in `8bade120`; run
+supervision in `e61e6847` with corrections `24d35503` and `62739c80`; managed
+hosting in `dc55e5b3`; browser/Electron attachment in `613fb176`. Checkbox replay
+was corrected in `8aed9b23`; layering cleanup landed in `050fc5d5`. U6 landed
+in `117351ef`: install-and-recovery checks from a git-installed canvas.
+Sign-offs ran alongside Orca's at the owner's request on 16 Nov.
+
+Effect diagnostics now run with TypeScript 7 through `@effect/tsgo` 0.69.0.
+The shrink-only baseline records 10 diagnostics (one error, one warning, eight
+suggestions): zero in core and canvas UI, one in canvas server tests, nine in review.
+
+Remaining: hooks enablement and private-adapter adoption after the branch reaches
+main; Orca-side wiring ([proposal](../integrations/orca-proposal.md)); the shared
+sign-off package (§6b); proving the real-agent loop; Vite restart with a connected
+desktop client; hidden-tab/frame exclusion test; coverage notifications for
+preview-only replays (another worker is closing the last three); sleep/wake;
+further S12 baseline cleanup; and the owner decision about private-store deletion.
+This list records merges and the diagnostics outcome, not fresh full-suite results.

@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { Effect } from 'effect'
 import { mkdir, mkdtemp, readFile, readdir, writeFile } from 'node:fs/promises'
 import http, { createServer, request } from 'node:http'
 import { tmpdir } from 'node:os'
@@ -126,7 +127,7 @@ test('visible snapshots reuse one browser, retain fresh contexts and recover a d
   disconnected = true
   assert.equal(await (await get(395)).text(), '3')
   assert.equal(launches, 2)
-  await new Promise(resolve => setTimeout(resolve, 1100))
+  await Effect.runPromise(Effect.sleep(1100))
   assert.equal(closed, 2, 'An idle snapshot browser closes without retaining background work')
 })
 
@@ -275,7 +276,7 @@ test('live interaction inventory is authenticated, source-bound and scans only r
     assert.equal(report.interactions.summary.unrecorded, 1)
     assert.equal((await post({ action: 'scan', source: input.source })).status, 202)
     const deadline = Date.now() + 2000
-    while (!closed && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 10))
+    while (!closed && Date.now() < deadline) await Effect.runPromise(Effect.sleep(10))
     assert.equal(closed, true)
     assert.deepEqual(captured, ['home', 'settings'])
     const scan = (await (await fetch(`${base}/api/review/interactions`, { headers })).json()).scan
@@ -293,7 +294,7 @@ test('isolated behavior results persist with their source and cannot verify a ch
   await new Promise(resolve => server.listen(0, '127.0.0.1', resolve))
   const base = `http://127.0.0.1:${server.address().port}`, headers = await localHeaders(base)
   const post = action => fetch(`${base}/api/review/interactions`, { method: 'POST', headers, body: JSON.stringify({ action, source: metadata.revision.source }) })
-  const wait = async () => { const deadline = Date.now() + 2000; while (!closed && Date.now() < deadline) await new Promise(resolve => setTimeout(resolve, 10)); assert.equal(closed, true) }
+  const wait = async () => { const deadline = Date.now() + 2000; while (!closed && Date.now() < deadline) await Effect.runPromise(Effect.sleep(10)); assert.equal(closed, true) }
   const report = async () => (await fetch(`${base}/api/review/interactions`, { headers })).json()
   try {
     assert.equal((await post('explore')).status, 202); await wait()
@@ -474,14 +475,14 @@ test('saved reviews dispatch once, retain receipts and recover uncertain sends a
     assert.equal((await post(input)).status, 200)
     assert.equal((await post({ ...input, requestId: 'cccccccc-1234-4234-8234-123456789abc' })).status, 409)
     // Dispatch starts after its durable HTTP receipt, without waiting for the agent turn.
-    await new Promise((resolve) => setTimeout(resolve, 20))
+    await Effect.runPromise(Effect.sleep(20))
     assert.equal(sends, 1)
     const stored = JSON.parse(await readFile(join(dataDir, 'feedback.json'), 'utf8'))[0]
     assert.equal(stored.status, 'new'); assert.equal(stored.deliveries[0].status, 'accepted')
     await receipt({ status: 'completed', detail: 'Agent finished, verification pending.' })
     assert.equal(JSON.parse(await readFile(join(dataDir, 'feedback.json'), 'utf8'))[0].status, 'new')
     assert.equal((await post({ requestId: 'eeeeeeee-1234-4234-8234-123456789abc', destination: destination.id, replyTo: input.requestId, message: 'Show the branch checks and remaining gaps.' })).status, 202)
-    await new Promise((resolve) => setTimeout(resolve, 20))
+    await Effect.runPromise(Effect.sleep(20))
     assert.equal(sends, 2)
     const conversation = JSON.parse(await readFile(join(dataDir, 'feedback.json'), 'utf8'))[0]
     assert.equal(conversation.deliveries[1].replyTo, input.requestId)

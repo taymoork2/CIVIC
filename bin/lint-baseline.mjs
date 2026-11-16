@@ -68,6 +68,25 @@ export function count(findings) {
   return Object.fromEntries(Object.entries(counts).sort(([a], [b]) => a.localeCompare(b)))
 }
 
+export function effectFindings(report) {
+  if (!Array.isArray(report.diagnostics) || !report.summary?.filesChecked || report.summary.filesWithoutPlugin) throw new Error('Invalid or inactive Effect diagnostics report')
+  return report.diagnostics.map(item => {
+    if (!item.name || !isAbsolute(item.file ?? '')) throw new Error('Unclassified Effect diagnostic')
+    const filename = relative(root, item.file)
+    if (filename.startsWith('..')) throw new Error('Effect diagnostic outside repository')
+    return { code: `effect/${item.name}`, filename }
+  })
+}
+
+const effectProjects = ['packages/core/tsconfig.json', 'packages/canvas/tsconfig.json', 'packages/canvas/tsconfig.server.json', 'review/tsconfig.json']
+function collectEffect(projects) {
+  return projects.flatMap(project => {
+    const result = spawnSync('pnpm', ['exec', 'effect-tsgo', 'diagnostics', '--project', resolve(root, project), '--format', 'json'], { cwd: resolve(root, 'packages'), encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
+    if (result.error || ![0, 1].includes(result.status)) throw new Error(result.error?.message ?? result.stderr ?? 'Effect diagnostics failed')
+    return effectFindings(JSON.parse(result.stdout))
+  })
+}
+
 export function compare(current, baseline, update = false) {
   const errors = []
   for (const [key, value] of Object.entries(baseline)) {
@@ -88,14 +107,23 @@ export function collect() {
   const findings = report.diagnostics.map(item => ({ ...item, filename: `packages/${item.filename}` }))
   const files = execFileSync('git', ['ls-files', '-z'], { cwd: root, encoding: 'utf8' }).split('\0').filter(file => /\.(?:[cm]?[jt]sx?)$/.test(file))
   for (const file of files) findings.push(...architecture(file, readFileSync(resolve(root, file), 'utf8')))
+  findings.push(...collectEffect(effectProjects))
   return count(findings)
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
     const update = process.argv.includes('--update')
-    const current = collect()
-    const baseline = JSON.parse(readFileSync(baselinePath, 'utf8'))
+    const projectIndex = process.argv.indexOf('--effect-project')
+    const projects = projectIndex === -1 ? null : process.argv.slice(projectIndex + 1)
+    if (projects && update) throw new Error('Effect project checks cannot rewrite the shared baseline')
+    if (projects && (!projects.length || projects.some(project => !effectProjects.includes(project)))) throw new Error('Unknown Effect project')
+    const current = projects ? count(collectEffect(projects)) : collect()
+    let baseline = JSON.parse(readFileSync(baselinePath, 'utf8'))
+    if (projects) {
+      const directories = projects.map(project => dirname(project) + '/')
+      baseline = Object.fromEntries(Object.entries(baseline).filter(([key]) => key.startsWith('effect/') && directories.some(directory => key.split(':')[1].startsWith(directory))))
+    }
     const errors = compare(current, baseline, update)
     if (errors.length) throw new Error(errors.join('\n'))
     if (update) writeFileSync(baselinePath, `${JSON.stringify(current, null, 2)}\n`)

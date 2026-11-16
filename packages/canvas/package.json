@@ -26,7 +26,7 @@
     "./styles/*.css": "./src/*.css"
   },
   "scripts": {
-    "check": "tsc --noEmit && tsc -p tsconfig.server.json",
+    "check": "tsc --noEmit && tsc -p tsconfig.server.json && node ../../bin/lint-baseline.mjs --effect-project packages/canvas/tsconfig.json packages/canvas/tsconfig.server.json",
     "test": "node ../../bin/with-temp-root.mjs vp test run --maxWorkers=2 && pnpm run test:host",
     "test:host": "node ../../bin/with-temp-root.mjs node --test --test-concurrency=2 \"server/*.check.mjs\""
   },
