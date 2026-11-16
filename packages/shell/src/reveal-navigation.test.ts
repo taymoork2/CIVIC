@@ -1,4 +1,4 @@
-import { expect, test, vi } from 'vitest'
+import { expect, test, vi } from 'vite-plus/test'
 import { revealNavigation } from './reveal-navigation'
 
 test('following a screen scrolls only its outline containers, without moving the page', () => {

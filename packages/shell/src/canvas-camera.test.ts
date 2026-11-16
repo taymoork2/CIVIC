@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { expect, test } from 'vite-plus/test'
 import { containCamera, panCamera, zoomCamera } from './canvas-camera'
 
 test('zoom keeps the world point beneath the pointer, with a modest panning margin', () => {

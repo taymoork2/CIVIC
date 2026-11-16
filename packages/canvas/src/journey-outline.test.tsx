@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { expect, test } from 'vite-plus/test'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { JourneyOutline, outlineRows } from './journey-outline'
 import type { AppFlow } from './app-map'

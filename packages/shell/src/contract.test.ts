@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { expect, test } from 'vite-plus/test'
 import { alignment, contractDimensions, coverage } from './contract'
 
 const towelFabric = { id: 'intake.towel.fabric', component: 'apps/web/src/closet/add-clothes.tsx', preview: 'working-synthetic', implementation: 'present', designCoverage: 'rules/bounded specimen; full scenario unverified', reference: 'missing', behavior: 'not verified by this inventory; see scoped checks', native: 'missing', device: 'unverified' }

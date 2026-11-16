@@ -93,6 +93,11 @@ README and architecture decisions before changing its boundaries.
   `bin/signoff` on the result. A coordinator in another tool must not request
   integration into this repository (for example Orca's `orca_integrate`), and
   must leave `.civic/` and the owner's untracked root `package.json` alone.
+- Commit titles start with a type (`feat:`, `fix:`, `refactor:`, `docs:`, `test:`,
+  `build:`, `chore:`…); `bin/signoff` refuses untyped commits after main. Enable
+  the hooks once per clone with `packages/node_modules/.bin/vp hooks enable`, then set
+  `core.hooksPath` to that checkout's absolute `.vite-hooks/_` (the generated dispatcher
+  exists only there, and worktrees share the setting).
 - Report what changed, the checks actually run, and material remaining risks.
   Keep private validation evidence in ignored local storage; keep these instructions short.
 

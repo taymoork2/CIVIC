@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { expect, test } from 'vite-plus/test'
 import { renderToStaticMarkup } from 'react-dom/server'
 import { ConnectionPaths } from './connection-paths'
 import { routeConnections, type Connection } from './connection-routing'

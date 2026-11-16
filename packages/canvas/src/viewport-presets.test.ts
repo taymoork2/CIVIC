@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { expect, test } from 'vite-plus/test'
 import { presetOf, validViewport } from './viewport-presets'
 
 test('viewport preferences retain resolved appearance and an optional app theme', () => {

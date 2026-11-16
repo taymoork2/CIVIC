@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { expect, test } from 'vite-plus/test'
 import { connectionDescription, connectionStyle, interactionOf } from './connection-semantics'
 
 test('interaction meaning uses an explicit type before conservative label inference', () => {

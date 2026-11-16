@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { expect, test } from 'vite-plus/test'
 import { checkoutGroup } from './project-choice'
 
 test('identical-content checkouts share a commit label while preserving their branch names', () => {

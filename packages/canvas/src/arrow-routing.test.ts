@@ -1,4 +1,4 @@
-import { expect, test } from 'vitest'
+import { expect, test } from 'vite-plus/test'
 import { arrowPath, routeArrow, simplifyRoute } from './arrow-routing'
 
 test('routing avoids the intervening card, prefers the shorter lower gutter and separates lanes', () => {
