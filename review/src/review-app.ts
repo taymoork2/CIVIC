@@ -4,6 +4,7 @@ import { git, revisionOf, type Checkout } from './git.ts'
 import { lineIdFor, registerPreview, unregisterPreview, type Context } from './loop.ts'
 import { createOverlayServer, type Rasterize } from './overlay/server.ts'
 import { createInjectingProxy } from './overlay/proxy.ts'
+import type { WorkRef } from '../../graph/src/index.ts'
 
 export interface ReviewApp {
   /** Where a reviewer opens the app: the proxy, which serves the app with the overlay in it. */
@@ -16,6 +17,7 @@ export interface ReviewApp {
 }
 
 export interface ReviewAppInput {
+  workRef?: WorkRef | (() => WorkRef | undefined)
   /** The running app, on loopback. It is only read from; its source is never changed. */
   upstream: string
   /** Files the annotations under this branch when the app runs from a detached copy of its head. */
@@ -49,7 +51,7 @@ export async function startReviewApp(context: Context, input: ReviewAppInput): P
   const scoped: Context = { ...context, checkout: named }
   const line = lineIdFor(named)
 
-  const overlayServer = createOverlayServer(() => scoped, input.rasterize)
+  const overlayServer = createOverlayServer(() => scoped, input.rasterize, input.workRef)
   const overlay = await listen(overlayServer, input.overlayPort)
   const tag = `<script src="${overlay}/overlay.js" data-civic-line="${line}" data-civic-revision="${named.head}" defer></script>`
   let proxy: Server

@@ -1,0 +1,119 @@
+import { randomUUID } from 'node:crypto'
+import { join, relative, resolve, sep } from 'node:path'
+import type { WorkRef } from '../../graph/src/index.ts'
+import { readBackendCoverage, readProjectInventory } from './backend.ts'
+import { diffRanges, elements, taggedCapture, type TaggedCapture } from './elements.ts'
+import { git, readCheckout } from './git.ts'
+import { lineIdFor } from './loop.ts'
+import { startPreview } from './preview/launcher.ts'
+import { isRunning, readPreviews, type Preview } from './preview/state.ts'
+import { launchBrowser } from './recapture.ts'
+import { Store } from './store.ts'
+
+const manifestFor = (cwd: string, project?: string) => project ?? resolve(cwd, 'packages/canvas/examples/notebook/civic.project.json')
+const previewStore = (cwd: string) => {
+  const preview = readPreviews().find(row => row.worktree === readCheckout(cwd).root && isRunning(row))
+  return preview ? join(preview.root, 'store') : cwd
+}
+export interface ScreenRef { project: string; scenario: string; journey?: string; route?: string }
+export interface Shot { viewport: number; theme: 'light' | 'dark' }
+type Scenario = { id: string; journey: string; route?: string }
+
+export async function changedScreens(cwd: string, base: string) {
+  const checkout = readCheckout(cwd)
+  const { project, metadata } = await readProjectInventory(cwd, manifestFor(cwd), previewStore(cwd))
+  const captures = Store.forCheckout(checkout).taggedCaptures(project.key, metadata.revision.source)
+  const ranges = diffRanges(git(cwd, 'diff', '--no-ext-diff', '--unified=0', `${base}...HEAD`, '--'))
+  const changedFiles = git(cwd, 'diff', '--no-ext-diff', '--name-only', `${base}...HEAD`, '--').split('\n').filter(Boolean)
+  const screens = new Map<string, ScreenRef & { because: { file: string; lines: [number, number] }[] }>()
+  const limits: string[] = []
+  for (const range of ranges) {
+    const file = relative(project.root, resolve(checkout.root, range.file))
+    const matches = elements(captures, file, [range.from, range.to])
+    for (const match of matches) {
+      const scenario = (metadata.scenarios as Scenario[]).find(row => row.id === match.scenario)
+      if (!scenario) continue
+      const screen: ScreenRef & { because: { file: string; lines: [number, number] }[] } = screens.get(scenario.id) ?? { project: project.key, scenario: scenario.id, journey: scenario.journey, because: [] }
+      if (!screen.because.some(row => row.file === range.file && row.lines[0] === range.from)) screen.because.push({ file: range.file, lines: [range.from, range.to] })
+      screens.set(scenario.id, screen)
+    }
+  }
+  for (const file of changedFiles) if (!elements(captures, relative(project.root, resolve(checkout.root, file))).length && project.sources.some((source: string) => resolve(checkout.root, file).startsWith(source + sep))) limits.push(`No saved capture renders ${file}, so CIVIC cannot name its screens.`)
+  if (!captures.length) limits.push('No tagged captures have been saved for this source yet. Open a review to collect them.')
+  return { revision: checkout.head, base, screens: [...screens.values()], limits: [...new Set(limits)] }
+}
+
+export async function coverage(cwd: string, projectPath?: string) {
+  const defaultManifest = manifestFor(cwd)
+  const defaultInventory = await readProjectInventory(cwd, defaultManifest, previewStore(cwd))
+  const manifest = !projectPath || projectPath === defaultInventory.project.key ? defaultManifest : projectPath
+  const { project, metadata } = manifest === defaultManifest ? defaultInventory : await readProjectInventory(cwd, manifest, previewStore(cwd))
+  const replays = Store.forCheckout(readCheckout(cwd)).replays().filter(row => row.project === project.key && row.source === metadata.revision.source)
+  const scenarios = metadata.scenarios as Scenario[]
+  const covered = new Set(replays.filter(row => row.outcome === 'pass').map(row => row.scenario))
+  return {
+    project: project.key, revision: readCheckout(cwd).head, evidenceAt: replays.map(row => row.replayedAt).sort().at(-1) ?? metadata.revision.capturedAt,
+    screens: { total: scenarios.length, covered: scenarios.filter(row => covered.has(row.id)).length, uncovered: scenarios.filter(row => !covered.has(row.id)).map(row => ({ project: project.key, scenario: row.id, journey: row.journey })) },
+    journeys: [...new Set(scenarios.map(row => row.journey))].map(id => {
+      const screens = scenarios.filter(row => row.journey === id).map(row => row.id)
+      const replay = replays.filter(row => screens.includes(row.scenario)).sort((a, b) => a.replayedAt.localeCompare(b.replayedAt)).at(-1)
+      return { id, screens, lastReplay: replay ? replay.outcome === 'pass' ? 'passed' : 'diverged' : 'none', ...(replay?.divergedAt ? { divergedAt: replay.divergedAt } : {}) }
+    }),
+    backend: await readBackendCoverage(cwd, manifest, previewStore(cwd)),
+  }
+}
+
+export class ReviewSessions {
+  private readonly sessions = new Map<string, { cwd: string; workRef: WorkRef; preview: Preview; close: () => Promise<void>; done: Promise<number> }>()
+
+  async open(cwd: string, workRef: WorkRef, env: NodeJS.ProcessEnv, screens?: ScreenRef[], shots: Shot[] = [1440, 390].flatMap(viewport => (['light', 'dark'] as const).map(theme => ({ viewport, theme })))) {
+    const existing = [...this.sessions.entries()].find(([, session]) => session.cwd === cwd && session.workRef.system === workRef.system && session.workRef.id === workRef.id)
+    const id = existing?.[0] ?? randomUUID()
+    let session = existing?.[1]
+    if (!session) {
+      let ready!: (value: { preview: Preview; close: () => Promise<void> }) => void
+      const started = new Promise<{ preview: Preview; close: () => Promise<void> }>(resolve => { ready = resolve })
+      const done = startPreview({ cwd, env, session: { id, workRef }, print: () => {}, keep: false, noOpen: true, allowDirty: true, ready: (preview, close) => ready({ preview, close }) })
+      const running = await Promise.race([started, done.then(() => { throw new Error('Preview stopped before it was ready.') })])
+      session = { cwd, workRef, ...running, done }
+      this.sessions.set(id, session)
+    }
+    try {
+      const checkout = readCheckout(cwd)
+      const store = Store.forCheckout(checkout)
+      const { project, metadata } = await readProjectInventory(cwd, manifestFor(cwd), previewStore(cwd))
+      if (!store.taggedCaptures(project.key, metadata.revision.source).length) {
+        const captures: TaggedCapture[] = []
+        const browser = await launchBrowser(env)
+        try {
+          const page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
+          try {
+            for (const scenario of metadata.scenarios as Scenario[]) {
+              await page.goto(`${session.preview.origin}/review-frame.html?scenario=${encodeURIComponent(scenario.id)}`, { waitUntil: 'load', timeout: 30_000 })
+              await page.waitForFunction(() => document.querySelector('[data-rehearsal-ready="true"]') !== null, undefined, { timeout: 30_000 })
+              const source = await page.evaluate(() => (globalThis as typeof globalThis & { reviewPreview?: { snapshot?: { revision?: { source?: string } } } }).reviewPreview?.snapshot?.revision?.source)
+              if (source !== metadata.revision.source) throw new Error('The preview source changed before capture. Reopen the review.')
+              captures.push(await taggedCapture(page, scenario.id))
+            }
+          } finally { await page.close() }
+        } finally { await browser.close() }
+        const current = await readProjectInventory(cwd, manifestFor(cwd), previewStore(cwd))
+        if (current.metadata.revision.source !== metadata.revision.source) throw new Error('Source changed during capture. Reopen the review.')
+        for (const capture of captures) store.putTaggedCapture(project.key, metadata.revision.source, capture)
+      }
+      const base = git(cwd, 'for-each-ref', '--format=%(refname)', 'refs/heads/main').trim() || 'HEAD'
+      const selected = screens ?? (await changedScreens(cwd, base)).screens
+      return { id, workRef, line: lineIdFor(checkout), revision: checkout.head, link: `${session.preview.origin}/review`, screens: selected.map(screen => ({ ...screen, shots })) }
+    } catch (error) { await this.close(id); throw error }
+  }
+
+  async close(id: string) {
+    const session = this.sessions.get(id)
+    if (!session) throw new Error('That review session does not belong to this coordinator.')
+    await session.close()
+    await session.done
+    this.sessions.delete(id)
+  }
+
+  async closeAll() { for (const id of this.sessions.keys()) await this.close(id) }
+}

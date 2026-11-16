@@ -15,12 +15,15 @@ import {
 import { worktreeFor } from './git.ts'
 import { ensureCivicActor } from './identity.ts'
 import { moveRequest } from './request.machine.ts'
+import { taggedCapture, type TaggedCapture } from './elements.ts'
 import { allow, bump, checkCountsIn, ConflictError, find, resolveId, splitVersion, summarize, versionOf, type Context } from './loop.ts'
 
 // Structural types for the part of Playwright CIVIC uses, so the rest of the package
 // never depends on it. It is loaded only when a capture actually runs.
 interface Locator { count(): Promise<number>; nth(index: number): Locator; getAttribute(name: string): Promise<string | null> }
 interface Page {
+  evaluate<T>(fn: () => T): Promise<T>
+  waitForFunction(fn: () => boolean, arg?: unknown, options?: { timeout: number }): Promise<unknown>
   goto(url: string, options: { waitUntil: 'load'; timeout: number }): Promise<unknown>
   locator(selector: string): Locator
   getByTestId(testId: string): Locator
@@ -58,6 +61,7 @@ export interface ScenarioCapture {
   url: string
   outcome: AnchorOutcome
   png?: Uint8Array
+  tagged?: { project: string; source: string; capture: TaggedCapture }
 }
 
 /** The URL that opens an annotation's exact scenario on a preview. */
@@ -77,7 +81,12 @@ export async function captureScenario(browser: Browser, annotation: Annotation, 
   try {
     await page.goto(url, { waitUntil: 'load', timeout: 30_000 })
     const { outcome } = resolveAnchor(annotation.anchor, await observe(page, annotation.anchor!))
-    return { url, outcome, png: await page.screenshot({ type: 'png' }) }
+    const snapshot = await page.evaluate(() => {
+      const preview = (globalThis as typeof globalThis & { reviewPreview?: { snapshot?: { project: { key: string }; revision: { source: string } }; config?: { scenario: string } } }).reviewPreview
+      return preview?.snapshot && preview.config?.scenario ? { project: preview.snapshot.project.key, source: preview.snapshot.revision.source, scenario: preview.config.scenario } : undefined
+    })
+    const tagged = snapshot ? { project: snapshot.project, source: snapshot.source, capture: await taggedCapture(page, snapshot.scenario) } : undefined
+    return { url, outcome, png: await page.screenshot({ type: 'png' }), ...(tagged ? { tagged } : {}) }
   } finally {
     await page.close()
   }
@@ -142,6 +151,7 @@ export async function recapture(context: Context, id: string, options: Recapture
   try {
     for (const annotationId of request.annotationIds) {
       const shot = await captureScenario(browser, find<Annotation>(document, annotationId, 'annotation'), preview, bearer)
+      if (shot.tagged) context.store.putTaggedCapture(shot.tagged.project, shot.tagged.source, shot.tagged.capture)
       anchors.push({ annotationId, outcome: shot.outcome, ...(shot.png ? { capture: context.store.putCapture(shot.png, 'image/png') } : {}) })
     }
   } finally {

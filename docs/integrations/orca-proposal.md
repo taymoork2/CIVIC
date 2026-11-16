@@ -34,7 +34,25 @@ carry context, never approval.
 
 ## Current implementation boundary
 
-This checkout implements work references on records, inheritance when a request
-is created, `link_request`, and the `list_requests` work-reference filter.
-The other tools, preview-session bridge, and subscribed resources described above
-remain required before these three flows can be enabled in Orca.
+The MCP surface includes `changed_screens`, `open_review`, `close_review`,
+`coverage`, work-reference links and request filtering. Request and coverage
+resources support subscriptions; store file changes produce debounced update
+notifications. Unsubscribe when the view closes; stdin end closes all watchers
+and reviews owned by that coordinator connection.
+
+Review sessions use `civic preview` and its process identities. A session that
+attaches to an existing preview leaves that preview running when closed; another
+session's ID cannot close it. The overlay reads the session's work reference on
+the server and ignores a reference supplied by the page.
+
+Tagged captures live in the repository's review store, under
+`tagged-captures/<project-hash>/<scenario-hash>.json`. Each scenario replaces its
+previous capture and records the preview inventory's source fingerprint. Screen
+discovery uses only captures matching the current source and reports files with
+no rendered tags. Opening a review collects missing captures with one browser
+page, visiting scenarios sequentially. This establishes rendered synthetic
+coverage, not real-device or deployment acceptance.
+
+## Known limit
+
+The coverage resource announces changes to CIVIC's shared records. A replay saved only inside a running preview updates the backend part of the coverage report when it is read, but does not send a change notice yet; a coordinator that needs it right away reads the resource again.

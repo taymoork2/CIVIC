@@ -3,6 +3,7 @@ import { mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, wri
 import { join } from 'node:path'
 import { git, type Checkout } from './git.ts'
 import { SCHEMA_VERSION, validateGraph, type CaptureRef, type GraphDocument } from '../../graph/src/index.ts'
+import type { TaggedCapture } from './elements.ts'
 
 export const STORE_FOLDER = '.civic'
 const STALE_LOCK_MS = 30_000
@@ -46,6 +47,32 @@ export class Store {
       if ((error as NodeJS.ErrnoException).code === 'ENOENT') return { schema: SCHEMA_VERSION, records: [], links: [] }
       throw error
     }
+  }
+
+  putTaggedCapture(project: string, source: string, capture: TaggedCapture) {
+    this.ensure()
+    const dir = join(this.dir, 'tagged-captures', sha256(project))
+    mkdirSync(dir, { recursive: true, mode: 0o700 })
+    const release = this.lock()
+    try {
+      const file = join(dir, `${sha256(capture.scenario)}.json`)
+      writeFileSync(`${file}.tmp`, JSON.stringify({ project, source, capture }), { mode: 0o600 })
+      renameSync(`${file}.tmp`, file)
+    } finally { release() }
+  }
+
+  taggedCaptures(project: string, source: string): TaggedCapture[] {
+    this.trust()
+    const dir = join(this.dir, 'tagged-captures', sha256(project))
+    let names: string[]
+    try { names = readdirSync(dir) } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === 'ENOENT') return []
+      throw error
+    }
+    return names.filter(name => /^[0-9a-f]{64}\.json$/.test(name)).flatMap(name => {
+      const row = JSON.parse(readFileSync(join(dir, name), 'utf8'))
+      return row.project === project && row.source === source ? [row.capture as TaggedCapture] : []
+    })
   }
 
   /**

@@ -15,9 +15,12 @@ import { git, readCheckout } from '../git.ts'
 import { identityFromEnv } from '../identity.ts'
 import { startReviewApp } from '../review-app.ts'
 import { Store } from '../store.ts'
+import type { WorkRef } from '../../../graph/src/index.ts'
 import { forgetPreview, identify, isProc, isRunning, sameProcess, LAUNCHER_MARKER, pickPorts, previewId, previewsDir, privateDir, readPreviews, removeOwnedRoot, ROOT_MARK, select, stopProcess, writePreview, type Preview } from './state.ts'
 
 export interface PreviewOptions {
+  session?: { id: string; workRef: WorkRef }
+  ready?: (preview: Preview, close: () => Promise<void>) => void
   cwd: string
   env: NodeJS.ProcessEnv
   print: (text: string) => void
@@ -115,8 +118,11 @@ async function launch(o: PreviewOptions, scope: Scope.Scope): Promise<number> {
   const id = previewId(root, branch)
   const existing = (await prune()).find((preview) => preview.id === id)
   if (existing && isRunning(existing)) {
+    if (o.session && existing.session && existing.session.id !== o.session.id) throw new Error('This preview belongs to another review session. Close it before opening a new review.')
+    if (o.session) writePreview({ ...existing, session: o.session })
     await move({ type: 'ATTACH', matching: true })
     o.print(`A preview of ${branch} is already running: ${link(existing)}`)
+    o.ready?.(existing, async () => { if (o.session) writePreview(existing) })
     return 0
   }
   const dirty = git(root, 'status', '--porcelain') !== ''
@@ -189,6 +195,7 @@ async function launch(o: PreviewOptions, scope: Scope.Scope): Promise<number> {
   writeFileSync(join(previewRoot, ROOT_MARK), id)
 
   const preview: Preview = {
+    ...(o.session ? { session: o.session } : {}),
     id, branch, worktree: root, root: previewRoot, head: checkout.head, dirty,
     canvasPort, port, origin: `http://127.0.0.1:${port}`, keep: o.keep, startedAt: new Date().toISOString(),
     launcher: identify(process.pid, LAUNCHER_MARKER, false), children: [],
@@ -238,9 +245,10 @@ async function launch(o: PreviewOptions, scope: Scope.Scope): Promise<number> {
 
     const identity = identityFromEnv({ ...o.env, CIVIC_AGENT: undefined }, root)
     const bearerFile = findAccessKey(store)
-    const app = await startReviewApp({ store: Store.forCheckout(checkout), checkout, identity }, { upstream: `http://127.0.0.1:${canvasPort}`, port, overlayPort, allowDirty: o.allowDirty, ...(bearerFile ? { bearerFile } : {}) })
+    const app = await startReviewApp({ store: Store.forCheckout(checkout), checkout, identity }, { upstream: `http://127.0.0.1:${canvasPort}`, port, overlayPort, allowDirty: o.allowDirty, workRef: () => readPreviews().find(row => row.id === id)?.session?.workRef, ...(bearerFile ? { bearerFile } : {}) })
     closeApp = app.close
     if ((await move({ type: 'READY' })).value !== 'running') return finished
+    o.ready?.(preview, () => shutdown(0))
     o.print(`Previewing ${branch} at ${checkout.head.slice(0, 7)}${dirty ? ' plus uncommitted changes' : ''}: ${link(preview)}\nAnnotations land on ${app.line} at ${app.revision.slice(0, 7)}. Stop with Ctrl+C or \`civic preview stop\`.`)
     if (o.noOpen || !(await openInBrowser(link(preview)))) o.print(`Open ${link(preview)}`)
   } catch (error) {
