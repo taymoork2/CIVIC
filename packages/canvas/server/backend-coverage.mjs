@@ -4,10 +4,13 @@ import { createHash } from 'node:crypto'
 import { backendCoverage } from '../../shell/server/backend-coverage.mjs'
 import { tanstackDetector } from './server-functions.mjs'
 import { convexDetector } from './convex-functions.mjs'
+import { nextRoutesDetector } from './next-routes.mjs'
+import { nextActionsDetector } from './next-actions.mjs'
+import { expressDetector } from './express-routes.mjs'
 import { projectPath } from '@civic/vite-connector/project'
 
 const { relative, join } = nodePath
-const detectors = [tanstackDetector, convexDetector]
+const detectors = [tanstackDetector, convexDetector, nextRoutesDetector, nextActionsDetector, expressDetector]
 
 // JSON values cannot contain boxed strings or custom Symbol.toStringTag values.
 const isInventoryString = value => Object.prototype.toString.call(value) === '[object String]'
