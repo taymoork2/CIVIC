@@ -1,0 +1,32 @@
+Delegated task node:delegated-task:command%3Amcp%3A0fc5146e-3a24-492d-b871-e21a3331032d%3Adelegate-task%3A5fbbe4da-c702-4fd7-9d66-8529aefc76fd (S1b update CIVIC dependencies) [completed]:
+Changes are uncommitted. Verification is incomplete because the load gate remained above 6 (final: 10.29).
+
+| Package/install | Updates |
+|---|---|
+| Fluent web demo | Storybook packages 8→10; React/React DOM and their types 18→19; Vite 6→8 |
+| Canvas | Same majors; Playwright 1.65.1, React plugin 6.3.0, React 19.3.1, Vite 8.3.8 |
+| Shell | Same majors; Tailwind 4.3.5, Lucide 1.73.0, Playwright 1.65.1 |
+| Local | Tailwind Vite plugin 4.3.3→4.3.5 |
+| Vite connector | React 19.3.0→19.3.1 |
+| Graph/importers | Node types 26.6.3→26.6.6 |
+| Review/crawl | Playwright Core 1.63.0→1.65.1; Node types 26.6.3→26.6.6 |
+| Fluent demo parent | No dependencies |
+
+Stable versions use carets; prerelease pins remain exact. Vite+/core remain the latest matching pair, 1.6.0. Removed unused `@storybook/test` and the obsolete watcher override.
+
+Held back: `oxc-transform-react` uses `^0.156.0`; latest 0.158 violates React plugin 6.3.0’s `<0.157` peer requirement.
+
+Audits: six installs clean. `packages` retains low **GHSA-gcqx-w48m-w2h4**, through `ultracite → deepmerge`; no patched release exists. A scoped glob override fixes both demo advisories.
+
+| Command | Result |
+|---|---|
+| Taze major, recursively/per install | Pass |
+| Frozen install, all seven installs | Pass |
+| `check`: packages, graph, review, importers, crawl | Pass |
+| `pnpm --dir packages test` | Pass |
+| `pnpm --dir packages exec vp lint` | Pass |
+| Graph/review/importers/crawl tests | Blocked by load gate |
+| Demo bundle/Storybook builds | Blocked by load gate |
+| `git diff --check` | Pass |
+
+Skipped the commit-dependent install check as requested; demos define no `check`/`test` scripts. Remaining risk: the demo majors and four outstanding suites are unverified.
