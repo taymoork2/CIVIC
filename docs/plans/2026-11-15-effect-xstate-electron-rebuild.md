@@ -183,6 +183,8 @@ S1, S6 and S9b touch different paths and may run in parallel workers. S1b follow
 
 ## 6b. Sign-off: requirements for the shared package
 
+Adoption: `tools/signoff` copies Orca 502603d41; `.signoff.json` preserves the existing steps through `scripts/signoff.ts`. `bin/signoff` keeps the legacy gate until `main:.signoff.json` exists, then uses the shared runner. Posting requires `--post`. The quiet-machine threshold is now 10 (`CIVIC_SIGNOFF_LOAD` overrides it), with a 30-second recheck and macOS sleep prevention. Runtime base/browser options currently require fresh checks to avoid stale reuse.
+
 Owner and Orca controller, 15 Nov: Orca's sign-off (exact-commit sign-off, area map, reuse of passed checks, Vite+ task cache, related tests first, live status view, typed-commit check) is being extracted into a shared package that CIVIC and laundry-app will adopt, with a GitHub `signoff` commit-status mode like gh-signoff. CIVIC does not rewrite `bin/signoff` now. It keeps working as it is (S1 added the typed-title check, S1b installs before any suite, S3 made it one install and one check-and-test pass) until the shared package can replace it. What CIVIC needs from that package:
 
 1. **Exact commit.** Refuse a dirty tree; refuse if the tree or HEAD changes while checks run; the result names the full SHA. A merge whose tree equals a signed-off commit's tree counts as signed off (CIVIC's controller verifies `HEAD^{tree}` after each merge today).

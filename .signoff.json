@@ -1,0 +1,116 @@
+{
+  "typedCommits": true,
+  "checks": [
+    {
+      "name": "Install locked dependencies",
+      "argv": [
+        "pnpm",
+        "install",
+        "--frozen-lockfile"
+      ],
+      "cwd": "packages"
+    },
+    {
+      "name": "Workspace checks",
+      "argv": [
+        "pnpm",
+        "run",
+        "check"
+      ],
+      "cwd": "packages"
+    },
+    {
+      "name": "Workspace tests",
+      "argv": [
+        "pnpm",
+        "test"
+      ],
+      "cwd": "packages"
+    },
+    {
+      "name": "Validate graphs",
+      "argv": [
+        "pnpm",
+        "--filter",
+        "@civic/graph",
+        "run",
+        "validate"
+      ],
+      "cwd": "packages"
+    },
+    {
+      "name": "demo/fluent-button graphs",
+      "argv": [
+        "node",
+        "demo/fluent-button/build.ts",
+        "--check"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "demo/card graphs",
+      "argv": [
+        "node",
+        "demo/card/build.ts",
+        "--check"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "demo/rebrand graphs",
+      "argv": [
+        "node",
+        "demo/rebrand/build.ts",
+        "--check"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "projects/discovery-app graphs",
+      "argv": [
+        "node",
+        "projects/discovery-app/build.ts",
+        "--check"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "gate",
+      "argv": [
+        "node",
+        "scripts/signoff.ts",
+        "--step",
+        "gate"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "release",
+      "argv": [
+        "node",
+        "scripts/signoff.ts",
+        "--step",
+        "release"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "browser",
+      "argv": [
+        "node",
+        "scripts/signoff.ts",
+        "--step",
+        "browser"
+      ],
+      "cwd": "."
+    },
+    {
+      "name": "Install into an empty app",
+      "argv": [
+        "node",
+        "packages/install.check.mjs"
+      ],
+      "cwd": "."
+    }
+  ]
+}
