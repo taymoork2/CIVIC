@@ -1,0 +1,68 @@
+{
+  "cli_version": "0.13.3",
+  "checkpoint_id": "01M7K3AEYM5V9Y45NMWXBK0FCG",
+  "session_id": "8f3b2eca-0508-4f5d-8344-d9ed70c2da42",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-16T21:13:33.838505Z",
+  "branch": "t3/adopt-shared-signoff-package",
+  "checkpoints_count": 2,
+  "files_touched": [
+    ".signoff.json",
+    "bin/signoff",
+    "docs/plans/2026-11-15-effect-xstate-electron-rebuild.md",
+    "packages/package.json",
+    "scripts/signoff.test.ts",
+    "scripts/signoff.ts",
+    "tools/signoff/README.md",
+    "tools/signoff/civic-legacy.sh",
+    "tools/signoff/civic-test-temp.ts",
+    "tools/signoff/package.json",
+    "tools/signoff/src/commit-type.ts",
+    "tools/signoff/src/config.ts",
+    "tools/signoff/src/dependencies.test.ts",
+    "tools/signoff/src/dependencies.ts",
+    "tools/signoff/src/git.ts",
+    "tools/signoff/src/landing-tasks.ts",
+    "tools/signoff/src/signoff-status.ts",
+    "tools/signoff/src/signoff.test.ts",
+    "tools/signoff/src/signoff.ts",
+    "tools/signoff/tsconfig.json"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "87b5c0ee26f3",
+  "checkpoint_transcript_start": 6508,
+  "transcript_lines_at_start": 6508,
+  "compact_transcript_start": 889,
+  "token_usage": {
+    "input_tokens": 16,
+    "cache_creation_tokens": 7624,
+    "cache_read_tokens": 1688107,
+    "output_tokens": 5310,
+    "api_call_count": 8
+  },
+  "session_token_usage": {
+    "input_tokens": 1586,
+    "cache_creation_tokens": 3327655,
+    "cache_read_tokens": 299992139,
+    "output_tokens": 419984,
+    "api_call_count": 687
+  },
+  "redaction": {
+    "replacements": 593,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 534,
+      "key_context": 59,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 100
+  }
+}
