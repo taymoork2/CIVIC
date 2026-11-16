@@ -140,7 +140,7 @@ civic preview link        # the address again (for another branch: link <branch>
 civic preview stop        # this worktree's preview, or stop <branch>, or stop all
 ```
 
-`--keep` keeps the data after a stop, `--no-open` prints the address instead of opening a browser, `--project <manifest or folder>` previews another project than the Notebook example, and `--allow-dirty` previews uncommitted edits. Annotations are filed on the worktree's line and revision in CIVIC's `.civic/` and not on the edits, so a preview with edits is marked in `list`. It installs `packages/` and `review/` with `pnpm install --frozen-lockfile` when they are missing or out of date, except in the main working tree, where it prints the command. It never touches the instance on port 3012 or its `.civic-canvas/`. `--desktop` is not built. A running preview serves the code in the worktree it was started from.
+`--keep` keeps the data after a stop, `--no-open` prints the address instead of opening a browser, `--project <manifest or folder>` previews another project than the Notebook example, and `--allow-dirty` previews uncommitted edits. Annotations are filed on the worktree's line and revision in CIVIC's `.civic/` and not on the edits, so a preview with edits is marked in `list`. It installs the whole engine workspace from `packages/` with `pnpm install --frozen-lockfile` when they are missing or out of date, except in the main working tree, where it prints the command. It never touches the instance on port 3012 or its `.civic-canvas/`. `--desktop` is not built. A running preview serves the code in the worktree it was started from.
 
 ## MCP server
 
@@ -150,7 +150,7 @@ civic preview stop        # this worktree's preview, or stop <branch>, or stop a
 
 ```sh
 cd review
-pnpm install --frozen-lockfile
+pnpm --dir ../packages install --frozen-lockfile
 pnpm run check
 pnpm test      # includes the roadmap acceptance, end to end on a temporary repository with a linked worktree
 ```

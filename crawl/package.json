@@ -14,10 +14,10 @@
     "test": "node ../bin/with-temp-root.mjs node --test --test-concurrency=2 \"test/**/*.test.ts\""
   },
   "dependencies": {
-    "playwright-core": "^1.65.1"
+    "playwright-core": "catalog:"
   },
   "devDependencies": {
-    "@types/node": "^26.6.6",
-    "typescript": "^7.0.2"
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
   }
 }

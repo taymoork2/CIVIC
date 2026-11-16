@@ -23,12 +23,8 @@ done
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 packages_dir="$repo_root/packages"
-graph_dir="$repo_root/graph"
-importers_dir="$repo_root/importers"
 demo_dir="$repo_root/demo/fluent-button"
 card_dir="$repo_root/demo/card"
-review_dir="$repo_root/review"
-crawl_dir="$repo_root/crawl"
 discovery_dir="$repo_root/projects/discovery-app"
 step() { printf '\n[signoff %s] %s\n' "$(date +%H:%M:%S)" "$1"; }
 
@@ -41,25 +37,15 @@ sha="$(git -C "$repo_root" rev-parse HEAD)"
 node "$repo_root/scripts/commit-type.ts"
 
 # Install everything first: some suites (civic preview) start the engine packages too.
-step "Installing each install's locked dependencies"
-for dir in "$graph_dir" "$review_dir" "$crawl_dir" "$importers_dir" "$packages_dir"; do pnpm --dir "$dir" install --frozen-lockfile; done
+step "Installing the engine workspace's locked dependencies"
+pnpm --dir "$packages_dir" install --frozen-lockfile
 
-step "CIVIC graph: types, tests and example graphs"
-pnpm --dir "$graph_dir" run check
-pnpm --dir "$graph_dir" test
-pnpm --dir "$graph_dir" run validate
+step "CIVIC workspace: graph, review, crawl, importers, canvas, shell, connector and local runtime"
+pnpm --dir "$packages_dir" run check
+pnpm --dir "$packages_dir" test
 
-step "CIVIC review to agent loop: store, CLI and re-capture"
-pnpm --dir "$review_dir" run check
-pnpm --dir "$review_dir" test
-
-step "CIVIC crawl loop: types and tests (one test drives a browser)"
-pnpm --dir "$crawl_dir" run check
-pnpm --dir "$crawl_dir" test
-
-step "CIVIC importers, the Fluent Button and Card demo graphs, and the discovery example graph"
-pnpm --dir "$importers_dir" run check
-pnpm --dir "$importers_dir" test
+step "Example graphs: validation, Fluent Button, Card, rebrand and discovery"
+pnpm --dir "$packages_dir" --filter @civic/graph run validate
 node "$demo_dir/build.ts" --check
 node "$card_dir/build.ts" --check
 node "$repo_root/demo/rebrand/build.ts" --check
@@ -90,10 +76,6 @@ if [ "$browser" = 1 ]; then
   pnpm --dir "$demo_dir/web" install --frozen-lockfile
   pnpm --dir "$demo_dir/web" run evidence
 fi
-
-step "CIVIC packages: canvas, shell and Vite connector, with the canvas examples"
-pnpm --dir "$packages_dir" run check
-pnpm --dir "$packages_dir" test
 
 step "CIVIC packages installed from this commit into an empty app, opened in the standalone canvas"
 node "$packages_dir/install.check.mjs"

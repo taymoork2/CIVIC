@@ -68,7 +68,8 @@ README and architecture decisions before changing its boundaries.
   Use memoization where it helps; avoid blanket wrappers and unstable Suspense
   promises. Preserve cancellation, error handling, and live frame identity.
 - `packages/pnpm-workspace.yaml` and `packages/pnpm-lock.yaml` own the engine
-  workspace. Use package scripts and declared versions; do not invent a root
+  workspace, including `graph/`, `review/`, `importers/` and `crawl/`. Demo apps
+  keep separate installs. Use package scripts and declared versions; do not invent a root
   workspace or assume another app's dependency layout.
 
 ## Verification and delivery

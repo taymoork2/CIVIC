@@ -26,8 +26,6 @@ export interface PreviewOptions {
 }
 
 const NOTEBOOK = 'packages/canvas/examples/notebook/civic.project.json'
-/** What the canvas needs installed: the workspace's packages, and the review package (the overlay's capture). */
-const INSTALLS = ['packages', 'review']
 
 const ago = (iso: string) => {
   const minutes = Math.round((Date.now() - Date.parse(iso)) / 60_000)
@@ -111,7 +109,8 @@ export async function startPreview(o: PreviewOptions): Promise<number> {
   const manifest = resolve(o.cwd, o.project ?? join(root, NOTEBOOK))
   if (!existsSync(manifest)) throw new Error(`No project at ${manifest}.`)
 
-  for (const dir of INSTALLS.map((name) => join(root, name)).filter(needsInstall)) {
+  const dir = join(root, 'packages')
+  if (needsInstall(dir)) {
     // The main working tree may be what the owner's instance runs from; nothing here installs into it.
     if (root === checkout.mainRoot) throw new Error(`Dependencies are missing or out of date in ${dir}. This is the main working tree, so run: pnpm --dir ${dir} install --frozen-lockfile`)
     o.print(`Installing dependencies in ${dir} (pnpm install --frozen-lockfile)`)

@@ -40,10 +40,10 @@
   "devDependencies": {
     "@civic/shell": "workspace:*",
     "@civic/vite-connector": "workspace:*",
-    "@types/node": "^26.6.6",
-    "@types/react": "^19.3.0",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
     "@types/react-dom": "^19.3.0",
-    "typescript": "^7.0.2",
+    "typescript": "catalog:",
     "vite-plus": "catalog:"
   },
   "peerDependencies": {

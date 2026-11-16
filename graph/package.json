@@ -16,7 +16,7 @@
     "validate": "node src/cli.ts validate examples/fluent-button.graph.json examples/card-override.graph.json examples/review-loop.graph.json"
   },
   "devDependencies": {
-    "@types/node": "^26.6.6",
-    "typescript": "^7.0.2"
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
   }
 }

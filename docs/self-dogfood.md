@@ -15,7 +15,7 @@ CIVIC makes no model calls and launches no agents ([decision 0006](decisions/000
 - **A running instance exists.** `~/Projects/CIVIC/.civic-canvas/runtime.json` records pid 8839 on port 3012 with a tailnet origin, started 21 October. I did not check that it is alive and did not touch it. From its store's location it appears to serve the main checkout, so a change in another worktree would not show there until it is merged.
 - **Nothing is packaged.** The Electron launcher is "not a signed, packaged application" (`packages/local/README.md`). There is no release build and no promotion step to keep apart.
 - **The review loop already works on any loopback app.** `civic review-app` ([decision 0019](decisions/0019-review-a-running-app-through-a-proxy.md)) adds the overlay and registers the preview on the checkout's line. `civic claim`, `report-fix`, `recapture` and `resolve` finish the loop.
-- **Setup is separate installs** in `graph/`, `review/`, `importers/`, `crawl/` and `packages/`. A fresh worktree has none. `packages/local/worktree-dependencies.mjs` refuses to install into a worktree for the user ("Install the worktree's pinned dependencies separately").
+- **Setup is one engine install** from `packages/`, covering `graph/`, `review/`, `importers/`, `crawl/` and `packages/`. A fresh worktree has none. `packages/local/worktree-dependencies.mjs` refuses to install into a worktree for the user ("Install the worktree's pinned dependencies separately").
 
 ## What the trial showed
 
@@ -53,7 +53,7 @@ How it behaves:
 3. **Two starts at once** end with one owner of each process (a lock in the registry).
 4. **Stop** signals only recorded processes whose start times still match. No `pkill`, no stale pid trust. It never touches 3012 or `.civic-canvas/`.
 5. **Data.** A temporary store per instance by default. Records of the review itself go to CIVIC's `.civic/` ([decision 0020](decisions/0020-records-live-in-the-civic-folder.md)).
-6. **Setup.** If `node_modules` is missing, run `pnpm install --frozen-lockfile` in the directories the command needs, in this worktree only (it is CIVIC's own checkout, not a connected app). This is an open decision below.
+6. **Setup.** If `node_modules` is missing, run `pnpm install --frozen-lockfile` in `packages/` for the whole engine workspace, in this worktree only (it is CIVIC's own checkout, not a connected app). This is an open decision below.
 7. **Status shows what runs.** Head, whether the tree is dirty, and when the instance started. HMR serves uncommitted bytes, so head alone is not the running source.
 
 ## What each change needs to take effect

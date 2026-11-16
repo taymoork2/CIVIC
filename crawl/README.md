@@ -21,7 +21,7 @@ A `civic.crawl/0` file: the seed, the driver, the revision it ran against, every
 
 ```sh
 cd crawl
-pnpm install --frozen-lockfile
+pnpm --dir ../packages install --frozen-lockfile
 pnpm run check
 pnpm test                       # the loop on fake apps, and one crawl of a static site in a real browser
 node src/cli.ts --folder ../projects/discovery-app/app/src --seed index.html --revision HEAD --input "Title=Crawl note"
