@@ -131,6 +131,7 @@ export async function explorationPoint(root: HTMLElement, target: NonNullable<Ru
   const box = element.getBoundingClientRect()
   return { x: box.x + box.width / 2, y: box.y + box.height / 2 }
 }
+const replayClicks = new WeakSet<HTMLElement>()
 export async function replayGesture(root: HTMLElement, gesture: RuntimeGesture) {
   if (gesture.kind === 'key' && gesture.value === 'Escape') {
     const watcher = [...(closeWatchers.get(root.ownerDocument) ?? [])].at(-1)
@@ -143,7 +144,12 @@ export async function replayGesture(root: HTMLElement, gesture: RuntimeGesture) 
   // Repeated labels need a stable ordinal; a changed number of controls must stop before a write.
   const element = matches[gesture.target.index]
   if (!element || matches.length !== gesture.target.count || ('disabled' in element && element.disabled)) throw Error(`Recorded control is missing, disabled or ambiguous: ${gesture.target.name}`)
-  if (gesture.kind === 'click') { element.click(); return }
+  if (gesture.kind === 'click') {
+    // Native activation emits trusted input/change events that must reach the app during replay.
+    replayClicks.add(root)
+    try { element.click() } finally { replayClicks.delete(root) }
+    return
+  }
   if (!(element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement) || typeof gesture.value !== 'string') throw Error('Recorded input no longer exists')
   const prototype = element instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : element instanceof HTMLSelectElement ? HTMLSelectElement.prototype : HTMLInputElement.prototype
   Object.getOwnPropertyDescriptor(prototype, 'value')!.set!.call(element, gesture.value)
@@ -151,7 +157,7 @@ export async function replayGesture(root: HTMLElement, gesture: RuntimeGesture) 
 }
 export function observeRuntime(root: HTMLElement, bridge: RuntimeBridge, changed: () => void, failed: (error: Error) => void, inputAllowed: (name: string) => boolean) {
   const record = (event: Event) => {
-    if (!event.isTrusted) return
+    if (!event.isTrusted || replayClicks.has(root)) return
     // A replay drives the app itself; a person's input must not interleave with it.
     if (bridge.isReplaying() || root.ownerDocument.getElementById('review-root')?.dataset.rehearsalReplaying === 'true') { event.preventDefault(); event.stopImmediatePropagation(); return }
     if (event.type === 'pointerdown') { bridge.prepare(); return }
@@ -162,8 +168,7 @@ export function observeRuntime(root: HTMLElement, bridge: RuntimeBridge, changed
       bridge.record({ kind: 'key', value: 'Escape', target: { tag: 'document', name: 'Escape', index: 0, count: 1 } })
       setTimeout(() => { void bridge.flush().then(changed).catch(failed) }, 0); return
     }
-    let element = (event.target as Element).closest<HTMLElement>(selector)
-    if (!element && event.target instanceof HTMLLabelElement) element = event.target.control
+    const element = (event.target as Element).closest<HTMLElement>(selector)
     if (!element || !root.contains(element) || !safe(element) || !visible(element)) return
     const input = element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement
     if (event.type === 'click' && input && !(element instanceof HTMLInputElement && ['radio', 'checkbox', 'button', 'submit'].includes(element.type))) return

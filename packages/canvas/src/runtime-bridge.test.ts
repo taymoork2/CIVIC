@@ -28,6 +28,23 @@ test('binds execution evidence to the exact before and after interaction states 
   await expect(bridge.replay(drift)).rejects.toThrow('Replay diverged')
 })
 
+test('preparation captures discovery before native checkbox activation', async () => {
+  const state: InteractionState = { scenario: 'home', persona: 'owner', role: 'browse', condition: 'live', viewport: { width: 1440, height: 900 }, controls: [{ tag: 'input', role: 'checkbox', name: 'Done', index: 0, count: 1, disabled: false, checked: 'false' }], landmarks: [], truncated: false }
+  const control = state.controls[0]
+  if (!control) throw Error('Expected checkbox')
+  const bridge = createRuntimeBridge({ project: 'app', source: 'source', seed: {}, now: 0, route: () => '/', fields: () => [], view: () => '', discover: () => state, assertSource: async () => {}, settle: async () => {}, reset: () => { control.checked = 'false'; return Promise.resolve() }, interact: () => { control.checked = 'true'; return Promise.resolve() } })
+  bridge.prepare()
+  control.checked = 'true'
+  bridge.record({ kind: 'click' })
+  const tape = await bridge.recording()
+  expect(tape.steps[0]).toMatchObject({ discovery: { before: { controls: [{ checked: 'false' }] }, after: { controls: [{ checked: 'true' }] } } })
+  await expect(bridge.replay(tape)).resolves.toEqual({ verified: 1 })
+  const recorded = tape.steps[0]?.discovery?.after.controls[0]
+  if (!recorded) throw Error('Expected recorded checkbox')
+  recorded.checked = 'false'
+  await expect(bridge.replay(tape)).rejects.toThrow('Replay diverged at step 1')
+})
+
 function notebook(components?: () => { component: string; variant?: string; state?: string; props?: Record<string, string> }[]) {
   let route = '/', title = '', saved = '', source = 'revision-one'
   let bridge: ReturnType<typeof createRuntimeBridge>
