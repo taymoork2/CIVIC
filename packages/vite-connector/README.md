@@ -58,10 +58,58 @@ review: () => ({ adapter, shared: civicShared({ repo, product: 'example' }) })
 
 `civicShared` runs CIVIC's `civic` CLI, so canvas notes become annotations in the reviewed repository's `.civic/` folder and can be handed to agents as work requests (decision 0007). It finds the CLI through `CIVIC_ROOT`, or else in the CIVIC checkout this package came from, and returns null when there is none. `product` is the app's product ID in CIVIC's graphs: a whole-screen note anchors to `target:<product>.<scenario>`, and the Contract panel reads that target with `civic screen`.
 
+## Source tags outside Vite
+
+The same JSX transform is exported as `@civic/vite-connector/source-tags-loader`
+(an ESM webpack loader, supported by webpack's [loader runner](https://github.com/webpack/loader-runner/blob/main/lib/loadLoader.js)). It requires Node 22.20+ or 24+ for `path.matchesGlob`
+and the package's Vite peer for parsing. Options are JSON-serializable: an absolute
+`root` and `include` globs relative to that root, using `/` separators. Match only
+the sources you would declare in the Vite manifest. Files outside root and
+`node_modules` are excluded; only lowercase host JSX in `.jsx`/`.tsx` is tagged.
+Locations refer to the original source; transformed output currently has no
+source map. Unchanged inputs retain their incoming map.
+
+For **Next.js 16 with Turbopack**, in `next.config.mjs`:
+
+```js
+export default {
+  turbopack: {
+    rules: process.env.NODE_ENV === 'development' ? {
+      '*.{tsx,jsx}': { loaders: [{ loader: '@civic/vite-connector/source-tags-loader', options: {
+        root: import.meta.dirname, include: ['app/**/*.tsx', 'app/**/*.jsx', 'src/**/*.tsx', 'src/**/*.jsx'],
+      } }] },
+    } : {},
+  },
+}
+```
+
+Run `next dev --turbopack`. These rules apply before JSX lowering to both server
+and client components; do not restrict them to a browser-only condition. This
+uses [Turbopack loaders](https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack),
+not webpack plugins, and only `resourcePath`, `getOptions()` and `callback`.
+
+For **webpack**, append this rule to `module.rules` only in development:
+
+```js
+import { fileURLToPath } from 'node:url'
+
+// In module.rules:
+{ test: /\.[jt]sx$/, enforce: 'pre', use: [{
+  loader: fileURLToPath(import.meta.resolve('@civic/vite-connector/source-tags-loader')),
+  options: { root: import.meta.dirname, include: ['src/**/*.tsx', 'src/**/*.jsx'] },
+}] }
+```
+
+In CommonJS config use `require.resolve(...)` and `__dirname` instead.
+For **Rspack**, use the same development-only `module.rules` rule. `enforce: 'pre'`
+runs the tagger before Babel/SWC lowers JSX. Apply it to both server and client
+configs. Production configs must omit the rule: the loader deliberately uses no
+bundler mode APIs. Relative source paths expose project structure.
+
 ## Not covered yet
 
 - Live runs: `@civic/canvas` supplies the run service for HTTP APIs and function backends (see its README). TanStack Start server functions are not covered.
-- Other bundlers (Webpack, esbuild, Bun, Turbopack, Metro) and Vite+ are not verified. See `docs/design/review-product/platform-adapters.md`.
+- esbuild, Bun, Metro and Vite+ are not verified. See `docs/design/review-product/platform-adapters.md`.
 
 ## Checks
 

@@ -3,6 +3,8 @@
   "private": true,
   "type": "module",
   "exports": {
+    "./source-tags": "./src/review-source-tags.mjs",
+    "./source-tags-loader": "./src/review-source-tags-loader.mjs",
     ".": "./src/review-plugin.mjs",
     "./project": "./src/review-project.mjs",
     "./projects": "./src/review-projects.mjs",
