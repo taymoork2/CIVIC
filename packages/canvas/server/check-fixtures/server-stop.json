@@ -1,0 +1,1 @@
+{"events":[{"type":"READY","clients":1},{"type":"STOP"},{"type":"ATTACH"}],"expected":{"Stopping":"Draining"}}
