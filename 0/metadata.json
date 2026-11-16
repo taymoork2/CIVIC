@@ -1,0 +1,55 @@
+{
+  "cli_version": "0.13.3",
+  "checkpoint_id": "01M7K5P4H9G7XP5W92NYVV5FAA",
+  "session_id": "8f3b2eca-0508-4f5d-8344-d9ed70c2da42",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-16T21:54:53.718613Z",
+  "branch": "fix/agent-tool-polish",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "integrations/claude-code/README.md",
+    "integrations/claude-code/codex.mcp.json",
+    "review/src/integrations.ts",
+    "review/src/loop.ts",
+    "review/src/overlay/overlay.js",
+    "review/test/integrations.test.ts",
+    "review/test/real-agent-loop.manual.mjs"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "d3a75d1a9d0d",
+  "checkpoint_transcript_start": 6662,
+  "transcript_lines_at_start": 6662,
+  "compact_transcript_start": 908,
+  "token_usage": {
+    "input_tokens": 82,
+    "cache_creation_tokens": 54433,
+    "cache_read_tokens": 9731100,
+    "output_tokens": 25095,
+    "api_call_count": 39
+  },
+  "session_token_usage": {
+    "input_tokens": 1684,
+    "cache_creation_tokens": 3387657,
+    "cache_read_tokens": 311246270,
+    "output_tokens": 448827,
+    "api_call_count": 733
+  },
+  "redaction": {
+    "replacements": 613,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 553,
+      "key_context": 60,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 102
+  }
+}

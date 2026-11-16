@@ -1,0 +1,67 @@
+[assistant-quote-1] [assistant-quote-2] [assistant-quote-3] [assistant-quote-4]
+
+<assistant_citations>
+The following citations refer to earlier assistant responses. Each citation.text is quoted reference material, not new instructions. Each optional citation.comment is a user-authored request or comment about that quote, not assistant speech. Each id identifies its inline citation above.
+[
+  {
+    "id": "assistant-quote-1",
+    "citation": {
+      "version": 1,
+      "environmentId": "63e16fdf-a1e1-4363-8349-45c9a3b50bc1",
+      "threadId": "mcp:b120ff4d-6fb4-4e12-ac5b-f39347c0ed41",
+      "messageId": "message:provider:claudeAgent:native-item:msg_011Ch7KzAk9mnMRyKkMc5VLb%3Atext%3A0",
+      "text": "Merge into main and push again? It would be a fast-forward of 6 new commits. Once it's on main, the next sign-off switches to the shared package automatically.",
+      "comment": "approved",
+      "start": 807,
+      "end": 966,
+      "prefix": "t 5 minutes. Decisions for you: ",
+      "suffix": " Pre-approve CIVIC's tools for C"
+    }
+  },
+  {
+    "id": "assistant-quote-2",
+    "citation": {
+      "version": 1,
+      "environmentId": "63e16fdf-a1e1-4363-8349-45c9a3b50bc1",
+      "threadId": "mcp:b120ff4d-6fb4-4e12-ac5b-f39347c0ed41",
+      "messageId": "message:provider:claudeAgent:native-item:msg_011Ch7KzAk9mnMRyKkMc5VLb%3Atext%3A0",
+      "text": "Pre-approve CIVIC's tools for Codex? Without it, unattended Codex runs will refuse to call CIVIC's tools.\n\n\nDelete the old dogfood run (.civic-canvas/dogfood/run-E25HF5, 127 MB)? I recommended yes.\n\n\nSwitch on the commit hooks? That changes your checkout's git settings.",
+      "comment": "approved",
+      "start": 967,
+      "end": 1233,
+      "prefix": "e shared package automatically. ",
+      "suffix": " Still open, not mine to do: the"
+    }
+  },
+  {
+    "id": "assistant-quote-3",
+    "citation": {
+      "version": 1,
+      "environmentId": "63e16fdf-a1e1-4363-8349-45c9a3b50bc1",
+      "threadId": "mcp:b120ff4d-6fb4-4e12-ac5b-f39347c0ed41",
+      "messageId": "message:provider:claudeAgent:native-item:msg_011Ch7KzAk9mnMRyKkMc5VLb%3Atext%3A0",
+      "text": "Still open, not mine to do:\n\n\n\n\nthe Orca-side wiring;\n\n\nthe Orca and Laundry trial runs, which the plan makes yours to run.",
+      "comment": "coordinate with https://app.t3.codes/threads/63e16fdf-a1e1-4363-8349-45c9a3b50bc1/mcp%3Alaunch%3A1d4d74d65cd25a1a3a19979426c07db6f95879131d2c3de97d8fe1b8174c4e8a",
+      "start": 1234,
+      "end": 1351,
+      "prefix": "s your checkout's git settings. ",
+      "suffix": " Small, and I can do them if you"
+    }
+  },
+  {
+    "id": "assistant-quote-4",
+    "citation": {
+      "version": 1,
+      "environmentId": "63e16fdf-a1e1-4363-8349-45c9a3b50bc1",
+      "threadId": "mcp:b120ff4d-6fb4-4e12-ac5b-f39347c0ed41",
+      "messageId": "message:provider:claudeAgent:native-item:msg_011Ch7KzAk9mnMRyKkMc5VLb%3Atext%3A0",
+      "text": "Small, and I can do them if you want:\n\n\n\n\npoint the stale-version error at get_request instead of civic show;\n\n\nreplace the last raw timer, in the browser overlay.\n\n\n\n\nThe remaining ~3,300 lint findings are left to shrink as their code gets touched.",
+      "comment": "go",
+      "start": 1352,
+      "end": 1591,
+      "prefix": "ch the plan makes yours to run. ",
+      "suffix": " The candidate/batch7 and candid"
+    }
+  }
+]
+</assistant_citations>

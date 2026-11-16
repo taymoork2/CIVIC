@@ -1,0 +1,46 @@
+{
+  "cli_version": "0.13.3",
+  "checkpoint_id": "01M7K5P4H9G7XP5W92NYVV5FAA",
+  "strategy": "manual-commit",
+  "branch": "fix/agent-tool-polish",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "integrations/claude-code/README.md",
+    "integrations/claude-code/codex.mcp.json",
+    "review/src/integrations.ts",
+    "review/src/loop.ts",
+    "review/src/overlay/overlay.js",
+    "review/test/integrations.test.ts",
+    "review/test/real-agent-loop.manual.mjs"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 82,
+    "cache_creation_tokens": 54433,
+    "cache_read_tokens": 9731100,
+    "output_tokens": 25095,
+    "api_call_count": 39
+  },
+  "redaction": {
+    "replacements": 613,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 553,
+      "key_context": 60,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
