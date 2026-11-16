@@ -4,12 +4,12 @@
   "devEngines": {
     "runtime": {
       "name": "node",
-      "version": "26.10.0",
+      "version": "26.13.1",
       "onFail": "ignore"
     },
     "packageManager": {
       "name": "pnpm",
-      "version": "12.5.1",
+      "version": "12.21.0",
       "onFail": "ignore"
     }
   },
@@ -18,7 +18,7 @@
     "test": "pnpm --workspace-concurrency=1 --recursive run test && node ../bin/with-temp-root.mjs node --test --test-concurrency=2 ../scripts/commit-type.test.ts"
   },
   "devDependencies": {
-    "vite-plus": "catalog:",
-    "ultracite": "^8.2.0"
+    "ultracite": "^8.2.1",
+    "vite-plus": "catalog:"
   }
 }
