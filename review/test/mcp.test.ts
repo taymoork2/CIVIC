@@ -4,11 +4,14 @@ import { mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createInterface } from 'node:readline'
+import { once } from 'node:events'
 import { test } from 'node:test'
+import { Schema } from 'effect'
 import { run } from '../src/index.ts'
+import { TOOLS } from '../src/mcp.ts'
 
 // The MCP server speaks JSON-RPC over stdio and offers D35's narrow write path, nothing more.
-test('an agent works a request over MCP and cannot resolve it', async () => {
+test('an agent works a request over MCP and cannot resolve it', { timeout: 30_000 }, async () => {
   const repo = mkdtempSync(join(tmpdir(), 'civic-mcp-'))
   const git = (...args: string[]) => execFileSync('git', args, { cwd: repo })
   git('init', '-q', '-b', 'main'); git('config', 'user.email', 'taymoor@example.com')
@@ -30,7 +33,9 @@ test('an agent works a request over MCP and cannot resolve it', async () => {
     const init = await call('initialize', { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'test', version: '1' } })
     assert.equal(init.result.serverInfo.name, 'civic')
     server.stdin.write(`${JSON.stringify({ jsonrpc: '2.0', method: 'notifications/initialized' })}\n`)
-    const names = (await call('tools/list')).result.tools.map((t: { name: string }) => t.name)
+    const listed = (await call('tools/list')).result.tools
+    assert.deepEqual(listed, TOOLS.map(({ name, description, schema }) => ({ name, description, inputSchema: Schema.toJsonSchemaDocument(schema).schema })))
+    const names = listed.map((t: { name: string }) => t.name)
     assert.ok(names.includes('claim') && names.includes('report_fix') && names.includes('annotate'))
     for (const forbidden of ['resolve', 'accept_check', 'escalate']) assert.ok(!names.includes(forbidden), `${forbidden} is not an agent tool`)
 
@@ -42,7 +47,33 @@ test('an agent works a request over MCP and cannot resolve it', async () => {
     const unknown = await tool('resolve', { id: requestId })
     assert.equal(unknown.isError, true)
     assert.equal((await call('no/such/method')).error.code, -32601)
+    for (const args of [{}, { id: 42 }, { id: '' }]) {
+      const invalid = await tool('claim', args)
+      assert.equal(invalid.isError, true)
+      assert.match(invalid.content[0].text, /id/)
+    }
+    assert.deepEqual((await call('ping')).result, {})
+    await call('shutdown')
+    assert.equal((await call('tools/list')).error.code, -32600)
+    const closed = once(server, 'exit')
+    server.stdin.end()
+    assert.deepEqual(await closed, [0, null])
   } finally {
-    server.kill()
+    if (server.exitCode === null) server.kill()
+    responses.close()
+  }
+})
+
+test('stdin end closes the MCP scope without a shutdown request', { timeout: 10_000 }, async () => {
+  const server = spawn(process.execPath, [new URL('../src/mcp.ts', import.meta.url).pathname], { stdio: ['pipe', 'pipe', 'inherit'] })
+  const output: Buffer[] = []
+  server.stdout.on('data', (chunk) => output.push(chunk))
+  try {
+    const closed = once(server, 'exit')
+    server.stdin.end(`${JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'ping' })}\n`)
+    assert.deepEqual(await closed, [0, null])
+    assert.deepEqual(JSON.parse(Buffer.concat(output).toString()), { jsonrpc: '2.0', id: 1, result: {} })
+  } finally {
+    if (server.exitCode === null) server.kill()
   }
 })
