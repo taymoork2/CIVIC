@@ -8,14 +8,16 @@
 // Environment: CIVIC_AGENT (the harness, default "mcp-agent"), CIVIC_FOR (the person it acts
 // for; defaults to the checkout's git identity), CIVIC_REPO (default checkout).
 
-import { readFileSync, realpathSync } from 'node:fs'
+import { readFileSync, realpathSync, watch } from 'node:fs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { Effect, Schema, Stream } from 'effect'
+import { Effect, Fiber, Queue, Schedule, Schema, Stream } from 'effect'
+import { changedScreens, coverage, ReviewSessions, type ScreenRef, type Shot } from './coordinator.ts'
 import { contextFor, gapsIn, loadGraph, renderGaps, renderWorkOrder, PLATFORMS, type Annotation, type CaptureRef, type Platform, type RequestStatus } from '../../graph/src/index.ts'
 import { readCheckout } from './git.ts'
 import { identityFromEnv } from './identity.ts'
-import { addCheck, annotate, claim, comment, find, getRequest, listRequests, lineIdFor, registerPullRequest, release, reportFix, type Context } from './loop.ts'
+import { addCheck, annotate, claim, comment, find, getRequest, linkRequest, listRequests, lineIdFor, registerPullRequest, release, reportFix, type Context } from './loop.ts'
+import type { WorkRef } from '../../graph/src/index.ts'
 import { recapture, reproductionUrl } from './recapture.ts'
 import { renderList, renderRequest } from './render.ts'
 import { elements, type TaggedCapture } from './elements.ts'
@@ -24,6 +26,9 @@ import { Store } from './store.ts'
 
 type Content = { type: 'text'; text: string } | { type: 'image'; data: string; mimeType: string }
 type Args = Record<string, unknown>
+const workRef = Schema.Struct({ system: Schema.NonEmptyString, id: Schema.NonEmptyString, url: Schema.optionalKey(Schema.NonEmptyString) })
+const sessions = new ReviewSessions()
+const screenRef = Schema.Struct({ project: Schema.NonEmptyString, scenario: Schema.NonEmptyString, journey: Schema.optionalKey(Schema.String), route: Schema.optionalKey(Schema.String) })
 
 const cwdProperty = { cwd: Schema.optionalKey(Schema.String.annotate({ description: 'The checkout (worktree) you are working in. Its branch is the line your claims and fixes are recorded on.' })) }
 const id = { id: Schema.NonEmptyString.annotate({ description: 'Work request ID, or a unique prefix of it. End it with @<version>, as list_requests prints it, so a write is refused if someone changed the request since you read it.' }) }
@@ -31,10 +36,17 @@ const id = { id: Schema.NonEmptyString.annotate({ description: 'Work request ID,
 type Tool = { name: string; description: string; schema: Schema.ConstraintDecoder<Args>; run: (helpers: ReturnType<typeof toolContext>) => Promise<Content[]> }
 
 export const TOOLS: readonly Tool[] = [
-  { name: 'list_requests', description: 'List CIVIC work requests with status, lane and claim holder. Open and reopened requests are claimable.', schema: Schema.Struct({ ...cwdProperty, status: Schema.optionalKey(Schema.Array(Schema.Literals(['open', 'claimed', 'fix-ready', 'resolved', 'reopened']))) }), run: async ({ args, context, text }) => {
+  { name: 'changed_screens', description: 'Screens and journeys rendered by changed source lines, with missing capture limits.', schema: Schema.Struct({ cwd: Schema.NonEmptyString, base: Schema.NonEmptyString }), run: async ({ need, text }) => text(JSON.stringify(await changedScreens(need('cwd'), need('base')))) },
+  { name: 'coverage', description: 'Current screen, journey and backend coverage.', schema: Schema.Struct({ ...cwdProperty, project: Schema.optionalKey(Schema.String) }), run: async ({ str, env, text }) => text(JSON.stringify(await coverage(str('cwd') ?? env.CIVIC_REPO ?? process.cwd(), str('project')))) },
+  { name: 'open_review', description: 'Open this worktree for its owner to review, linked to an outside work item.', schema: Schema.Struct({ cwd: Schema.NonEmptyString, workRef, screens: Schema.optionalKey(Schema.Array(screenRef)), shots: Schema.optionalKey(Schema.Array(Schema.Struct({ viewport: Schema.Int.check(Schema.isBetween({ minimum: 100, maximum: 4000 })), theme: Schema.Literals(['light', 'dark']) }))) }), run: async ({ args, need, env, text }) => text(JSON.stringify(await sessions.open(need('cwd'), args.workRef as WorkRef, env, args.screens as ScreenRef[] | undefined, args.shots as Shot[] | undefined))) },
+  { name: 'close_review', description: 'Close only a review session this coordinator opened.', schema: Schema.Struct({ id: Schema.NonEmptyString }), run: async ({ need, text }) => { await sessions.close(need('id')); return text('Review closed.') } },
+  { name: 'list_requests', description: 'List CIVIC work requests with status, lane and claim holder. Open and reopened requests are claimable.', schema: Schema.Struct({ ...cwdProperty, workRef: Schema.optionalKey(workRef), status: Schema.optionalKey(Schema.Array(Schema.Literals(['open', 'claimed', 'fix-ready', 'resolved', 'reopened']))) }), run: async ({ args, context, text }) => {
     const status = Array.isArray(args.status) ? (args.status as RequestStatus[]) : undefined
     const c = context()
-    return text(`You are on ${lineIdFor(c.checkout)}.\n${renderList(listRequests(c, status ? { status } : {}))}`)
+    return text(`You are on ${lineIdFor(c.checkout)}.\n${renderList(listRequests(c, { ...(status ? { status } : {}), ...(args.workRef ? { workRef: args.workRef as WorkRef } : {}) }))}`)
+  } },
+  { name: 'link_request', description: 'Add an external work reference to a request at id@version. This changes no review outcome.', schema: Schema.Struct({ ...cwdProperty, ...id, workRef }), run: async ({ args, context, need, text }) => {
+    return text(JSON.stringify(linkRequest(context(), need('id'), args.workRef as WorkRef)))
   } },
   { name: 'get_request', description: 'Read one work request as a work order: the ask, annotations with anchors and their frozen captures (as images), where it was seen, how to reproduce it, acceptance, fixes and comments. Pass graph to include the civic context export.', schema: Schema.Struct({ ...cwdProperty, ...id, graph: Schema.optionalKey(Schema.String.annotate({ description: 'Path to a CIVIC graph file for the contract export.' })) }), run: async ({ context, str, need, text }) => {
     const c = context()
@@ -171,12 +183,28 @@ export async function handle(message: Message, env: NodeJS.ProcessEnv = process.
     case 'initialize':
       return reply({
         protocolVersion: typeof message.params?.protocolVersion === 'string' ? message.params.protocolVersion : '2025-06-18',
-        capabilities: { tools: {} },
+        capabilities: { tools: {}, resources: { subscribe: true } },
         serverInfo: { name: 'civic', version: '0.1.0' },
         instructions: 'CIVIC work requests: list_requests, get_request, claim, repro, fix and commit, then report_fix with your preview. You never resolve requests; CIVIC and people do.',
       })
     case 'ping':
       return reply({})
+    case 'resources/list': {
+      const resources = new Map<string, { uri: string; name: string; mimeType: string }>()
+      for (const row of listRequests(toolContext({}, env).context())) for (const link of row.request.links ?? []) {
+        const uri = `civic://requests?${new URLSearchParams({ system: link.system, id: link.id })}`
+        resources.set(uri, { uri, name: `${link.system}: ${link.id}`, mimeType: 'application/json' })
+      }
+      return reply({ resources: [...resources.values()] })
+    }
+    case 'resources/templates/list':
+      return reply({ resourceTemplates: [{ uriTemplate: 'civic://requests?system={system}&id={id}', name: 'Work item requests' }, { uriTemplate: 'civic://coverage/{project}', name: 'Project coverage' }] })
+    case 'resources/read': {
+      try {
+        const uri = String(message.params?.uri ?? '')
+        return reply({ contents: [{ uri, mimeType: 'application/json', text: JSON.stringify(await readResource(uri, env)) }] })
+      } catch (error) { return { jsonrpc: '2.0', id: message.id, error: { code: -32602, message: String(error) } } }
+    }
     case 'tools/list':
       return reply({ tools: TOOLS.map(({ name, description, schema }) => ({ name, description, inputSchema: Schema.toJsonSchemaDocument(schema).schema })) })
     case 'tools/call': {
@@ -194,6 +222,9 @@ export async function handle(message: Message, env: NodeJS.ProcessEnv = process.
 }
 
 export const serve = () => Effect.scoped(Effect.gen(function* () {
+  const subscriptions = new Map<string, Fiber.Fiber<void, unknown>>()
+  yield* Effect.addFinalizer(() => Fiber.interruptAll(subscriptions.values()))
+  yield* Effect.addFinalizer(() => Effect.promise(() => sessions.closeAll()))
   yield* Effect.addFinalizer(() => Effect.sync(() => process.stdin.destroy()))
   process.stdin.setEncoding('utf8')
   let shutdown = false
@@ -208,7 +239,8 @@ export const serve = () => Effect.scoped(Effect.gen(function* () {
     }),
     Stream.splitLines,
   )
-  yield* Stream.runForEach(lines, (line) => Effect.promise(async () => {
+  yield* Stream.runForEach(lines, (line) => Effect.gen(function* () {
+    yield* Effect.promise(async () => {
     if (!line.trim()) return
     let message: Message
     try {
@@ -223,10 +255,55 @@ export const serve = () => Effect.scoped(Effect.gen(function* () {
     } else if (message.method === 'shutdown') {
       shutdown = true
       if (message.id !== undefined) response = { jsonrpc: '2.0', id: message.id, result: {} }
+    } else if (message.method === 'resources/subscribe' || message.method === 'resources/unsubscribe') {
+      const uri = String(message.params?.uri ?? '')
+      try {
+        resourceKind(uri)
+        const previous = subscriptions.get(uri)
+        if (previous) await Effect.runPromise(Fiber.interrupt(previous))
+        subscriptions.delete(uri)
+        if (message.method === 'resources/subscribe') {
+          const store = Store.forCheckout(readCheckout(process.env.CIVIC_REPO ?? process.cwd()))
+          store.ensure()
+          const changes = Stream.callback<void>(queue => Effect.acquireRelease(
+            Effect.sync(() => watch(store.dir, { recursive: true }, (_event, filename) => {
+              if (filename && !String(filename).endsWith('.tmp')) Queue.offerUnsafe(queue, undefined)
+            })),
+            watcher => Effect.sync(() => watcher.close()),
+          ), { bufferSize: 1, strategy: 'sliding' })
+          const fiber = yieldSubscription(changes, uri)
+          subscriptions.set(uri, fiber)
+        }
+        response = { jsonrpc: '2.0', id: message.id, result: {} }
+      } catch (error) { response = { jsonrpc: '2.0', id: message.id, error: { code: -32602, message: String(error) } } }
     } else if (message.id !== undefined) response = await handle(message)
     if (response) await new Promise<void>((resolve, reject) => process.stdout.write(`${JSON.stringify(response)}\n`, (error) => error ? reject(error) : resolve()))
+    })
   }))
+  yield* Fiber.interruptAll(subscriptions.values())
 }))
+
+function resourceKind(uri: string) {
+  const url = new URL(uri)
+  if (url.protocol !== 'civic:') fail('Unknown resource.')
+  if (url.hostname === 'requests' && url.searchParams.get('system') && url.searchParams.get('id')) return url
+  if (url.hostname === 'coverage' && url.pathname.length > 1) return url
+  return fail('Unknown resource.')
+}
+
+async function readResource(uri: string, env: NodeJS.ProcessEnv) {
+  const url = resourceKind(uri)
+  const cwd = env.CIVIC_REPO ?? process.cwd()
+  if (url.hostname === 'coverage') return coverage(cwd, decodeURIComponent(url.pathname.slice(1)))
+  return listRequests(toolContext({}, env).context(), { workRef: { system: url.searchParams.get('system')!, id: url.searchParams.get('id')! } })
+}
+
+function yieldSubscription(changes: Stream.Stream<void>, uri: string) {
+  const debounce = Schedule.recurs(1).pipe(Schedule.addDelay(() => Effect.succeed('75 millis')))
+  return Effect.runFork(Stream.runForEach(changes.pipe(Stream.switchMap(() => Stream.fromEffect(Effect.schedule(Effect.void, debounce)))), () => Effect.sync(() => {
+    process.stdout.write(`${JSON.stringify({ jsonrpc: '2.0', method: 'notifications/resources/updated', params: { uri } })}\n`)
+  })))
+}
 
 if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   Effect.runPromise(serve()).catch((error) => {

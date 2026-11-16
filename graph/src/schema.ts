@@ -697,7 +697,14 @@ export interface CodeLocation {
   revision: string
 }
 
+export interface WorkRef {
+  system: string
+  id: string
+  url?: string
+}
+
 export interface Annotation extends RecordBase {
+  workRef?: WorkRef
   kind: 'annotation'
   comment: string
   location?: CodeLocation
@@ -772,6 +779,7 @@ export interface RequestEvent {
  * policy, resolves it. Owners (on the record) sign off in the owner lane.
  */
 export interface WorkRequest extends RecordBase {
+  links?: WorkRef[]
   kind: 'work-request'
   ask: string
   location?: CodeLocation

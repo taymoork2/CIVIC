@@ -10,6 +10,7 @@ import { tmpdir } from 'node:os'
 import { join, relative, sep } from 'node:path'
 import * as Effect from 'effect/Effect'
 import { waitUntil } from './runtime.ts'
+import type { WorkRef } from '../../../graph/src/index.ts'
 
 // Ports other instances use: Orca's dev, dogfood and test lanes, CIVIC's own host (3012), standalone
 // canvas (3020) and default overlay (4777).
@@ -48,6 +49,7 @@ export interface Proc {
 }
 
 export interface Preview {
+  session?: { id: string; workRef: WorkRef }
   id: string
   branch: string
   worktree: string
@@ -90,7 +92,8 @@ const PREVIEW_KEYS = 'branch,canvasPort,children,dirty,head,id,keep,launcher,ori
 /** State files sit in a temp folder other processes can write, so a file is parsed, never trusted. */
 export function parsePreview(value: unknown): Preview | undefined {
   const p = value as Preview
-  if (!p || typeof p !== 'object' || keys(p) !== PREVIEW_KEYS) return undefined
+  if (!p || typeof p !== 'object' || keys(p).replace('session,', '') !== PREVIEW_KEYS) return undefined
+  if (p.session && (typeof p.session.id !== 'string' || !p.session.id || typeof p.session.workRef?.system !== 'string' || !p.session.workRef.system || typeof p.session.workRef.id !== 'string' || !p.session.workRef.id)) return undefined
   const text = [p.id, p.branch, p.worktree, p.root, p.head, p.origin, p.startedAt].every((field) => typeof field === 'string')
   const ok = text && /^[\w.-]+$/.test(p.id) && typeof p.keep === 'boolean' && typeof p.dirty === 'boolean'
     && isPort(p.canvasPort) && isPort(p.port) && p.origin === `http://127.0.0.1:${p.port}` && p.branch.length <= 200 && !/[\x00-\x1f]/.test(p.branch) && isProc(p.launcher) && p.launcher.marker === LAUNCHER_MARKER && Array.isArray(p.children) && p.children.every(isProc)

@@ -17,6 +17,7 @@ import {
   type Platform,
   type RequestStatus,
   type WorkRequest,
+  type WorkRef,
 } from '../../graph/src/index.ts'
 import { ForbiddenError, loadAccess, scopesOf, type AccessPolicy, type Scope } from './access.ts'
 import { git, idPath, revisionOf, type Checkout } from './git.ts'
@@ -266,6 +267,7 @@ function lineForUrl(document: GraphDocument, url: string): { line: string; revis
 // Annotations (D37, D40)
 
 export interface AnnotateInput {
+  workRef?: WorkRef
   location?: { file: string; line: number; column: number }
   comment: string
   title?: string
@@ -311,6 +313,7 @@ export function annotate(context: Context, input: AnnotateInput): Annotation {
       kind: 'annotation',
       title: input.title ?? firstLine(input.comment),
       comment: input.comment,
+      ...(input.workRef ? { workRef: input.workRef } : {}),
       ...(input.location ? { location: { ...input.location, revision: seen.revision } } : {}),
       ...(isAnchored(anchor) || anchor.rect ? { anchor } : {}),
       ...(capture ? { capture: { ...capture, ...(input.viewport ? { viewport: input.viewport } : {}), ...(url ? { reproduction: url.pathname + url.search } : {}) } } : {}),
@@ -357,6 +360,7 @@ export function createRequest(context: Context, input: RequestInput): WorkReques
       title: input.title ?? firstLine(input.ask),
       ask: input.ask,
       annotationIds,
+      links: annotations[0]?.workRef ? [annotations[0].workRef] : [],
       ...(annotations.find((annotation) => annotation.location)?.location ? { location: annotations.find((annotation) => annotation.location)!.location } : {}),
       intent: input.change ? 'change' : 'restore-contract',
       risk: input.highRisk ? 'high' : 'normal',
@@ -404,6 +408,7 @@ export function checkCountsIn(document: GraphDocument): (check: WorkRequest['acc
 }
 
 export interface ListFilter {
+  workRef?: WorkRef
   status?: RequestStatus[]
   lane?: Lane
   /** Only requests on, or claimable from, this line. */
@@ -418,6 +423,7 @@ export function listRequests(context: Context, filter: ListFilter = {}): Request
   const order: RequestStatus[] = ['reopened', 'open', 'claimed', 'fix-ready', 'resolved']
   return document.records
     .filter((record): record is WorkRequest => record.kind === 'work-request')
+    .filter((request) => !filter.workRef || request.links?.some((link) => link.system === filter.workRef!.system && link.id === filter.workRef!.id))
     .map((request) => summarize(document, request, now))
     .filter(({ request, lane }) => (!filter.status || filter.status.includes(request.status)) && (!filter.lane || filter.lane === lane))
     .filter(({ request }) => !filter.line || request.base.line === filter.line || request.claim?.line === filter.line || request.status === 'open' || request.status === 'reopened')
@@ -548,6 +554,14 @@ export function reviewQueue(context: Context): RequestSummary[] {
 }
 
 // ---------------------------------------------------------------------------
+
+export function linkRequest(context: Context, id: string, workRef: WorkRef): WorkRequest {
+  if (splitVersion(id).expected === undefined) throw new Error('link_request requires id@version.')
+  return mutateRequest(context, id, 'link-request', 'write', (request) => {
+    request.links ??= []
+    if (!request.links.some((link) => link.system === workRef.system && link.id === workRef.id)) request.links.push(workRef)
+  })
+}
 
 function mutateRequest(context: Context, id: string, what: string, scope: Scope, change: (request: WorkRequest, by: string, at: string, document: GraphDocument) => void): WorkRequest {
   allow(context, scope, what.replace('-', ' '))

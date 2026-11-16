@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http'
-import { parseId, type ElementLocator } from '../../../graph/src/index.ts'
-import { annotate, type Context } from '../loop.ts'
+import { parseId, type ElementLocator, type WorkRef } from '../../../graph/src/index.ts'
+import { annotate, createRequest, type Context } from '../loop.ts'
 import { parseSource } from '../elements.ts'
 
 const OVERLAY = new URL('./overlay.js', import.meta.url)
@@ -17,13 +17,13 @@ export type Rasterize = (html: string, viewport: { width: number; height: number
  * annotations. The screenshot is rendered deterministically from the submitted DOM with
  * scripts disabled, as the journey engine's capture does.
  */
-export function createOverlayServer(context: () => Context, rasterize: Rasterize = rasterizeWithPlaywright): Server {
+export function createOverlayServer(context: () => Context, rasterize: Rasterize = rasterizeWithPlaywright, workRef?: WorkRef | (() => WorkRef | undefined)): Server {
   return createServer((req, res) => {
-    void handle(req, res, context, rasterize)
+    void handle(req, res, context, rasterize, workRef)
   })
 }
 
-async function handle(req: IncomingMessage, res: ServerResponse, context: () => Context, rasterize: Rasterize) {
+async function handle(req: IncomingMessage, res: ServerResponse, context: () => Context, rasterize: Rasterize, sessionRef?: WorkRef | (() => WorkRef | undefined)) {
   const origin = req.headers.origin
   const json = (status: number, value: unknown) => {
     res.writeHead(status, { 'content-type': 'application/json', 'cache-control': 'no-store', ...(origin && LOOPBACK.test(origin) ? { 'access-control-allow-origin': origin, vary: 'origin' } : {}) })
@@ -46,7 +46,9 @@ async function handle(req: IncomingMessage, res: ServerResponse, context: () => 
     if (!req.headers['content-type']?.startsWith('application/json')) return json(400, { error: 'Use JSON' })
     const input = checked(JSON.parse(await body(req)) as Record<string, unknown>, origin)
     const png = await rasterize(input.html, input.viewport, new URL(input.url).origin)
+    const workRef = typeof sessionRef === 'function' ? sessionRef() : sessionRef
     const annotation = annotate(context(), {
+      ...(workRef ? { workRef } : {}),
       comment: input.comment,
       ...(input.location ? { location: input.location } : {}),
       url: input.url,
@@ -57,6 +59,7 @@ async function handle(req: IncomingMessage, res: ServerResponse, context: () => 
       ...(input.stamped ? { stamped: input.stamped } : {}),
       image: { bytes: png, mediaType: 'image/png' },
     })
+    if (workRef) createRequest(context(), { annotationIds: [annotation.id], ask: input.comment })
     return json(201, { id: annotation.id, seenOn: annotation.seenOn })
   } catch (error) {
     return json((error as { status?: number }).status ?? 500, { error: (error as Error).message })
