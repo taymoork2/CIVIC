@@ -1,0 +1,37 @@
+<task-notification>
+<task-id>b510654mb</task-id>
+<tool-use-id>toolu_01G5KdVRaQGqyTWnSr4gxA9X</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/b510654mb.output</output-file>
+<status>completed</status>
+<summary>Background command "Signoff S5 behind gate" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b5m33f1ck</task-id>
+<tool-use-id>toolu_01MVRPP6qfTDVrMeMiigHvEw</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/b5m33f1ck.output</output-file>
+<status>completed</status>
+<summary>Background command "After S5 signoff, signoff S9 behind gate" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>besp8ahkh</task-id>
+<tool-use-id>toolu_01PDVcc75VBHnyMuVgBFX9XZ</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/besp8ahkh.output</output-file>
+<status>completed</status>
+<summary>Background command "Signoff S7 behind gate" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>brnrjxgwa</task-id>
+<tool-use-id>toolu_01UtFnwCtotpVN4PqHtsJgLV</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/brnrjxgwa.output</output-file>
+<status>completed</status>
+<summary>Background command "Rerun S7 signoff behind gate" completed (exit code 0)</summary>
+</task-notification>
