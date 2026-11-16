@@ -1,0 +1,104 @@
+Delegated task node:delegated-task:command%3Amcp%3A9f43cd31-b115-413f-821e-100bc7675bb1%3Adelegate-task%3A3c7b703e-b608-4b92-b9e3-146c46dcf800 (Outside-project fixes + finish Laundry trial) [completed]:
+Implemented Part A; CIVIC changes remain uncommitted. Regression tests, package checks and lint passed.
+
+Laundry trial results:
+
+- **Elements:** 176/176 spot-checked locations matched source across three captures.
+- **Replays:** new and pre-owned towel branches passed 11 and 10 steps.
+- **Coverage readers:** load Laundry successfully.
+- **Changed screens:** recent range runs; broader history exposes an `ENOBUFS` gap.
+
+[Full report and evidence]( /var/folders/fd/hz_x5rk15t31rk4cv4mx047w0000gn/T/laundry-trial/FIX-REPORT.md). All owned servers and browsers stopped.
+
+Full backend coverage remains unproven: Laundry lacks a Convex operation inventory. Shared replay counting, production, device and full-scale acceptance remain unchecked.
+
+---
+
+<task-notification>
+<summary>Commit security review found: Code execution via untrusted manifest (dynamic module load) in packages/vite-connector/src/review-inventory.mjs</summary>
+</task-notification>
+
+---
+
+> Two limits remain: `backend_coverage` has no Convex inventory to score, and `coverage` reports 0/229 because it reads shared replay records rather than the host’s local replay store.
+
+It seems like we need to build out similar integrations that we did on the frontend for the backend as well + a combination (convex + tanstack start is a good example of this, convex is the backend service + db (all-in-one and potentially remote owned because convex is a hosted service) & tanstack start is both frontend w/ some server aspects for SSR and RPC like server calls), unsure how we will handle enterprise microservice sprawl, and even if that's something want to go down (and even if all the personas care)
+
+---
+
+most (if not all) of my projects are Node based w/ vite (and possibly convex for the backend), but people use java/scala, node, go, python, rust, etc. for their backends and microservices
+
+---
+
+[assistant-quote-1]
+
+<assistant_citations>
+The following citations refer to earlier assistant responses. Each citation.text is quoted reference material, not new instructions. Each optional citation.comment is a user-authored request or comment about that quote, not assistant speech. Each id identifies its inline citation above.
+[
+  {
+    "id": "assistant-quote-1",
+    "citation": {
+      "version": 1,
+      "environmentId": "63e16fdf-a1e1-4363-8349-45c9a3b50bc1",
+      "threadId": "mcp:b120ff4d-6fb4-4e12-ac5b-f39347c0ed41",
+      "messageId": "message:provider:claudeAgent:native-item:msg_011Ch7R1dKfuYuyAYGk4K5kx%3Atext%3A0",
+      "text": "Design and PM don't care about the operations themselves, only their effect. That means a journey or screen marked \"save step not exercised\" or \"backend call failing\" on the canvas.",
+      "comment": "it can also indicate to them that its not been implemented yet (and possibly we can expand functionality to track its deliverable timeline)",
+      "start": 3317,
+      "end": 3498,
+      "prefix": "s actually covered end to end\". ",
+      "suffix": " That suggests showing backend c"
+    }
+  }
+]
+</assistant_citations>
+
+---
+
+[assistant-quote-1]
+
+<assistant_citations>
+The following citations refer to earlier assistant responses. Each citation.text is quoted reference material, not new instructions. Each optional citation.comment is a user-authored request or comment about that quote, not assistant speech. Each id identifies its inline citation above.
+[
+  {
+    "id": "assistant-quote-1",
+    "citation": {
+      "version": 1,
+      "environmentId": "63e16fdf-a1e1-4363-8349-45c9a3b50bc1",
+      "threadId": "mcp:b120ff4d-6fb4-4e12-ac5b-f39347c0ed41",
+      "messageId": "message:provider:claudeAgent:native-item:msg_011Ch7R5uwBEhxtwEpkFyG5D%3Atext%3A0",
+      "text": "Contracts can be missing or stale. Requests that match no contract operation get reported as \"outside the contract\". That flag is useful on its own: it shows where the documented API and the real traffic disagree.",
+      "comment": "is this an expansion of contract testing or an implementation of it?",
+      "start": 2240,
+      "end": 2453,
+      "prefix": " previews from device evidence. ",
+      "suffix": " Why not read each language's co"
+    }
+  }
+]
+</assistant_citations>
+
+---
+
+[assistant-quote-1]
+
+<assistant_citations>
+The following citations refer to earlier assistant responses. Each citation.text is quoted reference material, not new instructions. Each optional citation.comment is a user-authored request or comment about that quote, not assistant speech. Each id identifies its inline citation above.
+[
+  {
+    "id": "assistant-quote-1",
+    "citation": {
+      "version": 1,
+      "environmentId": "63e16fdf-a1e1-4363-8349-45c9a3b50bc1",
+      "threadId": "mcp:b120ff4d-6fb4-4e12-ac5b-f39347c0ed41",
+      "messageId": "message:provider:claudeAgent:native-item:msg_011Ch7RDxJXK6JVMm95EuF69%3Atext%3A0",
+      "text": "Still waiting on your go to start 0023 and the first two items. The trust-fix sign-off is still running.",
+      "comment": "Go",
+      "start": 2400,
+      "end": 2504,
+      "prefix": "hemathesis, not reimplemented.\" ",
+      "suffix": ""
+    }
+  }
+]
+</assistant_citations>
