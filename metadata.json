@@ -1,0 +1,46 @@
+{
+  "cli_version": "0.13.3",
+  "checkpoint_id": "01M7HDKFVRFTNXR6CES1TH2A82",
+  "strategy": "manual-commit",
+  "branch": "feat/run-supervision",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "lint-baseline.json",
+    "packages/canvas/package.json",
+    "packages/canvas/server/check-fixtures/interrupted-runtime.mjs",
+    "packages/canvas/server/lifecycle-boundary.test.ts",
+    "packages/canvas/server/runtime-lifecycle.check.mjs",
+    "packages/canvas/server/runtime-service.mjs",
+    "packages/pnpm-lock.yaml"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 8,
+    "cache_creation_tokens": 5050,
+    "cache_read_tokens": 1885881,
+    "output_tokens": 4154,
+    "api_call_count": 3
+  },
+  "redaction": {
+    "replacements": 332,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 307,
+      "key_context": 25,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}

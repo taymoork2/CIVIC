@@ -1,0 +1,8 @@
+Delegated task node:delegated-task:command%3Amcp%3A0fc5146e-3a24-492d-b871-e21a3331032d%3Adelegate-task%3A0539a94a-7bac-41cd-b0dc-891d5b6f0c8c (S10 U3 supervise the run service) [completed]:
+- Diff: seven files changed, uncommitted. Wired run-machine actors, fenced shutdown/start/restore, added five U3 scenarios, and moved Effect/XState dependencies into canvas runtime dependencies. No runtime `@civic/core` import.
+- Effect now owns worker acquisition/termination, actor scopes, listener cleanup, expiry scheduling, call timeouts, and shutdown drain deadlines.
+- Baseline: raw timers **2 → 0**; five rule/file entries removed; no increases.
+- PASS: `pnpm --dir packages run check`; `node bin/lint-baseline.mjs`; both runtime check files (**19 tests**, including U3); lifecycle/boundary tests (**6 tests**). Suites used the gate, temp wrapper, and ≤2 workers.
+- FAIL: `pnpm --dir packages --filter @civic/canvas run test:host` — **63 passed, 2 timed out**: [draft/capture check:317](/Users/taymoor/.t3/worktrees/CIVIC/t3-8cd3b3ed-b207ce88c03e51c9/packages/canvas/server/canvas-host.check.mjs:317), [narrow settings check:212](/Users/taymoor/.t3/worktrees/CIVIC/t3-8cd3b3ed-b207ce88c03e51c9/packages/canvas/server/theme-settings.check.mjs:212).
+
+Not run: git-install acceptance or signoff. Full-host acceptance remains blocked by those unresolved browser failures.
