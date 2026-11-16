@@ -34,6 +34,22 @@ The packages aren't published. An app installs all three from git, pinned to one
 
 Then `pnpm exec civic-canvas --project ./civic.json`. Signoff proves this on every commit with `packages/install.check.mjs`.
 
+That command runs a standalone server until its process stops. The desktop
+launcher uses the managed server exported by `@civic/canvas/app-server`
+(`startManagedCanvas`). It shares one server per store. Browser tabs hold a
+connection; desktop main holds its own private connection until Quit, even when
+all windows are closed. After the last connection leaves, the server waits ten
+seconds for reconnection, then drains runs and closes. Without an initial client
+it closes after sixty seconds. A browser URL cannot wake a stopped server; use
+the local launcher again.
+
+Interrupted runs reopen from completed journal entries only. An unfinished write
+needs an explicit resend. Source or recorded-result mismatches refuse recovery
+and retain the old evidence. A stale server registration is reclaimed only when
+its recorded process is confirmed dead; an unreadable or live incompatible owner
+requires inspection. The install check exercises this managed path with a real
+browser and a desktop-style bearer connection, without requiring Electron.
+
 ## Hosting it elsewhere
 
 `canvasPlugins({ store, connectors, runtime, review })` returns the Vite plugins for a host of your own: React, and `civicReview` from `@civic/vite-connector` pointed at this package. A host that already has its own Vite config, like Example's `apps/web`, passes `canvas: canvasRoot` (from `@civic/canvas/root`) to `civicReview` instead.

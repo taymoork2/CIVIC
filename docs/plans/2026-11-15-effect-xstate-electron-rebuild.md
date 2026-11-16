@@ -12,6 +12,22 @@ One thing needs the owner (listed at the end): whether the stale Orca preview bu
 
 ## 1. Audit: where CIVIC is today
 
+### Status, 16 Nov
+
+Merged: tooling and dependency updates (S1/S1b), baseline checks (S2), the single
+workspace (S3), core and request machine (S4), Effect MCP (S5), self-review picker
+(S6), source-to-element (S7), backend coverage (S8), preview lifecycle and bounded
+retention (S9/S9b), harness integrations (S11, `8375aea2`), and coordinator tools
+(S11b, `267d4563`, base fix `94875c8d`). S10 U1/U2 landed in `8bade120`; run
+supervision in `e61e6847` with corrections `24d35503` and `62739c80`; managed
+hosting in `dc55e5b3`; browser/Electron attachment in `613fb176`. Checkbox replay
+was corrected in `8aed9b23`; layering cleanup landed in `050fc5d5`.
+
+Remaining: U6's installed-consumer candidate and final acceptance/signoff,
+including macOS sleep/wake, further S12 baseline cleanup, adoption of the shared
+signoff package when available, and the owner decision about private-store
+retention adoption/deletion. This list records merges, not fresh suite results.
+
 Grounded at `f749b770` (this branch). Counts are from `grep` over tracked source, not lint output.
 
 | Area | Today | Target | Verdict |

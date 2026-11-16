@@ -28,6 +28,14 @@ state, captures, reviews, and the Electron profile. Application sources remain
 external and read-only. This source-backed Electron launcher is not a signed,
 packaged application.
 
+Runs keep their completed operations in a journal. After a server crash, reopening
+replays those completed operations; unfinished operations need an explicit resend.
+Changed source or a different replay result refuses recovery and keeps the old
+evidence. Restart only reclaims a server registration after confirming its process
+is dead. Other store contents are retained. The Git install check also exercises
+the managed server with a browser and a desktop-style connection; it does not
+establish signed distribution, profile migration, or macOS sleep/wake acceptance.
+
 Optional integrations can provide a Vite configuration. Set `hostConfig` to its
 absolute path in the store's ignored `local-config.json`. Keep adapter code,
 private project assets, and acceptance reports outside tracked CIVIC content.
