@@ -5,7 +5,7 @@ import * as Fiber from 'effect/Fiber'
 import * as Deferred from 'effect/Deferred'
 import * as TestClock from 'effect/testing/TestClock'
 import { createEffectActor, sendAndAwait } from '@xstate/effect'
-import { serverMachine } from './server-lifecycle.ts'
+import { serverMachine } from './server-lifecycle.mjs'
 
 test('interrupting an actor scope settles its resource finalizer once', async () => {
   let closed = 0

@@ -37,7 +37,7 @@ import { taggable, tagSources } from './review-source-tags.mjs'
 // CIVIC_* settings, with the engine's older REHEARSAL_* names still read.
 const env = (name) => process.env[`CIVIC_${name}`] ?? process.env[`REHEARSAL_${name}`]
 
-export function civicReview({ host, canvas = host, repo = resolve(host, '../..'), connectors = {}, review = () => ({}), runtime = null, engineRoots, picker = {}, project: connection = {}, designRoot: designOverride, restart: restartHost }) {
+export function civicReview({ host, canvas = host, repo = resolve(host, '../..'), connectors = {}, review = () => ({}), runtime = null, engineRoots, picker = {}, project: connection = {}, designRoot: designOverride, restart: restartHost, managed }) {
   // The canvas, the shell it imports, and the packages they resolve from its workspace.
   const canvasRoots = [canvas, resolve(dirname(fileURLToPath(import.meta.resolve('@civic/shell/server'))), '..'), join(searchForWorkspaceRoot(canvas), 'node_modules')]
   const viteClientEnv = join(dirname(fileURLToPath(import.meta.resolve('vite/package.json'))), 'dist/client/env.mjs')
@@ -136,14 +136,26 @@ export function civicReview({ host, canvas = host, repo = resolve(host, '../..')
       // Runs keep their journals beside the project's reviews, so a closed run can be reopened on the same source.
       const runs = runtime?.(project, source, { dataDir })
       const options = await review({ project, repo, dataDir })
-      const auth = await reviewMiddleware({ dataDir, metadata, evidence, capture: captureReview, publicOrigin, projects, ...options, ...(runs ? { runtime: runs } : {}), restart: () => (restartHost ? restartHost(loadProject(repo, connection)) : server.restart()).catch((error) => server.config.logger.error(`Project restart failed: ${error.message}`)) })
-      server.httpServer?.once('listening', () => {
-        const address = server.httpServer.address()
+      const auth = await reviewMiddleware({ dataDir, metadata, evidence, capture: captureReview, publicOrigin, projects, ...options, presence: managed?.presence, ...(runs ? { runtime: runs } : {}), restart: () => (restartHost ? restartHost(loadProject(repo, connection)) : server.restart()).catch((error) => server.config.logger.error(`Project restart failed: ${error.message}`)) })
+      const parent = managed?.listener ?? server.httpServer
+      const register = () => {
+        const address = parent.address()
         if (options.shared && address && typeof address === 'object') options.shared.registerPreview(`http://127.0.0.1:${address.port}`, join(dataDir, 'access-key')).catch((error) => server.config.logger.warn(`CIVIC preview registration failed: ${error.message}`))
-      })
+      }
+      if (parent?.listening) register()
+      else parent?.once('listening', register)
       await auth.refreshCoverage()
       server.watcher.add(watchPaths())
-      server.httpServer?.once('close', () => { clearTimeout(debounce); void auth.close(); void runs?.close() })
+      const dispose = async () => {
+        clearTimeout(debounce)
+        server.watcher.off('change', refresh).off('add', refresh).off('unlink', refresh)
+        scheduled?.wake(); scheduled = null
+        parent?.removeListener('listening', register)
+        await refreshing
+        try { await auth.close() } finally { if (!managed) await runs?.close() }
+      }
+      if (managed) managed.dispose(dispose)
+      else server.httpServer?.once('close', () => { void dispose() })
       server.middlewares.use(async (req, res, next) => { let pending; do { pending = refreshing; await pending } while (pending !== refreshing); return auth(req, res, next) })
       // These entries never mount the app's live providers.
       server.middlewares.use(async (req, res, next) => {

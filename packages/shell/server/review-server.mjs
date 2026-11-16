@@ -134,7 +134,7 @@ function checkedFeedback(input, metadata, adapter) {
  * `projects` and `restart`, when given, let the project picker switch the connected application.
  * `runtime`, when given, runs the adapter's isolated backend for live runs (`/api/review/runtime`).
  */
-export async function reviewMiddleware({ dataDir, metadata, capture, adapter, coverage, agents = null, evidence = new Map(), publicHost = null, publicOrigin, shared = null, projects, restart, runtime }) {
+export async function reviewMiddleware({ dataDir, metadata, capture, adapter, coverage, agents = null, evidence = new Map(), publicHost = null, publicOrigin, shared = null, projects, restart, runtime, presence }) {
   const { screens, proposalProperties, captureFixture, launchFixtureBrowser } = adapter
   // The shell validates exactly these presentation edits; an adapter may offer a subset.
   if (proposalProperties.some((key) => !['title', 'action', 'color'].includes(key))) throw new Error('The review shell can only validate title, action and color proposals.')
@@ -299,6 +299,10 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
         res.setHeader('set-cookie', `${sessionName}=${session}; HttpOnly; SameSite=Strict; Path=/${secure}`)
       }
       if (url.pathname.startsWith('/api/review/') && req.headers['x-rehearsal-project'] && req.headers['x-rehearsal-project'] !== metadata.project?.key) { json(409, { error: 'The active project changed. Reload this tab before reading or changing its reviews.' }); return }
+      if (url.pathname === '/api/review/presence-ticket' && req.method === 'POST' && presence) {
+        if (req.headers.origin !== `http://127.0.0.1:${req.socket.localPort}` || req.headers['x-rehearsal-project'] !== metadata.project?.key || metadata.refreshError) { json(403, { error: 'Presence binding refused' }); return }
+        json(200, { ticket: await presence.issue(req.headers.origin) }); return
+      }
       if (url.pathname === '/api/review/index' && req.method === 'GET') { json(metadata.refreshError ? 503 : 200, metadata.refreshError ? { error: metadata.refreshError } : metadata); return }
       if (url.pathname === '/api/review/runtime' && req.method === 'POST' && runtime) { json(200, await runtime.handle(await body(req))); return }
       if (url.pathname === '/api/review/interactions' && ['GET', 'POST'].includes(req.method)) {

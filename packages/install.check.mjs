@@ -33,6 +33,7 @@ try {
 
   // An app of its own, outside CIVIC's tree, taken from the installed canvas.
   const installed = join(app, 'node_modules/@civic/canvas')
+  await import(pathToFileURL(join(installed, 'server/app-server-main.mjs')).href)
   await cp(join(installed, 'examples/notebook'), join(app, 'notebook'), { recursive: true })
   const { startCanvas } = await import(pathToFileURL(join(installed, 'server/canvas-host.mjs')).href)
   const server = await startCanvas({ project: join(app, 'notebook/civic.project.json'), store: join(app, '.civic'), port: 0, logLevel: 'silent' })
