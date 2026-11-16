@@ -1,0 +1,53 @@
+i'll be away from the machine for a couple of hours so please keep working and delivering
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A9f43cd31-b115-413f-821e-100bc7675bb1%3Adelegate-task%3A708f2c6e-8964-42bc-8328-11e390bbd836 (Shared JSX tagger + webpack/Turbopack loader) [completed]:
+Implemented, uncommitted, within `packages/vite-connector/**`:
+
+- Extracted `tagHostElements`; existing Vite wrapper delegates to it.
+- Added/exported an ESM loader using only the three permitted context APIs.
+- Added root/include filtering, tests, and Next/Turbopack, webpack and Rspack documentation.
+- No dependencies added. Source maps remain text-only; unchanged loader inputs preserve incoming maps.
+
+`git diff --check` passed. Package inspection found no vite-connector `check` script.
+
+Execution was blocked by your machine-sharing rule: signoff PIDs `10626` and `64296` remained active at the final check (1-minute load 9.10). Therefore tagging tests, connector tests, `pnpm --dir packages run check`, and lint-baseline verification were not run. No Next installation or server was started, so there is no real Turbopack HTML evidence.
+
+Skipped runtime checks because signoff remained active. Risk: the implementation and added tests are unexecuted; bundler compatibility remains unverified.
+
+---
+
+<task-notification>
+<task-id>bdsdrfzpw</task-id>
+<tool-use-id>toolu_013ZHthtZ4NWUv7DsCLAbAbX</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/bdsdrfzpw.output</output-file>
+<status>completed</status>
+<summary>Background command "Sign off the backend coverage batch" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+From the Orca controller: the machine-wide sign-off gate is on Orca main as bb0c009c3 (Merge w/signoff-machine-gate). New file packages/signoff/src/machine-gate.ts, called from signoff() before the plan is built; README has a section on it.
+
+What it does: waits until no OLDER sign-off is running anywhere and 1-min load < maxLoad (config field `maxLoad`, default 10), checked twice 30 s apart. Oldest-first (by process age, pid breaks ties) so two waiters never deadlock. Flags: `--no-wait`, `--wait-max <minutes>` (default 120, then fails with a plain reason); `--dry-run`/`--verify`/`--watch`/`--help` never wait and don't count as running. Skipped under NODE_TEST_CONTEXT/VITEST.
+Matcher (argv shape via `ps -A -ww -o pid=,ppid=,etime=,command=`, no shell): node whose first non-option arg is …/scripts/signoff.ts or …/landing/signoff-runner.ts; `node -e import("…/scripts/signoff.ts")`; `node …/with-temp-root.mjs node …/scripts/signoff.ts`; `bash|sh|zsh …/bin/signoff`. Excludes itself, ancestors, descendants; never signals anything. If `ps` is unreadable (some sandboxes) it says so once and gates on load only.
+To adopt: update tools/signoff from that commit; then your wrapper gate is optional. Until you update, my landing script also waits for any running sign-off (yours included) and load < 10 before starting.
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A9f43cd31-b115-413f-821e-100bc7675bb1%3Adelegate-task%3Ada014dac-c4bb-4378-a951-e15827961845 (Detectors: Next routes + actions, Express) [completed]:
+Added three detectors, list entries, `limits` typing, and synthetic fixtures. Changes are uncommitted.
+
+- **Next routes:** HTTP exports, local aliases, groups, parameters and required/optional catch-alls. Excludes slots/private folders; notes unresolved config and re-exports.
+- **Next actions:** exported async functions with module/body directives; IDs use `file:export`. Next’s build-generated action mapping remains unavailable.
+- **Express:** proven Express bindings, literal routes, chained routes, `all`, and local mount prefixes. Unsupported paths/mounts are counted in row limits.
+
+Verification:
+- Focused detector/backend/server-function checks: **11/12 passed**. Fixed the chained Express failure afterward.
+- Package check and lint baseline: failed on new lint findings; fixes applied afterward.
+- Final reruns are **blocked**: signoff repeatedly restarted. Latest load was 7.81, but signoff remained active.
+
+Open questions: future replay matching for catch-alls and `ALL`; reporting limits when a file produces zero rows.
+
+Final fixes remain unverified. No build manifests, commits, pushes, or baseline changes.

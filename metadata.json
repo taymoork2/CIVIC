@@ -1,0 +1,49 @@
+{
+  "cli_version": "0.13.3",
+  "checkpoint_id": "01M7KC0SC1R2CKSVGJQQYVRYAX",
+  "strategy": "manual-commit",
+  "branch": "t3/backend-framework-detectors",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "packages/canvas/server/backend-coverage.mjs",
+    "packages/canvas/server/check-fixtures/express/routes.ts",
+    "packages/canvas/server/check-fixtures/next-actions/actions.ts",
+    "packages/canvas/server/check-fixtures/next-actions/inline.ts",
+    "packages/canvas/server/check-fixtures/next-routes/route.ts",
+    "packages/canvas/server/express-routes.mjs",
+    "packages/canvas/server/framework-detectors.check.mjs",
+    "packages/canvas/server/next-actions.mjs",
+    "packages/canvas/server/next-routes.mjs",
+    "packages/shell/server/backend-coverage.d.mts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 26,
+    "cache_creation_tokens": 10503,
+    "cache_read_tokens": 5352774,
+    "output_tokens": 5515,
+    "api_call_count": 12
+  },
+  "redaction": {
+    "replacements": 674,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 598,
+      "key_context": 76,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
