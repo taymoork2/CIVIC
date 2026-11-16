@@ -1,0 +1,63 @@
+{
+  "cli_version": "0.13.3",
+  "checkpoint_id": "01M7H7Y27RBJQJGQFWWJCADNKB",
+  "session_id": "8f3b2eca-0508-4f5d-8344-d9ed70c2da42",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-16T03:55:41.195353Z",
+  "branch": "feat/backend-coverage",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "packages/canvas/README.md",
+    "packages/canvas/examples/tasks/civic.project.json",
+    "packages/canvas/examples/tasks/server/api.js",
+    "packages/canvas/examples/tasks/server/routes.json",
+    "packages/canvas/examples/team-board/civic.project.json",
+    "packages/canvas/examples/team-board/server/api.js",
+    "packages/canvas/examples/team-board/server/routes.json",
+    "packages/canvas/server/backend-coverage.check.mjs",
+    "packages/canvas/server/canvas-host.check.mjs",
+    "packages/shell/server/backend-coverage.mjs",
+    "packages/vite-connector/src/review-project.mjs",
+    "review/src/backend.ts",
+    "review/src/cli.ts",
+    "review/src/mcp.ts",
+    "review/test/backend.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "8835dd2db892",
+  "checkpoint_transcript_start": 3184,
+  "transcript_lines_at_start": 3184,
+  "compact_transcript_start": 424,
+  "token_usage": {
+    "input_tokens": 12,
+    "cache_creation_tokens": 6939,
+    "cache_read_tokens": 2723375,
+    "output_tokens": 2389,
+    "api_call_count": 5
+  },
+  "session_token_usage": {
+    "input_tokens": 722,
+    "cache_creation_tokens": 523597,
+    "cache_read_tokens": 111226481,
+    "output_tokens": 197391,
+    "api_call_count": 325
+  },
+  "redaction": {
+    "replacements": 249,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 232,
+      "key_context": 17,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 33
+  }
+}

@@ -1,0 +1,61 @@
+<task-notification>
+<task-id>b510654mb</task-id>
+<tool-use-id>toolu_01G5KdVRaQGqyTWnSr4gxA9X</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/b510654mb.output</output-file>
+<status>completed</status>
+<summary>Background command "Signoff S5 behind gate" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b5m33f1ck</task-id>
+<tool-use-id>toolu_01MVRPP6qfTDVrMeMiigHvEw</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/b5m33f1ck.output</output-file>
+<status>completed</status>
+<summary>Background command "After S5 signoff, signoff S9 behind gate" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>besp8ahkh</task-id>
+<tool-use-id>toolu_01PDVcc75VBHnyMuVgBFX9XZ</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/besp8ahkh.output</output-file>
+<status>completed</status>
+<summary>Background command "Signoff S7 behind gate" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>brnrjxgwa</task-id>
+<tool-use-id>toolu_01UtFnwCtotpVN4PqHtsJgLV</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/brnrjxgwa.output</output-file>
+<status>completed</status>
+<summary>Background command "Rerun S7 signoff behind gate" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A0fc5146e-3a24-492d-b871-e21a3331032d%3Adelegate-task%3Ac02542bd-5e08-4552-b856-a191a28e7516 (S8 finish backend coverage) [completed]:
+Added on top of the WIP:
+
+- Shared CLI/MCP backend reader and `backend_coverage` tool.
+- Manifest inventory-path validation.
+- Parameterized HTTP route matching; responses ≥400 establish no reach.
+- Route, coverage, and CLI/MCP parity tests.
+- Reading-list acceptance using the passing add-book journey.
+
+Tasks and Team board now dispatch through their JSON route tables (3 and 5 routes). Their manifests point inventory discovery at those same tables, avoiding a separate inventory list.
+
+Commands/results—all tests followed the supplied load gate and used temporary roots:
+
+- Canvas/review workspace `check`: **PASS**.
+- `node --test --test-concurrency=2 packages/canvas/server/backend-coverage.check.mjs review/test/backend.test.ts`: **5 PASS**.
+- Focused `canvas-host.check.mjs` browser flows: **Tasks, Team board, Reading list PASS** after correcting the Reading-list test.
+- `vp test run src/runtime-bridge.test.ts --maxWorkers=2`: **8 PASS**.
+- `git diff --check`: **PASS**.
+- `node bin/lint-baseline.mjs`: **FAIL**; WIP lint violations remain, plus serial-await warnings in the added inventory test.
+
+Skipped full suites, Electron, and visual-width acceptance. Lint still blocks clean signoff; checkbox replay also has a confirmed discovery-state mismatch outside this slice.
