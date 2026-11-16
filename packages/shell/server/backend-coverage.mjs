@@ -15,7 +15,9 @@ function reachedTarget(operations, reached, name) {
 
 const reachedOperation = (operations, name) => {
   const actual = httpName(name).split('/')
-  return operations.find(row => row.kind === 'route' && httpName(row.id) === httpName(name)) ?? operations.find(row => row.kind === 'route' && httpName(row.id).split('/').length === actual.length && httpName(row.id).split('/').every((part, index) => part.startsWith(':') ? Boolean(actual[index]) : part === actual[index]))
+  // An ALL route accepts any recorded method.
+  const same = (part, index) => part.startsWith(':') ? Boolean(actual[index]) : index === 0 && part === 'ALL ' ? /^[A-Z]+ $/u.test(actual[index]) : part === actual[index]
+  return operations.find(row => row.kind === 'route' && httpName(row.id) === httpName(name)) ?? operations.find(row => row.kind === 'route' && httpName(row.id).split('/').length === actual.length && httpName(row.id).split('/').every(same))
 }
 
 /** Count only the verified prefix of the latest replay of each content-addressed tape. */

@@ -4,8 +4,51 @@ import { readFile } from 'node:fs/promises'
 import { nextRouteOperations } from './next-routes.mjs'
 import { nextActionOperations } from './next-actions.mjs'
 import { expressOperations } from './express-routes.mjs'
+import { honoOperations } from './hono-routes.mjs'
+import { fastifyOperations } from './fastify-routes.mjs'
+import { elysiaOperations } from './elysia-routes.mjs'
+import { backendInventory } from './backend-coverage.mjs'
+import { backendCoverage } from '../../shell/server/backend-coverage.mjs'
+import { fileURLToPath } from 'node:url'
 
 const fixture = path => readFile(new URL('./check-fixtures/' + path, import.meta.url), 'utf8')
+for (const [framework, detect, expected, runtime] of [
+  ['hono', honoOperations, ['GET /api/v1/users/:id', 'POST /api/items', 'PUT /api/items', 'ALL /api/health', 'GET /schema'], /Hono app.routes/u],
+  ['fastify', fastifyOperations, ['GET /health', 'POST /items/:id', 'PUT /items/:id', 'GET /api/users/:id', 'DELETE /api/v2/items'], /Fastify onRoute/u],
+  ['elysia', elysiaOperations, ['GET /api/health', 'POST /api/items', 'ALL /api/any', 'GET /api/v1/users', 'DELETE /api/v1/users/:id', 'GET /api/sub/users/:id'], /Elysia routes/u],
+]) {
+  test(framework + ' finds literal routes and local composition without unrelated or shadowed calls', async () => {
+    const rows = detect(await fixture(framework + '/routes.ts'), 'routes.ts')
+    assert.deepEqual(rows.map(row => row.id), expected)
+    assert.match(rows[0].limits[0], /Skipped 3 /u)
+    assert.match(rows[0].limits[0], runtime)
+    assert.deepEqual(detect("const other = {}; other.get('/no', handler)", 'a.js'), [])
+    assert.throws(() => detect(`import '${framework}'; const =`, 'a.js'))
+    const root = fileURLToPath(new URL('./check-fixtures/' + framework, import.meta.url))
+    const inventory = await backendInventory({ root, sources: [root], manifest: { adapter: {} } })
+    assert.deepEqual(inventory.map(row => row.id), expected)
+    assert.ok(inventory.every(row => row.detector === framework))
+  })
+}
+
+test('literal HTTP inventory identities match concrete replay paths and ALL methods', () => {
+  const operations = [{ id: 'GET /users/:id', kind: 'route' }, { id: 'ALL /health', kind: 'route' }]
+  const tape = { project: 'p', source: 's', seed: { context: { scenario: 'start' } }, steps: [{ operations: [{ name: 'GET /users/42' }, { name: 'POST /health' }] }] }
+  const replay = { schema: 'civic.replay/0', project: 'p', source: 's', tape: 't', scenario: 'start', outcome: 'pass', steps: 1 }
+  const result = backendCoverage(operations, new Map([['t', tape]]), [replay], { project: 'p', source: 's', journeys: [{ id: 'j', scenarios: ['start'] }] })
+  assert.deepEqual(result.unreached, [])
+})
+
+test('dynamic prefixes and unknown fluent return values do not invent routes', () => {
+  assert.deepEqual(elysiaOperations("import { Elysia } from 'elysia'; new Elysia(config).get('/x', handler)", 'a.ts'), [])
+  assert.deepEqual(elysiaOperations("import { Elysia } from 'elysia'; new Elysia({ ...config }).get('/x', handler)", 'a.ts'), [])
+  assert.deepEqual(honoOperations("import { Hono } from 'hono'; const sub = new Hono().basePath('/v1').get('/x', handler); new Hono().route(prefix, sub)", 'a.ts'), [])
+  assert.deepEqual(honoOperations("import { Hono } from 'hono'; new Hono().unknown().get('/x', handler)", 'a.ts'), [])
+  const code = "import { Hono } from 'hono'; const sub = new Hono().basePath('/v1').get('/x', handler); new Hono().route('/api', sub)"
+  assert.deepEqual(honoOperations(code, 'a.ts').map(row => row.id), ['GET /api/v1/x'])
+  const plugin = "import fastify from 'fastify'; const app = fastify(); function plugin(server) { server.get('/x', handler) }; app.register(plugin, { prefix })"
+  assert.deepEqual(fastifyOperations(plugin, 'a.ts'), [])
+})
 test('Next routes use exported functions and file conventions', async () => {
   const code = await fixture('next-routes/route.ts')
   for (const extension of ['ts', 'js', 'mts', 'mjs', 'tsx', 'jsx']) {
