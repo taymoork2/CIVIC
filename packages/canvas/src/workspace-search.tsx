@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
+import { useMemo, useState, type RefObject } from 'react'
 import { ArrowRight, Layers, Search } from '@civic/shell/icons'
 import { Dialog, DialogContent, DialogTitle } from '@civic/shell/ui/dialog'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@civic/shell/ui/command'
@@ -32,23 +32,28 @@ export function WorkspaceSearch({ open, setOpen, name, flows, actions, focusFlow
   canvas: RefObject<HTMLDivElement | null>; trigger: RefObject<HTMLButtonElement | null>
 }) {
   const [query, setQuery] = useState('')
-  const destination = useRef<'trigger' | 'canvas' | 'dialog'>('trigger')
+  const [destination, setDestination] = useState<'trigger' | 'canvas' | 'dialog'>('trigger')
+  const [previousOpen, setPreviousOpen] = useState(open)
+  if (previousOpen !== open) {
+    setPreviousOpen(open)
+    if (open) setDestination('trigger')
+    else setQuery('')
+  }
   const index = useMemo(() => open ? workspaceIndex(flows) : [], [open, flows])
   useWorkspaceShortcut('k', event => {
     if (!open && document.querySelector('[role=dialog][aria-modal=true]:not([hidden]):not([data-closed])')) return
     event.preventDefault(); event.stopPropagation(); setOpen(!open)
   }, frame)
-  useEffect(() => { if (!open) setQuery(''); else destination.current = 'trigger' }, [open])
   const results = workspaceResults([...actions.map(action => ({ ...action, kind: 'action' as const, detail: 'Action', keywords: action.keywords ?? '' })), ...index], query)
   const select = (item: SearchItem) => {
     const action = item.kind === 'action' ? actions.find(action => action.id === item.id) : undefined
-    destination.current = action?.opensDialog ? 'dialog' : 'canvas'
+    setDestination(action?.opensDialog ? 'dialog' : 'canvas')
     setOpen(false)
     if (action) action.run()
     else if (item.kind === 'flow') focusFlow(item.id.slice(5))
     else { const screen = flows.flatMap(flow => flow.screens).find(screen => screen.id === item.id.slice(7)); if (screen) focusScreen(screen) }
   }
-  return <Dialog open={open} onOpenChange={setOpen}><DialogContent finalFocus={() => destination.current === 'dialog' ? false : destination.current === 'canvas' ? canvas.current : trigger.current} showCloseButton={false} className="civic-command-dialog cv:p-0 cv:gap-0 cv:w-[560px] cv:max-w-[calc(100vw-2rem)] cv:sm:max-w-[calc(100vw-2rem)]"><DialogTitle className="cv:sr-only">Search {name}</DialogTitle>
+  return <Dialog open={open} onOpenChange={setOpen}><DialogContent finalFocus={() => destination === 'dialog' ? false : destination === 'canvas' ? canvas.current : trigger.current} showCloseButton={false} className="civic-command-dialog cv:p-0 cv:gap-0 cv:w-[560px] cv:max-w-[calc(100vw-2rem)] cv:sm:max-w-[calc(100vw-2rem)]"><DialogTitle className="cv:sr-only">Search {name}</DialogTitle>
     <Command shouldFilter={false} label={`${name} commands`}><CommandInput autoFocus aria-label="Search this project" placeholder={`Search ${name}…`} value={query} onValueChange={setQuery} />
       <CommandList><CommandEmpty>{loading ? 'Loading this project…' : 'No matching journeys, screens, components or actions.'}</CommandEmpty>
         {(['action', 'flow', 'screen'] as const).map(kind => { const matches = results.filter(item => item.kind === kind); return matches.length > 0 && <CommandGroup key={kind} heading={kind === 'action' ? 'Actions' : kind === 'flow' ? 'Journeys & components' : 'Screens & states'}>{matches.map(item => {

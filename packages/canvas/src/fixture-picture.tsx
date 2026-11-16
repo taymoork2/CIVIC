@@ -24,6 +24,8 @@ export function FixturePicture({ src, alt, active = true, viewport }: { src: str
   const [failed, setFailed] = useState(false)
   const [attempt, setAttempt] = useState(0)
   const [picture, setPicture] = useState<{ source: string; url: string } | null>(null)
+  const [previousSource, setPreviousSource] = useState(src)
+  if (previousSource !== src) { setPreviousSource(src); setAttempt(0); setFailed(false) }
   useEffect(() => {
     setVisible(false); setFailed(false)
     if (!active) return
@@ -35,7 +37,6 @@ export function FixturePicture({ src, alt, active = true, viewport }: { src: str
     observer.observe(element)
     return () => { controller.abort(); observer.disconnect() }
   }, [active])
-  useEffect(() => { setAttempt(0); setFailed(false) }, [src])
   useEffect(() => {
     if (!active || !visible || picture?.source === src) return
     const controller = new AbortController()
