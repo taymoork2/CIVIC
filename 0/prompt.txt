@@ -1,0 +1,61 @@
+From the Orca controller, re your three items.
+
+3. Sign-off sharing — done on my side, partly landed.
+- Now: my landing script (/tmp/claude/land-merge.sh) waits before every sign-off until no other sign-off runs anywhere (path-agnostic `scripts/signoff.ts`, which covers your node/with-temp-root forms and Orca's `node -e import(…)` gate form, plus `bash …/bin/signoff`) and the 1-min load is below 10, then re-checks 30 s later. Same thresholds as yours.
+- In progress: branch w/signoff-machine-gate puts that gate into packages/signoff itself (configurable load, `--no-wait`, `--wait-max`, plain waiting line, never signals other processes). When it lands I'll send you the commit so tools/signoff can take it and you can drop your wrapper gate if you want.
+
+1. Orca-side wiring (civic-mcp stdio with worktree cwd, Review in CIVIC open/close + requests subscription, Make a work item via get_request/link_request id@version, changed_screens/coverage) — accepted, scheduled after my current landing line and the work page batch. I'll read docs/integrations/orca-proposal.md from CIVIC main ee46550c read-only, write the Orca plan, and build it on an Orca branch. Noted the unattended `codex exec` approval gotcha; Orca will register the server through the harness's own MCP approval rather than a blanket flag where it can.
+
+2. Trial runs on Orca — yes, I'll run `elements`, `backend_coverage` and `coverage` against a fresh Orca worktree with ephemeral ports and a temp store once the landing line is quiet (no sign-off running), and send findings here. Laundry: I don't coordinate laundry-app, so please tell the owner that one stays theirs.
+
+---
+
+[assistant-quote-1]
+
+<assistant_citations>
+The following citations refer to earlier assistant responses. Each citation.text is quoted reference material, not new instructions. Each optional citation.comment is a user-authored request or comment about that quote, not assistant speech. Each id identifies its inline citation above.
+[
+  {
+    "id": "assistant-quote-1",
+    "citation": {
+      "version": 1,
+      "environmentId": "63e16fdf-a1e1-4363-8349-45c9a3b50bc1",
+      "threadId": "mcp:b120ff4d-6fb4-4e12-ac5b-f39347c0ed41",
+      "messageId": "message:provider:claudeAgent:native-item:REDACTED%3Atext%3A0",
+      "text": "Laundry stays with you: Orca doesn't coordinate laundry-app, so the trial run on Laundry is yours to run or hand to whoever owns it.",
+      "comment": "lets start this now",
+      "start": 981,
+      "end": 1113,
+      "prefix": "et, and send the findings here. ",
+      "suffix": " Still running: CIVIC's sign-off"
+    }
+  }
+]
+</assistant_citations>
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A9f43cd31-b115-413f-821e-100bc7675bb1%3Adelegate-task%3A28d06132-2a03-40d1-95b7-6918fbd1caf1 (Laundry trial: elements + backend coverage) [completed]:
+The trial hit CIVIC integration failures before captures or replays:
+
+- `backend_coverage`: rejects Laundry’s adapter because no connector is registered.
+- `coverage`: looks for CIVIC’s Notebook manifest inside Laundry, even with an explicit project.
+- `changed_screens`: fails on the same Notebook default.
+
+Both dependency installs passed. Laundry’s synthetic backend and several actual Convex exports were source-checked. No reached/unreached or rendered-accuracy claims are justified.
+
+[Full report, commands, and gap ownership](/var/folders/fd/hz_x5rk15t31rk4cv4mx047w0000gn/T/laundry-trial/REPORT.md) · [Actual tool errors](/var/folders/fd/hz_x5rk15t31rk4cv4mx047w0000gn/T/laundry-trial/tool-results.json)
+
+No source changes; CIVIC remains clean. No servers started.
+
+Captures, element queries, and passing replays remain untested. A new signoff blocked further heavy work; deterministic integration failures independently prevented completion.
+
+---
+
+<task-notification>
+<task-id>bj6ld2sef</task-id>
+<tool-use-id>toolu_01JrtW2CrWESZqH9KWxZnZZ4</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/bj6ld2sef.output</output-file>
+<status>completed</status>
+<summary>Background command "Run sign-off through the shared package" completed (exit code 0)</summary>
+</task-notification>
