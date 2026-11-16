@@ -1,0 +1,20 @@
+[
+  {
+    "id": "GET:/api/tasks",
+    "file": "server/api.js",
+    "export": "listTasks",
+    "kind": "route"
+  },
+  {
+    "id": "POST:/api/tasks",
+    "file": "server/api.js",
+    "export": "addTask",
+    "kind": "route"
+  },
+  {
+    "id": "PATCH:/api/tasks/:id",
+    "file": "server/api.js",
+    "export": "updateTask",
+    "kind": "route"
+  }
+]

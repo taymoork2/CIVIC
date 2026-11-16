@@ -86,6 +86,7 @@ const USAGE = `Usage (records are shared by every worktree of this repository):
   civic share-replays [<review data dir>] [--head <sha>]   keeps the canvas's replays of recorded runs, with their
                  tapes, for civic sync to share (the directory defaults to .review-data)
   civic replays [--head <sha>] [--json]           the replays kept here or shared by others
+  civic coverage --backend [--project <manifest>] [--store <host store>] [--data-dir <directory>] [--json]
   civic conflicts [--json]                        civic settle <record> --keep mine|theirs
   civic keygen [--out <file>]                     makes your signing key for civic sync
   annotate also takes --rect x,y,w,h [--rect-label <text>], --viewport <w>x<h>, --line <id> (a known line, such as a
@@ -116,6 +117,13 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
       if (match[2] && (Number(match[2]) < 1 || Number(match[3]) < Number(match[2]) || !Number.isSafeInteger(Number(match[3])))) throw new UsageError('Use a positive, increasing line range.')
       const captures = JSON.parse(readFileSync(resolvePath(cwd, capture), 'utf8')) as TaggedCapture[]
       print(JSON.stringify(elements(captures, match[1]!, match[2] ? [Number(match[2]), Number(match[3])] : undefined), null, 2))
+      return 0
+    }
+    case 'coverage': {
+      if (!has('--backend')) throw new UsageError('Choose --backend coverage.')
+      const { readBackendCoverage } = await import('./backend.ts')
+      const report = await readBackendCoverage(cwd, one('--project'), one('--store'), one('--data-dir'))
+      print(has('--json') ? JSON.stringify(report, null, 2) : report.operations.map((operation: { export: string; reachedBy: string[] }) => `${operation.export}: ${operation.reachedBy.join(', ') || 'No journey reaches this yet'}`).join('\n'))
       return 0
     }
     case 'annotate': {
@@ -493,6 +501,7 @@ function parse(args: string[], command: string | undefined) {
   const positional: string[] = []
   const flags = new Map<string, string[]>()
   const booleans = new Set(['--allow-dirty', '--canvas', '--change', '--desktop', '--high-risk', '--json', '--no-checks', '--no-open', '--recapture'])
+  if (command === 'coverage') booleans.add('--backend')
   // `settle` takes --keep mine|theirs; `preview` takes it alone.
   if (command === 'preview') booleans.add('--keep')
   for (let index = 0; index < args.length; index++) {

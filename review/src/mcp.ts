@@ -19,6 +19,7 @@ import { addCheck, annotate, claim, comment, find, getRequest, listRequests, lin
 import { recapture, reproductionUrl } from './recapture.ts'
 import { renderList, renderRequest } from './render.ts'
 import { elements, type TaggedCapture } from './elements.ts'
+import { readBackendCoverage } from './backend.ts'
 import { Store } from './store.ts'
 
 type Content = { type: 'text'; text: string } | { type: 'image'; data: string; mimeType: string }
@@ -127,6 +128,9 @@ export const TOOLS: readonly Tool[] = [
     const captures = JSON.parse(readFileSync(resolve(str('cwd') ?? process.cwd(), need('captures')), 'utf8')) as TaggedCapture[]
     return text(JSON.stringify(elements(captures, need('file'), lines), null, 2))
   } },
+  { name: 'backend_coverage', description: 'The server routes, handlers and RPCs each journey\'s passing replays reach, and the ones no journey reaches.', schema: Schema.Struct({ ...cwdProperty, project: Schema.optionalKey(Schema.String), store: Schema.optionalKey(Schema.String), data_dir: Schema.optionalKey(Schema.String) }), run: async ({ str, text, env }) => {
+    return text(JSON.stringify(await readBackendCoverage(str('cwd') ?? env.CIVIC_REPO ?? process.cwd(), str('project'), str('store'), str('data_dir')), null, 2))
+  } },
 ]
 
 const MEDIA: Record<CaptureRef['mediaType'], string> = { 'image/png': 'image/png', 'image/jpeg': 'image/jpeg', 'image/webp': 'image/webp' }
@@ -140,7 +144,7 @@ const toolContext = (args: Args, env: NodeJS.ProcessEnv) => {
   }
   const text = (value: string): Content[] => [{ type: 'text', text: value }]
 
-  return { args, str, need, context, text }
+  return { args, str, need, context, text, env }
 }
 
 export async function callTool(name: string, args: Args, env: NodeJS.ProcessEnv = process.env): Promise<Content[]> {

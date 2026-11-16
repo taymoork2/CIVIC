@@ -2,7 +2,7 @@
   "version": 1,
   "id": "team-board-demo",
   "name": "Team board",
-  "adapter": { "kind": "module", "entry": "src/preview.js", "runtime": "server/civic-runtime.js" },
+  "adapter": { "kind": "module", "entry": "src/preview.js", "runtime": "server/civic-runtime.js", "operations": "server/routes.json" },
   "sources": ["src", "server"],
   "scenarios": "civic.scenarios.json",
   "coverage": "civic.coverage.json",

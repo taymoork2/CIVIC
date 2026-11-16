@@ -10,6 +10,8 @@ const editorsOnly = createMiddleware({ type: 'function' }).server(({ next, conte
 
 export const listBooks = createServerFn({ method: 'GET' }).handler(async (): Promise<Book[]> => library.open())
 
+export const countBooks = createServerFn({ method: 'GET' }).handler(() => Promise.resolve(library.open().length))
+
 export const addBook = createServerFn({ method: 'POST' })
   .middleware([editorsOnly])
   .inputValidator((input: { title: string; author: string }) => {

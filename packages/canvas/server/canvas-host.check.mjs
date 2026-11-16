@@ -6,6 +6,7 @@ import { test } from 'node:test'
 import { canvasRoot } from './canvas-root.mjs'
 import { canvasPlugins, startCanvas } from './canvas-host.mjs'
 import { moduleReviewAdapter } from './module-adapter.mjs'
+import { backendCoverage } from '../../shell/server/backend-coverage.mjs'
 
 const notebook = join(canvasRoot, 'examples/notebook')
 
@@ -164,7 +165,7 @@ test('an app calling its own HTTP API runs live against an isolated copy of that
   await frame.getByText('Call the plumber').waitFor()
   assert.deepEqual(api, [], 'the app\'s API calls never leave the page')
   const tape = await tab.locator('iframe[title="Live Task list"]').evaluate((element) => element.contentWindow.reviewPreview.recording())
-  const writes = tape.steps.flatMap((step) => step.operations)
+  const writes = tape.steps.flatMap((step) => step.operations).filter(operation => operation.kind !== 'query')
   assert.deepEqual(writes.map((operation) => [operation.name, operation.result.status]), [['POST:/api/tasks', 201]])
   const replayed = await tab.locator('iframe[title="Live Task list"]').evaluate((element, recording) => element.contentWindow.reviewPreview.replay(recording), tape)
   assert.equal(replayed.verified, tape.steps.length)
@@ -212,7 +213,7 @@ test('an app on a function backend runs live against an isolated run of its func
   await frame.getByText('Olive oil').waitFor()
   const live = tab.locator('iframe[title="Live Shelf"]')
   const tape = await live.evaluate((element) => element.contentWindow.reviewPreview.recording())
-  const writes = tape.steps.flatMap((step) => step.operations)
+  const writes = tape.steps.flatMap((step) => step.operations).filter(operation => operation.kind !== 'query')
   assert.deepEqual(writes.map((operation) => [operation.name, operation.result.name, operation.result.quantity]), [['items:use', 'Olive oil', 0], ['items:add', 'Flour', 2]])
   const replayed = await live.evaluate((element, recording) => element.contentWindow.reviewPreview.replay(recording), tape)
   assert.equal(replayed.verified, tape.steps.length)
@@ -349,12 +350,29 @@ test('a TanStack Start app\'s server functions run live against an isolated run,
   assert.ok(modules.some((path) => path.endsWith('/src/books.functions.ts')))
   assert.deepEqual(modules.filter((path) => /\/server\/(?:library|civic-runtime)/.test(path)), [], 'server-only modules stay in the run')
   const tape = await tab.locator('iframe[title="Live Reading list"]').evaluate((element) => element.contentWindow.reviewPreview.recording())
-  const writes = tape.steps.flatMap((step) => step.operations)
+  const writes = tape.steps.flatMap((step) => step.operations).filter(operation => operation.kind !== 'query')
   assert.deepEqual(writes.map((operation) => [operation.name, operation.result.value.title]), [['serverFn:src/books.functions.ts:addBook', 'Middlemarch']])
   const replayed = await tab.locator('iframe[title="Live Reading list"]').evaluate((element, recording) => element.contentWindow.reviewPreview.replay(recording), tape)
   assert.equal(replayed.verified, tape.steps.length)
   assert.equal(await frame.locator('li').count(), 3)
+  const complete = tape, verified = replayed
   const cookie = (await tab.context().cookies()).map((row) => `${row.name}=${row.value}`).join('; ')
+  const indexResponse = await fetch(origin + '/api/review/index', { headers: { cookie } })
+  const index = await indexResponse.json()
+  const headers = { cookie, origin, 'content-type': 'application/json', 'x-rehearsal-project': index.project.key }
+  const saved = await fetch(origin + '/api/review/replays', { method: 'POST', headers, body: JSON.stringify({ tape: complete, outcome: 'pass', verified: verified.verified }) })
+  assert.equal(saved.status, 201, await saved.text())
+  const coverageResponse = await fetch(origin + '/api/review/coverage', { headers })
+  const coverage = await coverageResponse.json()
+  assert.deepEqual(coverage.backend.unreached, ['serverFn:src/books.functions.ts:countBooks', 'serverFn:src/books.functions.ts:markRead'])
+  const diverged = structuredClone(complete)
+  diverged.steps.at(-1).view = 'A different settled screen'
+  await assert.rejects(tab.locator('iframe[title="Live Reading list"]').evaluate((element, recording) => element.contentWindow.reviewPreview.replay(recording), diverged), /Replay diverged/u)
+  const failed = await fetch(origin + '/api/review/replays', { method: 'POST', headers, body: JSON.stringify({ tape: diverged, outcome: 'fail', divergedAt: diverged.steps.length }) })
+  assert.equal(failed.status, 201)
+  const { replay } = await failed.json()
+  const prefix = backendCoverage(coverage.backend.operations, new Map([[replay.tape, diverged]]), [replay], { project: index.project.key, source: index.revision.source, journeys: [{ id: 'book.add', scenarios: ['books.list'] }] })
+  assert.deepEqual(prefix.unreached, coverage.backend.operations.map(operation => operation.id))
   const snapshots = await (await fetch(origin + '/api/review/snapshots', { method: 'POST', headers: { cookie, origin, 'content-type': 'application/json', 'x-rehearsal-project': (await (await fetch(origin + '/api/review/index', { headers: { cookie } })).json()).project.key }, body: '{}' })).json()
   assert.deepEqual(snapshots.errors, [])
   assert.equal(snapshots.count, 2)
@@ -392,7 +410,7 @@ test('an app with sign-in runs live as its persona\'s synthetic identity, signs 
   await frame.getByText('Alex Rivera: Lunch at noon').waitFor()
   assert.deepEqual(api, [], 'sign-in and the app\'s API calls never leave the page')
   const tape = await live.evaluate((element) => element.contentWindow.reviewPreview.recording())
-  const writes = tape.steps.flatMap((step) => step.operations)
+  const writes = tape.steps.flatMap((step) => step.operations).filter(operation => operation.kind !== 'query')
   assert.deepEqual(writes.map((operation) => [operation.name, operation.result.status]), [['DELETE:/api/session', 204], ['POST:/api/session', 200], ['POST:/api/posts', 201]])
   assert.equal(JSON.parse(writes[1].args.body).password, '[review credential]', 'recordings hold a placeholder, never the credential')
   assert.ok(!JSON.stringify(tape).includes('review-'), 'no credential anywhere in the recording')
@@ -490,7 +508,7 @@ test('a live run switches account, goes offline and back, and changes viewport o
   assert.deepEqual(commands.slice(0, 5), [['identity', 'newcomer'], ['connection', false], ['identity', 'lead'], ['identity', 'newcomer'], ['connection', true]])
   assert.equal(commands[5][0], 'applyPending')
   assert.deepEqual(commands.slice(6).map(([name, value]) => [name, value.width, value.height, value.theme, value.textScale]), [['viewport', 320, 658, 'light', 1], ['viewport', 658, 320, 'light', 1], ['viewport', 658, 320, 'dark', 1], ['viewport', 658, 320, 'dark', 2]])
-  const writes = tape.steps.flatMap((step) => step.operations)
+  const writes = tape.steps.flatMap((step) => step.operations).filter(operation => operation.kind !== 'query')
   assert.deepEqual(writes.map((operation) => [operation.name, operation.result?.status ?? operation.error, operation.actor]), [['POST:/api/posts', 201, 'newcomer'], ['POST:/api/posts', /interrupted/.test(writes[1].error) && writes[1].error, 'newcomer'], ['POST:/api/posts', 201, 'newcomer']], 'writes after the switch name the account; the offline attempt is kept as a refused write, and the resend as the effect')
   assert.ok(!JSON.stringify(tape).includes('"intent"'), 'write identities stay off the tape, so older tapes still match')
   assert.ok(!JSON.stringify(tape).includes('review-'), 'no credential anywhere in the recording')

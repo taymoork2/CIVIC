@@ -1,6 +1,6 @@
 export type RuntimeGesture = { kind: string; value?: string; target?: { tag: string; name: string; index: number; count: number }; checked?: boolean }
 /** `actor` names the synthetic account that made a write after the run switched accounts; a run that never switched records none. */
-export type RuntimeOperation = { kind: 'mutation' | 'action'; name: string; args: unknown; actor?: string; result?: unknown; error?: string }
+export type RuntimeOperation = { kind: 'query' | 'mutation' | 'action'; name: string; args: unknown; actor?: string; result?: unknown; error?: string }
 /**
  * A component the step settled on showing, as the app marks it with its stable CIVIC IDs (D31):
  * the platform component, the contract variant and state, and the props it names. CIVIC
@@ -9,7 +9,7 @@ export type RuntimeOperation = { kind: 'mutation' | 'action'; name: string; args
  */
 export type RuntimeComponent = { component: string; variant?: string; state?: string; props?: Record<string, string> }
 export type RuntimeStep = { gesture: RuntimeGesture; route: string; fields: { label: string; value: string }[]; view: string; components?: RuntimeComponent[]; discovery?: { before: import('./runtime-dom').InteractionState; after: import('./runtime-dom').InteractionState }; operations: RuntimeOperation[] }
-export type RuntimeRecording = { version: 1; project: string; source: string; seed: unknown; now: number; initialRoute: string; steps: RuntimeStep[] }
+export type RuntimeRecording = { version: 1; queries?: true; project: string; source: string; seed: unknown; now: number; initialRoute: string; steps: RuntimeStep[] }
 export type RuntimePorts = {
   project: string; source: string; seed: unknown; now: number
   route: () => string; fields: () => RuntimeStep['fields']; view: () => string
@@ -22,7 +22,7 @@ export type RuntimePorts = {
 
 /** No framework, router, backend or screen names belong in this recorder. */
 export function createRuntimeBridge(ports: RuntimePorts) {
-  const tape: RuntimeRecording = { version: 1, project: ports.project, source: ports.source, seed: structuredClone(ports.seed), now: ports.now, initialRoute: ports.route(), steps: [] }
+  const tape: RuntimeRecording = { version: 1, queries: true, project: ports.project, source: ports.source, seed: structuredClone(ports.seed), now: ports.now, initialRoute: ports.route(), steps: [] }
   const pending = new Set<Promise<unknown>>()
   const sealed = new WeakSet<RuntimeStep>()
   let current: RuntimeStep | null = null, replaying = false
@@ -98,6 +98,7 @@ export function createRuntimeBridge(ports: RuntimePorts) {
           await ports.interact(expected.gesture); await flush()
           // A tape recorded before components were marked (or from an app that marks none) checks the rest.
           if (!expected.components) delete current.components
+          if (!input.queries) current.operations = current.operations.filter(operation => operation.kind !== 'query')
           if (JSON.stringify(ordered(current)) !== JSON.stringify(ordered(expected))) {
             mismatch = { step: index + 1, expected: structuredClone(expected), actual: structuredClone(current) }
             throw Error(`Replay diverged at step ${index + 1}. Inspect the captured inputs, route and operation receipts.`)

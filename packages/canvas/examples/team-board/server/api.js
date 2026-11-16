@@ -1,3 +1,5 @@
+import routes from './routes.json' with { type: 'json' }
+
 // The app's API as a fetch handler, with its own password check and cookie sessions. It knows nothing about CIVIC.
 export async function hashPassword(password, salt) {
   const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${salt}:${password}`))
@@ -12,7 +14,11 @@ export function createApi(db) {
   return {
     async fetch(request) {
       const url = new URL(request.url)
-      if (url.pathname === '/api/session' && request.method === 'POST') {
+      const route = routes.find(row => {
+        const method = row.id.split(':')[0], path = row.id.slice(method.length + 1).split('/'), actual = url.pathname.split('/')
+        return method === request.method && path.length === actual.length && path.every((part, index) => part.startsWith(':') ? Boolean(actual[index]) : part === actual[index])
+      })?.export
+      if (route === 'signIn') {
         const { email, password } = await request.json()
         const user = db.users.find((row) => row.email === String(email).trim().toLowerCase())
         if (!user || typeof password !== 'string' || await hashPassword(password, user.salt) !== user.passwordHash) return json({ error: 'That email and password don\'t match an account.' }, 401)
@@ -20,15 +26,15 @@ export function createApi(db) {
         db.sessions.set(sid, user.id)
         return json(profile(user), 200, { 'set-cookie': `sid=${sid}; Path=/; HttpOnly; SameSite=Lax` })
       }
-      if (url.pathname === '/api/session' && request.method === 'DELETE') {
+      if (route === 'signOut') {
         db.sessions.delete(sessionOf(request))
         return new Response(null, { status: 204, headers: { 'set-cookie': 'sid=; Path=/; Max-Age=0' } })
       }
       const user = userOf(request)
       if (!user) return json({ error: 'Sign in to see the board.' }, 401)
-      if (url.pathname === '/api/me' && request.method === 'GET') return json(profile(user))
-      if (url.pathname === '/api/posts' && request.method === 'GET') return json(db.posts)
-      if (url.pathname === '/api/posts' && request.method === 'POST') {
+      if (route === 'profile') return json(profile(user))
+      if (route === 'listPosts') return json(db.posts)
+      if (route === 'addPost') {
         if (!user.canPost) return json({ error: 'Readers can\'t post to the board.' }, 403)
         const { text } = await request.json()
         if (typeof text !== 'string' || !text.trim()) return json({ error: 'Write a message first.' }, 400)
