@@ -4,6 +4,8 @@ import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { createServer } from 'node:net'
 import { store } from './store.mjs'
+import { Effect, Schedule } from 'effect'
+import { awakeTimeout } from '../canvas/server/awake-clock.mjs'
 
 const here = dirname(fileURLToPath(import.meta.url))
 await mkdir(store, { recursive: true, mode: 0o700 })
@@ -26,10 +28,10 @@ if (process.argv.includes('--serve')) {
   await new Promise((resolve, reject) => { child.once('spawn', resolve); child.once('error', reject) })
   child.unref(); await log.close()
   await writeFile(join(store, 'runtime.json'), JSON.stringify({ pid: child.pid, port, origin: config.origin, startedAt: new Date().toISOString() }, null, 2), { mode: 0o600 })
-  const deadline = Date.now() + 30_000
-  while (Date.now() < deadline) {
-    if (await fetch(`http://127.0.0.1:${port}/review`, { signal: AbortSignal.timeout(2000) }).then(response => response.ok).catch(() => false)) { console.log(`CIVIC http://127.0.0.1:${port}/review\nPID ${child.pid}; logs ${join(store, 'server.log')}`); process.exit(0) }
-    await new Promise(resolve => setTimeout(resolve, 300))
-  }
-  throw Error(`Startup failed; inspect ${join(store, 'server.log')}`)
+  await Effect.runPromise(awakeTimeout(
+    Effect.promise(() => fetch(`http://127.0.0.1:${port}/review`, { signal: AbortSignal.timeout(2000) }).then(response => response.ok).catch(() => false)).pipe(
+      Effect.repeat({ schedule: Schedule.spaced(300), until: Boolean }),
+    ), '30 seconds', () => Effect.fail(Error(`Startup failed; inspect ${join(store, 'server.log')}`)),
+  ))
+  console.log(`CIVIC http://127.0.0.1:${port}/review\nPID ${child.pid}; logs ${join(store, 'server.log')}`)
 }

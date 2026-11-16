@@ -4,6 +4,17 @@ import { managedHost } from './app-server.mjs'
 import { canvasPlugins } from './canvas-host.mjs'
 import { canvasRoot } from './canvas-root.mjs'
 import { deadlines } from './server-lifecycle.mjs'
+import { awakeTimeout } from './awake-clock.mjs'
+
+export function holdRestart(restarting, res, wait = (effect, signal) => Effect.runPromise(effect, { signal })) {
+  const abort = new AbortController()
+  const cancel = () => abort.abort()
+  res.once('close', cancel)
+  return wait(awakeTimeout(Effect.promise(() => restarting), deadlines.boot), abort.signal).then(() => true).catch(() => {
+    if (!res.destroyed) { res.writeHead(503, { 'content-type': 'text/plain', 'retry-after': '1' }); res.end('The review could not restart. Please reload to try again.') }
+    return false
+  }).finally(() => res.off('close', cancel))
+}
 
 const noop = () => Promise.resolve()
 
@@ -34,17 +45,7 @@ export function runManagedCanvas({ store, build, port = 0, project, ready }) {
     }
     try { await start() } catch (error) { await dispose(); await current?.close(); throw error }
     return { handle: async (req, res) => {
-      if (!current) {
-        const abort = new AbortController()
-        const cancel = () => abort.abort()
-        res.once('close', cancel)
-        try {
-          await Effect.runPromise(Effect.promise(() => restarting).pipe(Effect.timeout(deadlines.boot)), { signal: abort.signal })
-        } catch {
-          if (!res.destroyed) { res.writeHead(503, { 'content-type': 'text/plain', 'retry-after': '1' }); res.end('The review could not restart. Please reload to try again.') }
-          return
-        } finally { res.off('close', cancel) }
-      }
+      if (!current && !await holdRestart(restarting, res)) return
       if (res.destroyed) return
       if (closed || !current) { res.writeHead(503); res.end('The review has stopped. Please open it again.'); return }
       current.middlewares(req, res)
