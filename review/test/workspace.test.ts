@@ -24,8 +24,9 @@ test('engine libraries share the packages install and lockfile', () => {
 test('git-installed packages keep standalone runtime dependency ranges', () => {
   for (const member of ['canvas', 'shell', 'vite-connector']) {
     const manifest = JSON.parse(read(`packages/${member}/package.json`))
+    // A caret range, or an exact pin for a prerelease, which a caret would not hold; never catalog: or workspace:.
     for (const range of Object.values(manifest.dependencies ?? {})) {
-      assert.match(String(range), /^\^/)
+      assert.match(String(range), /^(?:\^\d|\d+\.\d+\.\d+-[\w.]+$)/u)
     }
   }
 })
