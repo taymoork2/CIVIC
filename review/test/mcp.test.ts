@@ -40,12 +40,40 @@ test('an agent works a request over MCP and cannot resolve it', { timeout: 30_00
     for (const forbidden of ['resolve', 'accept_check', 'escalate']) assert.ok(!names.includes(forbidden), `${forbidden} is not an agent tool`)
 
     assert.match((await tool('list_requests', {})).content[0].text, /Wrap the label\./)
+    const oversized = await tool('comment', { id: requestId, text: 'x'.repeat(64 * 1024 + 1) })
+    assert.equal(oversized.isError, true)
+    assert.match(oversized.content[0].text, /text exceeds 65536 bytes/)
+    const unclaimed = await tool('report_fix', { id: requestId, note: 'Not mine.' })
+    assert.equal(unclaimed.isError, true)
+    assert.match(unclaimed.content[0].text, /claim/i)
+    await tool('comment', { id: requestId, text: 'Changed since you read it.' })
+    const stale = await tool('claim', { id: `${requestId}@1` })
+    assert.equal(stale.isError, true)
+    assert.match(stale.content[0].text, /comment/)
     assert.match((await tool('claim', { id: requestId })).content[0].text, /claimed by actor:agent\.claude-code\.taymoor/)
+    const foreign = spawn(process.execPath, [new URL('../src/mcp.ts', import.meta.url).pathname], { env: { ...process.env, CIVIC_AGENT: 'other-agent', CIVIC_FOR: 'taymoor', CIVIC_REPO: repo }, stdio: ['pipe', 'pipe', 'inherit'] })
+    try {
+      const output: Buffer[] = []
+      foreign.stdout.on('data', (chunk) => output.push(chunk))
+      const closed = once(foreign, 'exit')
+      foreign.stdin.end([
+        { id: 1, method: 'initialize', params: { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'other', version: '1' } } },
+        { id: 2, method: 'tools/list' },
+        { id: 3, method: 'tools/call', params: { name: 'claim', arguments: { id: requestId } } },
+      ].map((message) => JSON.stringify({ jsonrpc: '2.0', ...message })).join('\n') + '\n')
+      assert.deepEqual(await closed, [0, null])
+      const result = JSON.parse(Buffer.concat(output).toString().trim().split('\n')[2]!).result
+      assert.equal(result.isError, true)
+      assert.match(result.content[0].text, /actor:agent\.claude-code\.taymoor/)
+    } finally {
+      if (foreign.exitCode === null) foreign.kill()
+    }
     assert.match((await tool('get_request', { id: requestId })).content[0].text, /Status: Claimed/)
     const fix = await tool('report_fix', { id: requestId, note: 'Wrapped.' })
     assert.match(fix.content[0].text, /Fix ready for review/)
     const unknown = await tool('resolve', { id: requestId })
     assert.equal(unknown.isError, true)
+    assert.match(unknown.content[0].text, /Unknown tool resolve/)
     assert.equal((await call('no/such/method')).error.code, -32601)
     for (const args of [{}, { id: 42 }, { id: '' }]) {
       const invalid = await tool('claim', args)

@@ -150,6 +150,10 @@ const toolContext = (args: Args, env: NodeJS.ProcessEnv) => {
 export async function callTool(name: string, args: Args, env: NodeJS.ProcessEnv = process.env): Promise<Content[]> {
   const tool = TOOLS.find((tool) => tool.name === name)
   if (!tool) return fail(`Unknown tool ${name}.`)
+  for (const [field, value] of Object.entries(args)) {
+    const limit = field === 'image_base64' ? 8 * 1024 * 1024 : 64 * 1024
+    if (typeof value === 'string' && Buffer.byteLength(value) > limit) fail(`${field} exceeds ${limit} bytes.`)
+  }
   const decoded = Schema.decodeUnknownSync(tool.schema)(args)
   return tool.run(toolContext(decoded, env))
 }
