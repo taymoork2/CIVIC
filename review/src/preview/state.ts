@@ -8,22 +8,26 @@ import { existsSync, lstatSync, mkdirSync, readdirSync, readFileSync, realpathSy
 import { createServer } from 'node:net'
 import { tmpdir } from 'node:os'
 import { join, relative, sep } from 'node:path'
-import { setTimeout as sleep } from 'node:timers/promises'
+import * as Effect from 'effect/Effect'
+import { waitUntil } from './runtime.ts'
 
 // Ports other instances use: Orca's dev, dogfood and test lanes, CIVIC's own host (3012), standalone
 // canvas (3020) and default overlay (4777).
-const RESERVED = new Set([3012, 3020, 4317, 4417, 4777, 5733, 5734, 10_448])
+const RESERVED = new Set([3012, 3013, 3020, 4317, 4417, 4777, 5733, 5734, 10_448, 10_449])
 const RESERVED_RANGES = [[4997, 4999], [5997, 5999]] as const
 
 export const reservedPort = (port: number) => RESERVED.has(port) || RESERVED_RANGES.some(([low, high]) => port >= low && port <= high)
 
 /** Ports the OS hands out while all of them are held open together, so they are distinct. */
 async function freePorts(count: number): Promise<number[]> {
-  const servers = Array.from({ length: count }, () => createServer())
-  await Promise.all(servers.map(async (server) => { server.listen(0, '127.0.0.1'); await once(server, 'listening') }))
-  const ports = servers.map((server) => (server.address() as { port: number }).port)
-  await Promise.all(servers.map(async (server) => { server.close(); await once(server, 'close') }))
-  return ports
+  return Effect.runPromise(Effect.scoped(Effect.gen(function* () {
+    const servers = yield* Effect.acquireRelease(
+      Effect.sync(() => Array.from({ length: count }, () => createServer())),
+      (servers) => Effect.promise(async () => { await Promise.all(servers.map((server) => new Promise<void>((resolve) => server.close(() => resolve())))) }),
+    )
+    yield* Effect.tryPromise(() => Promise.all(servers.map(async (server) => { server.listen(0, '127.0.0.1'); await once(server, 'listening') })))
+    return servers.map((server) => (server.address() as { port: number }).port)
+  })))
 }
 
 /** `count` distinct ports the OS says are free, none of them reserved. */
@@ -74,7 +78,7 @@ export const previewsDir = () => join(tmpdir(), 'civic-preview')
 export const previewId = (worktree: string, branch: string) => `${branch.replaceAll(/[^\w.-]+/g, '-').slice(0, 24)}-${createHash('sha256').update(worktree).digest('hex').slice(0, 8)}`
 
 const keys = (value: object) => Object.keys(value).sort().join(',')
-const isProc = (value: unknown): value is Proc => {
+export const isProc = (value: unknown): value is Proc => {
   const proc = value as Proc
   return !!proc && typeof proc === 'object' && keys(proc) === 'group,marker,pid,started' && Number.isInteger(proc.pid) && proc.pid > 1
     && typeof proc.group === 'boolean' && typeof proc.started === 'string' && typeof proc.marker === 'string' && ownMarker(proc.marker)
@@ -126,10 +130,7 @@ export async function stopProcess(proc: Proc, { look = inspect, kill = (pid, sig
     try { kill(proc.group ? -proc.pid : proc.pid, signal) } catch { /* already gone */ }
   }
   send('SIGTERM')
-  for (let waited = 0; waited < graceMs; waited += 100) {
-    if (!sameProcess(proc, look)) return true
-    await sleep(100)
-  }
+  await Effect.runPromise(waitUntil(Effect.sync(() => !sameProcess(proc, look)), 100, graceMs))
   if (sameProcess(proc, look)) send('SIGKILL')
   return true
 }

@@ -54,7 +54,8 @@ test('a replay is kept only with the tape it names, and a shared one must be a r
 
 // Decision 0006: CIVIC makes no model calls. The loop imports Node, the graph, and Playwright for capture, nothing else.
 // Decision 0022: lifecycles use CIVIC's machine core, Effect and XState.
-const PACKAGES = ['@civic/core', 'effect', 'playwright-core', 'xstate']
+// Decision 0022: Effect actors own in-process lifecycles.
+const PACKAGES = ['@civic/core', '@xstate/effect', 'effect', 'playwright-core', 'xstate']
 
 test('the review loop imports only Node built-ins, the graph, playwright-core and the machine core', () => {
   const sourceDir = new URL('../src/', import.meta.url).pathname
