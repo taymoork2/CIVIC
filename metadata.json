@@ -1,0 +1,51 @@
+{
+  "cli_version": "0.13.3",
+  "checkpoint_id": "01M7HN17RG6BPTNA7Y32ZTY021",
+  "strategy": "manual-commit",
+  "branch": "refactor/layering",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "bin/lint-baseline.mjs",
+    "graph/src/cli.ts",
+    "graph/src/freshness.ts",
+    "graph/test/boundary.test.ts",
+    "importers/src/playwright-reporter.ts",
+    "importers/test/boundary.test.ts",
+    "lint-baseline.json",
+    "review/src/freshness.ts",
+    "review/src/graph-cli.ts",
+    "review/src/playwright-reporter.ts",
+    "review/test/store.test.ts",
+    "scripts/lint-baseline.test.mjs"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 38,
+    "cache_creation_tokens": 18091,
+    "cache_read_tokens": 11020417,
+    "output_tokens": 11230,
+    "api_call_count": 16
+  },
+  "redaction": {
+    "replacements": 407,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 376,
+      "key_context": 31,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
