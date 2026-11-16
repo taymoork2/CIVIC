@@ -38,7 +38,10 @@ Reader tools (`coverage`, `backend_coverage`, and `changed_screens`) can load a 
 connector from `adapter.connector`, a module path relative to the project root.
 The module must default-export the same connector object supplied to a custom
 host's `civicReview({ connectors })`. The path must stay inside the project,
-including symlinks. Loading it executes project code; use trusted projects only.
+including symlinks. Loading it executes project code, so CIVIC loads it only when
+its absolute path is listed in `CIVIC_TRUSTED_CONNECTORS` (separated like `PATH`),
+which the owner sets outside the checkout; a branch can name a connector but not
+trust one.
 Without a host connector or this declaration, unknown adapter kinds are refused.
 
 The development connector tags host JSX elements under the manifest's `sources`

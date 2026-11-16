@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
 import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
-import { join } from 'node:path'
+import { delimiter, join } from 'node:path'
 import { test } from 'node:test'
 import { readBackendCoverage, readProjectInventory } from '../src/backend.ts'
 import { changedScreens, coverage } from '../src/coordinator.ts'
@@ -26,6 +26,11 @@ test('outside checkout discovery, explicit projects and declared connectors', as
   writeFileSync(join(root, 'src/screen.tsx'), 'export const Screen = () => <h1>After</h1>\n')
   git('add', '.')
   git('-c', 'user.name=Fixture', '-c', 'user.email=f@example.invalid', 'commit', '-qm', 'test: after')
+  // A connector the checkout names is refused until the owner trusts that exact file.
+  writeFileSync(join(root, 'connector.mjs'), "throw new Error('untrusted connector ran')\n")
+  await assert.rejects(readProjectInventory(root), /CIVIC_TRUSTED_CONNECTORS/)
+  writeFileSync(join(root, 'connector.mjs'), "export default { kind: 'custom' }\n")
+  process.env.CIVIC_TRUSTED_CONNECTORS = [join(root, 'connector.mjs'), join(root, 'owned.mjs')].join(delimiter)
   const { project, metadata } = await readProjectInventory(root)
   Store.forCheckout(readCheckout(root)).putTaggedCapture(project.key, metadata.revision.source, { scenario: 'home', elements: [{ tag: 'h1', source: 'src/screen.tsx:1:29' }] })
   for (const selection of [undefined, 'civic.json', project.key]) {

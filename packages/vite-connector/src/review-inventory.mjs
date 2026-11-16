@@ -1,7 +1,8 @@
 import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
+import { realpathSync } from 'node:fs'
 import { readFile, readdir } from 'node:fs/promises'
-import { dirname, join, relative, resolve } from 'node:path'
+import { delimiter, dirname, join, relative, resolve } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { loadProject, publicProject, checkedScenarios, projectPath } from './review-project.mjs'
 import { checkedContract, coverageReport } from './review-coverage.mjs'
@@ -23,7 +24,10 @@ export async function reviewInventory(repo, designRoot, appRepo, connection, { c
   const project = connection ?? loadProject(repo, { ...(appRepo ? { applicationRoot: appRepo } : {}) })
   let connector = registeredConnector
   if (!connector && project.manifest.adapter.connector) {
-    const entry = projectPath(project.root, project.manifest.adapter.connector)
+    const entry = realpathSync(projectPath(project.root, project.manifest.adapter.connector))
+    // A branch can name a connector but never trust one: the owner lists trusted files outside the checkout.
+    const trusted = (process.env.CIVIC_TRUSTED_CONNECTORS ?? '').split(delimiter).filter(Boolean).flatMap((path) => { try { return [realpathSync(path)] } catch { return [] } })
+    if (!trusted.includes(entry)) throw Error(`adapter.connector ${entry} runs project code. To trust it, add its absolute path to CIVIC_TRUSTED_CONNECTORS.`)
     const module = await import(pathToFileURL(entry).href)
     connector = module.default
     if (!connector || typeof connector !== 'object') throw Error('adapter.connector must export a default connector object')
