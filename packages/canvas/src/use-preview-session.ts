@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
+import { useWindowEvent } from '@civic/shell/use-window-event'
 import { captureScreen } from '@civic/shell/capture'
 import project from 'virtual:civic-project'
 import { extension } from './extension'
@@ -34,12 +35,7 @@ export function usePreviewSession({ flows, generic, viewport, focusScreen }: {
       setAdapterVisits((rows) => rows.map((row) => row.id === id ? { ...row, error: (error as Error).message } : row))
     }
   }
-  useEffect(() => {
-    if (!adapterMode || !adapterVisits.some((row) => !row.screenshot)) return
-    const protect = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = '' }
-    window.addEventListener('beforeunload', protect)
-    return () => window.removeEventListener('beforeunload', protect)
-  }, [adapterVisits, adapterMode])
+  useWindowEvent('beforeunload', event => { event.preventDefault(); event.returnValue = '' }, adapterMode && adapterVisits.some(row => !row.screenshot))
   const attachAdapter = () => {
     const win = previewFrame.current?.contentWindow
     if (!win) return

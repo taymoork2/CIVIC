@@ -69,9 +69,10 @@ export function AppCanvas() {
   const { preview, previewFrame, adapterMode, adapterScreen, adapterVisits, adapterError, queued, replaying, replayFromStart } = session
   const browsingLive = live && (!preview || scenarios.find(row => row.id === preview.scenario)?.preview === 'live-read-only')
   const previewLabel = browsingLive ? 'Live app · browse only' : 'Private synthetic preview'
-  const [pane, setPane] = useState<WorkspacePanel | null>(() => { const params = new URLSearchParams(location.search); return params.has('feedback') || params.get('view') === 'review' ? 'review' : params.get('view') === 'contract' ? 'contract' : null })
+  const [currentPane, setCurrentPane] = useState<WorkspacePanel | null>(() => { const params = new URLSearchParams(location.search); return params.has('feedback') || params.get('view') === 'review' ? 'review' : params.get('view') === 'contract' ? 'contract' : null })
+  const pane = currentPane
+  const setPane = (next: WorkspacePanel | null) => { setCurrentPane(next); if (next && next !== pane && window.innerWidth < 1180) setOutline(false) }
   useWindowEvent('resize', () => { if (window.innerWidth < 1180) setOutline(false) })
-  useEffect(() => { if (pane && window.innerWidth < 1180) setOutline(false) }, [pane])
   const [applicationRoot, setApplicationRoot] = useState('')
   const bridge = useCoverage((index) => { setScenarios(index.scenarios); setSource(index.fixtureSource); setFixtureSnapshot(index); setApplicationRoot(index.connection?.applicationRoot ?? '') })
   const proposals = bridge.data?.candidates.filter((c) => c.targetPresent && !c.acknowledged).length ?? 0
