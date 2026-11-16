@@ -9,6 +9,7 @@
 // for; defaults to the checkout's git identity), CIVIC_REPO (default checkout).
 
 import { readFileSync, realpathSync } from 'node:fs'
+import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { Effect, Schema, Stream } from 'effect'
 import { contextFor, gapsIn, loadGraph, renderGaps, renderWorkOrder, PLATFORMS, type Annotation, type CaptureRef, type Platform, type RequestStatus } from '../../graph/src/index.ts'
@@ -17,6 +18,7 @@ import { identityFromEnv } from './identity.ts'
 import { addCheck, annotate, claim, comment, find, getRequest, listRequests, lineIdFor, registerPullRequest, release, reportFix, type Context } from './loop.ts'
 import { recapture, reproductionUrl } from './recapture.ts'
 import { renderList, renderRequest } from './render.ts'
+import { elements, type TaggedCapture } from './elements.ts'
 import { Store } from './store.ts'
 
 type Content = { type: 'text'; text: string } | { type: 'image'; data: string; mimeType: string }
@@ -119,6 +121,11 @@ export const TOOLS: readonly Tool[] = [
     const platform = str('platform')
     const scope = str('scope')
     return text(renderGaps(gapsIn(await loadGraph(need('graph')), { ...(scope ? { scope } : {}), ...(platform ? { platform: platform as Platform } : {}) })))
+  } },
+  { name: 'elements', description: 'The captured elements a source file renders, optionally only those from a line range, with their scenario. Use it to see which screens a change touches.', schema: Schema.Struct({ ...cwdProperty, file: Schema.NonEmptyString.annotate({ description: 'Repository-relative source file, for example packages/canvas/src/review-panel.tsx.' }), from: Schema.optionalKey(Schema.Int), to: Schema.optionalKey(Schema.Int), captures: Schema.NonEmptyString.annotate({ description: 'A tagged-captures JSON file, as civic elements --capture reads.' }) }), run: async ({ args, str, need, text }) => {
+    const lines = typeof args.from === 'number' ? [args.from, typeof args.to === 'number' ? args.to : args.from] as const : undefined
+    const captures = JSON.parse(readFileSync(resolve(str('cwd') ?? process.cwd(), need('captures')), 'utf8')) as TaggedCapture[]
+    return text(JSON.stringify(elements(captures, need('file'), lines), null, 2))
   } },
 ]
 

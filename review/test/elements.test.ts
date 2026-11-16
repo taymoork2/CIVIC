@@ -6,6 +6,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { elements, diffRanges, parseSource } from '../src/elements.ts'
 import { annotate, createRequest, readCheckout, Store } from '../src/index.ts'
+import { callTool } from '../src/mcp.ts'
 
 test('source queries and diff ranges retain scenario and original location', () => {
   const captures = [{ scenario: 'screen', elements: [{ tag: 'button', source: 'src/view.tsx:4:2' }, { tag: 'div', source: 'src/view.tsx:8:1' }] }]
@@ -15,6 +16,13 @@ test('source queries and diff ranges retain scenario and original location', () 
   assert.equal(parseSource('/secret:1:1'), undefined)
   assert.equal(parseSource('src/a:0:1'), undefined)
   assert.deepEqual(diffRanges('+++ b/src/view.tsx\n@@ -2,2 +4,3 @@\n@@ -9 +12,0 @@'), [{ file: 'src/view.tsx', from: 4, to: 6 }])
+})
+
+test('the elements MCP tool answers from a captures file', async () => {
+  const root = mkdtempSync(join(tmpdir(), 'civic-elements-mcp-'))
+  writeFileSync(join(root, 'captures.json'), JSON.stringify([{ scenario: 'screen', elements: [{ tag: 'button', source: 'src/view.tsx:4:2' }, { tag: 'div', source: 'src/view.tsx:8:1' }] }]))
+  const [result] = await callTool('elements', { cwd: root, file: 'src/view.tsx', from: 8, captures: 'captures.json' })
+  assert.deepEqual(JSON.parse((result as { text: string }).text).map((element: { tag: string }) => element.tag), ['div'])
 })
 
 test('annotation and request carry the code location at the observed revision', () => {
