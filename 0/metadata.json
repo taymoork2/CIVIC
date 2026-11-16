@@ -1,0 +1,54 @@
+{
+  "cli_version": "0.13.3",
+  "checkpoint_id": "01M7H0KM0D98H4VSEY4EP8WTFV",
+  "session_id": "8f3b2eca-0508-4f5d-8344-d9ed70c2da42",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-16T01:47:39.351999Z",
+  "branch": "feat/civic-self-project",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "civic.coverage.json",
+    "civic.json",
+    "civic.scenarios.json",
+    "packages/canvas/README.md",
+    "packages/canvas/server/self-review.check.mjs",
+    "packages/canvas/src/self-review/preview.tsx"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "6e9bfc41e1d2",
+  "checkpoint_transcript_start": 1367,
+  "transcript_lines_at_start": 1367,
+  "compact_transcript_start": 168,
+  "token_usage": {
+    "input_tokens": 64,
+    "cache_creation_tokens": 26688,
+    "cache_read_tokens": 9173282,
+    "output_tokens": 13809,
+    "api_call_count": 28
+  },
+  "session_token_usage": {
+    "input_tokens": 356,
+    "cache_creation_tokens": 316114,
+    "cache_read_tokens": 38821295,
+    "output_tokens": 102646,
+    "api_call_count": 162
+  },
+  "redaction": {
+    "replacements": 97,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 89,
+      "key_context": 8,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 14
+  }
+}

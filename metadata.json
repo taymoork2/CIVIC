@@ -1,0 +1,45 @@
+{
+  "cli_version": "0.13.3",
+  "checkpoint_id": "01M7H0KM0D98H4VSEY4EP8WTFV",
+  "strategy": "manual-commit",
+  "branch": "feat/civic-self-project",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "civic.coverage.json",
+    "civic.json",
+    "civic.scenarios.json",
+    "packages/canvas/README.md",
+    "packages/canvas/server/self-review.check.mjs",
+    "packages/canvas/src/self-review/preview.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 64,
+    "cache_creation_tokens": 26688,
+    "cache_read_tokens": 9173282,
+    "output_tokens": 13809,
+    "api_call_count": 28
+  },
+  "redaction": {
+    "replacements": 97,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 89,
+      "key_context": 8,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
