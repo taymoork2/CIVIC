@@ -15,7 +15,10 @@
     "test": "node ../bin/with-temp-root.mjs node --test --test-concurrency=2 \"test/**/*.test.ts\""
   },
   "dependencies": {
-    "playwright-core": "catalog:"
+    "@civic/core": "workspace:*",
+    "effect": "^4.1.4",
+    "playwright-core": "catalog:",
+    "xstate": "6.0.0-beta.3"
   },
   "devDependencies": {
     "@types/node": "catalog:",

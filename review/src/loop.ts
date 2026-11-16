@@ -22,6 +22,7 @@ import { ForbiddenError, loadAccess, scopesOf, type AccessPolicy, type Scope } f
 import { git, idPath, revisionOf, type Checkout } from './git.ts'
 import { actorId, ensureActor, type Identity } from './identity.ts'
 import type { Store } from './store.ts'
+import { initialRequestStatus, moveRequest } from './request.machine.ts'
 
 /** Everything an operation needs to know about who runs it and where. */
 export interface Context {
@@ -363,7 +364,7 @@ export function createRequest(context: Context, input: RequestInput): WorkReques
       repro: `civic repro ${id} --url <preview>`,
       requestedBy: by,
       ...(input.owners?.length ? { owners: input.owners } : {}),
-      status: 'open',
+      status: initialRequestStatus,
       fixes: [],
       comments: [],
       history: [{ status: 'open', by, at }],
@@ -434,23 +435,20 @@ export function getRequest(context: Context, id: string): RequestSummary {
 export function claim(context: Context, id: string, leaseMinutes = DEFAULT_LEASE_MINUTES): WorkRequest {
   return mutateRequest(context, id, 'claim', 'write', (request, by, at, document) => {
     const now = nowOf(context)
-    if (request.status === 'fix-ready') throw new Error(`${request.id} already has a fix waiting for review; reopen it first.`)
-    if (request.status === 'resolved') throw new Error(`${request.id} is resolved; a person can reopen it.`)
     const holder = summarize(document, request, now).claimedBy
-    if (holder && holder !== by) throw new Error(`${request.id} is claimed by ${holder} on ${request.claim!.line} until ${request.claim!.expires}.`)
+    const previous = request.status
+    moveRequest(request, { type: 'CLAIM', by, now: now.getTime() }, request.status === 'fix-ready' ? `${request.id} already has a fix waiting for review; reopen it first.` : request.status === 'resolved' ? `${request.id} is resolved; a person can reopen it.` : `${request.id} is claimed by ${holder} on ${request.claim?.line} until ${request.claim?.expires}.`)
     const line = ensureLines(document, context.checkout)
     request.claim = { by, line, at, expires: new Date(now.getTime() + leaseMinutes * 60_000).toISOString() }
-    if (request.status !== 'claimed') request.history.push({ status: 'claimed', by, at })
-    request.status = 'claimed'
+    if (previous !== 'claimed') request.history.push({ status: 'claimed', by, at })
   })
 }
 
 /** Gives a claim back, so another agent can take the request. */
 export function release(context: Context, id: string): WorkRequest {
   return mutateRequest(context, id, 'release', 'write', (request, by, at) => {
-    if (request.status !== 'claimed' || request.claim?.by !== by) throw new Error(`${request.id} is not claimed by ${by}.`)
     const reopened = request.history.some((event) => event.status === 'reopened')
-    request.status = reopened ? 'reopened' : 'open'
+    moveRequest(request, { type: reopened ? 'RELEASE_REOPENED' : 'RELEASE', by, now: Date.parse(at) }, `${request.id} is not claimed by ${by}.`)
     request.history.push({ status: request.status, by, at, note: 'Claim released.' })
     delete request.claim
   })
@@ -476,9 +474,7 @@ export interface FixInput {
  */
 export function reportFix(context: Context, id: string, input: FixInput = {}): WorkRequest {
   return mutateRequest(context, id, 'report-fix', 'write', (request, by, at, document) => {
-    if (request.status !== 'claimed' || request.claim?.by !== by) {
-      throw new Error(`Claim ${request.id} before reporting a fix${request.claim ? `; it is claimed by ${request.claim.by}` : ''}.`)
-    }
+    moveRequest(request, { type: 'REPORT_FIX', by, now: Date.parse(at) }, `Claim ${request.id} before reporting a fix${request.claim ? `; it is claimed by ${request.claim.by}` : ''}.`)
     const line = ensureLines(document, context.checkout)
     const revision = input.revision ?? context.checkout.head
     if (input.preview) {
@@ -487,7 +483,6 @@ export function reportFix(context: Context, id: string, input: FixInput = {}): W
       record.previews = [...(record.previews ?? []).filter((preview) => new URL(preview.url).origin !== origin), { url: origin, revision }]
     }
     request.fixes.push({ by, line, revision, at, ...(input.preview ? { preview: input.preview } : {}), ...(input.note ? { note: input.note } : {}) })
-    request.status = 'fix-ready'
     request.history.push({ status: 'fix-ready', by, at, ...(input.note ? { note: input.note } : {}) })
   })
 }
@@ -520,9 +515,7 @@ export function resolve(context: Context, ids: string[], note?: string): WorkReq
     const at = nowOf(context).toISOString()
     return ids.map((id) => {
       const request = findVersioned(document, id)
-      if (request.status === 'resolved') throw new Error(`${request.id} is already resolved.`)
-      if (request.status !== 'fix-ready' && !note) throw new Error(`${request.id} has no fix waiting for review; say why it is resolved with --note.`)
-      request.status = 'resolved'
+      moveRequest(request, { type: 'RESOLVE', by, now: Date.parse(at), note }, request.status === 'resolved' ? `${request.id} is already resolved.` : `${request.id} has no fix waiting for review; say why it is resolved with --note.`)
       request.history.push({ status: 'resolved', by, at, ...(note ? { note } : {}) })
       bump(request, by, at, 'resolve')
       return structuredClone(request)
@@ -533,8 +526,7 @@ export function resolve(context: Context, ids: string[], note?: string): WorkReq
 /** Sends a fix back, or reopens a resolved request; the note goes to whoever picks it up. */
 export function reopen(context: Context, id: string, note: string): WorkRequest {
   return mutateRequest(context, id, 'reopen', 'resolve', (request, by, at) => {
-    if (request.status !== 'resolved' && request.status !== 'fix-ready') throw new Error(`${request.id} is ${request.status}; only a fix waiting for review or a resolved request can be reopened.`)
-    request.status = 'reopened'
+    moveRequest(request, { type: 'REOPEN', by, now: Date.parse(at) }, `${request.id} is ${request.status}; only a fix waiting for review or a resolved request can be reopened.`)
     request.history.push({ status: 'reopened', by, at, note })
     delete request.claim
   })
@@ -556,6 +548,7 @@ export function reviewQueue(context: Context): RequestSummary[] {
 
 function mutateRequest(context: Context, id: string, what: string, scope: Scope, change: (request: WorkRequest, by: string, at: string, document: GraphDocument) => void): WorkRequest {
   allow(context, scope, what.replace('-', ' '))
+  // The transaction reads the current document, so the machine decides on fresh state.
   return context.store.transact((document) => {
     const by = ensureActor(document, context.identity)
     const at = nowOf(context).toISOString()
