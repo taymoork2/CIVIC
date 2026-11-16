@@ -11,8 +11,9 @@
 import { readFileSync, realpathSync, watch } from 'node:fs'
 import { resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { Effect, Fiber, Queue, Schedule, Schema, Stream } from 'effect'
-import { changedScreens, coverage, ReviewSessions, type ScreenRef, type Shot } from './coordinator.ts'
+import { Cause, Effect, Fiber, Queue, Schedule, Schema, Stream } from 'effect'
+import { changedScreens, coverage, previewStore, ReviewSessions, type ScreenRef, type Shot } from './coordinator.ts'
+import { previewsDir, privateDir } from './preview/state.ts'
 import { contextFor, gapsIn, loadGraph, renderGaps, renderWorkOrder, PLATFORMS, type Annotation, type CaptureRef, type Platform, type RequestStatus } from '../../graph/src/index.ts'
 import { readCheckout } from './git.ts'
 import { identityFromEnv } from './identity.ts'
@@ -263,13 +264,35 @@ export const serve = () => Effect.scoped(Effect.gen(function* () {
         if (previous) await Effect.runPromise(Fiber.interrupt(previous))
         subscriptions.delete(uri)
         if (message.method === 'resources/subscribe') {
-          const store = Store.forCheckout(readCheckout(process.env.CIVIC_REPO ?? process.cwd()))
+          const cwd = process.env.CIVIC_REPO ?? process.cwd()
+          const store = Store.forCheckout(readCheckout(cwd))
           store.ensure()
           const changes = Stream.callback<void>(queue => Effect.acquireRelease(
-            Effect.sync(() => watch(store.dir, { recursive: true }, (_event, filename) => {
-              if (filename && !String(filename).endsWith('.tmp')) Queue.offerUnsafe(queue, undefined)
-            })),
-            watcher => Effect.sync(() => watcher.close()),
+            Effect.sync(() => {
+              privateDir(previewsDir())
+              const notify = () => Queue.offerUnsafe(queue, undefined)
+              const failed = (error: unknown) => { Queue.failCauseUnsafe(queue, Cause.die(error)) }
+              const records = watch(store.dir, { recursive: true }, (_event, filename) => {
+                if (filename && !String(filename).endsWith('.tmp')) notify()
+              }).on('error', failed)
+              let root = '', preview: ReturnType<typeof watch> | undefined
+              const refresh = () => {
+                const next = previewStore(cwd)
+                if (next === root) return
+                preview?.close()
+                root = next
+                preview = next === cwd ? undefined : watch(next, { recursive: true }, (_event, filename) => {
+                  if (filename && String(filename).split('/').includes('replays') && !String(filename).endsWith('.tmp')) notify()
+                }).on('error', failed)
+                notify()
+              }
+              const registrations = watch(previewsDir(), () => {
+                try { refresh() } catch (error) { failed(error) }
+              }).on('error', failed)
+              try { refresh() } catch (error) { records.close(); registrations.close(); throw error }
+              return () => { records.close(); registrations.close(); preview?.close() }
+            }),
+            close => Effect.sync(close),
           ), { bufferSize: 1, strategy: 'sliding' })
           const fiber = yieldSubscription(changes, uri)
           subscriptions.set(uri, fiber)

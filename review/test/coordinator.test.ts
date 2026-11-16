@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { createHash, randomUUID } from 'node:crypto'
 import { execFileSync, spawn } from 'node:child_process'
 import { once } from 'node:events'
 import { cpSync, mkdirSync, mkdtempSync, readFileSync, symlinkSync, writeFileSync } from 'node:fs'
@@ -8,6 +9,7 @@ import { createInterface } from 'node:readline'
 import { test } from 'node:test'
 import { readCheckout } from '../src/git.ts'
 import { Store } from '../src/store.ts'
+import { readProjectInventory } from '../src/backend.ts'
 import { previewId, sameProcess } from '../src/preview/state.ts'
 
 test('coordinator reviews, links, captures, notifies and closes over real stdio', { timeout: 120_000 }, async () => {
@@ -80,9 +82,27 @@ test('coordinator reviews, links, captures, notifies and closes over real stdio'
     assert.equal((await rpc('tools/call', { name: 'close_review', arguments: { id: 'another-session' } })).result.isError, true)
     assert.equal((await fetch(session.link)).status, 200)
     const preview = JSON.parse(readFileSync(join(tmpdir(), 'civic-preview', `${previewId(checkout.root, 'main')}.json`), 'utf8'))
+    const coverageUri = `civic://coverage/${encodeURIComponent(coverage.project)}`
+    assert.deepEqual((await rpc('resources/subscribe', { uri: coverageUri })).result, {})
+    // The preview owns this replay; the shared review store must remain untouched.
+    const replayDirectory = join(preview.root, 'store/.review-data/projects', coverage.project, 'replays')
+    mkdirSync(replayDirectory, { recursive: true })
+    notice = new Promise<any>(resolve => { notified = message => { if (message.params.uri === coverageUri) resolve(message) } })
+    const { metadata } = await readProjectInventory(repo, join(notebook, 'civic.project.json'), join(preview.root, 'store'))
+    const tape = { project: coverage.project, source: metadata.revision.source, seed: { context: { scenario: 'demo.home' } }, steps: [] }
+    const bytes = JSON.stringify(tape)
+    const hash = createHash('sha256').update(bytes).digest('hex')
+    mkdirSync(join(replayDirectory, 'tapes'), { recursive: true })
+    writeFileSync(join(replayDirectory, 'tapes', `${hash}.json`), bytes)
+    writeFileSync(join(replayDirectory, `${randomUUID()}.json`), JSON.stringify({ schema: 'civic.replay/0', project: coverage.project, source: metadata.revision.source, scenario: 'demo.home', tape: hash, steps: 0, outcome: 'pass', replayedAt: new Date().toISOString() }))
+    assert.equal((await notice).params.uri, coverageUri)
+    assert.equal((await rpc('resources/read', { uri: coverageUri })).error, undefined)
+    assert.equal(store.replays().length, 0)
+    assert.deepEqual((await rpc('resources/unsubscribe', { uri: coverageUri })).result, {})
     assert.equal((await rpc('tools/call', { name: 'close_review', arguments: { id: session.id } })).result.isError, undefined)
     for (const proc of preview.children) assert.equal(sameProcess(proc), false)
     assert.deepEqual((await rpc('resources/unsubscribe', { uri })).result, {})
+    assert.deepEqual((await rpc('resources/subscribe', { uri: coverageUri })).result, {})
     assert.equal((await rpc('tools/call', { name: 'close_review', arguments: { id: 'another-session' } })).result.isError, true)
   } finally {
     const exited = once(server, 'exit')
