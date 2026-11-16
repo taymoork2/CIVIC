@@ -9,7 +9,8 @@ export default defineConfig({
   run: { cache: false },
   lint: {
     extends: [core, react, antiSlop],
-    overrides: [...(vitest.overrides ?? []),
+    // House style for tests: top-level tests and the matchers CIVIC uses.
+    overrides: [...(vitest.overrides ?? []).map(override => ({ ...override, rules: { ...override.rules, ...Object.fromEntries(['vitest/require-top-level-describe', 'vitest/prefer-strict-equal', 'vitest/prefer-to-be-truthy', 'vitest/prefer-to-be-falsy'].map(rule => [rule, 'off'])) } })),
       { files: ["canvas/src/**/*", "shell/src/**/*"], rules: {
         "no-restricted-imports": ["error", { paths: [{ name: "react", importNames: ["useEffect"], message: "Use a named external-sync hook." }] }],
       } },
@@ -21,6 +22,14 @@ export default defineConfig({
     rules: {
       'no-restricted-properties': ['error', ...['vi', 'vitest', 'jest'].flatMap(object =>
         ['mock', 'doMock', 'unstable_mockModule'].map(property => ({ object, property, message: 'Use real dependencies.' })))],
+      // Style rules whose opposite is CIVIC's house style; new code reads like its neighbours.
+      ...Object.fromEntries([
+        'anti-slop/require-readable-spacing', 'eslint/curly', 'eslint/func-style', 'eslint/func-names',
+        'eslint/one-var', 'eslint/sort-vars', 'eslint/no-plusplus', 'eslint/prefer-destructuring',
+        'eslint/prefer-template', 'eslint/no-nested-ternary', 'unicorn/new-for-builtins', 'unicorn/throw-new-error',
+        'unicorn/text-encoding-identifier-case', 'unicorn/numeric-separators-style',
+        'typescript/consistent-type-definitions', 'import/consistent-type-specifier-style',
+      ].map(rule => [rule, 'off'])),
     },
     ignorePatterns: [...(core.ignorePatterns ?? []), '**/dist/**', '**/ui.generated.css'],
   },
