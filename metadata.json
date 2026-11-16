@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.13.3",
+  "checkpoint_id": "01M7GVKQQEWMDXZWWVR25A96GD",
+  "strategy": "manual-commit",
+  "branch": "civic/controller-2026-11-15",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "docs/plans/2026-11-15-effect-xstate-electron-rebuild.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 50,
+    "cache_creation_tokens": 21294,
+    "cache_read_tokens": 6471800,
+    "output_tokens": 11874,
+    "api_call_count": 23
+  },
+  "redaction": {
+    "replacements": 56,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 51,
+      "key_context": 5,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}

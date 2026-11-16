@@ -1,0 +1,49 @@
+{
+  "cli_version": "0.13.3",
+  "checkpoint_id": "01M7GVKQQEWMDXZWWVR25A96GD",
+  "session_id": "8f3b2eca-0508-4f5d-8344-d9ed70c2da42",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-16T00:20:19.659661Z",
+  "branch": "civic/controller-2026-11-15",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "docs/plans/2026-11-15-effect-xstate-electron-rebuild.md"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "48b6bf65667e",
+  "checkpoint_transcript_start": 1025,
+  "transcript_lines_at_start": 1025,
+  "compact_transcript_start": 121,
+  "token_usage": {
+    "input_tokens": 50,
+    "cache_creation_tokens": 21294,
+    "cache_read_tokens": 6471800,
+    "output_tokens": 11874,
+    "api_call_count": 23
+  },
+  "session_token_usage": {
+    "input_tokens": 250,
+    "cache_creation_tokens": 266133,
+    "cache_read_tokens": 24157659,
+    "output_tokens": 78593,
+    "api_call_count": 116
+  },
+  "redaction": {
+    "replacements": 56,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 51,
+      "key_context": 5,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 7
+  }
+}
