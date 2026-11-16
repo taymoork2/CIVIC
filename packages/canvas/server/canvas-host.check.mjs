@@ -164,11 +164,20 @@ test('an app calling its own HTTP API runs live against an isolated copy of that
   await frame.getByRole('button', { name: 'Save' }).click()
   await frame.getByText('Call the plumber').waitFor()
   assert.deepEqual(api, [], 'the app\'s API calls never leave the page')
+  await frame.getByRole('checkbox', { name: 'Water the plants' }).check()
+  await tab.locator('iframe[title="Live Task list"]').evaluate((element) => element.contentWindow.reviewPreview.recording())
+  await frame.locator('label', { hasText: 'Water the plants' }).click({ position: { x: 80, y: 10 } })
+  await tab.locator('iframe[title="Live Task list"]').evaluate((element) => element.contentWindow.reviewPreview.recording())
+  await frame.getByRole('checkbox', { name: 'Water the plants' }).press('Space')
   const tape = await tab.locator('iframe[title="Live Task list"]').evaluate((element) => element.contentWindow.reviewPreview.recording())
   const writes = tape.steps.flatMap((step) => step.operations).filter(operation => operation.kind !== 'query')
-  assert.deepEqual(writes.map((operation) => [operation.name, operation.result.status]), [['POST:/api/tasks', 201]])
-  const replayed = await tab.locator('iframe[title="Live Task list"]').evaluate((element, recording) => element.contentWindow.reviewPreview.replay(recording), tape)
+  assert.deepEqual(writes.map((operation) => [operation.name, operation.result.status]), [['POST:/api/tasks', 201], ['PATCH:/api/tasks/1', 200], ['PATCH:/api/tasks/1', 200], ['PATCH:/api/tasks/1', 200]])
+  const replayed = await tab.locator('iframe[title="Live Task list"]').evaluate(async (element, recording) => {
+    try { return await element.contentWindow.reviewPreview.replay(recording) }
+    catch (error) { throw Error(`${error.message}: ${JSON.stringify(element.contentWindow.reviewPreview.replayMismatch())}`, { cause: error }) }
+  }, tape)
   assert.equal(replayed.verified, tape.steps.length)
+  assert.equal(await frame.getByRole('checkbox', { name: 'Water the plants' }).isChecked(), true)
   assert.deepEqual(await frame.locator('li').allTextContents(), [' Water the plants', ' Book the dentist', ' Call the plumber'])
   // Snapshots render each screen from its own isolated run.
   const cookie = (await tab.context().cookies()).map((row) => `${row.name}=${row.value}`).join('; ')

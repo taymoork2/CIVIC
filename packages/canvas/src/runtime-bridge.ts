@@ -26,6 +26,7 @@ export function createRuntimeBridge(ports: RuntimePorts) {
   const pending = new Set<Promise<unknown>>()
   const sealed = new WeakSet<RuntimeStep>()
   let current: RuntimeStep | null = null, replaying = false
+  let prepared: ReturnType<NonNullable<RuntimePorts['discover']>> | undefined
   let replayDone: Promise<void> | null = null
   let mismatch: { step: number; expected: RuntimeStep; actual: RuntimeStep } | null = null
   const snapshot = (step: RuntimeStep) => {
@@ -57,14 +58,16 @@ export function createRuntimeBridge(ports: RuntimePorts) {
   const bridge = {
     prepare(target?: RuntimeGesture['target']) {
       if (!replaying && !(target && current?.gesture.kind === 'input' && JSON.stringify(target) === JSON.stringify(current.gesture.target))) seal()
+      if (!replaying && ports.discover) prepared = structuredClone(ports.discover())
     },
     record(gesture: RuntimeGesture) {
       if (replaying) return
-      if (current?.gesture.kind === 'input' && gesture.kind === 'input' && !sealed.has(current) && !current.operations.length && JSON.stringify(current.gesture.target) === JSON.stringify(gesture.target)) { current.gesture = structuredClone(gesture); return }
+      if (current?.gesture.kind === 'input' && gesture.kind === 'input' && !sealed.has(current) && !current.operations.length && JSON.stringify(current.gesture.target) === JSON.stringify(gesture.target)) { current.gesture = structuredClone(gesture); prepared = undefined; return }
       seal()
       if (tape.steps.length >= 1000) throw Error('Recording limit reached. Save this run and start another.')
       current = { gesture: structuredClone(gesture), route: ports.route(), fields: [], view: '', operations: [] }
-      if (ports.discover) { const state = structuredClone(ports.discover()); current.discovery = { before: state, after: structuredClone(state) } }
+      if (ports.discover) { const state = prepared ?? structuredClone(ports.discover()); current.discovery = { before: state, after: structuredClone(state) } }
+      prepared = undefined
       tape.steps.push(current)
     },
     operation<T>(kind: RuntimeOperation['kind'], name: string, args: unknown, execute: () => Promise<T>, actor?: string): Promise<T> {
@@ -85,6 +88,7 @@ export function createRuntimeBridge(ports: RuntimePorts) {
       if (replaying) throw Error('Replay is already running.')
       await flush(); await ports.assertSource()
       replaying = true
+      prepared = undefined
       let finished!: () => void
       replayDone = new Promise<void>((resolve) => { finished = resolve })
       mismatch = null
