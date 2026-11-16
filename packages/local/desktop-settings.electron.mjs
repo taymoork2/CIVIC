@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict'
+import { Effect, Fiber } from 'effect'
+import { awakeSleep } from '../canvas/server/awake-clock.mjs'
 import electron from 'electron'
 import { createRequire } from 'node:module'
 import { cp, mkdtemp, readFile, realpath, writeFile } from 'node:fs/promises'
@@ -46,7 +48,7 @@ windows = projectWindows({ current: current.key, origin, createHost: host })
 const env = { ...process.env, CIVIC_TEST: '1', CIVIC_LOCAL_STORE: store, CIVIC_DESKTOP_ORIGIN: origin }
 delete env.ELECTRON_RUN_AS_NODE
 let app
-const budget = setTimeout(() => { app?.process().kill('SIGKILL'); process.exitCode = 1 }, 180000)
+const budget = Effect.runFork(Effect.andThen(awakeSleep('180 seconds'), Effect.sync(() => { app?.process().kill('SIGKILL'); process.exitCode = 1 })))
 try {
   const launch = () => _electron.launch({ executablePath: process.env.CIVIC_ELECTRON_BINARY || electron, args: [fileURLToPath(new URL('desktop.mjs', import.meta.url))], env, timeout: 30000 })
   app = await launch()
@@ -254,7 +256,7 @@ try {
   console.error('Electron settings evidence:', store)
   throw error
 } finally {
-  clearTimeout(budget)
+  await Effect.runPromise(Fiber.interrupt(budget))
   await app?.evaluate(({ app }) => app.exit(0)).catch(() => {})
   await app?.close().catch(() => {})
   await windows.close(); await initial.close()

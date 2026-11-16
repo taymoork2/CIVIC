@@ -7,6 +7,7 @@ const hostTime = () => Effect.runSync(Clock.currentTimeMillis);
 export function clientPresence(changed, readTime = hostTime) {
   const tickets = new Map();
   const clients = new Map();
+  let checked = readTime();
   return {
     revokeTickets() {
       tickets.clear();
@@ -57,7 +58,11 @@ export function clientPresence(changed, readTime = hostTime) {
       return { id, generation };
     },
     heartbeat() {
+      const now = readTime();
+      const woke = now - checked > 10_000 || now < checked;
+      checked = now;
       for (const [id, client] of clients) {
+        if (woke) client.seen = now;
         if (readTime() - client.seen < 15_000) {
           client.socket.ping();
         } else {

@@ -5,6 +5,7 @@ import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
 import { Effect, Schedule } from 'effect'
+import { awakeTimeout } from '../canvas/server/awake-clock.mjs'
 import { WebSocket } from 'ws'
 import { repo, store } from './store.mjs'
 
@@ -27,7 +28,7 @@ export const desktopHost = Effect.gen(function* () {
   const hash = createHash('sha256').update(repo).update(git(['rev-parse', 'HEAD'])).update(git(['diff', 'HEAD', '--', ...sources]))
   for (const file of git(['ls-files', '--others', '--exclude-standard', '-z', '--', ...sources]).toString().split('\0').filter(Boolean)) hash.update(file).update(readFileSync(path.join(repo, file)))
   const build = hash.digest('hex')
-  const owner = yield* Effect.timeout(Effect.tryPromise(async () => {
+  const owner = yield* awakeTimeout(Effect.tryPromise(async () => {
     const log = await open(path.join(store, 'managed-host.log'), 'a', 0o600)
     try {
       // eslint-disable-next-line promise/avoid-new -- child IPC is a callback boundary.
@@ -55,7 +56,7 @@ export const desktopHost = Effect.gen(function* () {
 
 export function desktopConnection(owner) {
   return Effect.acquireRelease(
-    Effect.timeout(Effect.retry(Effect.timeout(Effect.callback(resume => {
+    awakeTimeout(Effect.retry(awakeTimeout(Effect.callback(resume => {
       const socket = new WebSocket(owner.endpoint.replace('http:', 'ws:') + '/api/civic/control', ['civic-control'], { headers: { authorization: `Bearer ${owner.capability}` } })
       socket.once('open', () => resume(Effect.succeed(socket)))
       socket.once('error', error => resume(Effect.fail(error)))

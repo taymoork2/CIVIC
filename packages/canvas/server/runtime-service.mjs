@@ -8,6 +8,7 @@ import * as Scope from 'effect/Scope'
 import * as Exit from 'effect/Exit'
 import * as Schedule from 'effect/Schedule'
 import * as Clock from 'effect/Clock'
+import { awakeTimeout } from './awake-clock.mjs'
 import { createEffectActor, sendAndAwait } from '@xstate/effect'
 import { runMachine } from './run-lifecycle.mjs'
 
@@ -68,14 +69,21 @@ export function runtimeService(project, source, { root = project.manifestRoot, a
     })()
     return run.stopping
   }
+  let checked = hostTime()
   Effect.runSync(Effect.forkIn(Effect.repeat(Effect.promise(async () => {
+    const now = hostTime(), elapsed = now - checked
+    checked = now
+    if (elapsed > 90_000 || elapsed < 0) {
+      for (const run of runs.values()) run.used = now
+      return
+    }
     for (const [id, run] of runs) if (hostTime() - run.used > 30 * 60_000) await stop(id)
   }), Schedule.spaced('1 minute')), scope))
   function call(run, command) {
     const id = randomUUID()
     let cleanup
     if (run.stopping) reject('Isolated runtime stopped; start a new run.', 409)
-    return Effect.runPromise(Effect.ensuring(Effect.timeoutOrElse(Effect.callback(resumeCall => {
+    return Effect.runPromise(Effect.ensuring(awakeTimeout(Effect.callback(resumeCall => {
       cleanup = () => { run.worker.off('message', message); run.worker.off('error', failed); run.worker.off('exit', exited) }
       const message = (response) => { if (response.id !== id) return; resumeCall(response.error ? Effect.fail(Object.assign(Error(response.error), { data: response.data })) : Effect.succeed(response.result)) }
       const failed = (error) => resumeCall(Effect.fail(error))
@@ -83,7 +91,7 @@ export function runtimeService(project, source, { root = project.manifestRoot, a
       run.worker.on('message', message).once('error', failed).once('exit', exited)
       run.worker.postMessage({ ...command, id })
       return Effect.sync(cleanup)
-    }), { duration: '30 seconds', orElse: () => Effect.promise(async () => { await stop(run.id); throw Error('Isolated runtime timed out; start a new run.') }) }), Effect.sync(() => cleanup?.())))
+    }), '30 seconds', () => Effect.promise(async () => { await stop(run.id); throw Error('Isolated runtime timed out; start a new run.') })), Effect.sync(() => cleanup?.())))
   }
   /** Fresh review credentials for every persona with an identity; the run's own persona is `identity`. */
   const credentials = (persona, signedIn) => {
@@ -241,7 +249,7 @@ export function runtimeService(project, source, { root = project.manifestRoot, a
     },
     close() {
       closing ??= (async () => {
-        await Effect.runPromise(Effect.timeoutOrElse(Effect.promise(() => Promise.allSettled(pending)), { duration: '30 seconds', orElse: () => Effect.void }))
+        await Effect.runPromise(awakeTimeout(Effect.promise(() => Promise.allSettled(pending)), '30 seconds', () => Effect.void))
         await Promise.all([...runs.keys()].map(stop))
         await Effect.runPromise(Scope.close(scope, Exit.void))
       })()

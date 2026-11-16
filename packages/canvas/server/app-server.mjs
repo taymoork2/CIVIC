@@ -4,7 +4,8 @@ import { createServer } from "node:http";
 import { promisify } from "node:util";
 
 import { createEffectActor, sendAndAwait } from "@xstate/effect";
-import { Effect, Schedule } from "effect";
+import { Clock, Effect, Schedule } from "effect";
+import { awakeClock } from './awake-clock.mjs';
 import { WebSocketServer } from "ws";
 
 import { clientPresence, frameLimit } from "./client-presence.mjs";
@@ -53,7 +54,8 @@ export function managedHost({ store, build, port = 0, viewer, ready = () => null
         ready(registration.owner);
         return registration.owner;
       }
-      const actor = yield* createEffectActor(serverMachine);
+      const clock = yield* awakeClock;
+      const actor = yield* Effect.provideService(createEffectActor(serverMachine), Clock.Clock, clock);
       const runs = new Map();
       const closeRuns = () =>
         Promise.all([...runs.values()].map((value) => value.service.close()));

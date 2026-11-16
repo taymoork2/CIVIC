@@ -5,6 +5,7 @@ import { mkdtemp, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { Effect } from 'effect'
 
 test('an explicitly configured missing integration reports its path instead of loading a private default', async () => {
   const store = await mkdtemp(join(tmpdir(), 'civic-missing-host-')), missing = join(store, 'missing-integration.mjs')
@@ -22,15 +23,14 @@ test('generic startup accepts a manifest without a private integration or local 
   })
   let output = ''
   try {
-    const origin = await new Promise((resolve, reject) => {
-      const timer = setTimeout(() => reject(Error('Startup timed out: ' + output)), 20000)
-      child.once('exit', code => { clearTimeout(timer); reject(Error(`Startup exited ${code}: ${output}`)) })
+    const origin = await Effect.runPromise(Effect.timeout(Effect.promise(() => new Promise((resolve, reject) => {
+      child.once('exit', code => { reject(Error(`Startup exited ${code}: ${output}`)) })
       for (const stream of [child.stdout, child.stderr]) stream.on('data', chunk => {
         output += chunk
         const match = output.match(/http:\/\/127\.0\.0\.1:\d+/)
-        if (match) { clearTimeout(timer); resolve(match[0]) }
+        if (match) resolve(match[0])
       })
-    })
+    })), '20 seconds'))
     assert.equal((await fetch(origin + '/review')).status, 200)
   } finally {
     child.kill('SIGTERM')

@@ -4,6 +4,8 @@ import * as Effect from 'effect/Effect'
 import * as Fiber from 'effect/Fiber'
 import * as Deferred from 'effect/Deferred'
 import * as TestClock from 'effect/testing/TestClock'
+import * as Clock from 'effect/Clock'
+import { awakeClock } from './awake-clock.mjs'
 import { createEffectActor, sendAndAwait } from '@xstate/effect'
 import { serverMachine } from './server-lifecycle.mjs'
 
@@ -36,6 +38,28 @@ test('synthetic time events cannot advance host grace time', async () => {
     yield* TestClock.adjust(9999)
     assert.equal(actor.getSnapshot().value, 'Waiting')
     yield* TestClock.adjust(1)
+    assert.ok(actor.getSnapshot().matches('Stopping'))
+  })), TestClock.layer()))
+})
+
+test('host grace survives suspend and expires only after a fresh awake window', async () => {
+  await Effect.runPromise(Effect.provide(Effect.scoped(Effect.gen(function* () {
+    let offset = 0
+    const base = yield* Clock.Clock
+    const jumpingClock = Object.assign(Object.create(base), {
+      currentTimeMillis: base.currentTimeMillis.pipe(Effect.map(now => now + offset)),
+      currentTimeMillisUnsafe: () => base.currentTimeMillisUnsafe() + offset,
+    })
+    const clock = yield* Effect.provideService(awakeClock, Clock.Clock, jumpingClock)
+    const actor = yield* Effect.provideService(createEffectActor(serverMachine), Clock.Clock, clock)
+    yield* sendAndAwait(actor, { type: 'READY', clients: 1 })
+    yield* sendAndAwait(actor, { type: 'LOST', current: true, remaining: 0 })
+    offset = 3_600_000
+    yield* TestClock.adjust(1000)
+    assert.equal(actor.getSnapshot().value, 'Waiting')
+    for (let tick = 0; tick < 9; tick++) yield* TestClock.adjust(1000)
+    assert.equal(actor.getSnapshot().value, 'Waiting')
+    yield* TestClock.adjust(1000)
     assert.ok(actor.getSnapshot().matches('Stopping'))
   })), TestClock.layer()))
 })

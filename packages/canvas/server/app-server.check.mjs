@@ -100,6 +100,10 @@ test('real control sockets close on oversize and queue overflow, releasing prese
     assert.equal(count, 0)
     const missing = new WebSocket(endpoint, { autoPong: false })
     await once(missing, 'open')
+    now = 5000
+    presence.heartbeat()
+    now = 10000
+    presence.heartbeat()
     now = 14_999
     presence.heartbeat()
     assert.equal(count, 1)
