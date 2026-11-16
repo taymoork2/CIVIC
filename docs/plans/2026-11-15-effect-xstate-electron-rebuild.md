@@ -69,7 +69,7 @@ Each rule is a lint rule or a test. Where code already breaks a rule, a committe
 | Machine analysis and serialization clean; saved failing sequences replay | per-machine test, fixtures globbed | — |
 | Effect language service diagnostics | `@effect/language-service` in `tsconfig` plugins, run in `check` | 0 |
 | Short "why"-only comments | review rule in AGENTS.md; anti-slop preset where it applies | — |
-| No hardcoded lists of files, scripts or tools | test lists by glob; MCP tool list from one table with `Schema` inputs; signoff steps from the workspace | — |
+| No hardcoded lists of files, scripts or tools | test lists by glob; MCP tool list from one table with `Schema` inputs; sign-off steps from CIVIC's config (§6b) | — |
 
 Tests are end to end and unmocked: real processes, temporary stores, temporary git repositories, Playwright for UI.
 
@@ -180,6 +180,20 @@ Each slice: its own worktree and branch, its own checks plus the full suites, `b
 | S12 | Cleanup passes found by S2's baselines and fallow (largest files, duplicated helpers) | Baselines shrink |
 
 S1, S6 and S9b touch different paths and may run in parallel workers. S1b follows S1 (same lockfile) and comes before S3. S4 waits for S3. S7 and S8 wait for S5 and S6. S11b waits for S5, S7 and S8.
+
+## 6b. Sign-off: requirements for the shared package
+
+Owner and Orca controller, 15 Nov: Orca's sign-off (exact-commit sign-off, area map, reuse of passed checks, Vite+ task cache, related tests first, live status view, typed-commit check) is being extracted into a shared package that CIVIC and laundry-app will adopt, with a GitHub `signoff` commit-status mode like gh-signoff. CIVIC does not rewrite `bin/signoff` now. It keeps working as it is (S1 added the typed-title check, S1b installs before any suite, S3 made it one install and one check-and-test pass) until the shared package can replace it. What CIVIC needs from that package:
+
+1. **Exact commit.** Refuse a dirty tree; refuse if the tree or HEAD changes while checks run; the result names the full SHA. A merge whose tree equals a signed-off commit's tree counts as signed off (CIVIC's controller verifies `HEAD^{tree}` after each merge today).
+2. **CIVIC's check list, derived not listed:** the engine workspace's own `check` and `test` (`pnpm --dir packages run check` / `test`, which include the shrink-only lint baseline and every member package); graph validation; the demo and example graph builds with `--check` (`demo/fluent-button`, `demo/card`, `demo/rebrand`, `projects/discovery-app`); the civic gate (`bin/civic check --config civic.check.json`, against `CIVIC_BASE`, default `origin/main`); the library-release report (exit 1 is reported, not gating); and the install check (`packages/install.check.mjs`: the three packages installed from this commit by git into an empty app). Steps come from CIVIC's config, not from the package.
+3. **Browser evidence flag.** An opt-in step for the Fluent Button web evidence (`--browser`: its own install, a Storybook build and Playwright), off by default.
+4. **Temp root.** Every step runs under `bin/with-temp-root.mjs` (one temporary folder per run, removed afterwards, kept with `CIVIC_KEEP_TEMP=1`; git inside it never signs). The package must run CIVIC's steps inside it, or provide the same guarantees; `review/test/temp-root.test.ts` must keep passing.
+5. **Machine sharing.** Wait before heavy steps until the one-minute load is below 6 and no other sign-off (CIVIC's or Orca's) is running; at most two test workers; one heavy lane at a time. Detect other runs by their actual processes, never by matching text in a waiting script's own command line (a self-matching gate stalled CIVIC's queue on 15 Nov).
+6. **Reuse of passed checks** keyed by tree, so a merge or a rebase that does not change a step's inputs does not rerun it.
+7. **Typed commits.** Refuse commits after main whose titles lack a conventional type (CIVIC's `scripts/commit-type.ts` today).
+8. **GitHub status posting** only when asked (CIVIC passes `--no-post` until the owner authorizes pushing): a `signoff` commit status for the SHA, the civic gate status (`civic check --post`), and the change's findings as a comment on the open pull request.
+9. **Owner-facing output** in everyday words, with paths and SHAs only in details.
 
 ## 7. Safety and pacing
 
