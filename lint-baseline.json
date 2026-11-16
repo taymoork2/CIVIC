@@ -113,7 +113,6 @@
   "anti-slop(require-safety-comment-for-type-assertion):packages/shell/src/ui/input-group.tsx": 1,
   "anti-slop(require-safety-comment-for-type-assertion):packages/shell/src/ui/toggle-group.tsx": 1,
   "anti-slop(require-safety-comment-for-type-assertion):packages/shell/src/use-canvas-camera.ts": 2,
-  "architecture/raw-timer:review/src/overlay/overlay.js": 1,
   "architecture/useEffect:packages/canvas/src/agent-delivery.tsx": 2,
   "architecture/useEffect:packages/canvas/src/app-canvas.tsx": 3,
   "architecture/useEffect:packages/canvas/src/connection-readiness.ts": 1,

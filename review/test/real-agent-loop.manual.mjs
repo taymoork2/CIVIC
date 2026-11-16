@@ -77,8 +77,6 @@ createInterface({input:process.stdin}).on('line',line=>{const m=JSON.parse(line)
     if (key === 'env') for (const [name, setting] of Object.entries(value)) args.push('-c', `mcp_servers.civic.env.${name}=${JSON.stringify(setting)}`)
     else args.push('-c', `mcp_servers.civic.${key}=${JSON.stringify(value)}`)
   }
-  // Unattended exec has no one to approve tool calls; trust only CIVIC's server for this run.
-  args.push('-c', 'mcp_servers.civic.default_tools_approval_mode="approve"')
   args.push('Use the CIVIC tools to find and complete the open work request in this project. Follow AGENTS.md. Do not commit. Leave the result waiting for owner review.')
   const child = spawn('codex', args, { cwd: repo, stdio: ['ignore', 'pipe', 'pipe'], detached: true })
   child.stderr.pipe(createWriteStream(join(evidence, 'harness-stderr.log')))

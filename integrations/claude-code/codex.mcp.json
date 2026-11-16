@@ -5,7 +5,8 @@
       "args": [],
       "cwd": "./",
       "env": { "CIVIC_AGENT": "codex" },
-      "env_vars": ["CIVIC_HOME", "CIVIC_FOR"]
+      "env_vars": ["CIVIC_HOME", "CIVIC_FOR"],
+      "default_tools_approval_mode": "approve"
     }
   }
 }

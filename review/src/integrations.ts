@@ -8,15 +8,19 @@ export const serverEntry = (root = fileURLToPath(new URL('../../', import.meta.u
   env: { CIVIC_HOME: root, CIVIC_AGENT: 'mcp-agent' },
 })
 
+// Unattended Codex refuses MCP calls nobody approved. CIVIC's tools cannot resolve or accept work, so trust them.
+const codexApproval = { default_tools_approval_mode: 'approve' }
+
 export function integrationConfig(harness: string, entry = serverEntry()): string {
   const json = (value: unknown) => JSON.stringify(value, null, 2)
   switch (harness) {
     case 'claude-code':
-    case 'codex':
     case 'cursor':
       return json({ mcpServers: { civic: entry } })
+    case 'codex':
+      return json({ mcpServers: { civic: { ...entry, ...codexApproval } } })
     case 'codex-toml':
-      return `[mcp_servers.civic]\ncommand = ${json(entry.command)}\nargs = ${json(entry.args)}\n\n[mcp_servers.civic.env]\n${Object.entries(entry.env).map(([key, value]) => `${key} = ${json(value)}`).join('\n')}`
+      return `[mcp_servers.civic]\ncommand = ${json(entry.command)}\nargs = ${json(entry.args)}\ndefault_tools_approval_mode = "approve"\n\n[mcp_servers.civic.env]\n${Object.entries(entry.env).map(([key, value]) => `${key} = ${json(value)}`).join('\n')}`
     case 'opencode':
       return json({ mcp: { civic: { type: 'local', command: [entry.command, ...entry.args], environment: entry.env } } })
     case 'acp':
@@ -32,7 +36,7 @@ export function pluginConfig(harness: 'claude-code' | 'codex'): string {
     ...entry,
     command: harness === 'claude-code' ? '${CLAUDE_PLUGIN_ROOT}/bin/civic-mcp' : './bin/civic-mcp',
     env: { CIVIC_AGENT: harness, ...(harness === 'claude-code' ? { CIVIC_REPO: '${CLAUDE_PROJECT_DIR}' } : {}) },
-    ...(harness === 'codex' ? { cwd: './', env_vars: ['CIVIC_HOME', 'CIVIC_FOR'] } : {}),
+    ...(harness === 'codex' ? { cwd: './', env_vars: ['CIVIC_HOME', 'CIVIC_FOR'], ...codexApproval } : {}),
   }
   return JSON.stringify({ mcpServers: { civic: server } }, null, 2)
 }

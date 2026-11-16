@@ -616,7 +616,7 @@ export class ConflictError extends Error {
     const current = versionOf(request)
     const change = request.changed ? `: ${request.changed.what} by ${request.changed.by} at ${request.changed.at}` : ''
     const short = request.id.slice('request:'.length, 'request:'.length + 8)
-    super(`${request.id} is at version ${current}, not ${expected}${change}. Nothing was written. Read it again with \`civic show ${short}\`, then retry with ${short}@${current}.`)
+    super(`${request.id} is at version ${current}, not ${expected}${change}. Nothing was written. Read it again (the get_request tool, or \`civic show ${short}\`), then retry with ${short}@${current}.`)
     this.name = 'ConflictError'
   }
 }

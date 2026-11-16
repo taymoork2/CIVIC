@@ -98,8 +98,10 @@
   function say(message) {
     toast.textContent = message
     toast.style.display = 'block'
-    clearTimeout(say.timer)
-    say.timer = setTimeout(() => { toast.style.display = 'none' }, 4000)
+    say.shown?.cancel()
+    // The four-second animation's finish hides the toast; a newer message cancels it.
+    say.shown = toast.animate([{ opacity: 1 }, { opacity: 1 }], 4000)
+    say.shown.onfinish = () => { toast.style.display = 'none' }
   }
 
   shield.addEventListener('pointermove', (event) => {

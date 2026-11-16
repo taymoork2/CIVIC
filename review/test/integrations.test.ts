@@ -25,8 +25,13 @@ for (const harness of HARNESSES) {
       } else if (harness === 'acp') {
         const local = config.mcpServers[0]
         entry = { command: local.command, args: local.args, env: Object.fromEntries(local.env.map(({ name, value }: { name: string; value: string }) => [name, value])) as typeof entry.env }
-      } else entry = config.mcpServers.civic
+      } else {
+        const { default_tools_approval_mode: approval, ...local } = config.mcpServers.civic
+        assert.equal(approval, harness === 'codex' ? 'approve' : undefined)
+        entry = local
+      }
     }
+    if (harness === 'codex-toml') assert.match(rendered, /^default_tools_approval_mode = "approve"$/m)
     assert.deepEqual(entry, serverEntry())
     const printed: string[] = []
     assert.equal(await run(['integrate', harness], '/not-a-repository', process.env, (text) => printed.push(text)), 0)

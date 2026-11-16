@@ -28,6 +28,7 @@ codex plugin add civic@civic
 ```
 
 - **Set `CIVIC_HOME` before starting Codex,** even inside the CIVIC repository. Codex starts the MCP server in the plugin's own folder and passes only the environment it names, which is `CIVIC_HOME` and `CIVIC_FOR`. The server runs with `CIVIC_AGENT=codex`.
+- **CIVIC's tools are pre-approved** (`default_tools_approval_mode = "approve"`), so unattended `codex exec` can use them. None of them can resolve a request or accept a check; those stay with the owner.
 - **Pass `cwd` on every tool call.** Codex doesn't tell the server which project it's in, so the skill's instruction to pass the worktree is required here.
 - **Trust the hook** when Codex asks, so the open requests are listed at session start.
 - **Commands become skills.** Codex turns `/civic:next` into the `civic:source-command-next` skill and leaves out `/civic:request`. Ask for the `civic:work-a-request` skill with a request ID instead.
