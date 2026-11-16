@@ -2,7 +2,8 @@ import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { fork } from 'node:child_process'
 import { once } from 'node:events'
-import { mkdtemp, readFile, writeFile } from 'node:fs/promises'
+import { mkdtemp, readFile, writeFile, rename, mkdir, stat } from 'node:fs/promises'
+import * as Effect from 'effect/Effect'
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 import { loadProject } from '@civic/vite-connector/project'
@@ -10,12 +11,19 @@ import { canvasRoot } from './canvas-root.mjs'
 import { runtimeService } from './runtime-service.mjs'
 
 const now = Date.UTC(2026, 9, 12, 9)
+const pause = () => Effect.runPromise(Effect.sleep('10 millis'))
+async function barrierReady(file, attempt = 0) {
+  if (await stat(file).catch(() => null)) return
+  assert.ok(attempt < 500, 'worker did not reach barrier')
+  await pause()
+  return barrierReady(file, attempt + 1)
+}
 const { join } = path
-async function fixture(t, example = 'tasks') {
+async function fixture(t, example = 'tasks', options = {}) {
   const dataDir = await mkdtemp(join(tmpdir(), 'civic-lifecycle-'))
   const project = loadProject(canvasRoot, { manifest: `${canvasRoot}/examples/${example}/civic.project.json` })
   let source = 'one'
-  const service = runtimeService(project, () => source, { dataDir })
+  const service = runtimeService(project, () => source, { dataDir, ...options })
   t.after(() => service.close())
   const start = () => service.handle({ action: 'start', scenario: example === 'tasks' ? 'tasks.list' : 'board.home', persona: example === 'tasks' ? 'planner' : 'lead', role: 'member', condition: 'normal', now, timeZone: 'Pacific/Auckland' })
   return { service, start, project, dataDir, source: value => { source = value }, path: id => join(dataDir, 'runtime', `${id}.json`) }
@@ -103,4 +111,74 @@ test('account, reset, timezone and fresh credentials survive close and restore',
   assert.equal(JSON.parse(bytes).options.timeZone, 'Pacific/Auckland')
   assert.deepEqual(JSON.parse(bytes).journal, [])
   assert.ok(!bytes.includes('review-'))
+})
+
+test('U3 stop drains a changing operation and persists its receipt', async t => {
+  const f = await fixture(t)
+  f.project.runtimeEntry = new URL('check-fixtures/interrupted-runtime.mjs', import.meta.url).pathname
+  const run = await f.start(), barrier = join(f.dataDir, 'finish')
+  const write = f.service.handle({ action: 'mutation', run: run.id, name: 'finish', args: { barrier } })
+  await barrierReady(barrier)
+  await f.service.close()
+  assert.deepEqual(await write, { count: 1 })
+  assert.equal(JSON.parse(await readFile(f.path(run.id), 'utf8')).journal[0].complete, true)
+  await assert.rejects(f.start(), /stopped/u)
+})
+
+test('U3 hung operation is terminated without a completed receipt', { timeout: 36_000 }, async t => {
+  const f = await fixture(t)
+  f.project.runtimeEntry = new URL('check-fixtures/interrupted-runtime.mjs', import.meta.url).pathname
+  const run = await f.start(), barrier = join(f.dataDir, 'hang')
+  const write = assert.rejects(f.service.handle({ action: 'mutation', run: run.id, name: 'hang', args: { barrier } }), /timed out|stopped/u)
+  await barrierReady(barrier)
+  const start = Date.now()
+  await f.service.close()
+  await write
+  assert.ok(Date.now() - start < 35_000)
+  assert.ok(JSON.parse(await readFile(f.path(run.id), 'utf8')).journal.every(entry => !entry.complete))
+})
+
+test('U3 stop fences pending creation and restore', async t => {
+  const original = await fixture(t), run = await original.start()
+  await original.service.close()
+  await Promise.all([false, true].map(async restore => {
+    const { promise: waiting, resolve: entered } = Promise.withResolvers()
+    const { promise: generated, resolve: release } = Promise.withResolvers()
+    const modules = () => { entered(); return generated }
+    const service = runtimeService(original.project, () => 'one', { dataDir: original.dataDir, modules })
+    t.after(() => service.close())
+    const request = assert.rejects(service.handle(restore ? { action: 'resume', run: run.id } : { action: 'start', scenario: 'tasks.list', role: 'member', condition: 'normal' }), /stopped/u)
+    await waiting
+    const closed = service.close()
+    release({})
+    await Promise.all([closed, request])
+  }))
+})
+
+test('U3 duplicate resume, queued mutation and stale close preserve takeover', async t => {
+  const f = await fixture(t), run = await f.start()
+  await f.service.handle({ action: 'close', run: run.id })
+  const [first, second] = await Promise.all([f.service.handle({ action: 'resume', run: run.id }), f.service.handle({ action: 'resume', run: run.id })])
+  assert.equal(first.lease, second.lease)
+  const write = { action: 'mutation', run: run.id, name: 'POST:/api/tasks', intent: 'race-write-0001', args: { body: JSON.stringify({ title: 'Once' }), type: 'application/json' } }
+  const [a, b, closed] = await Promise.all([f.service.handle(write), f.service.handle(write), f.service.handle({ action: 'close', run: run.id, lease: run.lease })])
+  assert.deepEqual(a, b)
+  assert.deepEqual(closed, { closed: false })
+  assert.equal(JSON.parse(await readFile(f.path(run.id), 'utf8')).journal.length, 1)
+})
+
+test('U3 persistence and startup failures release workers and preserve recoverable input', async t => {
+  const f = await fixture(t), run = await f.start()
+  const bytes = await readFile(f.path(run.id), 'utf8')
+  await rename(join(f.dataDir, 'runtime'), join(f.dataDir, 'retained'))
+  await writeFile(join(f.dataDir, 'runtime'), 'blocked')
+  await assert.rejects(f.service.handle({ action: 'time', run: run.id, args: { minutes: 1 } }))
+  assert.equal(await readFile(join(f.dataDir, 'retained', `${run.id}.json`), 'utf8'), bytes)
+  const broken = await fixture(t)
+  broken.project.runtimeEntry = join(broken.dataDir, 'missing.mjs')
+  await assert.rejects(broken.start())
+  await mkdir(join(broken.dataDir, 'runtime'), { recursive: true })
+  await writeFile(broken.path(run.id), bytes)
+  await assert.rejects(broken.service.handle({ action: 'resume', run: run.id }))
+  assert.equal(await readFile(broken.path(run.id), 'utf8'), bytes)
 })
