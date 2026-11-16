@@ -9,7 +9,7 @@ import * as Exit from 'effect/Exit'
 import * as Schedule from 'effect/Schedule'
 import * as Clock from 'effect/Clock'
 import { createEffectActor, sendAndAwait } from '@xstate/effect'
-import { runMachine } from './run-lifecycle.ts'
+import { runMachine } from './run-lifecycle.mjs'
 
 const reject = (message, status = 400) => { throw Object.assign(Error(message), { status }) }
 const hostTime = () => Effect.runSync(Clock.currentTimeMillis)
