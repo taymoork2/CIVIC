@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import * as Match from 'effect/Match'
 import {
   checkCounts,
   indexGraph,
@@ -446,7 +447,11 @@ export function claim(context: Context, id: string, leaseMinutes = DEFAULT_LEASE
     const now = nowOf(context)
     const holder = summarize(document, request, now).claimedBy
     const previous = request.status
-    moveRequest(request, { type: 'CLAIM', by, now: now.getTime() }, request.status === 'fix-ready' ? `${request.id} already has a fix waiting for review; reopen it first.` : request.status === 'resolved' ? `${request.id} is resolved; a person can reopen it.` : `${request.id} is claimed by ${holder} on ${request.claim?.line} until ${request.claim?.expires}.`)
+    moveRequest(request, { type: 'CLAIM', by, now: now.getTime() }, Match.value(request.status).pipe(
+      Match.when('fix-ready', () => `${request.id} already has a fix waiting for review; reopen it first.`),
+      Match.when('resolved', () => `${request.id} is resolved; a person can reopen it.`),
+      Match.orElse(() => `${request.id} is claimed by ${holder} on ${request.claim?.line} until ${request.claim?.expires}.`),
+    ))
     const line = ensureLines(document, context.checkout)
     request.claim = { by, line, at, expires: new Date(now.getTime() + leaseMinutes * 60_000).toISOString() }
     if (previous !== 'claimed') request.history.push({ status: 'claimed', by, at })

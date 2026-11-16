@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto'
+import { Match } from 'effect'
 import { readFile, writeFile, rename, readdir } from 'node:fs/promises'
 import { join } from 'node:path'
 
@@ -53,7 +54,7 @@ export function interactionReport(metadata, observations, runs, replays) {
       const navigation = Boolean(control.destination && scenario?.edges?.some(edge => edge.destination === control.destination))
       const execution = evidence.some(row => !row.failed) ? 'recorded' : evidence.length ? 'failed' : 'unrecorded'
       const verified = evidence.some(row => row.verified)
-      const gaps = [...(!control.name ? ['Unnamed control'] : []), ...(!binding && !navigation ? ['No interaction scenario'] : []), ...(control.link === 'unmapped' ? ['Unmapped destination'] : []), ...(control.disabled ? ['Disabled in observed state'] : []), ...(execution === 'unrecorded' ? ['No recorded execution'] : execution === 'failed' ? ['Recorded operation failed'] : []), ...(!verified ? ['No passing replay'] : [])]
+      const gaps = [...(!control.name ? ['Unnamed control'] : []), ...(!binding && !navigation ? ['No interaction scenario'] : []), ...(control.link === 'unmapped' ? ['Unmapped destination'] : []), ...(control.disabled ? ['Disabled in observed state'] : []), ...Match.value(execution).pipe(Match.when('unrecorded', () => ['No recorded execution']), Match.when('failed', () => ['Recorded operation failed']), Match.orElse(() => [])), ...(!verified ? ['No passing replay'] : [])]
       return { ...control, declared: binding || navigation, execution, verified, gaps, evidence }
     })
     return { id, ...state, label: scenario?.label ?? 'Unmapped screen', declared, gaps: [...(!scenario ? ['No screen scenario'] : []), ...(!declared ? ['No scenario for this observed state'] : []), ...(state.truncated ? ['Control scan limit reached'] : [])], controls }

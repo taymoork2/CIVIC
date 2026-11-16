@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useEffectEvent, useMemo, useRef, useState } from 'react'
+import { useWindowEvent } from '@civic/shell/use-window-event'
 import { appFlows, flowContent, screenSize, type MapScenario, type MapScreen } from './app-map'
 import { extension, useGuidedSession } from './extension'
 import project from 'virtual:civic-project'
@@ -69,11 +70,7 @@ export function AppCanvas() {
   const browsingLive = live && (!preview || scenarios.find(row => row.id === preview.scenario)?.preview === 'live-read-only')
   const previewLabel = browsingLive ? 'Live app · browse only' : 'Private synthetic preview'
   const [pane, setPane] = useState<WorkspacePanel | null>(() => { const params = new URLSearchParams(location.search); return params.has('feedback') || params.get('view') === 'review' ? 'review' : params.get('view') === 'contract' ? 'contract' : null })
-  useEffect(() => {
-    const collapse = () => { if (window.innerWidth < 1180) setOutline(false) }
-    window.addEventListener('resize', collapse)
-    return () => window.removeEventListener('resize', collapse)
-  }, [])
+  useWindowEvent('resize', () => { if (window.innerWidth < 1180) setOutline(false) })
   useEffect(() => { if (pane && window.innerWidth < 1180) setOutline(false) }, [pane])
   const [applicationRoot, setApplicationRoot] = useState('')
   const bridge = useCoverage((index) => { setScenarios(index.scenarios); setSource(index.fixtureSource); setFixtureSnapshot(index); setApplicationRoot(index.connection?.applicationRoot ?? '') })

@@ -4,6 +4,7 @@ import react from 'ultracite/oxlint/react'
 import vitest from 'ultracite/oxlint/vitest'
 import antiSlop from 'ultracite/oxlint/anti-slop'
 import fmt from 'ultracite/oxfmt'
+import effectLint from '../tools/oxlint/anti-slop-effect/config.json'
 
 export default defineConfig({
   run: { cache: false },
@@ -11,15 +12,28 @@ export default defineConfig({
     extends: [core, react, antiSlop],
     // House style for tests: top-level tests and the matchers CIVIC uses.
     overrides: [...(vitest.overrides ?? []).map(override => ({ ...override, rules: { ...override.rules, ...Object.fromEntries(['vitest/require-top-level-describe', 'vitest/prefer-strict-equal', 'vitest/prefer-to-be-truthy', 'vitest/prefer-to-be-falsy'].map(rule => [rule, 'off'])) } })),
+      { files: ['core/**/*', 'canvas/server/**/*', 'shell/server/**/*', '../review/**/*', '../crawl/**/*'], rules: {
+        ...effectLint.rules,
+        // makeX names also identify plain factories.
+        'anti-slop-effect/no-service-constructor-imports': 'off',
+        // CIVIC deliberately colocates unit tests with source.
+        'anti-slop-effect/no-test-code-in-src': 'off',
+      } },
       { files: ["canvas/src/**/*", "shell/src/**/*"], rules: {
         "no-restricted-imports": ["error", { paths: [{ name: "react", importNames: ["useEffect"], message: "Use a named external-sync hook." }] }],
+      } },
+      { files: ['shell/src/use-window-event.ts', 'shell/src/use-resize-observer.ts', 'shell/src/use-frame-keydown.ts'], rules: {
+        // These hooks own one external subscription each.
+        'no-restricted-imports': 'off',
       } },
       { files: ["**/server/**/*", "local/**/*"], rules: {
         "no-restricted-globals": ["error", "setTimeout", "setInterval"],
       } },
     ],
-    jsPlugins: [...antiSlop.jsPlugins],
+    jsPlugins: [...antiSlop.jsPlugins, { name: 'anti-slop-effect', specifier: '../tools/oxlint/anti-slop-effect/index.ts' }],
     rules: {
+      // Runtime input and capability validation legitimately use typeof outside type guards.
+      'anti-slop/no-runtime-typeof': 'off',
       'no-restricted-properties': ['error', ...['vi', 'vitest', 'jest'].flatMap(object =>
         ['mock', 'doMock', 'unstable_mockModule'].map(property => ({ object, property, message: 'Use real dependencies.' })))],
       // Style rules whose opposite is CIVIC's house style; new code reads like its neighbours.

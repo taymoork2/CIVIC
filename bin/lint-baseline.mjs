@@ -16,6 +16,8 @@ export function architecture(file, source) {
   const ast = parseSync(file, source)
   if (ast.errors.length) throw new Error(`Cannot parse ${file}: ${JSON.stringify(ast.errors)}`)
   const aliases = new Map()
+  const syncHook = /^packages\/shell\/src\/use-(window-event|resize-observer|frame-keydown)\.ts$/.test(file)
+  let syncEffects = 0
   for (const node of ast.program.body) {
     if (node.type !== 'ImportDeclaration') continue
     for (const specifier of node.specifiers) {
@@ -31,7 +33,7 @@ export function architecture(file, source) {
     if (!node || typeof node !== 'object') return
     if (node.type === 'CallExpression') {
       const name = callName(node.callee)
-      if (ui && /(^|\.)useEffect$/.test(name)) add('architecture/useEffect')
+      if (ui && /(^|\.)useEffect$/.test(name) && (!syncHook || ++syncEffects > 1)) add('architecture/useEffect')
       if (server && /(^|\.)(setTimeout|setInterval)$/.test(name)) add('architecture/raw-timer')
       if (/^(vi|vitest|jest)\.(mock|doMock|unstable_mockModule)$/.test(name) || name === 'mock.module') add('architecture/module-mocking')
     }
@@ -99,12 +101,28 @@ export function compare(current, baseline, update = false) {
   return errors
 }
 
+export function adopt(current, baseline, rule) {
+  if (!/^anti-slop-effect\([a-z-]+\)$/.test(rule)) throw new Error('Adopt requires one anti-slop-effect(rule-name) category')
+  const belongs = key => key.startsWith(`${rule}:`)
+  if (Object.keys(baseline).some(belongs)) throw new Error('Rule already adopted; use shrink-only --update')
+  const other = Object.fromEntries(Object.entries(current).filter(([key]) => !belongs(key)))
+  const errors = compare(other, baseline)
+  if (errors.length) throw new Error(errors.join('\n'))
+  return { ...baseline, ...Object.fromEntries(Object.entries(current).filter(([key]) => belongs(key))) }
+}
+
 export function collect() {
   const lint = spawnSync('pnpm', ['exec', 'vp', 'lint', '--format', 'json', '--threads', '2'], { cwd: resolve(root, 'packages'), encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
   if (lint.error || ![0, 1].includes(lint.status)) throw new Error(lint.error?.message ?? lint.stderr ?? 'Lint failed')
   const report = JSON.parse(lint.stdout)
   if (!Array.isArray(report.diagnostics) || !report.number_of_files) throw new Error('Invalid or empty lint report')
   const findings = report.diagnostics.map(item => ({ ...item, filename: `packages/${item.filename}` }))
+  // Vite's package config does not cover sibling workspace directories.
+  const siblings = spawnSync('pnpm', ['exec', 'vp', 'lint', '--config', resolve(root, 'tools/oxlint/anti-slop-effect/config.json'), '--format', 'json', '--threads', '2', resolve(root, 'review'), resolve(root, 'crawl')], { cwd: resolve(root, 'packages'), encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 })
+  if (siblings.error || ![0, 1].includes(siblings.status)) throw new Error(siblings.error?.message ?? siblings.stderr ?? 'Sibling lint failed')
+  const siblingReport = JSON.parse(siblings.stdout)
+  if (!Array.isArray(siblingReport.diagnostics) || !siblingReport.number_of_files) throw new Error('Invalid or empty sibling lint report')
+  for (const item of siblingReport.diagnostics) findings.push({ ...item, filename: relative(root, resolve(root, 'packages', item.filename)) })
   const files = execFileSync('git', ['ls-files', '-z'], { cwd: root, encoding: 'utf8' }).split('\0').filter(file => /\.(?:[cm]?[jt]sx?)$/.test(file))
   for (const file of files) findings.push(...architecture(file, readFileSync(resolve(root, file), 'utf8')))
   findings.push(...collectEffect(effectProjects))
@@ -114,9 +132,13 @@ export function collect() {
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
     const update = process.argv.includes('--update')
+    const adoptIndex = process.argv.indexOf('--adopt')
+    const rule = adoptIndex === -1 ? null : process.argv[adoptIndex + 1]
+    if (adoptIndex !== -1 && (!rule || update)) throw new Error('--adopt requires a rule and cannot combine with --update')
     const projectIndex = process.argv.indexOf('--effect-project')
     const projects = projectIndex === -1 ? null : process.argv.slice(projectIndex + 1)
     if (projects && update) throw new Error('Effect project checks cannot rewrite the shared baseline')
+    if (projects && rule) throw new Error('Effect project checks cannot adopt rules')
     if (projects && (!projects.length || projects.some(project => !effectProjects.includes(project)))) throw new Error('Unknown Effect project')
     const current = projects ? count(collectEffect(projects)) : collect()
     let baseline = JSON.parse(readFileSync(baselinePath, 'utf8'))
@@ -124,9 +146,10 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
       const directories = projects.map(project => dirname(project) + '/')
       baseline = Object.fromEntries(Object.entries(baseline).filter(([key]) => key.startsWith('effect/') && directories.some(directory => key.split(':')[1].startsWith(directory))))
     }
+    if (rule) baseline = adopt(current, baseline, rule)
     const errors = compare(current, baseline, update)
     if (errors.length) throw new Error(errors.join('\n'))
-    if (update) writeFileSync(baselinePath, `${JSON.stringify(current, null, 2)}\n`)
+    if (update || rule) writeFileSync(baselinePath, `${JSON.stringify(rule ? baseline : current, null, 2)}\n`)
     console.log(`Lint baseline passed (${Object.keys(current).length} rule/file pairs).`)
   } catch (error) {
     console.error(error.message)
