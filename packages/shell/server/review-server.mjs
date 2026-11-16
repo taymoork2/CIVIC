@@ -92,6 +92,8 @@ function checkedFeedback(input, metadata, adapter) {
     designHashes[path] = hash
   }
   const target = checkedTarget(input.target, c, metadata, adapter)
+  const location = input.location === undefined ? undefined : text(input.location, 2000)
+  if (location && (!/^.+:[1-9]\d*:[1-9]\d*$/u.test(location) || /^(?:\/|[A-Za-z]:)|\\|[\r\n]/u.test(location) || location.split('/').includes('..'))) bad('Invalid code location')
   if (input.recording !== undefined && !uuid.test(input.recording)) bad('Invalid recording identity')
   if (input.capture !== undefined && !uuid.test(input.capture)) bad('Invalid saved capture identity')
   const simulation = c.simulation === undefined ? undefined : { pieces: choice(c.simulation?.pieces, [100, 500, 1000]), stage: choice(c.simulation?.stage, ['planning', 'washing', 'drying', 'putaway']) }
@@ -107,7 +109,7 @@ function checkedFeedback(input, metadata, adapter) {
   if (capturedViewport && (capturedViewport.width !== viewport.width || capturedViewport.height !== viewport.height)) bad('Fixture viewport does not match the captured screen')
   if (evidenceKind === 'map' && !['app', 'flow', 'path'].includes(target?.kind)) bad('Invalid map evidence')
   return {
-    id: input.requestId, kind: choice(input.kind, ['bug', 'confusing', 'idea', 'other']), message: text(input.message, 4000),
+    id: input.requestId, kind: choice(input.kind, ['bug', 'confusing', 'idea', 'other']), message: text(input.message, 4000), location,
     context: { scenario: c.scenario, ...(simulation ? { simulation } : {}), ...(c.screen === undefined ? {} : { screen: c.screen }), persona: choice(c.persona, metadata.project?.personas.map((p) => p.id) ?? ['single', 'student', 'parent']), role: choice(c.role, metadata.project?.roles.map((p) => p.id) ?? ['owner', 'member']), condition: choice(c.condition, metadata.project?.conditions.map((p) => p.id) ?? ['normal', 'save-error', 'offline', 'missing-care']), ...checkedAppearance(c, metadata.project), ...(c.appearance ? { appearance: c.appearance } : {}), theme: choice(c.theme, ['light', 'dark']), textScale: choice(c.textScale, [1, 2]), viewport: { width: viewport.width, height: viewport.height }, state: { dialogs: state.dialogs.map((s) => text(s, 300)), tabs: state.tabs.map((s) => text(s, 300)), fields: state.fields.map((field) => ({ label: text(field.label, 300), value: typeof field.value === 'string' && field.value.length <= 4000 ? field.value : bad('Invalid draft value') })) } },
     anchor: { label: text(anchor.label, 300), x: anchor.x, y: anchor.y, width: anchor.width, height: anchor.height, ...(anchor.locator === undefined ? {} : { locator: checkedLocator(anchor.locator) }) },
     ...(target ? { target } : {}),

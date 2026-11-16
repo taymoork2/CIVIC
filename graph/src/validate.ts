@@ -539,6 +539,12 @@ function checkRecordShape(raw: unknown, at: string, error: Report) {
   field.string('title')
   field.optionalList('owners', (owner, path) => checkOwner(owner, path, error))
   field.optional('source', (source, path) => checkSource(source, path, error))
+  if (raw.kind === 'annotation' || raw.kind === 'work-request') field.optional('location', (location, path) => {
+    if (!isObject(location)) return error('shape', path, 'Must be an object.')
+    fieldChecker(location, path, error).string('revision')
+    if (typeof location.file !== 'string' || !location.file || /^(\/|[A-Za-z]:)|\\|[\r\n]/.test(location.file) || location.file.split('/').includes('..')) error('shape', path, 'The file must be repository relative.')
+    for (const key of ['line', 'column']) if (!Number.isSafeInteger(location[key]) || (location[key] as number) < 1) error('shape', path, 'Line and column must be positive integers.')
+  })
   field.optional('writtenBy', (value, path) => checkString(value, path, error))
   field.optionalList('formerIds', (former, path) => {
     if (!isObject(former)) return error('shape', path, 'Must be an object.')

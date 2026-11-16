@@ -6,6 +6,14 @@ CIVIC makes no model calls (D30). Agents run in their own harness and talk to CI
 
 ## Where the records live
 
+`civic elements <file>[:<from>-<to>] --capture <tagged-captures.json>` finds rendered
+elements in captures exported by `taggedCapture(page, scenario)` from
+`review/src/elements.ts`. The JSON is an array of `{ scenario, elements }`, where
+each element has `tag`, `source` (`file:line:column`), and an optional `name`.
+`elements(captures, file, [from, to])` uses inclusive, one-based lines;
+`diffRanges(diff)` returns new-side file ranges from a unified Git diff.
+These calls read supplied evidence and do not open connected checkouts.
+
 In the `.civic/` folder of the repository's main working tree ([decision 0020](../docs/decisions/0020-records-live-in-the-civic-folder.md), replacing D39): `records.graph.json` holds the graph document, and `captures/` holds images named by their SHA-256. Every worktree of a repository reads and writes that one folder, so an annotation made in one worktree is visible to an agent in another. Nothing is written inside `.git`. The folder ignores itself (`.civic/.gitignore` is `*` and `!civic.json`), so nothing is committed to a product branch. The store refuses to be used while git tracks anything in `.civic/` but `civic.json` (a checked-out branch could have supplied it), and while git would not ignore the records. A sandboxed agent in a linked worktree needs write access to the main working tree's `.civic/`.
 
 Records an earlier CIVIC kept in `<git dir>/civic/` move with `civic move-store`: it copies each file, checks the copy, removes the old file and then the empty folders, and can be run again. It stops, changing nothing, if both stores hold a file of the same name with different bytes, if a civic command is running, or if the old folder holds anything but plain files. `git clean -x` in the main working tree would delete `.civic/`; `civic sync` keeps a shared copy.

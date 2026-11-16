@@ -27,6 +27,7 @@
   <div class="shield" part="shield"></div><div class="box"></div>
   <form class="panel" aria-label="CIVIC annotation"><strong>Comment on <span class="target"></span></strong>
     <textarea required maxlength="4000" aria-label="Comment"></textarea>
+    <details><summary>Details</summary><p class="source"></p></details>
     <button type="submit">Save annotation</button><button type="button" class="cancel">Cancel</button></form>
   <button class="toggle" type="button" aria-pressed="false" title="Annotate for CIVIC (Alt+Shift+C)">CIVIC</button>
   <div class="toast" role="status"></div>`
@@ -84,6 +85,7 @@
     setSelecting(false)
     show(next.box)
     $('.target').textContent = next.label
+    $('.source').textContent = next.location ? `Code location: ${next.location}` : 'No code location recorded.'
     panel.style.display = 'block'
     textarea.focus()
   }
@@ -118,7 +120,7 @@
     if (!element) return
     const rect = element.getBoundingClientRect()
     const locator = locatorOf(element)
-    choose({ label: locator?.name || element.tagName.toLowerCase(), box: rect, rect: normalized(rect), targetIds: civicIdsOf(element), locator })
+    choose({ label: locator?.name || element.tagName.toLowerCase(), box: rect, rect: normalized(rect), targetIds: civicIdsOf(element), locator, location: element.closest('[data-civic-source]')?.getAttribute('data-civic-source') })
   })
   toggle.addEventListener('click', () => { reset(); setSelecting(!selecting) })
   $('.cancel').addEventListener('click', reset)
@@ -158,6 +160,7 @@
       viewport: { width: innerWidth, height: innerHeight },
       rect: { ...selection.rect, label: selection.label },
       targetIds: selection.targetIds,
+      ...(selection.location ? { location: selection.location } : {}),
       ...(selection.locator ? { locator: selection.locator } : {}),
       ...(stamped.line ? { line: stamped.line, revision: stamped.revision } : {}),
       html: snapshot(),

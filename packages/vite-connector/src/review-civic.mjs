@@ -49,6 +49,7 @@ export function civicShared({ repo, product, civicRoot = process.env.CIVIC_ROOT 
         // A whole-screen note anchors to the scenario's target, which the frame carries as data-civic-id.
         if (anchor.label === 'Whole screen') args.push('--target', `target:${product}.${c.scenario}`)
         if (anchor.locator) args.push('--role', anchor.locator.role, '--name', anchor.locator.name)
+        if (feedback.location) args.push('--location', feedback.location)
         // Re-register first, so the annotation names the revision this server is serving now.
         await civic('preview', origin)
         return (await json(...args)).id

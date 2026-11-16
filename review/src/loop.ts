@@ -266,6 +266,7 @@ function lineForUrl(document: GraphDocument, url: string): { line: string; revis
 // Annotations (D37, D40)
 
 export interface AnnotateInput {
+  location?: { file: string; line: number; column: number }
   comment: string
   title?: string
   targetIds?: string[]
@@ -310,6 +311,7 @@ export function annotate(context: Context, input: AnnotateInput): Annotation {
       kind: 'annotation',
       title: input.title ?? firstLine(input.comment),
       comment: input.comment,
+      ...(input.location ? { location: { ...input.location, revision: seen.revision } } : {}),
       ...(isAnchored(anchor) || anchor.rect ? { anchor } : {}),
       ...(capture ? { capture: { ...capture, ...(input.viewport ? { viewport: input.viewport } : {}), ...(url ? { reproduction: url.pathname + url.search } : {}) } } : {}),
       seenOn: { ...seen, ...(input.url ? { url: input.url } : {}) },
@@ -355,6 +357,7 @@ export function createRequest(context: Context, input: RequestInput): WorkReques
       title: input.title ?? firstLine(input.ask),
       ask: input.ask,
       annotationIds,
+      ...(annotations.find((annotation) => annotation.location)?.location ? { location: annotations.find((annotation) => annotation.location)!.location } : {}),
       intent: input.change ? 'change' : 'restore-contract',
       risk: input.highRisk ? 'high' : 'normal',
       base,

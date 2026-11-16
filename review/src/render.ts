@@ -55,6 +55,7 @@ export function renderRequest(document: GraphDocument, summary: RequestSummary, 
     const annotation = find<Annotation>(document, id, 'annotation')
     out.push('', `### ${annotation.title}`, '', annotation.comment, '', `- ID: \`${annotation.id}\`, by ${annotation.writtenBy}`)
     const anchor = annotation.anchor
+    if (annotation.location) out.push(`- Code location: ${annotation.location.file}:${annotation.location.line}:${annotation.location.column} at ${annotation.location.revision}`)
     if (anchor?.targetIds.length) out.push(`- Targets: ${anchor.targetIds.map((target) => `\`${target}\``).join(', ')}`)
     for (const edge of anchor?.edges ?? []) out.push(`- Path: \`${edge.from}\` to ${edge.to ? `\`${edge.to}\`` : 'an unmapped destination'}${edge.action ? ` by "${edge.action}"` : ''}${edge.condition ? ` when ${edge.condition}` : ''}`)
     if (anchor?.locator) out.push(`- Locator: ${Object.entries(anchor.locator).map(([key, value]) => `${key} "${value}"`).join(', ')}`)

@@ -48,8 +48,10 @@ import { Store } from './store.ts'
 import { DEFAULT_REF, GitRefRemote } from './remote.ts'
 import { listConflicts, settleConflict, sync } from './sync.ts'
 import { shareReplays } from './replays.ts'
+import { elements, parseSource, type TaggedCapture } from './elements.ts'
 
 const USAGE = `Usage (records are shared by every worktree of this repository):
+  civic elements <file>[:<from>-<to>] --capture <tagged-captures.json>
   civic annotate "<comment>" [--image <file>] [--url <page>] [--target <id>]... [--edge <from>><to>[:<action>]]...
                  [--test-id <id> | --role <role> --name <name>] [--title <title>]
   civic request <annotation>... --ask "<what to do>" [--check "<command>"]... [--change] [--high-risk]
@@ -106,6 +108,16 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
   const show = (value: { id: string; status?: string }) => print(`${value.id}${value.status ? ` ${value.status}` : ''}`)
 
   switch (command) {
+    case 'elements': {
+      need(1)
+      const capture = one('--capture')
+      if (!capture) throw new UsageError('elements needs --capture <tagged-captures.json>.')
+      const match = /^(.*?)(?::(\d+)-(\d+))?$/.exec(positional[0]!)!
+      if (match[2] && (Number(match[2]) < 1 || Number(match[3]) < Number(match[2]) || !Number.isSafeInteger(Number(match[3])))) throw new UsageError('Use a positive, increasing line range.')
+      const captures = JSON.parse(readFileSync(resolvePath(cwd, capture), 'utf8')) as TaggedCapture[]
+      print(JSON.stringify(elements(captures, match[1]!, match[2] ? [Number(match[2]), Number(match[3])] : undefined), null, 2))
+      return 0
+    }
     case 'annotate': {
       need(1)
       const image = one('--image')
@@ -118,6 +130,7 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
       const rect = one('--rect')
       const viewport = one('--viewport')
       const annotation = annotate(context, {
+        ...(one('--location') ? { location: parseSource(one('--location')!) ?? (() => { throw new UsageError('Invalid code location.') })() } : {}),
         comment: positional.join(' '),
         ...(one('--title') ? { title: one('--title')! } : {}),
         targetIds: flags.get('--target') ?? [],

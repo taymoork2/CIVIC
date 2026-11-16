@@ -6,6 +6,7 @@ import { captureReview, reviewMiddleware } from '@civic/shell/server'
 import { reviewInventory } from './review-inventory.mjs'
 import { loadProject, publicProject } from './review-project.mjs'
 import { projectPicker } from './review-projects.mjs'
+import { taggable, tagSources } from './review-source-tags.mjs'
 
 /**
  * CIVIC's Vite connector: a dev-only Vite plugin that turns a review host into the journey
@@ -82,9 +83,12 @@ export function civicReview({ host, canvas = host, repo = resolve(host, '../..')
       if (id in modules) return '\0' + id
       return connector?.resolveId?.(id, project, importer)
     },
-    load(id) {
+    async load(id) {
       if (id.startsWith('\0') && id.slice(1) in modules) return modules[id.slice(1)]()
-      return connector?.load?.(id, project)
+      const loaded = await connector?.load?.(id, project)
+      // Tag on load: the React plugin compiles JSX in an earlier transform than any connector's.
+      if (loaded !== undefined && loaded !== null || !taggable(id, project)) return loaded
+      return tagSources(await readFile(id, 'utf8'), id, project)
     },
     transform(code, id) {
       if (!connector?.transform || !id.startsWith(appRepo + '/')) return

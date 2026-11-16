@@ -689,9 +689,18 @@ export interface CaptureRef {
  * and resolved like any other, but it can't follow the product to another revision until a
  * person anchors it.
  */
+/** Where an element was rendered from: a repository-relative file, 1-based line and column, at a revision. */
+export interface CodeLocation {
+  file: string
+  line: number
+  column: number
+  revision: string
+}
+
 export interface Annotation extends RecordBase {
   kind: 'annotation'
   comment: string
+  location?: CodeLocation
   anchor?: Anchor
   capture?: CaptureRef
   /** The line and revision the annotation was made on, and the URL when it was a preview. */
@@ -765,6 +774,7 @@ export interface RequestEvent {
 export interface WorkRequest extends RecordBase {
   kind: 'work-request'
   ask: string
+  location?: CodeLocation
   annotationIds: string[]
   /** `restore-contract` fixes drift from the approved contract; `change` alters intent or behavior and is a Proposal. */
   intent: 'restore-contract' | 'change'
