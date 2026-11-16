@@ -1,0 +1,40 @@
+{
+  "cli_version": "0.13.3",
+  "checkpoint_id": "01M7K0N2AXA5HRTRF98HBXYDTM",
+  "strategy": "manual-commit",
+  "branch": "chore/anti-slop-effect",
+  "checkpoints_count": 5,
+  "files_touched": [
+    "scripts/lint-baseline.test.mjs"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 82,
+    "cache_creation_tokens": 87754,
+    "cache_read_tokens": 4159101,
+    "output_tokens": 15499,
+    "api_call_count": 36
+  },
+  "redaction": {
+    "replacements": 570,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 517,
+      "key_context": 53,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
