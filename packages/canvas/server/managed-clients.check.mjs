@@ -37,9 +37,9 @@ await startManagedCanvas({ store: process.argv[2], project: { manifest: process.
     }
     desktop = new WebSocket(owner.endpoint.replace('http:', 'ws:') + '/api/civic/control', ['civic-control'], { headers: { authorization: `Bearer ${owner.capability}` } })
     await once(desktop, 'open')
-    // CDP without defaults preserves Chromium's real tab visibility.
+    // Preserve real tab visibility without letting desktop occlusion suspend rendering.
     const profile = join(root, 'browser')
-    chrome = spawn(process.env.CIVIC_BROWSER_PATH ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', ['--remote-debugging-port=0', `--user-data-dir=${profile}`, '--no-first-run', '--no-default-browser-check', '--no-startup-window'], { stdio: 'ignore' })
+    chrome = spawn(process.env.CIVIC_BROWSER_PATH ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', ['--remote-debugging-port=0', `--user-data-dir=${profile}`, '--no-first-run', '--no-default-browser-check', '--no-startup-window', '--disable-backgrounding-occluded-windows'], { stdio: 'ignore' })
     chromeExited = once(chrome, 'exit')
     let debugPort
     await wait(async () => {
@@ -73,12 +73,13 @@ await startManagedCanvas({ store: process.argv[2], project: { manifest: process.
     assert.equal(controlClosed, false)
     await hidden.close()
     await tab.evaluate(() => { const frame = document.createElement('iframe'); frame.src = '/review'; document.body.append(frame) })
-    await tab.evaluate(() => { const frame = document.createElement('iframe'); frame.src = '/review-frame.html?scenario=pantry.shelf'; document.body.append(frame) })
+    await tab.evaluate(() => { const frame = document.createElement('iframe'); frame.src = '/review-frame.html?scenario=pantry.shelf'; frame.style.cssText = 'position:fixed;inset:0;z-index:9999'; document.body.append(frame) })
     captureBrowser = await moduleReviewAdapter.launchFixtureBrowser()
     const capture = await captureBrowser.newPage()
     await capture.goto(owner.endpoint + '/review-frame.html?scenario=pantry.shelf')
     await capture.locator('[data-rehearsal-ready="true"]').waitFor()
     await tab.frames()[1].waitForLoadState('networkidle')
+    await tab.bringToFront()
     await tab.frameLocator('iframe').nth(1).locator('[data-rehearsal-ready="true"]').waitFor()
     assert.equal(await clients(), 2)
     })
@@ -125,7 +126,7 @@ await startManagedCanvas({ store: process.argv[2], project: { manifest: process.
       let disconnected = false
       controls.at(-1).on('close', () => { disconnected = true })
       await writeFile(source, hmrModule(2))
-      await tab.waitForFunction(() => window.civicHmrCheck === 2)
+      await tab.waitForFunction(() => window.civicHmrCheck === 2, undefined, { polling: 100 })
       assert.equal(disconnected, false)
       assert.equal(controls.length, connections)
       assert.equal(await clients(), 2)
