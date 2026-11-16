@@ -27,6 +27,14 @@ test('aliases and computed members cannot bypass call restrictions', () => {
   assert.equal(architecture('packages/local/a.ts', 'globalThis["setTimeout"](work, 1)').length, 1)
   assert.equal(architecture('review/test/a.ts', 'import {vi as v} from "vitest"; v["mock"]("x")').length, 1)
 })
+test('integration processes and React test rendering do not weaken production boundaries', () => {
+  assert.deepEqual(architecture('graph/test/cli.test.ts', 'import {spawnSync} from "node:child_process"'), [])
+  assert.equal(architecture('graph/src/cli.ts', 'import {spawnSync} from "node:child_process"').length, 1)
+  assert.equal(architecture('graph/test/cli.test.ts', 'import "effect"').length, 1)
+  assert.deepEqual(architecture('packages/canvas/src/view.test.tsx', 'import "react-dom/server"'), [])
+  assert.equal(architecture('packages/canvas/src/view.tsx', 'import "react-dom/server"').length, 1)
+  assert.equal(architecture('packages/canvas/src/view.test.tsx', 'import "../server/work.mjs"').length, 1)
+})
 test('baseline accepts equality, rejects growth/new pairs and requires deliberate shrink', () => {
   const baseline = { 'rule:a.ts': 2 }
   assert.deepEqual(compare(baseline, baseline), [])

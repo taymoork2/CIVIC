@@ -57,17 +57,33 @@ test('a replay is kept only with the tape it names, and a shared one must be a r
 // Decision 0022: Effect actors own in-process lifecycles.
 const PACKAGES = ['@civic/core', '@xstate/effect', 'effect', 'playwright-core', 'xstate']
 
+function imports(source: string): string[] {
+  return [...source.matchAll(/from\s+['"]([^'"]+)['"]|import\(\s*(?:(?:moduleAt|new URL)\(\s*)?['"]([^'"]+)['"]/g)].map(match => (match[1] ?? match[2])!)
+}
+
+test('the import boundary sees computed engine imports', () => {
+  for (const expression of ["import('./engine')", "import(moduleAt('./engine'))", "import(new URL('./engine', import.meta.url).href)"]) {
+    assert.deepEqual(imports(expression), ['./engine'])
+  }
+})
+
+const ENGINE_IMPORTS: Record<string, string[]> = {
+  // Backend coverage loads the same engine inventory and evidence as the canvas host.
+  'backend.ts': ['../../packages/canvas/server/backend-coverage.mjs', '../../packages/vite-connector/src/review-project.mjs', '../../packages/vite-connector/src/review-inventory.mjs'],
+  // The reporter owns git revision discovery; the importer still parses the report.
+  'playwright-reporter.ts': ['../../importers/src/playwright.ts'],
+}
+
 test('the review loop imports only Node built-ins, the graph, playwright-core and the machine core', () => {
   const sourceDir = new URL('../src/', import.meta.url).pathname
   const graphDir = new URL('../../graph/src/', import.meta.url).pathname
   const files = (readdirSync(sourceDir, { recursive: true }) as string[]).filter((name) => /\.(ts|js)$/.test(name))
   assert.ok(files.includes(join('overlay', 'server.ts')))
   for (const name of files) {
-    for (const match of readFileSync(join(sourceDir, name), 'utf8').matchAll(/from\s+'([^']+)'|import\('([^']+)'\)/g)) {
-      const specifier = (match[1] ?? match[2])!
+    for (const specifier of imports(readFileSync(join(sourceDir, name), 'utf8'))) {
       const target = specifier.startsWith('.') ? resolve(sourceDir, dirname(name), specifier) : undefined
       const allowed = specifier.startsWith('node:') || PACKAGES.includes(specifier.replace(/^((?:@[^/]+\/)?[^/]+).*$/, '$1')) || (target !== undefined && (target.startsWith(sourceDir) || target.startsWith(graphDir)))
-      assert.ok(allowed, `${name} imports ${specifier}`)
+      assert.ok(allowed || ENGINE_IMPORTS[name]?.includes(specifier), `${name} imports ${specifier}`)
     }
   }
   const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as { dependencies: Record<string, string> }

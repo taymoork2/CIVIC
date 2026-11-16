@@ -41,8 +41,12 @@ export function architecture(file, source) {
     if (node.type === 'TSImportType') specifier = node.source
     if (specifier && typeof specifier.value === 'string') {
       const value = specifier.value
-      if (/^(graph|importers)\//.test(file) && /^(effect(?:\/|$)|xstate(?:\/|$)|@effect\/|@xstate\/|(?:node:)?child_process$)/.test(value)) add('architecture/data-core')
-      if (ui && /(^|\/)server(\/|$)/.test(value)) add('architecture/browser-server')
+      // Integration tests spawn the real CLI; production data modules cannot spawn processes.
+      const testProcess = /^(graph|importers)\/test\//.test(file) && /^(?:node:)?child_process$/.test(value)
+      if (/^(graph|importers)\//.test(file) && !testProcess && /^(effect(?:\/|$)|xstate(?:\/|$)|@effect\/|@xstate\/|(?:node:)?child_process$)/.test(value)) add('architecture/data-core')
+      // Node rendering tests use React's renderer, not a CIVIC server module.
+      const testRenderer = /\.test\.[jt]sx?$/.test(file) && value === 'react-dom/server'
+      if (ui && !testRenderer && /(^|\/)server(\/|$)/.test(value)) add('architecture/browser-server')
       if (isAbsolute(value) || value.startsWith('file:') || (value.startsWith('.') && relative(root, resolve(root, dirname(file), value)).split(sep)[0] === '..')) add('architecture/outside-repo')
     }
     for (const value of Object.values(node)) {

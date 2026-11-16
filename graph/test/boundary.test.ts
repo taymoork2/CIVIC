@@ -13,7 +13,9 @@ const imports = files.flatMap((name) =>
 test('the graph imports only its own files and Node built-ins', () => {
   assert.ok(files.length > 0)
   for (const { name, specifier } of imports) {
-    assert.ok(specifier.startsWith('./') || specifier.startsWith('node:'), `${name} imports ${specifier}`)
+    // Keep the old freshness API while review owns git execution.
+    const freshnessFacade = name === 'freshness.ts' && specifier === '../../review/src/freshness.ts'
+    assert.ok(freshnessFacade || specifier.startsWith('./') || specifier.startsWith('node:'), `${name} imports ${specifier}`)
   }
 })
 

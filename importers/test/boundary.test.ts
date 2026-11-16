@@ -12,7 +12,9 @@ test('importers import only their own files, the graph and Node built-ins', () =
   assert.ok(files.length > 0)
   for (const name of files) {
     for (const [, specifier] of readFileSync(new URL(name, sourceDir), 'utf8').matchAll(/from\s+'([^']+)'/g)) {
-      assert.ok(specifier!.startsWith('./') || specifier!.startsWith('node:') || specifier!.startsWith('../../graph/src/'), `${name} imports ${specifier}`)
+      // Keep existing Playwright configurations while review owns the reporter lifecycle.
+      const reporterFacade = name === 'playwright-reporter.ts' && specifier === '../../review/src/playwright-reporter.ts'
+      assert.ok(reporterFacade || specifier!.startsWith('./') || specifier!.startsWith('node:') || specifier!.startsWith('../../graph/src/'), `${name} imports ${specifier}`)
     }
   }
 })
