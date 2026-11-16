@@ -1,0 +1,117 @@
+<task-notification>
+<task-id>beh6d6lju</task-id>
+<tool-use-id>toolu_01MPVZC9Ym6p4uDtwTeYsycn</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/beh6d6lju.output</output-file>
+<status>completed</status>
+<summary>Background command "Rerun S7 signoff behind gate" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A0fc5146e-3a24-492d-b871-e21a3331032d%3Adelegate-task%3A16209525-2cb7-42a2-8644-ba7b626bdb62 (S8 lint cleanup) [completed]:
+Files changed:
+
+- [backend-coverage.mjs](packages/canvas/server/backend-coverage.mjs), [backend-coverage.check.mjs](packages/canvas/server/backend-coverage.check.mjs)
+- [canvas-host.mjs](packages/canvas/server/canvas-host.mjs), [canvas-host.check.mjs](packages/canvas/server/canvas-host.check.mjs)
+- [server-functions.mjs](packages/canvas/server/server-functions.mjs)
+- [coverage-panel.tsx](packages/canvas/src/coverage-panel.tsx)
+- [runtime-bridge.test.ts](packages/canvas/src/runtime-bridge.test.ts)
+- [backend-coverage.mjs](packages/shell/server/backend-coverage.mjs), [backend-coverage.d.mts](packages/shell/server/backend-coverage.d.mts)
+- [books.functions.ts](packages/canvas/examples/reading-list/src/books.functions.ts)
+
+Unfixed findings: none. `lint-baseline.json` unchanged; changes uncommitted.
+
+Commands:
+
+- PASS — lint baseline through `bin/with-temp-root.mjs`
+- PASS — `pnpm --dir packages run check`
+- PASS — specified load gate
+- PASS — specified Node tests: 5 passed
+- PASS — specified runtime-bridge command: 8 passed
+- PASS — `git diff --check`
+
+Not checked: browser/Electron acceptance. No known remaining risk.
+
+---
+
+<task-notification>
+<task-id>bsa3loztk</task-id>
+<tool-use-id>toolu_0177toHYDYuV1Va6CMfGV2Zn</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/bsa3loztk.output</output-file>
+<status>completed</status>
+<summary>Background command "Signoff S8 behind gate" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A0fc5146e-3a24-492d-b871-e21a3331032d%3Adelegate-task%3A06c9b3d0-a7ce-47c7-b95b-7a786afc6dca (S10 U1-U2 run journal tests and lifecycle machines) [completed]:
+Implemented U1/U2, left uncommitted. Added five runtime characterization checks, crash fixtures, lifecycle machines, six U2 tests, server type-checking, and dependency-boundary checks.
+
+Machines live in [server-lifecycle.ts](/Users/taymoor/.t3/worktrees/CIVIC/t3-51c4d8b7-c308617938b07406/packages/canvas/server/server-lifecycle.ts) and [run-lifecycle.ts](/Users/taymoor/.t3/worktrees/CIVIC/t3-51c4d8b7-c308617938b07406/packages/canvas/server/run-lifecycle.ts). All four dependencies are canvas **devDependencies**: Effect `^4.1.4`, XState `6.0.0-beta.3`, bridge `1.0.0-beta.2`, core `workspace:*`. This keeps dormant server modules available for checks without adding core to the installed canvas runtime.
+
+- **Server states:** Starting, AwaitingClient, Serving, Waiting, Stopping (Draining/Closing), Stopped. Events: READY, ATTACH, LOST, STOP, FAILED, DRAINED, CLOSED.
+- **Run states:** Starting, Restoring, Ready, Executing, Stopping, Stopped. Events: RESTORE, READY, EXECUTE, COMPLETED, FAILED, STOP, CLOSED.
+- Clock deadlines use Effect actors and TestClock. Graph tests cover explicit events through a timer-free projection because the durable kernel rejects timer intents.
+
+Verification:
+
+- `pnpm --dir packages run check` — **PASS**
+- `node bin/lint-baseline.mjs` — **PASS**, baseline unchanged
+- New U1 check — **5/5 PASS**, including final fixtures in the host run
+- Focused U2 `vp test run` with `--maxWorkers=2` — **6/6 PASS**
+- `pnpm --dir packages --filter @civic/canvas run test:host` after gate — **FAIL: 55 passed, 1 failed**
+
+Blocker: [shell-layout.check.mjs:71](/Users/taymoor/.t3/worktrees/CIVIC/t3-51c4d8b7-c308617938b07406/packages/canvas/server/shell-layout.check.mjs:71), “Actions stay fixed while versions scroll,” reported differing footer bounds. That file is unchanged; baseline behavior was not established.
+
+Skipped installed-consumer verification because it requires a committed candidate. U3 runtime wiring remains excluded; the full host suite remains red.
+
+---
+
+<task-notification>
+<task-id>bcvacp39f</task-id>
+<tool-use-id>toolu_01KVjALAVTBVzGwsyvRZ6zXd</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/bcvacp39f.output</output-file>
+<status>completed</status>
+<summary>Background command "Rerun S8 signoff behind gate" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bnoxwwll6</task-id>
+<tool-use-id>toolu_016M44dZLTCQyxtiTAzrdxKx</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/bnoxwwll6.output</output-file>
+<status>completed</status>
+<summary>Background command "Run the pantry test twice on S8 after gate" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>b1ww6h3p9</task-id>
+<tool-use-id>toolu_01H83iHXnCzwcRyL1DqmwwKp</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/b1ww6h3p9.output</output-file>
+<status>failed</status>
+<summary>Background command "Signoff S8 then S10, each behind gate" failed with exit code 144</summary>
+</task-notification>
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A0fc5146e-3a24-492d-b871-e21a3331032d%3Adelegate-task%3A5cc11c0e-bbf7-4d20-9f28-ea3a5570b61f (S11 harness integrations) [completed]:
+Implemented uncommitted S11 changes:
+
+- Kept `integrations/claude-code/bin/civic-mcp` as the shared launcher.
+- Added `review/src/integrations.ts` as the config source for Claude Code, Codex JSON/TOML, OpenCode, Cursor, and ACP.
+- Added print-only `civic integrate <harness>`, documentation, config drift checks, and launcher smoke tests.
+- Added field-size validation without changing `TOOLS`.
+
+The stdio behaviour tests assert refusal of stale versions naming the change, foreign claims naming the holder, unknown `resolve` calls, fix reports without claims, and invalid/oversized fields naming the field.
+
+Verification:
+
+- **PASS:** `pnpm --dir packages install --frozen-lockfile`
+- **PASS:** `pnpm --dir packages run check` — includes lint-baseline
+- **PASS:** `git diff --check`
+- **BLOCKED:** focused behaviour/smoke tests and `pnpm --dir packages --filter @civic/review test`. The required gate never opened; an external signoff remained active.
+
+Tests remain unrun; runtime correctness is unverified. No commits, delegation, or real-agent runs.
