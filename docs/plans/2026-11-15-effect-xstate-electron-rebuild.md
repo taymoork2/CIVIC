@@ -203,27 +203,12 @@ AGENTS.md holds throughout: HOME never changes; ephemeral ports only (never 3012
 
 1. May the 79 stale `orca-worktree-*` folders (1.4 GB) in `.civic-canvas/projects` be deleted, and may the private Orca adapter adopt the retention helper?
 
-## Status, 16 Nov
+## Status, 16 Nov (handover)
 
-Merged: tooling and dependency updates (S1/S1b), baseline checks (S2), the single
-workspace (S3), core and request machine (S4), Effect MCP (S5), self-review picker
-(S6), source-to-element (S7), backend coverage (S8), preview lifecycle and bounded
-retention (S9/S9b), harness integrations (S11, `8375aea2`), and coordinator tools
-(S11b, `267d4563`, base fix `94875c8d`). S10 U1/U2 landed in `8bade120`; run
-supervision in `e61e6847` with corrections `24d35503` and `62739c80`; managed
-hosting in `dc55e5b3`; browser/Electron attachment in `613fb176`. Checkbox replay
-was corrected in `8aed9b23`; layering cleanup landed in `050fc5d5`. U6 landed
-in `117351ef`: install-and-recovery checks from a git-installed canvas.
-Sign-offs ran alongside Orca's at the owner's request on 16 Nov.
+**Merged on `civic/controller-2026-11-15`** (each through `bin/signoff`; nothing pushed, nothing in `main`): every slice S0–S12 of this plan. Tooling and dependency updates (S1/S1b), shrink-only lint and architecture baselines (S2), one workspace (S3), the machine core and request machine (S4), the Effect MCP server (S5), CIVIC in its own picker (S6), source-to-element (S7), backend coverage (S8), the preview lifecycle and bounded build retention (S9/S9b), the shared app server and desktop app U1–U6 (S10), harness integrations (S11), the coordinator hand-off (S11b), and a first layering cleanup (S12). Follow-ups merged in `7c9a1442`: Effect diagnostics through `@effect/tsgo` 0.69.0 (10 recorded in the baseline), server raw timers 13 → 4, attached tabs and desktop surviving a Vite restart, coverage notices for preview-only replays, a hidden-tab and frame test, and a fix for the managed-client checks' covered-window rendering. Fixes found on the way: checkbox replay, a git option injection in `changed_screens`, a desktop crash on late window events, and git-installed canvases loading TypeScript.
 
-Effect diagnostics now run with TypeScript 7 through `@effect/tsgo` 0.69.0.
-The shrink-only baseline records 10 diagnostics (one error, one warning, eight
-suggestions): zero in core and canvas UI, one in canvas server tests, nine in review.
+**Not merged:** `chore/anti-slop-effect` (`174f6187`): 12 Effect rules vendored from k-mistele/anti-slop at `b7c1619b`, `no-runtime-typeof` off, a `--adopt` baseline path, and `useEffect` 51 → 45 behind `useWindowEvent`, `useResizeObserver` and `useFrameKeydown`. Its sign-off (`658e76f6`) stalled for 15–17 minutes per test in the canvas settings and viewport checks and in run-supervision's hung-operation check, which pass on `7c9a1442`. Likely cause: the `useEffect` changes in settings and viewport UI. Next step: run `viewport-controls.check.mjs` and `theme-settings.check.mjs` on that branch alone, find the hang, fix or split the lint rules from the hook changes.
 
-Remaining: hooks enablement and private-adapter adoption after the branch reaches
-main; Orca-side wiring ([proposal](../integrations/orca-proposal.md)); the shared
-sign-off package (§6b); proving the real-agent loop; Vite restart with a connected
-desktop client; hidden-tab/frame exclusion test; coverage notifications for
-preview-only replays (another worker is closing the last three); sleep/wake;
-further S12 baseline cleanup; and the owner decision about private-store deletion.
-This list records merges and the diagnostics outcome, not fresh full-suite results.
+**Owner decisions:** merge this branch into `main` and push; then enable hooks (`vp hooks enable`, absolute `core.hooksPath`) and adopt the retention helper in the private Orca adapter. Sign-off timing: wait for a quiet machine, or allow load below 10 when no Orca sign-off runs (used overnight 16 Nov). Two old dogfood recordings that tick a checkbox (`.civic-canvas/dogfood/run-E25HF5`) need re-recording or removal.
+
+**Remaining work:** the Orca-side wiring ([proposal](../integrations/orca-proposal.md)); adopting the shared sign-off package (§6b); proving the real-agent loop end to end; sleep and wake; the viewport check that failed once without reproducing; the 60 second restart deadline path; source-to-element and backend coverage on Orca and Laundry (local, private); further baseline cleanup (useEffect, raw timers, about 3,300 lint findings).
