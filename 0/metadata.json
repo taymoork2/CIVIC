@@ -1,0 +1,67 @@
+{
+  "cli_version": "0.13.3",
+  "checkpoint_id": "01M7HKMSDYM1ZEK6C3PACFPVAY",
+  "session_id": "8f3b2eca-0508-4f5d-8344-d9ed70c2da42",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-16T07:20:20.340867Z",
+  "branch": "feat/managed-host-u4",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "packages/canvas/package.json",
+    "packages/canvas/server/app-server-main.mjs",
+    "packages/canvas/server/app-server.check.mjs",
+    "packages/canvas/server/app-server.mjs",
+    "packages/canvas/server/canvas-host.mjs",
+    "packages/canvas/server/client-presence.d.mts",
+    "packages/canvas/server/client-presence.mjs",
+    "packages/canvas/server/client-presence.test.ts",
+    "packages/canvas/server/lifecycle-scope.test.ts",
+    "packages/canvas/server/lifecycle.test.ts",
+    "packages/canvas/server/server-lifecycle.d.mts",
+    "packages/canvas/server/server-lifecycle.mjs",
+    "packages/canvas/server/server-lifecycle.ts",
+    "packages/canvas/server/service-registration.check.mjs",
+    "packages/canvas/server/service-registration.mjs",
+    "packages/install.check.mjs",
+    "packages/pnpm-lock.yaml",
+    "packages/shell/server/review-server.mjs",
+    "packages/vite-connector/src/review-plugin.mjs"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "2f52d4d5bfc4",
+  "checkpoint_transcript_start": 4218,
+  "transcript_lines_at_start": 4218,
+  "compact_transcript_start": 578,
+  "token_usage": {
+    "input_tokens": 30,
+    "cache_creation_tokens": 12721,
+    "cache_read_tokens": 8720950,
+    "output_tokens": 7990,
+    "api_call_count": 13
+  },
+  "session_token_usage": {
+    "input_tokens": 1012,
+    "cache_creation_tokens": 652910,
+    "cache_read_tokens": 186060867,
+    "output_tokens": 269354,
+    "api_call_count": 446
+  },
+  "redaction": {
+    "replacements": 388,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 360,
+      "key_context": 28,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 57
+  }
+}
