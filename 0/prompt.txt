@@ -1,0 +1,50 @@
+<task-notification>
+<task-id>bt2or37c6</task-id>
+<tool-use-id>toolu_011pPApQhzWf9uRmCLA2KMUX</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/bt2or37c6.output</output-file>
+<status>completed</status>
+<summary>Background command "Sign off the rebuilt outside-project batch" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A9f43cd31-b115-413f-821e-100bc7675bb1%3Adelegate-task%3A599eb080-26f8-4462-a7f0-8e6761c2f8db (Convex operations + unshared replays) [completed]:
+Implemented in this worktree; changes remain uncommitted.
+
+- Added an ordered TanStack/Convex detector list. Rows preserve existing fields and carry `detector`; Convex rows also carry visibility.
+- Added source-derived Convex functions, nested/default export identities, and literal HTTP routes. Unreached internal functions are reported separately from public gaps.
+- Added current-source, current-project unshared replay counts and the requested sharing hint. They do not increase coverage.
+
+Tests cover every Convex kind, nested/default exports, HTTP routes, generated files, false positives/comments, tape reachability, and unshared-to-shared coverage behavior.
+
+Verification results:
+
+- Focused backend, scanner, replay, outside-project and CLI/MCP tests: **12 passed**.
+- Related HTTP, function-backend and TanStack browser checks: **3 passed**.
+- `pnpm --dir packages run check`: **passed**.
+- `node bin/lint-baseline.mjs`: **passed**.
+- `git diff --check`: **passed**.
+- Initial tests lacked dependencies; `pnpm --dir packages install --frozen-lockfile --offline` resolved that without downloads.
+
+Laundry readers derived **197 Convex operations**: **57 queries, 133 mutations, 5 actions, 2 HTTP routes**. Of these, **28 are internal**. One additional TanStack operation makes **198 total**.
+
+Both passing tapes record:
+
+- `inventory:createTextiles`
+- `inventory:list`
+- `inventoryBrowse:summary`
+
+However, their recorded source is `cc0eeed9…`; the current reader reports `01359789…`. Consequently, current coverage correctly reports **0/229 screens**, no reached backend operations, and **0 matching unshared replays**. I preserved the recordings and their identities.
+
+Five source spot-checks confirmed the derived kinds:
+
+- [createTextiles — mutation](/var/folders/fd/hz_x5rk15t31rk4cv4mx047w0000gn/T/laundry-trial/app/convex/inventory.ts:470)
+- [list — query](/var/folders/fd/hz_x5rk15t31rk4cv4mx047w0000gn/T/laundry-trial/app/convex/inventory.ts:234)
+- [summary — query](/var/folders/fd/hz_x5rk15t31rk4cv4mx047w0000gn/T/laundry-trial/app/convex/inventoryBrowse.ts:49)
+- [health:status — query](/var/folders/fd/hz_x5rk15t31rk4cv4mx047w0000gn/T/laundry-trial/app/convex/health.ts:5)
+- [photos:generateUploadUrl — mutation](/var/folders/fd/hz_x5rk15t31rk4cv4mx047w0000gn/T/laundry-trial/app/convex/photos.ts:67)
+
+Unreached public examples include `health:status`, `photos:generateUploadUrl`, and `plans:get`.
+
+Skipped dynamic/prefix HTTP routes and other frameworks. No Convex deployment was contacted; test processes stopped.
+The full workspace/browser checks preceded the final default-export addition; focused tests and lint passed afterward. The Laundry source mismatch remains unexplained.
