@@ -40,24 +40,24 @@ fi
 sha="$(git -C "$repo_root" rev-parse HEAD)"
 node "$repo_root/scripts/commit-type.ts"
 
+# Install everything first: some suites (civic preview) start the engine packages too.
+step "Installing each install's locked dependencies"
+for dir in "$graph_dir" "$review_dir" "$crawl_dir" "$importers_dir" "$packages_dir"; do pnpm --dir "$dir" install --frozen-lockfile; done
+
 step "CIVIC graph: types, tests and example graphs"
-pnpm --dir "$graph_dir" install --frozen-lockfile
 pnpm --dir "$graph_dir" run check
 pnpm --dir "$graph_dir" test
 pnpm --dir "$graph_dir" run validate
 
 step "CIVIC review to agent loop: store, CLI and re-capture"
-pnpm --dir "$review_dir" install --frozen-lockfile
 pnpm --dir "$review_dir" run check
 pnpm --dir "$review_dir" test
 
 step "CIVIC crawl loop: types and tests (one test drives a browser)"
-pnpm --dir "$crawl_dir" install --frozen-lockfile
 pnpm --dir "$crawl_dir" run check
 pnpm --dir "$crawl_dir" test
 
 step "CIVIC importers, the Fluent Button and Card demo graphs, and the discovery example graph"
-pnpm --dir "$importers_dir" install --frozen-lockfile
 pnpm --dir "$importers_dir" run check
 pnpm --dir "$importers_dir" test
 node "$demo_dir/build.ts" --check
@@ -92,7 +92,6 @@ if [ "$browser" = 1 ]; then
 fi
 
 step "CIVIC packages: canvas, shell and Vite connector, with the canvas examples"
-pnpm --dir "$packages_dir" install --frozen-lockfile
 pnpm --dir "$packages_dir" run check
 pnpm --dir "$packages_dir" test
 

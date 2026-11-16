@@ -12,11 +12,11 @@
   },
   "scripts": {
     "check": "tsc --noEmit",
-    "test": "node ../bin/with-temp-root.mjs node --test \"test/**/*.test.ts\"",
+    "test": "node ../bin/with-temp-root.mjs node --test --test-concurrency=2 \"test/**/*.test.ts\"",
     "validate": "node src/cli.ts validate examples/fluent-button.graph.json examples/card-override.graph.json examples/review-loop.graph.json"
   },
   "devDependencies": {
-    "@types/node": "26.6.3",
-    "typescript": "7.0.2"
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2"
   }
 }

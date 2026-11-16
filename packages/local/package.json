@@ -12,7 +12,7 @@
   "dependencies": {
     "@civic/canvas": "workspace:*",
     "@civic/vite-connector": "workspace:*",
-    "@tailwindcss/vite": "4.3.3",
+    "@tailwindcss/vite": "^4.3.5",
     "vite": "catalog:"
   }
 }
