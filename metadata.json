@@ -1,0 +1,49 @@
+{
+  "cli_version": "0.13.3",
+  "checkpoint_id": "01M7KCEDWRCE86526AA3ZGZBAK",
+  "strategy": "manual-commit",
+  "branch": "t3/backend-framework-detectors-1",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "packages/canvas/server/backend-coverage.mjs",
+    "packages/canvas/server/check-fixtures/elysia/routes.ts",
+    "packages/canvas/server/check-fixtures/fastify/routes.ts",
+    "packages/canvas/server/check-fixtures/hono/routes.ts",
+    "packages/canvas/server/elysia-routes.mjs",
+    "packages/canvas/server/fastify-routes.mjs",
+    "packages/canvas/server/framework-detectors.check.mjs",
+    "packages/canvas/server/hono-routes.mjs",
+    "packages/canvas/server/literal-routes.mjs",
+    "packages/shell/server/backend-coverage.mjs"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 10,
+    "cache_creation_tokens": 3764,
+    "cache_read_tokens": 1888275,
+    "output_tokens": 1820,
+    "api_call_count": 4
+  },
+  "redaction": {
+    "replacements": 676,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 598,
+      "key_context": 78,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}

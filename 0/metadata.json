@@ -1,0 +1,58 @@
+{
+  "cli_version": "0.13.3",
+  "checkpoint_id": "01M7KCEDWRCE86526AA3ZGZBAK",
+  "session_id": "8f3b2eca-0508-4f5d-8344-d9ed70c2da42",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-16T23:53:01.594338Z",
+  "branch": "t3/backend-framework-detectors-1",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "packages/canvas/server/backend-coverage.mjs",
+    "packages/canvas/server/check-fixtures/elysia/routes.ts",
+    "packages/canvas/server/check-fixtures/fastify/routes.ts",
+    "packages/canvas/server/check-fixtures/hono/routes.ts",
+    "packages/canvas/server/elysia-routes.mjs",
+    "packages/canvas/server/fastify-routes.mjs",
+    "packages/canvas/server/framework-detectors.check.mjs",
+    "packages/canvas/server/hono-routes.mjs",
+    "packages/canvas/server/literal-routes.mjs",
+    "packages/shell/server/backend-coverage.mjs"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "83d8e2730680",
+  "checkpoint_transcript_start": 8644,
+  "transcript_lines_at_start": 8644,
+  "compact_transcript_start": 1162,
+  "token_usage": {
+    "input_tokens": 10,
+    "cache_creation_tokens": 3764,
+    "cache_read_tokens": 1888275,
+    "output_tokens": 1820,
+    "api_call_count": 4
+  },
+  "session_token_usage": {
+    "input_tokens": 2034,
+    "cache_creation_tokens": 3586829,
+    "cache_read_tokens": 368327053,
+    "output_tokens": 556223,
+    "api_call_count": 883
+  },
+  "redaction": {
+    "replacements": 676,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 598,
+      "key_context": 78,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 126
+  }
+}
