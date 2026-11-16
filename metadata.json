@@ -1,0 +1,56 @@
+{
+  "cli_version": "0.13.3",
+  "checkpoint_id": "01M7HTTDGDQEJK36VC9K3XYYRC",
+  "strategy": "manual-commit",
+  "branch": "chore/effect-diagnostics-timers",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "bin/lint-baseline.mjs",
+    "crawl/package.json",
+    "crawl/src/appium.ts",
+    "docs/plans/2026-11-15-effect-xstate-electron-rebuild.md",
+    "lint-baseline.json",
+    "packages/canvas/package.json",
+    "packages/canvas/server/module-adapter.mjs",
+    "packages/canvas/tsconfig.json",
+    "packages/core/package.json",
+    "packages/package.json",
+    "packages/pnpm-lock.yaml",
+    "packages/shell/package.json",
+    "packages/shell/server/review-server.check.mjs",
+    "packages/shell/server/review-server.mjs",
+    "review/package.json",
+    "review/tsconfig.json",
+    "scripts/lint-baseline.test.mjs"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 34,
+    "cache_creation_tokens": 16405,
+    "cache_read_tokens": 10385794,
+    "output_tokens": 10197,
+    "api_call_count": 14
+  },
+  "redaction": {
+    "replacements": 454,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 415,
+      "key_context": 39,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
