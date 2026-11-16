@@ -1,8 +1,5 @@
 import { execFileSync, spawnSync, spawn } from 'node:child_process'
-import { loadavg } from 'node:os'
-import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
-import { setTimeout as delay } from 'node:timers/promises'
 import { signoffMain } from '../tools/signoff/src/signoff.ts'
 import { loadConfig } from '../tools/signoff/src/config.ts'
 
@@ -13,39 +10,6 @@ const run = (command: string, args: string[], accepted = [0]) => {
   if (result.error) throw result.error
   if (!accepted.includes(result.status ?? -1)) throw new Error(`${command} failed (${result.status ?? result.signal})`)
   return result.status
-}
-
-// Match the executable and its script argument, never shell snippets containing those words.
-export function isSignoffProcess(command: string) {
-  return /^(?:\S*\/)?(?:bash|node)\s+(?:--\s+)?(?:"(?:[^"]*\/)?(?:bin\/signoff|scripts\/signoff\.ts)"|'(?:[^']*\/)?(?:bin\/signoff|scripts\/signoff\.ts)'|(?:\S*\/)?(?:bin\/signoff|scripts\/signoff\.ts))(?:\s|$)/u.test(command)
-    // Orca's landing gate runs its sign-off as `node -e import(".../scripts/signoff.ts")...`.
-    || /^(?:\S*\/)?node\s+(?:-e|--eval)\s+['"]?import\(\s*["'][^"']*\/scripts\/signoff\.ts["']\s*\)/u.test(command)
-}
-
-export async function waitForQuiet() {
-  process.title = 'civic-signoff-waiting'
-  const limit = Number(process.env.CIVIC_SIGNOFF_LOAD ?? 10)
-  if (!Number.isFinite(limit) || limit <= 0) throw new Error('CIVIC_SIGNOFF_LOAD must be a positive number')
-  const quiet = () => {
-    const rows = execFileSync('ps', ['-axo', 'pid=,ppid=,args='], { encoding: 'utf8' }).trim().split('\n').map(line => {
-      const [, pid, parent, command] = line.match(/^\s*(\d+)\s+(\d+)\s+(.*)$/u) ?? []
-      return { pid: Number(pid), parent: Number(parent), command: command?.trim() ?? '' }
-    })
-    const ancestors = new Set([process.pid])
-    let parent = process.ppid
-    while (parent && !ancestors.has(parent)) { ancestors.add(parent); parent = rows.find(row => row.pid === parent)?.parent ?? 0 }
-    return loadavg()[0]! < limit && !rows.some(row => !ancestors.has(row.pid) && (isSignoffProcess(row.command) || (row.command === 'civic-signoff-reserving' && row.pid < process.pid)))
-  }
-  console.log('Waiting for a quiet machine and other sign-offs to finish.')
-  while (true) {
-    if (quiet()) {
-      process.title = 'civic-signoff-reserving'
-      await delay(30_000)
-      if (quiet()) { process.title = `node ${fileURLToPath(import.meta.url)}`; return }
-      process.title = 'civic-signoff-waiting'
-    }
-    await delay(10_000)
-  }
 }
 
 function since() {
@@ -71,14 +35,18 @@ async function main() {
     step(args[1] ?? '')
     return
   }
-  if (args.some(arg => !['--dry-run', '--browser', '--post', '--no-post', '--fresh', '--all'].includes(arg))) throw new Error('Use --dry-run, --browser, --no-post, --post, --fresh or --all')
+  // The shared package waits for a quiet machine itself; pass its wait options through.
+  const wait = args.flatMap((arg, index) => arg === '--no-wait' || arg.startsWith('--wait-max=') ? [arg] : arg === '--wait-max' ? [arg, args[index + 1] ?? ''] : [])
+  const own = args.filter((arg, index) => !wait.includes(arg) && args[index - 1] !== '--wait-max')
+  if (own.some(arg => !['--dry-run', '--browser', '--post', '--no-post', '--fresh', '--all'].includes(arg))) throw new Error('Use --dry-run, --browser, --no-post, --post, --fresh, --all, --no-wait or --wait-max <minutes>')
   if (args.includes('--post') && (args.includes('--no-post') || args.includes('--dry-run') || process.env.NODE_TEST_CONTEXT)) throw new Error('Posting requires an explicit --post run outside tests and dry runs')
   process.chdir(root)
   process.env.CIVIC_SIGNOFF_BROWSER = args.includes('--browser') ? '1' : '0'
   const installed = spawnSync('git', ['show', 'main:.signoff.json'], { cwd: root, encoding: 'utf8' })
+  if (installed.status !== 0) throw new Error('main has no .signoff.json, so there are no checks to run.')
   if (args.includes('--dry-run')) {
-    console.log(installed.status === 0 ? 'Shared sign-off checks from main:' : 'Before landing: existing sign-off steps; after landing: shared runner.')
-    for (const check of loadConfig(installed.status === 0 ? installed.stdout : readFileSync('.signoff.json', 'utf8')).checks) console.log(`${check.name}: (${check.cwd}) ${check.argv.join(' ')}`)
+    console.log('Shared sign-off checks from main:')
+    for (const check of loadConfig(installed.stdout).checks) console.log(`${check.name}: (${check.cwd}) ${check.argv.join(' ')}`)
     console.log(`gate: bin/civic check --config civic.check.json ${since().join(' ')}`)
     console.log(`release: bin/civic release --config civic.check.json ${since().join(' ')} (only when the base exists; exit 1 is reported)`)
     console.log(`browser (${args.includes('--browser') ? 'enabled' : 'off; use --browser'}): pnpm --dir demo/fluent-button/web install --frozen-lockfile; pnpm --dir demo/fluent-button/web run evidence`)
@@ -88,21 +56,15 @@ async function main() {
   if (!process.env.CIVIC_TEMP_ROOT) throw new Error('Run sign-off through bin/signoff')
   if (git('status', '--porcelain')) throw new Error('Commit your changes first: sign-off covers the committed version.')
   const sha = git('rev-parse', 'HEAD')
-  await waitForQuiet()
   const awake = process.platform === 'darwin' ? spawn('caffeinate', ['-ims', '-w', String(process.pid)], { stdio: 'ignore' }) : undefined
   awake?.on('error', error => { console.error(error.message); process.exitCode = 1 })
   try {
-    if (installed.status !== 0) {
-      process.env.CIVIC_SIGNOFF_REPO_ROOT = root
-      run('bash', ['tools/signoff/civic-legacy.sh', ...args.filter(arg => !['--fresh', '--all'].includes(arg))])
-      return
-    }
     // shortcut: runtime base/browser options require fresh checks, enable reuse when the package fingerprints them.
-    await signoffMain(root, ['--fresh', '--all'])
+    await signoffMain(root, ['--fresh', '--all', ...wait])
     if (process.exitCode) return
     if (git('rev-parse', 'HEAD') !== sha || git('status', '--porcelain')) throw new Error('The checkout changed during checks; sign-off refused.')
     if (args.includes('--post')) {
-      await signoffMain(root, ['--post', '--all'])
+      await signoffMain(root, ['--post', '--all', '--no-wait'])
       if (process.exitCode) return
       run('bin/civic', ['check', '--config', 'civic.check.json', '--post'])
       const pr = spawnSync('gh', ['pr', 'view', '--json', 'number,state', '--jq', 'select(.state == "OPEN") | .number'], { encoding: 'utf8' })

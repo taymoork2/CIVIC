@@ -7,6 +7,7 @@ import { git } from "./git.ts";
 import { loadConfig, selectChecks } from "./config.ts";
 import type { Check, DomainMap, Project } from "./config.ts";
 import { advice, untyped } from "./commit-type.ts";
+import { statusWriter, waitFlags, waitForQuietMachine } from "./machine-gate.ts";
 import { processIdentity, readProgress, signoffDir, writeProgress, statusMain } from "./signoff-status.ts";
 import { SIGNOFF_KEY, taskParts } from "./landing-tasks.ts";
 import { dependencyGraph } from "./dependencies.ts";
@@ -64,7 +65,7 @@ const checklist = (root: string, project: Project) => {
   const map = project.areaMapFile === undefined || git(root, "ls-tree", "--name-only", "main", "--", project.areaMapFile) === "" ? undefined : git(root, "show", `main:${project.areaMapFile}`);
   const config = loadConfig(text, map);
 
-  return { checks: (changed: readonly string[]) => selectChecks(config.checks, changed), related: project.relatedTests ?? config.relatedTests ?? false, vite: config.vite === true, typedCommits: config.typedCommits === true, map: config.areaMap, hash: createHash("sha256").update(text).update(map ?? "").digest("hex") };
+  return { checks: (changed: readonly string[]) => selectChecks(config.checks, changed), related: project.relatedTests ?? config.relatedTests ?? false, vite: config.vite === true, typedCommits: config.typedCommits === true, maxLoad: config.maxLoad, map: config.areaMap, hash: createHash("sha256").update(text).update(map ?? "").digest("hex") };
 };
 
 const areaFilter = (area: string) => (word: string) => word.startsWith("src/core/") && (`src/core/${area}`.startsWith(word) || word.startsWith(`src/core/${area}/`));
@@ -608,7 +609,7 @@ const describePlan = ({ root, commit, changed, plan, skipped, relatedCount, say 
   }
 };
 
-export interface SignoffOptions { dryRun?: boolean; fresh?: boolean; all?: boolean; say?: (line: string) => void; candidate?: string | undefined; signal?: AbortSignal }
+export interface SignoffOptions { dryRun?: boolean; fresh?: boolean; all?: boolean; say?: (line: string) => void; candidate?: string | undefined; signal?: AbortSignal | undefined; noWait?: boolean | undefined; waitMaxMinutes?: number | undefined }
 
 const describeResult = (record: Signoff, directory: string, say: (line: string) => void) => {
   const flakyChecks = record.checks.filter(entry => entry.flaky === true);
@@ -618,16 +619,27 @@ const describeResult = (record: Signoff, directory: string, say: (line: string) 
   say(`${record.passed ? `Signed off (${SELECTION_LABEL[record.selection]})` : "Not signed off"}: ${record.commit} (log: ${path.join(directory, `${record.commit}.log`)})`);
 };
 
+const underTest = () => process.env.NODE_TEST_CONTEXT !== undefined || process.env.VITEST !== undefined;
+
+const gate = async (options: SignoffOptions, say: (line: string) => void, maxLoad: number | undefined) => {
+  if (options.dryRun === true || options.noWait === true || underTest()) { return; }
+
+  await waitForQuietMachine({ maxLoad, maxWaitMinutes: options.waitMaxMinutes, signal: options.signal, say, status: statusWriter(say, say === console.log && process.stdout.isTTY) });
+};
+
 const requireTypedTitles = (root: string, required: boolean) => {
   const bad = required ? untyped(root) : [];
   assert.equal(bad.length, 0, `Not signed off: ${advice(bad)}`);
 };
 
-export const signoff = async (root: string, { dryRun = false, fresh, all = false, say = console.log, candidate, signal }: SignoffOptions = {}, project: Project = {}) => {
+export const signoff = async (root: string, { dryRun = false, fresh, all = false, say = console.log, candidate, signal, noWait, waitMaxMinutes }: SignoffOptions = {}, project: Project = {}) => {
   assert.ok(dryRun || git(root, "status", "--porcelain") === "", "The working tree has uncommitted changes. Commit first: a sign-off describes a commit.");
   const commit = git(root, "rev-parse", "HEAD");
-  const { checks: select, map, hash, related, vite, typedCommits } = checklist(root, project);
+  const { checks: select, map, hash, related, vite, typedCommits, maxLoad } = checklist(root, project);
   requireTypedTitles(root, typedCommits);
+
+  await gate({ dryRun, noWait, signal, waitMaxMinutes }, say, maxLoad);
+
   const directory = signoffDir(root);
   const changed = changedFiles(root, directory);
   const fingerprint = fingerprinter(root);
@@ -771,12 +783,12 @@ export const verify = (root: string, revision: string, project: Project = {}) =>
   return SELECTION_LABEL["selection" in record && record.selection === "domain" ? "domain" : "full"];
 };
 
-const usage = "Usage: signoff [--dry-run] [--fresh] [--all] [--post] [--candidate=<token>]\n       signoff --verify <sha>\n       signoff --watch[=seconds] [--details]\nRun main's configured checks against committed HEAD; --all ignores the area map; --fresh disables reuse; --post explicitly authorizes a GitHub commit status (never pushes).";
+const usage = "Usage: signoff [--dry-run] [--fresh] [--all] [--post] [--candidate=<token>] [--no-wait] [--wait-max <minutes>]\n       signoff --verify <sha>\n       signoff --watch[=seconds] [--details]\nRun main's configured checks against committed HEAD; --all ignores the area map; --fresh disables reuse; it first waits (up to 120 minutes) for any other sign-off on this machine to finish and the load to drop, unless --no-wait; --post explicitly authorizes a GitHub commit status (never pushes).";
 
-const runCommand = async (root: string, args: string[], project: Project) => {
-  assert.ok(!args.includes("--post") || (!args.includes("--dry-run") && process.env.NODE_TEST_CONTEXT === undefined && process.env.VITEST === undefined), "GitHub posting is refused during tests and dry runs");
+const runCommand = async (root: string, args: string[], project: Project, wait: Pick<SignoffOptions, "noWait" | "waitMaxMinutes">) => {
+  assert.ok(!args.includes("--post") || (!args.includes("--dry-run") && !underTest()), "GitHub posting is refused during tests and dry runs");
   const commit = git(root, "rev-parse", "HEAD");
-  const passed = await signoff(root, { dryRun: args.includes("--dry-run"), fresh: args.includes("--fresh"), all: args.includes("--all"), candidate: args.find(arg => arg.startsWith("--candidate="))?.slice(12) }, project);
+  const passed = await signoff(root, { dryRun: args.includes("--dry-run"), fresh: args.includes("--fresh"), all: args.includes("--all"), candidate: args.find(arg => arg.startsWith("--candidate="))?.slice(12), ...wait }, project);
 
   if (passed && args.includes("--post")) {
     verify(root, commit, project);
@@ -795,11 +807,15 @@ export const signoffMain = async (root = process.cwd(), args = process.argv.slic
       console.log(`Signed off (${verify(root, args[1], project)}): ${args[1]}`);
     } else if (args[0] === "--help") {
       console.log(usage);
-    } else if (args.every(arg => arg === "--dry-run" || arg === "--fresh" || arg === "--all" || arg === "--post" || /^--candidate=[a-f\d-]{36}$/u.test(arg))) {
-      process.exitCode = await runCommand(root, args, project) ? 0 : 1;
     } else {
-      console.log(usage);
-      process.exitCode = 1;
+      const { rest, ...wait } = waitFlags(args);
+
+      if (rest.every(arg => arg === "--dry-run" || arg === "--fresh" || arg === "--all" || arg === "--post" || /^--candidate=[a-f\d-]{36}$/u.test(arg))) {
+        process.exitCode = await runCommand(root, rest, project, wait) ? 0 : 1;
+      } else {
+        console.log(usage);
+        process.exitCode = 1;
+      }
     }
   } catch (error) {
     console.log(error instanceof Error ? error.message : String(error));

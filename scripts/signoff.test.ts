@@ -4,11 +4,11 @@ import { spawnSync } from 'node:child_process'
 import { readFileSync } from 'node:fs'
 import { fileURLToPath } from 'node:url'
 import { loadConfig } from '../tools/signoff/src/config.ts'
-import { isSignoffProcess } from './signoff.ts'
+import { isSignoffCommand } from '../tools/signoff/src/machine-gate.ts'
 
-test('matches actual sign-off script processes, not snippets or lookalikes', () => {
-  for (const command of ['bash /repo/bin/signoff --no-post', '/bin/bash bin/signoff', 'node /repo/scripts/signoff.ts', '/opt/bin/node scripts/signoff.ts --fresh', 'bash "/repo with spaces/bin/signoff"', '/opt/node -e import("/orca/scripts/signoff.ts").then((m) => m.signoff("/x"))']) assert.equal(isSignoffProcess(command), true, command)
-  for (const command of ['bash -c "node /repo/scripts/signoff.ts"', 'node -e "bash /repo/bin/signoff"', 'rg bash /repo/bin/signoff', 'node /repo/scripts/signoff.ts.test', 'bash /repo/bin/signoff-other', 'bash /repo/notbin/signoff', 'civic-signoff-waiting']) assert.equal(isSignoffProcess(command), false, command)
+test('the shared machine gate recognises every way a CIVIC sign-off runs', () => {
+  for (const command of ['bash /repo/bin/signoff --no-post', '/opt/bin/node /repo/bin/with-temp-root.mjs /opt/bin/node /repo/scripts/signoff.ts --no-post', '/opt/bin/node /repo/scripts/signoff.ts', '/opt/node -e import("/orca/scripts/signoff.ts").then((m) => m.signoff("/x"))']) assert.equal(isSignoffCommand(command), true, command)
+  for (const command of ['bash -c "node /repo/scripts/signoff.ts"', 'rg bash /repo/bin/signoff', 'bash /repo/bin/signoff-other']) assert.equal(isSignoffCommand(command), false, command)
 })
 
 test('the manifest keeps the existing checks and typed commit guard', () => {
