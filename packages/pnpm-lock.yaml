@@ -78,6 +78,9 @@ importers:
       '@civic/core':
         specifier: workspace:*
         version: link:../packages/core
+      '@xstate/effect':
+        specifier: 1.0.0-beta.2
+        version: 1.0.0-beta.2(@oxlint/plugins@1.93.0)(effect@4.1.4)(xstate@6.0.0-beta.3)
       effect:
         specifier: ^4.1.4
         version: 4.1.4
@@ -1443,6 +1446,16 @@ packages:
     engines: {node: '>=20.0.0'}
     cpu: [x64]
     os: [win32]
+
+  '@xstate/effect@1.0.0-beta.2':
+    resolution: {integrity: sha512-BGyeP2E2vRxRtMiUKrG797qGMQfE8WqZNYiC5VLFrwIEj73C25LnyQpk5VwhYL2vUntIH629klM/sDWZ1ZjPyQ==}
+    peerDependencies:
+      '@oxlint/plugins': ^1.76.0
+      effect: ^4.0.0
+      xstate: ^6.0.0-beta.3
+    peerDependenciesMeta:
+      '@oxlint/plugins':
+        optional: true
 
   '@yuku-core/binding-android-arm64@0.19.0':
     resolution: {integrity: sha512-wdL2XmTiZixAOaHk9Z0JJZ8u9Qm8d333Zjpc6gaxXFX+UR5BlsfxZ7a2+2Rm71pamppsPYGUGFq2oVLbh6DISw==}
@@ -3122,6 +3135,13 @@ snapshots:
 
   '@voidzero-dev/vite-plus-win32-x64-msvc@1.6.0':
     optional: true
+
+  '@xstate/effect@1.0.0-beta.2(@oxlint/plugins@1.93.0)(effect@4.1.4)(xstate@6.0.0-beta.3)':
+    dependencies:
+      effect: 4.1.4
+      xstate: 6.0.0-beta.3
+    optionalDependencies:
+      '@oxlint/plugins': 1.93.0
 
   '@yuku-core/binding-android-arm64@0.19.0':
     optional: true

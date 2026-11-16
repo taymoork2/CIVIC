@@ -172,8 +172,6 @@
   "architecture/raw-timer:packages/shell/server/review-server.check.mjs": 5,
   "architecture/raw-timer:packages/shell/server/review-server.mjs": 2,
   "architecture/raw-timer:review/src/overlay/overlay.js": 1,
-  "architecture/raw-timer:review/src/preview/launcher.ts": 1,
-  "architecture/raw-timer:review/src/preview/state.ts": 1,
   "architecture/useEffect:packages/canvas/src/agent-delivery.tsx": 2,
   "architecture/useEffect:packages/canvas/src/app-canvas.tsx": 5,
   "architecture/useEffect:packages/canvas/src/connection-readiness.ts": 1,

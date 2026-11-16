@@ -1,0 +1,1 @@
+{"events":[{"type":"START","owner":true},{"type":"LOST"},{"type":"ATTACH","matching":true},{"type":"STOP"},{"type":"CLOSED"},{"type":"START","owner":true}],"expected":"stopped"}
