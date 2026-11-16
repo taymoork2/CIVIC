@@ -36,14 +36,14 @@
     "api_call_count": 8
   },
   "redaction": {
-    "replacements": 177,
+    "replacements": 184,
     "layers": {
       "betterleaks": 0,
       "connection_string": 0,
       "credential_key": 0,
       "credential_value": 0,
       "credentialed_uri": 0,
-      "entropy": 163,
+      "entropy": 170,
       "key_context": 14,
       "provider_token": 0,
       "shell_stdin": 0
