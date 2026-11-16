@@ -7,7 +7,7 @@ import * as Effect from 'effect/Effect'
 import * as TestClock from 'effect/testing/TestClock'
 import { createEffectActor, sendAndAwait } from '@xstate/effect'
 import { serverLifecycle, serverMachine, deadlines } from './server-lifecycle.ts'
-import { runMachine } from './run-lifecycle.ts'
+import { runMachine } from './run-lifecycle.mjs'
 import { machineFromJSON, machineToJSON } from 'xstate'
 import type { StateNodeJSON } from 'xstate'
 
