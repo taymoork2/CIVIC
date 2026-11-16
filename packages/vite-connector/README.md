@@ -34,6 +34,13 @@ civicReview({
 
 ## CIVIC's shared store
 
+Reader tools (`coverage`, `backend_coverage`, and `changed_screens`) can load a custom
+connector from `adapter.connector`, a module path relative to the project root.
+The module must default-export the same connector object supplied to a custom
+host's `civicReview({ connectors })`. The path must stay inside the project,
+including symlinks. Loading it executes project code; use trusted projects only.
+Without a host connector or this declaration, unknown adapter kinds are refused.
+
 The development connector tags host JSX elements under the manifest's `sources`
 with `data-civic-source="file:line:column"`. Locations are repository relative and
 one-based. Component JSX and production builds are excluded. The canvas's frozen

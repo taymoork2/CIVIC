@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto'
 import { execFileSync } from 'node:child_process'
 import { readFile, readdir } from 'node:fs/promises'
 import { dirname, join, relative, resolve } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 import { loadProject, publicProject, checkedScenarios, projectPath } from './review-project.mjs'
 import { checkedContract, coverageReport } from './review-coverage.mjs'
 import { fixtureHashes } from './review-fixture-hashes.mjs'
@@ -19,14 +19,21 @@ async function files(root) {
  * index is bound to the manifest, scored against the coverage contract and fingerprinted per screen.
  * `engineRoots` are the host's own review code: it changes every render, so it joins the revision.
  */
-export async function reviewInventory(repo, designRoot, appRepo, connection, { connector = null, engineRoots = [join(repo, 'apps/web/src/review'), join(repo, 'apps/web/scripts')] } = {}) {
+export async function reviewInventory(repo, designRoot, appRepo, connection, { connector: registeredConnector = null, engineRoots = [join(repo, 'apps/web/src/review'), join(repo, 'apps/web/scripts')] } = {}) {
   const project = connection ?? loadProject(repo, { ...(appRepo ? { applicationRoot: appRepo } : {}) })
+  let connector = registeredConnector
+  if (!connector && project.manifest.adapter.connector) {
+    const entry = projectPath(project.root, project.manifest.adapter.connector)
+    const module = await import(pathToFileURL(entry).href)
+    connector = module.default
+    if (!connector || typeof connector !== 'object') throw Error('adapter.connector must export a default connector object')
+  }
   const profile = publicProject(project, connector?.capabilities)
   const kind = project.manifest.adapter.kind
-  if (kind !== 'module' && (!connector || connector.kind !== undefined && connector.kind !== kind)) throw Error(`No connector is registered for adapter kind ${kind}`)
+  if (kind !== 'module' && (!connector || connector.kind !== undefined && connector.kind !== kind)) throw Error(`No connector is registered for adapter kind ${kind}. Declare adapter.connector as a project-relative module with a default connector export.`)
   // A connector may supply its own index; otherwise use the scenario registry, like a module app.
   if (kind !== 'module' && connector.inventory) {
-    const result = await connector.inventory(repo, designRoot, project.root, project)
+    const result = await connector.inventory(repo, designRoot ?? connector.designRoot?.(repo), project.root, project)
     result.metadata.project = profile
     result.metadata.revision.source = sha(result.metadata.revision.source + JSON.stringify(project.manifest))
     result.metadata.fixtureSource = sha(result.metadata.fixtureSource + JSON.stringify(project.manifest))
@@ -35,7 +42,7 @@ export async function reviewInventory(repo, designRoot, appRepo, connection, { c
     result.metadata.fixtureHashes = fixtureHashes(result.metadata, result.evidence, project, result.metadata.fixtureInputs, connector)
     delete result.metadata.fixtureInputs
     result.metadata.fixtureSource = sha(JSON.stringify(Object.entries(result.metadata.fixtureHashes).sort()))
-    return result
+    return { ...result, sharedStore: Boolean(connector.sharedStore?.(project)) }
   }
   const registry = checkedScenarios(JSON.parse(await readFile(project.scenariosPath, 'utf8')), project)
   const scenarios = registry.map((row) => ({ renderer: project.entry ? 'adapter' : 'legacy', preview: project.entry ? 'working-synthetic' : 'visual-or-partial', implementation: row.component ? 'present' : 'unknown', design: [], checks: [], device: 'unverified', native: 'missing', behavior: 'missing execution evidence', ...row, flow: row.flow ?? `flow:${row.journey}`, section: row.section ?? project.manifest.navigation[0] }))
@@ -81,5 +88,5 @@ export async function reviewInventory(repo, designRoot, appRepo, connection, { c
   metadata.coverage = coverageReport(metadata, contract, new Set(evidence.keys()))
   metadata.fixtureHashes = fixtureHashes(metadata, evidence, project, [...hashes])
   metadata.fixtureSource = sha(JSON.stringify(Object.entries(metadata.fixtureHashes).sort()))
-  return { metadata, evidence }
+  return { metadata, evidence, sharedStore: Boolean(connector?.sharedStore?.(project)) }
 }
