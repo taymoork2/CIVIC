@@ -1,0 +1,61 @@
+<task-notification>
+<task-id>bfpi1aayt</task-id>
+<tool-use-id>toolu_01JJvbYv4B8V7Aw9t9HtG6LA</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/bfpi1aayt.output</output-file>
+<status>completed</status>
+<summary>Background command "Signoff S4 head behind gate" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A0fc5146e-3a24-492d-b871-e21a3331032d%3Adelegate-task%3A0033d860-10aa-4b05-b166-fdf93fb93e92 (S5 MCP server on Effect) [completed]:
+- Diff: two files changed, uncommitted. One table owns all 12 tool schemas and handlers; stdio uses a scoped, sequential Effect Stream with shutdown refusal and bounded input.
+- Schemas: Effect 4.1.4’s `Schema.toJsonSchemaDocument(schema).schema`; validation uses `Schema.decodeUnknownSync`.
+- PASS: `pnpm --dir packages run check` through the temp-root wrapper, including lint baseline.
+- PASS: focused MCP process test before the final additions.
+- BLOCKED: `pnpm --dir packages --filter @civic/review test` and final process-test rerun. Load gate remained closed; latest load 8.95.
+- Tool behavior changes: none for valid inputs; D35 permissions and text/image outputs preserved.
+
+Unchecked: final process tests and full review suite. Transport now refuses lines exceeding 16 MiB.
+
+---
+
+Delegated task node:delegated-task:provider-continuation%3Amessage%3Athread%3Athread%253Adelegated-task%253Acommand%25253Amcp%25253A0fc5146e-3a24-492d-b871-e21a3331032d%25253Adelegate-task%25253A0033d860-10aa-4b05-b166-fdf93fb93e92%3Aordinal%3A1%3A64eab4f2-48b3-4e19-9faa-6e6d8184e21d (S5 MCP server on Effect) [completed]:
+Exit 143 is the gate waiter I stopped after the sustained load block, not a test failure.
+
+Final process tests and the full review suite remain unverified.
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A0fc5146e-3a24-492d-b871-e21a3331032d%3Adelegate-task%3A4559fbb8-f4b5-47dd-b969-6dd4aaad766b (S9 preview lifecycle on Effect and XState) [completed]:
+- **Diff:** Added a preview lifecycle machine, Effect actor, scoped cleanup, atomic start claims, graph/regression tests, and TestClock tests. Added exact `@xstate/effect` dependency. `preview.test.ts` and `mcp.ts` unchanged; changes remain uncommitted.
+- **Machine:** States: absent, starting, running, stale, stopping, stopped. Events: START, ATTACH, READY, LOST, STOP, CLOSED. Guards: owner claim and matching recorded process.
+- **Effect owns:** Actor lifetime, child-process cleanup, port reservations, readiness polling/timeouts, process-stop grace periods, signal cleanup.
+- **Baseline:** `architecture/raw-timer` **17 → 15**; launcher and state each **1 → 0**. Update passed without increases.
+- **Passed:** `pnpm --dir packages run check`, review package check, lint baseline update, `git diff --check`.
+- **Blocked:** Load gate stayed closed. Machine tests and `pnpm --dir packages --filter @civic/review test` were not run.
+
+Acceptance and real concurrent-start behavior remain unverified; S9 is not signed off.
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A0fc5146e-3a24-492d-b871-e21a3331032d%3Adelegate-task%3A0c582ed3-41bf-4dea-92b8-d5c7f0730087 (S7 source-to-element) [completed]:
+Implemented uncommitted: dev-only JSX tagging, nearest-ancestor source selection, annotation/request persistence, work-order locations, reverse lookup CLI, diff ranges, and tests. `review/src/mcp.ts` is untouched.
+
+Exports from [elements.ts](/Users/taymoor/.t3/worktrees/CIVIC/t3-c2dafc2c-bd983225574aca01/review/src/elements.ts):
+
+```ts
+elements(captures: TaggedCapture[], file: string, lines?: readonly [number, number])
+taggedCapture(page, scenario: string): Promise<TaggedCapture>
+diffRanges(diff: string): { file: string; from: number; to: number }[]
+parseSource(value: string)
+```
+
+Locations appear under **Details** in the overlay and canvas annotation draft/saved review. CLI usage: `civic elements <file>[:<from>-<to>] --capture <tagged-captures.json>`.
+
+Checks:
+- PASS: `pnpm --dir packages run check`, including lint baseline.
+- PASS: `git diff --check`.
+- BLOCKED: new tests, browser self-review, and `pnpm --dir packages test`; the gate remained closed due to load and an active signoff.
+
+Test/browser acceptance remains unverified. No commits, delegation, or production-instance changes.
