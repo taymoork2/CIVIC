@@ -15,7 +15,7 @@ bin/civic demo      # opens the Notebook example in your browser at http://127.0
 bin/civic desktop   # the same in the CIVIC desktop window (downloads Electron on first run)
 ```
 
-Both commands install the canvas packages on first run. To review your own app, give it a `civic.json` ([how](docs/getting-started.md#your-own-app)) and add `--project /path/to/your-app/civic.json`. Everything CIVIC saves goes to `~/.civic`, not into your app. Press Ctrl+C to stop.
+Both commands install the engine workspace on first run. For a development checkout, `pnpm --dir packages install --frozen-lockfile` installs the packages, graph, review, importers and crawl together; demo apps keep separate installs. To review your own app, give it a `civic.json` ([how](docs/getting-started.md#your-own-app)) and add `--project /path/to/your-app/civic.json`. Everything CIVIC saves goes to `~/.civic`, not into your app. Press Ctrl+C to stop.
 
 [Getting started](docs/getting-started.md) has the walkthrough, what works today, and what doesn't yet.
 

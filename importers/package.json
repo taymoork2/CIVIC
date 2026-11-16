@@ -11,7 +11,7 @@
     "test": "node ../bin/with-temp-root.mjs node --test --test-concurrency=2 \"test/**/*.test.ts\""
   },
   "devDependencies": {
-    "@types/node": "^26.6.6",
-    "typescript": "^7.0.2"
+    "@types/node": "catalog:",
+    "typescript": "catalog:"
   }
 }

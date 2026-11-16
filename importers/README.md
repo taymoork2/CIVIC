@@ -43,7 +43,7 @@ Importers read what each role's tools already produce and turn it into [CIVIC gr
 
 ```sh
 cd importers
-pnpm install --frozen-lockfile
+pnpm --dir ../packages install --frozen-lockfile
 pnpm run check   # types, including the demo and project build scripts
 pnpm test        # readers, importers, boundary and demo-output tests
 ```

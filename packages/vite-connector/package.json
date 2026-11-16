@@ -22,10 +22,10 @@
   "dependencies": {},
   "devDependencies": {
     "@civic/shell": "workspace:*",
-    "@types/node": "^26.6.6",
-    "@types/react": "^19.3.0",
-    "react": "^19.3.1",
-    "typescript": "^7.0.2",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "react": "catalog:",
+    "typescript": "catalog:",
     "vite": "catalog:"
   }
 }

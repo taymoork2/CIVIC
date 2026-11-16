@@ -1,9 +1,16 @@
-# CIVIC's engine packages (decision 0010): the canvas, the shell and the Vite connector, with
-# the canvas examples. The workspace sits here rather than at the repository root so CIVIC's
-# other projects (graph, importers, review, crawl, demos) keep their own installs.
+# One engine workspace and lockfile; demo apps keep separate installs.
 packages:
   - '*'
+  - '../graph'
+  - '../review'
+  - '../importers'
+  - '../crawl'
 catalog:
+  typescript: ^7.0.2
+  '@types/node': ^26.6.6
+  playwright-core: ^1.65.1
+  react: ^19.3.1
+  '@types/react': ^19.3.0
   vite: npm:@voidzero-dev/vite-plus-core@1.6.0
   vite-plus: ^1.6.0
 peerDependencyRules:
