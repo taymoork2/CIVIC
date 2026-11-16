@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import electron from 'electron'
 import { createRequire } from 'node:module'
 import { cp, mkdtemp, readFile, realpath, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -42,15 +43,14 @@ const host = async project => {
 }
 const initial = await host(current), origin = new URL(initial.url).origin
 windows = projectWindows({ current: current.key, origin, createHost: host })
-const env = { ...process.env, CIVIC_LOCAL_STORE: store, CIVIC_DESKTOP_ORIGIN: origin }
+const env = { ...process.env, CIVIC_TEST: '1', CIVIC_LOCAL_STORE: store, CIVIC_DESKTOP_ORIGIN: origin }
 delete env.ELECTRON_RUN_AS_NODE
 let app
 const budget = setTimeout(() => { app?.process().kill('SIGKILL'); process.exitCode = 1 }, 180000)
 try {
-  const launch = () => _electron.launch({ executablePath: process.env.CIVIC_ELECTRON_BINARY, args: [fileURLToPath(new URL('desktop.mjs', import.meta.url))], env, timeout: 30000 })
+  const launch = () => _electron.launch({ executablePath: process.env.CIVIC_ELECTRON_BINARY || electron, args: [fileURLToPath(new URL('desktop.mjs', import.meta.url))], env, timeout: 30000 })
   app = await launch()
   app.process().stderr.on('data', bytes => process.stderr.write(bytes))
-  await app.evaluate(({ dialog }) => { dialog.showErrorBox = (title, message) => console.error(title, message) })
   let page = await app.firstWindow()
   const errors = []
   page.on('pageerror', error => { errors.push(error.stack); console.error('Renderer:', error.stack) })
@@ -114,7 +114,8 @@ try {
   assert.equal(await modal.getByRole('button', { name: 'All screens', exact: true }).getAttribute('aria-pressed'), 'true')
   await modal.getByRole('button', { name: 'Light', exact: true }).click()
   await modal.getByRole('button', { name: 'Dark', exact: true }).click()
-  assert.equal(JSON.parse(await readFile(join(store, 'desktop/appearance.json'), 'utf8')).theme, 'dark')
+  const userData = await app.evaluate(({ app: desktopApp }) => desktopApp.getPath('userData'))
+  assert.equal(JSON.parse(await readFile(join(userData, 'appearance.json'), 'utf8')).theme, 'dark')
   await assert.rejects(page.evaluate(() => window.civicDesktop.setAppearance('invalid')), /Invalid appearance/)
   assert.equal((await page.evaluate(() => window.civicDesktop.appearance())).preference, 'dark')
   assert.deepEqual(errors, [])

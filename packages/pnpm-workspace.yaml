@@ -22,6 +22,7 @@ peerDependencyRules:
 overrides:
   vite@*: "catalog:"
 allowBuilds:
+  electron: true
   esbuild: true
   '@parcel/watcher': false
 minimumReleaseAgeExclude:

@@ -9,9 +9,12 @@ import { Workspace } from './workspace'
 import { extension } from './extension'
 import { ProjectWindow } from './project-window'
 import { initializeTheme } from '@civic/shell/theme'
+import { attachBrowserPresence } from './client-presence'
 
 await initializeTheme(window.civicDesktop)
 bindProjectRequests(project.key)
+const detachPresence = attachBrowserPresence()
+import.meta.hot?.dispose(detachPresence)
 document.title = `${project.name} · CIVIC`
 const params = new URLSearchParams(location.search)
 if (params.has('desktop')) document.documentElement.dataset.civicDesktop = params.get('desktop')!

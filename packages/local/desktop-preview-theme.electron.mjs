@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import electron from 'electron'
 import { createRequire } from 'node:module'
 import { cp, mkdtemp, readFile, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
@@ -14,11 +15,11 @@ const file = join(source, 'civic.project.json'), manifest = JSON.parse(await rea
 manifest.appearance = { themes: [{ id: 'paper', label: 'Paper' }, { id: 'ocean', label: 'Ocean' }], defaultTheme: 'paper' }
 await writeFile(file, JSON.stringify(manifest))
 const server = await startCanvas({ project: file, store, port: 0, logLevel: 'silent' })
-const origin = `http://127.0.0.1:${server.httpServer.address().port}`, env = { ...process.env, CIVIC_LOCAL_STORE: store, CIVIC_DESKTOP_ORIGIN: origin }
+const origin = `http://127.0.0.1:${server.httpServer.address().port}`, env = { ...process.env, CIVIC_TEST: '1', CIVIC_LOCAL_STORE: store, CIVIC_DESKTOP_ORIGIN: origin }
 delete env.ELECTRON_RUN_AS_NODE
 let app, page
 try {
-  app = await _electron.launch({ executablePath: process.env.CIVIC_ELECTRON_BINARY, args: [fileURLToPath(new URL('desktop.mjs', import.meta.url))], env })
+  app = await _electron.launch({ executablePath: process.env.CIVIC_ELECTRON_BINARY || electron, args: [fileURLToPath(new URL('desktop.mjs', import.meta.url))], env })
   page = await app.firstWindow()
   await page.getByLabel('Canvas appearance', { exact: true }).waitFor()
   await page.evaluate(() => window.civicDesktop.setAppearance('dark'))

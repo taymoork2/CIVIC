@@ -6,8 +6,8 @@ import { canvasRoot } from './canvas-root.mjs'
 
 const noop = () => Promise.resolve()
 
-export function runManagedCanvas({ store, build, port = 0, project }) {
-  return managedHost({ store, build, port, viewer: async (listener, presence, { runtime }) => {
+export function runManagedCanvas({ store, build, port = 0, project, ready }) {
+  return managedHost({ store, build, port, ready, viewer: async (listener, presence, { runtime }) => {
     let current, dispose = noop, closed = false, restarting = Promise.resolve()
     const start = async () => {
       const server = await createServer({ configFile: false, root: canvasRoot, plugins: canvasPlugins({ store, project, runtime, restart, managed: { listener, presence, dispose: fn => { dispose = fn } } }), server: { host: '127.0.0.1', middlewareMode: true, hmr: { server: listener } } })

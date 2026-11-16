@@ -6,6 +6,7 @@
     "civic-canvas": "./bin/civic-canvas.mjs"
   },
   "exports": {
+    "./app-server": "./server/app-server-main.mjs",
     ".": "./server/canvas-host.mjs",
     "./root": "./server/canvas-root.mjs",
     "./module-adapter": "./server/module-adapter.mjs",

@@ -10,9 +10,12 @@
     "test:electron": "node ../../bin/with-temp-root.mjs node --test --test-concurrency=1 \"*.electron.mjs\""
   },
   "dependencies": {
+    "effect": "^4.1.4",
+    "ws": "^8.23.0",
     "@civic/canvas": "workspace:*",
     "@civic/vite-connector": "workspace:*",
     "@tailwindcss/vite": "^4.3.5",
     "vite": "catalog:"
-  }
+  },
+  "devDependencies": { "electron": "^45.3.2" }
 }
