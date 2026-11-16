@@ -24,3 +24,5 @@ overrides:
 allowBuilds:
   esbuild: true
   '@parcel/watcher': false
+minimumReleaseAgeExclude:
+  - xstate@6.0.0-beta.3

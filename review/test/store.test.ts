@@ -53,7 +53,10 @@ test('a replay is kept only with the tape it names, and a shared one must be a r
 })
 
 // Decision 0006: CIVIC makes no model calls. The loop imports Node, the graph, and Playwright for capture, nothing else.
-test('the review loop imports only Node built-ins, the graph and playwright-core', () => {
+// Decision 0022: lifecycles use CIVIC's machine core, Effect and XState.
+const PACKAGES = ['@civic/core', 'effect', 'playwright-core', 'xstate']
+
+test('the review loop imports only Node built-ins, the graph, playwright-core and the machine core', () => {
   const sourceDir = new URL('../src/', import.meta.url).pathname
   const graphDir = new URL('../../graph/src/', import.meta.url).pathname
   const files = (readdirSync(sourceDir, { recursive: true }) as string[]).filter((name) => /\.(ts|js)$/.test(name))
@@ -62,10 +65,10 @@ test('the review loop imports only Node built-ins, the graph and playwright-core
     for (const match of readFileSync(join(sourceDir, name), 'utf8').matchAll(/from\s+'([^']+)'|import\('([^']+)'\)/g)) {
       const specifier = (match[1] ?? match[2])!
       const target = specifier.startsWith('.') ? resolve(sourceDir, dirname(name), specifier) : undefined
-      const allowed = specifier.startsWith('node:') || specifier === 'playwright-core' || (target !== undefined && (target.startsWith(sourceDir) || target.startsWith(graphDir)))
+      const allowed = specifier.startsWith('node:') || PACKAGES.includes(specifier.replace(/^((?:@[^/]+\/)?[^/]+).*$/, '$1')) || (target !== undefined && (target.startsWith(sourceDir) || target.startsWith(graphDir)))
       assert.ok(allowed, `${name} imports ${specifier}`)
     }
   }
   const manifest = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as { dependencies: Record<string, string> }
-  assert.deepEqual(Object.keys(manifest.dependencies), ['playwright-core'])
+  assert.deepEqual(Object.keys(manifest.dependencies), PACKAGES)
 })

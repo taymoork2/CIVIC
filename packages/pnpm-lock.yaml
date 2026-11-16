@@ -75,9 +75,18 @@ importers:
 
   ../review:
     dependencies:
+      '@civic/core':
+        specifier: workspace:*
+        version: link:../packages/core
+      effect:
+        specifier: ^4.1.4
+        version: 4.1.4
       playwright-core:
         specifier: 'catalog:'
         version: 1.65.1
+      xstate:
+        specifier: 6.0.0-beta.3
+        version: 6.0.0-beta.3
     devDependencies:
       '@types/node':
         specifier: 'catalog:'
@@ -122,6 +131,25 @@ importers:
       '@types/react-dom':
         specifier: ^19.3.0
         version: 19.3.0(@types/react@19.3.0)
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+      vite-plus:
+        specifier: 'catalog:'
+        version: 1.6.0(@types/node@26.6.6)(@vitest/ui@5.1.0)(jiti@2.7.0)(playwright@1.65.1)(typescript@7.0.2)(yaml@2.9.1)
+
+  core:
+    dependencies:
+      effect:
+        specifier: ^4.1.4
+        version: 4.1.4
+      xstate:
+        specifier: 6.0.0-beta.3
+        version: 6.0.0-beta.3
+    devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 26.6.6
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
@@ -1593,6 +1621,9 @@ packages:
   dom-accessibility-api@0.5.16:
     resolution: {integrity: sha512-X7BJ2yElsnOJ30pZF4uIIDfBEVgF4XEBxL9Bxhy6dnrm5hkzqmsWHGTiHqRiITNhMyFLyAiWndIJP7Z1NTteDg==}
 
+  effect@4.1.4:
+    resolution: {integrity: sha512-Tgrv/9FN+TZYyOn8XSli+fVqAfwDrDAkiX5Uu9vztINb675VTQdhD0gWI5Kzvhlh9QqzjZvw72iugqw5pwoghQ==}
+
   empathic@2.1.0:
     resolution: {integrity: sha512-AnfC1ATldl49/cvZdLPDjBfrRNwbDO05aibiOtzQu3qtlbJtomNLhF30HEtn/7iBz50dlMECqATo3fG0LrdEgw==}
     engines: {node: '>=14'}
@@ -2258,6 +2289,10 @@ packages:
         optional: true
       utf-8-validate:
         optional: true
+
+  xstate@6.0.0-beta.3:
+    resolution: {integrity: sha512-b6C6SQ9cern6sD531uHcwOH94lBL+701Jd/VRSkzT8oAV1AKTT9oXFZtvC5DajUU4+8gmTLBTMHjZjd0VrsmAg==}
+    hasBin: true
 
   yaml@2.9.1:
     resolution: {integrity: sha512-3NxN8+78OdzbT7C/WjGsyfPAtJaN3FNDsWxv7Y7mcDsT/oOmgW8BpyQQFFBnvZE3j9Y2Sdz1ULFLezL7Eb2yFw==}
@@ -3207,6 +3242,8 @@ snapshots:
 
   dom-accessibility-api@0.5.16: {}
 
+  effect@4.1.4: {}
+
   empathic@2.1.0: {}
 
   enhanced-resolve@5.26.0:
@@ -3853,6 +3890,8 @@ snapshots:
       string-width: 8.3.0
 
   ws@8.23.0: {}
+
+  xstate@6.0.0-beta.3: {}
 
   yaml@2.9.1: {}
 

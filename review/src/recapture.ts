@@ -14,6 +14,7 @@ import {
 } from '../../graph/src/index.ts'
 import { worktreeFor } from './git.ts'
 import { ensureCivicActor } from './identity.ts'
+import { moveRequest } from './request.machine.ts'
 import { allow, bump, checkCountsIn, ConflictError, find, resolveId, splitVersion, summarize, versionOf, type Context } from './loop.ts'
 
 // Structural types for the part of Playwright CIVIC uses, so the rest of the package
@@ -193,7 +194,7 @@ export async function recapture(context: Context, id: string, options: Recapture
     const recaptured: Recapture = { at, revision: currentFix.revision, anchors, checks, evidenceId }
     currentFix.recapture = recaptured
     if (summarize(latest, current, new Date(at)).lane === 'auto') {
-      current.status = passed ? 'resolved' : 'reopened'
+      moveRequest(current, { type: passed ? 'AUTO_PASS' : 'AUTO_FAIL', by, now: Date.parse(at), auto: true }, `${current.id} changed while CIVIC was capturing.`)
       current.history.push({
         status: current.status,
         by,
