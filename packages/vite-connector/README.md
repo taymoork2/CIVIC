@@ -17,6 +17,18 @@ Then open it with the standalone canvas (`node packages/canvas/bin/civic-canvas.
 
 ## Hosting the canvas
 
+`adapter.contracts: ["api/openapi.json"]` imports OpenAPI 3.x HTTP operations
+for backend journey coverage. Paths are relative to the project and confined to
+it, including symlinks. A single server's URL path prefixes operations; multiple
+servers add no prefix. Path parameters match concrete recorded requests. Matching
+source rows retain their metadata and gain `inContract: true`; other rows carry
+`source: 'contract'` and `evidence: 'contract'` (contract only).
+Coverage includes `outsideContract` request IDs only when contracts are declared.
+This imports declarations and request reach, without body validation or contract
+testing. JSON is supported; YAML is only an optional transitive workspace
+dependency and is not used. Referenced path items are refused rather than fetched.
+The existing generated `adapter.operations` inventory remains supported.
+
 ```js
 import { civicReview } from '@civic/vite-connector'
 

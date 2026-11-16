@@ -39,7 +39,9 @@ export async function reviewInventory(repo, designRoot, appRepo, connection, { c
   if (kind !== 'module' && connector.inventory) {
     const result = await connector.inventory(repo, designRoot ?? connector.designRoot?.(repo), project.root, project)
     result.metadata.project = profile
-    result.metadata.revision.source = sha(result.metadata.revision.source + JSON.stringify(project.manifest))
+    // Contracts may sit outside the source roots; a changed contract must still make recorded evidence stale.
+    const contracts = await Promise.all((project.manifest.adapter.contracts ?? []).map(async (path) => [path, sha(await readFile(projectPath(project.root, path)))]))
+    result.metadata.revision.source = sha(result.metadata.revision.source + JSON.stringify(project.manifest) + JSON.stringify(contracts))
     result.metadata.fixtureSource = sha(result.metadata.fixtureSource + JSON.stringify(project.manifest))
     if (result.metadata.validation.receipt?.revision?.source !== result.metadata.revision.source) result.metadata.validation.status = 'stale'
     result.metadata.coverage = coverageReport(result.metadata, checkedContract(JSON.parse(await readFile(project.coverageFile, 'utf8'))), new Set(result.evidence.keys()))
@@ -76,6 +78,8 @@ export async function reviewInventory(repo, designRoot, appRepo, connection, { c
   for (const file of await files(shell)) await add(file, `rehearsal:packages/shell/${relative(shell, file)}`)
   const connectorRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..')
   for (const file of await files(connectorRoot)) await add(file, `rehearsal:packages/vite-connector/${relative(connectorRoot, file)}`)
+  // oxlint-disable-next-line eslint/no-await-in-loop -- Hash declared contracts in order; they join the attested revision.
+  for (const path of project.manifest.adapter.contracts ?? []) await add(projectPath(project.root, path), `contract:${path}`)
   const design = { project: project.manifest.design?.id ?? project.manifest.id, hashes: {}, reconciliation: 'Design references require separate verification' }
   for (const path of project.manifest.design?.files ?? []) {
     try { const file = designRoot && projectPath(designRoot, path); design.hashes[path] = file ? sha(await readFile(file)) : null; if (file) evidence.set(`design:${path}`, await readFile(file, 'utf8')) }
