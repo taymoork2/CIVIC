@@ -40,14 +40,14 @@
     "api_call_count": 403
   },
   "redaction": {
-    "replacements": 340,
+    "replacements": 345,
     "layers": {
       "betterleaks": 0,
       "connection_string": 0,
       "credential_key": 0,
       "credential_value": 0,
       "credentialed_uri": 0,
-      "entropy": 314,
+      "entropy": 319,
       "key_context": 26,
       "provider_token": 0,
       "shell_stdin": 0
