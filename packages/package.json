@@ -15,7 +15,7 @@
   },
   "scripts": {
     "check": "node ../bin/with-temp-root.mjs node ../bin/lint-baseline.mjs && node ../bin/with-temp-root.mjs pnpm --workspace-concurrency=1 --recursive run check",
-    "test": "pnpm --workspace-concurrency=1 --recursive run test && node ../bin/with-temp-root.mjs node --test --test-concurrency=2 ../scripts/commit-type.test.ts ../scripts/lint-baseline.test.mjs"
+    "test": "pnpm --workspace-concurrency=1 --recursive run test && node ../bin/with-temp-root.mjs node --test --test-concurrency=2 '../scripts/*.test.{ts,mjs}'"
   },
   "devDependencies": {
     "@effect/tsgo": "0.69.0",
