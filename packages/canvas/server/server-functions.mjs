@@ -126,6 +126,8 @@ export function serverFunctionOperations(code, file) {
   return operations
 }
 
+export const tanstackDetector = { name: 'tanstack-start', detect: serverFunctionOperations }
+
 /**
  * The Vite plugin for one side: `client` for the canvas serving the preview, `server` for a run's worker.
  * `appRoot()` is the app's root (null before one is chosen); only its own modules are transformed, never its dependencies.

@@ -4,7 +4,42 @@ import { serverFunctionOperations } from './server-functions.mjs'
 import { backendCoverage } from '../../shell/server/backend-coverage.mjs'
 import { backendInventory } from './backend-coverage.mjs'
 import { fileURLToPath } from 'node:url'
-import { readFile } from 'node:fs/promises'
+import { readFile, mkdtemp, mkdir, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import nodePath from 'node:path'
+
+const { join } = nodePath
+
+test('Convex inventory derives all kinds, nested identities and registered HTTP routes', async () => {
+  const root = await mkdtemp(join(tmpdir(), 'convex-inventory-'))
+  await mkdir(join(root, 'backend/nested'), { recursive: true })
+  await mkdir(join(root, 'backend/_generated'))
+  const kinds = ['query', 'mutation', 'action', 'internalQuery', 'internalMutation', 'internalAction']
+  await writeFile(join(root, 'backend/nested/items.ts'), `import { ${kinds.join(', ')} } from '../_generated/server'
+${kinds.map(kind => `export const ${kind}Item = ${kind}({ handler: () => 1 })`).join('\n')}
+// export const phantom = query({ handler: () => 0 })`)
+  await writeFile(join(root, 'backend/http.ts'), `import { httpAction } from './_generated/server'
+import { httpRouter } from 'convex/server'
+const http = httpRouter()
+const handler = httpAction(() => new Response())
+http.route({ 'path': '/hook', method: 'POST', handler })
+export default http`)
+  await writeFile(join(root, 'other.ts'), 'const query = x => x; export const fake = query({})')
+  await writeFile(join(root, 'backend/default.ts'), "import { query as q } from './_generated/server'; export default q({ handler: () => 1 })")
+  await writeFile(join(root, 'backend/_generated/server.ts'), 'invalid generated source')
+  const operations = await backendInventory({ root, sources: [root], manifest: { adapter: {} } })
+  assert.equal(operations.length, 8)
+  assert.ok(operations.some(row => row.id === 'default' && row.export === 'default'))
+  assert.ok(operations.every(row => row.detector === 'convex'))
+  for (const kind of kinds) assert.ok(operations.some(row => row.id === `nested/items:${kind}Item` && row.kind === kind.replace(/^internal/u, '').toLowerCase()))
+  assert.ok(operations.some(row => row.id === 'POST:/hook' && row.kind === 'route'))
+  const tape = { project: 'p', source: 's', seed: { context: { scenario: 'home' } }, steps: [{ operations: [{ name: 'nested/items:queryItem' }, { name: 'nested/items:internalActionItem' }] }] }
+  const replay = { schema: 'civic.replay/0', project: 'p', source: 's', scenario: 'home', tape: 'hash', steps: 1, outcome: 'pass' }
+  const report = backendCoverage(operations, new Map([['hash', tape]]), [replay], { project: 'p', source: 's', journeys: [{ id: 'journey', scenarios: ['home'] }] })
+  assert.deepEqual(report.unreachedInternal, ['nested/items:internalMutationItem', 'nested/items:internalQueryItem'])
+  assert.deepEqual(report.unreached, ['default', 'nested/items:actionItem', 'nested/items:mutationItem', 'POST:/hook'])
+  assert.equal(report.operations.filter(row => row.reachedBy.length).length, 2)
+})
 
 test('HTTP inventories are the routing tables used by both synthetic APIs', async () => {
   await Promise.all(['tasks', 'team-board'].map(async app => {

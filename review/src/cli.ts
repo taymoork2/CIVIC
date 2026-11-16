@@ -130,7 +130,7 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
       if (!has('--backend')) throw new UsageError('Choose --backend coverage.')
       const { readBackendCoverage } = await import('./backend.ts')
       const report = await readBackendCoverage(cwd, one('--project'), one('--store'), one('--data-dir'))
-      print(has('--json') ? JSON.stringify(report, null, 2) : report.operations.map((operation: { export: string; reachedBy: string[] }) => `${operation.export}: ${operation.reachedBy.join(', ') || 'No journey reaches this yet'}`).join('\n'))
+      print(has('--json') ? JSON.stringify(report, null, 2) : report.operations.map((operation: { export: string; reachedBy: string[]; visibility?: string }) => `${operation.export}: ${operation.reachedBy.join(', ') || (operation.visibility === 'internal' ? 'Unreached internal function' : 'No journey reaches this yet')}`).join('\n'))
       return 0
     }
     case 'annotate': {

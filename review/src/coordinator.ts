@@ -9,6 +9,7 @@ import { startPreview } from './preview/launcher.ts'
 import { isRunning, readPreviews, type Preview } from './preview/state.ts'
 import { launchBrowser } from './recapture.ts'
 import { Store } from './store.ts'
+import { unsharedPassingReplays } from './replays.ts'
 
 export const previewStore = (cwd: string) => {
   const preview = readPreviews().find(row => row.worktree === readCheckout(cwd).root && isRunning(row))
@@ -53,8 +54,10 @@ export async function changedScreens(cwd: string, base: string, projectPath?: st
 
 export async function coverage(cwd: string, projectPath?: string) {
   const manifest = projectPath ?? '.'
-  const { project, metadata } = await readProjectInventory(cwd, manifest, previewStore(cwd))
+  const { project, metadata, hostStore, sharedStore } = await readProjectInventory(cwd, manifest, previewStore(cwd))
   const replays = Store.forCheckout(readCheckout(cwd)).replays().filter(row => row.project === project.key && row.source === metadata.revision.source)
+  const dataDir = sharedStore ? join(hostStore, '.review-data') : join(hostStore, '.review-data/projects', project.key)
+  const unshared = unsharedPassingReplays(dataDir, project.key, metadata.revision.source, replays)
   const scenarios = metadata.scenarios as Scenario[]
   const covered = new Set(replays.filter(row => row.outcome === 'pass').map(row => row.scenario))
   return {
@@ -66,6 +69,8 @@ export async function coverage(cwd: string, projectPath?: string) {
       return { id, screens, lastReplay: replay ? replay.outcome === 'pass' ? 'passed' : 'diverged' : 'none', ...(replay?.divergedAt ? { divergedAt: replay.divergedAt } : {}) }
     }),
     backend: await readBackendCoverage(cwd, manifest, previewStore(cwd)),
+    unsharedReplays: unshared,
+    hints: unshared ? [`${unshared} passing replays recorded but not shared yet; run \`civic share-replays ${dataDir}\``] : [],
   }
 }
 
