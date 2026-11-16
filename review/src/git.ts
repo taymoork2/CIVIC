@@ -17,7 +17,8 @@ export interface Checkout {
 }
 
 export function git(cwd: string, ...args: string[]): string {
-  return execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim()
+  // Long diff ranges overflow the 1 MB default; graph-cli reads history with the same ceiling.
+  return execFileSync('git', args, { cwd, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'], maxBuffer: 256 * 1024 * 1024 }).trim()
 }
 
 function tryGit(cwd: string, ...args: string[]): string | undefined {

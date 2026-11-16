@@ -10,7 +10,6 @@ import { isRunning, readPreviews, type Preview } from './preview/state.ts'
 import { launchBrowser } from './recapture.ts'
 import { Store } from './store.ts'
 
-const manifestFor = (cwd: string, project?: string) => project ?? resolve(cwd, 'packages/canvas/examples/notebook/civic.project.json')
 export const previewStore = (cwd: string) => {
   const preview = readPreviews().find(row => row.worktree === readCheckout(cwd).root && isRunning(row))
   return preview ? join(preview.root, 'store') : cwd
@@ -27,10 +26,10 @@ export const commitOf = (cwd: string, base: string) => {
   return sha
 }
 
-export async function changedScreens(cwd: string, base: string) {
+export async function changedScreens(cwd: string, base: string, projectPath?: string) {
   const sha = commitOf(cwd, base)
   const checkout = readCheckout(cwd)
-  const { project, metadata } = await readProjectInventory(cwd, manifestFor(cwd), previewStore(cwd))
+  const { project, metadata } = await readProjectInventory(cwd, projectPath, previewStore(cwd))
   const captures = Store.forCheckout(checkout).taggedCaptures(project.key, metadata.revision.source)
   const ranges = diffRanges(git(cwd, 'diff', '--no-ext-diff', '--unified=0', `${sha}...HEAD`, '--'))
   const changedFiles = git(cwd, 'diff', '--no-ext-diff', '--name-only', `${sha}...HEAD`, '--').split('\n').filter(Boolean)
@@ -53,10 +52,8 @@ export async function changedScreens(cwd: string, base: string) {
 }
 
 export async function coverage(cwd: string, projectPath?: string) {
-  const defaultManifest = manifestFor(cwd)
-  const defaultInventory = await readProjectInventory(cwd, defaultManifest, previewStore(cwd))
-  const manifest = !projectPath || projectPath === defaultInventory.project.key ? defaultManifest : projectPath
-  const { project, metadata } = manifest === defaultManifest ? defaultInventory : await readProjectInventory(cwd, manifest, previewStore(cwd))
+  const manifest = projectPath ?? '.'
+  const { project, metadata } = await readProjectInventory(cwd, manifest, previewStore(cwd))
   const replays = Store.forCheckout(readCheckout(cwd)).replays().filter(row => row.project === project.key && row.source === metadata.revision.source)
   const scenarios = metadata.scenarios as Scenario[]
   const covered = new Set(replays.filter(row => row.outcome === 'pass').map(row => row.scenario))
@@ -90,7 +87,7 @@ export class ReviewSessions {
     try {
       const checkout = readCheckout(cwd)
       const store = Store.forCheckout(checkout)
-      const { project, metadata } = await readProjectInventory(cwd, manifestFor(cwd), previewStore(cwd))
+      const { project, metadata } = await readProjectInventory(cwd, undefined, previewStore(cwd))
       if (!store.taggedCaptures(project.key, metadata.revision.source).length) {
         const captures: TaggedCapture[] = []
         const browser = await launchBrowser(env)
@@ -106,7 +103,7 @@ export class ReviewSessions {
             }
           } finally { await page.close() }
         } finally { await browser.close() }
-        const current = await readProjectInventory(cwd, manifestFor(cwd), previewStore(cwd))
+        const current = await readProjectInventory(cwd, undefined, previewStore(cwd))
         if (current.metadata.revision.source !== metadata.revision.source) throw new Error('Source changed during capture. Reopen the review.')
         for (const capture of captures) store.putTaggedCapture(project.key, metadata.revision.source, capture)
       }
