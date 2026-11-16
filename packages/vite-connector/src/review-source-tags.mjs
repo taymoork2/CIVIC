@@ -5,11 +5,16 @@ import { parseSync } from 'vite'
 export const taggable = (id, project) => /\.[jt]sx$/u.test(id) && project.sources.some(root => id === root || id.startsWith(root + '/'))
 
 export const tagSources = (input, id, project) => {
-  let code = input
   const file = id.split('?')[0]
-  if (!taggable(file, project)) return code
-  const relative = path.relative(project.root, file)
-  if (relative.startsWith('../')) return code
+  if (!taggable(file, project)) return input
+  return tagHostElements(input, file, project).code
+}
+
+/** Tag original JSX before lowering; no bundler context is required. */
+export const tagHostElements = (input, file, { root }) => {
+  let code = input
+  const relative = path.relative(root, file)
+  if (!/\.[jt]sx$/u.test(file) || relative === '..' || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative) || relative.split(path.sep).includes('node_modules')) return { code, map: null }
   const ast = parseSync(file, code)
   if (ast.errors.length) throw Error(`Cannot tag source: ${file}`)
   const edits = []
@@ -28,5 +33,6 @@ export const tagSources = (input, id, project) => {
   }
   visit(ast.program)
   for (const [offset, text] of edits.toSorted((a, b) => b[0] - a[0])) code = code.slice(0, offset) + text + code.slice(offset)
-  return code
+  // shortcut: text edits have no composable map; add one when a declared map editor is available.
+  return { code, map: null }
 }
