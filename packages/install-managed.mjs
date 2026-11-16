@@ -1,15 +1,16 @@
 import assert from 'node:assert/strict'
 import { fork, execFileSync } from 'node:child_process'
 import { once } from 'node:events'
-import { cp, mkdir, readFile, writeFile, readdir, stat } from 'node:fs/promises'
+import { cp, mkdir, readFile, writeFile, readdir, realpath, stat } from 'node:fs/promises'
 import { createRequire } from 'node:module'
 import nodePath from 'node:path'
 import { pathToFileURL } from 'node:url'
 
 export async function checkManagedInstall(app, installed) {
-  const require = createRequire(nodePath.join(installed, 'package.json'))
+  // pnpm keeps the canvas's dependencies beside its real folder, not the node_modules link.
+  const require = createRequire(nodePath.join(await realpath(installed), 'package.json'))
   const { Effect, Schedule } = await import(pathToFileURL(require.resolve('effect')).href)
-  const { WebSocket } = await import(pathToFileURL(require.resolve('ws')).href)
+  const { default: WebSocket } = await import(pathToFileURL(require.resolve('ws')).href)
   const { moduleReviewAdapter } = await import(pathToFileURL(nodePath.join(installed, 'server/module-adapter.mjs')).href)
   const project = nodePath.join(app, 'managed-pantry'), store = nodePath.join(app, 'managed-store')
   await cp(nodePath.join(installed, 'examples/pantry'), project, { recursive: true })
