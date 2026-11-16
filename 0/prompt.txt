@@ -1,0 +1,19 @@
+<task-notification>
+<task-id>bfpi1aayt</task-id>
+<tool-use-id>toolu_01JJvbYv4B8V7Aw9t9HtG6LA</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/bfpi1aayt.output</output-file>
+<status>completed</status>
+<summary>Background command "Signoff S4 head behind gate" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A0fc5146e-3a24-492d-b871-e21a3331032d%3Adelegate-task%3A0033d860-10aa-4b05-b166-fdf93fb93e92 (S5 MCP server on Effect) [completed]:
+- Diff: two files changed, uncommitted. One table owns all 12 tool schemas and handlers; stdio uses a scoped, sequential Effect Stream with shutdown refusal and bounded input.
+- Schemas: Effect 4.1.4’s `Schema.toJsonSchemaDocument(schema).schema`; validation uses `Schema.decodeUnknownSync`.
+- PASS: `pnpm --dir packages run check` through the temp-root wrapper, including lint baseline.
+- PASS: focused MCP process test before the final additions.
+- BLOCKED: `pnpm --dir packages --filter @civic/review test` and final process-test rerun. Load gate remained closed; latest load 8.95.
+- Tool behavior changes: none for valid inputs; D35 permissions and text/image outputs preserved.
+
+Unchecked: final process tests and full review suite. Transport now refuses lines exceeding 16 MiB.

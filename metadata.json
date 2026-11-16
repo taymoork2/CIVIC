@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.13.3",
+  "checkpoint_id": "01M7H4Y6CYTC05K17P4NJ6QDVQ",
+  "strategy": "manual-commit",
+  "branch": "refactor/mcp-on-effect",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "review/src/mcp.ts",
+    "review/test/mcp.test.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 36,
+    "cache_creation_tokens": 22968,
+    "cache_read_tokens": 7037921,
+    "output_tokens": 11609,
+    "api_call_count": 16
+  },
+  "redaction": {
+    "replacements": 174,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 162,
+      "key_context": 12,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
