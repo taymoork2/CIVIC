@@ -24,7 +24,7 @@ Both commands install the engine workspace on first run. For a development check
 - [Getting started](docs/getting-started.md) and the [release notes](docs/release-notes/v0.1.0.md).
 - [Vision](docs/vision.md) and the full [product specification](docs/product-spec.md).
 - [Architecture decisions](docs/decisions). The first demo uses [Microsoft Fluent 2](docs/decisions/0001-fluent-2-demo-design-system.md).
-- The [review loop](review/README.md), the [canvas](packages/canvas/README.md), and the [Claude Code and Codex plugin](integrations/claude-code/README.md).
+- The [review loop](review/README.md), the [canvas](packages/canvas/README.md), and [agent harness setup](integrations/claude-code/README.md) for Claude Code, Codex, OpenCode, Cursor and ACP clients (`civic integrate <harness>`).
 
 ## For contributors
 

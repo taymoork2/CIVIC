@@ -49,8 +49,10 @@ import { DEFAULT_REF, GitRefRemote } from './remote.ts'
 import { listConflicts, settleConflict, sync } from './sync.ts'
 import { shareReplays } from './replays.ts'
 import { elements, parseSource, type TaggedCapture } from './elements.ts'
+import { integrationConfig } from './integrations.ts'
 
 const USAGE = `Usage (records are shared by every worktree of this repository):
+  civic integrate <claude-code|codex|codex-toml|opencode|cursor|acp>   prints MCP setup
   civic elements <file>[:<from>-<to>] --capture <tagged-captures.json>
   civic annotate "<comment>" [--image <file>] [--url <page>] [--target <id>]... [--edge <from>><to>[:<action>]]...
                  [--test-id <id> | --role <role> --name <name>] [--title <title>]
@@ -97,6 +99,11 @@ const MEDIA: Record<string, CaptureRef['mediaType']> = { '.png': 'image/png', '.
 
 export async function run(argv: string[], cwd = process.cwd(), env = process.env, print = (text: string) => console.log(text)): Promise<number> {
   const [command, ...rest] = argv
+  if (command === 'integrate') {
+    if (rest.length !== 1) throw new UsageError('integrate needs one harness name.')
+    print(integrationConfig(rest[0]!))
+    return 0
+  }
   const { positional, flags, has } = parse(rest, command)
   const one = (name: string) => flags.get(name)?.at(-1)
   const checkout = readCheckout(cwd)
