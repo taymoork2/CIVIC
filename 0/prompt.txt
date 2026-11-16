@@ -1,0 +1,8 @@
+Delegated task node:delegated-task:command%3Amcp%3A9f43cd31-b115-413f-821e-100bc7675bb1%3Adelegate-task%3A97e7f013-9e5d-42d0-80b8-964a49524c79 (Research: Node frameworks + non-Vite frontends) [completed]:
+Wrote the uncommitted [framework coverage plan](/Users/taymoor/.t3/worktrees/CIVIC/t3-35ce52b2-ad93381b7c4bc19b/docs/plans/2026-11-16-framework-coverage-prep.md).
+
+Recommendations: prioritize Next/Express, then Hono/Fastify; combine static source discovery with runtime registration evidence; reuse a loader-based JSX tagger; use opaque ids and private build-bound maps for deployed previews.
+
+Verified Turbopack loader, Babel and experimental SWC support, plus Sentry’s annotation precedent.
+
+No dependencies installed or builds run. Decision 0023 was missing; tier alignment remains provisional, and unverified integration details are named in the document.
