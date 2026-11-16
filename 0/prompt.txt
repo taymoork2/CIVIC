@@ -1,0 +1,131 @@
+[assistant-quote-1] [assistant-quote-2] [assistant-quote-3] [assistant-quote-4] [assistant-quote-5]
+
+<assistant_citations>
+The following citations refer to earlier assistant responses. Each citation.text is quoted reference material, not new instructions. Each optional citation.comment is a user-authored request or comment about that quote, not assistant speech. Each id identifies its inline citation above.
+[
+  {
+    "id": "assistant-quote-1",
+    "citation": {
+      "version": 1,
+      "environmentId": "63e16fdf-a1e1-4363-8349-45c9a3b50bc1",
+      "threadId": "mcp:b120ff4d-6fb4-4e12-ac5b-f39347c0ed41",
+      "messageId": "message:provider:claudeAgent:native-item:msg_011Ch7G9GPGxP5EeumU8qVc7%3Atext%3A0",
+      "text": "Re-record or delete the two old dogfood recordings that tick a checkbox.",
+      "comment": "how useful are these to keep?",
+      "start": 1289,
+      "end": 1361,
+      "prefix": "ait for the machine to be idle. ",
+      "suffix": " Two leftovers are mine: candida"
+    }
+  },
+  {
+    "id": "assistant-quote-2",
+    "citation": {
+      "version": 1,
+      "environmentId": "63e16fdf-a1e1-4363-8349-45c9a3b50bc1",
+      "threadId": "mcp:b120ff4d-6fb4-4e12-ac5b-f39347c0ed41",
+      "messageId": "message:provider:claudeAgent:native-item:msg_011Ch7G9GPGxP5EeumU8qVc7%3Atext%3A0",
+      "text": "candidate/batch7 branch: it's fully merged, but the safety hook won't let me delete a branch without your approval. Run git branch -d candidate/batch7 if you want it gone.\n\n\nEmpty lint scratch folder: lintfx, which is harmless.",
+      "comment": "you can cleanup yourself",
+      "start": 1386,
+      "end": 1611,
+      "prefix": "eckbox. Two leftovers are mine: ",
+      "suffix": " I didn't re-run the earlier one"
+    }
+  },
+  {
+    "id": "assistant-quote-3",
+    "citation": {
+      "version": 1,
+      "environmentId": "63e16fdf-a1e1-4363-8349-45c9a3b50bc1",
+      "threadId": "mcp:b120ff4d-6fb4-4e12-ac5b-f39347c0ed41",
+      "messageId": "message:provider:claudeAgent:native-item:msg_011Ch7G9GPGxP5EeumU8qVc7%3Atext%3A0",
+      "text": "Merge the controller branch into main and push.",
+      "comment": "go ahead",
+      "start": 1178,
+      "end": 1225,
+      "prefix": "hree decisions are still yours: ",
+      "suffix": " Choose how strictly sign-offs w"
+    }
+  },
+  {
+    "id": "assistant-quote-4",
+    "citation": {
+      "version": 1,
+      "environmentId": "63e16fdf-a1e1-4363-8349-45c9a3b50bc1",
+      "threadId": "mcp:b120ff4d-6fb4-4e12-ac5b-f39347c0ed41",
+      "messageId": "message:provider:claudeAgent:native-item:msg_011Ch7G9GPGxP5EeumU8qVc7%3Atext%3A0",
+      "text": "Choose how strictly sign-offs wait for the machine to be idle.",
+      "comment": "how strict is strict?",
+      "start": 1226,
+      "end": 1288,
+      "prefix": "ller branch into main and push. ",
+      "suffix": " Re-record or delete the two old"
+    }
+  },
+  {
+    "id": "assistant-quote-5",
+    "citation": {
+      "version": 1,
+      "environmentId": "63e16fdf-a1e1-4363-8349-45c9a3b50bc1",
+      "threadId": "mcp:b120ff4d-6fb4-4e12-ac5b-f39347c0ed41",
+      "messageId": "message:provider:claudeAgent:native-item:msg_011Ch7G9GPGxP5EeumU8qVc7%3Atext%3A0",
+      "text": "The \"what's left\" list in my last status update still holds, now with 45 useEffect calls left to clean up.",
+      "comment": "Go",
+      "start": 1034,
+      "end": 1140,
+      "prefix": "ection is corrected (2302751b). ",
+      "suffix": " The three decisions are still y"
+    }
+  }
+]
+</assistant_citations>
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A9f43cd31-b115-413f-821e-100bc7675bb1%3Adelegate-task%3A80427882-be6d-41f9-89ea-1a072aec1c48 asked a question and is still working. Read it with t3_pending_request action read, threadId thread:delegated-task:command%3Amcp%3A9f43cd31-b115-413f-821e-100bc7675bb1%3Adelegate-task%3A80427882-be6d-41f9-89ea-1a072aec1c48, and requestId runtime-request:provider:codex:provider-turn:provider-turn%3Aprovider%3Acodex%3Anative-turn%3A01a1e621-1caa-7630-9a13-a97c55f01897:native-request:async%3Acall_1cde64aecdc14f6c98b8ff1f447fdb79:a432209b-71ad-4640-9d69-91c9a18a23e8. Answer it with action respond when the answer follows from the task or the user's instructions; otherwise ask the user, then answer it. If it is no longer pending, it was answered or dismissed.
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A9f43cd31-b115-413f-821e-100bc7675bb1%3Adelegate-task%3A833f054e-ec68-4af1-9fb5-fb00ce850095 (useEffect cleanup 45→fewer) [completed]:
+Reduced the baseline from **45 → 41 effects**. Changes are uncommitted and limited to the authorized paths.
+
+Removed pane-reset, search-reset, and fixture-retry-reset effects; moved unload protection to the existing `useWindowEvent` hook. No dependencies or wrappers added.
+
+Verification:
+
+- `pnpm --dir packages install` — passed.
+- `pnpm --dir packages run check` — passed after fixing a setter-naming lint finding.
+- `node bin/with-temp-root.mjs pnpm --dir packages/canvas exec vp test run --maxWorkers=2` — **23 files, 95 tests passed**.
+- Final canvas `check` — passed.
+- `node bin/with-temp-root.mjs node bin/lint-baseline.mjs --update` — passed; shrink only.
+- `git diff --check` — passed.
+- Browser checks selected: `canvas-host.check.mjs` and `shell-layout.check.mjs`. **Not run:** load stayed above 10 for several minutes, reaching about 17. The waiting runner was cancelled.
+
+Remaining effects, with separate reasons for each call:
+
+| File | Reasons effects stay, in source order |
+|---|---|
+| [agent-delivery.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/agent-delivery.tsx) | Fetch agent destinations; poll active delivery receipts. |
+| [app-canvas.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/app-canvas.tsx) | Initialize camera using measured canvas dimensions and URL navigation; follow the externally running guided session; subscribe to desktop scenario focus. |
+| [connection-readiness.ts](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/connection-readiness.ts) | Observe iframe document readiness and navigation. |
+| [contract-panel.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/contract-panel.tsx) | Fetch feedback; fetch scenario graph facts. |
+| [coverage-panel.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/coverage-panel.tsx) | Poll server inventory and coverage. |
+| [desktop-project-tabs.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/desktop-project-tabs.tsx) | Publish desktop draft status and clear it on cleanup; subscribe to desktop project state. |
+| [fixture-picture.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/fixture-picture.tsx) | Observe canvas intersection; fetch/retry images with cancellation; revoke replaced object URLs. |
+| [project-picker.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/project-picker.tsx) | Register desktop project metadata; persist the active project to local storage. |
+| [project-window.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/project-window.tsx) | Resolve the project-window request and navigate. |
+| [review-panel.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/review-panel.tsx) | Fetch feedback; persist unsent drafts; navigate to a URL-linked review once inventory and camera are ready. |
+| [run-controls.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/run-controls.tsx) | Observe and poll iframe runtime/recording status. |
+| [source-browser.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/source-browser.tsx) | Fetch debounced source-discovery results with cancellation. |
+| [use-canvas-selection.ts](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/use-canvas-selection.ts) | Reveal outline DOM entries; scroll selected bundles into view; reconcile selection with measured camera position; refit after preview resizing; refit after window resizing. |
+| [use-preview-viewport.ts](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/use-preview-viewport.ts) | Guard asynchronous work after unmount; observe iframe viewport events; synchronize system appearance into the preview. |
+| [use-project-versions.ts](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/use-project-versions.ts) | Fetch connections; fetch version pages; fetch expanded-version details; fetch comparisons. |
+| [version-history.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/version-history.tsx) | Measure and observe multiple history-row anchors. |
+| [workspace-settings.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/workspace-settings.tsx) | Subscribe to desktop settings requests. |
+| [canvas-controls.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/shell/src/canvas-controls.tsx) | Bind keyboard shortcuts to the canvas’s containing main element. |
+| [use-canvas-camera.ts](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/shell/src/use-canvas-camera.ts) | Cancel scheduled work on unmount; observe stage dimensions; constrain the camera against measured DOM bounds; bind non-passive wheel handling. |
+
+Three additional effects implement the existing named hooks and are excluded from the baseline: `use-frame-keydown` binds iframe keyboard events, `use-resize-observer` owns a `ResizeObserver`, and `use-window-event` owns window listeners.
+
+Browser and Electron acceptance remain unchecked. Behavior preservation, especially search focus restoration and fixture-source transitions, still needs browser confirmation.
