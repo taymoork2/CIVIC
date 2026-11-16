@@ -1,0 +1,6 @@
+{
+  "version": 1,
+  "targets": [
+    { "id": "civic.workspace", "kind": "journey", "title": "Review CIVIC's workspace", "component": "packages/canvas/src/self-review/preview.tsx", "scenarios": ["civic.picker", "civic.canvas", "civic.inspector", "civic.review", "civic.settings"], "acceptance": ["CIVIC is listed in the project picker.", "The real workspace components render with synthetic Notebook content."] }
+  ]
+}

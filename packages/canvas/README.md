@@ -12,6 +12,12 @@ Then open `http://127.0.0.1:3020/review`. Five examples are included: `examples/
 
 Without a connector, the standalone host opens `module` apps: a manifest, a scenario registry, and a preview entry that exports `mount(container, context)` (see [`@civic/vite-connector`](../vite-connector) for `init` and `check`).
 
+CIVIC itself has a root `civic.json`. From a CIVIC checkout, use
+`civic preview --project ./civic.json` to review its picker, Notebook flow overview,
+screen details, review panel and settings. These are bounded specimens of the real
+components with synthetic Notebook content; they do not recursively run a second
+canvas or represent a complete recorded workspace journey.
+
 Use **⌘K / Ctrl+K**, the header search icon, or **Search this project** in the journey rail to open the same command menu. It searches the running instance's loaded journeys, screens, component states, and workspace actions, with at most ten results. Selecting a screen focuses its canvas card; Play remains a separate action. Search builds no index of other projects or versions. **Projects & versions** opens the project picker when you want to browse other work.
 
 ## Installing it in an app

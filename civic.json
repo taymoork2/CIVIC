@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "id": "civic",
+  "name": "CIVIC",
+  "adapter": { "kind": "module", "entry": "packages/canvas/src/self-review/preview.tsx" },
+  "sources": ["packages/canvas/src", "packages/shell/src", "packages/canvas/examples/notebook"],
+  "scenarios": "civic.scenarios.json",
+  "coverage": "civic.coverage.json",
+  "personas": [{ "id": "reviewer", "label": "Reviewer" }],
+  "roles": [{ "id": "owner", "label": "Owner" }],
+  "conditions": [{ "id": "normal", "label": "Normal" }],
+  "navigation": ["Workspace"]
+}
