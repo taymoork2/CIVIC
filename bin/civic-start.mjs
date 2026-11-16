@@ -7,15 +7,13 @@
 //                                         installs the canvas packages if needed and opens the Notebook example (or your app)
 //   civic desktop [--project <civic.json>] the same in the CIVIC desktop window; Electron is downloaded on first run
 import { spawnSync } from 'node:child_process'
-import { existsSync, readFileSync } from 'node:fs'
-import { createRequire } from 'node:module'
+import { existsSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const repo = join(dirname(fileURLToPath(import.meta.url)), '..')
 const MIN_NODE = [22, 18] // the first Node 22 that runs .ts files without a flag, which the civic CLI relies on
-const ELECTRON = 'electron@45' // the major the desktop host was written against
 const CHROME = ['/Applications/Google Chrome.app', '/usr/bin/google-chrome', '/usr/bin/google-chrome-stable', '/usr/bin/chromium', '/snap/bin/chromium']
 
 const has = (command) => spawnSync(command, ['--version'], { stdio: 'ignore' }).status === 0
@@ -74,27 +72,15 @@ function demo(args) {
   return spawnSync(process.execPath, [...flags, join(packages, 'canvas/bin/civic-canvas.mjs'), ...example, ...args], { stdio: 'inherit' }).status ?? 1
 }
 
-/** Opens the desktop window on a local server of its own, and stops that server when the window closes. */
+/** Opens Electron; main owns its connection to the managed server. */
 async function desktop(args) {
   const failed = prepare()
   if (failed) return failed
   const store = process.env.CIVIC_LOCAL_STORE ?? join(homedir(), '.civic', 'desktop')
-  const port = process.env.CIVIC_LOCAL_PORT ?? '3030' // 3012 is refused for a non-default store
   const at = args.indexOf('--project')
-  const env = { ...process.env, CIVIC_LOCAL_STORE: store, CIVIC_LOCAL_PORT: port, CIVIC_PROJECT: at >= 0 ? args[at + 1] : join(packages, 'canvas/examples/notebook/civic.project.json') }
+  const env = { ...process.env, CIVIC_LOCAL_STORE: store, CIVIC_PROJECT: at >= 0 ? args[at + 1] : join(packages, 'canvas/examples/notebook/civic.project.json') }
   delete env.ELECTRON_RUN_AS_NODE
-  const folder = join(store, 'electron')
-  if (!existsSync(join(folder, 'node_modules/electron'))) {
-    console.log(`Downloading Electron (first run only, about 100 MB) into ${folder}...`)
-    const got = spawnSync('npm', ['install', '--prefix', folder, ELECTRON, '--no-audit', '--no-fund', '--loglevel=error'], { stdio: 'inherit' })
-    if (got.status !== 0) return got.status ?? 1
-  }
-  const binary = createRequire(join(folder, 'x.js'))('electron')
-  // Always start our own server: whatever already answers on the port is not trusted, and start.mjs refuses a taken port.
-  const started = spawnSync(process.execPath, [join(packages, 'local/start.mjs')], { env, stdio: 'inherit' })
-  if (started.status !== 0) return (console.error(`The CIVIC server did not start. If port ${port} is in use (another civic desktop?), close it or set CIVIC_LOCAL_PORT.`), started.status ?? 1)
-  const window = spawnSync(binary, [join(packages, 'local/desktop.mjs')], { env: { ...env, CIVIC_DESKTOP_ORIGIN: `http://127.0.0.1:${port}` }, stdio: 'inherit' })
-  try { process.kill(JSON.parse(readFileSync(join(store, 'runtime.json'), 'utf8')).pid, 'SIGTERM') } catch (error) { console.error(`Could not stop the CIVIC server; see ${join(store, 'runtime.json')}: ${error.message}`) }
+  const window = spawnSync(process.execPath, [join(packages, 'local/desktop-launch.mjs')], { env, stdio: 'inherit' })
   return window.status ?? 1
 }
 

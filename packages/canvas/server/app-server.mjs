@@ -21,7 +21,7 @@ const addressPort = (server) => {
   // SAFETY: a loopback TCP listener returns AddressInfo, never a Unix socket path.
   return address.port;
 };
-export function managedHost({ store, build, port = 0, viewer }) {
+export function managedHost({ store, build, port = 0, viewer, ready = () => null }) {
   return Effect.scoped(
     Effect.gen(function* () {
       const registration = yield* Effect.acquireRelease(
@@ -50,6 +50,7 @@ export function managedHost({ store, build, port = 0, viewer }) {
           throw Error(
             "The registered listener did not authenticate as this CIVIC service."
           );
+        ready(registration.owner);
         return registration.owner;
       }
       const actor = yield* createEffectActor(serverMachine);
@@ -245,6 +246,7 @@ export function managedHost({ store, build, port = 0, viewer }) {
         )
       );
       yield* sendAndAwait(actor, { type: "READY", clients: count });
+      ready(registration.owner);
       yield* Effect.forkChild(
         Effect.repeat(
           Effect.sync(() => presence.heartbeat()),

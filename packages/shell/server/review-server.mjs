@@ -303,7 +303,7 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
         if (req.headers.origin !== `http://127.0.0.1:${req.socket.localPort}` || req.headers['x-rehearsal-project'] !== metadata.project?.key || metadata.refreshError) { json(403, { error: 'Presence binding refused' }); return }
         json(200, { ticket: await presence.issue(req.headers.origin) }); return
       }
-      if (url.pathname === '/api/review/index' && req.method === 'GET') { json(metadata.refreshError ? 503 : 200, metadata.refreshError ? { error: metadata.refreshError } : metadata); return }
+      if (url.pathname === '/api/review/index' && req.method === 'GET') { json(metadata.refreshError ? 503 : 200, metadata.refreshError ? { error: metadata.refreshError } : { ...metadata, managedPresence: !!presence }); return }
       if (url.pathname === '/api/review/runtime' && req.method === 'POST' && runtime) { json(200, await runtime.handle(await body(req))); return }
       if (url.pathname === '/api/review/interactions' && ['GET', 'POST'].includes(req.method)) {
         if (!interactions || metadata.refreshError) { json(503, { error: 'Runtime interaction discovery is unavailable for this project.' }); return }

@@ -419,7 +419,7 @@
   "eslint(no-shadow):packages/local/desktop-settings.electron.mjs": 7,
   "eslint(no-shadow):packages/local/desktop-tabs.check.mjs": 3,
   "eslint(no-shadow):packages/local/desktop-tabs.mjs": 2,
-  "eslint(no-shadow):packages/local/desktop.mjs": 6,
+  "eslint(no-shadow):packages/local/desktop.mjs": 5,
   "eslint(no-shadow):packages/local/preview-retention.mjs": 1,
   "eslint(no-shadow):packages/local/start.mjs": 1,
   "eslint(no-shadow):packages/local/vite.config.mjs": 2,

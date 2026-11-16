@@ -4,9 +4,18 @@ The local launcher serves the generic canvas and opens it in Electron. Projects
 are selected through their manifests; no connected application is required by
 CIVIC's source or startup.
 
-From a clone, `bin/civic desktop` does all of this for you: it downloads Electron on first run, starts a
-server on its own port and store, opens the window, and stops the server when the window closes. The
-commands below are the manual route.
+From this workspace, `pnpm --dir packages/local desktop` starts or discovers the
+store's managed server on an available loopback port and opens Electron. Install
+the workspace first with `pnpm --dir packages install`. `CIVIC_ELECTRON_BINARY`
+can override the workspace's Electron binary.
+
+Electron keeps the server while running, even with every window closed. Quit
+releases its connection; browser tabs can keep the same server and runs alive.
+The final client leaving starts a ten-second reconnection interval, then the
+server closes. A server started without any clients closes after sixty seconds.
+Open a stopped workspace through Electron; a browser URL cannot start it.
+Each worktree has a separate desktop profile and its branch in the window title.
+The commands below retain the manual, unmanaged server route.
 
 ```sh
 CIVIC_PROJECT=/absolute/project/civic.json pnpm --dir packages/local start
