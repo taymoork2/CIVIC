@@ -49,7 +49,7 @@ test('Effect 4 lint fixtures accept service construction and reject manual tags'
       make: Effect.gen(function* () { return { find: Effect.fn('Store.find')(function* () {}) }; })
     }) { static layer = Layer.effect(this, this.make); }`)
   writeFileSync(invalid, `const value = { _tag: 'Ready' };`)
-  const result = spawnSync('pnpm', ['--dir', 'packages', 'exec', 'vp', 'lint', '--config', config, '--format', 'json', '--threads', '2', valid, invalid], { encoding: 'utf8' })
+  const result = spawnSync('pnpm', ['--dir', fileURLToPath(new URL('../packages', import.meta.url)), 'exec', 'vp', 'lint', '--config', config, '--format', 'json', '--threads', '2', valid, invalid], { encoding: 'utf8' })
   assert.equal(result.status, 1, result.stderr)
   const diagnostics = JSON.parse(result.stdout).diagnostics.filter(item => item.code.startsWith('anti-slop-effect'))
   assert.equal(diagnostics.length, 1, JSON.stringify(diagnostics))
