@@ -1,0 +1,27 @@
+i'll be away from the machine for a couple of hours so please keep working and delivering
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A9f43cd31-b115-413f-821e-100bc7675bb1%3Adelegate-task%3A708f2c6e-8964-42bc-8328-11e390bbd836 (Shared JSX tagger + webpack/Turbopack loader) [completed]:
+Implemented, uncommitted, within `packages/vite-connector/**`:
+
+- Extracted `tagHostElements`; existing Vite wrapper delegates to it.
+- Added/exported an ESM loader using only the three permitted context APIs.
+- Added root/include filtering, tests, and Next/Turbopack, webpack and Rspack documentation.
+- No dependencies added. Source maps remain text-only; unchanged loader inputs preserve incoming maps.
+
+`git diff --check` passed. Package inspection found no vite-connector `check` script.
+
+Execution was blocked by your machine-sharing rule: signoff PIDs `10626` and `64296` remained active at the final check (1-minute load 9.10). Therefore tagging tests, connector tests, `pnpm --dir packages run check`, and lint-baseline verification were not run. No Next installation or server was started, so there is no real Turbopack HTML evidence.
+
+Skipped runtime checks because signoff remained active. Risk: the implementation and added tests are unexecuted; bundler compatibility remains unverified.
+
+---
+
+<task-notification>
+<task-id>bdsdrfzpw</task-id>
+<tool-use-id>toolu_013ZHthtZ4NWUv7DsCLAbAbX</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/bdsdrfzpw.output</output-file>
+<status>completed</status>
+<summary>Background command "Sign off the backend coverage batch" completed (exit code 0)</summary>
+</task-notification>
