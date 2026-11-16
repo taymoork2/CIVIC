@@ -1,0 +1,63 @@
+Delegated task node:delegated-task:command%3Amcp%3A0fc5146e-3a24-492d-b871-e21a3331032d%3Adelegate-task%3A829f0adc-af73-40bb-83b2-a0feb04e7735 (Fix presence lost on Vite restart (KTD8)) [completed]:
+Root cause: [app-server-main.mjs:14](/Users/taymoor/.t3/worktrees/CIVIC/t3-4910817a-effd3af405681eb0/packages/canvas/server/app-server-main.mjs:14) enabled generation-owned HMR. Shutdown triggered a browser reload into the 503 “Starting” page, closing its control connection. Presence was already host-owned; the registry correctly released the disconnected client.
+
+Fix: disabled managed-viewer HMR/WebSocket transport. Added a regression asserting the document survives restart. Changes remain uncommitted.
+
+Commands/results (Node checks used `bin/with-temp-root.mjs`, concurrency 1):
+
+- **PASS:** `node --test packages/canvas/server/managed-clients.check.mjs` — 3/3.
+- **PASS:** `node --test packages/canvas/server/app-server.check.mjs packages/canvas/server/service-registration.check.mjs` — 7/7.
+- **PASS:** `vp test run --maxWorkers=1 server/client-presence.test.ts server/lifecycle.test.ts server/lifecycle-scope.test.ts` — 6/6.
+- **PASS:** `node --test packages/canvas/server/runtime-lifecycle.check.mjs` — 10/10.
+- **PASS:** `node --test review/test/coordinator.test.ts`.
+- **PASS on retry:** `CIVIC_TEST=1 node --test packages/local/desktop-lifecycle.electron.mjs`; first run failed reopening a window.
+- **PASS:** `pnpm --dir packages run check`.
+- **PASS:** `node bin/lint-baseline.mjs`.
+- **FAIL:** combined canvas-host run, 16/17; failed sign-in test passed its focused rerun.
+
+Full canvas-host suite was not rerun. Managed UI code changes now require explicit reload; standalone HMR remains enabled.
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A0fc5146e-3a24-492d-b871-e21a3331032d%3Adelegate-task%3Ab11f2416-b73d-4e4c-a395-658be25f9d5c (KTD8: keep hot reload across Vite restarts) [completed]:
+No changes made: this checkout materially differs from the assigned candidate.
+
+- HEAD is `117351ef9ae362cee41a4a898c74b068717e0544` — `test: Merge the installed-server lifecycle checks (S10 U6)`, not the specified WIP commit.
+- `packages/canvas/server/managed-clients.check.mjs` is absent.
+- Dependencies are not installed, so installed Vite types are unavailable.
+- HMR already uses `hmr: { server: listener }`; restart still returns `503 Starting`. `presence.revoke()` clears pending tickets and fences attachments without releasing existing clients.
+
+Checks: `git status --short` passed; checkout is clean. Requested verification was not run because the assigned candidate is missing.
+
+Skipped edits and installs pending the correct candidate; the reported regression remains unverified here.
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A0fc5146e-3a24-492d-b871-e21a3331032d%3Adelegate-task%3A13dc0a50-4983-4fb2-aa4a-4eba2d013855 (KTD8: hold requests during Vite restart) [completed]:
+Changed two files, left uncommitted:
+
+- Restart HTTP requests now wait for readiness using Effect, bounded by the 60-second boot deadline, with a plain-language failure response.
+- Retiring generations suppress `full-reload` broadcasts. HMR remains on the stable listener.
+- Restart restores two clients within the reconnect window. Source-module HMR updates the open tab without dropping control. Old runs still refuse changed source.
+
+Verification, serially under `node bin/with-temp-root.mjs`:
+
+- `pnpm --dir packages install` — PASS
+- `managed-clients.check.mjs` — PASS, all 4 tests
+- `app-server.check.mjs`, `service-registration.check.mjs`, `runtime-lifecycle.check.mjs`, `review/test/coordinator.test.ts` — PASS
+- `vp test run --maxWorkers=1 server/client-presence.test.ts server/lifecycle.test.ts server/lifecycle-scope.test.ts` — PASS, 6 tests
+- `CIVIC_TEST=1 node packages/local/desktop-lifecycle.electron.mjs` — PASS on rerun
+- `pnpm --dir packages run check` — PASS
+- `node bin/lint-baseline.mjs` — PASS
+
+The 60-second failure path was not separately exercised; HMR verification uses a synthetic source module.
+
+---
+
+<task-notification>
+<task-id>b317yf5n7</task-id>
+<tool-use-id>toolu_01UTgoyxmSGrt2jD4DK8V89y</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/b317yf5n7.output</output-file>
+<status>completed</status>
+<summary>Background command "Signoff batch 5 plus Electron checks" completed (exit code 0)</summary>
+</task-notification>
