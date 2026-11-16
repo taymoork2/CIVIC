@@ -225,6 +225,8 @@ No blocking product question remains. Exact file subdivisions and timeout tuning
 
 ### U1. Characterize journal and closure boundaries
 
+**Status, 16 Nov:** Done in `8bade120` (implementation `e703dfbd`).
+
 **Goal:** Bind the existing recovery guarantees before changing resource ownership.
 **Requirements:** R8–R10; AE4–AE7. **Dependencies:** None.
 **Files:** `packages/canvas/server/runtime-service.check.mjs`, new `packages/canvas/server/runtime-lifecycle.check.mjs`, and small deterministic test fixtures under `packages/canvas/server/check-fixtures/`.
@@ -242,6 +244,8 @@ No blocking product question remains. Exact file subdivisions and timeout tuning
 
 ### U2. Add lifecycle decisions and scoped execution
 
+**Status, 16 Nov:** Done in `8bade120` (implementation `e703dfbd`); plain JavaScript run machine completed in `62739c80`.
+
 **Goal:** Introduce one owner for host and run transitions without another durable store.
 **Requirements:** R4, R5, R8–R10, R12. **Dependencies:** U1.
 **Files:** New `packages/canvas/server/server-lifecycle.ts`, `packages/canvas/server/run-lifecycle.ts`, `packages/canvas/server/lifecycle.test.ts`, `packages/canvas/server/lifecycle-scope.test.ts`, `packages/canvas/tsconfig.server.json`; `packages/canvas/package.json`, `packages/canvas/vitest.config.ts` and `packages/pnpm-lock.yaml`.
@@ -258,6 +262,8 @@ No blocking product question remains. Exact file subdivisions and timeout tuning
 
 ### U3. Supervise the existing run service
 
+**Status, 16 Nov:** Done in `e61e6847`, with dependency correction `24d35503` and plain JavaScript correction `62739c80`.
+
 **Goal:** Give runs bounded, awaitable closure while preserving their public contract.
 **Requirements:** R5, R8–R10, R13. **Dependencies:** U1, U2.
 **Files:** `packages/canvas/server/runtime-service.mjs`, `packages/canvas/server/runtime-worker.mjs`, `packages/canvas/server/runtime-service.check.mjs`, `packages/canvas/server/runtime-lifecycle.check.mjs`; a scoped execution module if needed under `packages/canvas/server/`.
@@ -273,6 +279,8 @@ No blocking product question remains. Exact file subdivisions and timeout tuning
 **Verification:** U1's baseline and all existing runtime backends pass against the refactored service; real fixture workers exit without leaked handles.
 
 ### U4. Build managed discovery and authenticated presence
+
+**Status, 16 Nov:** Done in `dc55e5b3`.
 
 **Goal:** Start or adopt one managed host and make its lifetime follow valid clients.
 **Requirements:** R1, R4–R6, R11–R14. **Dependencies:** U2, U3.
@@ -291,6 +299,8 @@ No blocking product question remains. Exact file subdivisions and timeout tuning
 
 ### U5. Attach browser and minimal Electron clients
 
+**Status, 16 Nov:** Done in `613fb176`, in `packages/local` rather than a new desktop package.
+
 **Goal:** Make real app instances participate in the managed lifecycle.
 **Requirements:** R1–R6, R11, R13, R14. **Dependencies:** U4.
 **Files:** New `packages/canvas/src/client-presence.ts`, `packages/canvas/src/client-presence.test.ts`, `packages/desktop/package.json`, `packages/desktop/main.mjs`, `packages/desktop/lifecycle.mjs`, `packages/desktop/lifecycle.check.mjs`, `packages/desktop/desktop.check.mjs`; `packages/canvas/src/main.tsx`, `packages/canvas/bin/civic-canvas.mjs`, `packages/canvas/package.json` and `packages/pnpm-lock.yaml`.
@@ -307,6 +317,13 @@ No blocking product question remains. Exact file subdivisions and timeout tuning
 **Verification:** Model-based main-process checks plus real Electron/browser acceptance establish R2. Do not count mocked Electron events alone as macOS acceptance.
 
 ### U6. Verify installation, recovery and delivery boundaries
+
+**Status, 16 Nov:** Installed-consumer checks and delivery documentation added in
+the current uncommitted U6 candidate; no landing commit yet. Full Definition of
+Done remains open pending the final local gate and the real-client acceptance
+matrix, including macOS sleep/wake. The desktop-style install client does not
+replace Electron acceptance. Decision 0022 supersedes this plan's dependency
+pins and core-package choice.
 
 **Goal:** Make the managed path installable and prove it preserves CIVIC's existing integration contract.
 **Requirements:** R1–R14; AE1–AE8. **Dependencies:** U3–U5.

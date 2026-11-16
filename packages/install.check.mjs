@@ -14,6 +14,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { parseArgs } from 'node:util'
+import { checkManagedInstall } from './install-managed.mjs'
 
 const civic = join(dirname(fileURLToPath(import.meta.url)), '..')
 const { values } = parseArgs({ options: { source: { type: 'string' }, commit: { type: 'string' }, keep: { type: 'boolean' } } })
@@ -73,6 +74,7 @@ try {
   } finally {
     await server.close()
   }
+  await checkManagedInstall(app, installed)
 } finally {
   if (values.keep) console.log(`Kept ${app}`)
   else await rm(app, { recursive: true, force: true })

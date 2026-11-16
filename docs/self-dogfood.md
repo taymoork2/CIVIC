@@ -104,7 +104,7 @@ Record every step the owner or the agent had to do in a terminal. The target is 
 
 `civic preview` is built ([decision 0021](decisions/0021-civic-preview-reviews-a-worktree-of-civic.md)). Slices 2, 4 and part of 3 are done: start, attach, list, link and stop; setup from a fresh worktree; and hot reload through the proxy (S06). Still open:
 
-1. **`--desktop`.** CIVIC's Electron shell needs the branch in its window title and its own profile (`packages/local/desktop.mjs`), and an Electron binary to verify them.
+1. **`--desktop` — done.** CIVIC's Electron shell shows the branch in its window title and uses its own worktree profile (`packages/local/desktop.mjs`), merged in `613fb176`. The local `test:electron` lane uses `CIVIC_TEST=1` and a temporary profile; signed distribution and sleep/wake remain separate acceptance.
 2. **The full agent loop (S11).** An external agent claims a request in its own worktree, reports a fix with a preview of its own copy, `civic recapture` checks it there, and the owner resolves it. The launcher passes the preview's access key file when it finds exactly one, but no recapture has been run through a preview.
 3. **S12.** Merging to main and seeing the change in the owner's live instance on port 3012, only when the owner asks for it.
 4. **Sign-in.** The preview has none (decision 0021, point 7).
