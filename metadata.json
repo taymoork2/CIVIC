@@ -1,0 +1,46 @@
+{
+  "cli_version": "0.13.3",
+  "checkpoint_id": "01M7HWS828GNAWPW3NJMB5V87B",
+  "strategy": "manual-commit",
+  "branch": "fix/lifecycle-gaps-final",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "docs/integrations/orca-proposal.md",
+    "packages/canvas/server/app-server-main.mjs",
+    "packages/canvas/server/app-server.mjs",
+    "packages/canvas/server/managed-clients.check.mjs",
+    "review/src/coordinator.ts",
+    "review/src/mcp.ts",
+    "review/test/coordinator.test.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 28,
+    "cache_creation_tokens": 16141,
+    "cache_read_tokens": 8402332,
+    "output_tokens": 10286,
+    "api_call_count": 11
+  },
+  "redaction": {
+    "replacements": 467,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 423,
+      "key_context": 44,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
