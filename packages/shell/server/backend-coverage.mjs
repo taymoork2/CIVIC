@@ -6,7 +6,7 @@ const refused = operation => operation.error || operation.result?.status >= 400
 
 const reachedOperation = (operations, name) => {
   const actual = name.split('/')
-  return operations.find(row => row.kind === 'route' && row.id.split('/').length === actual.length && row.id.split('/').every((part, index) => part.startsWith(':') ? Boolean(actual[index]) : part === actual[index]))
+  return operations.find(row => row.kind === 'route' && row.id.split('/').length === actual.length && row.id.split('/').every((part, index) => part.startsWith(':') ? Boolean(actual[index]) : (index === 0 && part === 'ALL ' ? /^[A-Z]+ $/u.test(actual[index]) : part === actual[index])))
 }
 
 /** Count only the verified prefix of the latest replay of each content-addressed tape. */

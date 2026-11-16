@@ -7,10 +7,13 @@ import { convexDetector } from './convex-functions.mjs'
 import { nextRoutesDetector } from './next-routes.mjs'
 import { nextActionsDetector } from './next-actions.mjs'
 import { expressDetector } from './express-routes.mjs'
+import { honoDetector } from './hono-routes.mjs'
+import { fastifyDetector } from './fastify-routes.mjs'
+import { elysiaDetector } from './elysia-routes.mjs'
 import { projectPath } from '@civic/vite-connector/project'
 
 const { relative, join } = nodePath
-const detectors = [tanstackDetector, convexDetector, nextRoutesDetector, nextActionsDetector, expressDetector]
+const detectors = [tanstackDetector, convexDetector, nextRoutesDetector, nextActionsDetector, expressDetector, honoDetector, fastifyDetector, elysiaDetector]
 
 // JSON values cannot contain boxed strings or custom Symbol.toStringTag values.
 const isInventoryString = value => Object.prototype.toString.call(value) === '[object String]'
