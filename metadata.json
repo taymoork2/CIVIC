@@ -1,0 +1,41 @@
+{
+  "cli_version": "0.13.3",
+  "checkpoint_id": "01M7H425XTH1H0FYB9V5722SBV",
+  "strategy": "manual-commit",
+  "branch": "build/lint-house-style",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "lint-baseline.json",
+    "packages/vite.config.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": ""
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 4,
+    "cache_creation_tokens": 1778,
+    "cache_read_tokens": 854032,
+    "output_tokens": 1400,
+    "api_call_count": 2
+  },
+  "redaction": {
+    "replacements": 160,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 149,
+      "key_context": 11,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
