@@ -1,0 +1,86 @@
+Delegated task node:delegated-task:command%3Amcp%3A0fc5146e-3a24-492d-b871-e21a3331032d%3Adelegate-task%3A0539a94a-7bac-41cd-b0dc-891d5b6f0c8c (S10 U3 supervise the run service) [completed]:
+- Diff: seven files changed, uncommitted. Wired run-machine actors, fenced shutdown/start/restore, added five U3 scenarios, and moved Effect/XState dependencies into canvas runtime dependencies. No runtime `@civic/core` import.
+- Effect now owns worker acquisition/termination, actor scopes, listener cleanup, expiry scheduling, call timeouts, and shutdown drain deadlines.
+- Baseline: raw timers **2 → 0**; five rule/file entries removed; no increases.
+- PASS: `pnpm --dir packages run check`; `node bin/lint-baseline.mjs`; both runtime check files (**19 tests**, including U3); lifecycle/boundary tests (**6 tests**). Suites used the gate, temp wrapper, and ≤2 workers.
+- FAIL: `pnpm --dir packages --filter @civic/canvas run test:host` — **63 passed, 2 timed out**: [draft/capture check:317](/Users/taymoor/.t3/worktrees/CIVIC/t3-8cd3b3ed-b207ce88c03e51c9/packages/canvas/server/canvas-host.check.mjs:317), [narrow settings check:212](/Users/taymoor/.t3/worktrees/CIVIC/t3-8cd3b3ed-b207ce88c03e51c9/packages/canvas/server/theme-settings.check.mjs:212).
+
+Not run: git-install acceptance or signoff. Full-host acceptance remains blocked by those unresolved browser failures.
+
+---
+
+<task-notification>
+<task-id>b0j4926a8</task-id>
+<tool-use-id>toolu_01FB8zHn9JKjHsAhikX9ZcKW</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/b0j4926a8.output</output-file>
+<status>completed</status>
+<summary>Background command "Rerun the two timed-out tests on U3 twice behind gate" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A0fc5146e-3a24-492d-b871-e21a3331032d%3Adelegate-task%3Aea6b19ca-0dda-41e4-b9b5-c609ca8094b4 (S11b part 2 review sessions, changed screens, resources) [completed]:
+- Added coordinator tools, preview-session ownership, tagged-capture storage, server-side workRef stamping, resource subscriptions, and integration docs. Changes are uncommitted.
+- Tagged captures: `.civic/tagged-captures/<project-hash>/<scenario-hash>.json`, replaced per scenario and matched against the inventory’s source fingerprint.
+- The overlay reads workRef from the preview registry; client-supplied workRef is ignored.
+- Notifications use scoped `fs.watch`, debounced through Effect Schedule; unsubscribe and stdin end close watchers.
+
+Checks:
+- TypeScript, `node bin/lint-baseline.mjs`, and `git diff --check`: **PASS**.
+- Focused preview/overlay/proxy/MCP batch: **16 passed**.
+- Real coordinator stdio/browser test: **passed** before the final additions.
+
+S11b remains incomplete: screen/journey coverage reads shared-store replays, while backend coverage also reads preview-local evidence; preview-local replay changes do not trigger resource notifications.
+
+Skipped full suites as instructed. The final focused rerun never started because the load gate stayed closed; I stopped that waiting gate.
+
+---
+
+<task-notification>
+<summary>Commit security review found: argument injection in review/src/coordinator.ts</summary>
+</task-notification>
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A0fc5146e-3a24-492d-b871-e21a3331032d%3Adelegate-task%3A12a89832-c02f-444b-b3a8-bc5ba3e8586d (S10 U4 managed discovery and presence) [completed]:
+U4 is partial; changes remain uncommitted.
+
+- **Diff:** Added managed-host, registration, presence, and focused test files; added middleware-mode Vite hosting and awaitable connector disposal; added authenticated shell ticket issuance. Moved Effect/XState to canvas runtime dependencies; declared existing `ws` 8.23.0 and added `@types/ws` 8.18.2.
+- **Registration:** `.review-data/service/` uses `0700`; `owner.lock/owner.json` and `registration.json` use `0600`. Checks cover canonical store paths, file ownership/modes, machine, PID, nonce, capability, build/protocol, and loopback endpoint. Recovery requires `ESRCH`; cleanup checks the instance nonce. `breaker.lock` serializes recovery.
+- **Socket:** `/api/civic/control`; browser credentials use `civic-control,<single-use-ticket>` subprotocols with 10-second expiry. Desktop authentication uses a bearer capability. Incoming frames cap at 16 KiB; queues cap at 256, with overflow closing for resync.
+
+Commands:
+
+- `pnpm --dir packages install` — passed.
+- `pnpm --dir packages/canvas check` — passed.
+- `node bin/lint-baseline.mjs` — passed.
+- `git diff --check` — passed.
+- Required load gate — waited without opening; terminated my waiting gate after identifying the blocker. No test suites ran.
+
+**Blocker:** [runtime-service.mjs:1](/Users/taymoor/.t3/worktrees/CIVIC/t3-bc7e62aa-15f00f6623d92d4f/packages/canvas/server/runtime-service.mjs:1) lacks Effect/run-machine imports and still manages workers and raw timers directly. This contradicts the stated merged U3 prerequisite. Implementation stopped on that material drift.
+
+Electron/browser wiring and full suites were skipped as requested. The partial implementation has no runtime acceptance proof and is not ready for integration.
+
+---
+
+it seems like this sign-off is taking awhile?
+
+---
+
+<task-notification>
+<task-id>b2izaefl2</task-id>
+<tool-use-id>toolu_01BwGgxzfKSs5LdR5W3qs93U</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/b2izaefl2.output</output-file>
+<status>completed</status>
+<summary>Background command "Signoff batch 2 behind gate" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bgbjd9njl</task-id>
+<tool-use-id>toolu_01Xqg16gmoNXTpQ6XbpQ4aY8</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/bgbjd9njl.output</output-file>
+<status>completed</status>
+<summary>Background command "Rerun batch 2 signoff behind gate" completed (exit code 0)</summary>
+</task-notification>
