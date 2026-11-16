@@ -8,6 +8,7 @@ import { nextRoutesDetector } from './next-routes.mjs'
 import { nextActionsDetector } from './next-actions.mjs'
 import { expressDetector } from './express-routes.mjs'
 import { projectPath } from '@civic/vite-connector/project'
+import { contractOperations } from './openapi-contract.mjs'
 
 const { relative, join } = nodePath
 const detectors = [tanstackDetector, convexDetector, nextRoutesDetector, nextActionsDetector, expressDetector]
@@ -46,6 +47,12 @@ export async function backendInventory(project) {
     }
   }
   if (new Set(operations.map(row => row.id)).size !== operations.length) throw Error('Duplicate backend operation')
+  const byId = new Map(operations.map(row => [row.id, row]))
+  for (const row of await contractOperations(project)) {
+    const existing = byId.get(row.id)
+    if (existing) existing.inContract = true
+    else { operations.push(row); byId.set(row.id, row) }
+  }
   return operations
 }
 
@@ -67,5 +74,5 @@ export async function projectBackendCoverage(project, dataDir, metadata, operati
   const journeys = (metadata.coverage?.targets ?? []).filter(row => row.kind === 'journey')
   const inventory = operations ?? await backendInventory(project)
   if (source !== metadata.revision.source) throw Error('Source changed while reading backend coverage; retry')
-  return backendCoverage(inventory, tapes, replays, { project: project.key, source, journeys })
+  return backendCoverage(inventory, tapes, replays, { project: project.key, source, journeys, contracts: Boolean(project.manifest.adapter.contracts?.length) })
 }

@@ -38,6 +38,11 @@ export function projectPath(root, path, required = true, strict = true) {
   if (required && !existsSync(file)) fail(`missing path: ${path}`)
   return file
 }
+function checkedContracts(contracts) {
+  if (contracts === undefined) return
+  if (!Array.isArray(contracts) || contracts.length > 50 || new Set(contracts).size !== contracts.length || contracts.some(path => !words(path, 500))) fail('invalid contract paths')
+  for (const path of contracts) projectPath('/', path, false, false)
+}
 export function checkedProject(input) {
   if (!input || input.version !== 1 || !id(input.id) || !words(input.name)) fail('use version 1, a stable id and a name')
   // `module` is the portable preview contract. Any other kind names a connector the host registers (Example's is `example`).
@@ -45,6 +50,7 @@ export function checkedProject(input) {
   if (input.adapter.mode !== undefined && input.adapter.mode !== 'live-read-only') fail('unsupported live review mode')
   if (input.adapter.runtime !== undefined && !words(input.adapter.runtime, 500)) fail('invalid isolated runtime entry')
   if (input.adapter.operations !== undefined && !words(input.adapter.operations, 500)) fail('invalid backend inventory path')
+  checkedContracts(input.adapter.contracts)
   if (input.adapter.connector !== undefined && !words(input.adapter.connector, 500)) fail('invalid connector module')
   if (input.adapter.extension !== undefined && !words(input.adapter.extension, 500)) fail('invalid canvas extension')
   for (const field of ['sources', 'navigation']) if (!Array.isArray(input[field]) || !input[field].length || input[field].length > 50 || new Set(input[field]).size !== input[field].length || input[field].some((s) => !words(s))) fail(`invalid ${field}`)
@@ -94,6 +100,7 @@ export function loadProject(repo, options = {}) {
   // Connector-owned projects may resolve through workspace links; portable modules stay inside their checkout.
   const strict = manifest.adapter.kind === 'module'
   const sources = manifest.sources.map((path) => projectPath(root, path, true, strict))
+  for (const path of manifest.adapter.contracts ?? []) projectPath(root, path)
   if (sources.some((path) => !statSync(path).isDirectory())) fail('source roots must be directories')
   const scenariosPath = projectPath(manifestRoot, manifest.scenarios, true, strict)
   const coverageFile = projectPath(manifestRoot, manifest.coverage, true, strict)
