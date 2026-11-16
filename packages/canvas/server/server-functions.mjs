@@ -1,5 +1,6 @@
 import { fileURLToPath } from 'node:url'
 import { relative } from 'node:path'
+import { parseSync } from 'vite'
 
 const VIRTUAL = 'virtual:civic-server-functions'
 const PROVIDED = new Set(['createServerFn', 'createMiddleware', 'useServerFn'])
@@ -101,6 +102,28 @@ export function transformServerFunctions(code, file, side) {
     if (stripped.stripped) rewritten = dropUnusedImports(stripped.code)
   }
   return rewritten
+}
+
+export function serverFunctionOperations(code, file) {
+  const transformed = transformServerFunctions(code, file, 'server')
+  if (!transformed) return []
+  const parsed = parseSync(file, transformed)
+  if (parsed.errors.length) throw Error(`Cannot inventory server functions in ${file}`)
+  const factories = new Set(), operations = []
+  const walk = node => {
+    if (!node?.type) return
+    if (node.type === 'VariableDeclarator' && node.init?.type === 'MemberExpression' && node.init.object.name === '__civicStart' && node.init.property.name === 'createServerFn') factories.add(node.id.name)
+    if (node.type === 'CallExpression' && node.callee.type === 'MemberExpression' && factories.has(node.callee.object.name) && node.callee.property.name === 'as' && node.arguments[0]?.type === 'Literal' && ['"', "'"].includes(node.arguments[0].raw[0])) {
+      const name = node.arguments[0].value
+      operations.push({ id: `serverFn:${file}:${name}`, file, export: name, kind: 'server-function' })
+    }
+    for (const value of Object.values(node)) {
+      if (Array.isArray(value)) { for (const child of value) walk(child) }
+      else walk(value)
+    }
+  }
+  walk(parsed.program)
+  return operations
 }
 
 /**

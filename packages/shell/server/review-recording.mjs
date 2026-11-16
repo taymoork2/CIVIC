@@ -36,7 +36,7 @@ export function checkedRecording(input, project) {
     if (step.discovery !== undefined && (!step.discovery || Object.keys(step.discovery).some(key => !['before', 'after'].includes(key)) || !step.discovery.before || !step.discovery.after)) refuse('Invalid interaction evidence')
     if (step.discovery) { checkedState(step.discovery.before, { project }); checkedState(step.discovery.after, { project }) }
     for (const field of step.fields) if (!field || typeof field.label !== 'string' || sensitive.test(field.label) || typeof field.value !== 'string' || field.value.length > 4000) refuse('Invalid recorded field')
-    for (const operation of step.operations) if (!operation || !['mutation', 'action'].includes(operation.kind) || typeof operation.name !== 'string' || operation.name.length > 200 || operation.actor !== undefined && (typeof operation.actor !== 'string' || !/^[\w.-]{1,80}$/.test(operation.actor)) || sensitivePayload(operation.args) || sensitivePayload(operation.result)) refuse('Invalid or sensitive recorded operation')
+    for (const operation of step.operations) if (!operation || !['query', 'mutation', 'action'].includes(operation.kind) || typeof operation.name !== 'string' || operation.name.length > 200 || operation.actor !== undefined && (typeof operation.actor !== 'string' || !/^[\w.-]{1,80}$/.test(operation.actor)) || sensitivePayload(operation.args) || sensitivePayload(operation.result)) refuse('Invalid or sensitive recorded operation')
   }
   return input
 }

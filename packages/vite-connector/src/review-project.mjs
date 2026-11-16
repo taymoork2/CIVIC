@@ -44,6 +44,7 @@ export function checkedProject(input) {
   if (!id(input.adapter?.kind) || input.adapter.entry !== undefined && !words(input.adapter.entry)) fail('unsupported adapter or entry')
   if (input.adapter.mode !== undefined && input.adapter.mode !== 'live-read-only') fail('unsupported live review mode')
   if (input.adapter.runtime !== undefined && !words(input.adapter.runtime, 500)) fail('invalid isolated runtime entry')
+  if (input.adapter.operations !== undefined && !words(input.adapter.operations, 500)) fail('invalid backend inventory path')
   if (input.adapter.extension !== undefined && !words(input.adapter.extension, 500)) fail('invalid canvas extension')
   for (const field of ['sources', 'navigation']) if (!Array.isArray(input[field]) || !input[field].length || input[field].length > 50 || new Set(input[field]).size !== input[field].length || input[field].some((s) => !words(s))) fail(`invalid ${field}`)
   for (const field of ['personas', 'roles', 'conditions']) {

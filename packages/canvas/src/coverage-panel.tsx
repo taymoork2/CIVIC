@@ -18,9 +18,10 @@ type Target = InteractionExpectation & { component?: string; implementation: str
 type Candidate = { id: string; version: number; source: string; title: string; body: string; action: string; brief: string; code: string; stale: boolean; targetPresent: boolean; acknowledged: boolean }
 type Coverage = { version: number; automatic: boolean; source: string; fixtureSource: string; report: { contractVersion: number; targets: Target[]; limits: string[] }; candidates: Candidate[]; interactions?: InteractionReport }
 type Draft = { id: string; title: string; body: string; action: string; source: string; expectedVersion: number }
+type Backend = { operations: { id: string; file: string; export: string; kind: string; reachedBy: string[] }[]; unreached: string[] }
 
 export function useCoverage(onIndex: (index: ReviewSnapshot & { scenarios: MapScenario[]; fixtureSource: string; connection?: { applicationRoot: string } }) => void) {
-  const [data, setData] = useState<Coverage | null>(null)
+  const [data, setData] = useState<(Coverage & { backend?: Backend }) | null>(null)
   const [error, setError] = useState('')
   const callback = useRef(onIndex); callback.current = onIndex
   const lastSource = useRef('')
@@ -35,7 +36,7 @@ export function useCoverage(onIndex: (index: ReviewSnapshot & { scenarios: MapSc
           const options = { signal: controller.signal, fallback: 'Coverage update unavailable. Previous state and drafts are retained.' }
           const results = await Promise.allSettled([
             reviewApi<ReviewSnapshot & { scenarios: MapScenario[]; fixtureSource: string }>('index', undefined, options),
-            reviewApi<Coverage>('coverage', undefined, options),
+            reviewApi<Coverage & { backend?: Backend }>('coverage', undefined, options),
           ])
           const conflict = results.find(result => result.status === 'rejected' && result.reason instanceof ReviewRequestError && result.reason.status === 409)
           if (conflict?.status === 'rejected') throw conflict.reason
@@ -96,9 +97,14 @@ export function CoveragePanel({ bridge, focus }: { bridge: ReturnType<typeof use
   const choose = (t: Target) => { setSelected(t.id); setDraft(null); setIntent(null); setValue(''); setCaptured(null); setError(''); setStatus(''); setQueuedTarget(null) }
   if (!data) return <p role="status">{bridge.error || 'Checking coverage…'}</p>
   const base = { source: data.source, expectedVersion: data.version }
+  const backend = data.backend
   const content = draft ?? candidate
   const editIntent = (t?: InteractionExpectation & { component?: string }) => setIntent({ ...base, contractVersion: data.report.contractVersion, text: JSON.stringify(t ? { id: t.id, title: t.title, kind: t.kind, ...(t.component ? { component: t.component } : {}), ...(t.state ? { state: t.state } : {}), ...(t.control ? { control: t.control } : {}), scenarios: t.scenarios, acceptance: t.acceptance } : { id: 'journey.new-journey', title: 'New journey', kind: 'journey', scenarios: [], acceptance: ['Describe the expected behavior.'] }, null, 2) })
   return <section className="rh-coverage-panel" aria-label="Coverage bridge">
+    {backend && <section aria-label="Server coverage"><h3>Server coverage</h3>
+      {data.report.targets.filter(item => item.kind === 'journey').map(journey => <div key={journey.id}><h4>{journey.title}</h4><p>{backend.operations.filter(operation => operation.reachedBy.includes(journey.id)).map(operation => operation.export).join(', ') || 'No server operations verified yet.'}</p></div>)}
+      <h4>No journey reaches these yet</h4><ul>{backend.operations.filter(operation => backend.unreached.includes(operation.id)).map(operation => <li key={operation.id}>{operation.export}<Disclosure title="Details"><code>{operation.file}</code></Disclosure></li>)}</ul>
+    </section>}
     {data.interactions && <InteractionCoverage report={data.interactions} source={data.source} focus={focus} expect={target => { if (dirtyDraft || intent) { setError('Save or cancel the current expectation or prototype draft before drafting another.'); return }; editIntent(target) }} />}
     <p className="rh-muted">Expected behavior ↔ repository. Generated proposals stay separate from the app.</p>
     <Field orientation="horizontal" className="rh-coverage-switch"><FieldLabel className="cv:flex cv:min-h-11 cv:w-full cv:items-center cv:gap-2"><Checkbox checked={data.automatic} disabled={busy} onCheckedChange={checked => void act({ ...base, operation: 'automatic', enabled: checked })} /> Automatically draft new gaps</FieldLabel></Field>

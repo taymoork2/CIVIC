@@ -10,6 +10,7 @@ import { canvasRoot } from './canvas-root.mjs'
 import { moduleReviewAdapter } from './module-adapter.mjs'
 import { runtimeService } from './runtime-service.mjs'
 import { serverFunctionsPlugin } from './server-functions.mjs'
+import { backendInventory, projectBackendCoverage } from './backend-coverage.mjs'
 
 /** Where a standalone canvas keeps its review store, outside every app checkout. */
 export const defaultStore = () => resolve(process.env.CIVIC_STORE ?? join(homedir(), '.civic', 'canvas'))
@@ -37,7 +38,20 @@ export function canvasPlugins({ store = defaultStore(), connectors = {}, runtime
     engineRoots: [join(canvasRoot, 'src'), join(canvasRoot, 'server')],
     review: async (context) => ({
       adapter: moduleReviewAdapter,
-      coverage: (inputs) => coverageBridge({ repo: store, contractFile: context.project.coverageFile, contractRoot: context.project.manifestRoot, ...inputs }),
+      coverage: async (inputs) => {
+        const bridge = await coverageBridge({ repo: store, contractFile: context.project.coverageFile, contractRoot: context.project.manifestRoot, ...inputs })
+        let inventorySource, inventory
+        const wrap = method => {
+          const call = bridge[method].bind(bridge)
+          bridge[method] = async (...args) => {
+            const source = inputs.metadata.revision.source
+            if (!inventory || source !== inventorySource) { inventorySource = source; inventory = (async () => { try { return await backendInventory(context.project) } catch (error) { inventory = null; throw error } })() }
+            return { ...await call(...args), backend: await projectBackendCoverage(context.project, inputs.dataDir, inputs.metadata, await inventory) }
+          }
+        }
+        for (const method of ['get', 'update']) wrap(method)
+        return bridge
+      },
       ...await review(context),
     }),
   })]

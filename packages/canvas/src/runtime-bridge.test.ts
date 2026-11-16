@@ -2,6 +2,19 @@ import { expect, test } from 'vite-plus/test'
 import { createRuntimeBridge } from './runtime-bridge'
 import type { InteractionState } from './runtime-dom'
 
+test('query receipts verify on new tapes while old tapes retain write-only replay', async () => {
+  const interact = async () => { await bridge.operation('query', 'GET:/items', {}, () => Promise.resolve(['item'])) }
+  const bridge = createRuntimeBridge({ project: 'app', source: 'source', seed: {}, now: 0, route: () => '/', fields: () => [], view: () => '', assertSource: async () => {}, settle: async () => {}, reset: async () => {}, interact })
+  bridge.record({ kind: 'click' }); await interact()
+  const tape = await bridge.recording()
+  const step = tape.steps[0]
+  if (!step) throw Error('Expected a recorded step')
+  expect(step.operations).toEqual([{ kind: 'query', name: 'GET:/items', args: {}, result: ['item'] }])
+  await expect(bridge.replay(tape)).resolves.toEqual({ verified: 1 })
+  const old = structuredClone(tape); delete old.queries; const oldStep = old.steps[0]; if (!oldStep) throw Error('Expected a cloned step'); oldStep.operations = []
+  await expect(bridge.replay(old)).resolves.toEqual({ verified: 1 })
+})
+
 test('binds execution evidence to the exact before and after interaction states and checks it on replay', async () => {
   const before: InteractionState = { scenario: 'home', persona: 'owner', role: 'browse', condition: 'live', viewport: { width: 1440, height: 900 }, controls: [{ tag: 'button', role: 'button', name: 'Menu', index: 0, count: 1, disabled: false, expanded: 'false' }], landmarks: [], truncated: false }
   const after = structuredClone(before); after.controls[0]!.expanded = 'true'; after.landmarks = ['Menu']

@@ -83,6 +83,24 @@ The Connections key in the canvas footer shows the same symbols. The overview fo
 
 ## Live runs
 
+### Backend inventory
+
+The host derives server-function operations from the same transform used for live
+runs, across the manifest's source roots. HTTP and RPC adapters may set
+`adapter.operations` to a project-relative JSON inventory generated from their
+route or procedure registry, inside a manifest source root so changes invalidate
+evidence. Each row is `{ id, file, export, kind }`, with kind
+`route` or `rpc`; IDs must match runtime receipt names (`GET:/api/items`, for
+example). Generate this file from the application's routing table during its
+build; do not maintain a separate list. Paths remain inside the connected project.
+Tasks and Team board use their JSON inventory as their API's routing table, so
+dispatch and coverage share the same route definitions. Parameter segments such
+as `:id` match concrete recorded request paths. Refused HTTP responses do not
+establish reach.
+Backend coverage uses the latest replay per tape at the current project and source,
+and excludes the diverging step and all later steps. Journey IDs and starting
+scenarios come from the coverage contract. Unreplayed tapes establish no reach.
+
 An app with a runtime entry (`adapter.runtime`) runs live in an isolated worker per run (`server/runtime-service.mjs`). Three backends are supported:
 
 - **HTTP APIs** (`createFetchRuntime(seed)` returning `{ fetch(request) }`): the preview calls `context.startRuntime({ routes: ['/api/'], ... })`, and the page's own `fetch` calls go to the run. Writes are recorded with their requests and responses and checked on replay. See `examples/tasks`.

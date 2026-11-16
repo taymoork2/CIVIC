@@ -81,7 +81,7 @@ export function runtimeTransport(session: { id: string; project?: string }, reco
     }
     // Writes made after an account switch name the account on their receipt; a run that never switched records none.
     const by = actor && actor.account !== recovery?.start() ? actor.account ?? undefined : undefined
-    const work = action === 'mutation' || action === 'action' ? bridge ? bridge.operation(action, name!, args, execute, by) : execute() : execute()
+    const work = action === 'query' || action === 'mutation' || action === 'action' ? bridge ? bridge.operation(action, name!, args, execute, by) : execute() : execute()
     pending.add(work); void work.finally(() => pending.delete(work)).catch(() => {})
     return work
   }

@@ -23,8 +23,8 @@ export function ReadingList({ view, navigated, changed, loaded }: Props) {
   const save = async () => {
     setBusy(true)
     try {
-      const book = await add({ data: draft })
-      setBooks((rows) => [...rows, book]); setDraft({ title: '', author: '' })
+      await add({ data: draft })
+      setBooks(await list()); setDraft({ title: '', author: '' })
       go('books.list', 'Save')
     } catch (failure) { setError((failure as Error).message) }
     finally { setBusy(false) }

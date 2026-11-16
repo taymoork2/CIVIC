@@ -1,0 +1,32 @@
+[
+  {
+    "id": "POST:/api/session",
+    "file": "server/api.js",
+    "export": "signIn",
+    "kind": "route"
+  },
+  {
+    "id": "DELETE:/api/session",
+    "file": "server/api.js",
+    "export": "signOut",
+    "kind": "route"
+  },
+  {
+    "id": "GET:/api/me",
+    "file": "server/api.js",
+    "export": "profile",
+    "kind": "route"
+  },
+  {
+    "id": "GET:/api/posts",
+    "file": "server/api.js",
+    "export": "listPosts",
+    "kind": "route"
+  },
+  {
+    "id": "POST:/api/posts",
+    "file": "server/api.js",
+    "export": "addPost",
+    "kind": "route"
+  }
+]
