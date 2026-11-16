@@ -15,7 +15,8 @@ import { Effect, Schema, Stream } from 'effect'
 import { contextFor, gapsIn, loadGraph, renderGaps, renderWorkOrder, PLATFORMS, type Annotation, type CaptureRef, type Platform, type RequestStatus } from '../../graph/src/index.ts'
 import { readCheckout } from './git.ts'
 import { identityFromEnv } from './identity.ts'
-import { addCheck, annotate, claim, comment, find, getRequest, listRequests, lineIdFor, registerPullRequest, release, reportFix, type Context } from './loop.ts'
+import { addCheck, annotate, claim, comment, find, getRequest, linkRequest, listRequests, lineIdFor, registerPullRequest, release, reportFix, type Context } from './loop.ts'
+import type { WorkRef } from '../../graph/src/index.ts'
 import { recapture, reproductionUrl } from './recapture.ts'
 import { renderList, renderRequest } from './render.ts'
 import { elements, type TaggedCapture } from './elements.ts'
@@ -24,6 +25,7 @@ import { Store } from './store.ts'
 
 type Content = { type: 'text'; text: string } | { type: 'image'; data: string; mimeType: string }
 type Args = Record<string, unknown>
+const workRef = Schema.Struct({ system: Schema.NonEmptyString, id: Schema.NonEmptyString, url: Schema.optionalKey(Schema.NonEmptyString) })
 
 const cwdProperty = { cwd: Schema.optionalKey(Schema.String.annotate({ description: 'The checkout (worktree) you are working in. Its branch is the line your claims and fixes are recorded on.' })) }
 const id = { id: Schema.NonEmptyString.annotate({ description: 'Work request ID, or a unique prefix of it. End it with @<version>, as list_requests prints it, so a write is refused if someone changed the request since you read it.' }) }
@@ -31,10 +33,13 @@ const id = { id: Schema.NonEmptyString.annotate({ description: 'Work request ID,
 type Tool = { name: string; description: string; schema: Schema.ConstraintDecoder<Args>; run: (helpers: ReturnType<typeof toolContext>) => Promise<Content[]> }
 
 export const TOOLS: readonly Tool[] = [
-  { name: 'list_requests', description: 'List CIVIC work requests with status, lane and claim holder. Open and reopened requests are claimable.', schema: Schema.Struct({ ...cwdProperty, status: Schema.optionalKey(Schema.Array(Schema.Literals(['open', 'claimed', 'fix-ready', 'resolved', 'reopened']))) }), run: async ({ args, context, text }) => {
+  { name: 'list_requests', description: 'List CIVIC work requests with status, lane and claim holder. Open and reopened requests are claimable.', schema: Schema.Struct({ ...cwdProperty, workRef: Schema.optionalKey(workRef), status: Schema.optionalKey(Schema.Array(Schema.Literals(['open', 'claimed', 'fix-ready', 'resolved', 'reopened']))) }), run: async ({ args, context, text }) => {
     const status = Array.isArray(args.status) ? (args.status as RequestStatus[]) : undefined
     const c = context()
-    return text(`You are on ${lineIdFor(c.checkout)}.\n${renderList(listRequests(c, status ? { status } : {}))}`)
+    return text(`You are on ${lineIdFor(c.checkout)}.\n${renderList(listRequests(c, { ...(status ? { status } : {}), ...(args.workRef ? { workRef: args.workRef as WorkRef } : {}) }))}`)
+  } },
+  { name: 'link_request', description: 'Add an external work reference to a request at id@version. This changes no review outcome.', schema: Schema.Struct({ ...cwdProperty, ...id, workRef }), run: async ({ args, context, need, text }) => {
+    return text(JSON.stringify(linkRequest(context(), need('id'), args.workRef as WorkRef)))
   } },
   { name: 'get_request', description: 'Read one work request as a work order: the ask, annotations with anchors and their frozen captures (as images), where it was seen, how to reproduce it, acceptance, fixes and comments. Pass graph to include the civic context export.', schema: Schema.Struct({ ...cwdProperty, ...id, graph: Schema.optionalKey(Schema.String.annotate({ description: 'Path to a CIVIC graph file for the contract export.' })) }), run: async ({ context, str, need, text }) => {
     const c = context()

@@ -527,6 +527,14 @@ function checkWorkRequest(
 
 type Report = (code: string, at: string, message: string) => void
 
+function checkWorkRef(value: unknown, path: string, error: Report) {
+  if (!isObject(value)) return error('shape', path, 'A work reference is an object.')
+  const field = fieldChecker(value, path, error)
+  field.string('system')
+  field.string('id')
+  field.optional('url', (url, at) => checkString(url, at, error))
+}
+
 function checkRecordShape(raw: unknown, at: string, error: Report) {
   if (!isObject(raw)) return error('shape', at, 'A record must be an object.')
   const field = fieldChecker(raw, at, error)
@@ -841,6 +849,7 @@ function checkReviewShape(kind: RecordKind, raw: Record<string, unknown>, at: st
       break
     case 'annotation':
       field.string('comment')
+      field.optional('workRef', (value, path) => checkWorkRef(value, path, error))
       field.string('at')
       field.string('writtenBy')
       field.optional('capture', capture)
@@ -883,6 +892,7 @@ function checkReviewShape(kind: RecordKind, raw: Record<string, unknown>, at: st
       break
     case 'work-request':
       field.string('ask')
+      field.optionalList('links', (value, path) => checkWorkRef(value, path, error))
       field.list('annotationIds', id)
       field.oneOf('intent', ['restore-contract', 'change'])
       field.oneOf('risk', ['normal', 'high'])
