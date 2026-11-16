@@ -11,7 +11,7 @@
     "civic-mcp": "./src/mcp.ts"
   },
   "scripts": {
-    "check": "tsc --noEmit",
+    "check": "tsc --noEmit && node ../bin/lint-baseline.mjs --effect-project review/tsconfig.json",
     "test": "node ../bin/with-temp-root.mjs node --test --test-concurrency=2 \"test/**/*.test.ts\""
   },
   "dependencies": {
