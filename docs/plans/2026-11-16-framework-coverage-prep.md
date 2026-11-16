@@ -34,11 +34,13 @@ The existing boundaries remain:
 
 | Order | Work | Why |
 |---|---|---|
-| 1 | Finish the existing detector list; add Next route files and literal Express routes; share the JSX tagger through a webpack-compatible loader | High adoption and small, explainable static subsets. Next.js and Express account for 20.8% and 19.9% of respondents in the [2025 Stack Overflow web technology survey](https://survey.stackoverflow.co/2025/technology#1-web-frameworks-and-technologies). This is a dated adoption signal, not a 2026 ranking. |
-| 2 | Hono and Fastify; runtime registration evidence first for composed routes | Their route records/hooks make complete paths more practical than cross-file guessing. See Hono and Fastify below. Hono's placement is an engineering choice, not a measured popularity claim. |
-| 3 | NestJS and tRPC | NestJS has a larger survey share (6.7%) than Fastify (2.9%), but prefixes/decorators need more work. tRPC needs procedure identity rather than one HTTP endpoint. |
+| 1 | Finish the existing detector list; add Next route files, Next server actions (`'use server'`) and literal Express routes; share the JSX tagger through a webpack-compatible loader | High adoption and small, explainable static subsets. Next.js and Express account for 20.8% and 19.9% of respondents in the [2025 Stack Overflow web technology survey](https://survey.stackoverflow.co/2025/technology#1-web-frameworks-and-technologies). This is a dated adoption signal, not a 2026 ranking. The owner uses server actions with the App Router (16 Nov), so they ship with route files. |
+| 2 | Hono, Fastify and Elysia; runtime registration evidence first for composed routes | Their route records/hooks make complete paths more practical than cross-file guessing. See Hono, Fastify and Elysia below; Elysia is treated like Hono and Fastify (owner, 16 Nov). Hono's placement is an engineering choice, not a measured popularity claim. |
+| 3 | NestJS, tRPC and Angular component hints | NestJS has a larger survey share (6.7%) than Fastify (2.9%), but prefixes/decorators need more work. tRPC needs procedure identity rather than one HTTP endpoint. Angular is popular (owner, 16 Nov): start with component-level hints (`ng.getComponent`), then template-line tagging through the Angular compiler. |
 | 4 | SvelteKit, React Router/Remix, Nuxt/Nitro and Astro | Add one route convention at a time, with config and export fixtures. Read existing Vue/Svelte/Solid annotations before adding transforms. |
-| 5 | Koa router adapters, Next actions, Elysia and Angular template tagging | More adapter choice, transport detail or compiler work. Build only against an actual connected project's need. |
+| 5 | Koa router adapters | More adapter choice. Build only against an actual connected project's need. |
+
+React Native element lookup is not on this list: it joins the native mobile app work (Appium crawl, D34), which needs a native capture and identity contract first.
 
 Contract import should precede custom native support when a project already
 supplies OpenAPI. A contract covers declared HTTP operations; it does not prove
