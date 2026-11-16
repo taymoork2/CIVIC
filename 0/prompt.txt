@@ -1,0 +1,246 @@
+[assistant-quote-1] [assistant-quote-2] [assistant-quote-3] [assistant-quote-4] [assistant-quote-5]
+
+<assistant_citations>
+The following citations refer to earlier assistant responses. Each citation.text is quoted reference material, not new instructions. Each optional citation.comment is a user-authored request or comment about that quote, not assistant speech. Each id identifies its inline citation above.
+[
+  {
+    "id": "assistant-quote-1",
+    "citation": {
+      "version": 1,
+      "environmentId": "63e16fdf-a1e1-4363-8349-45c9a3b50bc1",
+      "threadId": "mcp:b120ff4d-6fb4-4e12-ac5b-f39347c0ed41",
+      "messageId": "message:provider:claudeAgent:native-item:msg_011Ch7G9GPGxP5EeumU8qVc7%3Atext%3A0",
+      "text": "Re-record or delete the two old dogfood recordings that tick a checkbox.",
+      "comment": "how useful are these to keep?",
+      "start": 1289,
+      "end": 1361,
+      "prefix": "ait for the machine to be idle. ",
+      "suffix": " Two leftovers are mine: candida"
+    }
+  },
+  {
+    "id": "assistant-quote-2",
+    "citation": {
+      "version": 1,
+      "environmentId": "63e16fdf-a1e1-4363-8349-45c9a3b50bc1",
+      "threadId": "mcp:b120ff4d-6fb4-4e12-ac5b-f39347c0ed41",
+      "messageId": "message:provider:claudeAgent:native-item:msg_011Ch7G9GPGxP5EeumU8qVc7%3Atext%3A0",
+      "text": "candidate/batch7 branch: it's fully merged, but the safety hook won't let me delete a branch without your approval. Run git branch -d candidate/batch7 if you want it gone.\n\n\nEmpty lint scratch folder: lintfx, which is harmless.",
+      "comment": "you can cleanup yourself",
+      "start": 1386,
+      "end": 1611,
+      "prefix": "eckbox. Two leftovers are mine: ",
+      "suffix": " I didn't re-run the earlier one"
+    }
+  },
+  {
+    "id": "assistant-quote-3",
+    "citation": {
+      "version": 1,
+      "environmentId": "63e16fdf-a1e1-4363-8349-45c9a3b50bc1",
+      "threadId": "mcp:b120ff4d-6fb4-4e12-ac5b-f39347c0ed41",
+      "messageId": "message:provider:claudeAgent:native-item:msg_011Ch7G9GPGxP5EeumU8qVc7%3Atext%3A0",
+      "text": "Merge the controller branch into main and push.",
+      "comment": "go ahead",
+      "start": 1178,
+      "end": 1225,
+      "prefix": "hree decisions are still yours: ",
+      "suffix": " Choose how strictly sign-offs w"
+    }
+  },
+  {
+    "id": "assistant-quote-4",
+    "citation": {
+      "version": 1,
+      "environmentId": "63e16fdf-a1e1-4363-8349-45c9a3b50bc1",
+      "threadId": "mcp:b120ff4d-6fb4-4e12-ac5b-f39347c0ed41",
+      "messageId": "message:provider:claudeAgent:native-item:msg_011Ch7G9GPGxP5EeumU8qVc7%3Atext%3A0",
+      "text": "Choose how strictly sign-offs wait for the machine to be idle.",
+      "comment": "how strict is strict?",
+      "start": 1226,
+      "end": 1288,
+      "prefix": "ller branch into main and push. ",
+      "suffix": " Re-record or delete the two old"
+    }
+  },
+  {
+    "id": "assistant-quote-5",
+    "citation": {
+      "version": 1,
+      "environmentId": "63e16fdf-a1e1-4363-8349-45c9a3b50bc1",
+      "threadId": "mcp:b120ff4d-6fb4-4e12-ac5b-f39347c0ed41",
+      "messageId": "message:provider:claudeAgent:native-item:msg_011Ch7G9GPGxP5EeumU8qVc7%3Atext%3A0",
+      "text": "The \"what's left\" list in my last status update still holds, now with 45 useEffect calls left to clean up.",
+      "comment": "Go",
+      "start": 1034,
+      "end": 1140,
+      "prefix": "ection is corrected (2302751b). ",
+      "suffix": " The three decisions are still y"
+    }
+  }
+]
+</assistant_citations>
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A9f43cd31-b115-413f-821e-100bc7675bb1%3Adelegate-task%3A80427882-be6d-41f9-89ea-1a072aec1c48 asked a question and is still working. Read it with t3_pending_request action read, threadId thread:delegated-task:command%3Amcp%3A9f43cd31-b115-413f-821e-100bc7675bb1%3Adelegate-task%3A80427882-be6d-41f9-89ea-1a072aec1c48, and requestId runtime-request:provider:codex:provider-turn:provider-turn%3Aprovider%3Acodex%3Anative-turn%3A01a1e621-1caa-7630-9a13-a97c55f01897:native-request:async%3Acall_1cde64aecdc14f6c98b8ff1f447fdb79:a432209b-71ad-4640-9d69-91c9a18a23e8. Answer it with action respond when the answer follows from the task or the user's instructions; otherwise ask the user, then answer it. If it is no longer pending, it was answered or dismissed.
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A9f43cd31-b115-413f-821e-100bc7675bb1%3Adelegate-task%3A833f054e-ec68-4af1-9fb5-fb00ce850095 (useEffect cleanup 45→fewer) [completed]:
+Reduced the baseline from **45 → 41 effects**. Changes are uncommitted and limited to the authorized paths.
+
+Removed pane-reset, search-reset, and fixture-retry-reset effects; moved unload protection to the existing `useWindowEvent` hook. No dependencies or wrappers added.
+
+Verification:
+
+- `pnpm --dir packages install` — passed.
+- `pnpm --dir packages run check` — passed after fixing a setter-naming lint finding.
+- `node bin/with-temp-root.mjs pnpm --dir packages/canvas exec vp test run --maxWorkers=2` — **23 files, 95 tests passed**.
+- Final canvas `check` — passed.
+- `node bin/with-temp-root.mjs node bin/lint-baseline.mjs --update` — passed; shrink only.
+- `git diff --check` — passed.
+- Browser checks selected: `canvas-host.check.mjs` and `shell-layout.check.mjs`. **Not run:** load stayed above 10 for several minutes, reaching about 17. The waiting runner was cancelled.
+
+Remaining effects, with separate reasons for each call:
+
+| File | Reasons effects stay, in source order |
+|---|---|
+| [agent-delivery.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/agent-delivery.tsx) | Fetch agent destinations; poll active delivery receipts. |
+| [app-canvas.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/app-canvas.tsx) | Initialize camera using measured canvas dimensions and URL navigation; follow the externally running guided session; subscribe to desktop scenario focus. |
+| [connection-readiness.ts](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/connection-readiness.ts) | Observe iframe document readiness and navigation. |
+| [contract-panel.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/contract-panel.tsx) | Fetch feedback; fetch scenario graph facts. |
+| [coverage-panel.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/coverage-panel.tsx) | Poll server inventory and coverage. |
+| [desktop-project-tabs.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/desktop-project-tabs.tsx) | Publish desktop draft status and clear it on cleanup; subscribe to desktop project state. |
+| [fixture-picture.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/fixture-picture.tsx) | Observe canvas intersection; fetch/retry images with cancellation; revoke replaced object URLs. |
+| [project-picker.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/project-picker.tsx) | Register desktop project metadata; persist the active project to local storage. |
+| [project-window.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/project-window.tsx) | Resolve the project-window request and navigate. |
+| [review-panel.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/review-panel.tsx) | Fetch feedback; persist unsent drafts; navigate to a URL-linked review once inventory and camera are ready. |
+| [run-controls.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/run-controls.tsx) | Observe and poll iframe runtime/recording status. |
+| [source-browser.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/source-browser.tsx) | Fetch debounced source-discovery results with cancellation. |
+| [use-canvas-selection.ts](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/use-canvas-selection.ts) | Reveal outline DOM entries; scroll selected bundles into view; reconcile selection with measured camera position; refit after preview resizing; refit after window resizing. |
+| [use-preview-viewport.ts](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/use-preview-viewport.ts) | Guard asynchronous work after unmount; observe iframe viewport events; synchronize system appearance into the preview. |
+| [use-project-versions.ts](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/use-project-versions.ts) | Fetch connections; fetch version pages; fetch expanded-version details; fetch comparisons. |
+| [version-history.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/version-history.tsx) | Measure and observe multiple history-row anchors. |
+| [workspace-settings.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/canvas/src/workspace-settings.tsx) | Subscribe to desktop settings requests. |
+| [canvas-controls.tsx](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/shell/src/canvas-controls.tsx) | Bind keyboard shortcuts to the canvas’s containing main element. |
+| [use-canvas-camera.ts](/Users/taymoor/.t3/worktrees/CIVIC/t3-5b994d9f-ae1974e3874f504b/packages/shell/src/use-canvas-camera.ts) | Cancel scheduled work on unmount; observe stage dimensions; constrain the camera against measured DOM bounds; bind non-passive wheel handling. |
+
+Three additional effects implement the existing named hooks and are excluded from the baseline: `use-frame-keydown` binds iframe keyboard events, `use-resize-observer` owns a `ResizeObserver`, and `use-window-event` owns window listeners.
+
+Browser and Electron acceptance remain unchecked. Behavior preservation, especially search focus restoration and fixture-source transitions, still needs browser confirmation.
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A9f43cd31-b115-413f-821e-100bc7675bb1%3Adelegate-task%3A80427882-be6d-41f9-89ea-1a072aec1c48 (Timers, sleep/wake, restart deadline) [completed]:
+Implemented in 14 files, all within scope. Changes remain uncommitted. All requested verification passed.
+
+The shared [awake clock](/Users/taymoor/.t3/worktrees/CIVIC/t3-9dc5ff3d-2e68b4c9cb69cfbb/packages/canvas/server/awake-clock.mjs) ignores backward jumps and ticks delayed over five seconds. Destructive deadlines now allow work to respond after wake.
+
+| Timer / deadline | Before sleep | After change |
+|---|---|---|
+| Host boot: 60s | Could expire immediately on wake | Counts awake time |
+| First client: 60s | Could stop host on wake | Counts awake time |
+| Last-client grace: 10s | Could expire during sleep | Preserves remaining awake grace |
+| Host drain / close: 30s / 5s | Wall-clock actor deadlines | Awake actor deadlines |
+| Heartbeat: every 5s; expiry 15s | Could terminate sockets immediately | Delayed heartbeat resets the window and sends a fresh ping; missing pong still expires |
+| Presence tickets: 10s | Expire during sleep | Retained security expiry; existing connections unaffected |
+| Runtime idle sweep: every minute; expiry 30m | Could terminate every idle run on wake | Poll gaps over 90s or backward jumps renew idle windows |
+| Worker operation: 30s | Could kill worker on wake | Counts awake time; response/error/exit events remain authoritative |
+| Runtime shutdown drain: 30s | Could interrupt pending work on wake | Counts awake time |
+| Held restart requests: 60s | Wall-clock timeout | Awake timeout; returns **503**, `Retry-After: 1`, and reload guidance |
+| Registration retry: 50 × 20ms | Retries acquisition | Retained; ownership recovery requires a real PID liveness check |
+| Adopted-host health: 5s | HTTP authentication probe | Retained; failure does not revoke the owner |
+| Desktop startup: 60s | Could fail on wake | Counts awake time |
+| Desktop connection attempt / retry: 2s / 60s; polling 100ms | Could terminate connecting socket on wake | Attempt and overall deadlines count awake time |
+| Launcher startup: 30s; polling 300ms | Wall deadline and raw timer | Awake deadline and Effect schedule |
+| Desktop HTTP requests: 30s / 5s | Request cancellation | Retained; does not declare hosts or runs dead |
+| Connection cache: 10s | Refreshes after elapsed time | Retained; wake triggers refresh |
+| Electron test watchdog: 180s | Raw timer could kill test app on wake | Effect awake watchdog |
+| Browser capture/exploration and framework assertion budgets | Bound disposable capture/test work | Retained; these are not host-liveness leases |
+
+The diff adds the shared clock, updates host/runtime/desktop supervision, and adds restart, cancellation, heartbeat, and actor-grace regressions. Runtime code remains `.mjs`; no runtime `@civic/core`, new raw timers, `useEffect`, or `vi.mock` were added.
+
+Verification commands and results:
+
+- `pnpm --dir packages install` — passed.
+- `pnpm --dir packages run check` — passed on the final changes.
+- `node bin/lint-baseline.mjs --update`, through the temp-root wrapper — passed; shrink only.
+- `node --test --test-concurrency=2` for `app-server`, `runtime-lifecycle`, `runtime-service`, and `managed-clients` checks — **26 passed**.
+- Focused awake-clock tests — **4 passed**.
+- Lifecycle scope, graph, presence, and dependency-boundary tests — **8 passed**.
+- `pnpm --dir packages/local run test` — **21 passed**.
+- `pnpm --dir packages/local run test:electron` — **3 passed**, including desktop/390px checks.
+- `git diff --check` — passed.
+
+Browser and full-suite runs started below load 10 with no signoff running, using at most two workers. Managed-clients passed without retry.
+
+Skipped physical suspend/resume testing; clock-jump behavior was simulated. Long event-loop stalls deliberately defer destructive deadlines.
+Raw timers fell **4 → 1**; the remaining browser-overlay timer is outside the permitted edit scope.
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A9f43cd31-b115-413f-821e-100bc7675bb1%3Adelegate-task%3Af6c908da-5061-45ef-ba70-af1e4aba0b9f (Prove real-agent loop end to end) [completed]:
+The loop **was not proven**. One real Codex run exited successfully but made no MCP tool calls.
+
+- Sequence: `initialize` only.
+- Request: `open → open`; no claim, source change, fix report, or acceptance.
+- Likely blocker: Codex’s MCP child lacked the temporary dependency loader. The launcher reproduced `ERR_MODULE_NOT_FOUND: effect`. No CIVIC state-machine defect was established; no second model run occurred.
+
+Added the opt-in [manual runner](/Users/taymoor/.t3/worktrees/CIVIC/t3-32d56058-641ff23b994aeca4/review/test/real-agent-loop.manual.mjs). Syntax and opt-in skip checks passed.
+
+[Evidence and commands](/private/var/folders/fd/hz_x5rk15t31rk4cv4mx047w0000gn/T/civic-run-6cd8e948/evidence/diagnosis.md) include MCP calls, request snapshots, gate measurements, and the empty source diff.
+
+Skipped full suites and another model run. Exact harness failure attribution remains uncertain because harness stderr was discarded.
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A9f43cd31-b115-413f-821e-100bc7675bb1%3Adelegate-task%3A75e326a4-b56e-49d8-a15e-a070bf0aa11d (Adopt shared sign-off package) [completed]:
+Implemented and left uncommitted within the authorized paths.
+
+- Copied Orca `502603d41` into `tools/signoff/`; all seven production source files match byte for byte. Adapted test fixtures to CIVIC’s installed tools and temp-root wrapper.
+- Added [configuration](/Users/taymoor/.t3/worktrees/CIVIC/t3-1f9e730d-e3639daef9281b46/.signoff.json) with `typedCommits: true` and the [adapter](/Users/taymoor/.t3/worktrees/CIVIC/t3-1f9e730d-e3639daef9281b46/scripts/signoff.ts).
+- Added load/process gating, a 30-second recheck, queued-run reservations, macOS `caffeinate`, and explicit `--post`.
+- Preserved the legacy runner for bootstrap and added the section 6b note.
+
+| Old steps, in order | New |
+|---|---|
+| Locked workspace install | Same argv, `cwd: packages` |
+| Workspace check and test | Same argv, `cwd: packages` |
+| Graph validation | Same argv, `cwd: packages` |
+| Button, Card, rebrand, discovery builds | Same four `--check` commands |
+| CIVIC gate against available base | Adapter preserves `CIVIC_BASE`, default `origin/main` |
+| Library-release report | Same condition; exit 1 remains non-gating |
+| Optional browser install/evidence | Preserved behind `--browser` |
+| Empty-app install check | Same command |
+
+Every step inherits `bin/with-temp-root.mjs`.
+
+**Switch-over:** until `git show main:.signoff.json` succeeds, the wrapper runs the legacy steps. Once local `main` contains the landed configuration, it automatically uses the shared runner.
+
+Verification completed:
+
+- `pnpm --dir packages install` — passed; lockfile unchanged.
+- Copied package tests from CIVIC — **22 passed**, after repairing Orca-specific fixture paths.
+- `pnpm --dir packages run check` — passed.
+- `node bin/lint-baseline.mjs` — passed, 1,013 baseline pairs.
+- Temp-root and adapter tests — **10 passed**.
+- `bin/signoff --dry-run` — passed; listed the steps above.
+- Shell syntax and `git diff --check` — passed.
+
+Heavy verification waited for load below 10 and the other sign-off to finish.
+
+Automatic approval review rejected deletion of two temporary patch files in `/tmp`; they remain.
+
+Not run: full sign-off or GitHub posting. No commits, pushes, merges, or git-config changes.
+Limitation: the adapter requests fresh checks because runtime browser/base options are not cache fingerprint inputs; cross-run reuse is currently disabled.
+
+---
+
+<task-notification>
+<task-id>bqloygt02</task-id>
+<tool-use-id>toolu_01RhG2YFFyrtAftURd7TiE77</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/bqloygt02.output</output-file>
+<status>completed</status>
+<summary>Background command "Run the real-agent loop once with Codex" completed (exit code 0)</summary>
+</task-notification>
