@@ -130,6 +130,7 @@ export function managedHost({ store, build, port = 0, viewer, ready = () => null
               nonce: registration.owner.nonce,
               build,
               protocol: 1,
+              clients: count,
             })
           );
           return;

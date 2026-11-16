@@ -3,6 +3,7 @@ import { createServer } from 'vite'
 import { managedHost } from './app-server.mjs'
 import { canvasPlugins } from './canvas-host.mjs'
 import { canvasRoot } from './canvas-root.mjs'
+import { deadlines } from './server-lifecycle.mjs'
 
 const noop = () => Promise.resolve()
 
@@ -16,11 +17,38 @@ export function runManagedCanvas({ store, build, port = 0, project, ready }) {
     }
     const restart = () => {
       const previous = restarting
-      restarting = (async () => { await previous; const old = current; current = null; presence.revoke(); try { await dispose() } finally { await old?.close() } if (!closed) await start() })()
+      restarting = (async () => {
+        await previous
+        const old = current
+        current = null
+        presence.revoke()
+        // A retiring compiler must not reload documents into the startup gap.
+        if (old) {
+          const hot = old.environments.client.hot, send = hot.send.bind(hot)
+          hot.send = (...args) => { if (args[0]?.type !== 'full-reload') send(...args) }
+        }
+        try { await dispose() } finally { await old?.close() }
+        if (!closed) await start()
+      })()
       return restarting
     }
     try { await start() } catch (error) { await dispose(); await current?.close(); throw error }
-    return { handle: (req, res) => { if (current) current.middlewares(req, res); else { res.writeHead(503); res.end('Starting') } }, close: async () => { closed = true; presence.revoke(); try { await restarting; await dispose() } finally { await current?.close() } } }
+    return { handle: async (req, res) => {
+      if (!current) {
+        const abort = new AbortController()
+        const cancel = () => abort.abort()
+        res.once('close', cancel)
+        try {
+          await Effect.runPromise(Effect.promise(() => restarting).pipe(Effect.timeout(deadlines.boot)), { signal: abort.signal })
+        } catch {
+          if (!res.destroyed) { res.writeHead(503, { 'content-type': 'text/plain', 'retry-after': '1' }); res.end('The review could not restart. Please reload to try again.') }
+          return
+        } finally { res.off('close', cancel) }
+      }
+      if (res.destroyed) return
+      if (closed || !current) { res.writeHead(503); res.end('The review has stopped. Please open it again.'); return }
+      current.middlewares(req, res)
+    }, close: async () => { closed = true; presence.revoke(); try { await restarting; await dispose() } finally { await current?.close() } } }
   } })
 }
 

@@ -52,7 +52,3 @@ discovery uses only captures matching the current source and reports files with
 no rendered tags. Opening a review collects missing captures with one browser
 page, visiting scenarios sequentially. This establishes rendered synthetic
 coverage, not real-device or deployment acceptance.
-
-## Known limit
-
-The coverage resource announces changes to CIVIC's shared records. A replay saved only inside a running preview updates the backend part of the coverage report when it is read, but does not send a change notice yet; a coordinator that needs it right away reads the resource again.

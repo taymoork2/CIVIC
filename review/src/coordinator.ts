@@ -11,7 +11,7 @@ import { launchBrowser } from './recapture.ts'
 import { Store } from './store.ts'
 
 const manifestFor = (cwd: string, project?: string) => project ?? resolve(cwd, 'packages/canvas/examples/notebook/civic.project.json')
-const previewStore = (cwd: string) => {
+export const previewStore = (cwd: string) => {
   const preview = readPreviews().find(row => row.worktree === readCheckout(cwd).root && isRunning(row))
   return preview ? join(preview.root, 'store') : cwd
 }
