@@ -4,10 +4,14 @@ import { globSync, readFileSync, existsSync } from 'node:fs'
 import path from 'node:path'
 import { parseSync } from 'vite'
 
-test('public exports and browser sources cannot reach lifecycle development dependencies', () => {
+test('server lifecycles use installable runtime dependencies and browser sources stay separate', () => {
   const root = path.resolve(import.meta.dirname, '..')
   const pkg = JSON.parse(readFileSync(path.join(root, 'package.json'), 'utf8'))
-  const dependencies = ['@civic/core', 'effect', 'xstate', '@xstate/effect']
+  const dependencies = ['@civic/core']
+  for (const name of ['effect', 'xstate', '@xstate/effect']) {
+    assert.ok(pkg.dependencies[name])
+    assert.equal(pkg.devDependencies[name], undefined)
+  }
   for (const name of dependencies) {
     assert.ok(pkg.devDependencies[name])
     assert.equal(pkg.dependencies[name], undefined)
@@ -28,9 +32,12 @@ test('public exports and browser sources cannot reach lifecycle development depe
       if (!['ImportDeclaration', 'ExportNamedDeclaration', 'ExportAllDeclaration'].includes(node.type) || !('source' in node) || !node.source) continue
       const specifier = node.source.value
       assert.ok(!dependencies.some(name => specifier === name || specifier.startsWith(`${name}/`)), `${file} imports ${specifier}`)
+      if (file.startsWith(`${root}/src/`)) {
+        assert.ok(!['effect', 'xstate', '@xstate/effect'].some(name => specifier === name || specifier.startsWith(`${name}/`)), `${file} imports ${specifier}`)
+      }
       if (!specifier.startsWith('.')) continue
       const target = path.resolve(path.dirname(file), specifier)
-      assert.ok(!/\/server\/(?:server|run)-lifecycle/u.test(target), file)
+      if (file.startsWith(`${root}/src/`)) assert.ok(!/\/server\/(?:server|run)-lifecycle/u.test(target), file)
       const resolved = [target, `${target}.ts`, `${target}.tsx`, `${target}.mjs`, `${target}.js`].find(existsSync)
       assert.ok(resolved, `${file}: ${specifier}`)
       pending.push(resolved)

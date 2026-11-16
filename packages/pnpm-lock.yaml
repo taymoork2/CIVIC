@@ -106,6 +106,12 @@ importers:
       '@vitejs/plugin-react':
         specifier: ^6.3.0
         version: 6.3.0(@voidzero-dev/vite-plus-core@1.6.0(@types/node@26.6.6)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.1))(oxc-transform-react@0.156.0)
+      '@xstate/effect':
+        specifier: 1.0.0-beta.2
+        version: 1.0.0-beta.2(@oxlint/plugins@1.93.0)(effect@4.1.4)(xstate@6.0.0-beta.3)
+      effect:
+        specifier: ^4.1.4
+        version: 4.1.4
       oxc-transform-react:
         specifier: ^0.156.0
         version: 0.156.0
@@ -118,6 +124,9 @@ importers:
       vite:
         specifier: npm:@voidzero-dev/vite-plus-core@1.6.0
         version: '@voidzero-dev/vite-plus-core@1.6.0(@types/node@26.6.6)(jiti@2.7.0)(typescript@7.0.2)(yaml@2.9.1)'
+      xstate:
+        specifier: 6.0.0-beta.3
+        version: 6.0.0-beta.3
     devDependencies:
       '@civic/core':
         specifier: workspace:*
@@ -137,21 +146,12 @@ importers:
       '@types/react-dom':
         specifier: ^19.3.0
         version: 19.3.0(@types/react@19.3.0)
-      '@xstate/effect':
-        specifier: 1.0.0-beta.2
-        version: 1.0.0-beta.2(@oxlint/plugins@1.93.0)(effect@4.1.4)(xstate@6.0.0-beta.3)
-      effect:
-        specifier: ^4.1.4
-        version: 4.1.4
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
       vite-plus:
         specifier: 'catalog:'
         version: 1.6.0(@types/node@26.6.6)(@vitest/ui@5.1.0)(jiti@2.7.0)(playwright@1.65.1)(typescript@7.0.2)(yaml@2.9.1)
-      xstate:
-        specifier: 6.0.0-beta.3
-        version: 6.0.0-beta.3
 
   core:
     dependencies:
