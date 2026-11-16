@@ -5,12 +5,12 @@
   "branch": "build/signoff-machine-gate",
   "checkpoints_count": 1,
   "files_touched": [
+    ".gitignore",
     "docs/plans/2026-11-15-effect-xstate-electron-rebuild.md",
     "scripts/signoff.test.ts",
     "scripts/signoff.ts",
     "tools/signoff/README.md",
     "tools/signoff/civic-legacy.sh",
-    "tools/signoff/node_modules/typescript",
     "tools/signoff/src/config.ts",
     "tools/signoff/src/dependencies.test.ts",
     "tools/signoff/src/machine-gate.test.ts",
@@ -27,11 +27,11 @@
     }
   ],
   "token_usage": {
-    "input_tokens": 28,
-    "cache_creation_tokens": 16031,
-    "cache_read_tokens": 5619809,
-    "output_tokens": 7886,
-    "api_call_count": 13
+    "input_tokens": 2,
+    "cache_creation_tokens": 1090,
+    "cache_read_tokens": 440728,
+    "output_tokens": 765,
+    "api_call_count": 1
   },
   "redaction": {
     "replacements": 670,
