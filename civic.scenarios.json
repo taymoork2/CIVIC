@@ -1,0 +1,7 @@
+[
+  { "id": "civic.picker", "label": "Projects & versions", "journey": "Review CIVIC", "section": "Workspace", "component": "packages/canvas/src/project-picker.tsx" },
+  { "id": "civic.canvas", "label": "Notebook canvas overview", "journey": "Review CIVIC", "section": "Workspace", "component": "packages/canvas/src/app-overview.tsx" },
+  { "id": "civic.inspector", "label": "Screen details", "journey": "Review CIVIC", "section": "Workspace", "component": "packages/canvas/src/workspace-inspector.tsx" },
+  { "id": "civic.review", "label": "Screen review panel", "journey": "Review CIVIC", "section": "Workspace", "component": "packages/canvas/src/review-panel.tsx" },
+  { "id": "civic.settings", "label": "CIVIC settings", "journey": "Review CIVIC", "section": "Workspace", "component": "packages/canvas/src/workspace-settings.tsx" }
+]
