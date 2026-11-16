@@ -10,6 +10,8 @@ import { useDesktopDraft } from './desktop-project-tabs'
 import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription } from '@civic/shell/ui/empty'
 import { MessageSquare } from '@civic/shell/icons'
 import { useEffect, useImperativeHandle, useRef, useState, type Ref } from 'react'
+import { useResizeObserver } from '@civic/shell/use-resize-observer'
+import { useWindowEvent } from '@civic/shell/use-window-event'
 import { feedbackText, type FeedbackKind } from './feedback-copy'
 import type { MapScreen } from './app-map'
 import type { ReviewConfig, ReviewSnapshot } from './adapter'
@@ -65,11 +67,7 @@ function FrozenAnnotation({ draft, update, disabled }: { draft: NoteDraft; updat
   const container = useRef<HTMLDivElement>(null)
   const pointer = useRef<{ x: number; y: number } | null>(null)
   const [width, setWidth] = useState(280)
-  useEffect(() => {
-    if (!container.current) return
-    const observer = new ResizeObserver(([entry]) => setWidth(entry!.contentRect.width))
-    observer.observe(container.current); return () => observer.disconnect()
-  }, [])
+  useResizeObserver(container, (_element, entry) => setWidth(entry.contentRect.width))
   const { viewport } = draft.capture.context
   const anchor = draft.capture.anchor
   return <>
@@ -134,11 +132,7 @@ export function ReviewPanel({ project, selected, flowScreens, allScreens, frame,
     try { if (draft) localStorage.setItem(noteKey, JSON.stringify(draft)); else localStorage.removeItem(noteKey) }
     catch { setError('Your unsent review could not be retained after reload. Keep this tab open until it saves.') }
   }, [draft])
-  useEffect(() => {
-    if (!draft) return
-    const protect = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = '' }
-    window.addEventListener('beforeunload', protect); return () => window.removeEventListener('beforeunload', protect)
-  }, [draft])
+  useWindowEvent('beforeunload', event => { event.preventDefault(); event.returnValue = '' }, Boolean(draft))
   const current = comments.find((comment) => comment.id === opened)
   const targetOf = (comment: Feedback): ReviewTarget | undefined => comment.target ?? (() => {
     const screen = allScreens.find((screen) => feedbackOnScreen(comment, screen))

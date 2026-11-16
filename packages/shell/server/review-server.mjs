@@ -1,5 +1,5 @@
 import { checkedAppearance } from './review-appearance.mjs'
-import { Effect, Fiber } from 'effect'
+import { Effect, Fiber, Match } from 'effect'
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto'
 import { mkdir, readFile, readdir, rename, stat, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
@@ -333,7 +333,7 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
             }
             const eligible = input.action === 'explore' && adapter.explorationScenarios ? adapter.explorationScenarios(metadata.scenarios) : metadata.scenarios
             if (input.action === 'explore' && eligible.length < metadata.scenarios.length) progress.errors.push({ scenario: null, message: `${metadata.scenarios.length - eligible.length} screens lack an automated runtime starting state; they remain coverage gaps.` })
-            const scenarios = input.action === 'verify' ? [] : input.action === 'explore' ? eligible.flatMap(scenario => [{ ...scenario, viewport: { width: 1440, height: 900 } }, { ...scenario, viewport: { width: 393, height: 852 } }]) : metadata.scenarios
+            const scenarios = Match.value(input.action).pipe(Match.when('verify', () => []), Match.when('explore', () => eligible.flatMap(scenario => [{ ...scenario, viewport: { width: 1440, height: 900 } }, { ...scenario, viewport: { width: 393, height: 852 } }])), Match.orElse(() => metadata.scenarios))
             if (input.action !== 'verify') progress.total = scenarios.length
             for (const scenario of scenarios) {
               if (Date.now() >= deadline) { progress.limited = true; break }
@@ -403,7 +403,15 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
           try { return await projects[action](input, { signal: controller.signal }) }
           finally { res.off('close', cancel) }
         }
-        const result = input?.action === 'catalog' ? await readProject('catalog') : input?.action === 'version-page' ? await readProject('versionPage') : input?.action === 'source-versions' ? await projects.sourceVersions(input) : input?.action === 'changes' ? await readProject('changes') : input?.action === 'open-window' ? await projects.openWindow(input.key, input.workspace, input.lease) : input?.action === 'release-window' ? await projects.releaseWindow(input.key, input.workspace, input.lease) : input?.action === 'window-origins' ? { origins: projects.windowOrigins() } : await serial(async () => {
+        const result = await Match.value(input?.action).pipe(
+          Match.when('catalog', () => readProject('catalog')),
+          Match.when('version-page', () => readProject('versionPage')),
+          Match.when('source-versions', () => projects.sourceVersions(input)),
+          Match.when('changes', () => readProject('changes')),
+          Match.when('open-window', () => projects.openWindow(input.key, input.workspace, input.lease)),
+          Match.when('release-window', () => projects.releaseWindow(input.key, input.workspace, input.lease)),
+          Match.when('window-origins', () => ({ origins: projects.windowOrigins() })),
+          Match.orElse(() => serial(async () => {
           if (!input) return projects.list()
           if (input.action === 'add') return projects.add(input)
           if (input.action === 'discover') return projects.discover(input)
@@ -416,7 +424,7 @@ export async function reviewMiddleware({ dataDir, metadata, capture, adapter, co
           if (scan.status === 'running') throw Object.assign(Error('Wait for interaction discovery to finish before switching projects.'), { status: 409 })
           if ((await read()).some((row) => row.deliveries?.some((delivery) => ['pending', 'accepted'].includes(delivery.status)))) throw Object.assign(Error('An agent delivery is active. Wait for its final receipt before switching projects.'), { status: 409 })
           return projects.select(input.key, input.workspace)
-        })
+        })))
         if (result.restarting) res.once('finish', () => Effect.runFork(Effect.andThen(Effect.sleep(100), Effect.sync(restart))))
         json(200, result); return
       }

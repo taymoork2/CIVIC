@@ -7,6 +7,7 @@ import { once } from 'node:events'
 import { closeSync, existsSync, openSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import * as Effect from 'effect/Effect'
+import * as Option from 'effect/Option'
 import * as Scope from 'effect/Scope'
 import { createEffectActor, sendAndAwait } from '@xstate/effect'
 import { previewMachine } from './lifecycle.ts'
@@ -40,7 +41,7 @@ const ago = (iso: string) => {
 }
 
 const waitUp = (url: string, signal: AbortSignal) => Effect.runPromise(waitUntil(
-  Effect.tryPromise((signal) => fetch(url, { signal }).then((response) => response.ok)).pipe(Effect.timeoutOption(2000), Effect.map((value) => value._tag === 'Some' && value.value), Effect.catch(() => Effect.succeed(false))),
+  Effect.tryPromise((signal) => fetch(url, { signal }).then((response) => response.ok)).pipe(Effect.timeoutOption(2000), Effect.map(Option.getOrElse(() => false)), Effect.catch(() => Effect.succeed(false))),
   200, 90_000,
 ), { signal })
 

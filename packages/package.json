@@ -19,6 +19,7 @@
   },
   "devDependencies": {
     "@effect/tsgo": "0.69.0",
+    "@oxlint/plugins": "1.93.0",
     "ultracite": "^8.2.1",
     "vite-plus": "catalog:"
   }

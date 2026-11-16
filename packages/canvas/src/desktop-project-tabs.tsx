@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { useResizeObserver } from '@civic/shell/use-resize-observer'
 import { ChevronDown, Plus, X } from '@civic/shell/icons'
 import { IconButton } from '@civic/shell/ui/icon-button'
 import { Tabs, TabsList, TabsTrigger } from '@civic/shell/ui/tabs'
@@ -51,12 +52,7 @@ export function useDesktopProjects() {
 export function DesktopProjectTabs({ state, openPicker }: { state: DesktopState; openPicker: (replace: boolean, trigger: HTMLButtonElement) => void }) {
   const root = useRef<HTMLDivElement>(null)
   const [limit, setLimit] = useState(1)
-  useEffect(() => {
-    const element = root.current!
-    const observer = new ResizeObserver(() => setLimit(Math.max(1, Math.floor((element.clientWidth - 80) / 168))))
-    observer.observe(element)
-    return () => observer.disconnect()
-  }, [])
+  useResizeObserver(root, element => setLimit(Math.max(1, Math.floor((element.clientWidth - 80) / 168))))
   const visible = state.tabs.slice(0, limit)
   const current = state.tabs.find(tab => tab.id === state.active)
   if (current && !visible.includes(current)) visible[visible.length - 1] = current

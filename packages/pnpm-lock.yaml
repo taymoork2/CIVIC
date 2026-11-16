@@ -38,6 +38,9 @@ importers:
       '@effect/tsgo':
         specifier: 0.69.0
         version: 0.69.0
+      '@oxlint/plugins':
+        specifier: 1.93.0
+        version: 1.93.0
       ultracite:
         specifier: ^8.2.1
         version: 8.2.1(oxfmt@0.78.0(vite-plus@1.6.0(@types/node@26.6.6)(@vitest/ui@5.1.0)(jiti@2.7.0)(playwright@1.65.1)(typescript@7.0.2)(yaml@2.9.1)))(oxlint@1.93.0(oxlint-tsgolint@7.0.2006)(vite-plus@1.6.0(@types/node@26.6.6)(@vitest/ui@5.1.0)(jiti@2.7.0)(playwright@1.65.1)(typescript@7.0.2)(yaml@2.9.1)))
