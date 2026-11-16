@@ -19,12 +19,21 @@ export interface ScreenRef { project: string; scenario: string; journey?: string
 export interface Shot { viewport: number; theme: 'light' | 'dark' }
 type Scenario = { id: string; journey: string; route?: string }
 
+// base comes from an agent: resolve it to a commit so it can never be read as a git option.
+export const commitOf = (cwd: string, base: string) => {
+  let sha = ''
+  try { sha = git(cwd, 'rev-parse', '--verify', '--quiet', '--end-of-options', `${base}^{commit}`) } catch { /* reported below */ }
+  if (!/^[0-9a-f]{40,64}$/.test(sha)) throw new Error(`${base} is not a commit in this checkout.`)
+  return sha
+}
+
 export async function changedScreens(cwd: string, base: string) {
+  const sha = commitOf(cwd, base)
   const checkout = readCheckout(cwd)
   const { project, metadata } = await readProjectInventory(cwd, manifestFor(cwd), previewStore(cwd))
   const captures = Store.forCheckout(checkout).taggedCaptures(project.key, metadata.revision.source)
-  const ranges = diffRanges(git(cwd, 'diff', '--no-ext-diff', '--unified=0', `${base}...HEAD`, '--'))
-  const changedFiles = git(cwd, 'diff', '--no-ext-diff', '--name-only', `${base}...HEAD`, '--').split('\n').filter(Boolean)
+  const ranges = diffRanges(git(cwd, 'diff', '--no-ext-diff', '--unified=0', `${sha}...HEAD`, '--'))
+  const changedFiles = git(cwd, 'diff', '--no-ext-diff', '--name-only', `${sha}...HEAD`, '--').split('\n').filter(Boolean)
   const screens = new Map<string, ScreenRef & { because: { file: string; lines: [number, number] }[] }>()
   const limits: string[] = []
   for (const range of ranges) {
