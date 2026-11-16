@@ -25,7 +25,7 @@
     "./styles/*.css": "./src/*.css"
   },
   "scripts": {
-    "check": "tsc --noEmit",
+    "check": "tsc --noEmit && tsc -p tsconfig.server.json",
     "test": "node ../../bin/with-temp-root.mjs vp test run --maxWorkers=2 && pnpm run test:host",
     "test:host": "node ../../bin/with-temp-root.mjs node --test --test-concurrency=2 \"server/*.check.mjs\""
   },
@@ -38,6 +38,10 @@
     "vite": "^8.3.8"
   },
   "devDependencies": {
+    "@civic/core": "workspace:*",
+    "effect": "^4.1.4",
+    "xstate": "6.0.0-beta.3",
+    "@xstate/effect": "1.0.0-beta.2",
     "@civic/shell": "workspace:*",
     "@civic/vite-connector": "workspace:*",
     "@types/node": "catalog:",

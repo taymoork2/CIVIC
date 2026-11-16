@@ -1,0 +1,1 @@
+{"events":[{"type":"RESTORE"},{"type":"STOP"},{"type":"READY"},{"type":"EXECUTE","sameSource":true}],"expected":"Stopping"}
