@@ -24,6 +24,8 @@ The owner's projects are Node with Vite, often with Convex. Other teams run Java
 6. **CIVIC reports journey coverage of contracts; it does not reimplement contract testing.** Consumer-driven contract tests (Pact) and schema conformance (Schemathesis, Dredd) are imported as evidence on the same operations, as Playwright reports are. Checking recorded bodies against schemas waits until someone asks, and would be labelled as checked on journey traffic only.
 7. **Only shared replays count as coverage.** Sharing stays a person's or CI's step (`civic share-replays`). Passing replays that were recorded but not shared are reported with how to share them, not counted.
 
+8. **Deployed builds, when CIVIC is hosted, are tagged at build time, not mapped through source maps.** Preview and staging builds would carry short opaque element ids plus a per-build mapping file (id to file and line) uploaded to CIVIC and kept private, the element counterpart of a source map. Source maps would serve stack traces only. Real-user monitoring stays with tools such as Sentry or Datadog and is imported (D26), never collected by CIVIC, because production sessions carry personal data that CIVIC's synthetic evidence avoids.
+
 ## Consequences
 
 - Backend coverage shows inside journey and screen views and in each role's CI check, not on a separate backend screen. Engineering and QA read operations; Design and PM read step statuses.
