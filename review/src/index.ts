@@ -1,4 +1,5 @@
 export * from './loop.ts'
+export * from './elements.ts'
 export * from './drafts.ts'
 export { Store, RefusedError, type StoredReplay } from './store.ts'
 export { shareReplays } from './replays.ts'

@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs'
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'node:http'
 import { parseId, type ElementLocator } from '../../../graph/src/index.ts'
 import { annotate, type Context } from '../loop.ts'
+import { parseSource } from '../elements.ts'
 
 const OVERLAY = new URL('./overlay.js', import.meta.url)
 const LOOPBACK = /^http:\/\/(127\.0\.0\.1|localhost|\[::1\])(:\d+)?$/
@@ -47,6 +48,7 @@ async function handle(req: IncomingMessage, res: ServerResponse, context: () => 
     const png = await rasterize(input.html, input.viewport, new URL(input.url).origin)
     const annotation = annotate(context(), {
       comment: input.comment,
+      ...(input.location ? { location: input.location } : {}),
       url: input.url,
       viewport: input.viewport,
       rect: input.rect,
@@ -69,6 +71,8 @@ function checked(input: Record<string, unknown>, origin: string) {
     return value.trim()
   }
   const comment = text(input.comment, 4000, 'comment')
+  const location = typeof input.location === 'string' ? parseSource(input.location) : undefined
+  if (input.location !== undefined && !location) throw bad('Invalid code location')
   const url = text(input.url, 4000, 'page URL')
   if (new URL(url).origin !== origin) throw bad('The page URL must be the page that sent the annotation.')
   const viewport = input.viewport as { width?: unknown; height?: unknown } | undefined
@@ -91,6 +95,7 @@ function checked(input: Record<string, unknown>, origin: string) {
   const stamped = typeof input.line === 'string' && typeof input.revision === 'string' && parseId(input.line) ? { line: input.line, revision: text(input.revision, 200, 'revision') } : undefined
   return {
     comment,
+    location,
     url,
     viewport: { width: viewport.width as number, height: viewport.height as number },
     rect: { x: rect.x as number, y: rect.y as number, width: rect.width as number, height: rect.height as number, ...(typeof rect.label === 'string' ? { label: text(rect.label, 300, 'label') } : {}) },

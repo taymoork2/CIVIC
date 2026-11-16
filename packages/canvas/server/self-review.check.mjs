@@ -6,6 +6,17 @@ import { test } from 'node:test'
 import { startCanvas } from './canvas-host.mjs'
 import { canvasRoot } from './canvas-root.mjs'
 import { moduleReviewAdapter } from './module-adapter.mjs'
+import { elements, parseSource, taggedCapture } from '../../../review/src/elements.ts'
+
+const verifySource = async (page, root, scenario) => {
+  const picked = await page.locator('[data-civic-source^="packages/canvas/src/"]').first().evaluate(element => element.closest('[data-civic-source]').dataset.civicSource)
+  const source = parseSource(picked)
+  assert.ok(source)
+  const code = await readFile(join(root, source.file), 'utf8')
+  assert.equal(code.split('\n')[source.line - 1][source.column - 1], '<')
+  const capture = await taggedCapture(page, scenario)
+  assert.ok(elements([capture], source.file, [source.line, source.line]).some(element => element.source.column === source.column))
+}
 
 test('CIVIC appears in its picker and renders its own synthetic screens', { timeout: 120000 }, async t => {
   const root = resolve(canvasRoot, '../..')
@@ -33,7 +44,7 @@ test('CIVIC appears in its picker and renders its own synthetic screens', { time
     await page.setViewportSize({ width, height: 900 })
     for (const scenario of scenarios) {
       await page.goto(`${origin}/review-frame.html?scenario=${scenario.id}&width=${width}&height=900`)
-      await page.locator(selectors[scenario.id]).waitFor()
+      await page.locator(selectors[scenario.id]).waitFor().then(() => verifySource(page, root, scenario.id))
       // A modal (picker, settings) hides the canvas from the accessibility tree; it must still be drawn behind it.
       await page.getByRole('button', { name: 'Open Write a note flow', exact: true, includeHidden: true }).waitFor({ state: 'attached' })
       assert.equal(await page.getByRole('heading', { name: 'Preview unavailable', exact: true }).count(), 0)

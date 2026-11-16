@@ -34,6 +34,12 @@ civicReview({
 
 ## CIVIC's shared store
 
+The development connector tags host JSX elements under the manifest's `sources`
+with `data-civic-source="file:line:column"`. Locations are repository relative and
+one-based. Component JSX and production builds are excluded. The canvas's frozen
+element selection and the review overlay show the location under Details and
+carry it into saved notes and work requests.
+
 ```js
 import { civicShared } from '@civic/vite-connector/civic'
 
