@@ -53,7 +53,7 @@ const fixture = () => {
   write("src/leaf.ts", "export const leaf = 2;\n");
   commit();
 
-  const run = async (options = {}, module = path.join(import.meta.dirname, "signoff.ts")) => invoke(`import { signoff } from ${JSON.stringify(module)}; if (!await signoff(${JSON.stringify(root)}, ${JSON.stringify(options)})) process.exitCode = 1;`);
+  const run = async (options = {}, module = path.join(import.meta.dirname, "signoff.ts")) => invoke(`import { signoff } from ${JSON.stringify(module)}; if (!await signoff(${JSON.stringify(root)}, ${JSON.stringify({ noWait: true, ...options })})) process.exitCode = 1;`);
 
   const prove = (check: Check, env?: NodeJS.ProcessEnv) => {
     const result: unknown = JSON.parse(invoke(`import { dependencyGraph } from ${JSON.stringify(path.join(import.meta.dirname, "dependencies.ts"))}; const graph = await dependencyGraph(${JSON.stringify(root)}); try { console.log(JSON.stringify(graph.prove(${JSON.stringify(check)}))); } finally { graph.close(); }`, env));

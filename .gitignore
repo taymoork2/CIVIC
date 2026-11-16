@@ -2,7 +2,7 @@
 !.amp/services.yaml
 .civic-canvas/
 .pnpm-store/
-/node_modules/
+node_modules/
 .vite-hooks/_/
 # Preserved ignored state from the retired local v4 setup; its code is in a named stash.
 rehearsal/

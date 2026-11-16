@@ -79,6 +79,28 @@ authenticated GitHub CLI, refuses test processes and dry runs, and never pushes,
 fetches, changes protection rules, or comments on a PR. Posting failure leaves the
 local result intact and exits unsuccessfully. Tests never invoke GitHub.
 
+## Waiting for a quiet machine
+
+Before any check runs, a sign-off waits until no other sign-off is running on the
+machine, from any repository, and the 1-minute load average is below `maxLoad`
+(config field, default 10). When both hold it waits 30 seconds, looks again, then
+starts. One status line updates while it waits, for example
+`Waiting for another sign-off to finish (CIVIC, started 4 min ago)` or
+`Waiting for the machine to quieten (load 13)`; in a log each distinct line prints once.
+
+Other sign-offs are found in the process list (`ps`, no shell) by argv shape:
+`node …/scripts/signoff.ts`, `node -e import("…/scripts/signoff.ts")`,
+`node …/bin/with-temp-root.mjs node …/scripts/signoff.ts`, Orca's
+`landing/signoff-runner.ts`, and CIVIC's `bash …/bin/signoff`. Editors, `grep`, and
+runs that do not execute checks (`--dry-run`, `--verify`, `--watch`, `--help`) never
+count, nor does this process, its wrappers or its children. Of two sign-offs that
+both wait, the older goes first, so they cannot wait on each other. Nothing is ever
+signalled or killed. If the process list cannot be read, only the load is checked.
+
+`--no-wait` skips the gate. `--wait-max <minutes>` (default 120) fails with a plain
+reason instead of waiting longer. `--dry-run` never waits. Test processes
+(`node --test`, Vitest) skip the gate too.
+
 A project that sets `"typedCommits": true` in its sign-off config has its commit titles after `main` checked before any check runs; other projects keep their own commit style. The exported `commitTypeMain`
 supports a commit-msg hook. `statusMain` supports the separate status script and
 the existing queued/held declarations. Results, fingerprints, logs, progress and
@@ -163,5 +185,5 @@ Engine interruption aborts the runner; restart retains passed check fingerprints
 and reruns the gate before publication. The programmatic `signal` option cancels
 active checks and waits for their process groups to stop.
 
-Copied from Orca commit 502603d41 (packages/signoff); re-sync from that source.
+Copied from Orca commit bb0c009c3 (packages/signoff); re-sync from that source.
 Production source is unchanged. Tests use CIVIC's temporary-root wrapper, local test helper and installed workspace tools instead of Orca's repository paths.

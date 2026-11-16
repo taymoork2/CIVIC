@@ -11,7 +11,7 @@ export interface Check {
 
 export interface DomainMap { broad: string[]; domains: { name: string; match: string; checks: "all" | string[] }[] }
 
-export interface Config { checks: Check[]; areaMap?: DomainMap; relatedTests?: boolean; vite?: boolean; typedCommits?: boolean }
+export interface Config { checks: Check[]; areaMap?: DomainMap; relatedTests?: boolean; vite?: boolean; typedCommits?: boolean; maxLoad?: number }
 
 export interface Project {
   configFile?: string;
@@ -28,6 +28,7 @@ const relative = (value: string) => !value.startsWith("/") && !value.includes("\
 const localPath = (value: unknown, limit: number): value is string => text(value) && value.length <= limit && relative(value);
 const duration = (value: unknown): value is number => typeof value === "number" && Number.isInteger(value) && value > 0 && value <= 86_400_000;
 const boolean = (value: unknown): value is boolean => typeof value === "boolean";
+const loadLimit = (value: unknown): value is number => typeof value === "number" && value > 0 && value <= 1000;
 
 const only = (keys: readonly string[], allowedKeys: readonly string[]) => {
   const allowed = new Set(allowedKeys);
@@ -57,11 +58,15 @@ export const parseDomainMap = (source: string) => {
 export const loadConfig = (source: string, areaMap?: string): Config => {
   const value: unknown = JSON.parse(source);
   const manifest = Array.isArray(value) ? { checks: value } : value;
-  assert.ok(object(manifest) && only(Object.keys(manifest), ["checks", "areaMap", "relatedTests", "vite", "typedCommits", "step", "budgetMs"]), "Unreadable sign-off config");
+  assert.ok(object(manifest) && only(Object.keys(manifest), ["checks", "areaMap", "relatedTests", "vite", "typedCommits", "step", "budgetMs", "maxLoad"]), "Unreadable sign-off config");
   assert.ok(Array.isArray(manifest.checks) && manifest.checks.length > 0 && manifest.checks.length <= 32 && manifest.checks.every(isCheck), "Invalid sign-off checks: use names, argv and repository-relative paths");
   assert.ok(manifest.step === undefined || manifest.step === "merge" || manifest.step === "pr", "Invalid landing step");
   assert.ok(manifest.budgetMs === undefined || duration(manifest.budgetMs), "Invalid check budget");
+  assert.ok(manifest.maxLoad === undefined || loadLimit(manifest.maxLoad), "Invalid maxLoad");
   const config: Config = { checks: manifest.checks };
+
+  if (loadLimit(manifest.maxLoad)) { config.maxLoad = manifest.maxLoad; }
+
   assert.equal(new Set(config.checks.map(check => check.name)).size, config.checks.length, "Duplicate sign-off check name");
 
   for (const option of ["relatedTests", "vite", "typedCommits"] as const) {
