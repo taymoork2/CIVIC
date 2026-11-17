@@ -1,0 +1,47 @@
+Delegated task node:delegated-task:command%3Amcp%3A9f43cd31-b115-413f-821e-100bc7675bb1%3Adelegate-task%3Ac463d28b-93e8-4640-b66d-761f09906529 (Read Vue/Svelte/Solid source markers + Angular hints) [completed]:
+Implemented the shared reader in [element-source.mjs](/Users/taymoor/.t3/worktrees/CIVIC/t3-5dea7013-1e572390b3648f17/packages/canvas/src/element-source.mjs), used by tagged captures, overlay selection, and the canvas picker. Changes remain uncommitted.
+
+It validates paths, rejects `node_modules`, preserves reader precedence, records `via` and exact/ancestor matches, and returns Angular component hints without inventing locations.
+
+Column conventions verified:
+
+| Format | Conversion to CIVIC |
+|---|---|
+| CIVIC | Already 1-based |
+| [Vue inspector](https://github.com/webfansplz/vite-plugin-vue-inspector/blob/v7.0.0/packages/core/src/compiler/template.ts) | Already 1-based |
+| [Svelte inspector](https://unpkg.com/@sveltejs/vite-plugin-svelte-inspector@5.0.2/src/runtime/Inspector.svelte) | Add 1 to both line and column |
+| [Solid locator](https://unpkg.com/@solid-devtools/transform@0.10.4/dist/index.js) | JSX column is Babel column + 2; subtract 1 |
+
+Commands/results:
+
+- `pnpm --dir packages install --frozen-lockfile --offline` — passed.
+- New tests plus existing elements tests — **8 passed**.
+- Existing overlay loopback test — **passed**.
+- `pnpm --dir packages run check` — passed.
+- `node bin/lint-baseline.mjs` — passed; baseline unchanged.
+- `git diff --check` — passed.
+
+Checks ran through the required temp-root wrapper. A browser-level capture assertion was added.
+
+**Remaining scope gap:** the shell feedback server discards additional evidence metadata. Canvas drafts retain provenance and Angular hints, but durable canvas feedback needs an out-of-scope shell change; Angular-only overlay hints also remain display-only.
+
+Skipped browser capture suites because observed 1-minute load exceeded 10. Full task completion remains blocked by that verification gate and the persistence gap above.
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A9f43cd31-b115-413f-821e-100bc7675bb1%3Adelegate-task%3Ab077db51-09c2-4491-908b-85d5b9a738fb (Laundry: re-record replays, final coverage) [completed]:
+Wrote [FINAL-COVERAGE.md](/var/folders/fd/hz_x5rk15t31rk4cv4mx047w0000gn/T/laundry-trial/FINAL-COVERAGE.md).
+
+- Replays passed **11/11** and **10/10**, matching the current fingerprint.
+- Tapes reached **3 Convex operations**; **166 public** and **28 internal** were unobserved.
+- Reader scores **0 reached**: its journey targets omit `intake.towel.fabric`.
+- `coverage` correctly hints **2 passing replays remain unshared**.
+- Six source spot-checks passed; host and browser stopped.
+
+No source changes or sharing. Production and device behavior were not checked.
+
+---
+
+<task-notification>
+<summary>Commit security review found: Information disclosure (cross-origin script inclusion) in review/src/overlay/server.ts</summary>
+</task-notification>
