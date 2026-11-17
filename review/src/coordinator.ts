@@ -97,7 +97,8 @@ export async function coverage(cwd: string, projectPath?: string) {
     }),
     backend: await readBackendCoverage(cwd, manifest, previewStore(cwd)),
     unsharedReplays: unshared,
-    hints: !replays.length ? ['No evidence has been measured for this source yet.'] : unshared ? [`${unshared} passing replays recorded but not shared yet; run \`civic share-replays ${dataDir}\``] : [],
+    // The actionable hint first; say both when nothing is shared yet but local passing replays exist.
+    hints: [unshared > 0 && `${unshared} passing replays recorded but not shared yet; run \`civic share-replays ${dataDir}\``, !replays.length && 'No evidence has been measured for this source yet.'].filter(hint => typeof hint === 'string'),
   }
 }
 
