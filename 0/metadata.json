@@ -1,0 +1,53 @@
+{
+  "cli_version": "0.13.3",
+  "checkpoint_id": "01M7KF9YSCF0JSJ710RP88XYZV",
+  "session_id": "8f3b2eca-0508-4f5d-8344-d9ed70c2da42",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-17T00:43:00.460087Z",
+  "branch": "t3/framework-source-inspection",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "packages/canvas/src/element-source.d.mts",
+    "packages/canvas/src/element-source.mjs",
+    "review/src/overlay/server.ts",
+    "review/test/element-source.test.ts",
+    "review/test/overlay.test.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "dc7cb0eede79",
+  "checkpoint_transcript_start": 9262,
+  "transcript_lines_at_start": 9262,
+  "compact_transcript_start": 1241,
+  "token_usage": {
+    "input_tokens": 18,
+    "cache_creation_tokens": 12862,
+    "cache_read_tokens": 4965475,
+    "output_tokens": 5882,
+    "api_call_count": 9
+  },
+  "session_token_usage": {
+    "input_tokens": 2178,
+    "cache_creation_tokens": 3671474,
+    "cache_read_tokens": 402170489,
+    "output_tokens": 600670,
+    "api_call_count": 949
+  },
+  "redaction": {
+    "replacements": 710,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 628,
+      "key_context": 82,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 132
+  }
+}
