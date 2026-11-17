@@ -1,0 +1,55 @@
+{
+  "cli_version": "0.13.3",
+  "checkpoint_id": "01M7KD6BN63G87JAHXNBMEMF75",
+  "session_id": "8f3b2eca-0508-4f5d-8344-d9ed70c2da42",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-17T00:06:06.146827Z",
+  "branch": "t3/nestjs-trpc-operation-detectors",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "packages/canvas/server/backend-coverage.mjs",
+    "packages/canvas/server/check-fixtures/nestjs/routes.ts",
+    "packages/canvas/server/check-fixtures/trpc/routes.ts",
+    "packages/canvas/server/framework-detectors.check.mjs",
+    "packages/canvas/server/nestjs-routes.mjs",
+    "packages/canvas/server/trpc-procedures.mjs",
+    "packages/shell/server/backend-coverage.mjs"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "5a2f09577a13",
+  "checkpoint_transcript_start": 8755,
+  "transcript_lines_at_start": 8755,
+  "compact_transcript_start": 1177,
+  "token_usage": {
+    "input_tokens": 36,
+    "cache_creation_tokens": 17092,
+    "cache_read_tokens": 7696251,
+    "output_tokens": 10732,
+    "api_call_count": 16
+  },
+  "session_token_usage": {
+    "input_tokens": 2070,
+    "cache_creation_tokens": 3603921,
+    "cache_read_tokens": 376023304,
+    "output_tokens": 566955,
+    "api_call_count": 899
+  },
+  "redaction": {
+    "replacements": 690,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 611,
+      "key_context": 79,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 128
+  }
+}
