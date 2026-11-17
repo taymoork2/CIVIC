@@ -1,0 +1,49 @@
+{
+  "cli_version": "0.13.3",
+  "checkpoint_id": "01M7KM2TZSDN9BQW89VYV75SSN",
+  "session_id": "8f3b2eca-0508-4f5d-8344-d9ed70c2da42",
+  "strategy": "manual-commit",
+  "created_at": "2026-11-17T02:06:29.925292Z",
+  "branch": "t3/fix-civic-trial-bugs",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "review/src/coordinator.ts"
+  ],
+  "agent": "Claude Code",
+  "model": "claude-opus-5-5",
+  "turn_id": "1a76cce33292",
+  "checkpoint_transcript_start": 10160,
+  "transcript_lines_at_start": 10160,
+  "compact_transcript_start": 1360,
+  "token_usage": {
+    "input_tokens": 30,
+    "cache_creation_tokens": 9671,
+    "cache_read_tokens": 9175909,
+    "output_tokens": 6457,
+    "api_call_count": 14
+  },
+  "session_token_usage": {
+    "input_tokens": 2396,
+    "cache_creation_tokens": 3772974,
+    "cache_read_tokens": 458932886,
+    "output_tokens": 658723,
+    "api_call_count": 1042
+  },
+  "redaction": {
+    "replacements": 764,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 671,
+      "key_context": 93,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  },
+  "session_metrics": {
+    "turn_count": 148
+  }
+}
