@@ -1,0 +1,47 @@
+{
+  "cli_version": "0.13.3",
+  "checkpoint_id": "01M7KKSEZDZCXZCGMXD99WRD31",
+  "strategy": "manual-commit",
+  "branch": "t3/headless-checks-hidden-windows",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "packages/canvas/server/managed-clients.check.mjs",
+    "packages/canvas/server/module-adapter.mjs",
+    "packages/local/desktop-lifecycle.electron.mjs",
+    "packages/local/desktop-preview-theme.electron.mjs",
+    "packages/local/desktop-settings.electron.mjs",
+    "packages/local/desktop.mjs",
+    "packages/shell/server/review-server.mjs",
+    "review/src/recapture.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0/metadata.json",
+      "transcript": "/0/full.jsonl",
+      "compact_transcript": "/0/transcript.jsonl",
+      "content_hash": "/0/content_hash.txt",
+      "prompt": "/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 12,
+    "cache_creation_tokens": 5065,
+    "cache_read_tokens": 3238592,
+    "output_tokens": 2682,
+    "api_call_count": 5
+  },
+  "redaction": {
+    "replacements": 757,
+    "layers": {
+      "betterleaks": 0,
+      "connection_string": 0,
+      "credential_key": 0,
+      "credential_value": 0,
+      "credentialed_uri": 0,
+      "entropy": 664,
+      "key_context": 93,
+      "provider_token": 0,
+      "shell_stdin": 0
+    }
+  }
+}
