@@ -96,7 +96,8 @@ export function loadProject(repo, options = {}) {
   warnIfDeprecated(manifestPath)
   const manifestRoot = manifestRootOf(manifestPath)
   const manifest = checkedProject(JSON.parse(readFileSync(manifestPath, 'utf8')))
-  const root = realpathSync(resolve(repo, options.applicationRoot ?? process.env.CIVIC_APP_ROOT ?? process.env.REHEARSAL_APP_ROOT ?? (!options.manifest && !process.env.CIVIC_PROJECT && !process.env.REHEARSAL_PROJECT ? local.root : undefined) ?? manifestRoot))
+  const ambientRoot = options.manifest ? undefined : process.env.CIVIC_APP_ROOT ?? process.env.REHEARSAL_APP_ROOT
+  const root = realpathSync(resolve(repo, options.applicationRoot ?? ambientRoot ?? (!options.manifest && !process.env.CIVIC_PROJECT && !process.env.REHEARSAL_PROJECT ? local.root : undefined) ?? manifestRoot))
   // Connector-owned projects may resolve through workspace links; portable modules stay inside their checkout.
   const strict = manifest.adapter.kind === 'module'
   const sources = manifest.sources.map((path) => projectPath(root, path, true, strict))
@@ -171,4 +172,4 @@ async function cli() {
     console.log(JSON.stringify({ ...publicProject(project), root: project.root, scenarios: scenarios.length, unmappedDestinations: scenarios.flatMap((s) => (s.edges ?? []).filter((edge) => !scenarios.some((d) => d.id === edge.destination)).map((edge) => ({ from: s.id, to: edge.destination }))) }, null, 2))
   } else fail('use init or check')
 }
-if (process.argv[1] && import.meta.url === pathToFileURL(resolve(process.argv[1])).href) cli().catch((error) => { console.error(error.message); process.exitCode = 1 })
+if (process.argv[1] && import.meta.url === pathToFileURL(realpathSync(process.argv[1])).href) cli().catch((error) => { console.error(error.message); process.exitCode = 1 })

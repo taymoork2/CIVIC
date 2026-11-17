@@ -88,7 +88,7 @@ export async function coverage(cwd: string, projectPath?: string) {
   const scenarios = metadata.scenarios as Scenario[]
   const covered = new Set(replays.filter(row => row.outcome === 'pass').map(row => row.scenario))
   return {
-    project: project.key, revision: readCheckout(cwd).head, evidenceAt: replays.map(row => row.replayedAt).sort().at(-1) ?? metadata.revision.capturedAt,
+    project: project.key, revision: readCheckout(project.root).head, evidenceAt: replays.map(row => row.replayedAt).sort().at(-1) ?? null,
     screens: { total: scenarios.length, covered: scenarios.filter(row => covered.has(row.id)).length, uncovered: scenarios.filter(row => !covered.has(row.id)).map(row => ({ project: project.key, scenario: row.id, journey: row.journey })) },
     journeys: [...new Set(scenarios.map(row => row.journey))].map(id => {
       const screens = scenarios.filter(row => row.journey === id).map(row => row.id)
@@ -97,7 +97,7 @@ export async function coverage(cwd: string, projectPath?: string) {
     }),
     backend: await readBackendCoverage(cwd, manifest, previewStore(cwd)),
     unsharedReplays: unshared,
-    hints: unshared ? [`${unshared} passing replays recorded but not shared yet; run \`civic share-replays ${dataDir}\``] : [],
+    hints: !replays.length ? ['No evidence has been measured for this source yet.'] : unshared ? [`${unshared} passing replays recorded but not shared yet; run \`civic share-replays ${dataDir}\``] : [],
   }
 }
 

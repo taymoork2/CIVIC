@@ -1,5 +1,18 @@
 /// <reference lib="dom" />
 import { readElementSource, type ElementSource } from '../../packages/canvas/src/element-source.mjs'
+import { existsSync, realpathSync, statSync } from 'node:fs'
+import { relative, resolve, sep, isAbsolute } from 'node:path'
+
+export function elementQuery(root: string, file: string) {
+  if (file.split(/[\\/]/).some(part => part === '..' || part === 'node_modules')) throw new Error('Element file must not contain .. or node_modules.')
+  const inside = (path: string) => { const name = relative(realpathSync(root), path); return !isAbsolute(name) && name !== '..' && !name.startsWith(`..${sep}`) && !name.split(sep).includes('node_modules') }
+  const path = resolve(root, file)
+  if (!inside(path)) throw new Error('Element file must be inside the project checkout.')
+  if (!existsSync(path)) throw new Error(`Element file does not exist: ${file}`)
+  if (!inside(realpathSync(path))) throw new Error('Element file must be inside the project checkout and outside node_modules.')
+  if (!statSync(path).isFile()) throw new Error(`Element path is not a file: ${file}`)
+  return relative(realpathSync(root), realpathSync(path)).split(sep).join('/')
+}
 export interface TaggedCapture {
   scenario: string
   elements: ({ tag: string; source: string; name?: string } & ElementSource)[]

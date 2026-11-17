@@ -1,5 +1,5 @@
 import { spawnSync, execFileSync } from 'node:child_process'
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync, realpathSync } from 'node:fs'
 import { createRequire } from 'node:module'
 import { dirname, resolve, relative, isAbsolute, sep } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -129,7 +129,7 @@ export function collect() {
   return count(findings)
 }
 
-if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+if (process.argv[1] && realpathSync(process.argv[1]) === fileURLToPath(import.meta.url)) {
   try {
     const update = process.argv.includes('--update')
     const adoptIndex = process.argv.indexOf('--adopt')
