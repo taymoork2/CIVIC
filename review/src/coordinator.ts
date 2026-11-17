@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto'
-import { readFileSync, realpathSync } from 'node:fs'
+import { realpathSync } from 'node:fs'
 import { join, relative, resolve, sep } from 'node:path'
 import type { WorkRef } from '../../graph/src/index.ts'
 import { readBackendCoverage, readProjectInventory } from './backend.ts'
@@ -25,18 +25,15 @@ export function previewOrigin(address: string) {
   return url.origin
 }
 
-export async function previewInventory(origin: string, local: Awaited<ReturnType<typeof readProjectInventory>>, store: Store) {
+export async function previewInventory(origin: string, local: Awaited<ReturnType<typeof readProjectInventory>>) {
   let metadata
   try {
+    // Use the preview's own loopback session cookie; stored bearer tokens never go to an address given at call time.
     const headers: Record<string, string> = {}
-    const key = store.previewAuth(origin)
-    if (key) headers.authorization = `Bearer ${readFileSync(key, 'utf8').trim()}`
-    else {
-      const page = await fetch(`${origin}/review`, { redirect: 'error', signal: AbortSignal.timeout(5000) })
-      const cookie = page.headers.get('set-cookie')
-      await page.body?.cancel()
-      if (cookie) headers.cookie = cookie.split(';')[0]!
-    }
+    const page = await fetch(`${origin}/review`, { redirect: 'error', signal: AbortSignal.timeout(5000) })
+    const cookie = page.headers.get('set-cookie')
+    await page.body?.cancel()
+    if (cookie) headers.cookie = cookie.split(';')[0]!
     const response = await fetch(`${origin}/api/review/index`, { headers, redirect: 'error', signal: AbortSignal.timeout(5000) })
     if (!response.ok) throw new Error(`HTTP ${response.status}`)
     metadata = await response.json()
@@ -130,16 +127,15 @@ export class ReviewSessions {
       const store = Store.forCheckout(checkout, env)
       const local = await readProjectInventory(cwd, undefined, previewStore(cwd, env))
       const { project } = local
-      const metadata = session.attached ? await previewInventory(session.preview.origin, local, store) : local.metadata
+      const metadata = session.attached ? await previewInventory(session.preview.origin, local) : local.metadata
       if (metadata.scenarios.length && !store.taggedCaptures(project.key, metadata.revision.source).length) {
         const captures: TaggedCapture[] = []
         const browser = await launchBrowser(env)
         try {
-          const extraHTTPHeaders: Record<string, string> = {}
-          const key = store.previewAuth(session.preview.origin)
-          if (key) extraHTTPHeaders.authorization = `Bearer ${readFileSync(key, 'utf8').trim()}`
-          const page = await browser.newPage({ viewport: { width: 1440, height: 900 }, extraHTTPHeaders })
+          const page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
           try {
+            // The session cookie this sets is scoped to the preview's origin, unlike a header on every request.
+            await page.goto(`${session.preview.origin}/review`, { waitUntil: 'load', timeout: 30_000 })
             for (const scenario of metadata.scenarios as Scenario[]) {
               await page.goto(`${session.preview.origin}/review-frame.html?scenario=${encodeURIComponent(scenario.id)}`, { waitUntil: 'load', timeout: 30_000 })
               await page.waitForFunction(() => document.querySelector('[data-rehearsal-ready="true"]') !== null, undefined, { timeout: 30_000 })
@@ -149,7 +145,7 @@ export class ReviewSessions {
             }
           } finally { await page.close() }
         } finally { await browser.close() }
-        const current = session.attached ? await previewInventory(session.preview.origin, local, store) : (await readProjectInventory(cwd, undefined, previewStore(cwd, env))).metadata
+        const current = session.attached ? await previewInventory(session.preview.origin, local) : (await readProjectInventory(cwd, undefined, previewStore(cwd, env))).metadata
         if (current.revision.source !== metadata.revision.source) throw new Error('Source changed during capture. Reopen the review.')
         for (const capture of captures) store.putTaggedCapture(project.key, metadata.revision.source, capture)
       }

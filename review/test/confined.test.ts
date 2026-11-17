@@ -7,6 +7,7 @@ import { join } from 'node:path'
 import { test } from 'node:test'
 import { Schema } from 'effect'
 import { previewOrigin, previewStore, ReviewSessions } from '../src/coordinator.ts'
+import { readCheckout } from '../src/git.ts'
 import { configuredStore, Store } from '../src/store.ts'
 import { callTool, TOOLS } from '../src/mcp.ts'
 
@@ -45,14 +46,20 @@ test('explicit attachment reads inventory, refuses unknown and mismatched previe
   const local = await readProjectInventory(root)
   let metadata = { ...local.metadata, scenarios: [] }
   let status = 200
-  const server = createServer((_req, res) => { res.writeHead(status, { 'content-type': 'application/json' }); res.end(JSON.stringify(metadata)) })
+  const authorizations: string[] = []
+  const server = createServer((req, res) => { if (req.headers.authorization) authorizations.push(req.headers.authorization); res.writeHead(status, { 'content-type': 'application/json' }); res.end(JSON.stringify(metadata)) })
   await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve))
   const origin = `http://127.0.0.1:${(server.address() as import('node:net').AddressInfo).port}`
+  // A token stored for this address must never be sent to an address given at call time.
+  const bearer = join(root, 'bearer')
+  writeFileSync(bearer, 'secret-token')
+  Store.forCheckout(readCheckout(root)).setPreviewAuth(origin, bearer)
   const sessions = new ReviewSessions()
   try {
     const session = await sessions.open(root, { system: 'test', id: '1' }, process.env, [], [], origin)
     await sessions.close(session.id)
     assert.equal((await fetch(origin)).status, 200)
+    assert.deepEqual(authorizations, [])
     metadata = { ...metadata, project: { ...metadata.project, key: 'other' } }
     await assert.rejects(sessions.open(root, { system: 'test', id: '1' }, process.env, [], [], origin), /different project/)
     status = 404
