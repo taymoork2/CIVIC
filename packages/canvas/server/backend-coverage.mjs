@@ -12,6 +12,7 @@ import { fastifyDetector } from './fastify-routes.mjs'
 import { elysiaDetector } from './elysia-routes.mjs'
 import { nestjsDetector } from './nestjs-routes.mjs'
 import { trpcDetector } from './trpc-procedures.mjs'
+import { effectRpcDetector, mergeEffectRpcHandlers } from './effect-rpc.mjs'
 import { sveltekitDetector } from './sveltekit-routes.mjs'
 import { reactRouterDetector, reactRouterConfig } from './react-router-routes.mjs'
 import { nitroDetector } from './nitro-routes.mjs'
@@ -20,7 +21,7 @@ import { projectPath } from '@civic/vite-connector/project'
 import { contractOperations } from './openapi-contract.mjs'
 
 const { relative, join } = nodePath
-const detectors = [tanstackDetector, convexDetector, nextRoutesDetector, nextActionsDetector, expressDetector, honoDetector, fastifyDetector, elysiaDetector, nestjsDetector, trpcDetector, sveltekitDetector, reactRouterDetector, nitroDetector, astroDetector]
+const detectors = [tanstackDetector, convexDetector, nextRoutesDetector, nextActionsDetector, expressDetector, honoDetector, fastifyDetector, elysiaDetector, nestjsDetector, trpcDetector, effectRpcDetector, sveltekitDetector, reactRouterDetector, nitroDetector, astroDetector]
 export const backendDetectorNames = detectors.map(detector => detector.name)
 
 // JSON values cannot contain boxed strings or custom Symbol.toStringTag values.
@@ -35,7 +36,7 @@ async function routeContext(project) {
 
 export async function backendInventory(project) {
   const context = await routeContext(project)
-  const operations = []
+  let operations = []
   const visited = new Set()
   const scan = async directory => {
     if (visited.has(directory)) return
@@ -53,6 +54,7 @@ export async function backendInventory(project) {
   }
   // oxlint-disable-next-line eslint/no-await-in-loop -- Source roots share visited state and ordered inventory output.
   for (const source of project.sources) await scan(source)
+  operations = mergeEffectRpcHandlers(operations)
   if (project.manifest.adapter.operations) {
     const path = await realpath(projectPath(project.manifestRoot, project.manifest.adapter.operations))
     if (!path.startsWith(project.root + '/')) throw Error('Backend inventory must belong to the project')
