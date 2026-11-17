@@ -10,12 +10,14 @@ import { WebSocket } from 'ws'
 import { chromium } from '@playwright/test'
 import { canvasRoot } from './canvas-root.mjs'
 import { moduleReviewAdapter } from './module-adapter.mjs'
+import { awakeTimeout } from './awake-clock.mjs'
 
 const { join } = nodePath
-const wait = (predicate, timeout = '20 seconds') => Effect.runPromise(Effect.promise(predicate).pipe(Effect.repeat({ schedule: Schedule.spaced('50 millis'), until: Boolean }), Effect.timeout(timeout)))
+const wait = (predicate, timeout = '20 seconds') => Effect.runPromise(awakeTimeout(Effect.tryPromise(predicate).pipe(Effect.repeat({ schedule: Schedule.spaced('50 millis'), until: Boolean })), timeout))
 const hmrModule = value => `export const value = ${value}; window.civicHmrCheck = value; if (import.meta.hot) import.meta.hot.accept(next => { window.civicHmrCheck = next.value })`
 
-test('managed viewer clients', { timeout: 120_000 }, async t => {
+for (const scenario of ['visibility', 'restart', 'hmr']) {
+test(`managed viewer clients: ${scenario}`, { timeout: 120_000 }, async t => {
   const root = await mkdtemp(join(tmpdir(), 'civic-managed-clients-'))
   const project = join(root, 'pantry'), store = join(root, 'store')
   await cp(join(canvasRoot, 'examples/pantry'), project, { recursive: true })
@@ -50,6 +52,13 @@ await startManagedCanvas({ store: process.argv[2], project: { manifest: process.
     const context = browser.contexts()[0]
     const tab = await context.newPage()
     const controls = []
+    let hmrConnected = false
+    tab.on('websocket', socket => {
+      socket.on('framereceived', ({ payload }) => {
+        if (typeof payload === 'string' && JSON.parse(payload).type === 'connected') hmrConnected = true
+      })
+      socket.on('close', () => { if (!socket.url().endsWith('/api/civic/control')) hmrConnected = false })
+    })
     tab.on('websocket', socket => { if (socket.url().endsWith('/api/civic/control')) controls.push(socket) })
     await tab.goto(owner.endpoint + '/review')
     await wait(async () => await clients() === 2)
@@ -64,8 +73,9 @@ await startManagedCanvas({ store: process.argv[2], project: { manifest: process.
     const run = await started.json()
     const journal = join(store, '.review-data/projects', index.project.key, 'runtime', `${run.id}.json`)
     const originalRun = await readFile(journal, 'utf8')
-    await t.test('hidden top-level tabs retain their hold; nested canvas, preview and capture frames acquire none', async () => {
+    if (scenario === 'visibility') await t.test('hidden top-level tabs retain their hold; nested canvas, preview and capture frames acquire none', async () => {
     const hidden = await context.newPage()
+    try {
     await hidden.bringToFront()
     await tab.waitForFunction(() => document.visibilityState === 'hidden', undefined, { polling: 100 })
     await Effect.runPromise(Effect.sleep('16 seconds'))
@@ -82,12 +92,19 @@ await startManagedCanvas({ store: process.argv[2], project: { manifest: process.
     await tab.bringToFront()
     await tab.frameLocator('iframe').nth(1).locator('[data-rehearsal-ready="true"]').waitFor()
     assert.equal(await clients(), 2)
+    } finally {
+      await hidden.close()
+      await captureBrowser?.close()
+      captureBrowser = undefined
+      await tab.evaluate(() => { for (const frame of document.querySelectorAll('iframe')) frame.remove() })
+    }
     })
-    await t.test('adapter config restart retains host, registration, control connections and original run binding', async () => {
+    if (scenario === 'restart') await t.test('adapter config restart retains host, registration, control connections and original run binding', async () => {
     const cookies = await context.cookies()
     const sessionName = `review_session_${new URL(owner.endpoint).port}`
     const initialSession = cookies.find(cookie => cookie.name === sessionName)?.value
     assert.ok(initialSession)
+    await tab.evaluate(() => { window.civicBeforeRestart = true })
     const manifestPath = join(project, 'civic.project.json')
     const manifest = JSON.parse(await readFile(manifestPath, 'utf8'))
     await cp(join(project, manifest.adapter.entry), join(project, 'src/restarted-preview.js'))
@@ -110,6 +127,11 @@ await startManagedCanvas({ store: process.argv[2], project: { manifest: process.
     assert.equal(child.exitCode, null)
     assert.equal(await readFile(registration, 'utf8'), originalRegistration)
     assert.equal(desktop.readyState, WebSocket.OPEN)
+    // Vite reloads after its retiring HMR socket closes; HTTP readiness precedes that reload.
+    await wait(() => tab.evaluate(() => window.civicBeforeRestart !== true).catch(error => {
+      if (error.message.includes('Execution context was destroyed')) return false
+      throw error
+    }))
     await wait(async () => await clients() === 2, '10 seconds')
     const refused = await post('/api/review/runtime', { action: 'state', run: run.id })
     assert.equal(refused.status(), 409)
@@ -118,15 +140,17 @@ await startManagedCanvas({ store: process.argv[2], project: { manifest: process.
     const remaining = await clients()
     assert.equal(remaining, 2, JSON.stringify({ desktop: desktop.readyState, controlClosed, controls: controls.length, url: tab.url() }))
     })
-    await t.test('canvas source hot-updates without dropping the control connection', async () => {
+    if (scenario === 'hmr') await t.test('canvas source hot-updates without dropping the control connection', async () => {
       const source = join(store, 'managed-hmr-check.js')
       await writeFile(source, hmrModule(1))
       await tab.evaluate(path => import(path), '/@fs' + source)
+      // Module evaluation can finish before Vite's WebSocket handshake under load.
+      await wait(() => Promise.resolve(hmrConnected))
       const connections = controls.length
       let disconnected = false
       controls.at(-1).on('close', () => { disconnected = true })
       await writeFile(source, hmrModule(2))
-      await tab.waitForFunction(() => window.civicHmrCheck === 2, undefined, { polling: 100 })
+      await wait(() => tab.evaluate(() => window.civicHmrCheck === 2), '30 seconds')
       assert.equal(disconnected, false)
       assert.equal(controls.length, connections)
       assert.equal(await clients(), 2)
@@ -141,3 +165,4 @@ await startManagedCanvas({ store: process.argv[2], project: { manifest: process.
     await exited
   }
 })
+}
