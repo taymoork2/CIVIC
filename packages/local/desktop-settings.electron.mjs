@@ -65,6 +65,7 @@ try {
     item.click()
   })
   let modal = page.getByRole('dialog', { name: 'CIVIC settings', exact: true })
+  assert.equal(await app.evaluate(({ BaseWindow }) => BaseWindow.getAllWindows().every(window => window.getOpacity() === 0)), true)
   await modal.getByRole('button', { name: 'Dark', exact: true }).click()
   await page.waitForFunction(() => document.documentElement.dataset.civicTheme === 'dark')
   assert.equal(await app.evaluate(({ nativeTheme }) => nativeTheme.themeSource), 'system', 'Shell overrides do not replace the system preference used by previews')

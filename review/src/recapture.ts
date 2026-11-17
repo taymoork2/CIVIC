@@ -40,16 +40,16 @@ export interface Browser {
 export async function launchBrowser(env: NodeJS.ProcessEnv = process.env): Promise<Browser> {
   const { chromium } = await import('playwright-core')
   if (env.CIVIC_BROWSER_PATH || env.CIVIC_BROWSER_CHANNEL) {
-    return (await chromium.launch({
-      headless: true,
-      ...(env.CIVIC_BROWSER_PATH ? { executablePath: env.CIVIC_BROWSER_PATH } : {}),
-      ...(env.CIVIC_BROWSER_CHANNEL ? { channel: env.CIVIC_BROWSER_CHANNEL } : {}),
-    })) as unknown as Browser
+    const options: Parameters<typeof chromium.launch>[0] = { headless: true }
+    if (env.CIVIC_BROWSER_PATH) options.executablePath = env.CIVIC_BROWSER_PATH
+    if (env.CIVIC_BROWSER_CHANNEL) options.channel = env.CIVIC_BROWSER_CHANNEL
+    return (await chromium.launch(options)) as unknown as Browser
   }
   // Playwright's own Chromium if it is installed, otherwise the machine's Chrome, as the journey engine uses.
   try {
     return (await chromium.launch({ headless: true })) as unknown as Browser
   } catch (error) {
+    if (!(error as Error).message.includes("Executable doesn't exist")) throw error
     try {
       return (await chromium.launch({ headless: true, channel: 'chrome' })) as unknown as Browser
     } catch {

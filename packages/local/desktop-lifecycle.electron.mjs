@@ -11,8 +11,9 @@ import { spawn } from 'node:child_process'
 import { Effect, Schedule } from 'effect'
 import electron from 'electron'
 import { canvasRoot } from '../canvas/server/canvas-root.mjs'
+import { moduleReviewAdapter } from '../canvas/server/module-adapter.mjs'
 
-const { _electron, chromium } = createRequire(new URL('../canvas/package.json', import.meta.url))('@playwright/test')
+const { _electron } = createRequire(new URL('../canvas/package.json', import.meta.url))('@playwright/test')
 const store = await mkdtemp(join(tmpdir(), 'civic-client-lifecycle-'))
 const registration = join(store, '.review-data/service/registration.json')
 const env = { ...process.env, CIVIC_TEST: '1', CIVIC_LOCAL_STORE: store, CIVIC_PROJECT: join(canvasRoot, 'examples/pantry/civic.project.json') }
@@ -32,10 +33,11 @@ try {
   app = await launch()
   const window = await app.firstWindow()
   await window.waitForURL(/\/review/u)
+  assert.equal(await app.evaluate(({ BaseWindow }) => BaseWindow.getAllWindows().every(window => window.getOpacity() === 0)), true)
   const owner = JSON.parse(await readFile(registration, 'utf8'))
   assert.notEqual(new URL(owner.endpoint).port, '3012')
   assert.match(await app.evaluate(({ BaseWindow }) => BaseWindow.getAllWindows()[0].getTitle()), /CIVIC · .+/u)
-  browser = await chromium.launch({ channel: 'chrome', headless: true })
+  browser = await moduleReviewAdapter.launchFixtureBrowser()
   const page = await browser.newPage()
   const attached = page.waitForEvent('websocket', socket => socket.url().endsWith('/api/civic/control'))
   await page.goto(owner.endpoint + '/review')

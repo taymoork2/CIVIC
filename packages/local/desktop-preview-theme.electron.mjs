@@ -21,6 +21,7 @@ let app, page
 try {
   app = await _electron.launch({ executablePath: process.env.CIVIC_ELECTRON_BINARY || electron, args: [fileURLToPath(new URL('desktop.mjs', import.meta.url))], env })
   page = await app.firstWindow()
+  assert.equal(await app.evaluate(({ BaseWindow }) => BaseWindow.getAllWindows().every(nativeWindow => nativeWindow.getOpacity() === 0)), true)
   await page.getByLabel('Canvas appearance', { exact: true }).waitFor()
   await page.evaluate(() => window.civicDesktop.setAppearance('dark'))
   await page.getByLabel('Canvas appearance', { exact: true }).selectOption('light')
@@ -45,6 +46,8 @@ try {
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth), true)
     await page.screenshot({ path: join(store, `preview-${width}.png`) })
   }
+  assert.equal(await window.evaluate(nativeWindow => nativeWindow.getOpacity()), 0)
+  if (process.platform === 'darwin') assert.equal(await app.evaluate(({ app: desktopApp }) => desktopApp.isActive()), false)
   assert.equal(await frame.getByLabel('Title', { exact: true }).inputValue(), 'Electron retained draft')
   assert.equal(await live.evaluate(element => element.contentWindow.reviewPreview.config.appTheme), 'ocean')
   console.log(`Electron preview themes passed at 1440/390px; system changes, shell independence, and draft retained. Evidence: ${store}`)

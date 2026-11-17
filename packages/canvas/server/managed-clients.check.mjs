@@ -39,17 +39,19 @@ await startManagedCanvas({ store: process.argv[2], project: { manifest: process.
     }
     desktop = new WebSocket(owner.endpoint.replace('http:', 'ws:') + '/api/civic/control', ['civic-control'], { headers: { authorization: `Bearer ${owner.capability}` } })
     await once(desktop, 'open')
-    // Preserve real tab visibility without letting desktop occlusion suspend rendering.
-    const profile = join(root, 'browser')
-    chrome = spawn(process.env.CIVIC_BROWSER_PATH ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', ['--remote-debugging-port=0', `--user-data-dir=${profile}`, '--no-first-run', '--no-default-browser-check', '--no-startup-window', '--disable-backgrounding-occluded-windows'], { stdio: 'ignore' })
-    chromeExited = once(chrome, 'exit')
-    let debugPort
-    await wait(async () => {
-      try { const address = await readFile(join(profile, 'DevToolsActivePort'), 'utf8'); debugPort = Number(address.split('\n')[0]); return Boolean(debugPort) }
-      catch (error) { if (error.code === 'ENOENT') return false; throw error }
-    })
-    browser = await chromium.connectOverCDP(`http://127.0.0.1:${debugPort}`, { noDefaults: true })
-    const context = browser.contexts()[0]
+    if (scenario === 'visibility') {
+      // New headless Chrome preserves real tab visibility; CDP must not apply Playwright's defaults.
+      const profile = join(root, 'browser')
+      chrome = spawn(process.env.CIVIC_BROWSER_PATH ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome', ['--headless=new', '--remote-debugging-port=0', `--user-data-dir=${profile}`, '--no-first-run', '--no-default-browser-check', '--no-startup-window', '--disable-backgrounding-occluded-windows'], { stdio: 'ignore' })
+      chromeExited = once(chrome, 'exit')
+      let debugPort
+      await wait(async () => {
+        try { const address = await readFile(join(profile, 'DevToolsActivePort'), 'utf8'); debugPort = Number(address.split('\n')[0]); return Boolean(debugPort) }
+        catch (error) { if (error.code === 'ENOENT') return false; throw error }
+      })
+      browser = await chromium.connectOverCDP(`http://127.0.0.1:${debugPort}`, { noDefaults: true })
+    } else browser = await moduleReviewAdapter.launchFixtureBrowser()
+    const context = browser.contexts()[0] ?? await browser.newContext()
     const tab = await context.newPage()
     const controls = []
     let hmrConnected = false
