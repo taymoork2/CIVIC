@@ -16,6 +16,19 @@ update notice. Route new requests through Orca's existing attention rules.
 Keep the session ID and call `close_review` when that review ends; CIVIC must stop
 only processes started by that session.
 
+For confined agents, `open_review` accepts `preview_url`: an HTTP loopback
+address (`127.0.0.1`, `localhost` or `[::1]`) with a port and no credentials.
+CIVIC reads its inventory and source fingerprint, checks its project key and
+application root against the selected checkout, and collects tagged captures.
+Unreadable inventories and different projects are refused. Closing the review
+leaves that preview running.
+
+Set `CIVIC_STORE` to an absolute folder path in the MCP server's environment to
+keep requests, claims, comments, annotations, captures and replays in a writable
+area. Missing folders are created with owner-only access; relative paths and
+paths that are files are refused at startup. Give the preview the same setting
+to share records. Without it, records stay in the main checkout's `.civic`.
+
 For a project Orca manages, offer **Make a work item** on unlinked CIVIC requests.
 Read `get_request`, create the item in Orca, and call `link_request` with the
 request's `id@version` and the new work reference. If the version is stale, read

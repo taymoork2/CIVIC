@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto'
+import { realpathSync } from 'node:fs'
 import { join, relative, resolve, sep } from 'node:path'
 import type { WorkRef } from '../../graph/src/index.ts'
 import { readBackendCoverage, readProjectInventory } from './backend.ts'
@@ -8,12 +9,38 @@ import { lineIdFor } from './loop.ts'
 import { startPreview } from './preview/launcher.ts'
 import { isRunning, readPreviews, type Preview } from './preview/state.ts'
 import { launchBrowser } from './recapture.ts'
-import { Store } from './store.ts'
+import { configuredStore, Store } from './store.ts'
 import { unsharedPassingReplays } from './replays.ts'
 
-export const previewStore = (cwd: string) => {
+export const previewStore = (cwd: string, env = process.env) => {
+  const configured = configuredStore(env)
+  if (configured) return configured
   const preview = readPreviews().find(row => row.worktree === readCheckout(cwd).root && isRunning(row))
   return preview ? join(preview.root, 'store') : cwd
+}
+export function previewOrigin(address: string) {
+  let url: URL
+  try { url = new URL(address) } catch { throw new Error('Preview URL must be a loopback http address with a port and no credentials.') }
+  if (url.protocol !== 'http:' || !['127.0.0.1', '[::1]', 'localhost'].includes(url.hostname) || !url.port || url.username || url.password) throw new Error('Preview URL must be a loopback http address with a port and no credentials.')
+  return url.origin
+}
+
+export async function previewInventory(origin: string, local: Awaited<ReturnType<typeof readProjectInventory>>) {
+  let metadata
+  try {
+    // Use the preview's own loopback session cookie; stored bearer tokens never go to an address given at call time.
+    const headers: Record<string, string> = {}
+    const page = await fetch(`${origin}/review`, { redirect: 'error', signal: AbortSignal.timeout(5000) })
+    const cookie = page.headers.get('set-cookie')
+    await page.body?.cancel()
+    if (cookie) headers.cookie = cookie.split(';')[0]!
+    const response = await fetch(`${origin}/api/review/index`, { headers, redirect: 'error', signal: AbortSignal.timeout(5000) })
+    if (!response.ok) throw new Error(`HTTP ${response.status}`)
+    metadata = await response.json()
+    if (!metadata.project?.key || !metadata.connection?.applicationRoot || typeof metadata.revision?.source !== 'string' || !Array.isArray(metadata.scenarios)) throw new Error('missing inventory metadata')
+  } catch { throw new Error('That address did not answer as a CIVIC preview with readable inventory.') }
+  if (metadata.project.key !== local.project.key || realpathSync(metadata.connection.applicationRoot) !== realpathSync(local.project.root)) throw new Error('The preview serves a different project than this checkout.')
+  return metadata as typeof local.metadata
 }
 export interface ScreenRef { project: string; scenario: string; journey?: string; route?: string }
 export interface Shot { viewport: number; theme: 'light' | 'dark' }
@@ -27,10 +54,10 @@ export const commitOf = (cwd: string, base: string) => {
   return sha
 }
 
-export async function changedScreens(cwd: string, base: string, projectPath?: string) {
+export async function changedScreens(cwd: string, base: string, projectPath?: string, inventory?: Awaited<ReturnType<typeof readProjectInventory>>) {
   const sha = commitOf(cwd, base)
   const checkout = readCheckout(cwd)
-  const { project, metadata } = await readProjectInventory(cwd, projectPath, previewStore(cwd))
+  const { project, metadata } = inventory ?? await readProjectInventory(cwd, projectPath, previewStore(cwd))
   const captures = Store.forCheckout(checkout).taggedCaptures(project.key, metadata.revision.source)
   const ranges = diffRanges(git(cwd, 'diff', '--no-ext-diff', '--unified=0', `${sha}...HEAD`, '--'))
   const changedFiles = git(cwd, 'diff', '--no-ext-diff', '--name-only', `${sha}...HEAD`, '--').split('\n').filter(Boolean)
@@ -75,30 +102,40 @@ export async function coverage(cwd: string, projectPath?: string) {
 }
 
 export class ReviewSessions {
-  private readonly sessions = new Map<string, { cwd: string; workRef: WorkRef; preview: Preview; close: () => Promise<void>; done: Promise<number> }>()
+  private readonly sessions = new Map<string, { cwd: string; workRef: WorkRef; preview: Pick<Preview, 'origin'>; attached: boolean; close: () => Promise<void>; done: Promise<number> }>()
 
-  async open(cwd: string, workRef: WorkRef, env: NodeJS.ProcessEnv, screens?: ScreenRef[], shots: Shot[] = [1440, 390].flatMap(viewport => (['light', 'dark'] as const).map(theme => ({ viewport, theme })))) {
+  async open(cwd: string, workRef: WorkRef, env: NodeJS.ProcessEnv, screens?: ScreenRef[], shots: Shot[] = [1440, 390].flatMap(viewport => (['light', 'dark'] as const).map(theme => ({ viewport, theme }))), previewUrl?: string) {
+    const origin = previewUrl === undefined ? undefined : previewOrigin(previewUrl)
     const existing = [...this.sessions.entries()].find(([, session]) => session.cwd === cwd && session.workRef.system === workRef.system && session.workRef.id === workRef.id)
     const id = existing?.[0] ?? randomUUID()
     let session = existing?.[1]
+    if (session && origin && session.preview.origin !== origin) throw new Error('Close the existing review before changing its preview address.')
+    if (!session && origin) {
+      session = { cwd, workRef, preview: { origin }, attached: true, close: async () => {}, done: Promise.resolve(0) }
+      this.sessions.set(id, session)
+    }
     if (!session) {
       let ready!: (value: { preview: Preview; close: () => Promise<void> }) => void
       const started = new Promise<{ preview: Preview; close: () => Promise<void> }>(resolve => { ready = resolve })
       const done = startPreview({ cwd, env, session: { id, workRef }, print: () => {}, keep: false, noOpen: true, allowDirty: true, ready: (preview, close) => ready({ preview, close }) })
       const running = await Promise.race([started, done.then(() => { throw new Error('Preview stopped before it was ready.') })])
-      session = { cwd, workRef, ...running, done }
+      session = { cwd, workRef, ...running, done, attached: false }
       this.sessions.set(id, session)
     }
     try {
       const checkout = readCheckout(cwd)
-      const store = Store.forCheckout(checkout)
-      const { project, metadata } = await readProjectInventory(cwd, undefined, previewStore(cwd))
-      if (!store.taggedCaptures(project.key, metadata.revision.source).length) {
+      const store = Store.forCheckout(checkout, env)
+      const local = await readProjectInventory(cwd, undefined, previewStore(cwd, env))
+      const { project } = local
+      const metadata = session.attached ? await previewInventory(session.preview.origin, local) : local.metadata
+      if (metadata.scenarios.length && !store.taggedCaptures(project.key, metadata.revision.source).length) {
         const captures: TaggedCapture[] = []
         const browser = await launchBrowser(env)
         try {
           const page = await browser.newPage({ viewport: { width: 1440, height: 900 } })
           try {
+            // The session cookie this sets is scoped to the preview's origin, unlike a header on every request.
+            await page.goto(`${session.preview.origin}/review`, { waitUntil: 'load', timeout: 30_000 })
             for (const scenario of metadata.scenarios as Scenario[]) {
               await page.goto(`${session.preview.origin}/review-frame.html?scenario=${encodeURIComponent(scenario.id)}`, { waitUntil: 'load', timeout: 30_000 })
               await page.waitForFunction(() => document.querySelector('[data-rehearsal-ready="true"]') !== null, undefined, { timeout: 30_000 })
@@ -108,12 +145,12 @@ export class ReviewSessions {
             }
           } finally { await page.close() }
         } finally { await browser.close() }
-        const current = await readProjectInventory(cwd, undefined, previewStore(cwd))
-        if (current.metadata.revision.source !== metadata.revision.source) throw new Error('Source changed during capture. Reopen the review.')
+        const current = session.attached ? await previewInventory(session.preview.origin, local) : (await readProjectInventory(cwd, undefined, previewStore(cwd, env))).metadata
+        if (current.revision.source !== metadata.revision.source) throw new Error('Source changed during capture. Reopen the review.')
         for (const capture of captures) store.putTaggedCapture(project.key, metadata.revision.source, capture)
       }
       const base = git(cwd, 'for-each-ref', '--format=%(refname)', 'refs/heads/main').trim() || 'HEAD'
-      const selected = screens ?? (await changedScreens(cwd, base)).screens
+      const selected = screens ?? (await changedScreens(cwd, base, undefined, { ...local, metadata })).screens
       return { id, workRef, line: lineIdFor(checkout), revision: checkout.head, link: `${session.preview.origin}/review`, screens: selected.map(screen => ({ ...screen, shots })) }
     } catch (error) { await this.close(id); throw error }
   }

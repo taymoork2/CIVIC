@@ -1,6 +1,7 @@
 import { resolve, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { existsSync } from 'node:fs'
+import { configuredStore } from './store.ts'
 
 export async function readBackendCoverage(cwd: string, manifest = '.', store = '.', dataDir?: string) {
   const { project, metadata, hostStore, sharedStore } = await readProjectInventory(cwd, manifest, store)
@@ -12,7 +13,7 @@ export async function readProjectInventory(cwd: string, manifest = '.', store = 
   const moduleAt = (path: string) => new URL(path, import.meta.url).href
   const { loadProject } = await import(moduleAt('../../packages/vite-connector/src/review-project.mjs'))
   const { reviewInventory } = await import(moduleAt('../../packages/vite-connector/src/review-inventory.mjs'))
-  const hostStore = resolve(cwd, store)
+  const hostStore = resolve(cwd, configuredStore() ?? store)
   const discover = () => {
     try { return loadProject(cwd) } catch (error) {
       const notebook = resolve(cwd, 'packages/canvas/examples/notebook/civic.project.json')

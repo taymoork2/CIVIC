@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { execFileSync, spawn } from 'node:child_process'
-import { mkdtempSync, writeFileSync } from 'node:fs'
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { createInterface } from 'node:readline'
@@ -16,13 +16,18 @@ test('an agent works a request over MCP and cannot resolve it', { timeout: 30_00
   const git = (...args: string[]) => execFileSync('git', args, { cwd: repo })
   git('init', '-q', '-b', 'main'); git('config', 'user.email', 'taymoor@example.com')
   writeFileSync(join(repo, 'README'), 'x'); git('add', '.'); git('commit', '-q', '-m', 'init')
+  const worktree = `${repo}-worktree`
+  git('worktree', 'add', '-q', '-b', 'agent', worktree)
+  mkdirSync(join(repo, '.civic'), { mode: 0o500 })
+  chmodSync(join(repo, '.civic'), 0o500)
+  const store = join(repo, 'external-store')
   const printed: string[] = []
-  const env = { ...process.env, CIVIC_PERSON: 'taymoor', CIVIC_AGENT: undefined }
+  const env = { ...process.env, CIVIC_STORE: store, CIVIC_PERSON: 'taymoor', CIVIC_AGENT: undefined }
   await run(['annotate', 'Label clips.', '--target', 'target:demo.pack'], repo, env, (t) => printed.push(t))
   await run(['request', printed[0]!, '--ask', 'Wrap the label.'], repo, env, (t) => printed.push(t))
   const requestId = printed[1]!.split(' ')[0]!
 
-  const server = spawn(process.execPath, [new URL('../src/mcp.ts', import.meta.url).pathname], { env: { ...process.env, CIVIC_AGENT: 'claude-code', CIVIC_FOR: 'taymoor', CIVIC_REPO: repo, CIVIC_PERSON: undefined }, stdio: ['pipe', 'pipe', 'inherit'] })
+  const server = spawn(process.execPath, [new URL('../src/mcp.ts', import.meta.url).pathname], { env: { ...env, CIVIC_AGENT: 'claude-code', CIVIC_FOR: 'taymoor', CIVIC_REPO: worktree, CIVIC_PERSON: undefined }, stdio: ['pipe', 'pipe', 'inherit'] })
   const responses = createInterface({ input: server.stdout })
   const pending = new Map<number, (value: any) => void>()
   responses.on('line', (line) => { const message = JSON.parse(line); pending.get(message.id)?.(message); pending.delete(message.id) })
@@ -51,7 +56,7 @@ test('an agent works a request over MCP and cannot resolve it', { timeout: 30_00
     assert.equal(stale.isError, true)
     assert.match(stale.content[0].text, /comment/)
     assert.match((await tool('claim', { id: requestId })).content[0].text, /claimed by actor:agent\.claude-code\.taymoor/)
-    const foreign = spawn(process.execPath, [new URL('../src/mcp.ts', import.meta.url).pathname], { env: { ...process.env, CIVIC_AGENT: 'other-agent', CIVIC_FOR: 'taymoor', CIVIC_REPO: repo }, stdio: ['pipe', 'pipe', 'inherit'] })
+    const foreign = spawn(process.execPath, [new URL('../src/mcp.ts', import.meta.url).pathname], { env: { ...env, CIVIC_AGENT: 'other-agent', CIVIC_FOR: 'taymoor', CIVIC_REPO: worktree }, stdio: ['pipe', 'pipe', 'inherit'] })
     try {
       const output: Buffer[] = []
       foreign.stdout.on('data', (chunk) => output.push(chunk))
@@ -71,6 +76,8 @@ test('an agent works a request over MCP and cannot resolve it', { timeout: 30_00
     assert.match((await tool('get_request', { id: requestId })).content[0].text, /Status: Claimed/)
     const fix = await tool('report_fix', { id: requestId, note: 'Wrapped.' })
     assert.match(fix.content[0].text, /Fix ready for review/)
+    assert.ok(existsSync(join(store, 'records.graph.json')))
+    assert.equal(existsSync(join(repo, '.civic/records.graph.json')), false)
     const unknown = await tool('resolve', { id: requestId })
     assert.equal(unknown.isError, true)
     assert.match(unknown.content[0].text, /Unknown tool resolve/)
@@ -89,6 +96,7 @@ test('an agent works a request over MCP and cannot resolve it', { timeout: 30_00
   } finally {
     if (server.exitCode === null) server.kill()
     responses.close()
+    chmodSync(join(repo, '.civic'), 0o700)
   }
 })
 

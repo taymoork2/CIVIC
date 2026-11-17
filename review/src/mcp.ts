@@ -7,6 +7,7 @@
 //
 // Environment: CIVIC_AGENT (the harness, default "mcp-agent"), CIVIC_FOR (the person it acts
 // for; defaults to the checkout's git identity), CIVIC_REPO (default checkout).
+// CIVIC_STORE selects an absolute records folder (created owner-only); otherwise main checkout/.civic.
 
 import { readFileSync, realpathSync, watch } from 'node:fs'
 import { resolve } from 'node:path'
@@ -23,7 +24,7 @@ import { recapture, reproductionUrl } from './recapture.ts'
 import { renderList, renderRequest } from './render.ts'
 import { elements, type TaggedCapture } from './elements.ts'
 import { readBackendCoverage } from './backend.ts'
-import { Store } from './store.ts'
+import { configuredStore, Store } from './store.ts'
 
 type Content = { type: 'text'; text: string } | { type: 'image'; data: string; mimeType: string }
 type Args = Record<string, unknown>
@@ -39,7 +40,7 @@ type Tool = { name: string; description: string; schema: Schema.ConstraintDecode
 export const TOOLS: readonly Tool[] = [
   { name: 'changed_screens', description: 'Screens and journeys rendered by changed source lines, with missing capture limits.', schema: Schema.Struct({ cwd: Schema.NonEmptyString, base: Schema.NonEmptyString, project: Schema.optionalKey(Schema.NonEmptyString) }), run: async ({ need, text, str }) => text(JSON.stringify(await changedScreens(need('cwd'), need('base'), str('project')))) },
   { name: 'coverage', description: 'Current screen, journey and backend coverage.', schema: Schema.Struct({ ...cwdProperty, project: Schema.optionalKey(Schema.String) }), run: async ({ str, env, text }) => text(JSON.stringify(await coverage(str('cwd') ?? env.CIVIC_REPO ?? process.cwd(), str('project')))) },
-  { name: 'open_review', description: 'Open this worktree for its owner to review, linked to an outside work item.', schema: Schema.Struct({ cwd: Schema.NonEmptyString, workRef, screens: Schema.optionalKey(Schema.Array(screenRef)), shots: Schema.optionalKey(Schema.Array(Schema.Struct({ viewport: Schema.Int.check(Schema.isBetween({ minimum: 100, maximum: 4000 })), theme: Schema.Literals(['light', 'dark']) }))) }), run: async ({ args, need, env, text }) => text(JSON.stringify(await sessions.open(need('cwd'), args.workRef as WorkRef, env, args.screens as ScreenRef[] | undefined, args.shots as Shot[] | undefined))) },
+{ name: 'open_review', description: 'Open this worktree for its owner to review, linked to an outside work item.', schema: Schema.Struct({ cwd: Schema.NonEmptyString, workRef, preview_url: Schema.optionalKey(Schema.NonEmptyString), screens: Schema.optionalKey(Schema.Array(screenRef)), shots: Schema.optionalKey(Schema.Array(Schema.Struct({ viewport: Schema.Int.check(Schema.isBetween({ minimum: 100, maximum: 4000 })), theme: Schema.Literals(['light', 'dark']) }))) }), run: async ({ args, need, env, text }) => text(JSON.stringify(await sessions.open(need('cwd'), args.workRef as WorkRef, env, args.screens as ScreenRef[] | undefined, args.shots as Shot[] | undefined, args.preview_url as string | undefined))) },
   { name: 'close_review', description: 'Close only a review session this coordinator opened.', schema: Schema.Struct({ id: Schema.NonEmptyString }), run: async ({ need, text }) => { await sessions.close(need('id')); return text('Review closed.') } },
   { name: 'list_requests', description: 'List CIVIC work requests with status, lane and claim holder. Open and reopened requests are claimable.', schema: Schema.Struct({ ...cwdProperty, workRef: Schema.optionalKey(workRef), status: Schema.optionalKey(Schema.Array(Schema.Literals(['open', 'claimed', 'fix-ready', 'resolved', 'reopened']))) }), run: async ({ args, context, text }) => {
     const status = Array.isArray(args.status) ? (args.status as RequestStatus[]) : undefined
@@ -153,7 +154,7 @@ const toolContext = (args: Args, env: NodeJS.ProcessEnv) => {
   const need = (key: string) => str(key) ?? fail(`${key} is required.`)
   const context = (): Context => {
     const checkout = readCheckout(str('cwd') ?? env.CIVIC_REPO ?? process.cwd())
-    return { store: Store.forCheckout(checkout), checkout, identity: identityFromEnv({ ...env, CIVIC_AGENT: env.CIVIC_AGENT || 'mcp-agent' }, checkout.root) }
+    return { store: Store.forCheckout(checkout, env), checkout, identity: identityFromEnv({ ...env, CIVIC_AGENT: env.CIVIC_AGENT || 'mcp-agent' }, checkout.root) }
   }
   const text = (value: string): Content[] => [{ type: 'text', text: value }]
 
@@ -223,6 +224,7 @@ export async function handle(message: Message, env: NodeJS.ProcessEnv = process.
 }
 
 export const serve = () => Effect.scoped(Effect.gen(function* () {
+  configuredStore()
   const subscriptions = new Map<string, Fiber.Fiber<void, unknown>>()
   yield* Effect.addFinalizer(() => Fiber.interruptAll(subscriptions.values()))
   yield* Effect.addFinalizer(() => Effect.promise(() => sessions.closeAll()))

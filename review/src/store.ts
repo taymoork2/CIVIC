@@ -1,11 +1,24 @@
 import { createHash } from 'node:crypto'
 import { mkdirSync, readdirSync, readFileSync, renameSync, rmSync, statSync, writeFileSync } from 'node:fs'
-import { join } from 'node:path'
+import { isAbsolute, join } from 'node:path'
 import { git, type Checkout } from './git.ts'
 import { SCHEMA_VERSION, validateGraph, type CaptureRef, type GraphDocument } from '../../graph/src/index.ts'
 import type { TaggedCapture } from './elements.ts'
 
 export const STORE_FOLDER = '.civic'
+export function configuredStore(env = process.env): string | undefined {
+  const dir = env.CIVIC_STORE
+  if (dir === undefined) return undefined
+  if (!isAbsolute(dir)) throw new Error('CIVIC_STORE must be an absolute folder path.')
+  try {
+    if (!statSync(dir).isDirectory()) throw new Error('CIVIC_STORE must be a folder.')
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error
+  }
+  mkdirSync(dir, { recursive: true, mode: 0o700 })
+  if (!statSync(dir).isDirectory()) throw new Error('CIVIC_STORE must be a folder.')
+  return dir
+}
 const STALE_LOCK_MS = 30_000
 const LOCK_WAIT_MS = 10_000
 const NAME = /^([0-9a-f]{64})\.(png|jpg|webp|tape\.json|replay\.json)$/
@@ -35,7 +48,9 @@ export class Store {
   }
 
   /** The store for a repository: the `.civic/` folder of its main working tree. */
-  static forCheckout(checkout: Pick<Checkout, 'mainRoot'>): Store {
+  static forCheckout(checkout: Pick<Checkout, 'mainRoot'>, env = process.env): Store {
+    const dir = configuredStore(env)
+    if (dir) return new Store(dir)
     return new Store(join(checkout.mainRoot, STORE_FOLDER), checkout.mainRoot)
   }
 

@@ -1,5 +1,11 @@
 # CIVIC review to agent loop
 
+`CIVIC_STORE` selects an absolute folder for all review records, captures and
+replays. CIVIC creates it with owner-only permissions if missing and refuses
+relative paths or files. Otherwise it uses the main checkout's `.civic` folder.
+MCP `open_review` accepts optional `preview_url` to attach to an existing CIVIC
+preview on HTTP loopback with a port and no credentials; closing leaves it running.
+
 The local half of [decision 0007](../docs/decisions/0007-review-to-agent-loop.md). People annotate the journey, hand annotations to an agent as a work request, the agent claims it on its own line and reports a fix, CIVIC re-captures the fix on its preview, and the request resolves through its lane. The records are the graph's Actor, Line, Annotation and Work request ([`graph/`](../graph#the-review-to-agent-loop)), so every rule there applies to every write here.
 
 CIVIC makes no model calls (D30). Agents run in their own harness and talk to CIVIC through this CLI or through the MCP server over the same calls. The [Claude Code plugin](../integrations/claude-code) packages that server.

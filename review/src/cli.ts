@@ -108,7 +108,7 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
   const { positional, flags, has } = parse(rest, command)
   const one = (name: string) => flags.get(name)?.at(-1)
   const checkout = readCheckout(cwd)
-  const store = Store.forCheckout(checkout)
+  const store = Store.forCheckout(checkout, env)
   const context: Context = { store, checkout, identity: identityFromEnv(env, checkout.root) }
   const need = (count: number) => {
     if (positional.length < count) throw new UsageError(`${command} needs ${count === 1 ? 'an argument' : `${count} arguments`}.`)
@@ -417,7 +417,7 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
       const dir = resolvePath(cwd, one('--checkout') ?? '.')
       const at = readCheckout(dir)
       const person = identityFromEnv({ ...env, CIVIC_AGENT: undefined }, at.root)
-      const records = Store.forCheckout(at)
+      const records = Store.forCheckout(at, env)
       const app = await startReviewApp({ store: records, checkout: at, identity: person }, { upstream, ...(one('--branch') ? { branch: one('--branch')! } : {}), ...(one('--port') ? { port: Number(one('--port')) } : {}), ...(one('--overlay-port') ? { overlayPort: Number(one('--overlay-port')) } : {}) })
       print(`Review ${app.origin} (the app at ${upstream}, with the overlay) as ${actorId(person)}. Annotations land on ${app.line} at ${app.revision}.\nRecords: ${records.dir}`)
       const stop = () => void app.close().then(() => process.exit(0))
