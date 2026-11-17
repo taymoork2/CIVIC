@@ -7,7 +7,7 @@
 //                                         installs the canvas packages if needed and opens the Notebook example (or your app)
 //   civic desktop [--project <civic.json>] the same in the CIVIC desktop window; Electron is downloaded on first run
 import { spawnSync } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { existsSync, realpathSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -84,7 +84,7 @@ async function desktop(args) {
   return window.status ?? 1
 }
 
-if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
+if (process.argv[1] && fileURLToPath(import.meta.url) === realpathSync(process.argv[1])) {
   const [command, ...args] = process.argv.slice(2)
   process.exit(command === 'doctor' ? doctor() : command === 'demo' ? demo(args) : command === 'desktop' ? await desktop(args) : (console.error('Usage: civic doctor | civic demo | civic desktop [--project <civic.json>] [--port 3020, demo only]'), 2))
 }

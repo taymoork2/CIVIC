@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { test } from 'node:test'
 import { execFileSync } from 'node:child_process'
-import { mkdtempSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { elements, diffRanges, parseSource } from '../src/elements.ts'
@@ -20,6 +20,8 @@ test('source queries and diff ranges retain scenario and original location', () 
 
 test('the elements MCP tool answers from a captures file', async () => {
   const root = mkdtempSync(join(tmpdir(), 'civic-elements-mcp-'))
+  mkdirSync(join(root, 'src'))
+  writeFileSync(join(root, 'src/view.tsx'), '')
   writeFileSync(join(root, 'captures.json'), JSON.stringify([{ scenario: 'screen', elements: [{ tag: 'button', source: 'src/view.tsx:4:2' }, { tag: 'div', source: 'src/view.tsx:8:1' }] }]))
   const [result] = await callTool('elements', { cwd: root, file: 'src/view.tsx', from: 8, captures: 'captures.json' })
   assert.deepEqual(JSON.parse((result as { text: string }).text).map((element: { tag: string }) => element.tag), ['div'])

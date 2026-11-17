@@ -5,8 +5,9 @@ import { configuredStore } from './store.ts'
 
 export async function readBackendCoverage(cwd: string, manifest = '.', store = '.', dataDir?: string) {
   const { project, metadata, hostStore, sharedStore } = await readProjectInventory(cwd, manifest, store)
-  const { projectBackendCoverage } = await import(new URL('../../packages/canvas/server/backend-coverage.mjs', import.meta.url).href)
-  return projectBackendCoverage(project, dataDir ? resolve(cwd, dataDir) : sharedStore ? join(hostStore, '.review-data') : join(hostStore, '.review-data/projects', project.key), metadata)
+  const { projectBackendCoverage, backendDetectorNames } = await import(new URL('../../packages/canvas/server/backend-coverage.mjs', import.meta.url).href)
+  const report = await projectBackendCoverage(project, dataDir ? resolve(cwd, dataDir) : sharedStore ? join(hostStore, '.review-data') : join(hostStore, '.review-data/projects', project.key), metadata)
+  return { ...report, detectors: backendDetectorNames, note: report.operations.length ? null : `No operations were found. Source detectors: ${backendDetectorNames.join(', ')}. For other backends, declare adapter.contracts (OpenAPI) or adapter.operations.` }
 }
 
 export async function readProjectInventory(cwd: string, manifest = '.', store = '.') {

@@ -21,6 +21,7 @@ import { contractOperations } from './openapi-contract.mjs'
 
 const { relative, join } = nodePath
 const detectors = [tanstackDetector, convexDetector, nextRoutesDetector, nextActionsDetector, expressDetector, honoDetector, fastifyDetector, elysiaDetector, nestjsDetector, trpcDetector, sveltekitDetector, reactRouterDetector, nitroDetector, astroDetector]
+export const backendDetectorNames = detectors.map(detector => detector.name)
 
 // JSON values cannot contain boxed strings or custom Symbol.toStringTag values.
 const isInventoryString = value => Object.prototype.toString.call(value) === '[object String]'

@@ -22,7 +22,7 @@ import { addCheck, annotate, claim, comment, find, getRequest, linkRequest, list
 import type { WorkRef } from '../../graph/src/index.ts'
 import { recapture, reproductionUrl } from './recapture.ts'
 import { renderList, renderRequest } from './render.ts'
-import { elements, type TaggedCapture } from './elements.ts'
+import { elements, elementQuery, type TaggedCapture } from './elements.ts'
 import { readBackendCoverage } from './backend.ts'
 import { configuredStore, Store } from './store.ts'
 
@@ -140,7 +140,7 @@ export const TOOLS: readonly Tool[] = [
   { name: 'elements', description: 'The captured elements a source file renders, optionally only those from a line range, with their scenario. Use it to see which screens a change touches.', schema: Schema.Struct({ ...cwdProperty, file: Schema.NonEmptyString.annotate({ description: 'Repository-relative source file, for example packages/canvas/src/review-panel.tsx.' }), from: Schema.optionalKey(Schema.Int), to: Schema.optionalKey(Schema.Int), captures: Schema.NonEmptyString.annotate({ description: 'A tagged-captures JSON file, as civic elements --capture reads.' }) }), run: async ({ args, str, need, text }) => {
     const lines = typeof args.from === 'number' ? [args.from, typeof args.to === 'number' ? args.to : args.from] as const : undefined
     const captures = JSON.parse(readFileSync(resolve(str('cwd') ?? process.cwd(), need('captures')), 'utf8')) as TaggedCapture[]
-    return text(JSON.stringify(elements(captures, need('file'), lines), null, 2))
+    return text(JSON.stringify(elements(captures, elementQuery(str('cwd') ?? process.cwd(), need('file')), lines), null, 2))
   } },
   { name: 'backend_coverage', description: 'The server routes, handlers and RPCs each journey\'s passing replays reach, and the ones no journey reaches.', schema: Schema.Struct({ ...cwdProperty, project: Schema.optionalKey(Schema.String), store: Schema.optionalKey(Schema.String), data_dir: Schema.optionalKey(Schema.String) }), run: async ({ str, text, env }) => {
     return text(JSON.stringify(await readBackendCoverage(str('cwd') ?? env.CIVIC_REPO ?? process.cwd(), str('project'), str('store'), str('data_dir')), null, 2))

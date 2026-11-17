@@ -17,6 +17,10 @@ Then open it with the standalone canvas (`node packages/canvas/bin/civic-canvas.
 
 ## Hosting the canvas
 
+`CIVIC_APP_ROOT` (and legacy `REHEARSAL_APP_ROOT`) applies only to implicit project
+selection. Explicit manifests ignore it; use `loadProject`'s `applicationRoot`
+option to deliberately override an explicit manifest's application root.
+
 `adapter.contracts: ["api/openapi.json"]` imports OpenAPI 3.x HTTP operations
 for backend journey coverage. Paths are relative to the project and confined to
 it, including symlinks. A single server's URL path prefixes operations; multiple

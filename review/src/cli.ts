@@ -48,7 +48,7 @@ import { Store } from './store.ts'
 import { DEFAULT_REF, GitRefRemote } from './remote.ts'
 import { listConflicts, settleConflict, sync } from './sync.ts'
 import { shareReplays } from './replays.ts'
-import { elements, parseSource, type TaggedCapture } from './elements.ts'
+import { elements, elementQuery, parseSource, type TaggedCapture } from './elements.ts'
 import { integrationConfig } from './integrations.ts'
 
 const USAGE = `Usage (records are shared by every worktree of this repository):
@@ -123,14 +123,14 @@ export async function run(argv: string[], cwd = process.cwd(), env = process.env
       const match = /^(.*?)(?::(\d+)-(\d+))?$/.exec(positional[0]!)!
       if (match[2] && (Number(match[2]) < 1 || Number(match[3]) < Number(match[2]) || !Number.isSafeInteger(Number(match[3])))) throw new UsageError('Use a positive, increasing line range.')
       const captures = JSON.parse(readFileSync(resolvePath(cwd, capture), 'utf8')) as TaggedCapture[]
-      print(JSON.stringify(elements(captures, match[1]!, match[2] ? [Number(match[2]), Number(match[3])] : undefined), null, 2))
+      print(JSON.stringify(elements(captures, elementQuery(checkout.root, match[1]!), match[2] ? [Number(match[2]), Number(match[3])] : undefined), null, 2))
       return 0
     }
     case 'coverage': {
       if (!has('--backend')) throw new UsageError('Choose --backend coverage.')
       const { readBackendCoverage } = await import('./backend.ts')
       const report = await readBackendCoverage(cwd, one('--project'), one('--store'), one('--data-dir'))
-      print(has('--json') ? JSON.stringify(report, null, 2) : report.operations.map((operation: { export: string; reachedBy: string[]; visibility?: string }) => `${operation.export}: ${operation.reachedBy.join(', ') || (operation.visibility === 'internal' ? 'Unreached internal function' : 'No journey reaches this yet')}`).join('\n'))
+      print(has('--json') ? JSON.stringify(report, null, 2) : report.note ?? report.operations.map((operation: { id: string; export: string; reachedBy: string[]; visibility?: string }) => `${operation.id} (${operation.export}): ${operation.reachedBy.join(', ') || (operation.visibility === 'internal' ? 'Unreached internal function' : 'No journey reaches this yet')}`).join('\n'))
       return 0
     }
     case 'annotate': {
