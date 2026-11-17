@@ -104,7 +104,7 @@ export class ReviewSessions {
               await page.waitForFunction(() => document.querySelector('[data-rehearsal-ready="true"]') !== null, undefined, { timeout: 30_000 })
               const source = await page.evaluate(() => (globalThis as typeof globalThis & { reviewPreview?: { snapshot?: { revision?: { source?: string } } } }).reviewPreview?.snapshot?.revision?.source)
               if (source !== metadata.revision.source) throw new Error('The preview source changed before capture. Reopen the review.')
-              captures.push(await taggedCapture(page, scenario.id))
+              captures.push(await taggedCapture(page, scenario.id, project.root))
             }
           } finally { await page.close() }
         } finally { await browser.close() }

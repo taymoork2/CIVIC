@@ -3,6 +3,7 @@ import { createServer, type IncomingMessage, type Server, type ServerResponse } 
 import { parseId, type ElementLocator, type WorkRef } from '../../../graph/src/index.ts'
 import { annotate, createRequest, type Context } from '../loop.ts'
 import { parseSource } from '../elements.ts'
+import { readElementSource } from '../../../packages/canvas/src/element-source.mjs'
 
 const OVERLAY = new URL('./overlay.js', import.meta.url)
 const LOOPBACK = /^http:\/\/(127\.0\.0\.1|localhost|\[::1\])(:\d+)?$/
@@ -34,7 +35,7 @@ async function handle(req: IncomingMessage, res: ServerResponse, context: () => 
     const path = new URL(req.url ?? '/', 'http://127.0.0.1').pathname
     if (path === '/overlay.js' && req.method === 'GET') {
       res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8', 'cache-control': 'no-store' })
-      return res.end(readFileSync(OVERLAY))
+      return res.end(`const reader = ${readElementSource.toString()};\nconst readElementSource = element => reader(element, ${JSON.stringify({ root: context().checkout.root })});\n${readFileSync(OVERLAY, 'utf8')}`)
     }
     if (path !== '/annotate') return json(404, { error: 'Not found' })
     if (!origin || !LOOPBACK.test(origin)) return json(403, { error: 'Annotations come only from pages served on this machine.' })
@@ -74,7 +75,10 @@ function checked(input: Record<string, unknown>, origin: string) {
     return value.trim()
   }
   const comment = text(input.comment, 4000, 'comment')
-  const location = typeof input.location === 'string' ? parseSource(input.location) : undefined
+  const parsed = typeof input.location === 'string' ? parseSource(input.location) : undefined
+  const via = ['civic', 'vue-inspector', 'svelte-inspector', 'solid-locator'].includes(String(input.via)) ? input.via : undefined
+  const match = input.match === 'ancestor' ? 'ancestor' : 'exact'
+  const location = parsed ? { ...parsed, via, match } : undefined
   if (input.location !== undefined && !location) throw bad('Invalid code location')
   const url = text(input.url, 4000, 'page URL')
   if (new URL(url).origin !== origin) throw bad('The page URL must be the page that sent the annotation.')

@@ -1,12 +1,13 @@
 /// <reference lib="dom" />
+import { readElementSource, type ElementSource } from '../../packages/canvas/src/element-source.mjs'
 export interface TaggedCapture {
   scenario: string
-  elements: { tag: string; source: string; name?: string }[]
+  elements: ({ tag: string; source: string; name?: string } & ElementSource)[]
 }
 
 export const parseSource = (value: string) => {
   const match = /^(.+):(\d+):(\d+)$/.exec(value)
-  if (!match || /^(\/|[A-Za-z]:)|\\|[\r\n]/.test(match[1]!) || match[1]!.split('/').includes('..')) return undefined
+  if (!match || /^(\/|[A-Za-z]:)|\\|[\r\n]/.test(match[1]!) || match[1]!.split('/').some(part => part === '..' || part === 'node_modules')) return undefined
   const line = Number(match[2]), column = Number(match[3])
   return Number.isSafeInteger(line) && line > 0 && Number.isSafeInteger(column) && column > 0 ? { file: match[1]!, line, column } : undefined
 }
@@ -27,7 +28,14 @@ export const diffRanges = (diff: string): { file: string; from: number; to: numb
   return ranges
 }
 
-export const taggedCapture = async (page: { evaluate<T>(fn: () => T): Promise<T> }, scenario: string): Promise<TaggedCapture> => ({
+function collectTaggedElements(read: typeof readElementSource, root?: string) {
+  return Array.from(document.querySelectorAll('*')).flatMap(element => {
+    const evidence = read(element, { root })
+    return evidence.location || evidence.component ? [{ ...evidence, tag: element.tagName.toLowerCase(), source: evidence.location ?? '', name: (element.getAttribute('aria-label') ?? element.textContent ?? '').trim().slice(0, 300) }] : []
+  })
+}
+
+export const taggedCapture = async (page: { evaluate<T>(fn: string): Promise<T> }, scenario: string, root?: string): Promise<TaggedCapture> => ({
   scenario,
-  elements: await page.evaluate(() => Array.from(document.querySelectorAll('[data-civic-source]'), element => ({ tag: element.tagName.toLowerCase(), source: element.getAttribute('data-civic-source')!, name: (element.getAttribute('aria-label') ?? element.textContent ?? '').trim().slice(0, 300) }))),
+  elements: await page.evaluate(`(${collectTaggedElements.toString()})(${readElementSource.toString()}, ${JSON.stringify(root)})`),
 })

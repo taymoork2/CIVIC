@@ -85,7 +85,7 @@
     setSelecting(false)
     show(next.box)
     $('.target').textContent = next.label
-    $('.source').textContent = next.location ? `Code location: ${next.location}` : 'No code location recorded.'
+    $('.source').textContent = next.location ? `Code location: ${next.location} (${next.via}, ${next.match})` : next.component ? `Component: ${next.component}` : 'No code location recorded.'
     panel.style.display = 'block'
     textarea.focus()
   }
@@ -122,7 +122,7 @@
     if (!element) return
     const rect = element.getBoundingClientRect()
     const locator = locatorOf(element)
-    choose({ label: locator?.name || element.tagName.toLowerCase(), box: rect, rect: normalized(rect), targetIds: civicIdsOf(element), locator, location: element.closest('[data-civic-source]')?.getAttribute('data-civic-source') })
+    choose({ label: locator?.name || element.tagName.toLowerCase(), box: rect, rect: normalized(rect), targetIds: civicIdsOf(element), locator, ...readElementSource(element) })
   })
   toggle.addEventListener('click', () => { reset(); setSelecting(!selecting) })
   $('.cancel').addEventListener('click', reset)
@@ -163,6 +163,8 @@
       rect: { ...selection.rect, label: selection.label },
       targetIds: selection.targetIds,
       ...(selection.location ? { location: selection.location } : {}),
+      via: selection.via,
+      match: selection.match,
       ...(selection.locator ? { locator: selection.locator } : {}),
       ...(stamped.line ? { line: stamped.line, revision: stamped.revision } : {}),
       html: snapshot(),
