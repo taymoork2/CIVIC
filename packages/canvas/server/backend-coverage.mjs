@@ -12,16 +12,28 @@ import { fastifyDetector } from './fastify-routes.mjs'
 import { elysiaDetector } from './elysia-routes.mjs'
 import { nestjsDetector } from './nestjs-routes.mjs'
 import { trpcDetector } from './trpc-procedures.mjs'
+import { sveltekitDetector } from './sveltekit-routes.mjs'
+import { reactRouterDetector, reactRouterConfig } from './react-router-routes.mjs'
+import { nitroDetector } from './nitro-routes.mjs'
+import { astroDetector } from './astro-routes.mjs'
 import { projectPath } from '@civic/vite-connector/project'
 import { contractOperations } from './openapi-contract.mjs'
 
 const { relative, join } = nodePath
-const detectors = [tanstackDetector, convexDetector, nextRoutesDetector, nextActionsDetector, expressDetector, honoDetector, fastifyDetector, elysiaDetector, nestjsDetector, trpcDetector]
+const detectors = [tanstackDetector, convexDetector, nextRoutesDetector, nextActionsDetector, expressDetector, honoDetector, fastifyDetector, elysiaDetector, nestjsDetector, trpcDetector, sveltekitDetector, reactRouterDetector, nitroDetector, astroDetector]
 
 // JSON values cannot contain boxed strings or custom Symbol.toStringTag values.
 const isInventoryString = value => Object.prototype.toString.call(value) === '[object String]'
 
+async function routeContext(project) {
+  const context = {}
+  try { context.reactRouterRoutes = reactRouterConfig(await readFile(join(project.root, 'app/routes.ts'), 'utf8')) }
+  catch (error) { if (error.code !== 'ENOENT') throw error }
+  return context
+}
+
 export async function backendInventory(project) {
+  const context = await routeContext(project)
   const operations = []
   const visited = new Set()
   const scan = async directory => {
@@ -34,7 +46,7 @@ export async function backendInventory(project) {
       else if (entry.isFile() && /\.[cm]?[jt]sx?$/u.test(entry.name)) {
         // oxlint-disable-next-line eslint/no-await-in-loop -- Preserve depth-first inventory order and bounded file reads.
         const code = await readFile(path, 'utf8'), file = relative(project.root, path)
-        for (const detector of detectors) operations.push(...detector.detect(code, file).map(row => ({ ...row, detector: detector.name })))
+        for (const detector of detectors) operations.push(...detector.detect(code, file, context).map(row => ({ ...row, detector: detector.name })))
       }
     }
   }
