@@ -72,6 +72,9 @@ const ENGINE_IMPORTS: Record<string, string[]> = {
   'backend.ts': ['../../packages/canvas/server/backend-coverage.mjs', '../../packages/vite-connector/src/review-project.mjs', '../../packages/vite-connector/src/review-inventory.mjs'],
   // The reporter owns git revision discovery; the importer still parses the report.
   'playwright-reporter.ts': ['../../importers/src/playwright.ts'],
+  // One self-contained in-page reader finds code locations for canvas captures and the overlay alike.
+  'elements.ts': ['../../packages/canvas/src/element-source.mjs'],
+  [join('overlay', 'server.ts')]: ['../../../packages/canvas/src/element-source.mjs'],
 }
 
 test('the review loop imports only Node built-ins, the graph, playwright-core and the machine core', () => {

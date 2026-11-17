@@ -8,6 +8,7 @@ import { after, before, test } from 'node:test'
 import type { Annotation } from '../../graph/src/index.ts'
 import { createOverlayServer } from '../src/overlay/server.ts'
 import { readCheckout, Store } from '../src/index.ts'
+import { taggedCapture } from '../src/elements.ts'
 
 // D40: the capture overlay in a dev page writes the same Annotation a canvas capture does.
 const repo = mkdtempSync(join(tmpdir(), 'civic-overlay-'))
@@ -41,6 +42,15 @@ test('only loopback pages can write, and the page URL must be the sender', async
   assert.equal((await fetch(`${overlay}/overlay.js`)).status, 200)
 })
 
+test('the overlay script carries no local path, and only locations inside the checkout are kept', async () => {
+  const script = await fetch(`${overlay}/overlay.js`)
+  assert.ok(!(await script.text()).includes(repo))
+  const located = (location: string) => fetch(`${overlay}/annotate`, { method: 'POST', headers: { origin: 'http://127.0.0.1:9', 'content-type': 'application/json' }, body: JSON.stringify({ comment: 'x', url: 'http://127.0.0.1:9/', location, viewport: { width: 400, height: 400 }, rect: { x: 0, y: 0, width: 1, height: 1 }, html: '<p>x</p>' }) })
+  const outside = await located('/elsewhere/src/view.tsx:1:1')
+  assert.equal(outside.status, 400)
+  assert.match(await outside.text(), /Invalid code location/u)
+})
+
 test('selecting an element in a dev page records an anchored annotation with its capture', async (t) => {
   let chromium
   try { ({ chromium } = await import('playwright-core')) } catch { return t.skip('playwright-core is not installed') }
@@ -54,6 +64,13 @@ test('selecting an element in a dev page records an anchored annotation with its
   try { browser = await chromium.launch({ headless: true, ...(process.env.CIVIC_BROWSER_PATH ? { executablePath: process.env.CIVIC_BROWSER_PATH } : {}) }) } catch (error) { return t.skip(`No browser: ${(error as Error).message.split('\n')[0]}`) }
   try {
     const page = await browser.newPage({ viewport: { width: 800, height: 600 } })
+    await page.setContent('<section data-v-inspector="src/View.vue:2:1"><button>Child</button></section>')
+    await page.evaluate(() => {
+      Object.assign(document.querySelector('button')!, { __svelte_meta: { loc: { file: 'src/View.svelte', line: 0, column: 0 } } })
+    })
+    const capture = await taggedCapture(page, 'framework')
+    assert.equal(capture.elements.find(element => element.tag === 'button')?.via, 'svelte-inspector')
+    assert.equal(capture.elements.find(element => element.tag === 'button')?.source, 'src/View.svelte:1:1')
     await page.goto(`${app}/intake?step=color`)
     await page.waitForFunction(() => '__civicOverlay' in globalThis)
     await page.keyboard.press('Alt+Shift+KeyC')

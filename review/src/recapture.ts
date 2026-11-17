@@ -23,6 +23,7 @@ import { allow, bump, checkCountsIn, ConflictError, find, resolveId, splitVersio
 interface Locator { count(): Promise<number>; nth(index: number): Locator; getAttribute(name: string): Promise<string | null> }
 interface Page {
   evaluate<T>(fn: () => T): Promise<T>
+  evaluate<T>(fn: string): Promise<T>
   waitForFunction(fn: () => boolean, arg?: unknown, options?: { timeout: number }): Promise<unknown>
   goto(url: string, options: { waitUntil: 'load'; timeout: number }): Promise<unknown>
   locator(selector: string): Locator

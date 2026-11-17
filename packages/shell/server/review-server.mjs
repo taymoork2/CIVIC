@@ -13,6 +13,16 @@ const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{1
 const bad = (message) => { throw Object.assign(new Error(message), { status: 400 }) }
 const text = (value, max) => typeof value === 'string' && value.trim().length > 0 && value.length <= max ? value.trim() : bad('Invalid or oversized text')
 const choice = (value, choices) => choices.includes(value) ? value : bad('Unknown review condition')
+// How a code location was found, kept with the comment; a hint without a location may only name a component.
+export const checkedSourceEvidence = (input, location) => {
+  if (!input || typeof input !== 'object') bad('Invalid source evidence')
+  const via = input.via === undefined ? undefined : choice(input.via, ['civic', 'vue-inspector', 'svelte-inspector', 'solid-locator'])
+  const match = input.match === undefined ? undefined : choice(input.match, ['exact', 'ancestor'])
+  const component = input.component === undefined ? undefined : text(input.component, 200)
+  if ((via || match) && !location) bad('Source evidence needs a code location')
+  const evidence = Object.fromEntries(Object.entries({ via, match, component }).filter(([, value]) => value !== undefined))
+  return Object.keys(evidence).length ? evidence : undefined
+}
 const fixtureViewport = value => {
   if (value === undefined) return undefined
   if (!value || !Number.isInteger(value.width) || !Number.isInteger(value.height) || value.width < 200 || value.width > 1920 || value.height < 200 || value.height > 1600) bad('Invalid snapshot viewport')
@@ -95,6 +105,7 @@ function checkedFeedback(input, metadata, adapter) {
   const target = checkedTarget(input.target, c, metadata, adapter)
   const location = input.location === undefined ? undefined : text(input.location, 2000)
   if (location && (!/^.+:[1-9]\d*:[1-9]\d*$/u.test(location) || /^(?:\/|[A-Za-z]:)|\\|[\r\n]/u.test(location) || location.split('/').includes('..'))) bad('Invalid code location')
+  const sourceEvidence = input.sourceEvidence === undefined ? undefined : checkedSourceEvidence(input.sourceEvidence, location)
   if (input.recording !== undefined && !uuid.test(input.recording)) bad('Invalid recording identity')
   if (input.capture !== undefined && !uuid.test(input.capture)) bad('Invalid saved capture identity')
   const simulation = c.simulation === undefined ? undefined : { pieces: choice(c.simulation?.pieces, [100, 500, 1000]), stage: choice(c.simulation?.stage, ['planning', 'washing', 'drying', 'putaway']) }
@@ -114,6 +125,7 @@ function checkedFeedback(input, metadata, adapter) {
     context: { scenario: c.scenario, ...(simulation ? { simulation } : {}), ...(c.screen === undefined ? {} : { screen: c.screen }), persona: choice(c.persona, metadata.project?.personas.map((p) => p.id) ?? ['single', 'student', 'parent']), role: choice(c.role, metadata.project?.roles.map((p) => p.id) ?? ['owner', 'member']), condition: choice(c.condition, metadata.project?.conditions.map((p) => p.id) ?? ['normal', 'save-error', 'offline', 'missing-care']), ...checkedAppearance(c, metadata.project), ...(c.appearance ? { appearance: c.appearance } : {}), theme: choice(c.theme, ['light', 'dark']), textScale: choice(c.textScale, [1, 2]), viewport: { width: viewport.width, height: viewport.height }, state: { dialogs: state.dialogs.map((s) => text(s, 300)), tabs: state.tabs.map((s) => text(s, 300)), fields: state.fields.map((field) => ({ label: text(field.label, 300), value: typeof field.value === 'string' && field.value.length <= 4000 ? field.value : bad('Invalid draft value') })) } },
     anchor: { label: text(anchor.label, 300), x: anchor.x, y: anchor.y, width: anchor.width, height: anchor.height, ...(anchor.locator === undefined ? {} : { locator: checkedLocator(anchor.locator) }) },
     ...(target ? { target } : {}),
+    sourceEvidence,
     ...(input.recording ? { recording: input.recording } : {}),
     ...(input.capture ? { capture: input.capture } : {}),
     evidence: { kind: evidenceKind, ...(evidenceKind === 'fixture' ? { fixtureSource: input.evidence.fixtureSource, ...(capturedViewport ? { viewport: capturedViewport } : {}), ...(pixelRatio === 2 ? { pixelRatio } : {}), ...(input.evidence.appearance ? { appearance: checkedAppearance(input.evidence.appearance, metadata.project) } : {}) } : {}) },
