@@ -10,8 +10,55 @@ import { elysiaOperations } from './elysia-routes.mjs'
 import { backendInventory } from './backend-coverage.mjs'
 import { backendCoverage } from '../../shell/server/backend-coverage.mjs'
 import { fileURLToPath } from 'node:url'
+import { sveltekitOperations } from './sveltekit-routes.mjs'
+import { reactRouterOperations, reactRouterConfig } from './react-router-routes.mjs'
+import { nitroOperations } from './nitro-routes.mjs'
+import { astroOperations } from './astro-routes.mjs'
 
 const fixture = path => readFile(new URL('./check-fixtures/' + path, import.meta.url), 'utf8')
+for (const [framework, detect, file, request] of [
+  ['sveltekit', sveltekitOperations, 'src/routes/(group)/api/items/[id]/+server.ts', 'GET:/api/items/42'],
+  ['react-router', reactRouterOperations, 'app/routes/api.items.$id.ts', 'PUT:/api/items/42'],
+  ['nitro', nitroOperations, 'server/api/items/[id].get.ts', 'GET:/api/items/42'],
+  ['astro', astroOperations, 'src/pages/api/items/[id].ts', 'GET:/api/items/42'],
+]) {
+  test(framework + ' conventional declarations match replay requests', async () => {
+    const code = await fixture(framework + '/' + file)
+    const rows = detect(code, file)
+    assert.ok(rows.length)
+    assert.deepEqual(detect(code, 'wrong/' + file.split('/').at(-1)), [])
+    assert.deepEqual(detect('// ' + code.replaceAll('\n', '\n// '), file), [])
+    assert.deepEqual(detect('export const helper = () => null', file), [])
+    assert.throws(() => detect('export const =', file))
+    const tape = { project: 'p', source: 's', seed: { context: { scenario: 'start' } }, steps: [{ operations: [{ name: request }] }] }
+    const replay = { schema: 'civic.replay/0', project: 'p', source: 's', tape: 't', scenario: 'start', outcome: 'pass', steps: 1 }
+    const report = backendCoverage(rows, new Map([['t', tape]]), [replay], { project: 'p', source: 's', journeys: [{ id: 'j', scenarios: ['start'] }] })
+    assert.ok(report.operations.some(row => row.reachedBy.includes('j')))
+    const root = fileURLToPath(new URL('./check-fixtures/' + framework, import.meta.url))
+    const inventory = await backendInventory({ root, sources: [root], manifest: { adapter: {} } })
+    assert.ok(inventory.some(row => row.id === rows[0].id && row.detector === framework))
+  })
+}
+
+test('file convention parameters, exports and explicit route config', async () => {
+  const get = 'export const GET = () => null'
+  assert.equal(sveltekitOperations(get, 'src/routes/(group)/[[optional]]/[...rest]/+server.js')[0].id, 'GET /:optional?/:rest*')
+  assert.deepEqual(sveltekitOperations(await fixture('sveltekit/src/routes/account/+page.server.ts'), 'src/routes/account/+page.server.ts').map(row => [row.export, row.kind]), [['load', 'rpc'], ['actions.default', 'rpc'], ['actions.login', 'rpc']])
+  assert.equal(astroOperations(get, 'src/pages/index.js')[0].id, 'GET /')
+  assert.equal(astroOperations(get, 'src/pages/[...rest].ts')[0].id, 'GET /:rest*')
+  assert.deepEqual(astroOperations(get, 'src/pages/index.astro'), [])
+  assert.equal(nitroOperations('export default () => null', 'server/routes/index.ts')[0].id, 'ALL /')
+  assert.equal(nitroOperations('export default () => null', 'server/api/[...slug].post.ts')[0].id, 'POST /api/:slug+')
+  const config = reactRouterConfig(await fixture('react-router/config.ts'))
+  assert.equal(config.get('app/item.tsx'), '/api/items/:id')
+  assert.equal(config.get('app/home.tsx'), '/api')
+  assert.equal(config.get('app/health.tsx'), '/v1/health')
+  const loader = 'export const loader = () => null'
+  assert.equal(reactRouterOperations(loader, 'app/item.tsx', { reactRouterRoutes: config })[0].id, 'GET /api/items/:id')
+  assert.deepEqual(reactRouterOperations(loader, 'app/routes/ignored.ts', { reactRouterRoutes: config }), [])
+  assert.equal(reactRouterOperations(loader, 'app/routes/_auth.items_.$id[.]json.ts')[0].id, 'GET /items/:id.json')
+  assert.equal(reactRouterOperations(loader, 'app/routes/items._index.ts')[0].id, 'GET /items')
+})
 for (const [framework, detect, expected, runtime] of [
   ['hono', honoOperations, ['GET /api/v1/users/:id', 'POST /api/items', 'PUT /api/items', 'ALL /api/health', 'GET /schema'], /Hono app.routes/u],
   ['fastify', fastifyOperations, ['GET /health', 'POST /items/:id', 'PUT /items/:id', 'GET /api/users/:id', 'DELETE /api/v2/items'], /Fastify onRoute/u],
@@ -37,6 +84,22 @@ test('literal HTTP inventory identities match concrete replay paths and ALL meth
   const replay = { schema: 'civic.replay/0', project: 'p', source: 's', tape: 't', scenario: 'start', outcome: 'pass', steps: 1 }
   const result = backendCoverage(operations, new Map([['t', tape]]), [replay], { project: 'p', source: 's', journeys: [{ id: 'j', scenarios: ['start'] }] })
   assert.deepEqual(result.unreached, [])
+})
+
+const reach = (id, name) => {
+    const tape = { project: 'p', source: 's', seed: { context: { scenario: 'start' } }, steps: [{ operations: [{ name }] }] }
+    const replay = { schema: 'civic.replay/0', project: 'p', source: 's', tape: 't', scenario: 'start', outcome: 'pass', steps: 1 }
+    return backendCoverage([{ id, kind: 'route' }], new Map([['t', tape]]), [replay], { project: 'p', source: 's', journeys: [{ id: 'j', scenarios: ['start'] }] }).unreached.length === 0
+}
+
+test('optional and catch-all route templates match only their accepted path lengths', () => {
+  assert.ok(reach('GET /items/:id?', 'GET:/items'))
+  assert.ok(reach('GET /items/:id?', 'GET:/items/42?query=1'))
+  assert.ok(!reach('GET /items/:id?', 'GET:/items/42/extra'))
+  assert.ok(reach('GET /items/:rest*', 'GET:/items'))
+  assert.ok(reach('GET /items/:rest+', 'GET:/items/a/b'))
+  assert.ok(!reach('GET /items/:rest+', 'GET:/items'))
+  assert.ok(!reach('POST /items/:rest*', 'GET:/items/a'))
 })
 
 test('dynamic prefixes and unknown fluent return values do not invent routes', () => {

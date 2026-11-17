@@ -13,11 +13,26 @@ function reachedTarget(operations, reached, name) {
   return reached.get(name) ?? reached.get(reachedOperation(operations, name)?.id)
 }
 
+function matchesPath(pattern, actual) {
+  if (!pattern.length) return !actual.length
+  const [part, ...rest] = pattern
+  if (part.startsWith(':') && /[*+]$/u.test(part)) {
+    const minimum = part.endsWith('+') ? 1 : 0
+    for (let count = minimum; count <= actual.length; count++) if (matchesPath(rest, actual.slice(count))) return true
+    return false
+  }
+  if (part.startsWith(':') && part.endsWith('?') && matchesPath(rest, actual)) return true
+  return Boolean(actual.length && (part.startsWith(':') ? actual[0] : part === actual[0])) && matchesPath(rest, actual.slice(1))
+}
+
 const reachedOperation = (operations, name) => {
   const actual = httpName(name).split('/')
   // An ALL route accepts any recorded method.
-  const same = (part, index) => part.startsWith(':') ? Boolean(actual[index]) : index === 0 && part === 'ALL ' ? /^[A-Z]+ $/u.test(actual[index]) : part === actual[index]
-  return operations.find(row => row.kind === 'route' && httpName(row.id) === httpName(name)) ?? operations.find(row => row.kind === 'route' && httpName(row.id).split('/').length === actual.length && httpName(row.id).split('/').every(same))
+  const same = row => {
+    const [method, ...path] = row.id.replace(/^(?<method>[A-Z]+):(?=\/)/u, '$<method> ').split('/')
+    return (method === actual[0] || method === 'ALL ' && /^[A-Z]+ $/u.test(actual[0])) && matchesPath(path, actual.slice(1))
+  }
+  return operations.find(row => row.kind === 'route' && httpName(row.id) === httpName(name)) ?? operations.find(row => row.kind === 'route' && same(row))
 }
 
 /** Count only the verified prefix of the latest replay of each content-addressed tape. */
