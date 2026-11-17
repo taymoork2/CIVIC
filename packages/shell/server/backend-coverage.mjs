@@ -50,14 +50,16 @@ export function backendCoverage(operations, tapes, replays, { project, source, j
   for (const replay of latest.values()) {
     const tape = tapes.get(replay.tape)
     if (!matchesTape(tape, replay, project, source)) continue
-    const matching = journeys.filter(row => row.scenarios.includes(replay.scenario))
-    if (!matching.length || !Number.isSafeInteger(replay.steps) || replay.steps < 0) continue
+    if (!Number.isSafeInteger(replay.steps) || replay.steps < 0) continue
+    // A passing replay outside every declared journey still proves reach; credit its scenario instead.
+    const credits = journeys.filter(row => row.scenarios.includes(replay.scenario)).map(journey => journey.id)
+    if (!credits.length) credits.push(`scenario:${replay.scenario}`)
     const count = verifiedSteps(replay)
     for (const step of tape.steps.slice(0, count)) for (const operation of step.operations) {
       if (contracts) recordOutside(operations, operation, outsideContract)
       if (refused(operation)) continue
       const targets = reachedTargets(operations, reached, operation.name)
-      for (const target of targets) for (const journey of matching) target.add(journey.id)
+      for (const target of targets) for (const credit of credits) target.add(credit)
     }
   }
   const rows = operations.map(operation => ({ ...operation, reachedBy: [...reached.get(operation.id)].toSorted() })).toSorted((a, b) => a.id.localeCompare(b.id))

@@ -85,3 +85,12 @@ test('editing a declared contract changes the revision, so older replays become 
   await writeFile(join(project.root, 'openapi.json'), JSON.stringify({ ...project.document, paths: { ...project.document.paths, '/added': { get: {} } } }))
   assert.notEqual(await revision(), before)
 })
+
+test('a passing replay outside every declared journey credits its scenario, not nothing', () => {
+  const operations = [{ id: 'GET /api/orders/:id', kind: 'route' }, { id: 'POST /api/unused', kind: 'route' }]
+  const tape = { project: 'p', source: 's', seed: { context: { scenario: 'orphan' } }, steps: [{ operations: [{ name: 'GET:/api/orders/7' }] }] }
+  const replay = { schema: 'civic.replay/0', project: 'p', source: 's', scenario: 'orphan', tape: 'hash', steps: 1, outcome: 'pass' }
+  const report = backendCoverage(operations, new Map([['hash', tape]]), [replay], { project: 'p', source: 's', journeys: [{ id: 'journey', scenarios: ['other'] }] })
+  assert.deepEqual(report.operations.find(row => row.id === 'GET /api/orders/:id').reachedBy, ['scenario:orphan'])
+  assert.deepEqual(report.unreached, ['POST /api/unused'])
+})
