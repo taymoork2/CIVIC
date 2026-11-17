@@ -4,7 +4,7 @@
 // Ctrl+C. It never reads, stops or attaches to the owner's running instance, or its `.civic-canvas/` store.
 import { spawn, type ChildProcess } from 'node:child_process'
 import { once } from 'node:events'
-import { closeSync, existsSync, openSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { closeSync, existsSync, openSync, readdirSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 import * as Effect from 'effect/Effect'
 import * as Option from 'effect/Option'
@@ -15,7 +15,7 @@ import { waitUntil } from './runtime.ts'
 import { git, readCheckout } from '../git.ts'
 import { identityFromEnv } from '../identity.ts'
 import { startReviewApp } from '../review-app.ts'
-import { Store } from '../store.ts'
+import { configuredStore, Store } from '../store.ts'
 import type { WorkRef } from '../../../graph/src/index.ts'
 import { forgetPreview, identify, isProc, isRunning, sameProcess, LAUNCHER_MARKER, pickPorts, previewId, previewsDir, privateDir, readPreviews, removeOwnedRoot, ROOT_MARK, select, stopProcess, writePreview, type Preview } from './state.ts'
 
@@ -192,7 +192,13 @@ async function launch(o: PreviewOptions, scope: Scope.Scope): Promise<number> {
   const [canvasPort = 0, port = 0, overlayPort = 0] = await pickPorts(3)
   const previewRoot = join(previewsDir(), id)
   const store = join(previewRoot, 'store')
-  for (const dir of [previewsDir(), previewRoot, store]) privateDir(dir)
+  for (const dir of [previewsDir(), previewRoot]) privateDir(dir)
+  const records = configuredStore(o.env)
+  // Keep the owned process marker path; removing the preview root removes only this link.
+  if (records) {
+    if (!existsSync(store)) symlinkSync(records, store, 'dir')
+    if (realpathSync(store) !== realpathSync(records)) throw new Error('Preview store differs from CIVIC_STORE. Stop the preview before changing stores.')
+  } else privateDir(store)
   writeFileSync(join(previewRoot, ROOT_MARK), id)
 
   const preview: Preview = {
@@ -226,7 +232,7 @@ async function launch(o: PreviewOptions, scope: Scope.Scope): Promise<number> {
   try {
     writePreview(preview)
     // Nothing inherited from the shell that could point a preview at another instance's store or ports.
-    const env = Object.fromEntries(Object.entries(o.env).filter(([key]) => !/^(?:VITE_)?CIVIC_/.test(key)))
+    const env = Object.fromEntries(Object.entries(o.env).filter(([key]) => key === 'CIVIC_STORE' || !/^(?:VITE_)?CIVIC_/.test(key)))
     const canvas: ChildProcess = await run(Effect.acquireRelease(Effect.sync(() => {
       const log = openSync(join(previewRoot, 'canvas.log'), 'a')
       try { return spawn(process.execPath, [join(root, 'packages/canvas/bin/civic-canvas.mjs'), '--project', manifest, '--store', store, '--port', String(canvasPort)], { cwd: root, env, detached: true, stdio: ['ignore', log, log] }) } finally { closeSync(log) }
@@ -246,7 +252,7 @@ async function launch(o: PreviewOptions, scope: Scope.Scope): Promise<number> {
 
     const identity = identityFromEnv({ ...o.env, CIVIC_AGENT: undefined }, root)
     const bearerFile = findAccessKey(store)
-    const app = await startReviewApp({ store: Store.forCheckout(checkout), checkout, identity }, { upstream: `http://127.0.0.1:${canvasPort}`, port, overlayPort, allowDirty: o.allowDirty, workRef: () => readPreviews().find(row => row.id === id)?.session?.workRef, ...(bearerFile ? { bearerFile } : {}) })
+    const app = await startReviewApp({ store: Store.forCheckout(checkout, o.env), checkout, identity }, { upstream: `http://127.0.0.1:${canvasPort}`, port, overlayPort, allowDirty: o.allowDirty, workRef: () => readPreviews().find(row => row.id === id)?.session?.workRef, ...(bearerFile ? { bearerFile } : {}) })
     closeApp = app.close
     if ((await move({ type: 'READY' })).value !== 'running') return finished
     o.ready?.(preview, () => shutdown(0))
