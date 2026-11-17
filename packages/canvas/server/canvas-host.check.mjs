@@ -3,12 +3,25 @@ import { cp, mkdtemp, readdir, readFile, realpath, writeFile } from 'node:fs/pro
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { test } from 'node:test'
+import { Effect, Schedule } from 'effect'
 import { canvasRoot } from './canvas-root.mjs'
 import { canvasPlugins, startCanvas } from './canvas-host.mjs'
 import { moduleReviewAdapter } from './module-adapter.mjs'
 import { backendCoverage } from '../../shell/server/backend-coverage.mjs'
+import { awakeTimeout } from './awake-clock.mjs'
 
 const notebook = join(canvasRoot, 'examples/notebook')
+const wait = predicate => Effect.runPromise(awakeTimeout(Effect.tryPromise(predicate).pipe(Effect.repeat({ schedule: Schedule.spaced('50 millis'), until: Boolean })), '20 seconds'))
+
+async function settleRun(tab, title) {
+  const live = tab.locator(`iframe[title="${title}"]`)
+  // Visible fields precede the recorder's asynchronous state publication and canvas refocus.
+  await live.evaluate(element => element.contentWindow.reviewPreview.recording())
+  await wait(() => live.evaluate(element => {
+    const win = element.contentWindow
+    return !element.contentDocument.body.inert && !win.reviewPreview.state().pending
+  }))
+}
 
 test('the canvas imports only React, the CIVIC shell, its virtual modules and itself', async () => {
   for (const file of await readdir(join(canvasRoot, 'src'))) {
@@ -213,9 +226,11 @@ test('an app on a function backend runs live against an isolated run of its func
   await frame.locator('[data-rehearsal-ready="true"]').waitFor({ state: 'attached' })
   await frame.getByRole('button', { name: 'Use Olive oil' }).click()
   await frame.getByRole('button', { name: 'Use Olive oil' }).waitFor({ state: 'detached' })
+  await settleRun(tab, 'Live Shelf')
   await frame.getByRole('button', { name: 'Add item' }).click()
   await frame.getByLabel('Item').fill('Flour')
   await frame.getByLabel('Quantity').fill('2')
+  await settleRun(tab, 'Live Shelf')
   await frame.getByRole('button', { name: 'Save' }).click()
   await frame.getByText('Flour × 2').waitFor()
   await frame.getByRole('button', { name: 'Shopping list' }).click()
@@ -353,6 +368,7 @@ test('a TanStack Start app\'s server functions run live against an isolated run,
   await frame.getByRole('button', { name: 'Add book' }).click()
   await frame.getByLabel('Title').fill('Middlemarch')
   await frame.getByLabel('Author').fill('George Eliot')
+  await settleRun(tab, 'Live Reading list')
   await frame.getByRole('button', { name: 'Save' }).click()
   await frame.getByText('Middlemarch').waitFor()
   assert.match(await frame.locator('li').last().textContent(), /by George Eliot, added 20\d\d-\d\d-\d\d/, 'the added date arrives as a Date')
