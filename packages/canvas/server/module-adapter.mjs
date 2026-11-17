@@ -16,12 +16,15 @@ export const moduleReviewAdapter = {
   exploreFixture,
 }
 
-/** Prefers an installed Chrome, then Playwright's own Chromium; `CIVIC_BROWSER` names a channel. */
+/** Prefers Playwright's headless shell; `CIVIC_BROWSER` names an explicit channel. */
 async function launchFixtureBrowser() {
   const { chromium } = await hostPlaywright()
-  const channel = process.env.CIVIC_BROWSER ?? 'chrome'
-  try { return await chromium.launch({ channel, headless: true, timeout: 10000 }) }
-  catch (error) { if (process.env.CIVIC_BROWSER) throw error; return chromium.launch({ headless: true, timeout: 10000 }) }
+  if (process.env.CIVIC_BROWSER) return chromium.launch({ channel: process.env.CIVIC_BROWSER, headless: true, timeout: 10000 })
+  try { return await chromium.launch({ headless: true, timeout: 10000 }) }
+  catch (error) {
+    if (!error.message.includes("Executable doesn't exist")) throw error
+    return chromium.launch({ channel: 'chrome', headless: true, timeout: 10000 })
+  }
 }
 
 /** Renders one screen through the preview adapter in an isolated context that can only read this review server. */

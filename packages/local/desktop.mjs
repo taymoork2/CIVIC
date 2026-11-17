@@ -9,6 +9,12 @@ import { branch, profile, desktopHost } from './desktop-host.mjs'
 
 const testFailure = error => { console.error(error?.stack ?? error); app.exit(1) }
 if (process.env.CIVIC_TEST === '1') {
+  if (process.platform === 'darwin') {
+    app.setActivationPolicy('accessory')
+    app.on('did-become-active', () => testFailure(Error('Test app became active')))
+    app.on('browser-window-focus', () => testFailure(Error('Test window received focus')))
+  }
+  app.commandLine.appendSwitch('disable-backgrounding-occluded-windows')
   process.on('uncaughtException', testFailure)
   process.on('unhandledRejection', testFailure)
   dialog.showErrorBox = (title, message) => testFailure(Error(`${title}: ${message}`))
@@ -40,6 +46,11 @@ const trustedSender = (event, context) => context && !context.window.isDestroyed
 
 async function open(initialURL = origin + '/review') {
   const window = new BaseWindow({ show: false, title: `CIVIC · ${branch}`, width: 1440, height: 1000, minWidth: 360, minHeight: 480, backgroundColor: windowColors().color, ...(process.platform === 'darwin' ? { titleBarStyle: 'hiddenInset', trafficLightPosition: { x: 14, y: 22 } } : process.platform === 'win32' ? { titleBarStyle: 'hidden', titleBarOverlay: { ...windowColors(), height: 60 } } : {}) })
+  if (process.env.CIVIC_TEST === '1') {
+    // macOS constrains shown windows back onto a display when resized.
+    window.setOpacity(0)
+    window.setPosition(-32000, -32000)
+  }
   let closing = false, reviewSession
   const context = { window, tabs: null }
   const stateFor = id => ({ ...context.tabs.snapshot(), visible: !window.isDestroyed() && window.isVisible() && !window.isMinimized() && context.tabs.idForView(id) === context.tabs.snapshot().active })
@@ -99,7 +110,7 @@ async function open(initialURL = origin + '/review') {
       return {
         id: contents.id, contents,
         load: () => !window.isDestroyed() && !contents.isDestroyed() ? contents.loadURL(destination(url)) : Promise.reject(Error('This window has closed')),
-        show: () => { if (window.isDestroyed() || contents.isDestroyed()) return; if (!attached) { window.contentView.addChildView(view); attached = true }; bounds(); contents.focus() },
+        show: () => { if (window.isDestroyed() || contents.isDestroyed()) return; if (!attached) { window.contentView.addChildView(view); attached = true }; bounds(); if (process.env.CIVIC_TEST !== '1') contents.focus() },
         hide: () => { if (attached && !window.isDestroyed()) { window.contentView.removeChildView(view); attached = false } },
         focusScenario: id => { if (!contents.isDestroyed()) contents.send('civic-desktop:focus-scenario', id) },
         destroy: () => { if (!window.isDestroyed()) { window.removeListener('resize', bounds); if (attached) window.contentView.removeChildView(view) }; if (!contents.isDestroyed()) contents.close({ waitForBeforeUnload: false }) },
@@ -120,7 +131,10 @@ async function open(initialURL = origin + '/review') {
   window.on('closed', () => windows.delete(context))
   try {
     await context.tabs.open({ appId: 'initial', name: 'CIVIC', key: 'initial', initial: true })
-    if (!window.isDestroyed()) window.show()
+    if (!window.isDestroyed()) {
+      if (process.env.CIVIC_TEST === '1') window.showInactive()
+      else window.show()
+    }
   } catch (error) { closing = true; if (window.isDestroyed()) return context; window.destroy(); throw error }
   return context
 }
@@ -149,7 +163,10 @@ for (const action of ['state', 'register', 'open', 'replace', 'select', 'close',
 const openSettings = () => {
   const context = [...windows].find(candidate => !candidate.window.isDestroyed() && candidate.window.isFocused()) ?? [...windows].find(candidate => !candidate.window.isDestroyed())
   const view = context?.tabs.views().find(view => context.tabs.idForView(view.id) === context.tabs.snapshot().active)
-  if (view && !view.contents.isDestroyed()) { context.window.show(); context.window.focus(); view.contents.send('civic-desktop:settings') }
+  if (view && !view.contents.isDestroyed()) {
+    if (process.env.CIVIC_TEST !== '1') { context.window.show(); context.window.focus() }
+    view.contents.send('civic-desktop:settings')
+  }
 }
 const main = Effect.scoped(Effect.gen(function* () {
   yield* Effect.promise(() => app.whenReady())

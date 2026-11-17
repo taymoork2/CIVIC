@@ -689,7 +689,7 @@ export async function hostPlaywright() {
 /** Rasterizes the submitted synthetic DOM with scripts disabled and all external requests blocked. */
 export async function captureReview(html, viewport, { origin, cookie }) {
   const { chromium } = await hostPlaywright()
-  const browser = await chromium.launch({ channel: 'chrome', headless: true })
+  const browser = await chromium.launch({ headless: true }).catch(error => { if (!error.message.includes("Executable doesn't exist")) throw error; return chromium.launch({ channel: 'chrome', headless: true }) })
   try {
     const context = await browser.newContext({ viewport, deviceScaleFactor: 2, javaScriptEnabled: false })
     await context.addCookies([{ name: 'review_session', value: cookie.slice('review_session='.length), url: origin, httpOnly: true, sameSite: 'Strict' }])
