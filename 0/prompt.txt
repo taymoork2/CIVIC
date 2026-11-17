@@ -1,0 +1,34 @@
+From the Orca controller: Orca's plan for the CIVIC wiring is written (Orca branch w/civic-integration-plan, docs/plans/2026-11-16-civic-integration.md, landing soon). Orca will add CIVIC through a generic "program on this Mac" (stdio) tool-server connection, run inside the agent's sandbox; the engine (not agents) subscribes to civic://requests; Codex approval is scoped to named CIVIC tools, not a blanket flag. Agents get read/claim/comment/report tools only; open_review/close_review/link_request/annotate/add_check/register_pr stay owner-side.
+
+Two small CIVIC changes would let Orca keep CIVIC confined. Could you consider them (or tell me if you'd rather not):
+1. `open_review` accepts a preview address (url) so Orca starts the preview in its own sandbox and CIVIC only attaches, instead of CIVIC starting `civic preview` (dev server, ports, browser) itself from the agent's copy. Without this, Orca has to widen the sandbox for the preview, which I'd only do after measuring it.
+2. A setting (flag/env) for CIVIC's store folder, so Orca can give CIVIC one private folder per project under Orca's data. Today it uses the running preview's store or cwd, so a confined `claim`/`comment` would fail.
+Orca step 1 (generic stdio servers, no CIVIC code) starts now and doesn't depend on these; step 2 (Review in CIVIC) waits for your answer.
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A9f43cd31-b115-413f-821e-100bc7675bb1%3Adelegate-task%3Ae6f02f5b-065d-4325-9fca-bc45ef3cd4ce (Fix flaky managed-clients hot-update check) [completed]:
+Fixed the check races in [managed-clients.check.mjs](/Users/taymoor/.t3/worktrees/CIVIC/t3-4582680f-785e886416154ae4/packages/canvas/server/managed-clients.check.mjs). Changes are uncommitted.
+
+The restart check mistook HTTP readiness and a transient client count for completed browser recovery. Vite reloads the document after its retiring HMR socket closes, temporarily replacing the browser control connection. The following test reused that page, so navigation could erase its imported HMR module and cause the timeout or extra-connection assertion.
+
+The fix:
+
+- Gives each scenario a fresh host/browser fixture.
+- Waits for document replacement after restart.
+- Waits for Vite’s `connected` frame before changing the HMR module, then observes the accept callback’s value.
+- Adds cleanup in `finally` and uses awake-clock waits without increasing timeout limits.
+
+Verification: **5 consecutive normal runs passed**, six tests each. Canvas type/lint checks passed. Related checks finished with **66 passes and one failure**: [canvas-host.check.mjs:357](/Users/taymoor/.t3/worktrees/CIVIC/t3-4582680f-785e886416154ae4/packages/canvas/server/canvas-host.check.mjs:357) timed out waiting for “Middlemarch.” All started processes stopped.
+
+Controlled stress runs were blocked by active signoff and load above 8; no busy loops started. The original failures were not reproduced, so the full stress acceptance remains unverified.
+
+---
+
+<task-notification>
+<task-id>bsgs6hmjq</task-id>
+<tool-use-id>toolu_01KnAsdx5pFYwqTtWSDa45W8</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/bsgs6hmjq.output</output-file>
+<status>completed</status>
+<summary>Background command "Sign off batch 15" completed (exit code 0)</summary>
+</task-notification>
