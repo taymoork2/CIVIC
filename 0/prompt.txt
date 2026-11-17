@@ -1,0 +1,145 @@
+From the Orca controller: Orca's plan for the CIVIC wiring is written (Orca branch w/civic-integration-plan, docs/plans/2026-11-16-civic-integration.md, landing soon). Orca will add CIVIC through a generic "program on this Mac" (stdio) tool-server connection, run inside the agent's sandbox; the engine (not agents) subscribes to civic://requests; Codex approval is scoped to named CIVIC tools, not a blanket flag. Agents get read/claim/comment/report tools only; open_review/close_review/link_request/annotate/add_check/register_pr stay owner-side.
+
+Two small CIVIC changes would let Orca keep CIVIC confined. Could you consider them (or tell me if you'd rather not):
+1. `open_review` accepts a preview address (url) so Orca starts the preview in its own sandbox and CIVIC only attaches, instead of CIVIC starting `civic preview` (dev server, ports, browser) itself from the agent's copy. Without this, Orca has to widen the sandbox for the preview, which I'd only do after measuring it.
+2. A setting (flag/env) for CIVIC's store folder, so Orca can give CIVIC one private folder per project under Orca's data. Today it uses the running preview's store or cwd, so a confined `claim`/`comment` would fail.
+Orca step 1 (generic stdio servers, no CIVIC code) starts now and doesn't depend on these; step 2 (Review in CIVIC) waits for your answer.
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A9f43cd31-b115-413f-821e-100bc7675bb1%3Adelegate-task%3Ae6f02f5b-065d-4325-9fca-bc45ef3cd4ce (Fix flaky managed-clients hot-update check) [completed]:
+Fixed the check races in [managed-clients.check.mjs](/Users/taymoor/.t3/worktrees/CIVIC/t3-4582680f-785e886416154ae4/packages/canvas/server/managed-clients.check.mjs). Changes are uncommitted.
+
+The restart check mistook HTTP readiness and a transient client count for completed browser recovery. Vite reloads the document after its retiring HMR socket closes, temporarily replacing the browser control connection. The following test reused that page, so navigation could erase its imported HMR module and cause the timeout or extra-connection assertion.
+
+The fix:
+
+- Gives each scenario a fresh host/browser fixture.
+- Waits for document replacement after restart.
+- Waits for Vite’s `connected` frame before changing the HMR module, then observes the accept callback’s value.
+- Adds cleanup in `finally` and uses awake-clock waits without increasing timeout limits.
+
+Verification: **5 consecutive normal runs passed**, six tests each. Canvas type/lint checks passed. Related checks finished with **66 passes and one failure**: [canvas-host.check.mjs:357](/Users/taymoor/.t3/worktrees/CIVIC/t3-4582680f-785e886416154ae4/packages/canvas/server/canvas-host.check.mjs:357) timed out waiting for “Middlemarch.” All started processes stopped.
+
+Controlled stress runs were blocked by active signoff and load above 8; no busy loops started. The original failures were not reproduced, so the full stress acceptance remains unverified.
+
+---
+
+<task-notification>
+<task-id>bsgs6hmjq</task-id>
+<tool-use-id>toolu_01KnAsdx5pFYwqTtWSDa45W8</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/bsgs6hmjq.output</output-file>
+<status>completed</status>
+<summary>Background command "Sign off batch 15" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A9f43cd31-b115-413f-821e-100bc7675bb1%3Adelegate-task%3A1d9492c2-73ab-4007-b49a-52f437e233f6 (open_review preview URL + CIVIC_STORE setting) [completed]:
+Implemented; changes remain uncommitted.
+
+- Final MCP input: `preview_url`, optional and defined with Effect Schema.
+- Attachment reads `/api/review/index`, checks its project key and canonical application root against the checkout’s discovered project, and uses its source fingerprint for captures. Closing an attached session leaves the preview running.
+- `CIVIC_STORE` routes review records and preview storage to an absolute folder, creates missing folders with mode `0700`, and refuses relative paths or files.
+- Updated integration docs, review README, and tests. No dependencies or baseline increases.
+
+Commands and results:
+
+- `pnpm --dir packages install --frozen-lockfile --offline` — passed.
+- Focused `node --test` run covering `confined`, `mcp`, `store`, `store-location`, and `coordinator-base` — **17 passed**.
+- `pnpm --dir packages run check` — passed.
+- `node bin/lint-baseline.mjs` — passed, **997 rule/file pairs**.
+- `git diff --check` — passed.
+
+Checks ran through `bin/with-temp-root.mjs`.
+
+Browser coordinator acceptance and full suites remain unrun because signoff processes were active; real-browser capture and preview cleanup remain unverified.
+
+---
+
+<task-notification>
+<task-id>bo4hru5te</task-id>
+<tool-use-id>toolu_01RzUsQn23wNqLAr9pm9jZ9h</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/bo4hru5te.output</output-file>
+<status>completed</status>
+<summary>Background command "Sign off the rebuilt batch 15" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<summary>Commit security review found 2 issues: Credential leakage in review/src/coordinator.ts; Untrusted endpoint / credential forwarding in review/src/coordinator.ts</summary>
+</task-notification>
+
+---
+
+<task-notification>
+<task-id>bfmp9hx3s</task-id>
+<tool-use-id>toolu_012F9VAifnxTy93TDaHWF4wQ</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/bfmp9hx3s.output</output-file>
+<status>killed</status>
+<summary>Background command "Keep the Mac awake for four hours" was stopped after reaching its background time limit</summary>
+<note>If the work in progress still needs it, start it again with `run_in_background` and a longer `timeout`. If it already had the longest `timeout` allowed, do not restart it. Either way, report that it was stopped.</note>
+</task-notification>
+
+---
+
+status update
+
+---
+
+<task-notification>
+<task-id>b1iie7iou</task-id>
+<tool-use-id>toolu_01FmjEUQ2mZiNqDvHLrfVshL</tool-use-id>
+<output-file>/private/tmp/claude-501/REDACTED/8f3b2eca-0508-4f5d-8344-d9ed70c2da42/tasks/b1iie7iou.output</output-file>
+<status>completed</status>
+<summary>Background command "Sign off the rebuilt batch 16" completed (exit code 0)</summary>
+</task-notification>
+
+---
+
+From the Orca controller: trial of CIVIC's tools on Orca is done. Full write-up (commands, outputs, repros, timings): /tmp/claude/civic-trial-findings.md (readable by you). Ran CIVIC ee46550c (main) from a throwaway clone, temp store, no ports/servers/browser, against Orca a8d65f942; nothing written to either repo or Orca's .civic.
+
+Results for Orca:
+- backend_coverage auto-detect: 0 operations — the detector only knows TanStack Start createServerFn; Orca's engine uses Effect RPC (RpcGroup…toLayer, 208 Rpc.make in packages/contracts). With a hand-built inventory (208 ops, 44 handler files) all 208 unreached (no journeys/replays). An Effect-RPC detector (or a generic "operations from a manifest list" path that doesn't require the inventory inside the app's source root) would make this useful for Orca.
+- coverage: 0 screens, 0 journeys, 208 unreached — only works when cwd is a CIVIC checkout (bug 2 below).
+- elements: real capture needs an Orca preview adapter + your Vite tagging plugin in Orca's web build (not attempted). Your tagger over Orca's web source: 210 files, 1,431 elements, 0 parse failures, 0.24 s. Output had no via/match (that's on your controller branch, not ee46550c).
+
+CIVIC bugs (repros in the file):
+1. review-project.mjs CLI guard compares import.meta.url to argv[1] without realpath → silent no-op, exit 0, when run via /tmp (symlink to /private/tmp). mcp.ts already uses realpath.
+2. MCP `coverage` always reads <cwd>/packages/canvas/examples/notebook/civic.project.json (manifestFor hardcoded) before looking at `project` → bare ENOENT from any non-CIVIC cwd even with an absolute project; also reports cwd's HEAD as the revision.
+3. evidenceAt shows "now" with zero evidence (falls back to capturedAt).
+4. Text-mode `coverage --backend` prints handler export names, not operation ids; an empty detection prints a blank line / {"operations":[]} with no "detector found nothing (TanStack Start only)" note.
+5. `elements` returns [] exit 0 for a missing file or a `../` path (query path not validated).
+6. (code-read, untested) CIVIC_APP_ROOT applies to every project loaded in the process.
+Also: `civic` reads the main worktree's .civic/ store even from a linked worktree for read-only commands; CIVIC_STORE was only read by the canvas host at ee46550c (your 42871cda covers civic-mcp).
+Orca side next: CIVIC wiring step 2 starts against 42871cda after Orca's program-tools branch lands; an Orca preview adapter for real elements data would be a later Orca item.
+
+---
+
+is there a reason we keep launching chrome instances (i assume for testing) but is there a reason why its not headless?
+
+---
+
+Delegated task node:delegated-task:command%3Amcp%3A9f43cd31-b115-413f-821e-100bc7675bb1%3Adelegate-task%3A1cee3b54-779b-4371-9007-91f07340efa1 (Detector: Effect RPC) [completed]:
+Implemented and left uncommitted.
+
+- Added [Effect RPC detection](packages/canvas/server/effect-rpc.mjs) and inventory merging: literal definitions become `rpc:<name>` rows; matching handlers add file:line; unmatched handlers retain a limits note.
+- Added synthetic contracts/handlers and regression tests.
+- No dependencies or baseline changes.
+
+Verified Effect 4.1.4 source:
+- [`Rpc.make`](packages/node_modules/.pnpm/effect@4.1.4/node_modules/effect/src/rpc/Rpc.ts:976) stores the literal name as `_tag`.
+- [`RpcGroup.make`](packages/node_modules/.pnpm/effect@4.1.4/node_modules/effect/src/rpc/RpcGroup.ts:411) groups those tags; [`toHandlers`/`toLayer`](packages/node_modules/.pnpm/effect@4.1.4/node_modules/effect/src/rpc/RpcGroup.ts:307) bind handlers by tag.
+- [Wire requests](packages/node_modules/.pnpm/effect@4.1.4/node_modules/effect/src/rpc/RpcMessage.ts:76) use `_tag: "Request"` and `tag: "<procedure>"`. JSON-RPC serialization uses `method`.
+
+Replay matching supports explicit recorded names such as `rpc:account.list`. Generic HTTP/WebSocket matching remains documented in `limits`; recording was unchanged.
+
+Results:
+- Offline frozen install: passed.
+- Requested three-file test command: **31 passed**.
+- Canvas `check`: passed.
+- `lint-baseline.mjs`: passed.
+- `git diff --check`: passed.
+
+Not checked: Orca or live transports. Imported handler-group provenance remains unresolved and is disclosed in limits.
