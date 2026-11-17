@@ -9,6 +9,7 @@ import { fastifyOperations } from './fastify-routes.mjs'
 import { elysiaOperations } from './elysia-routes.mjs'
 import { nestjsOperations } from './nestjs-routes.mjs'
 import { trpcOperations } from './trpc-procedures.mjs'
+import { effectRpcOperations } from './effect-rpc.mjs'
 import { backendInventory } from './backend-coverage.mjs'
 import { backendCoverage } from '../../shell/server/backend-coverage.mjs'
 import { fileURLToPath } from 'node:url'
@@ -18,6 +19,34 @@ import { nitroOperations } from './nitro-routes.mjs'
 import { astroOperations } from './astro-routes.mjs'
 
 const fixture = path => readFile(new URL('./check-fixtures/' + path, import.meta.url), 'utf8')
+test('Effect RPC merges cross-file definitions and handlers, retaining unmatched handlers', async () => {
+  const root = fileURLToPath(new URL('check-fixtures/effect-rpc', import.meta.url))
+  const rows = await backendInventory({ root, sources: [root], manifest: { adapter: {} } })
+  assert.deepEqual(rows.map(row => row.id), ['rpc:account.list', 'rpc:account.save', 'rpc:account.remove', 'rpc:account.unknown'])
+  assert.equal(rows[0].file, 'contracts.ts')
+  assert.equal(rows[0].export, 'account.list')
+  assert.equal(rows[0].handler, 'handlers.ts:4')
+  assert.equal(rows[2].handler, 'handlers.ts:9')
+  assert.match(rows[3].limits.at(-1), /no matching RPC definition/u)
+  assert.ok(rows.every(row => !('effectRpcHandler' in row)))
+})
+
+test('Effect RPC checks imports, literal names, comments and function shadowing', () => {
+  assert.deepEqual(effectRpcOperations("import {Rpc} from 'other'; Rpc.make('no', {})", 'a.ts'), [])
+  assert.deepEqual(effectRpcOperations("import {Rpc} from '@effect/rpc'; function shadow(Rpc) { return Rpc.make('no', {}) }", 'a.ts'), [])
+  assert.deepEqual(effectRpcOperations("import {Rpc} from '@effect/rpc'; Rpc.make(name, {}); // Rpc.make('no', {})", 'a.ts'), [])
+  for (const source of ['effect/rpc/Rpc', 'effect/unstable/rpc/Rpc', '@effect/rpc/Rpc']) {
+    assert.equal(effectRpcOperations(`import * as R from '${source}'; R.make('yes', {})`, 'a.ts')[0].id, 'rpc:yes')
+  }
+  assert.throws(() => effectRpcOperations("import '@effect/rpc'; const =", 'a.ts'))
+})
+
+test('Effect RPC reach requires an explicit recorded rpc name, not an HTTP endpoint or envelope tag', () => {
+  const operations = ['named', 'http'].map(name => ({ id: `rpc:${name}`, kind: 'rpc' }))
+  const tape = { project: 'p', source: 's', seed: { context: { scenario: 'start' } }, steps: [{ operations: [{ name: 'rpc:named' }, { name: 'POST:/rpc', args: { body: '{"_tag":"Request","tag":"http"}' } }] }] }
+  const replay = { schema: 'civic.replay/0', project: 'p', source: 's', tape: 't', scenario: 'start', outcome: 'pass', steps: 1 }
+  assert.deepEqual(backendCoverage(operations, new Map([['t', tape]]), [replay], { project: 'p', source: 's', journeys: [] }).unreached, ['rpc:http'])
+})
 for (const [framework, detect, expected] of [
   ['nestjs', nestjsOperations, ['GET /cats/:id', 'POST /cats', 'PUT /cats/:id', 'PATCH /cats/:id', 'DELETE /cats/:id', 'OPTIONS /cats', 'HEAD /cats', 'ALL /cats/health', 'GET /']],
   ['trpc', trpcOperations, ['trpc:user.byId', 'trpc:user.save', 'trpc:events.latest']],
