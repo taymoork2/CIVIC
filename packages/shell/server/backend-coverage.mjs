@@ -9,8 +9,11 @@ function recordOutside(operations, operation, outside) {
   if (/^(?:GET|PUT|POST|DELETE|OPTIONS|HEAD|PATCH|TRACE)[ :]/u.test(operation.name) && !reachedOperation(operations, operation.name)) outside.add(httpName(operation.name))
 }
 
-function reachedTarget(operations, reached, name) {
-  return reached.get(name) ?? reached.get(reachedOperation(operations, name)?.id)
+function reachedTargets(operations, reached, name) {
+  const targets = [reached.get(name) ?? reached.get(reachedOperation(operations, name)?.id)].filter(Boolean)
+  const match = /^(?:GET|POST) \/trpc\/(?<paths>[^/]+)$/u.exec(httpName(name))
+  if (match) targets.push(...match.groups.paths.split(',').map(path => reached.get(`trpc:${path}`)).filter(Boolean))
+  return targets
 }
 
 const reachedOperation = (operations, name) => {
@@ -38,8 +41,8 @@ export function backendCoverage(operations, tapes, replays, { project, source, j
     for (const step of tape.steps.slice(0, count)) for (const operation of step.operations) {
       if (contracts) recordOutside(operations, operation, outsideContract)
       if (refused(operation)) continue
-      const target = reachedTarget(operations, reached, operation.name)
-      for (const journey of matching) target?.add(journey.id)
+      const targets = reachedTargets(operations, reached, operation.name)
+      for (const target of targets) for (const journey of matching) target.add(journey.id)
     }
   }
   const rows = operations.map(operation => ({ ...operation, reachedBy: [...reached.get(operation.id)].toSorted() })).toSorted((a, b) => a.id.localeCompare(b.id))

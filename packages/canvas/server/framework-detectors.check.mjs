@@ -7,11 +7,52 @@ import { expressOperations } from './express-routes.mjs'
 import { honoOperations } from './hono-routes.mjs'
 import { fastifyOperations } from './fastify-routes.mjs'
 import { elysiaOperations } from './elysia-routes.mjs'
+import { nestjsOperations } from './nestjs-routes.mjs'
+import { trpcOperations } from './trpc-procedures.mjs'
 import { backendInventory } from './backend-coverage.mjs'
 import { backendCoverage } from '../../shell/server/backend-coverage.mjs'
 import { fileURLToPath } from 'node:url'
 
 const fixture = path => readFile(new URL('./check-fixtures/' + path, import.meta.url), 'utf8')
+for (const [framework, detect, expected] of [
+  ['nestjs', nestjsOperations, ['GET /cats/:id', 'POST /cats', 'PUT /cats/:id', 'PATCH /cats/:id', 'DELETE /cats/:id', 'OPTIONS /cats', 'HEAD /cats', 'ALL /cats/health', 'GET /']],
+  ['trpc', trpcOperations, ['trpc:user.byId', 'trpc:user.save', 'trpc:events.latest']],
+]) {
+  test(framework + ' inventories literal declarations with import provenance', async () => {
+    const rows = detect(await fixture(framework + '/routes.ts'), 'routes.ts')
+    assert.deepEqual(rows.map(row => row.id), expected)
+    assert.equal(rows[0].export, framework === 'nestjs' ? 'Cats.find' : 'user.byId')
+    assert.ok(rows.every(row => row.limits.length && row.kind === (framework === 'nestjs' ? 'route' : 'rpc')))
+    const root = fileURLToPath(new URL('./check-fixtures/' + framework, import.meta.url))
+    const inventory = await backendInventory({ root, sources: [root], manifest: { adapter: {} } })
+    assert.deepEqual(inventory.map(row => row.id), expected)
+    assert.ok(inventory.every(row => row.detector === framework))
+  })
+}
+
+test('Nest skips nonliteral options and foreign decorators; tRPC skips foreign routers', () => {
+  assert.deepEqual(nestjsOperations("import {Controller, Get} from 'other'; @Controller() class C { @Get() f() {} }", 'a.ts'), [])
+  assert.deepEqual(nestjsOperations("import {Controller, Get} from '@nestjs/common'; @Controller({...options, path:'x'}) class C { @Get() f() {} }", 'a.ts'), [])
+  assert.deepEqual(trpcOperations("import {router} from 'other'; const trpc = router({x: p.query(fn)})", 'a.ts'), [])
+  assert.throws(() => nestjsOperations("import '@nestjs/common'; const =", 'a.ts'))
+  assert.throws(() => trpcOperations("import '@trpc/server'; const =", 'a.ts'))
+  assert.deepEqual(nestjsOperations("import {Controller, Get} from '@nestjs/common'; @Controller('x') class C { @Get('/y/') f() {} }", 'a.ts').map(row => row.id), ['GET /x/y'])
+  const local = "import {initTRPC as init} from '@trpc/server'; const t = init.create(); const router = t.router; export default router({x: t.procedure.query(fn)})"
+  assert.deepEqual(trpcOperations(local, 'a.ts').map(row => row.id), ['trpc:x'])
+  const nested = "import {router} from './trpc'; const user = router({byId:p.query(fn)}); export default router({api:router({user})})"
+  assert.deepEqual(trpcOperations(nested, 'a.ts').map(row => row.id), ['trpc:api.user.byId'])
+})
+
+test('tRPC single and batch HTTP names match RPC paths only in verified successful steps', () => {
+  const operations = [...['a', 'b', 'user.byId', 'failed', 'later'].map(path => ({ id: 'trpc:' + path, kind: 'rpc' })), { id: 'GET /trpc/:path', kind: 'route' }]
+  const tape = { project: 'p', source: 's', seed: { context: { scenario: 'start' } }, steps: [
+    { operations: [{ name: 'GET /trpc/user.byId?input=1' }, { name: 'POST:/trpc/a,b?batch=1' }, { name: 'GET /trpc/failed', result: { status: 500 } }] },
+    { operations: [{ name: 'GET /trpc/later' }] },
+  ] }
+  const replay = { schema: 'civic.replay/0', project: 'p', source: 's', tape: 't', scenario: 'start', outcome: 'fail', steps: 2, divergedAt: 2 }
+  const result = backendCoverage(operations, new Map([['t', tape]]), [replay], { project: 'p', source: 's', journeys: [{ id: 'j', scenarios: ['start'] }] })
+  assert.deepEqual(result.unreached, ['trpc:failed', 'trpc:later'])
+})
 for (const [framework, detect, expected, runtime] of [
   ['hono', honoOperations, ['GET /api/v1/users/:id', 'POST /api/items', 'PUT /api/items', 'ALL /api/health', 'GET /schema'], /Hono app.routes/u],
   ['fastify', fastifyOperations, ['GET /health', 'POST /items/:id', 'PUT /items/:id', 'GET /api/users/:id', 'DELETE /api/v2/items'], /Fastify onRoute/u],
