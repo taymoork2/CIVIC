@@ -42,6 +42,15 @@ test('only loopback pages can write, and the page URL must be the sender', async
   assert.equal((await fetch(`${overlay}/overlay.js`)).status, 200)
 })
 
+test('the overlay script carries no local path, and only locations inside the checkout are kept', async () => {
+  const script = await fetch(`${overlay}/overlay.js`)
+  assert.ok(!(await script.text()).includes(repo))
+  const located = (location: string) => fetch(`${overlay}/annotate`, { method: 'POST', headers: { origin: 'http://127.0.0.1:9', 'content-type': 'application/json' }, body: JSON.stringify({ comment: 'x', url: 'http://127.0.0.1:9/', location, viewport: { width: 400, height: 400 }, rect: { x: 0, y: 0, width: 1, height: 1 }, html: '<p>x</p>' }) })
+  const outside = await located('/elsewhere/src/view.tsx:1:1')
+  assert.equal(outside.status, 400)
+  assert.match(await outside.text(), /Invalid code location/u)
+})
+
 test('selecting an element in a dev page records an anchored annotation with its capture', async (t) => {
   let chromium
   try { ({ chromium } = await import('playwright-core')) } catch { return t.skip('playwright-core is not installed') }

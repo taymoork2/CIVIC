@@ -4,6 +4,8 @@ export function readElementSource(element, build = {}) {
     if (typeof value !== 'string' || /[\\\r\n\0?#]/u.test(value)) return
     let file = value
     if (/^(?:\/|[A-Za-z]:)/u.test(file)) {
+      // The overlay never learns the checkout root; its server makes absolute paths relative.
+      if (build.absolute) return file.split('/').some(part => part === '..' || part === 'node_modules') ? undefined : file
       const root = build.root?.replace(/\/$/u, '')
       if (!root || !file.startsWith(root + '/')) return
       file = file.slice(root.length + 1)

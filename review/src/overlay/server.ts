@@ -35,7 +35,8 @@ async function handle(req: IncomingMessage, res: ServerResponse, context: () => 
     const path = new URL(req.url ?? '/', 'http://127.0.0.1').pathname
     if (path === '/overlay.js' && req.method === 'GET') {
       res.writeHead(200, { 'content-type': 'text/javascript; charset=utf-8', 'cache-control': 'no-store' })
-      return res.end(`const reader = ${readElementSource.toString()};\nconst readElementSource = element => reader(element, ${JSON.stringify({ root: context().checkout.root })});\n${readFileSync(OVERLAY, 'utf8')}`)
+      // Any page can load this script, so it carries no local paths; /annotate makes locations relative.
+      return res.end(`(() => {\nconst reader = ${readElementSource.toString()};\nconst readElementSource = element => reader(element, { absolute: true });\n${readFileSync(OVERLAY, 'utf8')}\n})();`)
     }
     if (path !== '/annotate') return json(404, { error: 'Not found' })
     if (!origin || !LOOPBACK.test(origin)) return json(403, { error: 'Annotations come only from pages served on this machine.' })
@@ -45,7 +46,7 @@ async function handle(req: IncomingMessage, res: ServerResponse, context: () => 
     }
     if (req.method !== 'POST') return json(405, { error: 'Use POST' })
     if (!req.headers['content-type']?.startsWith('application/json')) return json(400, { error: 'Use JSON' })
-    const input = checked(JSON.parse(await body(req)) as Record<string, unknown>, origin)
+    const input = checked(JSON.parse(await body(req)) as Record<string, unknown>, origin, context().checkout.root)
     const png = await rasterize(input.html, input.viewport, new URL(input.url).origin)
     const workRef = typeof sessionRef === 'function' ? sessionRef() : sessionRef
     const annotation = annotate(context(), {
@@ -69,13 +70,16 @@ async function handle(req: IncomingMessage, res: ServerResponse, context: () => 
 
 const bad = (message: string) => Object.assign(new Error(message), { status: 400 })
 
-function checked(input: Record<string, unknown>, origin: string) {
+function checked(input: Record<string, unknown>, origin: string, root: string) {
   const text = (value: unknown, max: number, what: string) => {
     if (typeof value !== 'string' || value.trim() === '' || value.length > max) throw bad(`Invalid ${what}`)
     return value.trim()
   }
   const comment = text(input.comment, 4000, 'comment')
-  const parsed = typeof input.location === 'string' ? parseSource(input.location) : undefined
+  // The overlay sends absolute paths as found; only those inside this checkout become relative locations.
+  const base = root.replace(/\/$/u, '') + '/'
+  const given = typeof input.location === 'string' && input.location.startsWith('/') ? input.location.startsWith(base) ? input.location.slice(base.length) : undefined : input.location
+  const parsed = typeof given === 'string' ? parseSource(given) : undefined
   const via = ['civic', 'vue-inspector', 'svelte-inspector', 'solid-locator'].includes(String(input.via)) ? input.via : undefined
   const match = input.match === 'ancestor' ? 'ancestor' : 'exact'
   const location = parsed ? { ...parsed, via, match } : undefined

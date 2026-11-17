@@ -60,3 +60,10 @@ test('tagged capture serializes the shared reader without module dependencies', 
   assert.equal(capture.elements[0]?.via, 'vue-inspector')
   assert.equal(capture.elements[0]?.match, 'exact')
 })
+
+test('the overlay mode passes absolute paths through for its server to make relative', () => {
+  const element = { dataset: { civicSource: '/repo/src/view.tsx:2:3' }, parentElement: null, ownerDocument: null } as unknown as Element
+  assert.equal(readElementSource(element, { absolute: true }).location, '/repo/src/view.tsx:2:3')
+  const hidden = { dataset: { civicSource: '/repo/node_modules/x/view.tsx:2:3' }, parentElement: null, ownerDocument: null } as unknown as Element
+  assert.equal(readElementSource(hidden, { absolute: true }).location, undefined)
+})

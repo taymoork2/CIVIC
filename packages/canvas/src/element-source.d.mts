@@ -7,4 +7,4 @@ export interface ElementSource {
   match?: 'exact' | 'ancestor'
   component?: string
 }
-export function readElementSource(element: Element, build?: { root?: string }): ElementSource
+export function readElementSource(element: Element, build?: { root?: string; absolute?: boolean }): ElementSource
